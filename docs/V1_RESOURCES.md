@@ -29,6 +29,7 @@ Chaque ressource passe la checklist d'audit (`docs/SECURITY.md`) avant install. 
 | Duo criminel | **gs_duo** | maison | ✅ fait |
 | Réseau social | **gs_social** (Néon, miroir Discord) | maison | ✅ fait |
 | Écran de chargement | **gs_loadscreen** | maison | ✅ fait |
+| Panel staff RP | **gs_admin** (complète le menu txAdmin) | maison | ✅ fait |
 | Boutique Tebex | **gs_store** (désactivée tant que la conformité PLA n'est pas validée) | maison | ✅ fait |
 
 Reste en Phase 2 : companion web (Supabase + Netlify).

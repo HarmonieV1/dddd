@@ -1,0 +1,26 @@
+# Administration : txAdmin + gs_admin
+
+| Outil | Pour quoi | Accès |
+|---|---|---|
+| **txAdmin** (web, `http://localhost:40120`) | restarts, console, backups, **bans** (base anti-contournement), whitelist, stats | comptes txAdmin |
+| **Menu txAdmin en jeu** (`/tx`) | noclip, god, TP, spectate, freeze, véhicules, warn/ban, IDs au-dessus des têtes | permissions txAdmin |
+| **gs_admin** (F10 / `/admin`) | tout ce qui est propre à notre RP : tickets, fiches, isolement, économie, contrats, météo, annonces | ACE `gs.admin.*` |
+
+## gs_admin
+- **Tickets** : les joueurs font `/report <message>` (1 ticket ouvert max, cooldown 2 min) ; le staff **en service** (`/staff` ou bouton) est notifié avec un son ; prendre, aller au joueur, ouvrir sa fiche, clôturer.
+- **Fiche joueur** branchée sur tous nos systèmes : job actif + contrats, recherche (étoiles), duo, pseudo Néon, isolement, ping, durée de session ; + licence et historique staff (modo) ; + argent (admin).
+- **Actions** (le serveur revérifie tout, motif obligatoire pour les sanctions) :
+  - Helper : tickets, aller au joueur, fiche
+  - Modo : amener, soigner, réanimer, réparer véhicule, figer, effacer la recherche, note staff, **avertir, isoler, expulser**
+  - Admin : donner/retirer argent (plafond 100 000 $), donner item (plafond 100), ajouter/retirer contrat, météo, annonce
+- **Anti-abus staff** : impossible de sanctionner un staff de niveau égal ou supérieur ; toute tentative sans le niveau est loggée.
+- **Isolement (jail admin)** : cour de Bolingbroke, compte à rebours à l'écran, retour automatique en cellule en cas de fuite, **persiste à la déconnexion** (par licence).
+- **Transparence** : avertissements, isolements, expulsions **et bans/warns/kicks txAdmin** publiés sur un salon public (`gs_webhook_sanctions`), staff anonyme.
+- **Journal** : toutes les actions staff en BDD (`gs_admin_log`) + webhook staff + onglet Journal (modo+).
+
+## Donner les droits
+Dans `cfg/secrets.cfg` : `add_principal identifier.license:XXXX group.helper` (ou `group.mod`, `group.admin`).
+Hiérarchie : god > admin > mod > helper (chaque groupe hérite du précédent, voir `cfg/permissions.cfg`).
+
+## Tests
+`tests/test_gs_admin.lua` (50 tests) : niveaux, anti-abus, motifs, plafonds, tickets, isolement persistant, publication des sanctions.

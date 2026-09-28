@@ -3,6 +3,26 @@
 [CONFIG] Checklist Phase 0. Rien n'est exposé sur Internet : on joue en `localhost`.
 Les écrans et menus exacts de txAdmin/Qbox évoluent : en cas de doute, docs.qbox.re et docs.fivem.net font foi.
 
+## 0. Liens officiels (ne télécharger que là)
+| Quoi | Lien |
+|---|---|
+| **MariaDB** (recommandé) | https://mariadb.org/download/ → version **LTS**, Windows, x86_64, **MSI** |
+| Alternative : XAMPP (MariaDB + panneau, local uniquement) | https://www.apachefriends.org/ |
+| Alternative : MySQL 8 | https://dev.mysql.com/downloads/installer/ |
+| HeidiSQL (voir la base, souvent installé avec MariaDB) | https://www.heidisql.com/download.php |
+| Serveur FiveM (artifacts Windows, prendre « Latest Recommended ») | https://runtime.fivem.net/artifacts/fivem/build_server_windows/master/ |
+| Clé de licence serveur (gratuite) | https://portal.cfx.re (anciennement keymaster.fivem.net) |
+| Doc Qbox (recipe, ressources) | https://docs.qbox.re |
+| Doc FiveM / txAdmin | https://docs.fivem.net |
+**Un seul** serveur de BDD à la fois (MariaDB OU XAMPP OU MySQL) : ils utilisent tous le port 3306.
+
+## Ce qu'il faut pour tester concrètement
+1. MariaDB installé (ci-dessous) · 2. artifacts FXServer · 3. clé de licence · 4. recipe Qbox dans txAdmin ·
+5. `brancher-gtasoon.bat` · 6. te donner le groupe admin · 7. te connecter avec FiveM (F8 → `connect localhost`).
+**Tester à 2** (duo, embauche, factures) : ton pote doit pouvoir joindre ton PC. Le plus simple et sans ouvrir de port :
+un VPN privé gratuit type **Tailscale** (vous l'installez tous les deux, il se connecte à ton IP Tailscale).
+Sinon : ouvrir le port 30120 TCP+UDP sur ta box (moins sûr).
+
 ## 1. Prérequis
 - [ ] GTA V **Legacy** + client FiveM qui se lance (voir FAQ en bas)
 - [ ] Git (ou GitHub Desktop), et ce repo cloné

@@ -200,6 +200,24 @@ end)
 -- API pour les autres ressources (économie dynamique, wanted, EMS...) ------------------------------
 
 exports('GetWeather', function() return Weather.type end)
+exports('SetWeather', function(wtype, minutes)
+    if not Config.Transitions[wtype] then return false end
+    if Weather.event then Weather.endEvent(true) end
+    minutes = math.max(1, math.min(240, tonumber(minutes) or 30))
+    Weather.set(wtype, minutes)
+    Weather.forcedUntil = os.time() + minutes * 60
+    return true
+end)
+exports('StartEvent', function(id) return Weather.startEvent(id) end)
+exports('StopEvent', function() Weather.endEvent(false) return true end)
+exports('ListWeathers', function()
+    local l = {}
+    for w in pairs(Config.Transitions) do l[#l + 1] = w end
+    table.sort(l)
+    local e = {}
+    for id, ev in pairs(Config.Events) do e[#e + 1] = { id = id, label = ev.label } end
+    return l, e
+end)
 exports('GetEvent', function() return Weather.event end)
 exports('IsBlackout', function() return Weather.blackout end)
 exports('GetGameTime', function() return Clock.split(Weather.gameMinute()) end)

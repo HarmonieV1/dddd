@@ -134,6 +134,8 @@ end)
 
 AddEventHandler('gs_bridge:server:playerUnloaded', function(src) Neon.handles[src] = nil end)
 
+exports('GetHandle', function(src) return handleOf(src) end)
+
 function Neon.init()
     Store.init()
     local posts, likes = Store.loadFeed(Config.FeedSize)

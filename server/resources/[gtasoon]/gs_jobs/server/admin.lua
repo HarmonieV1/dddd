@@ -1,3 +1,8 @@
+-- API staff (gs_admin) : mêmes règles que /gsjob, audit fait par l'appelant.
+exports('AdminAddContract', function(cid, job, grade, name) return GSJ.addMembership(cid, job, grade or 0, name) end)
+exports('AdminRemoveContract', function(cid, job) return GSJ.removeMembership(cid, job) end)
+exports('AdminSetGrade', function(cid, job, grade) return GSJ.setMembershipGrade(cid, job, grade) end)
+
 -- /gsjob <add|remove|grade|list> <id> [job] [grade] : gestion staff. ACE : group.admin (auto par ox_lib).
 -- Remplace le /setjob du framework : passer par ici pour garder les contrats cohérents.
 local function reply(src, msg, ntype)

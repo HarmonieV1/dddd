@@ -9,7 +9,7 @@ import pathlib, re, sys
 from collections import defaultdict
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent / "server" / "resources" / "[gtasoon]"
-EXTERNAL_PREFIXES = ("QBCore:", "qb-weathersync:", "ox_lib:", "illenium-appearance:", "gs_bridge:client:", "gs_bridge:server:")
+EXTERNAL_PREFIXES = ("QBCore:", "qb-weathersync:", "ox_lib:", "illenium-appearance:", "qbx_medical:", "txAdmin:", "gs_bridge:client:", "gs_bridge:server:")
 errors = []
 
 def side(path):
@@ -114,6 +114,17 @@ for res in res_files:
         for m in re.finditer(r"\b(?:nui|run)\('([^']+)'", js.read_text(encoding="utf-8")):
             if m.group(1) not in handlers:
                 errors.append(f"{js.relative_to(ROOT)} action NUI sans handler Lua : {m.group(1)}")
+
+# Panel staff : chaque action proposée par l'UI existe côté serveur (Actions.x / Actions['x'])
+admin_ui = ROOT / "gs_admin" / "web" / "src" / "App.jsx"
+admin_srv = ROOT / "gs_admin" / "server" / "main.lua"
+if admin_ui.exists() and admin_srv.exists():
+    server_actions = set(re.findall(r"^Actions(?:\.(\w+)|\['(\w+)'\])\s*=", admin_srv.read_text(encoding="utf-8"), re.M))
+    server_actions = {a or b for a, b in server_actions}
+    ui = admin_ui.read_text(encoding="utf-8")
+    for name in set(re.findall(r"\bname: '(\w+)'", ui)) | set(re.findall(r"\bact\('(\w+)'", ui)):
+        if name not in server_actions:
+            errors.append(f"gs_admin/web/src/App.jsx action sans handler serveur : {name}")
 
 # Clés de locale
 for res, files in res_files.items():

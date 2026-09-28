@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+# Bloque tout push si la syntaxe, les linters ou les tests échouent. Installé par scripts/install-hooks.sh.
+echo "[pre-push] tests avant envoi…"
+if ! ./tests/run.sh > /tmp/gs-prepush.log 2>&1; then
+    grep -E "KO|ÉCHEC|rror|- " /tmp/gs-prepush.log | head -20
+    echo "[pre-push] ❌ push bloqué : corrige puis relance (détail : /tmp/gs-prepush.log)"
+    exit 1
+fi
+echo "[pre-push] ✅ tout est vert"

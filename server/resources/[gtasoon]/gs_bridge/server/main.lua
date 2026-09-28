@@ -177,6 +177,14 @@ local function GiveVehicle(src, model)
     return ok and id ~= nil
 end
 
+--- Réanimation / soin complet via le système médical du framework. [API] qbx_medical
+local function Revive(src)
+    if not IsLoaded(src) then return false end
+    local ok = pcall(function() exports.qbx_medical:Revive(src) end) -- [API]
+    if not ok then TriggerClientEvent('qbx_medical:client:playerRevived', src) end -- [API] repli
+    return true
+end
+
 -- UI -----------------------------------------------------------------------------
 
 --- type: 'inform' | 'success' | 'error' | 'warning'
@@ -220,4 +228,5 @@ exports('RemoveItem', RemoveItem)
 exports('RegisterStash', RegisterStash)
 exports('GiveVehicleKeys', GiveVehicleKeys)
 exports('GiveVehicle', GiveVehicle)
+exports('Revive', Revive)
 exports('Notify', Notify)
