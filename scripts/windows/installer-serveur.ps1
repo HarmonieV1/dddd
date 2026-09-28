@@ -69,18 +69,28 @@ if (-not $DbPass) { $DbPass = Read-Host 'Mot de passe de l''utilisateur gtasoon 
 function Sql($query, $db) {
     $ErrorActionPreference = 'Continue'
     $env:MYSQL_PWD = $DbPass
-    $a = @('-h', '127.0.0.1', '-P', '3306', '-u', $DbUser, '--default-character-set=utf8mb4')
+    $a = @('-h', '127.0.0.1', '-P', '3306', '-u', $DbUser, '--default-character-set=utf8mb4', '--batch', '--skip-column-names')
     if ($db) { $a += $db }
     $out = $query | & $Client @a 2>&1
     Remove-Item Env:MYSQL_PWD -ErrorAction SilentlyContinue
-    return @{ ok = ($LASTEXITCODE -eq 0); out = ($out | Out-String) }
+    $code = $LASTEXITCODE
+    $text = ($out | ForEach-Object { "$_" } | Where-Object { $_ -notmatch 'ssl-verify-server-cert' }) -join "`n"
+    return @{ ok = ($code -eq 0); out = $text }
 }
-$r = Sql 'CREATE DATABASE IF NOT EXISTS gtasoon CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;' $null
+# Base neuve à chaque installation : si 'gtasoon' contient déjà des tables (install précédente), on en crée une datée
+$DbName = 'gtasoon'
+$r = Sql "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = 'gtasoon';" $null
 if (-not $r.ok) { Fail "Connexion à MariaDB avec 'gtasoon' impossible : $($r.out). Relance reparer-mariadb.bat." }
-Log 'Base gtasoon prête.' 'Green'
+if ([int](($r.out -split "`n" | Where-Object { $_ -match '^\s*\d+\s*$' } | Select-Object -First 1)) -gt 0) {
+    $DbName = 'gtasoon_' + (Get-Date -Format 'yyyyMMdd_HHmm')
+    Log "  La base 'gtasoon' existe déjà (ancienne install, conservée) : nouvelle base '$DbName'." 'Yellow'
+}
+$r = Sql "CREATE DATABASE IF NOT EXISTS ``$DbName`` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;" $null
+if (-not $r.ok) { Fail "Création de la base $DbName impossible : $($r.out). Relance reparer-mariadb.bat (droits de gtasoon)." }
+Log "Base $DbName prête." 'Green'
 
 # --- 2. Recipe officielle Qbox (sans API GitHub) ----------------------------------------------------------
-Log "`n[2/4] Téléchargement de Qbox (recipe officielle, 80 étapes)" 'Cyan'
+Log "`n[2/4] Téléchargement de Qbox (recipe officielle)" 'Cyan'
 # Les chemins de la recipe contiennent des crochets ([ox], [qbx]...) : sous PowerShell 5.1, Expand-Archive,
 # -OutFile et New-Item -Path les prennent pour des jokers. On passe donc par .NET (chemins littéraux).
 Add-Type -AssemblyName System.IO.Compression.FileSystem
@@ -163,7 +173,7 @@ foreach ($t in $tasks) {
             'query_database' {
                 $f = P $t.file
                 if (Test-Path -LiteralPath $f) {
-                    $q = Sql (Get-Content -LiteralPath $f -Raw -Encoding UTF8) 'gtasoon'
+                    $q = Sql (Get-Content -LiteralPath $f -Raw -Encoding UTF8) $DbName
                     if (-not $q.ok) { Log "  SQL $($t.file) : $($q.out)" 'Yellow' }
                 } else { Log "  SQL introuvable : $($t.file)" 'Yellow' }
             }
@@ -200,11 +210,23 @@ foreach ($name in 'qbx_management', 'qbx_weathersync', 'Renewed-Weathersync', 'q
 }
 
 # Secrets
+# Clé : nettoyée (espaces, guillemets) et dédoublonnée si elle a été collée deux fois (cfxk_AAAcfxk_AAA)
+function CleanKey($k) {
+    $k = "$k" -replace '[\s"''<>]', ''
+    $m = [regex]::Match($k, 'cfxk_.*?(?=cfxk_|$)')
+    if ($m.Success) { return $m.Value } else { return $k }
+}
 $license = ''
-while ($license -notmatch '^cfxk_') { $license = (Read-Host 'Colle ta clé de licence serveur (commence par cfxk_, sur portal.cfx.re)').Trim() }
+try { $license = CleanKey (Get-Clipboard -Raw) } catch { }
+if ($license -match '^cfxk_[A-Za-z0-9_\-]{10,}$') {
+    Log "  Clé trouvée dans le presse-papiers : $($license.Substring(0, 9))...$($license.Substring($license.Length - 4))" 'Green'
+} else { $license = '' }
+while ($license -notmatch '^cfxk_[A-Za-z0-9_\-]{10,}$') {
+    $license = CleanKey (Read-Host 'Colle ta clé de licence serveur UNE SEULE FOIS (commence par cfxk_, sur portal.cfx.re)')
+}
 $secrets = Get-Content -LiteralPath (Join-Path $Data 'cfg\secrets.cfg.example') -Raw -Encoding UTF8
 $secrets = $secrets -replace 'sv_licenseKey "CHANGE_ME"', ('sv_licenseKey "' + $license.Replace('$', '$$') + '"')
-$secrets = $secrets -replace 'set mysql_connection_string "[^"]*"', ('set mysql_connection_string "mysql://gtasoon:' + $DbPass.Replace('$', '$$') + '@127.0.0.1:3306/gtasoon?charset=utf8mb4"')
+$secrets = $secrets -replace 'set mysql_connection_string "[^"]*"', ('set mysql_connection_string "mysql://gtasoon:' + $DbPass.Replace('$', '$$') + '@127.0.0.1:3306/' + $DbName + '?charset=utf8mb4"')
 [IO.File]::WriteAllText((Join-Path $Data 'cfg\secrets.cfg'), $secrets, (New-Object Text.UTF8Encoding $false))
 Log '  secrets.cfg créé (licence + base de données)' 'Green'
 
