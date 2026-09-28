@@ -24,7 +24,7 @@ export const DEMO = {
 export const DEMO_DOSSIER = {
   id: 4, name: 'Vice Lucia', account: 'lucia_rp', ping: 58, citizenid: 'ABC12345', level: 0, session: 5400,
   job: { name: 'mechanic', label: 'Mécano LS Customs', onduty: false }, contracts: { mechanic: 1, taxi: 0 },
-  heat: 45, handle: 'vice_lucia', duo: 'Jason Neon [7]', duoLevel: 2, frozen: false, jailedFor: 0,
+  heat: 45, handle: 'vice_lucia', gang: 'ballas (grade 1)', duo: 'Jason Neon [7]', duoLevel: 2, frozen: false, jailedFor: 0,
   license: 'license:3f2a…', money: { cash: 1250, bank: 48200 },
   notes: [{ kind: 'warn', text: 'Conduite hors RP répétée', staff: 'Modo [3]', time: now - 86400 }],
 }

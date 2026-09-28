@@ -151,6 +151,7 @@ provide('gs_bridge', {
     end,
     RegisterStash = function() return true end,
     Revive = function(src) W.players[src].revived = true return true end,
+    SetGang = function(src, name, grade) W.players[src].gang = { name = name, grade = grade } return true end,
     GiveVehicle = function(src, model) if model == "casse" then return false end W.players[src].vehicles = (W.players[src].vehicles or 0) + 1 return true end,
     GiveVehicleKeys = function() return true end,
     Notify = function(src, msg, t) W.notes[src] = { msg = msg, type = t } end,

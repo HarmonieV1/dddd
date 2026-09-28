@@ -164,6 +164,10 @@ function Admin.dossier(src, target)
         d.duo = partner and label(partner) or nil
         d.duoLevel = exports.gs_duo:GetDuoLevel(target)
     end
+    if started('gs_gangs') then
+        local gang, grade = exports.gs_gangs:GetGang(target)
+        d.gang = gang and ('%s (grade %d)'):format(gang, grade) or nil
+    end
     if lvl >= 2 then
         d.license = license(target)
         d.notes = d.license and Store.notes(d.license) or {}

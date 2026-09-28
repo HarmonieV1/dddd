@@ -1,0 +1,123 @@
+-- gs_gangs (client) : territoires sur la carte (GlobalState), planque (ox_target), menu /gang (F9). 0 boucle.
+local Bridge = exports.gs_bridge
+local membership
+local blips = {}
+local stashZone
+
+-- Carte des territoires : couleur du gang propriétaire, opacité selon la chaleur du quartier.
+local function drawTerritories(state)
+    for _, b in pairs(blips) do RemoveBlip(b.area) RemoveBlip(b.label) end
+    blips = {}
+    for id, t in pairs(Config.Territories) do
+        local s = state and state[id] or {}
+        local area = AddBlipForRadius(t.center.x, t.center.y, t.center.z, t.radius)
+        SetBlipColour(area, s.owner and s.color or 4)
+        SetBlipAlpha(area, math.min(160, 60 + (s.heat or 0) * 15))
+        SetBlipAsShortRange(area, true)
+        local label = AddBlipForCoord(t.center.x, t.center.y, t.center.z)
+        SetBlipSprite(label, 437)
+        SetBlipColour(label, s.owner and s.color or 4)
+        SetBlipScale(label, 0.6)
+        SetBlipAsShortRange(label, true)
+        BeginTextCommandSetBlipName('STRING')
+        AddTextComponentSubstringPlayerName(('%s · %s'):format(t.label, s.owner or 'libre'))
+        EndTextCommandSetBlipName(label)
+        blips[id] = { area = area, label = label }
+    end
+end
+
+AddStateBagChangeHandler('gsTerritories', 'global', function(_, _, value) drawTerritories(value) end)
+CreateThread(function() drawTerritories(GlobalState.gsTerritories) end)
+
+-- Appartenance + planque ------------------------------------------------------------------------------
+RegisterNetEvent('gs_gangs:client:membership', function(m)
+    membership = m
+    if stashZone then exports.ox_target:removeZone(stashZone) stashZone = nil end
+    if m and m.stash then
+        stashZone = exports.ox_target:addSphereZone({
+            coords = m.stash, radius = 1.5,
+            options = { {
+                name = 'gs_gang_stash', icon = 'fa-solid fa-box', label = 'Planque ' .. m.label,
+                onSelect = function() Bridge:OpenStash('gs_gang_' .. m.gang) end,
+            } },
+        })
+    end
+end)
+
+RegisterNetEvent('gs_gangs:client:invite', function(label)
+    local answer = lib.alertDialog({
+        header = 'Proposition', content = ('On te propose de rejoindre **%s**. Tu acceptes ?'):format(label),
+        centered = true, cancel = true, labels = { confirm = 'Rejoindre', cancel = 'Refuser' },
+    })
+    TriggerServerEvent('gs_gangs:server:answer', answer == 'confirm')
+end)
+
+-- Menu ---------------------------------------------------------------------------------------------------
+local function result(ok, msg) if msg then lib.notify({ description = msg, type = ok and 'success' or 'error' }) end end
+
+local function openMenu()
+    local info = lib.callback.await('gs_gangs:info', false)
+    if info == false then return lib.notify({ description = 'Tu n\'es dans aucun gang.', type = 'error' }) end
+    if not info then return end
+    local options = {
+        { title = info.label, description = ('Caisse : %s $'):format(info.money), icon = 'skull', readOnly = true },
+        { title = 'Déposer dans la caisse', icon = 'arrow-down', onSelect = function()
+            local i = lib.inputDialog('Dépôt', { { type = 'number', label = 'Montant', min = 1, required = true } })
+            if i then result(lib.callback.await('gs_gangs:bank', false, 'deposit', i[1])) end
+        end },
+    }
+    if info.canBank then
+        options[#options + 1] = { title = 'Retirer de la caisse', icon = 'arrow-up', onSelect = function()
+            local i = lib.inputDialog('Retrait', { { type = 'number', label = 'Montant', min = 1, required = true } })
+            if i then result(lib.callback.await('gs_gangs:bank', false, 'withdraw', i[1])) end
+        end }
+    end
+    if info.canManage then
+        options[#options + 1] = { title = 'Recruter le joueur le plus proche', icon = 'user-plus', onSelect = function()
+            local target = lib.getClosestPlayer(GetEntityCoords(cache.ped), Config.InviteRange, false)
+            if not target then return result(false, 'Personne à proximité.') end
+            result(lib.callback.await('gs_gangs:invite', false, GetPlayerServerId(target)))
+        end }
+    end
+    local members = {}
+    for _, m in ipairs(info.members) do
+        members[#members + 1] = {
+            title = (m.name ~= '' and m.name or m.citizenid), description = m.gradeLabel .. (m.online and ' · en ligne' or ''),
+            icon = m.online and 'circle' or 'circle-dot', disabled = not info.canManage or m.citizenid == info.myCid or m.grade >= info.grade,
+            onSelect = function()
+                local grades = {}
+                for lvl, g in pairs(Config.Grades) do if lvl < info.grade then grades[#grades + 1] = { value = tostring(lvl), label = g.label } end end
+                table.sort(grades, function(a, b) return a.value < b.value end)
+                local i = lib.inputDialog(m.name, {
+                    { type = 'select', label = 'Action', required = true, options = { { value = 'grade', label = 'Changer le grade' }, { value = 'kick', label = 'Exclure' } } },
+                    { type = 'select', label = 'Grade', options = grades },
+                })
+                if i then result(lib.callback.await('gs_gangs:manage', false, i[1], m.citizenid, tonumber(i[2]))) end
+            end,
+        }
+    end
+    lib.registerContext({ id = 'gs_gang_members', title = 'Membres', menu = 'gs_gang', options = members })
+    options[#options + 1] = { title = ('Membres (%d)'):format(#info.members), icon = 'users', menu = 'gs_gang_members' }
+    local terr = {}
+    for _, t in ipairs(info.territories) do
+        terr[#terr + 1] = { title = t.label, description = ('Influence %d %% · %s'):format(t.influence, t.mine and 'À VOUS' or (t.owner or 'libre')),
+            progress = t.influence, colorScheme = t.mine and 'green' or 'pink', readOnly = true }
+    end
+    lib.registerContext({ id = 'gs_gang_terr', title = 'Territoires', menu = 'gs_gang', options = terr })
+    options[#options + 1] = { title = 'Territoires', icon = 'map', menu = 'gs_gang_terr' }
+    options[#options + 1] = { title = 'Quitter le gang', icon = 'door-open', iconColor = '#ff2e88', onSelect = function()
+        if lib.alertDialog({ header = 'Quitter le gang', content = 'Sûr ?', centered = true, cancel = true }) == 'confirm' then
+            TriggerServerEvent('gs_gangs:server:leave')
+        end
+    end }
+    lib.registerContext({ id = 'gs_gang', title = 'Gang', options = options })
+    lib.showContext('gs_gang')
+end
+
+RegisterCommand('gang', openMenu, false)
+RegisterKeyMapping('gang', 'Menu gang', 'keyboard', Config.Key)
+
+AddEventHandler('onResourceStop', function(res)
+    if res ~= GetCurrentResourceName() then return end
+    for _, b in pairs(blips) do RemoveBlip(b.area) RemoveBlip(b.label) end
+end)

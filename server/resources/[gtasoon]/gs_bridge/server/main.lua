@@ -73,6 +73,14 @@ local function SetJob(src, name, grade)
     return ok and res ~= false
 end
 
+--- Gang côté framework (pour que les coffres ox_inventory reconnaissent le gang). gs_gangs fait foi.
+local function SetGang(src, name, grade)
+    local p = GetPlayer(src)
+    if not p then return false end
+    local ok, res = pcall(p.Functions.SetGang, name, grade) -- [API]
+    return ok and res ~= false
+end
+
 local function SetDuty(src, onDuty)
     local p = GetPlayer(src)
     if not p then return false end
@@ -215,6 +223,7 @@ exports('GetJob', GetJob)
 exports('IsOnDuty', IsOnDuty)
 exports('SetJob', SetJob)
 exports('SetDuty', SetDuty)
+exports('SetGang', SetGang)
 exports('ForgetJob', ForgetJob)
 exports('RegisterJobs', RegisterJobs)
 exports('GetMoney', GetMoney)
