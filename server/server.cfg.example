@@ -18,6 +18,7 @@ ensure ox_inventory
 ensure ox_target
 ensure pma-voice
 ensure gs_security
+ensure gs_bridge
 # ensure gs_*
 
 ## ACE : principe du moindre privilège

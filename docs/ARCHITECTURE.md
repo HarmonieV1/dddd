@@ -23,7 +23,7 @@ Jeu (oxmysql/MariaDB) → événements serveur → webhook/Make → Discord / Su
 Supabase n'a jamais d'accès direct à la BDD de jeu : seulement via endpoint serveur signé.
 
 ## Ordre des `ensure` (cible)
-`oxmysql` → `ox_lib` → `qbx_core` → `ox_inventory` → `ox_target` → `pma-voice` → `gs_security` → `gs_*`.
+`oxmysql` → `ox_lib` → `qbx_core` → `ox_inventory` → `ox_target` → `pma-voice` → `gs_security` → `gs_bridge` → `gs_*`.
 À confirmer avec docs.qbox.re à l'installation (l'ordre exact dépend de la version).
 
 ## Note impact / risques / rollback
