@@ -17,6 +17,7 @@ provide('gs_jobs', {
 })
 provide('gs_wanted', { GetHeat = function(s) return heat[s] or 0 end, ClearHeat = function(s) heat[s] = nil cleared[s] = true end })
 provide('gs_social', { GetHandle = function() return 'vice_lucia' end })
+provide('gs_gangs', { GetGang = function(s) if s == 4 then return 'ballas', 1 end end })
 provide('gs_duo', { GetPartner = function() return nil end, GetDuoLevel = function() return 0 end })
 local weatherSet
 provide('gs_weather', {
@@ -80,6 +81,7 @@ d = cb('gs_admin:dossier', 2, 4); step()
 check('fiche modo : licence + notes, pas d\'argent', d.license == 'license:4' and d.notes and d.money == nil)
 d = cb('gs_admin:dossier', 1, 4); step()
 check('fiche admin : argent', d.money ~= nil)
+check('fiche : gang', d.gang == 'ballas (grade 1)')
 
 -- Anti-abus : pas de sanction sur staff de niveau égal / supérieur ------------------------------------------
 ok, msg = cb('gs_admin:action', 2, 'kick', 5, { reason = 'abus' }); step()
