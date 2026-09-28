@@ -279,6 +279,7 @@ lib.addCommand('gsgang', {
         if not name or not name:match('^[%w_]+$') or #name > 30 or not color or not label then return reply(src, 'Usage : create <nom> <couleur blip> <label>') end
         if not Store.createGang(name, label:sub(1, 50), color) then return reply(src, 'Nom déjà pris.') end
         Gangs.list[name] = { name = name, label = label:sub(1, 50), color = color }
+        Bridge:RegisterGangs({ [name] = label:sub(1, 50) })
         Security:LogStaff(('/gsgang create %s par %s'):format(name, who))
         return reply(src, 'Gang créé : ' .. label)
     elseif args.action == 'delete' then
@@ -327,6 +328,9 @@ function Gangs.init()
         Gangs.list[row.name] = g
         registerStash(g)
     end
+    local declared = {}
+    for name, g in pairs(Gangs.list) do declared[name] = g.label end
+    if next(declared) then Bridge:RegisterGangs(declared) end
     for id in pairs(Config.Territories) do Gangs.territories[id] = { owner = nil, influence = {}, crimes = {} } end
     for _, row in ipairs(Store.territories()) do
         local t = Gangs.territories[row.id]

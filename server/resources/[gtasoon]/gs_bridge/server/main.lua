@@ -73,6 +73,18 @@ local function SetJob(src, name, grade)
     return ok and res ~= false
 end
 
+--- Déclare des gangs au framework (grades génériques). [API] qbx_core CreateGangs
+local function RegisterGangs(gangs)
+    local list = {}
+    for name, label in pairs(gangs) do
+        list[name] = { label = label, grades = { [0] = { name = 'Recrue' }, [1] = { name = 'Membre' },
+            [2] = { name = 'Bras droit' }, [3] = { name = 'Chef', isboss = true } } }
+    end
+    local ok, err = pcall(function() return QBX:CreateGangs(list) end) -- [API]
+    if not ok then print(('[gs_bridge] CreateGangs a échoué : %s'):format(err)) end
+    return ok
+end
+
 --- Gang côté framework (pour que les coffres ox_inventory reconnaissent le gang). gs_gangs fait foi.
 local function SetGang(src, name, grade)
     local p = GetPlayer(src)
@@ -224,6 +236,7 @@ exports('IsOnDuty', IsOnDuty)
 exports('SetJob', SetJob)
 exports('SetDuty', SetDuty)
 exports('SetGang', SetGang)
+exports('RegisterGangs', RegisterGangs)
 exports('ForgetJob', ForgetJob)
 exports('RegisterJobs', RegisterJobs)
 exports('GetMoney', GetMoney)

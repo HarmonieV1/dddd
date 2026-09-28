@@ -6,6 +6,7 @@ ROOT = pathlib.Path(__file__).resolve().parent.parent
 SERVER = ROOT / "server"
 OURS = SERVER / "resources" / "[gtasoon]"
 FORBIDDEN = {"qbx_management": "remplacé par gs_jobs", "qbx_weathersync": "remplacé par gs_weather",
+             "Renewed-Weathersync": "remplacé par gs_weather", "qbx_hud": "remplacé par gs_hud", "npwd": "remplacé par gs_phone",
              "qb-weathersync": "remplacé par gs_weather", "vSync": "remplacé par gs_weather"}
 SECRET_KEYS = re.compile(r"(licensekey|webhook|mysql_connection|apikey|password|token|secret)", re.I)
 errors = []

@@ -23,6 +23,13 @@ Les écrans et menus exacts de txAdmin/Qbox évoluent : en cas de doute, docs.qb
 un VPN privé gratuit type **Tailscale** (vous l'installez tous les deux, il se connecte à ton IP Tailscale).
 Sinon : ouvrir le port 30120 TCP+UDP sur ta box (moins sûr).
 
+## ⚡ Installation express (recommandée) : sans la recipe txAdmin
+1. `scripts/windows/reparer-mariadb.bat` → crée l'utilisateur `gtasoon` (identifiants sur le Bureau).
+2. `scripts/windows/installer-serveur.bat` → installe Qbox (recipe officielle exécutée sans l'API GitHub,
+   donc sans « rate limit »), branche GTA SOON, ajoute les items, crée `C:\GTASOON\server-data\DEMARRER.bat` et lance le serveur.
+3. FiveM → F8 → `connect localhost`.
+Plus tard, txAdmin peut reprendre ce serveur : setup → « Existing server data » → `C:\GTASOON\server-data`.
+
 ## Premier lancement en 6 étapes (version simple)
 1. **txAdmin n'est pas un logiciel à part** : il est inclus dans le serveur FiveM. Télécharge les artifacts
    (lien ci-dessus, fichier `server.7z` du build « Latest Recommended »), extrais-le dans `C:\FXServer\server`.
