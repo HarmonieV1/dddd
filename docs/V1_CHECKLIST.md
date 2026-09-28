@@ -16,6 +16,7 @@ Cocher dans l'ordre. Chaque ligne rouge en console = on s'arrête et on l'envoie
 - [x] Corrigé : `;` dans les cfg (« No such command les »), `onesync`, `hardcap`, `sv_endpointPrivacy`, item `scrapmetal`
 - [ ] Aucune ligne `[gs_bridge] ... a échoué` à la première connexion (sinon : un nom d'API Qbox à corriger)
 - [ ] Écran de chargement néon visible à la connexion
+- [x] Corrigé : `qbx_idcard` non démarré → création de perso bloquée (écran noir, chargement infini)
 - [ ] Connu, sans effet : `Table 'properties' does not exist` (logement Qbox = V2)
 
 ## C. Tests en jeu ([TEST], plans détaillés dans docs/tests/)

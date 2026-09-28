@@ -10,6 +10,8 @@ FORBIDDEN = {"qbx_management": "remplacé par gs_jobs", "qbx_weathersync": "remp
              "qb-weathersync": "remplacé par gs_weather", "vSync": "remplacé par gs_weather"}
 REMOVED = {"onesync": "ConVar interne, passer +set onesync on sur la ligne de commande",
            "sv_endpointPrivacy": "supprimée par FXServer"}
+REQUIRED = {"qbx_idcard": "qbx_core en a besoin à la création du perso (sinon écran noir + chargement infini)",
+            "qbx_vehicles": "requis par garages / concession"}
 SECRET_KEYS = re.compile(r"(licensekey|webhook|mysql_connection|apikey|password|token|secret)", re.I)
 errors = []
 
@@ -55,6 +57,10 @@ for path, n, line in lines:
     if res.startswith("gs_") and not (OURS / res / "fxmanifest.lua").exists():
         errors.append(f"{path.name}:{n} {res} ensure mais absente de resources/[gtasoon]")
     ensures.append(res)
+
+for res, why in REQUIRED.items():
+    if res not in ensures:
+        errors.append(f"ensure {res} manquant : {why}")
 
 for folder in sorted(OURS.iterdir()):
     if (folder / "fxmanifest.lua").exists() and folder.name not in ensures:
