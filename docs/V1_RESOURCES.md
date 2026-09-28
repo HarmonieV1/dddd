@@ -27,7 +27,9 @@ Chaque ressource passe la checklist d'audit (`docs/SECURITY.md`) avant install. 
 | Dispatch / recherche | **gs_wanted** | maison | ✅ fait |
 | Commerces / revente | **gs_economy** (remplace les shops statiques des supérettes) | maison | ✅ fait |
 | Duo criminel | **gs_duo** | maison | ✅ fait |
+| Réseau social | **gs_social** (Néon, miroir Discord) | maison | ✅ fait |
+| Écran de chargement | **gs_loadscreen** | maison | ✅ fait |
 | Boutique Tebex | **gs_store** (désactivée tant que la conformité PLA n'est pas validée) | maison | ✅ fait |
 
-Maison en Phase 2 (identité) : réseau social in-game, companion web.
-Faits : météo événementielle, wanted intelligent, économie dynamique, duo criminel lié (`docs/FEATURES.md`).
+Reste en Phase 2 : companion web (Supabase + Netlify).
+Faits : météo événementielle, wanted intelligent, économie dynamique, duo criminel lié, réseau social Néon (`docs/FEATURES.md`).

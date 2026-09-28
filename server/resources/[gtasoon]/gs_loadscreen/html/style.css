@@ -1,0 +1,46 @@
+/* Pas de ressource externe : tout est local (rapide, fonctionne même si un CDN tombe). */
+:root { --pink: #ff2e88; --cyan: #28e0ff; --text: #f3eaff; --muted: #b9a7d9; }
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; overflow: hidden; background: #0b0714; color: var(--text);
+  font-family: 'Segoe UI', system-ui, sans-serif; }
+
+.sky { position: fixed; inset: 0;
+  background: linear-gradient(180deg, #0b0714 0%, #2a0f3f 38%, #7a1f5c 62%, #ff6a3d 82%, #ffb347 100%); }
+.sun { position: fixed; left: 50%; top: 52%; width: 44vh; height: 44vh; transform: translate(-50%, -50%);
+  border-radius: 50%; background: linear-gradient(180deg, #ffd23f 0%, #ff8a3d 45%, #ff2e88 100%);
+  box-shadow: 0 0 120px rgba(255, 46, 136, .55);
+  -webkit-mask: repeating-linear-gradient(180deg, #000 0 14px, transparent 14px 20px);
+          mask: repeating-linear-gradient(180deg, #000 0 14px, transparent 14px 20px); }
+.grid { position: fixed; left: -50%; right: -50%; bottom: 0; height: 42vh;
+  background-image: linear-gradient(rgba(40, 224, 255, .5) 1px, transparent 1px),
+                    linear-gradient(90deg, rgba(40, 224, 255, .5) 1px, transparent 1px);
+  background-size: 60px 60px; transform: perspective(300px) rotateX(60deg); transform-origin: bottom;
+  animation: drive 3s linear infinite;
+  -webkit-mask: linear-gradient(180deg, transparent, #000 40%); mask: linear-gradient(180deg, transparent, #000 40%); }
+@keyframes drive { to { background-position: 0 60px; } }
+
+main { position: relative; z-index: 2; height: 78vh; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; text-align: center; padding: 0 5vw; }
+.title { margin: 0; font-size: 11vh; font-weight: 900; letter-spacing: .12em; color: #fff;
+  text-shadow: 0 0 10px var(--pink), 0 0 30px var(--pink), 0 0 60px rgba(255, 46, 136, .7);
+  animation: flicker 6s infinite; }
+@keyframes flicker { 0%, 93%, 100% { opacity: 1 } 94% { opacity: .55 } 95% { opacity: 1 } 97% { opacity: .7 } }
+.tagline { margin: .6em 0 2.5em; color: var(--cyan); letter-spacing: .25em; text-transform: uppercase; font-size: 1.8vh;
+  padding: 6px 16px; border-radius: 999px; background: rgba(11, 7, 20, .6);
+  text-shadow: 0 0 10px rgba(40, 224, 255, .7); }
+
+.tip-box { max-width: 640px; padding: 18px 26px; border-radius: 18px; background: rgba(11, 7, 20, .65);
+  border: 1px solid rgba(255, 46, 136, .35); backdrop-filter: blur(6px); }
+.tip-label { font-size: 12px; letter-spacing: .3em; text-transform: uppercase; color: var(--pink); }
+#tip { margin: 8px 0 0; font-size: 2.1vh; line-height: 1.45; min-height: 3em; transition: opacity .4s; }
+.keys { display: flex; gap: 22px; margin-top: 22px; padding: 8px 18px; border-radius: 999px;
+  background: rgba(11, 7, 20, .65); color: var(--text); font-size: 1.6vh; }
+kbd { display: inline-block; padding: 2px 8px; margin-right: 4px; border-radius: 6px; font-family: inherit;
+  border: 1px solid rgba(40, 224, 255, .5); color: var(--cyan); background: rgba(11, 7, 20, .6); }
+
+footer { position: fixed; z-index: 2; left: 10vw; right: 10vw; bottom: 6vh; }
+.bar { height: 6px; border-radius: 6px; background: rgba(255, 255, 255, .12); overflow: hidden; }
+#fill { height: 100%; width: 0; border-radius: 6px; transition: width .3s;
+  background: linear-gradient(90deg, var(--pink), #ff8a3d, #ffd23f); box-shadow: 0 0 12px var(--pink); }
+#status { width: max-content; margin: 10px auto 0; padding: 4px 14px; border-radius: 999px;
+  background: rgba(11, 7, 20, .7); font-size: 1.5vh; color: var(--text); }

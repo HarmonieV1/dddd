@@ -33,6 +33,18 @@ Un crime n'existe pour la police **que s'il est signalé**.
   chaleur transmise au complice proche 50 % → 15 %.
 - Nom de duo personnalisable (nettoyé).
 
+## gs_social — Néon, réseau social in-game (F3 / `/neon`)
+- Pseudo @unique et définitif par personnage, fil en temps réel, likes, mentions (@pseudo → notification).
+- Anti-abus : cooldown 30 s par post, 280 caractères, balises retirées, liens et invitations Discord remplacés par `[lien]`.
+- Modération : suppression par l'auteur ou le staff (ACE `gs.social.moderate`), bouton « Signaler » → webhook staff.
+- **Miroir Discord** : chaque post copié sur un salon public (`gs_webhook_social`) → la vie de la ville visible hors du jeu.
+- Confidentialité : les clients ne reçoivent jamais d'identifiant de personnage, seulement le pseudo.
+- Interface React + Vite (71 Ko gzip), DA néon ; notifications coupables (🔔).
+- Dev de l'UI sans le jeu : `cd gs_social/web && npm install && npm run dev` (données de démo). Après modif : `npm run build` et commiter `web/dist`.
+
+## gs_loadscreen — écran de chargement
+Soleil couchant rétro, titre néon, astuces tournantes (FR), touches utiles, vraie progression du chargement. 100 % local, aucune ressource externe.
+
 ## Liens entre features
 `gs_weather` → visibilité de `gs_wanted` + prix de `gs_economy` ;
 `gs_duo` → crimes vers `gs_wanted`, chaleur partagée ; `gs_jobs` → police en service pour le dispatch.
