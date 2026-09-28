@@ -63,7 +63,8 @@ end
 
 RegisterNetEvent('gs_wanted:client:heat', function(value)
     heat = value or 0
-    if heat > 0 then drawStars() end
+    TriggerEvent('gs_wanted:client:heatChanged', heat) -- le HUD néon affiche les étoiles
+    if heat > 0 and GetResourceState('gs_hud') ~= 'started' then drawStars() end
 end)
 
 -- Dispatch police ----------------------------------------------------------------------------------

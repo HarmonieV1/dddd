@@ -20,6 +20,25 @@ local function GetJob()
     }
 end
 
+local lastStatus = ''
+
+--- Faim / soif (0-100) et argent. [API] metadata Qbox
+local function GetStatus()
+    local meta, money = playerData.metadata or {}, playerData.money or {}
+    return {
+        hunger = math.floor(meta.hunger or 100), thirst = math.floor(meta.thirst or 100),
+        cash = money.cash or 0, bank = money.bank or 0,
+    }
+end
+
+local function pushStatus()
+    local s = GetStatus()
+    local key = ('%d:%d:%d:%d'):format(s.hunger, s.thirst, s.cash, s.bank)
+    if key == lastStatus then return end
+    lastStatus = key
+    TriggerEvent('gs_bridge:client:statusUpdated', s)
+end
+
 -- Ne notifie que si le job, le grade ou le service changent (SetPlayerData arrive très souvent).
 local function pushJob()
     local j = GetJob()
@@ -33,10 +52,11 @@ RegisterNetEvent('QBCore:Client:OnPlayerLoaded', function() -- [API]
     refresh()
     TriggerEvent('gs_bridge:client:playerLoaded')
     pushJob()
+    pushStatus()
 end)
 
 RegisterNetEvent('QBCore:Client:OnPlayerUnload', function() -- [API]
-    playerData, lastKey = {}, ''
+    playerData, lastKey, lastStatus = {}, '', ''
     TriggerEvent('gs_bridge:client:playerUnloaded')
 end)
 
@@ -53,10 +73,11 @@ end)
 RegisterNetEvent('QBCore:Player:SetPlayerData', function(data) -- [API]
     playerData = data or {}
     pushJob()
+    pushStatus()
 end)
 
 CreateThread(function()
-    if LocalPlayer.state.isLoggedIn then refresh(); pushJob() end
+    if LocalPlayer.state.isLoggedIn then refresh(); pushJob(); pushStatus() end
 end)
 
 --- Remet l'apparence sauvegardée du personnage (après un skin boutique). [API] illenium-appearance
@@ -65,6 +86,7 @@ exports('RestoreAppearance', function()
 end)
 
 exports('GetJob', GetJob)
+exports('GetStatus', GetStatus)
 exports('IsLoggedIn', function() return playerData.citizenid ~= nil end)
 exports('GetItemCount', function(item) return exports.ox_inventory:Search('count', item) or 0 end) -- [API]
 exports('OpenStash', function(id) exports.ox_inventory:openInventory('stash', id) end) -- [API]

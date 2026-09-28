@@ -1,0 +1,45 @@
+/* HUD néon : lisible sur toutes les scènes (ombres), discret, aucune animation permanente (perf). */
+:root { --text: #f3eaff; --muted: #c9b8e8; --pink: #ff2e88; --cyan: #28e0ff; font-family: 'Segoe UI', system-ui, sans-serif; }
+* { box-sizing: border-box; }
+html, body { margin: 0; background: transparent; overflow: hidden; user-select: none; pointer-events: none; color: var(--text); }
+.top-right, .location, .speedo { text-shadow: 0 1px 3px rgba(0, 0, 0, .9);
+  background: rgba(11, 7, 20, .55); backdrop-filter: blur(4px); border-radius: 14px; padding: 8px 12px; }
+
+.top-right { position: fixed; top: 2.2vh; right: 1.6vw; display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
+.clock { font-size: 26px; font-weight: 800; letter-spacing: 1px; text-shadow: 0 0 10px rgba(255, 46, 136, .8), 0 1px 3px #000; }
+.clock small { display: block; text-align: right; font-size: 12px; font-weight: 500; color: var(--muted); letter-spacing: 0; }
+.money { display: flex; flex-direction: column; align-items: flex-end; font-weight: 700; font-size: 15px; }
+.money span:last-child { color: var(--muted); font-size: 13px; }
+.job { font-size: 12px; color: var(--cyan); } .job i { color: #39ff9a; font-style: normal; }
+.stars { font-size: 24px; color: var(--pink); text-shadow: 0 0 10px var(--pink), 0 1px 3px #000; letter-spacing: 2px; }
+.stars span { color: rgba(255, 255, 255, .25); text-shadow: none; }
+
+.status { position: fixed; left: 1.2vw; bottom: 2.5vh; display: flex; gap: 6px; align-items: center; }
+.status.with-map { bottom: 25vh; }
+.ring { position: relative; width: 44px; height: 44px; display: grid; place-items: center; filter: drop-shadow(0 1px 3px rgba(0, 0, 0, .8)); }
+.ring svg { position: absolute; inset: 0; transform: rotate(-90deg); }
+.ring circle { fill: rgba(11, 7, 20, .55); stroke-width: 4; }
+.ring .track { stroke: rgba(255, 255, 255, .12); }
+.ring .bar { fill: none; stroke-linecap: round; transition: stroke-dashoffset .4s; filter: drop-shadow(0 0 3px currentColor); }
+.ring span { position: relative; font-size: 15px; }
+.ring.low span { animation: blink 1s steps(2) infinite; }
+@keyframes blink { 50% { opacity: .3 } }
+.voice { width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; background: rgba(11, 7, 20, .55); font-size: 15px; line-height: 1;
+  border: 2px solid rgba(255, 255, 255, .12); }
+.voice small { font-size: 8px; color: var(--muted); }
+.voice.on { border-color: var(--cyan); box-shadow: 0 0 12px rgba(40, 224, 255, .7); }
+
+.location { position: fixed; left: 1.2vw; bottom: 8.5vh; display: flex; flex-direction: column; }
+.location.with-map { left: 17vw; bottom: 3vh; }
+.location b { font-size: 16px; } .location span { font-size: 12px; color: var(--muted); }
+
+.speedo { position: fixed; right: 2vw; bottom: 4vh; display: grid; grid-template-columns: auto auto; gap: 4px 14px; align-items: center; }
+.speed { font-size: 58px; font-weight: 900; line-height: .9; font-variant-numeric: tabular-nums; text-shadow: 0 0 14px rgba(255, 46, 136, .7), 0 2px 4px #000; }
+.speed small { font-size: 14px; font-weight: 600; color: var(--muted); margin-left: 4px; }
+.gear { font-size: 22px; font-weight: 800; color: var(--cyan); align-self: center; }
+.gauges { grid-column: 1 / -1; display: flex; flex-direction: column; gap: 4px; }
+.gauge { display: flex; align-items: center; gap: 6px; font-size: 12px; }
+.gauge .track { width: 170px; height: 6px; border-radius: 3px; background: rgba(255, 255, 255, .15); overflow: hidden; }
+.gauge .fill { height: 100%; background: linear-gradient(90deg, #ff2e88, #ff8a3d, #ffd23f); transition: width .3s; }
+.gauge .fill.engine { background: linear-gradient(90deg, #28e0ff, #39ff9a); }
+.gauge .fill.low { background: #ff4d6d; }
