@@ -2,6 +2,7 @@
 .env
 server/server.cfg
 server/secrets.cfg
+server/cfg/secrets.cfg
 *.key
 # FXServer runtime
 server/cache/

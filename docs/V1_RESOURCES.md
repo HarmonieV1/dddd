@@ -10,7 +10,7 @@ Chaque ressource passe la checklist d'audit (`docs/SECURITY.md`) avant install. 
 | Framework | qbx_core, ox_lib, oxmysql | Qbox / overextended | base |
 | Inventaire, interactions | ox_inventory, ox_target | overextended | base |
 | Voix / radio | pma-voice (+ radio Qbox) | AvarianKnight / Qbox | base |
-| Création perso / spawn | qbx_multicharacter, qbx_spawn | Qbox | à installer |
+| Création perso / spawn | sélection de perso intégrée à qbx_core (à confirmer), qbx_spawn | Qbox | à installer |
 | Apparence / tenues | illenium-appearance | open-source | à installer |
 | Clés / garages / concession | qbx_vehiclekeys, qbx_garages, qbx_vehicleshop | Qbox | à installer |
 | Carburant | ox_fuel | overextended | à installer |
@@ -23,6 +23,7 @@ Chaque ressource passe la checklist d'audit (`docs/SECURITY.md`) avant install. 
 | Boss menu / multijob | ~~qbx_management~~ | — | **remplacé par gs_jobs** |
 | Multi-job, caisses, paie, factures, missions | **gs_jobs** | maison | ✅ fait |
 | Anti-abus events, logs | **gs_security** | maison | ✅ fait |
+| Météo / heure | ~~qbx_weathersync~~ → **gs_weather** | maison | ✅ fait |
 
-Maison en Phase 2 (identité) : duo criminel lié, réseau social in-game, météo événementielle,
+Maison en Phase 2 (identité) : duo criminel lié, réseau social in-game, ~~météo événementielle~~ (fait),
 wanted intelligent, économie dynamique, companion web.

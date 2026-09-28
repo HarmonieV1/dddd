@@ -1,29 +1,43 @@
-## Copier en server.cfg (ignoré par git). Les secrets vont dans secrets.cfg (ignoré aussi).
-exec secrets.cfg   # sv_licenseKey, mysql_connection_string, gs_staff_webhook, gs_webhook_jobs
+## =====================================================================
+##  GTA SOON — server.cfg (V1)
+##  Copier en server.cfg (ignoré par git). Secrets : cfg/secrets.cfg (ignoré aussi).
+##  Ordre : réseau → identité → sécurité → secrets → convars → ressources → permissions → profil
+##  Vérif avant chaque déploiement : ./tests/run.sh (linter de config inclus)
+## =====================================================================
 
+## ---- Réseau ----
 endpoint_add_tcp "0.0.0.0:30120"
 endpoint_add_udp "0.0.0.0:30120"
-sv_hostname "GTA SOON | FR | Free Access"
-sets locale "fr-FR"
-sets tags "rp, roleplay, francais, fr, freeaccess"
-sv_maxclients 48
-set sv_enforceGameBuild 3095   # à ajuster selon les exigences des ressources
 set onesync on
+# Build du jeu : aligner sur ce qu'exige la version de Qbox installée (docs.qbox.re) avant de changer.
+set sv_enforceGameBuild 3258
 
-## Ordre des ensure (voir docs/ARCHITECTURE.md ; vérifier docs.qbox.re)
-ensure oxmysql
-ensure ox_lib
-ensure qbx_core
-ensure ox_inventory
-ensure ox_target
-ensure pma-voice
-ensure gs_security
-ensure gs_bridge
-ensure gs_jobs
-# ensure gs_*
+## ---- Identité (liste des serveurs) ----
+sv_hostname "^5GTA SOON ^7| ^6FR ^7| Free Access | Zéro P2W"
+sets sv_projectName "GTA SOON"
+sets sv_projectDesc "RP francophone premium : néons, sunset et bonne humeur"
+sets locale "fr-FR"
+sets tags "roleplay, rp, fr, francais, freeaccess, qbox"
+# sets Discord "https://discord.gg/XXXX"
+# load_server_icon logo.png   # PNG 96x96
 
-## ACE : principe du moindre privilège
-add_ace group.admin command allow
-add_principal group.admin group.mod
-# Ne mettre les identifiers staff que dans secrets.cfg :
-# add_principal identifier.license:XXXX group.admin
+## ---- Sécurité de base (sans effet de bord) ----
+sv_scriptHookAllowed 0          # pas de ScriptHook (menus de triche)
+sv_endpointPrivacy true         # masque les IP des joueurs
+set sv_pureLevel 1              # refuse les fichiers de jeu modifiés (hors audio/graphismes)
+
+## ---- Secrets (licence, BDD, webhooks, staff) ----
+exec cfg/secrets.cfg
+
+## ---- Réglages des ressources ----
+exec cfg/convars.cfg
+
+## ---- Ressources (ordre important) ----
+exec cfg/resources.cfg
+
+## ---- Permissions ACE ----
+exec cfg/permissions.cfg
+
+## ---- Profil : dev (serveur caché, durcissement à valider) ou prod ----
+exec cfg/dev.cfg
+# exec cfg/prod.cfg

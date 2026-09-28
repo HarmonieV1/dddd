@@ -11,6 +11,7 @@ function vec3(x, y, z) return vec(x, y, z) end
 function vec4(x, y, z, w) return vec(x, y, z, w) end
 
 -- Monde --------------------------------------------------------------------------------
+GlobalState = {}
 W = { now = 100000, players = {}, entities = {}, nextEntity = 5000, handlers = {}, callbacks = {},
       commands = {}, clientEvents = {}, notes = {}, audit = {}, logs = {} }
 
