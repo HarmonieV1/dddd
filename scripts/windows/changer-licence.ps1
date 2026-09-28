@@ -40,6 +40,11 @@ if (-not $key) {
 }
 
 $content = Get-Content -LiteralPath $secrets -Raw -Encoding UTF8
+$prev = Clean ([regex]::Match($content, 'sv_licenseKey\s+"([^"]*)"').Groups[1].Value)
+if ($prev -eq $key) {
+    Say "ATTENTION : c'est la MÊME clé que celle déjà enregistrée (…$($key.Substring($key.Length - 4)))." 'Yellow'
+    Say 'Si le serveur l''a refusée, crée une NOUVELLE clé sur portal.cfx.re > Server Keys, copie-la et relance cet outil.' 'Yellow'
+}
 $content = [regex]::Replace($content, 'sv_licenseKey\s+"[^"]*"', ('sv_licenseKey "' + $key + '"'))
 [IO.File]::WriteAllText($secrets, $content, (New-Object Text.UTF8Encoding $false))
 Say 'Clé enregistrée dans cfg\secrets.cfg.' 'Green'
