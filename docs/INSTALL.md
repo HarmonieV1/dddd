@@ -65,7 +65,8 @@ Sinon : ouvrir le port 30120 TCP+UDP sur ta box (moins sûr).
       sauvegarde le cfg de la recipe, copie nos ressources et `cfg/`, crée `cfg/secrets.cfg` avec ta
       licence et ta connexion MySQL, met de côté les doublons, et liste ce qui manque.
       Non testé sur une vraie machine Windows : envoie la sortie à [DEV] si une ligne est rouge.
-- [ ] Étapes Qbox de `docs/JOBS.md` (jobs en double, maxJobsPerPlayer, item repairkit)
+- [ ] Étapes Qbox de `docs/JOBS.md` (jobs en double, maxJobsPerPlayer)
+- [ ] **Items** : copier le contenu de `server/ox_items_gtasoon.lua` dans `resources/[ox]/ox_inventory/data/items.lua`
 - [ ] Ajouter ton identifiant `license:` en `group.admin` dans `cfg/secrets.cfg`
       (txAdmin → Players → ton joueur → identifiers)
 
