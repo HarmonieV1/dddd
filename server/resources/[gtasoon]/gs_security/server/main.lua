@@ -16,11 +16,12 @@ local buckets = {} -- [src][key] = { count, resetAt }
 
 local queue = {} -- [url] = { lignes }
 
-local function LogStaff(message, channel)
+--- `strict` = true : pas de repli sur le webhook staff (ex : fil public du réseau social).
+local function LogStaff(message, channel, strict)
     message = tostring(message)
-    print(('[gs_security] %s'):format(message))
+    if not strict then print(('[gs_security] %s'):format(message)) end
     local url = channel and GetConvar('gs_webhook_' .. channel, '') or ''
-    if url == '' then url = GetConvar('gs_staff_webhook', '') end
+    if url == '' and not strict then url = GetConvar('gs_staff_webhook', '') end
     if url == '' then return end
     queue[url] = queue[url] or {}
     local q = queue[url]

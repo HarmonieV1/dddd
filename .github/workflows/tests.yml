@@ -10,3 +10,16 @@ jobs:
           python-version: '3.12'
       - run: sudo apt-get update && sudo apt-get install -y lua5.4
       - run: ./tests/run.sh
+  nui:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Build Néon et vérifie que web/dist commité est à jour
+        working-directory: server/resources/[gtasoon]/gs_social/web
+        run: |
+          npm ci --no-audit --no-fund
+          npm run build
+          git diff --exit-code -- dist || (echo "web/dist pas à jour : lancer npm run build et commiter" && exit 1)

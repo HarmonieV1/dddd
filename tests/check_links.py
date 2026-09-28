@@ -97,6 +97,24 @@ for label, table in (("commande", commands), ("touche", keys), ("table SQL", tab
         if len(set(where)) > 1 or (label != "table SQL" and len(where) > 1):
             errors.append(f"{label} en double : {name} ({', '.join(where)})")
 
+# Interfaces NUI : chaque nui('action') du front a son RegisterNUICallback côté client Lua
+for res in res_files:
+    web = ROOT / res / "web" / "src"
+    if not web.exists():
+        continue
+    handlers = set()
+    for f in res_files[res]:
+        text = strip_comments(f.read_text(encoding="utf-8"))
+        handlers |= set(re.findall(r"RegisterNUICallback\('([^']+)'", text))
+        # boucle for _, action in ipairs({ 'a', 'b' }) do RegisterNUICallback(action, ...)
+        for m in re.finditer(r"ipairs\(\{([^}]*)\}\)\s*do\s*RegisterNUICallback\(action", text):
+            handlers |= set(re.findall(r"'([^']+)'", m.group(1)))
+    for js in web.rglob("*.js*"):
+        # nui('action') direct, ou via le helper run('action', ...) de l'app
+        for m in re.finditer(r"\b(?:nui|run)\('([^']+)'", js.read_text(encoding="utf-8")):
+            if m.group(1) not in handlers:
+                errors.append(f"{js.relative_to(ROOT)} action NUI sans handler Lua : {m.group(1)}")
+
 # Clés de locale
 for res, files in res_files.items():
     loc = ROOT / res / "shared" / "locale.lua"

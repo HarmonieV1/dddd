@@ -101,6 +101,8 @@ function loadResource(name, files)
     for _, f in ipairs(files) do dofile(f) end
 end
 function provide(name, api) registry[name] = api end
+--- Fonction exportée réelle (pour l'envelopper dans un faux sans boucle infinie).
+function getExport(res, name) return registry[res][name] end
 
 -- gs_bridge simulé (Qbox) -------------------------------------------------------------------
 local function positiveInt(n) return type(n) == 'number' and n > 0 and n == math.floor(n) end
@@ -256,3 +258,6 @@ function GetPlayerIdentifierByType(src, kind)
     local p = W.players[src]
     return p and p[kind] or nil
 end
+
+-- Ajouts pour gs_social
+function IsPlayerAceAllowed(src, ace) return W.players[src] ~= nil and W.players[src].aces ~= nil and W.players[src].aces[ace] == true end
