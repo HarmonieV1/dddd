@@ -329,6 +329,15 @@ CreateThread(function()
 end)
 
 exports('GetPartner', function(src) return (Duo.partner(src)) end)
+--- Bonus de paie du lien si le partenaire est à moins de `radius` m (1.0 sinon). Utilisé par les braquages.
+exports('GetPayBonus', function(src, radius)
+    local partner, duo = Duo.partner(src)
+    if not partner then return 1.0 end
+    local a, b = coordsOf(src), coordsOf(partner)
+    if not a or not b or dist(a, b) > (radius or 25.0) then return 1.0 end
+    local _, l = Duo.level(duo.xp)
+    return l.pay
+end)
 exports('GetDuoLevel', function(src)
     local _, duo = Duo.partner(src)
     return duo and (Duo.level(duo.xp)) or 0

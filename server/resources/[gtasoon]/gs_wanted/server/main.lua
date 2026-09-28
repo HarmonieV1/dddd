@@ -96,7 +96,7 @@ local function maskPlate(plate, precision)
 end
 
 --- Évalue un crime. Retourne le signalement envoyé à la police, ou nil s'il passe inaperçu.
----@param opts table|nil { silenced = bool, vehicle = entity }
+---@param opts table|nil { silenced = bool, vehicle = entity, alarm = bool }
 function Wanted.report(src, crimeType, coords, opts)
     local crime = Config.Crimes[crimeType]
     if not crime or not coords then return nil end
@@ -116,6 +116,8 @@ function Wanted.report(src, crimeType, coords, opts)
         chance = clamp(chance, 0, Config.Witness.maxChance)
         precision = clamp(count * 0.15 + visibility * 0.4, 0, 1)
     end
+    -- Alarme silencieuse (braquage) : signalement certain et précis, quels que soient les témoins.
+    if opts.alarm then chance, precision = 1.0, math.max(precision, 0.85) end
     if math.random() >= chance then return nil end
 
     -- Zone floutée : le centre est décalé aléatoirement dans le rayon d'incertitude.

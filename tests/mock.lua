@@ -50,7 +50,11 @@ end
 function SetVehicleNumberPlateText(ent, p) W.entities[ent].plate = p end
 function GetVehicleNumberPlateText(ent) return W.entities[ent].plate end
 function TaskWarpPedIntoVehicle() end
-function Entity(ent) return { state = { set = function(_, k, v) W.entities[ent].state[k] = v end } } end
+function Entity(ent)
+    local e = W.entities[ent]
+    e.state = e.state or {}
+    return { state = setmetatable({ set = function(_, k, v) e.state[k] = v end }, { __index = e.state }) }
+end
 function NetworkGetEntityFromNetworkId(id) return id end
 function NetworkGetNetworkIdFromEntity(ent) return ent end
 function NetworkGetEntityOwner(ent) return W.entities[ent].owner or -1 end

@@ -22,6 +22,17 @@
 - [ ] Déco du partenaire pendant un contrat → annulé proprement
 - [ ] Rupture → impossible de refaire un duo pendant 1 h
 
+## gs_heists
+- [ ] Supérette sans arme / sans assez de police → refus clair ; avec → barre, butin en argent sale
+- [ ] Bijouterie : 6 vitrines, alarme → dispatch police immédiat et précis
+- [ ] Même site juste après → « sous surveillance » (cooldown)
+- [ ] Nuit + duo proche + quartier de son gang → butin plus gros
+
+## gs_drugs
+- [ ] Récolte → préparation → vente à un passant ; même passant = refus
+- [ ] Vendre 10 fois au même endroit → le prix baisse ; revenir 1 h plus tard → prix normal
+- [ ] Policier en service à côté → personne n'achète
+
 ## Perf
 - [ ] resmon : chaque ressource < 0,5 ms au repos, 0 erreur console
 

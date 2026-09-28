@@ -45,9 +45,32 @@ Un crime n'existe pour la police **que s'il est signalé**.
 ## gs_loadscreen — écran de chargement
 Soleil couchant rétro, titre néon, astuces tournantes (FR), touches utiles, vraie progression du chargement. 100 % local, aucune ressource externe.
 
+## gs_heists — braquages
+- **Sites** : 4 supérettes (1 policier requis), bijouterie Vangelico (6 vitrines, 3 policiers), Fleeca Legion Square (3 coffres, 4 policiers).
+- **Conditions** : arme en main, nombre de policiers en service, cooldown par site, pas de braquage par un policier en service.
+- **Signalement** : alarme silencieuse (chance par site, 100 % bijouterie/banque) = police prévenue à coup sûr et précisément ;
+  sinon ce sont les témoins / l'heure / la météo (gs_wanted) qui décident.
+- **Butin** calculé serveur, en argent sale (`black_money`) : × nuit (22h-5h), × événement météo, × lien de duo (partenaire à < 25 m),
+  × quartier tenu par ton gang (+ influence gagnée). Durée d'action vérifiée serveur (impossible de sauter la barre).
+- Staff : `/braquages` (état, cooldowns).
+
+## gs_drugs — drogue (cannabis, extensible)
+- **Boucle** : récolte au champ (Grapeseed) → préparation (Sandy Shores, 3 feuilles → 1 sachet) → vente aux passants (ox_target « Proposer quelque chose »).
+- **Vente** : 1 fois par PNJ (state bag serveur), prix calculé serveur :
+  × nuit, × quartier (ton gang +20 %, rival −15 %), × **saturation** (−4 % par vente récente dans le quartier, plancher 55 %, se remet en 1 h).
+- **Risque** : refus 25 % (+15 % sous la pluie), refus systématique si un policier est à < 60 m ; un refus comme une vente peut être signalé (gs_wanted).
+- Gangs : chaque vente donne de l'influence dans le quartier.
+- **Items à déclarer** dans `ox_inventory/data/items.lua` (sinon la drogue est désactivée proprement au démarrage) :
+  ```lua
+  ['weed_leaf'] = { label = 'Feuille de cannabis', weight = 50, stack = true },
+  ['weed_bag']  = { label = 'Sachet de cannabis', weight = 20, stack = true },
+  -- ['black_money'] existe déjà dans ox_inventory (argent sale)
+  ```
+
 ## Liens entre features
 `gs_weather` → visibilité de `gs_wanted` + prix de `gs_economy` ;
 `gs_duo` → crimes vers `gs_wanted`, chaleur partagée ; `gs_jobs` → police en service pour le dispatch.
+`gs_heists` / `gs_drugs` → `gs_wanted` (signalements), `gs_weather` (nuit, météo), `gs_duo` (bonus), `gs_gangs` (territoires, influence).
 
 ## Impact / risques / rollback
 - Tables : `gs_economy`, `gs_duos` (créées au démarrage). gs_wanted : mémoire uniquement.

@@ -12,6 +12,10 @@ Config.Crimes = {
     robbery      = { label = 'Braquage', heat = 30, chance = 0.50 },
     assault      = { label = 'Agression', heat = 10, chance = 0.20 },
     duo_contract = { label = 'Vol de marchandise', heat = 20, chance = 0.25 },
+    store_robbery = { label = 'Braquage de supérette', heat = 30, chance = 0.45 },
+    jewelry = { label = 'Braquage de bijouterie', heat = 45, chance = 0.70 },
+    bank = { label = 'Braquage de banque', heat = 60, chance = 0.80 },
+    drug_sale = { label = 'Vente de stupéfiants', heat = 8, chance = 0.12 },
 }
 
 Config.Witness = {
