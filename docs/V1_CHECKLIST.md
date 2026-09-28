@@ -2,19 +2,21 @@
 
 Cocher dans l'ordre. Chaque ligne rouge en console = on s'arrête et on l'envoie à [DEV].
 
-## A. Installation (Alpha)
-- [ ] FiveM se lance (docs/FAQ_FIVEM.md, outil `scripts/windows/diagnostic-fivem.bat`)
-- [ ] MariaDB installé (docs/INSTALL.md)
-- [ ] txAdmin + recipe Qbox installés
-- [ ] `scripts/windows/brancher-gtasoon.bat` exécuté, sortie sans rouge
-- [ ] Étapes Qbox de docs/JOBS.md (jobs en double, maxJobsPerPlayer, item repairkit)
-- [ ] Ton `license:` en group.admin dans `cfg/secrets.cfg`
+## A. Installation (Alpha) — outils à la racine du dossier GTA SOON
+- [x] FiveM se lance (docs/FAQ_FIVEM.md, outil `scripts/windows/diagnostic-fivem.bat`)
+- [x] MariaDB installé + `REPARER-MARIADB.bat`
+- [x] `INSTALLER.bat` (Qbox officiel + GTA SOON) → `C:\GTASOON\server-data`
+- [x] Licence : `CHANGER-LICENCE.bat` (lit la clé copiée, répare un double collage)
+- [ ] `DEVENIR-ADMIN.bat` après une première connexion (écrit ton `license:` en group.god)
+- [ ] Mises à jour suivantes : `METTRE-A-JOUR.bat` (sauvegarde auto dans `C:\GTASOON\sauvegardes`)
 
 ## B. Premier démarrage (envoyer la console à [DEV])
-- [ ] `[gs_jobs] prêt : 6 jobs chargés`
-- [ ] Aucune ligne `[gs_bridge] ... a échoué` (sinon : un nom d'API Qbox à corriger)
-- [ ] Liste des items absents (gs_economy / gs_jobs) notée → déclarer ou retirer
+- [x] `Server license key authentication succeeded`
+- [x] `[gs_jobs] prêt : 6 jobs chargés`, les 16 `gs_*` démarrés
+- [x] Corrigé : `;` dans les cfg (« No such command les »), `onesync`, `hardcap`, `sv_endpointPrivacy`, item `scrapmetal`
+- [ ] Aucune ligne `[gs_bridge] ... a échoué` à la première connexion (sinon : un nom d'API Qbox à corriger)
 - [ ] Écran de chargement néon visible à la connexion
+- [ ] Connu, sans effet : `Table 'properties' does not exist` (logement Qbox = V2)
 
 ## C. Tests en jeu ([TEST], plans détaillés dans docs/tests/)
 - [ ] Jobs : docs/tests/phase1-jobs.md

@@ -8,6 +8,8 @@ OURS = SERVER / "resources" / "[gtasoon]"
 FORBIDDEN = {"qbx_management": "remplacé par gs_jobs", "qbx_weathersync": "remplacé par gs_weather",
              "Renewed-Weathersync": "remplacé par gs_weather", "qbx_hud": "remplacé par gs_hud", "npwd": "remplacé par gs_phone",
              "qb-weathersync": "remplacé par gs_weather", "vSync": "remplacé par gs_weather"}
+REMOVED = {"onesync": "ConVar interne, passer +set onesync on sur la ligne de commande",
+           "sv_endpointPrivacy": "supprimée par FXServer"}
 SECRET_KEYS = re.compile(r"(licensekey|webhook|mysql_connection|apikey|password|token|secret)", re.I)
 errors = []
 
@@ -15,6 +17,11 @@ def read_cfg(path, seen):
     """Lit un cfg et suit les `exec` (hors secrets.cfg, remplacé par son .example)."""
     lines = []
     for n, raw in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
+        if ";" in raw:
+            errors.append(f"{path.name}:{n} point-virgule interdit (séparateur de commandes FiveM, même en commentaire)")
+        for removed in REMOVED:
+            if re.match(rf"\s*(set[sr]?\s+)?{removed}\b", raw):
+                errors.append(f"{path.name}:{n} {removed} : {REMOVED[removed]}")
         line = raw.split("#", 1)[0].strip()
         if not line:
             continue

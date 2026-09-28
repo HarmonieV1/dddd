@@ -247,7 +247,7 @@ if ($items) {
 } else { Log '  items.lua d''ox_inventory introuvable : ajoute server\ox_items_gtasoon.lua à la main' 'Yellow' }
 
 # Lanceur
-$bat = "@echo off`r`ntitle Serveur GTA SOON`r`ncd /d `"%~dp0`"`r`n`"$FxExe`" +exec server.cfg`r`npause`r`n"
+$bat = "@echo off`r`ntitle Serveur GTA SOON`r`ncd /d `"%~dp0`"`r`n`"$FxExe`" +set onesync on +exec server.cfg`r`npause`r`n"
 [IO.File]::WriteAllText((Join-Path $Data 'DEMARRER.bat'), $bat, (New-Object Text.ASCIIEncoding))
 
 # --- 4. Lancement --------------------------------------------------------------------------------------------------

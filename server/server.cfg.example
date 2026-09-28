@@ -8,7 +8,7 @@
 ## ---- Réseau ----
 endpoint_add_tcp "0.0.0.0:30120"
 endpoint_add_udp "0.0.0.0:30120"
-set onesync on
+# OneSync : activé par la ligne de commande (+set onesync on dans DEMARRER.bat), plus modifiable ici.
 # Build du jeu : aligner sur ce qu'exige la version de Qbox installée (docs.qbox.re) avant de changer.
 set sv_enforceGameBuild 3258
 
@@ -23,7 +23,6 @@ sets tags "roleplay, rp, fr, francais, freeaccess, qbox"
 
 ## ---- Sécurité de base (sans effet de bord) ----
 sv_scriptHookAllowed 0          # pas de ScriptHook (menus de triche)
-sv_endpointPrivacy true         # masque les IP des joueurs
 set sv_pureLevel 1              # refuse les fichiers de jeu modifiés (hors audio/graphismes)
 
 ## ---- Secrets (licence, BDD, webhooks, staff) ----
