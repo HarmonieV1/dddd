@@ -55,6 +55,16 @@ RegisterNetEvent('QBCore:Client:OnPlayerLoaded', function() -- [API]
     pushStatus()
 end)
 
+-- Nouveau perso : qbx_core (startingApartment = true par défaut) passe la main au choix d'appartement.
+-- Sans ressource d'appartements, personne ne répond : écran noir + chargement infini (menus utilisables).
+-- On bascule sur l'apparition sans appartement de qbx_core : spawn par défaut, fondu, puis création de l'apparence.
+AddEventHandler('apartments:client:setupSpawnUI', function() -- [API] qbx_core client/character.lua
+    for _, res in ipairs({ 'qbx_apartments', 'qbx_properties', 'qb-apartments' }) do
+        if GetResourceState(res) == 'started' then return end
+    end
+    TriggerEvent('qbx_core:client:spawnNoApartments')
+end)
+
 RegisterNetEvent('QBCore:Client:OnPlayerUnload', function() -- [API]
     playerData, lastKey, lastStatus = {}, '', ''
     TriggerEvent('gs_bridge:client:playerUnloaded')

@@ -9,7 +9,7 @@ import pathlib, re, sys
 from collections import defaultdict
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent / "server" / "resources" / "[gtasoon]"
-EXTERNAL_PREFIXES = ("QBCore:", "qb-weathersync:", "ox_lib:", "illenium-appearance:", "qbx_medical:", "txAdmin:", "gs_bridge:client:", "gs_bridge:server:")
+EXTERNAL_PREFIXES = ("QBCore:", "qbx_core:client:", "qb-weathersync:", "ox_lib:", "illenium-appearance:", "qbx_medical:", "txAdmin:", "gs_bridge:client:", "gs_bridge:server:")
 errors = []
 
 def side(path):
