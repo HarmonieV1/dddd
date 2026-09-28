@@ -1,0 +1,27 @@
+## Copier en server.cfg (ignoré par git). Les secrets vont dans secrets.cfg (ignoré aussi).
+exec secrets.cfg   # sv_licenseKey, mysql_connection_string, gs_staff_webhook
+
+endpoint_add_tcp "0.0.0.0:30120"
+endpoint_add_udp "0.0.0.0:30120"
+sv_hostname "GTA SOON | FR | Free Access"
+sets locale "fr-FR"
+sets tags "rp, roleplay, francais, fr, freeaccess"
+sv_maxclients 48
+set sv_enforceGameBuild 3095   # à ajuster selon les exigences des ressources
+set onesync on
+
+## Ordre des ensure (voir docs/ARCHITECTURE.md ; vérifier docs.qbox.re)
+ensure oxmysql
+ensure ox_lib
+ensure qbx_core
+ensure ox_inventory
+ensure ox_target
+ensure pma-voice
+ensure gs_security
+# ensure gs_*
+
+## ACE : principe du moindre privilège
+add_ace group.admin command allow
+add_principal group.admin group.mod
+# Ne mettre les identifiers staff que dans secrets.cfg :
+# add_principal identifier.license:XXXX group.admin

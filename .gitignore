@@ -1,0 +1,15 @@
+# Secrets / local
+.env
+server/server.cfg
+server/secrets.cfg
+*.key
+# FXServer runtime
+server/cache/
+server/txData/
+server/db/
+# Node / NUI
+node_modules/
+dist/
+# Backups
+backups/
+*.sql.gz
