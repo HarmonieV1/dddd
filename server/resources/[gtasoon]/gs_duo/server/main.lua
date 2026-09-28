@@ -277,6 +277,7 @@ lib.callback.register('gs_duo:contractStep', function(src)
 end)
 
 RegisterNetEvent('gs_duo:server:contractCancel', function()
+    if not Security:RateLimit(source, 'gs_duo:cancel', 2, 10000) then return end
     local _, duo = Duo.partner(source)
     if duo and Duo.contracts[duo.id] then endContract(duo, 'cancel') end
 end)

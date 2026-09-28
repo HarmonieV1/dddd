@@ -112,6 +112,8 @@ lib.callback.register('gs_jobs:mission:step', function(src)
     return true, pay > 0 and L('mission_step_paid', pay) or nil
 end)
 
-RegisterNetEvent('gs_jobs:server:missionCancel', function() stop(source, 'cancel') end)
+RegisterNetEvent('gs_jobs:server:missionCancel', function()
+    if Security:RateLimit(source, 'gs_jobs:mission_cancel', 2, 10000) then stop(source, 'cancel') end
+end)
 AddEventHandler('gs_jobs:internal:endService', function(src) stop(src, 'cancel') end)
 AddEventHandler('gs_bridge:server:playerUnloaded', function(src) Active[src], Cooldown[src] = nil, nil end)

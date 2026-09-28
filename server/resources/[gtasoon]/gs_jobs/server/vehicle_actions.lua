@@ -23,6 +23,7 @@ lib.callback.register('gs_jobs:vehicle:start', function(src, action, netId)
 end)
 
 lib.callback.register('gs_jobs:vehicle:finish', function(src)
+    if not Security:RateLimit(src, 'gs_jobs:veh_finish', 5, 10000) then return false, L('slow_down') end
     local p = Pending[src]
     Pending[src] = nil
     if not p or GetGameTimer() < p.doneAt then return false, L('invalid') end
@@ -41,5 +42,7 @@ lib.callback.register('gs_jobs:vehicle:finish', function(src)
     return true, L('action_done')
 end)
 
-RegisterNetEvent('gs_jobs:server:vehicleCancel', function() Pending[source] = nil end)
+RegisterNetEvent('gs_jobs:server:vehicleCancel', function()
+    if Security:RateLimit(source, 'gs_jobs:veh_cancel', 5, 10000) then Pending[source] = nil end
+end)
 AddEventHandler('gs_bridge:server:playerUnloaded', function(src) Pending[src] = nil end)
