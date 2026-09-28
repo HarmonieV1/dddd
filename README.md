@@ -5,7 +5,7 @@ Base Los Santos vanilla, finitions néon / sunset façon Vice City, touche FR.
 
 - Fondateur / décideur final : **Alpha**
 - Stack : FXServer + txAdmin, Qbox, ox_lib / ox_inventory / ox_target / oxmysql, pma-voice, NUI React + Vite, Supabase + Netlify, Make, Tebex
-- Docs : [`docs/AGENTS.md`](docs/AGENTS.md) · [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) · [`docs/SECURITY.md`](docs/SECURITY.md) · [`docs/ROADMAP.md`](docs/ROADMAP.md) · [`docs/JOBS.md`](docs/JOBS.md) · [`docs/V1_RESOURCES.md`](docs/V1_RESOURCES.md) · [`docs/WEATHER.md`](docs/WEATHER.md) · **[`docs/INSTALL.md`](docs/INSTALL.md)**
+- Docs : [`docs/AGENTS.md`](docs/AGENTS.md) · [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) · [`docs/SECURITY.md`](docs/SECURITY.md) · [`docs/ROADMAP.md`](docs/ROADMAP.md) · [`docs/JOBS.md`](docs/JOBS.md) · [`docs/V1_RESOURCES.md`](docs/V1_RESOURCES.md) · [`docs/WEATHER.md`](docs/WEATHER.md) · [`docs/FEATURES.md`](docs/FEATURES.md) · **[`docs/INSTALL.md`](docs/INSTALL.md)**
 
 ## Structure
 ```
@@ -13,7 +13,8 @@ server/                  # server.cfg.example + cfg/ (secrets, convars, ressourc
   resources/[gtasoon]/   # nos ressources (préfixe gs_)
 docs/                    # prompt maître, archi, sécu, roadmap
 scripts/                 # backup BDD, outils
-tests/                   # ./tests/run.sh : syntaxe + tests logique serveur
+tests/                   # ./tests/run.sh : syntaxe, linters config + liaisons, tests logique serveur
+scripts/windows/         # brancher-gtasoon.bat : installe nos ressources sur la recipe Qbox
 ```
 
 ## Branches

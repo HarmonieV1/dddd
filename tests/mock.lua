@@ -24,6 +24,7 @@ function PerformHttpRequest() end
 function GetCurrentResourceName() return 'gs_jobs' end
 function GetResourceState() return 'started' end
 function joaat(s) return #s end
+GetHashKey = joaat
 json = { encode = function() return '{}' end }
 print = function(...) W.logs[#W.logs + 1] = table.concat({ ... }, ' ') end
 
@@ -132,6 +133,14 @@ provide('gs_bridge', {
         return true
     end,
     GetItemCount = function(src, item) return W.players[src].items[item] or 0 end,
+    ItemExists = function(item) return item ~= "introuvable" end,
+    CanCarry = function(src, _, n) return W.players[src] ~= nil and positiveInt(n) and not W.players[src].full end,
+    AddItem = function(src, item, n)
+        local p = W.players[src]
+        if not p or p.full then return false end
+        p.items[item] = (p.items[item] or 0) + n
+        return true
+    end,
     RemoveItem = function(src, item, n)
         local p = W.players[src]
         if (p.items[item] or 0) < n then return false end
@@ -207,3 +216,35 @@ end
 
 function tp(src, pos) W.players[src].pos = pos end
 function advance(ms) W.now = W.now + ms end
+
+-- Ajouts pour gs_wanted / gs_economy / gs_duo ----------------------------------------------------------
+function SetTimeout(_, fn) fn() end -- exécution immédiate en test
+function GetAllPeds()
+    local l = {}
+    for id, e in pairs(W.entities) do if e.type == 1 then l[#l + 1] = id end end
+    return l
+end
+function IsPedAPlayer(ped) return ped > 1000 and ped < 2000 end
+function GetEntityHealth(ent) return W.entities[ent] and W.entities[ent].health or 200 end
+function GetPlayers() local l = {} for s in pairs(W.players) do l[#l + 1] = tostring(s) end return l end
+function GetSelectedPedWeapon(ped) return W.players[ped - 1000].weapon or joaat('WEAPON_UNARMED') end
+function GetVehiclePedIsIn(ped) return W.players[ped - 1000].vehicle or 0 end
+function GetEntityModel(ent) return W.entities[ent].model or 0 end
+--- Ajoute `n` PNJ vivants autour de `pos`.
+function spawnPeds(pos, n)
+    for i = 1, n do
+        W.nextEntity = W.nextEntity + 1
+        W.entities[W.nextEntity] = { type = 1, pos = vec3(pos.x + i, pos.y, pos.z), health = 200 }
+    end
+end
+function clearPeds() for id, e in pairs(W.entities) do if e.type == 1 then W.entities[id] = nil end end end
+--- Force math.random : valeur fixe pour les tirages 0-1, ou restaure l'aléatoire.
+local realRandom = math.random
+function fixRandom(v)
+    if v == nil then math.random = realRandom return end
+    math.random = function(a, b)
+        if a == nil then return v end
+        if b == nil then return math.max(1, math.floor(v * a + 0.5)) end
+        return a + math.floor((b - a) * v + 0.5)
+    end
+end

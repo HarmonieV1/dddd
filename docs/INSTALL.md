@@ -5,8 +5,19 @@ Les écrans et menus exacts de txAdmin/Qbox évoluent : en cas de doute, docs.qb
 
 ## 1. Prérequis
 - [ ] GTA V **Legacy** + client FiveM qui se lance (voir FAQ en bas)
-- [ ] MariaDB (ou MySQL 8) : créer la base `gtasoon` et un utilisateur dédié (pas root)
-- [ ] Git, et ce repo cloné
+- [ ] Git (ou GitHub Desktop), et ce repo cloné
+- [ ] MariaDB, installé comme ci-dessous
+
+### MariaDB en 5 minutes (obligatoire : Qbox y stocke persos, inventaires, contrats)
+1. mariadb.org/download → version **LTS**, Windows x86_64, fichier `.msi`
+2. Lancer l'installeur, tout laisser par défaut, sauf :
+   - cocher **Modify password for database user 'root'** → choisir un mot de passe et **le noter**
+   - laisser coché **Install as service** (MariaDB démarre avec Windows)
+3. Terminer. C'est tout : pas besoin de créer la base à la main, la recipe txAdmin le fait.
+4. Dans txAdmin, à l'étape base de données de la recipe : hôte `localhost`, port `3306`,
+   utilisateur `root`, le mot de passe noté. (En local seulement ; en prod on utilisera un
+   utilisateur dédié, pas root.)
+5. Optionnel : HeidiSQL (installé avec MariaDB) pour voir les tables.
 
 ## 2. FXServer + txAdmin + Qbox
 - [ ] Télécharger les artifacts serveur Windows (runtime.fivem.net, build "recommended")
@@ -15,14 +26,15 @@ Les écrans et menus exacts de txAdmin/Qbox évoluent : en cas de doute, docs.qb
 - [ ] Clé de licence : keymaster.fivem.net (gratuite)
 - [ ] Laisser la recipe installer les ressources et la BDD
 
-## 3. Brancher GTA SOON sur la recipe
-- [ ] Copier `server/resources/[gtasoon]` dans le dossier `resources/` du serveur
-- [ ] Copier `server/cfg/` à côté du `server.cfg` du serveur
-- [ ] `cfg/secrets.cfg.example` → `cfg/secrets.cfg`, remplir licence + chaîne MySQL (**jamais commité**)
-- [ ] Remplacer le `server.cfg` de la recipe par `server/server.cfg.example` (garder une copie de celui de la recipe pour comparer les convars)
-- [ ] Retirer `qbx_management` et `qbx_weathersync` du dossier resources (doublons, voir linter)
+## 3. Brancher GTA SOON sur la recipe (automatique)
+- [ ] Double-cliquer sur `scripts/windows/brancher-gtasoon.bat` et choisir le dossier du serveur
+      (celui qui contient `server.cfg` et `resources`). Le script :
+      sauvegarde le cfg de la recipe, copie nos ressources et `cfg/`, crée `cfg/secrets.cfg` avec ta
+      licence et ta connexion MySQL, met de côté les doublons, et liste ce qui manque.
+      Non testé sur une vraie machine Windows : envoie la sortie à [DEV] si une ligne est rouge.
 - [ ] Étapes Qbox de `docs/JOBS.md` (jobs en double, maxJobsPerPlayer, item repairkit)
 - [ ] Ajouter ton identifiant `license:` en `group.admin` dans `cfg/secrets.cfg`
+      (txAdmin → Players → ton joueur → identifiers)
 
 ## 4. Premier démarrage
 - [ ] Console : `[gs_jobs] prêt : 6 jobs chargés`, aucune ligne rouge
@@ -36,6 +48,10 @@ Les écrans et menus exacts de txAdmin/Qbox évoluent : en cas de doute, docs.qb
 - [ ] `scripts/backup_db.sh` puis restart via txAdmin
 
 ## FAQ — FiveM ne détecte pas GTA
-FiveM ne marche qu'avec **GTA V Legacy** (pas Enhanced). Installer Legacy (entrée séparée dans Steam/Epic,
-inclus dans l'achat), le lancer une fois, supprimer `%localappdata%\FiveM`, réinstaller FiveM et
-choisir le dossier **Legacy** (celui qui contient `GTA5.exe` et `PlayGTAV.exe`).
+FiveM ne marche qu'avec **GTA V Legacy** (pas Enhanced), inclus dans l'achat (entrée séparée Steam/Epic).
+1. Fermer FiveM (Gestionnaire des tâches).
+2. Supprimer `%localappdata%\FiveM\FiveM.app\CitizenFX.ini` (désinstaller FiveM ne l'efface pas :
+   c'est lui qui garde l'ancien chemin). Radical : supprimer tout `%localappdata%\FiveM`.
+3. Relancer FiveM et donner le dossier qui contient **`GTA5.exe`**
+   (s'il n'y a que `GTA5_Enhanced.exe`, c'est Enhanced, pas Legacy).
+4. Toujours bloqué : noter le message exact + plateforme + liste des `.exe` du dossier du jeu.

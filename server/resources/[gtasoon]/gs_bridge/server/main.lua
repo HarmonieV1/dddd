@@ -135,6 +135,13 @@ local function GetItemCount(src, item)
     return OX:GetItemCount(src, item) or 0
 end
 
+--- L'item est-il déclaré dans ox_inventory ?
+local function ItemExists(item)
+    if type(item) ~= 'string' then return false end
+    local ok, data = pcall(function() return OX:Items(item) end) -- [API]
+    return ok and data ~= nil
+end
+
 local function AddItem(src, item, count, metadata)
     if not CanCarry(src, item, count) then return false end
     return OX:AddItem(src, item, count, metadata) and true or false
@@ -196,6 +203,7 @@ exports('AddMoney', AddMoney)
 exports('RemoveMoney', RemoveMoney)
 exports('CanCarry', CanCarry)
 exports('GetItemCount', GetItemCount)
+exports('ItemExists', ItemExists)
 exports('AddItem', AddItem)
 exports('RemoveItem', RemoveItem)
 exports('RegisterStash', RegisterStash)

@@ -24,6 +24,9 @@ Chaque ressource passe la checklist d'audit (`docs/SECURITY.md`) avant install. 
 | Multi-job, caisses, paie, factures, missions | **gs_jobs** | maison | ✅ fait |
 | Anti-abus events, logs | **gs_security** | maison | ✅ fait |
 | Météo / heure | ~~qbx_weathersync~~ → **gs_weather** | maison | ✅ fait |
+| Dispatch / recherche | **gs_wanted** | maison | ✅ fait |
+| Commerces / revente | **gs_economy** (remplace les shops statiques des supérettes) | maison | ✅ fait |
+| Duo criminel | **gs_duo** | maison | ✅ fait |
 
-Maison en Phase 2 (identité) : duo criminel lié, réseau social in-game, ~~météo événementielle~~ (fait),
-wanted intelligent, économie dynamique, companion web.
+Maison en Phase 2 (identité) : réseau social in-game, companion web.
+Faits : météo événementielle, wanted intelligent, économie dynamique, duo criminel lié (`docs/FEATURES.md`).

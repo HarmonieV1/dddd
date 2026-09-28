@@ -47,7 +47,7 @@ Chaque event/callback : rate-limit → personnage chargé → job/grade/service 
 Le client n'envoie que des intentions (index de garage, id de facture) ; prix, salaires, étapes et gains sont calculés côté serveur.
 
 ## Tests
-`./tests/run.sh` : syntaxe de tout le Lua + 62 tests de logique serveur (simulateur, pas le vrai jeu). Lancé aussi par la CI GitHub.
+`./tests/run.sh` : syntaxe, linters (config, liaisons entre ressources) et tests de logique serveur (simulateur, pas le vrai jeu). Lancé aussi par la CI GitHub.
 
 ## Impact / risques / rollback
 - Impact : nouvelle ressource, 4 tables préfixées `gs_`, aucune table Qbox modifiée.

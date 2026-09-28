@@ -22,7 +22,7 @@ local function spawnBlocked(spawn)
 end
 
 local function spawnVehicle(model, spawn, vtype)
-    local veh = CreateVehicleServerSetter(joaat(model), vtype or 'automobile', spawn.x, spawn.y, spawn.z, spawn.w)
+    local veh = CreateVehicleServerSetter(GetHashKey(model), vtype or 'automobile', spawn.x, spawn.y, spawn.z, spawn.w)
     local deadline = GetGameTimer() + 5000
     while not DoesEntityExist(veh) do
         if GetGameTimer() > deadline then return nil end

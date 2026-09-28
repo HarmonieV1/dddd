@@ -216,3 +216,13 @@ end)
 exports('GetMemberships', function(src)
     return Members[src] and Members[src].jobs or {}
 end)
+
+--- Sources des joueurs en service dans un job (dispatch police, alertes EMS...).
+exports('GetOnDutyPlayers', function(job)
+    local list = {}
+    for src in pairs(Members) do
+        local j = Bridge:GetJob(src)
+        if j and j.name == job and j.onduty then list[#list + 1] = src end
+    end
+    return list
+end)

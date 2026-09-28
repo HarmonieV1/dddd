@@ -1,0 +1,131 @@
+-- Tests gs_wanted : témoins, heure, météo, précision, chaleur, anti-abus.
+dofile('tests/mock.lua')
+local R = 'server/resources/[gtasoon]/'
+local duty = {}          -- [src] = true si policier en service
+local weather = { type = 'CLEAR', hour = 14, blackout = false }
+provide('gs_jobs', {
+    IsOnDutyAs = function(src, job) return job == 'police' and duty[src] == true end,
+    GetOnDutyPlayers = function() local l = {} for s in pairs(duty) do l[#l + 1] = s end return l end,
+})
+provide('gs_weather', {
+    GetGameTime = function() return weather.hour, 0, 0 end,
+    GetWeather = function() return weather.type end,
+    IsBlackout = function() return weather.blackout end,
+})
+loadResource('gs_security', { R .. 'gs_security/server/main.lua' })
+loadResource('gs_wanted', { R .. 'gs_wanted/shared/config.lua', R .. 'gs_wanted/server/main.lua' })
+
+local passed, failed = 0, 0
+local function check(name, cond)
+    if cond then passed = passed + 1 else failed = failed + 1; io.stderr:write('ÉCHEC : ' .. name .. '\n') end
+end
+local function step() advance(21000) end
+
+local street = vec3(200.0, -800.0, 30.0)
+join(1, 'CID1', 'Suspect Un', street)
+join(2, 'CID2', 'Agent Deux', vec3(5000.0, 5000.0, 0.0))
+join(3, 'CID3', 'Passant Trois', vec3(5000.0, 5000.0, 0.0))
+duty[2] = true
+
+-- Visibilité -------------------------------------------------------------------------------------
+check('jour clair = 1.0', Wanted.visibility() == 1.0)
+weather.hour = 23
+check('nuit réduit', Wanted.visibility() < 1.0)
+weather.type, weather.blackout = 'FOGGY', true
+local worst = Wanted.visibility()
+check('nuit + brouillard + blackout très faible', worst < 0.25)
+weather.hour, weather.type, weather.blackout = 14, 'CLEAR', false
+
+-- Témoins ----------------------------------------------------------------------------------------------
+spawnPeds(street, 4)
+local n, police = Wanted.witnesses(street, 1)
+check('4 PNJ témoins', n == 4 and not police)
+tp(3, street)
+n = Wanted.witnesses(street, 1)
+check('joueur proche = témoin, suspect exclu', n == 5)
+tp(3, vec3(5000.0, 5000.0, 0.0))
+clearPeds()
+
+-- Probabilités (tirage forcé) -----------------------------------------------------------------------
+fixRandom(0.5)
+check('sans témoin, vol discret non signalé (15 %)', Wanted.report(1, 'carjack', street) == nil)
+spawnPeds(street, 4)
+check('4 témoins : signalé (15 % + 48 %)', Wanted.report(1, 'carjack', street) ~= nil)
+check('chaleur ajoutée', Wanted.heat[1] == Config.Crimes.carjack.heat)
+Wanted.clearHeat(1)
+weather.hour, weather.type = 23, 'FOGGY'
+check('même scène de nuit dans le brouillard : pas signalé', Wanted.report(1, 'carjack', street) == nil)
+weather.hour, weather.type = 14, 'CLEAR'
+fixRandom(0.3)
+check('tir silencieux moins signalé', Wanted.report(1, 'gunshot', street, { silenced = true }) == nil)
+check('tir normal signalé', Wanted.report(1, 'gunshot', street) ~= nil)
+check('crime inconnu ignoré', Wanted.report(1, 'nimporte', street) == nil)
+
+-- Policier témoin : signalement certain et précis ----------------------------------------------------------
+fixRandom(0.99)
+tp(2, vec3(street.x + 30.0, street.y, street.z))
+clearPeds()
+local r = Wanted.report(1, 'assault', street)
+check('policier à portée : signalé malgré tirage défavorable', r ~= nil and r.witnesses == -1)
+check('policier à portée : zone précise, sans délai', r and r.radius == Config.Precision.blurMin and r.delay == 0)
+check('dispatch reçu par la police', lastClientEvent('gs_wanted:client:dispatch', 2) ~= nil)
+tp(2, vec3(5000.0, 5000.0, 0.0))
+
+-- Précision et plaque -------------------------------------------------------------------------------------
+fixRandom(0.0)
+local car = CreateVehicleServerSetter(0, 'automobile', street.x, street.y, street.z)
+SetVehicleNumberPlateText(car, 'GSOON123')
+r = Wanted.report(1, 'carjack', street, { vehicle = car })
+check('témoin unique : plaque partielle', r and r.plate and r.plate:find('%*') ~= nil and #r.plate == 8)
+check('zone floue sans témoin', r and r.radius > 100)
+spawnPeds(street, 8)
+r = Wanted.report(1, 'carjack', street, { vehicle = car })
+check('beaucoup de témoins : zone plus précise', r and r.radius < 100)
+clearPeds()
+fixRandom()
+
+-- Zone sûre -------------------------------------------------------------------------------------------------
+fixRandom(0.0)
+check('stand de tir : jamais signalé', Wanted.report(1, 'gunshot', Config.SafeZones[1].coords) == nil)
+fixRandom()
+
+-- Chaleur : plafond, décroissance ----------------------------------------------------------------------------
+Wanted.clearHeat(1)
+for _ = 1, 20 do Wanted.addHeat(1, 30) end
+check('chaleur plafonnée', Wanted.heat[1] == Config.Heat.max)
+Wanted.decay()
+check('pas de baisse juste après un signalement', Wanted.heat[1] == Config.Heat.max)
+advance(Config.Heat.quietMinutes * 60000 + 1000)
+Wanted.decay()
+check('baisse ensuite', Wanted.heat[1] == Config.Heat.max - Config.Heat.decayPerMinute)
+for _ = 1, 60 do Wanted.decay() end
+check('retour à zéro', Wanted.heat[1] == nil)
+check('étoiles mises à jour côté client', lastClientEvent('gs_wanted:client:heat', 1).args[1] == 0)
+
+-- Events réseau : anti-abus ------------------------------------------------------------------------------------
+fixRandom(0.0)
+spawnPeds(street, 3)
+net('gs_wanted:server:shot', 1, false)
+check('tir sans arme en main ignoré', Wanted.heat[1] == nil)
+step()
+W.players[1].weapon = joaat('WEAPON_PISTOL')
+net('gs_wanted:server:shot', 1, false)
+check('tir avec arme signalé', (Wanted.heat[1] or 0) > 0)
+local h = Wanted.heat[1]
+net('gs_wanted:server:shot', 1, false)
+check('spam de tirs limité', Wanted.heat[1] == h)
+step()
+W.players[2].weapon = joaat('WEAPON_PISTOL')
+tp(2, street)
+net('gs_wanted:server:shot', 2, false)
+check('policier en service qui tire : pas signalé', Wanted.heat[2] == nil)
+check('historique dispatch pour la police', #cb('gs_wanted:history', 2) > 0)
+check('historique refusé aux civils', #cb('gs_wanted:history', 3) == 0)
+fixRandom()
+
+-- Nettoyage à la déconnexion -------------------------------------------------------------------------------------
+TriggerEvent('gs_bridge:server:playerUnloaded', 1)
+check('chaleur nettoyée', Wanted.heat[1] == nil)
+
+io.write(('\n%d réussis, %d échoués\n'):format(passed, failed))
+os.exit(failed == 0 and 0 or 1)

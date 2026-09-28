@@ -79,6 +79,8 @@ for path, n, line in lines:
 tracked = subprocess.run(["git", "ls-files"], cwd=ROOT, capture_output=True, text=True).stdout.split()
 leak = re.compile(r"discord(?:app)?\.com/api/webhooks/\d+|mysql://[^:\s]+:(?!CHANGE_ME@)[^@\s]+@|sv_licenseKey\s+\"?(?!CHANGE_ME)[A-Za-z0-9]{10,}")
 for f in tracked:
+    if f == "tests/check_cfg.py":  # contient les motifs eux-mêmes
+        continue
     p = ROOT / f
     if p.suffix in (".png", ".jpg", ".ttf", ".woff2") or not p.is_file():
         continue
