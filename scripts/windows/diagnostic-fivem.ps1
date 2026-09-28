@@ -63,13 +63,19 @@ if (Test-Path $manifests) {
     }
 } else { Say "  Epic non trouvé" }
 
-Say "`n[4] Scan des disques (dossiers courants, quelques secondes)" 'Cyan'
-Get-PSDrive -PSProvider FileSystem | Where-Object { $_.Free -ne $null } | ForEach-Object {
-    foreach ($sub in 'Program Files', 'Program Files (x86)', 'Games', 'Jeux', 'SteamLibrary', 'Epic Games', 'Rockstar Games', '') {
-        $base = Join-Path $_.Root $sub
-        if (-not (Test-Path -LiteralPath $base)) { continue }
-        Get-ChildItem -LiteralPath $base -Recurse -Depth 4 -File -Include 'GTA5.exe', 'GTA5_Enhanced.exe' -ErrorAction SilentlyContinue |
-            ForEach-Object { Add-Candidate $_.DirectoryName }
+if ($candidates.Count -gt 0) {
+    Say "`n[4] Scan des disques : inutile, installation(s) déjà trouvée(s)" 'Cyan'
+} else {
+    Say "`n[4] Scan des disques (dossiers de jeux courants uniquement)" 'Cyan'
+    Get-PSDrive -PSProvider FileSystem | Where-Object { $_.Free -ne $null } | ForEach-Object {
+        foreach ($sub in 'Program Files\Rockstar Games', 'Program Files (x86)\Steam\steamapps\common', 'Program Files\Epic Games',
+                         'SteamLibrary\steamapps\common', 'Games', 'Jeux', 'Epic Games', 'Rockstar Games') {
+            $base = Join-Path $_.Root $sub
+            if (-not (Test-Path -LiteralPath $base)) { continue }
+            Write-Host "  ... $base"
+            Get-ChildItem -LiteralPath $base -Recurse -Depth 2 -File -Include 'GTA5.exe', 'GTA5_Enhanced.exe' -ErrorAction SilentlyContinue |
+                ForEach-Object { Add-Candidate $_.DirectoryName }
+        }
     }
 }
 
