@@ -7,7 +7,7 @@ SERVER = ROOT / "server"
 OURS = SERVER / "resources" / "[gtasoon]"
 FORBIDDEN = {"qbx_management": "remplacé par gs_jobs", "qbx_weathersync": "remplacé par gs_weather",
              "qb-weathersync": "remplacé par gs_weather", "vSync": "remplacé par gs_weather"}
-SECRET_KEYS = re.compile(r"(licensekey|webhook|mysql_connection|apikey|password|token)", re.I)
+SECRET_KEYS = re.compile(r"(licensekey|webhook|mysql_connection|apikey|password|token|secret)", re.I)
 errors = []
 
 def read_cfg(path, seen):

@@ -27,6 +27,7 @@ Chaque ressource passe la checklist d'audit (`docs/SECURITY.md`) avant install. 
 | Dispatch / recherche | **gs_wanted** | maison | ✅ fait |
 | Commerces / revente | **gs_economy** (remplace les shops statiques des supérettes) | maison | ✅ fait |
 | Duo criminel | **gs_duo** | maison | ✅ fait |
+| Boutique Tebex | **gs_store** (désactivée tant que la conformité PLA n'est pas validée) | maison | ✅ fait |
 
 Maison en Phase 2 (identité) : réseau social in-game, companion web.
 Faits : météo événementielle, wanted intelligent, économie dynamique, duo criminel lié (`docs/FEATURES.md`).

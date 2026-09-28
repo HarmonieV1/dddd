@@ -166,6 +166,17 @@ local function GiveVehicleKeys(src, vehicle)
     return (pcall(function() exports.qbx_vehiclekeys:GiveKeys(src, vehicle) end)) -- [API]
 end
 
+--- Véhicule possédé ajouté au garage du personnage (boutique, récompenses). Retourne true si créé.
+local function GiveVehicle(src, model)
+    local cid = GetIdentifier(src)
+    if not cid or type(model) ~= 'string' then return false end
+    local ok, id = pcall(function()
+        return exports.qbx_vehicles:CreatePlayerVehicle({ model = model, citizenid = cid }) -- [API]
+    end)
+    if not ok then print(('[gs_bridge] GiveVehicle %s a échoué : %s'):format(model, id)) end
+    return ok and id ~= nil
+end
+
 -- UI -----------------------------------------------------------------------------
 
 --- type: 'inform' | 'success' | 'error' | 'warning'
@@ -208,4 +219,5 @@ exports('AddItem', AddItem)
 exports('RemoveItem', RemoveItem)
 exports('RegisterStash', RegisterStash)
 exports('GiveVehicleKeys', GiveVehicleKeys)
+exports('GiveVehicle', GiveVehicle)
 exports('Notify', Notify)

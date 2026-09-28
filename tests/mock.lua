@@ -148,6 +148,7 @@ provide('gs_bridge', {
         return true
     end,
     RegisterStash = function() return true end,
+    GiveVehicle = function(src, model) if model == "casse" then return false end W.players[src].vehicles = (W.players[src].vehicles or 0) + 1 return true end,
     GiveVehicleKeys = function() return true end,
     Notify = function(src, msg, t) W.notes[src] = { msg = msg, type = t } end,
 })
@@ -247,4 +248,11 @@ function fixRandom(v)
         if b == nil then return math.max(1, math.floor(v * a + 0.5)) end
         return a + math.floor((b - a) * v + 0.5)
     end
+end
+
+-- Ajouts pour gs_store
+function RegisterCommand(name, fn) W.commands[name] = fn end
+function GetPlayerIdentifierByType(src, kind)
+    local p = W.players[src]
+    return p and p[kind] or nil
 end

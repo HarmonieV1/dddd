@@ -59,6 +59,11 @@ CreateThread(function()
     if LocalPlayer.state.isLoggedIn then refresh(); pushJob() end
 end)
 
+--- Remet l'apparence sauvegardée du personnage (après un skin boutique). [API] illenium-appearance
+exports('RestoreAppearance', function()
+    TriggerEvent('illenium-appearance:client:reloadSkin')
+end)
+
 exports('GetJob', GetJob)
 exports('IsLoggedIn', function() return playerData.citizenid ~= nil end)
 exports('GetItemCount', function(item) return exports.ox_inventory:Search('count', item) or 0 end) -- [API]

@@ -48,6 +48,7 @@ Les écrans et menus exacts de txAdmin/Qbox évoluent : en cas de doute, docs.qb
 - [ ] `scripts/backup_db.sh` puis restart via txAdmin
 
 ## FAQ — FiveM ne détecte pas GTA
+Version complète pas à pas : [`FAQ_FIVEM.md`](FAQ_FIVEM.md). Résumé :
 FiveM ne marche qu'avec **GTA V Legacy** (pas Enhanced), inclus dans l'achat (entrée séparée Steam/Epic).
 1. Fermer FiveM (Gestionnaire des tâches).
 2. Supprimer `%localappdata%\FiveM\FiveM.app\CitizenFX.ini` (désinstaller FiveM ne l'efface pas :
