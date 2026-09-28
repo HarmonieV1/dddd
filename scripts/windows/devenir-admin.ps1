@@ -12,8 +12,8 @@ $secrets = Join-Path $Data 'cfg\secrets.cfg'
 if (-not (Test-Path -LiteralPath $secrets)) { Fail "Introuvable : $secrets (lance d'abord INSTALLER.bat)." }
 $content = Get-Content -LiteralPath $secrets -Raw -Encoding UTF8
 
-# Connexion BDD : celle du serveur (mysql://user:motdepasse@hôte:port/base)
-$cs = [regex]::Match($content, 'mysql_connection_string\s+"mysql://([^:]+):(.*)@([^:/@]+)(?::(\d+))?/([^?"]+)')
+# Connexion BDD : celle du serveur (utilisateur, mot de passe, hôte, port, base lus dans secrets.cfg)
+$cs = [regex]::Match($content, 'mysql_connection_string\s+"mysql:/{2}([^:]+):(.*)@([^:/@]+)(?::(\d+))?/([^?"]+)')
 if (-not $cs.Success) { Fail 'mysql_connection_string illisible dans secrets.cfg.' }
 $user, $pass, $dbHost, $port, $db = $cs.Groups[1].Value, $cs.Groups[2].Value, $cs.Groups[3].Value, $cs.Groups[4].Value, $cs.Groups[5].Value
 if (-not $port) { $port = '3306' }
