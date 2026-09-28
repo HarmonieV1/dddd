@@ -14,7 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        app: [gs_social, gs_admin]
+        app: [gs_social, gs_admin, gs_phone]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4

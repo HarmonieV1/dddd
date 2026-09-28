@@ -111,7 +111,7 @@ for res in res_files:
             handlers |= set(re.findall(r"'([^']+)'", m.group(1)))
     for js in web.rglob("*.js*"):
         # nui('action') direct, ou via le helper run('action', ...) de l'app
-        for m in re.finditer(r"\b(?:nui|run)\('([^']+)'", js.read_text(encoding="utf-8")):
+        for m in re.finditer(r"\b(?:nui|run|submit)\('([^']+)'", js.read_text(encoding="utf-8")):
             if m.group(1) not in handlers:
                 errors.append(f"{js.relative_to(ROOT)} action NUI sans handler Lua : {m.group(1)}")
 
@@ -125,6 +125,16 @@ if admin_ui.exists() and admin_srv.exists():
     for name in set(re.findall(r"\bname: '(\w+)'", ui)) | set(re.findall(r"\bact\('(\w+)'", ui)):
         if name not in server_actions:
             errors.append(f"gs_admin/web/src/App.jsx action sans handler serveur : {name}")
+
+# Règle sécurité n°1 : tout event / callback serveur passe par un rate-limit (RateLimit, guard, staffGuard)
+for res, files in res_files.items():
+    for f in files:
+        if side(f) != "server":
+            continue
+        text = strip_comments(f.read_text(encoding="utf-8"))
+        for m in re.finditer(r"(?:RegisterNetEvent|lib\.callback\.register)\('([^']+)'", text):
+            if not re.search(r"RateLimit|guard\(|staffGuard\(", text[m.end(): m.end() + 400]):
+                errors.append(f"{f.relative_to(ROOT)} event serveur sans rate-limit : {m.group(1)}")
 
 # Clés de locale
 for res, files in res_files.items():
