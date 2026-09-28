@@ -23,6 +23,19 @@ Les écrans et menus exacts de txAdmin/Qbox évoluent : en cas de doute, docs.qb
 un VPN privé gratuit type **Tailscale** (vous l'installez tous les deux, il se connecte à ton IP Tailscale).
 Sinon : ouvrir le port 30120 TCP+UDP sur ta box (moins sûr).
 
+## Premier lancement en 6 étapes (version simple)
+1. **txAdmin n'est pas un logiciel à part** : il est inclus dans le serveur FiveM. Télécharge les artifacts
+   (lien ci-dessus, fichier `server.7z` du build « Latest Recommended »), extrais-le dans `C:\FXServer\server`.
+2. Double-clic sur `C:\FXServer\server\FXServer.exe` : une fenêtre noire s'ouvre et ton navigateur affiche
+   **txAdmin** (`http://localhost:40120`). Un **code PIN** s'affiche dans la fenêtre noire : entre-le.
+3. Connecte ton compte Cfx.re, choisis un mot de passe admin, puis **Popular Recipes → Qbox**.
+   Base de données : hôte `localhost`, utilisateur `root`, le mot de passe MariaDB noté.
+4. Quand la recipe a fini : lance `scripts/windows/brancher-gtasoon.bat` et choisis le dossier du serveur créé par txAdmin
+   (celui qui contient `server.cfg`, souvent dans `C:\FXServer\txData\...`).
+5. Dans txAdmin : bouton **Start** (ou Restart). Laisse la fenêtre noire ouverte.
+6. **Se connecter** : lance FiveM, puis appuie sur **F8** dans le menu principal de FiveM : une console s'ouvre en haut,
+   tape `connect localhost` et Entrée. (Alternative sans F8 : onglet « Localhost / Direct connect » du menu FiveM, adresse `localhost`.)
+
 ## 1. Prérequis
 - [ ] GTA V **Legacy** + client FiveM qui se lance (voir FAQ en bas)
 - [ ] Git (ou GitHub Desktop), et ce repo cloné

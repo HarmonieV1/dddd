@@ -24,3 +24,14 @@ Hiérarchie : god > admin > mod > helper (chaque groupe hérite du précédent, 
 
 ## Tests
 `tests/test_gs_admin.lua` (50 tests) : niveaux, anti-abus, motifs, plafonds, tickets, isolement persistant, publication des sanctions.
+
+## Mapping en jeu : gs_builder (`/builder`, groupe admin)
+Placer n'importe quel objet du jeu, le déplacer, le tourner, le dupliquer, le supprimer. Sauvegardé en BDD, visible par tous.
+- **Placer** : nom du modèle (ex. `prop_bench_01a`) ou favoris → l'objet suit ton viseur.
+- **Contrôles** : `TAB` mode viser/précis · flèches déplacer · `PgUp/PgDn` hauteur · `Q/E` tourner · molette rotation fine ·
+  `X` remettre droit · `G` poser au sol · `Shift` rapide · `Ctrl` précis · `Entrée` valider · `Retour` annuler.
+- **Modifier** : « Modifier l'objet visé » ou « Objets à proximité » → déplacer / dupliquer / supprimer.
+- **Planque de gang** : « Placer une planque de gang ici » (le coffre du gang est créé à ta position).
+- Perf : chaque joueur ne crée localement que les objets à moins de 150 m (aucune entité réseau), 3000 objets max.
+- Sécurité : tout est revalidé serveur (permission, nom de modèle, position, distance < 60 m), chaque action loggée.
+- Noms des objets : bibliothèque en ligne « GTA V prop list » (ex. gta-objects.xyz) ou favoris dans `gs_builder/shared/config.lua`.

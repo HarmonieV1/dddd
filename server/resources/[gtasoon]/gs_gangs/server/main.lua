@@ -359,6 +359,23 @@ end)
 
 AddEventHandler('onResourceStop', function(res) if res == GetCurrentResourceName() then Gangs.save() end end)
 
+--- Place la planque d'un gang (outil gs_builder). coords = vector3.
+exports('SetStash', function(gang, coords)
+    local g = Gangs.list[gang]
+    if not g or not coords then return false end
+    g.stash = vec3(coords.x, coords.y, coords.z)
+    Store.setStash(g.name, g.stash)
+    registerStash(g)
+    for s, m in pairs(Gangs.online) do if m.gang == g.name then syncMember(s) end end
+    return true
+end)
+exports('ListGangs', function()
+    local l = {}
+    for name, g in pairs(Gangs.list) do l[#l + 1] = { name = name, label = g.label } end
+    table.sort(l, function(a, b) return a.label < b.label end)
+    return l
+end)
+
 exports('GetGang', function(src) local m = Gangs.online[src] return m and m.gang, m and m.grade end)
 exports('GetTerritoryAt', function(coords) return territoryAt(coords) end)
 exports('GetTerritoryOwner', function(id) return Gangs.territories[id] and Gangs.territories[id].owner end)

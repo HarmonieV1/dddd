@@ -30,6 +30,10 @@ Chaque ressource passe la checklist d'audit (`docs/SECURITY.md`) avant install. 
 | Réseau social | **gs_social** (Néon, miroir Discord) | maison | ✅ fait |
 | Écran de chargement | **gs_loadscreen** | maison | ✅ fait |
 | Panel staff RP | **gs_admin** (complète le menu txAdmin) | maison | ✅ fait |
+| Téléphone | **gs_phone** | maison | ✅ fait |
+| HUD | **gs_hud** | maison | ✅ fait |
+| Gangs / territoires | **gs_gangs** | maison | ✅ fait |
+| Mapping en jeu | **gs_builder** | maison | ✅ fait |
 | Boutique Tebex | **gs_store** (désactivée tant que la conformité PLA n'est pas validée) | maison | ✅ fait |
 
 Reste en Phase 2 : companion web (Supabase + Netlify).
