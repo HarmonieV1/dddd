@@ -1,47 +1,107 @@
--- gs_bridge : API stable pour nos ressources gs_*. Aucune autre ressource ne doit appeler
--- qbx_core / ox_inventory directement. Si on change de framework, on ne réécrit que ce fichier.
--- Toutes les fonctions sont SERVEUR uniquement. Elles ne valident PAS l'intention du joueur
--- (distance, rate-limit) : c'est le rôle de gs_security côté appelant.
--- À vérifier contre docs.qbox.re / overextended.dev à l'installation (les API bougent selon les versions).
+-- gs_bridge (serveur) : API stable pour nos ressources gs_*.
+-- Règle : aucune autre ressource n'appelle qbx_core / ox_inventory / qbx_vehiclekeys directement.
+-- Changer de framework = réécrire ce fichier + client/main.lua, rien d'autre.
+-- Ne valide PAS l'intention du joueur (distance, rate-limit) : c'est le rôle de gs_security côté appelant.
+-- [API] = appel framework à vérifier contre docs.qbox.re / overextended.dev à l'installation.
+-- Les exports ne renvoient que des données simples (jamais l'objet Player : trop lourd à sérialiser).
 
 local QBX = exports.qbx_core
 local OX  = exports.ox_inventory
 
 local VALID_ACCOUNTS = { cash = true, bank = true }
+local MAX_AMOUNT = 100000000
 
 local function positiveInt(n)
-    return type(n) == 'number' and n > 0 and n == math.floor(n) and n < 2 ^ 31
+    return type(n) == 'number' and n > 0 and n == math.floor(n) and n <= MAX_AMOUNT
 end
 
----@return table|nil player objet Qbox ou nil si hors ligne / source invalide
+-- Joueurs ------------------------------------------------------------------------
+
 local function GetPlayer(src)
     if type(src) ~= 'number' or src <= 0 then return nil end
-    return QBX:GetPlayer(src)
+    return QBX:GetPlayer(src) -- [API]
 end
 
----@return string|nil citizenid
+local function IsLoaded(src) return GetPlayer(src) ~= nil end
+
+--- Liste des sources ayant un personnage chargé.
+local function GetPlayers()
+    local list = {}
+    for src in pairs(QBX:GetQBPlayers()) do list[#list + 1] = src end -- [API]
+    return list
+end
+
 local function GetIdentifier(src)
     local p = GetPlayer(src)
     return p and p.PlayerData.citizenid or nil
 end
 
----@return { name: string, grade: number, label: string }|nil
+local function GetSourceByIdentifier(cid)
+    if type(cid) ~= 'string' then return nil end
+    local p = QBX:GetPlayerByCitizenId(cid) -- [API]
+    return p and p.PlayerData.source or nil
+end
+
+local function GetName(src)
+    local p = GetPlayer(src)
+    if not p then return nil end
+    local ci = p.PlayerData.charinfo
+    return ('%s %s'):format(ci.firstname, ci.lastname)
+end
+
+-- Jobs ---------------------------------------------------------------------------
+
+---@return { name: string, label: string, grade: number, onduty: boolean }|nil
 local function GetJob(src)
     local p = GetPlayer(src)
     if not p then return nil end
     local job = p.PlayerData.job
-    return { name = job.name, grade = job.grade.level, label = job.label }
+    return { name = job.name, label = job.label, grade = job.grade.level, onduty = job.onduty == true }
 end
 
 local function IsOnDuty(src)
-    local p = GetPlayer(src)
-    return p ~= nil and p.PlayerData.job.onduty == true
+    local j = GetJob(src)
+    return j ~= nil and j.onduty
 end
 
---- Permission ACE (ex: 'command', 'group.admin'). Jamais de liste d'admins en dur.
-local function HasPermission(src, ace)
-    return type(ace) == 'string' and IsPlayerAceAllowed(src, ace)
+--- Change le job ACTIF (la liste des contrats est gérée par gs_jobs).
+local function SetJob(src, name, grade)
+    local p = GetPlayer(src)
+    if not p then return false end
+    local ok, res = pcall(p.Functions.SetJob, name, grade) -- [API]
+    if not ok then print(('[gs_bridge] SetJob %s/%s a échoué : %s'):format(name, grade, res)) end
+    return ok and res ~= false
 end
+
+local function SetDuty(src, onDuty)
+    local p = GetPlayer(src)
+    if not p then return false end
+    return (pcall(p.Functions.SetJobDuty, onDuty == true)) -- [API]
+end
+
+--- Retire le job de la liste multi-job native de Qbox (gs_jobs reste la source de vérité).
+local function ForgetJob(cid, name)
+    return (pcall(function() QBX:RemovePlayerFromJob(cid, name) end)) -- [API]
+end
+
+--- Déclare nos jobs au framework. Salaire à 0 : la paie est gérée par gs_jobs (pas de double paie).
+local function RegisterJobs(jobs)
+    local list = {}
+    for name, def in pairs(jobs) do
+        local grades = {}
+        for level, g in pairs(def.grades) do
+            grades[level] = { name = g.label, payment = 0, isboss = g.boss or nil, bankAuth = g.boss or nil }
+        end
+        list[name] = { label = def.label, type = def.type, defaultDuty = false, offDutyPay = false, grades = grades }
+    end
+    local ok, err = pcall(function() return QBX:CreateJobs(list) end) -- [API]
+    if not ok then
+        print(('[gs_bridge] CreateJobs a échoué (%s) : déclare les jobs dans qbx_core/shared/jobs.lua'):format(err))
+    end
+    return ok
+end
+
+-- Argent -------------------------------------------------------------------------
 
 local function GetMoney(src, account)
     local p = GetPlayer(src)
@@ -52,7 +112,7 @@ end
 local function AddMoney(src, account, amount, reason)
     local p = GetPlayer(src)
     if not p or not VALID_ACCOUNTS[account] or not positiveInt(amount) then return false end
-    return p.Functions.AddMoney(account, amount, reason or 'gs_bridge') == true
+    return p.Functions.AddMoney(account, amount, reason or 'gs_bridge') == true -- [API]
 end
 
 --- Retire seulement si le solde est suffisant (jamais de solde négatif).
@@ -60,16 +120,18 @@ local function RemoveMoney(src, account, amount, reason)
     local p = GetPlayer(src)
     if not p or not VALID_ACCOUNTS[account] or not positiveInt(amount) then return false end
     if GetMoney(src, account) < amount then return false end
-    return p.Functions.RemoveMoney(account, amount, reason or 'gs_bridge') == true
+    return p.Functions.RemoveMoney(account, amount, reason or 'gs_bridge') == true -- [API]
 end
 
+-- Inventaire ---------------------------------------------------------------------
+
 local function CanCarry(src, item, count)
-    if not GetPlayer(src) or type(item) ~= 'string' or not positiveInt(count) then return false end
+    if not IsLoaded(src) or type(item) ~= 'string' or not positiveInt(count) then return false end
     return OX:CanCarryItem(src, item, count) == true
 end
 
 local function GetItemCount(src, item)
-    if not GetPlayer(src) or type(item) ~= 'string' then return 0 end
+    if not IsLoaded(src) or type(item) ~= 'string' then return 0 end
     return OX:GetItemCount(src, item) or 0
 end
 
@@ -83,19 +145,52 @@ local function RemoveItem(src, item, count, metadata)
     return OX:RemoveItem(src, item, count, metadata) and true or false
 end
 
---- Notification via ox_lib. type: 'inform' | 'success' | 'error' | 'warning'
-local function Notify(src, description, ntype)
-    TriggerClientEvent('ox_lib:notify', src, {
-        description = tostring(description):sub(1, 200),
-        type = ntype or 'inform',
-    })
+--- Coffre ox_inventory. `groups` = { job = gradeMin } ; ox_inventory vérifie job + distance à l'ouverture.
+local function RegisterStash(id, label, slots, weight, groups, coords)
+    local ok, err = pcall(function() OX:RegisterStash(id, label, slots, weight, false, groups, coords) end) -- [API]
+    if not ok then print(('[gs_bridge] RegisterStash %s a échoué : %s'):format(id, err)) end
+    return ok
 end
 
-exports('GetPlayer', GetPlayer)
+-- Véhicules ----------------------------------------------------------------------
+
+local function GiveVehicleKeys(src, vehicle)
+    if GetResourceState('qbx_vehiclekeys') ~= 'started' then return false end
+    return (pcall(function() exports.qbx_vehiclekeys:GiveKeys(src, vehicle) end)) -- [API]
+end
+
+-- UI -----------------------------------------------------------------------------
+
+--- type: 'inform' | 'success' | 'error' | 'warning'
+local function Notify(src, description, ntype)
+    TriggerClientEvent('ox_lib:notify', src, { description = tostring(description):sub(1, 200), type = ntype or 'inform' })
+end
+
+-- Cycle de vie : événements neutres pour nos ressources (AddEventHandler = non déclenchables par un client)
+
+AddEventHandler('QBCore:Server:PlayerLoaded', function(player) -- [API]
+    TriggerEvent('gs_bridge:server:playerLoaded', player.PlayerData.source)
+end)
+
+AddEventHandler('QBCore:Server:OnPlayerUnload', function(src) -- [API]
+    TriggerEvent('gs_bridge:server:playerUnloaded', src)
+end)
+
+AddEventHandler('playerDropped', function()
+    TriggerEvent('gs_bridge:server:playerUnloaded', source)
+end)
+
+exports('IsLoaded', IsLoaded)
+exports('GetPlayers', GetPlayers)
 exports('GetIdentifier', GetIdentifier)
+exports('GetSourceByIdentifier', GetSourceByIdentifier)
+exports('GetName', GetName)
 exports('GetJob', GetJob)
 exports('IsOnDuty', IsOnDuty)
-exports('HasPermission', HasPermission)
+exports('SetJob', SetJob)
+exports('SetDuty', SetDuty)
+exports('ForgetJob', ForgetJob)
+exports('RegisterJobs', RegisterJobs)
 exports('GetMoney', GetMoney)
 exports('AddMoney', AddMoney)
 exports('RemoveMoney', RemoveMoney)
@@ -103,4 +198,6 @@ exports('CanCarry', CanCarry)
 exports('GetItemCount', GetItemCount)
 exports('AddItem', AddItem)
 exports('RemoveItem', RemoveItem)
+exports('RegisterStash', RegisterStash)
+exports('GiveVehicleKeys', GiveVehicleKeys)
 exports('Notify', Notify)

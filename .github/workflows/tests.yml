@@ -1,0 +1,9 @@
+name: tests
+on: [push, pull_request]
+jobs:
+  lua:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: sudo apt-get update && sudo apt-get install -y lua5.4
+      - run: ./tests/run.sh

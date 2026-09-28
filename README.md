@@ -5,7 +5,7 @@ Base Los Santos vanilla, finitions néon / sunset façon Vice City, touche FR.
 
 - Fondateur / décideur final : **Alpha**
 - Stack : FXServer + txAdmin, Qbox, ox_lib / ox_inventory / ox_target / oxmysql, pma-voice, NUI React + Vite, Supabase + Netlify, Make, Tebex
-- Docs : [`docs/AGENTS.md`](docs/AGENTS.md) · [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) · [`docs/SECURITY.md`](docs/SECURITY.md) · [`docs/ROADMAP.md`](docs/ROADMAP.md)
+- Docs : [`docs/AGENTS.md`](docs/AGENTS.md) · [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) · [`docs/SECURITY.md`](docs/SECURITY.md) · [`docs/ROADMAP.md`](docs/ROADMAP.md) · [`docs/JOBS.md`](docs/JOBS.md) · [`docs/V1_RESOURCES.md`](docs/V1_RESOURCES.md)
 
 ## Structure
 ```
@@ -13,6 +13,7 @@ server/                  # config FXServer (server.cfg.example) + resources
   resources/[gtasoon]/   # nos ressources (préfixe gs_)
 docs/                    # prompt maître, archi, sécu, roadmap
 scripts/                 # backup BDD, outils
+tests/                   # ./tests/run.sh : syntaxe + tests logique serveur
 ```
 
 ## Branches

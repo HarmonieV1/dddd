@@ -1,5 +1,5 @@
 ## Copier en server.cfg (ignoré par git). Les secrets vont dans secrets.cfg (ignoré aussi).
-exec secrets.cfg   # sv_licenseKey, mysql_connection_string, gs_staff_webhook
+exec secrets.cfg   # sv_licenseKey, mysql_connection_string, gs_staff_webhook, gs_webhook_jobs
 
 endpoint_add_tcp "0.0.0.0:30120"
 endpoint_add_udp "0.0.0.0:30120"
@@ -19,6 +19,7 @@ ensure ox_target
 ensure pma-voice
 ensure gs_security
 ensure gs_bridge
+ensure gs_jobs
 # ensure gs_*
 
 ## ACE : principe du moindre privilège
