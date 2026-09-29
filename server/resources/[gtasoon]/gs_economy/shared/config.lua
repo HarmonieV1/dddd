@@ -32,6 +32,7 @@ Config.Items = {
     gs_cigarettes = { label = 'Paquet de cigarettes', base = 15, min = 0.8, max = 1.6, volume = 40 },
     lighter   = { label = 'Briquet', base = 5, min = 0.8, max = 1.5, volume = 40 },
     phone     = { label = 'Téléphone', base = 450, min = 0.9, max = 1.3, volume = 10 },
+    scratch_ticket = { label = 'Ticket à gratter', base = 100, min = 1.0, max = 1.0, volume = 1000 }, -- prix fixe (gs_casino)
     -- Alcool (supérettes et cavistes)
     beer      = { label = 'Bière', base = 8, min = 0.7, max = 1.8, volume = 60 },
     wine      = { label = 'Vin', base = 25, min = 0.7, max = 1.6, volume = 30 },
@@ -43,6 +44,12 @@ Config.Items = {
     spraycan  = { label = 'Bombe de peinture', base = 40, min = 0.8, max = 1.6, volume = 20 },
     advancedrepairkit = { label = 'Kit de réparation avancé', base = 900, min = 0.8, max = 1.5, volume = 10 },
     cleaningkit = { label = 'Kit de nettoyage', base = 25, min = 0.8, max = 1.5, volume = 30 },
+    plant_pot  = { label = 'Pot de fleurs', base = 20, min = 0.8, max = 1.6, volume = 40 },
+    fertilizer = { label = 'Engrais', base = 45, min = 0.8, max = 1.8, volume = 30 },
+    fishingrod = { label = 'Canne à pêche', base = 120, min = 0.8, max = 1.5, volume = 15 },
+    pickaxe    = { label = 'Pioche', base = 180, min = 0.8, max = 1.5, volume = 15 },
+    axe        = { label = 'Hache', base = 160, min = 0.8, max = 1.5, volume = 15 },
+    huntingknife = { label = 'Couteau de chasse', base = 140, min = 0.8, max = 1.5, volume = 15 },
     scrapmetal = { label = 'Ferraille', base = 12, min = 0.3, max = 1.5, volume = 200, buy = false },
     copper     = { label = 'Cuivre', base = 30, min = 0.3, max = 1.6, volume = 120, buy = false },
 }
@@ -56,9 +63,9 @@ Config.EventMultipliers = {
 
 -- Catalogues (ordre = ordre d'affichage)
 local SUPERETTE = { 'water', 'sprunk', 'coffee', 'gs_energy', 'burger', 'sandwich', 'gs_chips', 'gs_donut',
-    'beer', 'wine', 'gs_cigarettes', 'lighter', 'bandage', 'phone' }
+    'beer', 'wine', 'gs_cigarettes', 'lighter', 'bandage', 'phone', 'scratch_ticket' }
 local CAVISTE = { 'beer', 'wine', 'vodka', 'whiskey', 'gs_cigarettes', 'lighter', 'water', 'sprunk', 'gs_chips' }
-local QUINCAILLERIE = { 'repairkit', 'advancedrepairkit', 'cleaningkit', 'jerry_can', 'spraycan', 'lockpick', 'radio', 'binoculars', 'phone' }
+local QUINCAILLERIE = { 'repairkit', 'advancedrepairkit', 'cleaningkit', 'jerry_can', 'spraycan', 'plant_pot', 'fertilizer', 'fishingrod', 'pickaxe', 'axe', 'huntingknife', 'lockpick', 'radio', 'binoculars', 'phone' }
 
 -- Commerces (achat). Coords = comptoirs des magasins du jeu (mêmes points qu'ox_inventory) ; blip = style de Config.Blips.
 -- clerk = vendeur PNJ derrière le comptoir (vec4, à caler en jeu : F11 → Copier mes coordonnées).

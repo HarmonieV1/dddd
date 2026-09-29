@@ -1,11 +1,12 @@
 import { useEffect, useRef, useState } from 'react'
 import { nui, isBrowser, DEMO } from './nui.js'
+import Vibe from './Vibe.jsx'
 
 const APPS = [
   { id: 'messages', label: 'Messages', icon: '💬', color: '#28e0ff' },
   { id: 'contacts', label: 'Contacts', icon: '👥', color: '#9b6bff' },
   { id: 'dialer', label: 'Appel', icon: '📞', color: '#39ff9a' },
-  { id: 'neon', label: 'Néon', icon: '#', color: '#ff2e88' },
+  { id: 'vibe', label: 'Vibe', icon: '✦', color: '#ff2e88' },
   { id: 'bank', label: 'Banque', icon: '💳', color: '#ffd23f' },
   { id: 'bills', label: 'Factures', icon: '🧾', color: '#ff8a3d' },
   { id: 'job', label: 'Emploi', icon: '💼', color: '#5ab0ff' },
@@ -77,7 +78,7 @@ export default function App() {
   if (!visible || !data) return null
 
   const openApp = async (id) => {
-    if (id === 'neon' || id === 'jobs') return nui('openApp', { app: id })
+    if (id === 'jobs') return nui('openApp', { app: id })
     if (id === 'bills') setBills(await nui('bills'))
     setForm({})
     setScreen(id)
@@ -147,6 +148,8 @@ export default function App() {
         </div>
       </div>
     )
+  } else if (screen === 'vibe') {
+    content = <Vibe onBack={home} />
   } else if (screen === 'messages') {
     content = (
       <>

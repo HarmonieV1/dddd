@@ -331,8 +331,8 @@ local function openMenu()
     lib.showContext('gs_progress')
 end
 
-RegisterCommand('progression', openMenu, false)
-RegisterCommand('menuprogression', openMenu, false) -- nom neuf : la touche F2 s'applique aussi à ceux qui avaient déjà F5
+-- Plus de commande « progression » : une ancienne touche F5 gardée par FiveM ouvrait ce menu en même temps que les emotes.
+RegisterCommand('menuprogression', openMenu, false) -- F2 (nom neuf : la touche par défaut s'applique à tout le monde)
 RegisterKeyMapping('menuprogression', 'Progression et quêtes', 'keyboard', Config.Key)
 
 -- Interaction avec les personnages : une zone ox_target fixe par personnage (marche même si le PNJ n'a pas

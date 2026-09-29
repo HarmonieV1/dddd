@@ -1,11 +1,15 @@
 -- [CONFIG] Portes vers les intérieurs du jeu déjà chargés par bob74_ipl (business bikers, club-house…).
 -- outside = porte dehors, inside = arrivée dedans (et porte de sortie). access : gang = '…' | job = '…' | public = true.
+-- Portes non publiques : marqueur visible SEULEMENT par les membres autorisés (les autres ne voient rien).
 -- Coords à caler en jeu (F11 → Copier mes coordonnées). Les intérieurs sont sous la map : ne pas les déplacer.
 Config = {}
 
 Config.Range = 2.0
 
 Config.Doors = {
+    -- Casino Diamond (intérieur bob74_ipl) : ouvert à tous. Roue de la fortune dedans (gs_casino).
+    { id = 'casino', label = 'Casino Diamond', access = { public = true }, blip = { sprite = 679, color = 5 },
+      outside = vec4(924.36, 46.92, 81.1, 58.0), inside = vec4(1089.73, 206.36, -48.99, 358.0) },
     { id = 'lost_club', label = 'Club-house du Lost MC', access = { gang = 'lostmc' },
       outside = vec4(981.3, -103.3, 74.85, 40.0), inside = vec4(1107.04, -3157.39, -37.52, 0.0) },
     { id = 'lab_families', label = 'Ferme de cannabis (Families)', access = { gang = 'families' }, lab = 'weed',

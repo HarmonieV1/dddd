@@ -1,4 +1,4 @@
--- gs_social (client) : ouvre l'app NUI Néon et relaie ses actions au serveur. 0 boucle.
+-- gs_social (client) : Vibe, réseau social. Vit dans le téléphone (gs_phone, app Vibe) ; /vibe ouvre la version grand écran.
 local open = false
 local muted = GetResourceKvpInt('gs_social_muted') == 1
 
@@ -18,8 +18,7 @@ local function toggle()
     SendNUIMessage({ action = 'open', data = data })
 end
 
-RegisterCommand('neon', toggle, false)
--- Pas de touche dédiée : Néon s'ouvre depuis le téléphone (app Néon) ou avec /neon.
+RegisterCommand('vibe', toggle, false) -- pas de touche dédiée : l'app Vibe du téléphone (F1) suffit
 
 RegisterNUICallback('close', function(_, cb) close() cb(true) end)
 
@@ -46,7 +45,7 @@ RegisterNetEvent('gs_social:client:new', function(post)
     if open then
         SendNUIMessage({ action = 'new', post = post })
     elseif not muted then
-        lib.notify({ title = 'Néon · @' .. post.handle, description = post.content:sub(1, 90), icon = 'hashtag', duration = 5000 })
+        lib.notify({ title = 'Vibe · @' .. post.handle, description = post.content:sub(1, 90), icon = 'hashtag', duration = 5000 })
     end
 end)
 

@@ -14,7 +14,7 @@ Config.XP = {
     heist = 20,           -- point de butin d'un braquage
 }
 
--- Titres affichés sur Néon et dans le panel staff (le plus haut atteint)
+-- Titres affichés sur Vibe et dans le panel staff (le plus haut atteint)
 Config.Titles = {
     { level = 1, label = 'Nouveau venu' }, { level = 3, label = 'Habitué' }, { level = 5, label = 'Débrouillard' },
     { level = 8, label = 'Figure locale' }, { level = 12, label = 'Pointure' }, { level = 18, label = 'Vétéran' },
@@ -34,7 +34,7 @@ Config.Badges = {
 
 -- Défis du jour : 3 tirés au sort par personnage et par jour (même tirage toute la journée)
 Config.Daily = {
-    count = 3, xp = 150, allXp = 300, allCash = 500,
+    count = 3, xp = 150, allXp = 300, allCash = 500, allItems = { { 'scratch_ticket', 1 } }, -- les 3 défis : + 1 ticket à gratter
     pool = {
         { id = 'job_mission', label = 'Termine une mission de métier', goal = 1 },
         { id = 'quest', label = 'Termine une quête', goal = 1 },
@@ -45,6 +45,7 @@ Config.Daily = {
         { id = 'playtime', label = 'Passe 30 minutes en ville', goal = 30 },
         { id = 'drug_sale', label = 'Réussis 3 ventes discrètes', goal = 3 },
         { id = 'heist', label = 'Récupère un butin de braquage', goal = 1 },
+        { id = 'harvest', label = 'Pêche, mine, coupe du bois ou chasse (5 fois)', goal = 5 },
     },
 }
 
@@ -53,7 +54,7 @@ Config.Streak = { xpPerDay = 50, maxDays = 7, weekCash = 1000 }
 
 Config.TalkRadius = 3.0
 Config.Tolerance = 3.0
-Config.Key = 'F2'         -- menu Progression (/progression) ; F5 = emotes
+Config.Key = 'F2'         -- menu Progression (/menuprogression) ; F5 = emotes (scully)
 
 -- Paquets cachés (clin d'œil aux premiers GTA) : invisibles sur la carte, un petit colis au sol quand on passe à côté.
 Config.Packages = {

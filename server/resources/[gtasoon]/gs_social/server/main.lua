@@ -1,4 +1,4 @@
--- gs_social (serveur) : Néon. Le fil vit en mémoire (lecture instantanée), la BDD fait foi au démarrage.
+-- gs_social (serveur) : Vibe (ex-Néon). Le fil vit en mémoire (lecture instantanée), la BDD fait foi au démarrage.
 -- Les clients ne reçoivent jamais de citizenid : seulement pseudo, contenu, likes, date.
 local Security = exports.gs_security
 local Bridge   = exports.gs_bridge
@@ -96,7 +96,7 @@ lib.callback.register('gs_social:post', function(src, content)
         if not notified[mention] then
             notified[mention] = true
             for s, h in pairs(Neon.handles) do
-                if h == mention and s ~= src then Bridge:Notify(s, ('@%s t\'a mentionné sur Néon'):format(handle), 'inform') end
+                if h == mention and s ~= src then Bridge:Notify(s, ('@%s t\'a mentionné sur Vibe'):format(handle), 'inform') end
             end
         end
     end
@@ -127,7 +127,7 @@ lib.callback.register('gs_social:delete', function(src, id)
     Store.deletePost(post.id)
     TriggerClientEvent('gs_social:client:removed', -1, post.id)
     if post.cid ~= cid then
-        Security:LogStaff(('[Néon] post #%d de @%s supprimé par %s : %s'):format(post.id, post.handle, GetPlayerName(src) or '?', post.content))
+        Security:LogStaff(('[Vibe] post #%d de @%s supprimé par %s : %s'):format(post.id, post.handle, GetPlayerName(src) or '?', post.content))
     end
     return true
 end)
@@ -136,7 +136,7 @@ lib.callback.register('gs_social:report', function(src, id)
     if not guard(src, 'report', 3, 60000) then return false end
     local post = findPost(tonumber(id))
     if not post then return false end
-    Security:LogStaff(('[Néon] SIGNALEMENT par %s : post #%d de @%s (%s) : %s'):format(
+    Security:LogStaff(('[Vibe] SIGNALEMENT par %s : post #%d de @%s (%s) : %s'):format(
         GetPlayerName(src) or '?', post.id, post.handle, post.cid, post.content))
     return true
 end)

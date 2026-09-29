@@ -62,3 +62,28 @@ Config.Sell = {
     saturationWindow = 3600,       -- ventes comptées sur la dernière heure
     influence = 1,                 -- influence de ton gang par vente
 }
+
+-- Plantations libres : une graine + un pot, planter dehors où on veut (pas en intérieur, pas sur la route).
+-- Le plant pousse en temps réel (3 stades visibles de tous), il faut l'arroser (bouteille d'eau), l'engrais accélère.
+-- Tout le monde peut récolter un plant mûr (vol possible) ; le propriétaire ou la police peuvent le détruire.
+Config.Plants = {
+    seed = 'weed_seed', pot = 'plant_pot', fertilizer = 'fertilizer', water = 'water',
+    maxPerPlayer = 6,
+    minSpacing = 1.5,             -- entre deux plants
+    growMinutes = 45,             -- de la graine à la récolte (arrosé, sans engrais)
+    fertilizerBoost = 1.5,        -- ×1,5 plus vite avec engrais
+    waterMinutes = 25,            -- un arrosage tient 25 min
+    dryDeathMinutes = 30,         -- sans eau pendant 30 min : le plant meurt
+    harvest = { item = 'weed_leaf', amount = { 8, 12 }, seeds = { 1, 2 } },
+    policeReward = 150,           -- prime au policier en service qui détruit un plant
+    reach = 2.0,
+    wildSeedChance = 0.3,         -- récolte au champ sauvage de Grapeseed : 30 % de chance de trouver une graine
+    -- props du jeu (DLC bikers), un par stade ; offset z à caler en jeu si le plant flotte / s'enfonce
+    props = {
+        { model = 'bkr_prop_weed_01_small_01c', z = 0.0 },
+        { model = 'bkr_prop_weed_med_01a', z = 0.0 },
+        { model = 'bkr_prop_weed_lrg_01a', z = 0.0 },
+    },
+    -- vendeur de graines (PNJ louche, marqueur caché) ; pots et engrais : quincailleries
+    seedShop = { coords = vec4(2197.3, 5602.6, 53.7, 340.0), model = 'a_m_m_hillbilly_01', price = 150, label = 'Vendeur de graines' },
+}

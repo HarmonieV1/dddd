@@ -52,6 +52,9 @@ lib.callback.register('gs_drugs:finish', function(src)
     if p.stage == 'harvest' then
         local n = math.random(step.amount[1], step.amount[2])
         if not Bridge:AddItem(src, step.item, n) then return false, 'Tu ne peux plus rien porter.' end
+        if p.drug == 'weed' and Config.Plants and math.random() < Config.Plants.wildSeedChance and Bridge:AddItem(src, Config.Plants.seed, 1) then
+            return true, ('+%d %s, et une graine !'):format(n, step.item)
+        end
         return true, ('+%d %s'):format(n, step.item)
     end
     local out = step.outputCount * (p.lab and Config.LabBonus or 1)

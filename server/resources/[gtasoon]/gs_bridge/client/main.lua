@@ -107,7 +107,9 @@ exports('RestoreAppearance', function()
     CreateThread(function()
         local female = playerData.charinfo and tonumber(playerData.charinfo.gender) == 1
         local hash = GetHashKey(female and 'mp_f_freemode_01' or 'mp_m_freemode_01')
-        lib.requestModel(hash, 5000)
+        RequestModel(hash) -- natif : gs_bridge ne charge pas ox_lib (lib = nil ici, c'était le bug du retour humain)
+        local deadline = GetGameTimer() + 5000
+        while not HasModelLoaded(hash) and GetGameTimer() < deadline do Wait(0) end
         SetPlayerModel(PlayerId(), hash) -- d'abord un corps humain (depuis un animal, illenium refuse sinon)
         SetPedDefaultComponentVariation(PlayerPedId())
         SetModelAsNoLongerNeeded(hash)

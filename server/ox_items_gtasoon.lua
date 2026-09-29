@@ -28,3 +28,21 @@
 ['whiskey'] = { label = 'Whisky', weight = 700, stack = true, close = true, client = { status = { thirst = 50000 }, anim = 'drinking', usetime = 3500, export = 'gs_economy.drink' } }, -- remplace
 ['gs_cigarettes'] = { label = 'Paquet de cigarettes', weight = 50, stack = false, close = true, consume = 0.1, description = '10 cigarettes. Il faut un briquet.', client = { image = 'cigarettes_redwood.png', usetime = 1500, export = 'gs_economy.smoke' } }, -- remplace
 ['spraycan'] = { label = 'Bombe de peinture', weight = 300, stack = true, close = true, consume = 0.25, description = 'Pour taguer au nom de ton gang (4 tags par bombe).', client = { image = 'WEAPON_HAZARDCAN.png', export = 'gs_gangs.spray' } }, -- remplace
+['scratch_ticket'] = { label = 'Ticket à gratter', weight = 10, stack = true, close = true, description = 'Gagne jusqu\'à 10 000 $. 10 tickets max par jour.', client = { image = 'printerdocument.png', export = 'gs_casino.scratch' } }, -- remplace
+['weed_seed'] = { label = 'Graine de cannabis', weight = 5, stack = true, close = true, description = 'À planter dehors avec un pot de fleurs. Arroser, attendre, récolter.', client = { image = 'weed_seed.png', export = 'gs_drugs.plantSeed' } }, -- remplace
+['plant_pot'] = { label = 'Pot de fleurs', weight = 800, stack = true, description = 'Pour planter une graine.', client = { image = 'plant_pot.png' } }, -- remplace
+['fertilizer'] = { label = 'Engrais', weight = 500, stack = true, description = 'Le plant pousse 1,5× plus vite.', client = { image = 'fertilizer.png' } }, -- remplace
+['fishingrod'] = { label = 'Canne à pêche', weight = 1500, stack = false, description = 'Pour pêcher sur les pontons et les rives.', client = { image = 'fishingrod.png' } }, -- remplace
+['pickaxe'] = { label = 'Pioche', weight = 2500, stack = false, description = 'Pour miner à la carrière.', client = { image = 'pickaxe.png' } }, -- remplace
+['axe'] = { label = 'Hache', weight = 2500, stack = false, description = 'Pour couper du bois à Paleto.', client = { image = 'axe.png' } }, -- remplace
+['huntingknife'] = { label = 'Couteau de chasse', weight = 400, stack = false, description = 'Pour dépecer le gibier.', client = { image = 'WEAPON_KNIFE.png' } }, -- remplace
+['fish'] = { label = 'Poisson', weight = 600, stack = true, client = { image = 'fish.png' } }, -- remplace
+['tuna'] = { label = 'Thon', weight = 3000, stack = true, client = { image = 'fish.png' } }, -- remplace
+['stone'] = { label = 'Pierre', weight = 1000, stack = true, client = { image = 'stone.png' } }, -- remplace
+['iron_ore'] = { label = 'Minerai de fer', weight = 1000, stack = true, client = { image = 'iron.png' } }, -- remplace
+['gold_ore'] = { label = 'Pépite d\'or', weight = 200, stack = true, client = { image = 'goldbar.png' } }, -- remplace
+['wood_log'] = { label = 'Bûche', weight = 2000, stack = true, client = { image = 'wood.png' } }, -- remplace
+['tomato'] = { label = 'Tomate', weight = 150, stack = true, client = { status = { hunger = 50000 }, anim = 'eating', usetime = 2000, image = 'tomato.png' } }, -- remplace
+['potato'] = { label = 'Pomme de terre', weight = 200, stack = true, client = { image = 'potato.png' } }, -- remplace
+['meat'] = { label = 'Viande de gibier', weight = 1000, stack = true, client = { image = 'meat.png' } }, -- remplace
+['leather'] = { label = 'Cuir', weight = 800, stack = true, client = { image = 'leather.png' } }, -- remplace

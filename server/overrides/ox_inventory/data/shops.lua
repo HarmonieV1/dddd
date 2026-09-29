@@ -1,5 +1,6 @@
 -- GTA SOON : copie de ox_inventory/data/shops.lua SANS General / Liquor / YouTool / PoliceArmoury / Medicine
 -- (commerces = gs_economy ; équipement de service = armureries gs_jobs, gratuites et limitées).
+-- Ammu-Nation : un armurier PNJ derrière chaque comptoir (on lui parle avec ox_target).
 -- Posé automatiquement par INSTALLER.bat / METTRE-A-JOUR.bat.
 return {
 
@@ -24,16 +25,16 @@ return {
 			vec3(2567.69, 294.38, 108.73),
 			vec3(-1117.58, 2698.61, 18.55),
 			vec3(842.44, -1033.42, 28.19)
-		}, targets = {
-			{ loc = vec3(-660.92, -934.10, 21.94), length = 0.6, width = 0.5, heading = 180.0, minZ = 21.8, maxZ = 22.2, distance = 2.0 },
-			{ loc = vec3(808.86, -2158.50, 29.73), length = 0.6, width = 0.5, heading = 360.0, minZ = 29.6, maxZ = 30.0, distance = 2.0 },
-			{ loc = vec3(1693.57, 3761.60, 34.82), length = 0.6, width = 0.5, heading = 227.39, minZ = 34.7, maxZ = 35.1, distance = 2.0 },
-			{ loc = vec3(-330.29, 6085.54, 31.57), length = 0.6, width = 0.5, heading = 225.0, minZ = 31.4, maxZ = 31.8, distance = 2.0 },
-			{ loc = vec3(252.85, -51.62, 70.0), length = 0.6, width = 0.5, heading = 70.0, minZ = 69.9, maxZ = 70.3, distance = 2.0 },
-			{ loc = vec3(23.68, -1106.46, 29.91), length = 0.6, width = 0.5, heading = 160.0, minZ = 29.8, maxZ = 30.2, distance = 2.0 },
-			{ loc = vec3(2566.59, 293.13, 108.85), length = 0.6, width = 0.5, heading = 360.0, minZ = 108.7, maxZ = 109.1, distance = 2.0 },
-			{ loc = vec3(-1117.61, 2700.26, 18.67), length = 0.6, width = 0.5, heading = 221.82, minZ = 18.5, maxZ = 18.9, distance = 2.0 },
-			{ loc = vec3(841.05, -1034.76, 28.31), length = 0.6, width = 0.5, heading = 360.0, minZ = 28.2, maxZ = 28.6, distance = 2.0 }
+		}, targets = { -- vendeur PNJ derrière chaque comptoir (ox_inventory : ped + scenario ; z = sol)
+			{ ped = `s_m_y_ammucity_01`, scenario = 'WORLD_HUMAN_COP_IDLES', loc = vec3(-661.96, -933.53, 20.83), heading = 177.05, distance = 2.5 },
+			{ ped = `s_m_y_ammucity_01`, scenario = 'WORLD_HUMAN_COP_IDLES', loc = vec3(809.68, -2159.13, 28.62), heading = 1.43, distance = 2.5 },
+			{ ped = `s_m_y_ammucity_01`, scenario = 'WORLD_HUMAN_COP_IDLES', loc = vec3(1692.67, 3761.38, 33.71), heading = 227.65, distance = 2.5 },
+			{ ped = `s_m_y_ammucity_01`, scenario = 'WORLD_HUMAN_COP_IDLES', loc = vec3(-331.23, 6085.37, 30.45), heading = 228.02, distance = 2.5 },
+			{ ped = `s_m_y_ammucity_01`, scenario = 'WORLD_HUMAN_COP_IDLES', loc = vec3(253.63, -51.02, 68.94), heading = 72.91, distance = 2.5 },
+			{ ped = `s_m_y_ammucity_01`, scenario = 'WORLD_HUMAN_COP_IDLES', loc = vec3(23.00, -1105.67, 28.80), heading = 162.91, distance = 2.5 },
+			{ ped = `s_m_y_ammucity_01`, scenario = 'WORLD_HUMAN_COP_IDLES', loc = vec3(2567.48, 292.59, 107.73), heading = 349.68, distance = 2.5 },
+			{ ped = `s_m_y_ammucity_01`, scenario = 'WORLD_HUMAN_COP_IDLES', loc = vec3(-1118.59, 2700.05, 17.55), heading = 221.89, distance = 2.5 },
+			{ ped = `s_m_y_ammucity_01`, scenario = 'WORLD_HUMAN_COP_IDLES', loc = vec3(841.92, -1035.32, 27.19), heading = 1.56, distance = 2.5 }
 		}
 	},
 

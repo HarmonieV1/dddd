@@ -1,4 +1,4 @@
--- Persistance Néon.
+-- Persistance Vibe (ex-Néon).
 Store = {}
 
 function Store.init()

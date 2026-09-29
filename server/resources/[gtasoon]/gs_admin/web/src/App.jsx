@@ -83,7 +83,7 @@ function Dossier({ d, level, maxJail, onAction }) {
         <div><span>Contrats</span>{Object.entries(d.contracts || {}).map(([j, g]) => `${j} (${g})`).join(', ') || 'aucun'}</div>
         <div><span>Recherche</span>{d.heat > 0 ? `${'★'.repeat(Math.ceil(d.heat / 20))} (${d.heat})` : 'aucune'}</div>
         <div><span>Duo</span>{d.duo ? `${d.duo} · niv. ${d.duoLevel}` : '—'}</div>
-        <div><span>Néon</span>{d.handle ? `@${d.handle}` : '—'}</div>
+        <div><span>Vibe</span>{d.handle ? `@${d.handle}` : '—'}</div>
         <div><span>Gang</span>{d.gang || '—'}</div>
         {d.progress && <div><span>Progression</span>{`Niv. ${d.progress.level} · ${d.progress.title} · série ${d.progress.streak} j`}</div>}
         {d.progress && <div><span>Badges</span>{d.progress.badges.length ? d.progress.badges.join(', ') : 'aucun'}</div>}

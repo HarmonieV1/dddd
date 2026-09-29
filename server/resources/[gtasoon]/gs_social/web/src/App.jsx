@@ -86,7 +86,7 @@ export default function App() {
   return (
     <div className="phone">
       <header>
-        <div className="logo">NÉON</div>
+        <div className="logo">VIBE</div>
         <div className="actions">
           <button className="ghost" title={data.muted ? 'Notifications coupées' : 'Notifications actives'} onClick={toggleMute}>
             {data.muted ? '🔕' : '🔔'}
@@ -97,7 +97,7 @@ export default function App() {
 
       {!data.handle ? (
         <form className="onboarding" onSubmit={submitHandle}>
-          <h2>Bienvenue sur Néon</h2>
+          <h2>Bienvenue sur Vibe</h2>
           <p>Choisis ton pseudo. Il est définitif pour ce personnage.</p>
           <div className="handle-input">
             <span>@</span>

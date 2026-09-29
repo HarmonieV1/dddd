@@ -34,6 +34,14 @@ lib.callback.register('gs_interiors:use', function(src, id, side)
     return true, side == 'outside' and d.label or nil
 end)
 
+--- Portes que le joueur a le droit d'ouvrir (le client n'affiche que celles-là).
+lib.callback.register('gs_interiors:allowed', function(src)
+    if not Security:RateLimit(src, 'gs_interiors:allowed', 6, 10000) then return {} end
+    local out = {}
+    for _, d in ipairs(Config.Doors) do if Interiors.allowed(src, d) then out[#out + 1] = d.id end end
+    return out
+end)
+
 --- Le joueur est-il dans le labo `lab` de son gang ? (utilisé par gs_drugs pour le bonus de production)
 exports('InLab', function(src, lab, radius)
     for _, d in ipairs(Config.Doors) do

@@ -114,6 +114,7 @@ function Progress.track(src, activity, amount)
     if allDone and not p.daily._all then -- bonus une seule fois par jour
         p.daily._all = 1
         Bridge:AddMoney(src, 'bank', Config.Daily.allCash, 'défis du jour')
+        for _, it in ipairs(Config.Daily.allItems or {}) do Bridge:AddItem(src, it[1], it[2]) end
         Progress.addXP(src, Config.Daily.allXp, 'Tous les défis du jour')
     end
     Store.save(p.cid, p)
@@ -239,7 +240,7 @@ lib.callback.register('gs_quests:start', function(src, questId)
     if not guard(src, 'start', 3, 10000) then return false, 'Doucement.' end
     local q, p = QuestById[questId], Progress.players[src]
     if not q or not p then return false, 'Quête inconnue.' end
-    if Progress.active[src] then return false, 'Termine ou abandonne ta quête en cours (/progression).' end
+    if Progress.active[src] then return false, 'Termine ou abandonne ta quête en cours (F2).' end
     local ok, why = available(src, q)
     if not ok then return false, why end
     if q.night and not isNight() then return false, 'Reviens ce soir (entre 20 h et 5 h).' end

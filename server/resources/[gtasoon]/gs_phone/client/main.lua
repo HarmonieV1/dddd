@@ -108,8 +108,25 @@ RegisterNUICallback('duty', function(_, cb) TriggerServerEvent('gs_jobs:server:t
 RegisterNUICallback('openApp', function(b, cb)
     cb(true)
     close()
-    if b.app == 'neon' then ExecuteCommand('neon') elseif b.app == 'jobs' then ExecuteCommand('job') end
+    if b.app == 'jobs' then ExecuteCommand('job') end
 end)
+
+-- App Vibe : relais vers gs_social (mêmes callbacks serveur, mêmes règles que l'ancienne app Néon)
+local VIBE = { setHandle = { 'gs_social:setHandle', 'handle' }, post = { 'gs_social:post', 'content' }, like = { 'gs_social:like', 'id' },
+    delete = { 'gs_social:delete', 'id' }, report = { 'gs_social:report', 'id' } }
+RegisterNUICallback('vibe', function(b, cb)
+    if GetResourceState('gs_social') ~= 'started' then return cb(b.op == 'open' and false or { ok = false, message = 'Vibe est hors ligne.' }) end
+    if b.op == 'open' then return cb(lib.callback.await('gs_social:open', false) or false) end
+    local route = VIBE[b.op]
+    if not route then return cb({ ok = false }) end
+    local ok, msg = lib.callback.await(route[1], false, b[route[2]])
+    cb({ ok = ok == true, message = msg })
+end)
+
+-- Temps réel : le fil Vibe se met à jour si le téléphone est ouvert
+RegisterNetEvent('gs_social:client:new', function(post) if open then SendNUIMessage({ action = 'vibeNew', post = post }) end end)
+RegisterNetEvent('gs_social:client:likes', function(id, likes) if open then SendNUIMessage({ action = 'vibeLikes', id = id, likes = likes }) end end)
+RegisterNetEvent('gs_social:client:removed', function(id) if open then SendNUIMessage({ action = 'vibeRemoved', id = id }) end end)
 
 RegisterNUICallback('silent', function(b, cb)
     silent = b.silent == true

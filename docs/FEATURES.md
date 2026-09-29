@@ -33,7 +33,7 @@ Un crime n'existe pour la police **que s'il est signalé**.
   chaleur transmise au complice proche 50 % → 15 %.
 - Nom de duo personnalisable (nettoyé).
 
-## gs_social — Néon, réseau social in-game (F3 / `/neon`)
+## gs_social — Vibe, réseau social in-game (app du téléphone F1, ou `/vibe`)
 - Pseudo @unique et définitif par personnage, fil en temps réel, likes, mentions (@pseudo → notification).
 - Anti-abus : cooldown 30 s par post, 280 caractères, balises retirées, liens et invitations Discord remplacés par `[lien]`.
 - Modération : suppression par l'auteur ou le staff (ACE `gs.social.moderate`), bouton « Signaler » → webhook staff.
@@ -67,7 +67,7 @@ Soleil couchant rétro, titre néon, astuces tournantes (FR), touches utiles, vr
   -- ['black_money'] existe déjà dans ox_inventory (argent sale)
   ```
 
-## gs_quests — progression et quêtes de départ (V2, F5 / `/progression`)
+## gs_quests — progression et quêtes de départ (V2, F2 / `/menuprogression`)
 - **XP et niveaux** (1 → 50) : quêtes, missions de métier, braquages, ventes de drogue. Chaque niveau rapporte un bonus en banque.
   Les annonces plein écran (« NIVEAU 4 », « MISSION RÉUSSIE ») sont faites façon anciens GTA.
 - **Personnages récurrents** repérables au **losange vert** au-dessus de la tête (façon Sims) : Max le Guide (mairie),
@@ -131,6 +131,24 @@ réparation de fortune (moteur 75 %), réparation avancée (complète), nettoyag
 - **Garage du gang** au QG : véhicules aux couleurs du gang, un par membre.
 - **Receleur** (grade ≥ 1, la nuit, lieu qui change toutes les heures) : vente en gros (10 à 50 pochons), prix ×1,35, argent sale.
 - **Labos** (gs_interiors) : intérieurs cachés du jeu derrière une porte réservée au gang ; préparation ×2.
+
+## V3.2 — finitions (casino, plantations, récolte, logement, Vibe)
+- **gs_casino** : porte publique du **Casino Diamond** (gs_interiors, blip), **roue de la fortune** au casino (1 tour gratuit / jour / perso :
+  argent, XP, tickets, kits ; tirage serveur, comptée avant paiement), **tickets à gratter** (supérettes 100 $, +1 offert quand les 3 défis
+  du jour sont faits ; 10 / jour max, gain moyen ≈ 70 $ : pas une machine à cash).
+- **Plantations de cannabis (gs_drugs)** : graine (vendeur louche près de Grapeseed, ou trouvée au champ / sur les plants) + pot (quincaillerie)
+  → on plante **dehors, où on veut**. 3 stades visibles de tous, arrosage (bouteille d'eau), engrais (×1,5), meurt sans eau.
+  Mûr : **n'importe qui peut récolter** (vol signalé à la police) ; le propriétaire arrache, la **police saisit** (+150 $).
+  Ensuite : transformation (Sandy ou labo de gang ×2) et vente, comme avant. 6 plants max / perso, survivent au redémarrage.
+- **Labos / club-house** : le marqueur n'apparaît plus qu'aux membres autorisés (fini la « ferme de cannabis » au milieu de Grove).
+- **gs_harvest** (libre, sans embauche) : **pêche** (pontons), **mine** (carrière), **bûcheron** (Paleto), **ferme** (Grapeseed),
+  **chasse** (animaux créés par le serveur, dépeçage au couteau). Outils en quincaillerie, casse 3 %, acheteurs dédiés, défi du jour « récolte ».
+- **Nouveaux métiers gs_jobs** : **routier** (entrepôts, au km), **chauffeur de bus** (5 arrêts), **agent immobilier Dynasty 8** (whitelist).
+- **Logement : qbx_properties** (recipe Qbox, audité) : choix d'un **appartement de départ** au 1er perso, **achat / location** de biens créés
+  par les agents immobiliers (`/createproperty` : prix, loyer, intérieur, garage), coffre, garde-robe, déco.
+- **Vendeurs PNJ** : armurier derrière chaque comptoir Ammu-Nation, vendeur aux boutiques de vêtements / coiffeur / tatoueur (illenium, ox_target).
+- **Vibe** (ex-Néon) : le réseau social est une **app du téléphone** (F1), en temps réel. `/vibe` garde la version grand écran.
+- **Correctifs** : retour humain après un animal (menu staff), F5 n'ouvre plus la progression (ancienne commande supprimée).
 
 ## Liens entre features
 `gs_weather` → visibilité de `gs_wanted` + prix de `gs_economy` ;

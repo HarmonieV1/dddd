@@ -186,6 +186,60 @@ Jobs = {
         },
     },
 
+    -- Agent immobilier : crée les biens à vendre / louer avec /createproperty (qbx_properties, nom de job imposé : realestate)
+    realestate = {
+        label = 'Agence immobilière Dynasty 8', type = 'realestate', whitelisted = true, society = true, salaryFrom = 'society',
+        dutyAnywhere = true, -- le bureau Dynasty 8 du jeu n'a pas d'intérieur : service partout, points devant la vitrine
+        platePrefix = 'DYN8',
+        blip = { sprite = 374, color = 2, label = 'Dynasty 8 (immobilier)' },
+        billing = { label = 'Frais d\'agence', max = 100000 },
+        grades = {
+            [0] = { label = 'Agent stagiaire', salary = 200 },
+            [1] = { label = 'Agent immobilier', salary = 300 },
+            [2] = { label = 'Directeur d\'agence', salary = 450, boss = true },
+        },
+        points = { -- [À CALER] trottoir devant l'agence Dynasty 8 (Rockford Hills)
+            duty = { vec3(-716.4, 261.2, 84.1) },
+            boss = { vec3(-714.0, 264.5, 84.1) },
+            stash = { { label = 'Dossiers', coords = vec3(-712.5, 262.0, 84.1), slots = 20, weight = 20000, minGrade = 0 } },
+            garage = { { coords = vec3(-706.0, 273.0, 83.1), spawn = vec4(-700.0, 277.0, 83.1, 300.0) } },
+        },
+        vehicles = { { model = 'tailgater', label = 'Voiture de l\'agence', minGrade = 0 } },
+    },
+
+    trucker = {
+        label = 'Routier', whitelisted = false, dutyAnywhere = true, salaryFrom = 'state',
+        description = 'Des kilomètres de bitume et une cabine qui sent le café.',
+        icon = 'truck', platePrefix = 'TRUK',
+        blip = { sprite = 477, color = 21, label = 'Dépôt poids lourds' },
+        grades = { [0] = { label = 'Chauffeur routier', salary = 0 } },
+        points = {
+            garage = { { coords = vec3(1191.0, -3253.0, 7.1), spawn = vec4(1180.0, -3240.0, 6.0, 90.0) } },
+        },
+        vehicles = { { model = 'pounder', label = 'Porteur', minGrade = 0 } },
+        mission = {
+            pool = 'depots', stops = 2, stepDuration = 6000,
+            stepLabels = { 'Charger la marchandise', 'Décharger la marchandise' },
+            payPerStop = { 150, 250 }, perKm = 180, completionBonus = 150,
+        },
+    },
+
+    bus = {
+        label = 'Chauffeur de bus', whitelisted = false, dutyAnywhere = true, salaryFrom = 'state',
+        description = 'Terminus, tout le monde descend. Oui, toi aussi.',
+        icon = 'bus', platePrefix = 'BUS',
+        blip = { sprite = 513, color = 38, label = 'Dépôt de bus' },
+        grades = { [0] = { label = 'Chauffeur', salary = 0 } },
+        points = {
+            garage = { { coords = vec3(453.2, -602.3, 28.6), spawn = vec4(462.0, -605.0, 28.5, 214.0) } },
+        },
+        vehicles = { { model = 'bus', label = 'Bus', minGrade = 0 } },
+        mission = {
+            pool = 'busstops', stops = 5, stepDuration = 5000, stepLabel = 'Arrêt : montée / descente des passagers',
+            payPerStop = { 70, 110 }, perKm = 40, completionBonus = 120,
+        },
+    },
+
     taxi = {
         label = 'Taxi', whitelisted = false, dutyAnywhere = true, salaryFrom = 'state',
         description = 'Le client est roi, même quand il salit la banquette.',
