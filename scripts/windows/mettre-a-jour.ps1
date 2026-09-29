@@ -64,11 +64,10 @@ Set-QboxOverrides $Res $Repo { param($m, $c) Say $m $c }
 
 # Lanceur : on garde le chemin de FXServer.exe de l'installation
 $batPath = Join-Path $Data 'DEMARRER.bat'
-$fx = if (Test-Path -LiteralPath $batPath) { [regex]::Match((Get-Content -LiteralPath $batPath -Raw), '"([^"]*FXServer\.exe)"').Groups[1].Value } else { '' }
-if (-not $fx) { $fx = @('C:\FXServer\server\FXServer.exe', 'C:\FXServer\FXServer.exe') | Where-Object { Test-Path $_ } | Select-Object -First 1 }
-if (-not $fx) { Fail 'FXServer.exe introuvable (DEMARRER.bat illisible).' }
-$bat = "@echo off`r`ntitle Serveur GTA SOON`r`ncd /d `"%~dp0`"`r`n`"$fx`" +set onesync on +exec server.cfg`r`npause`r`n"
-[IO.File]::WriteAllText($batPath, $bat, (New-Object Text.ASCIIEncoding))
+$fx = Find-FxServer $Data
+if (-not $fx) { Fail 'FXServer.exe introuvable : extrais server.7z (artefacts FiveM) dans C:\FXServer\server puis relance.' }
+Say "  FXServer : $fx" 'Green'
+Write-Launcher $Data $fx
 
 # 4. Relance
 Say "[4/4] Relance du serveur" 'Cyan'

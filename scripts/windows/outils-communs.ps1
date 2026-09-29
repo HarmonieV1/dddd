@@ -159,3 +159,47 @@ function Merge-FrenchLocales($Res, $Repo, [scriptblock]$Say) {
         } catch { & $Say "  $($f.BaseName) : traduction non fusionnée ($($_.Exception.Message))" 'Yellow' }
     }
 }
+
+#--- Trouve FXServer.exe : chemin de l'ancien DEMARRER.bat s'il existe encore, emplacements habituels, recherche dans
+#    C:\FXServer, C:\GTASOON, Téléchargements, Bureau ; sinon demande le dossier. Retourne le chemin complet ou $null.
+function Find-FxServer($Data) {
+    $bat = Join-Path $Data 'DEMARRER.bat'
+    $cands = @()
+    if (Test-Path -LiteralPath $bat) {
+        $old = [regex]::Match([IO.File]::ReadAllText($bat, [Text.Encoding]::Default), '"([^"]*FXServer\.exe)"').Groups[1].Value
+        if ($old) { $cands += $old }
+    }
+    $cands += 'C:\FXServer\server\FXServer.exe', 'C:\FXServer\FXServer.exe', 'C:\GTASOON\FXServer\FXServer.exe', 'C:\GTASOON\server\FXServer.exe'
+    foreach ($c in $cands) { if ($c -and (Test-Path -LiteralPath $c)) { return (Resolve-Path -LiteralPath $c).Path } }
+    $roots = @('C:\FXServer', 'C:\GTASOON', (Join-Path $env:USERPROFILE 'Downloads'), (Join-Path $env:USERPROFILE 'Desktop'), (Join-Path $env:USERPROFILE 'Documents'))
+    foreach ($r in $roots) {
+        if (-not (Test-Path -LiteralPath $r)) { continue }
+        $f = Get-ChildItem -LiteralPath $r -Recurse -Depth 4 -Filter 'FXServer.exe' -File -ErrorAction SilentlyContinue |
+            Where-Object { Test-Path -LiteralPath (Join-Path $_.DirectoryName 'citizen') } | Select-Object -First 1
+        if ($f) { return $f.FullName }
+    }
+    Add-Type -AssemblyName System.Windows.Forms
+    $d = New-Object System.Windows.Forms.FolderBrowserDialog
+    $d.Description = 'FXServer.exe introuvable : choisis le dossier où tu as extrait server.7z (celui qui contient FXServer.exe)'
+    if ($d.ShowDialog() -eq 'OK') {
+        $exe = Join-Path $d.SelectedPath 'FXServer.exe'
+        if (Test-Path -LiteralPath $exe) { return $exe }
+    }
+    return $null
+}
+
+#--- Écrit DEMARRER.bat (encodage de la console Windows : les chemins avec accents restent valides) avec un contrôle
+#    clair si FXServer.exe disparaît un jour (déplacé, antivirus…).
+function Write-Launcher($Data, $FxExe) {
+    $lines = @(
+        '@echo off', 'title Serveur GTA SOON', 'cd /d "%~dp0"',
+        "if not exist `"$FxExe`" (",
+        '  echo.',
+        "  echo ERREUR : FXServer.exe introuvable : $($FxExe -replace '([()&<>^|])', '^$1')",
+        '  echo Il a ete deplace ou supprime. Lance REPARER-LANCEUR.bat dans le dossier GTA SOON extrait.',
+        '  echo.', '  pause', '  exit /b 1', ')',
+        "`"$FxExe`" +set onesync on +exec server.cfg",
+        'pause')
+    $oem = [Text.Encoding]::GetEncoding([Globalization.CultureInfo]::CurrentCulture.TextInfo.OEMCodePage)
+    [IO.File]::WriteAllText((Join-Path $Data 'DEMARRER.bat'), (($lines -join "`r`n") + "`r`n"), $oem)
+}

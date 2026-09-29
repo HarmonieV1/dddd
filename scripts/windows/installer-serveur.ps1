@@ -241,8 +241,7 @@ else { Log '  items.lua d''ox_inventory introuvable : ajoute server\ox_items_gta
 Set-QboxOverrides $Res $Repo { param($m, $c) Log $m $c }
 
 # Lanceur
-$bat = "@echo off`r`ntitle Serveur GTA SOON`r`ncd /d `"%~dp0`"`r`n`"$FxExe`" +set onesync on +exec server.cfg`r`npause`r`n"
-[IO.File]::WriteAllText((Join-Path $Data 'DEMARRER.bat'), $bat, (New-Object Text.ASCIIEncoding))
+Write-Launcher $Data $FxExe
 
 # --- 4. Lancement --------------------------------------------------------------------------------------------------
 Log "`n[4/4] Lancement" 'Cyan'
