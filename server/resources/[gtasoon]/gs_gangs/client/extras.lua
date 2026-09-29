@@ -110,7 +110,7 @@ local function refreshFence()
     exports.gs_markers:Add('gs_gangs:fence', { coords = c, style = 'shop', label = 'Receleur', event = 'gs_gangs:client:fence', prompt = 'Parler au receleur' })
 end
 
-RegisterNetEvent('gs_gangs:client:membership', function(m)
+local function applyMembership(m)
     member = m
     exports.gs_markers:Remove('gs_gangs:garage')
     local g = m and (GlobalState.gsGangGarages or {})[m.gang]
@@ -119,7 +119,8 @@ RegisterNetEvent('gs_gangs:client:membership', function(m)
             icon = 36, event = 'gs_gangs:client:garage', prompt = 'Garage du gang' })
     end
     refreshFence()
-end)
+end
+RegisterNetEvent('gs_gangs:client:membership', applyMembership)
 
 -- Le receleur change de place toutes les heures et n'ouvre que la nuit : vérification toutes les 5 min
 CreateThread(function()
@@ -131,5 +132,5 @@ end)
 
 -- Garage déplacé par le staff : on remet le marqueur à jour
 AddStateBagChangeHandler('gsGangGarages', 'global', function()
-    SetTimeout(100, function() if member then TriggerEvent('gs_gangs:client:membership', member) end end)
+    SetTimeout(100, function() if member then applyMembership(member) end end)
 end)
