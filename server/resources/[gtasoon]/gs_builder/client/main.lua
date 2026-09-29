@@ -77,6 +77,7 @@ local function place(start)
     local result
     lib.showTextUI(HELP, { position = 'right-center' })
 
+    -- par frame : seulement pendant le placement d'un objet (sortie avec Entrée / Retour)
     while true do
         for _, c in ipairs(DISABLED) do DisableControlAction(0, c, true) end
         local mult = (IsControlPressed(0, 21) and 5.0) or (IsControlPressed(0, 36) and 0.2) or 1.0

@@ -264,7 +264,7 @@ Jobs = {
         label = 'Mairie de Los Santos', type = 'government', whitelisted = true, society = true, salaryFrom = 'state', dutyAnywhere = true,
         blip = { sprite = 419, color = 5, label = 'Mairie' },
         grades = { [0] = { label = 'Agent d\'état civil', salary = 250 }, [1] = { label = 'Adjoint au maire', salary = 400 }, [2] = { label = 'Maire', salary = 600, boss = true } },
-        points = { boss = { vec3(-545.1, -204.3, 38.2) } },
+        points = { boss = { vec3(-542.0, -201.5, 38.2) } },
     },
 
     psy = {

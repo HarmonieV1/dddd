@@ -68,7 +68,7 @@ end)
 
 CreateThread(function()
     for id, site in pairs(Config.Big) do
-        exports.gs_markers:Add('gs_heists:bigstart:' .. id, { coords = site.center, style = 'objective', label = site.label, event = 'gs_heists:client:bigStart',
+        exports.gs_markers:Add('gs_heists:bigstart:' .. id, { coords = site.start or site.center, style = 'objective', label = site.label, event = 'gs_heists:client:bigStart',
             args = { id }, prompt = site.label .. ' (duo)', reach = 2.5, distance = 25.0 })
     end
 end)

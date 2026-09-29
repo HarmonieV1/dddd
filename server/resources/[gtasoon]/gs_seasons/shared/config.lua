@@ -6,8 +6,8 @@ Config = {}
 Config.Weeks = 8
 Config.PointsPerTier = 1000
 Config.Seasons = {
-    { id = 's1', label = 'Saison 1 · Sunset Boulevard', theme = 'Néons, coucher de soleil et premières légendes.', start = '2026-10-05' },
-    { id = 's2', label = 'Saison 2 · Neige sur Vinewood', theme = 'Fêtes, froid et courses sur route mouillée.', start = '2026-11-30' },
+    { id = 's1', label = 'Saison 1 · Sunset Boulevard', theme = 'Néons, coucher de soleil et premières légendes.', start = '2026-09-28' },
+    { id = 's2', label = 'Saison 2 · Neige sur Vinewood', theme = 'Fêtes, froid et courses sur route mouillée.', start = '2026-11-23' },
 }
 
 -- tiers[n] = { free = récompense, premium = récompense }

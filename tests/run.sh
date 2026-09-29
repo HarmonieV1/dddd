@@ -6,6 +6,7 @@ find server/resources -name node_modules -prune -o -name '*.lua' -print0 | xargs
 echo "Syntaxe OK"
 python3 tests/check_cfg.py
 python3 tests/check_links.py
+python3 tests/check_perf.py
 for t in tests/test_*.lua; do
     echo "== $t"
     lua5.4 "$t"

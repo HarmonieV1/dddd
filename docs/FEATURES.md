@@ -205,6 +205,39 @@ réparation de fortune (moteur 75 %), réparation avancée (complète), nettoyag
   **plaque personnalisée** (2 500 $, 2–8 caractères A-Z 0-9 / espaces, préfixes réservés et mots interdits refusés, unique).
   Uniquement sur ses propres véhicules, au volant, dans un salon. Cosmétique : aucun effet sur les performances.
 
+## V4 — ouverture, vie de la ville, signatures Roadtrip
+**Arrivée des joueurs** : règlement à accepter à la 1re connexion (versionné, relu après chaque changement, `/regles`),
+liste blanche (`gs_whitelist "true"`, `/whitelist add <id | license>` par les modos, lien Discord aux refusés),
+quête guidée **« Ton premier jour »** (mairie, banque, Pôle Emploi, auto-école, location) proposée automatiquement.
+
+**Services publics et métiers** :
+- **Auto-école** (gs_driving) : un nouveau personnage n'a plus le permis. Code (QCM tiré et corrigé par le serveur, 8/10),
+  puis examen de conduite (parcours, 80 km/h, dégâts relevés sur le véhicule par le serveur, 3 fautes max). Métier **moniteur**
+  (`/moniteur`). Les anciens personnages qui ont déjà un véhicule gardent leur permis.
+- **Justice** (gs_justice, `/tribunal`) : juge (ouvre une affaire, prévenu présent, avocat), verdicts appliqués (amende facturée,
+  prison, casier, mandats clos), avocat qui consulte le casier **avec l'accord** de son client.
+- **Presse** : journalistes Weazel News, badge presse sur Vibe, **flash info** envoyé à toute la ville.
+- **Mairie** (gs_civil) : mariage (accord + frais, célébré par un agent de la mairie en service), divorce, conjoint au contrôle.
+- **Commerces tenus par des joueurs** (gs_business) : bar Le Néon, Horny's Burgers. Préparation à partir de la réserve
+  (ingrédients du jeu : alcools, viande de chasse, légumes de la ferme), caisse client, prix fixés par le patron,
+  libre-service +20 % sans employé, comptabilité.
+- **Santé** : pharmacies (antidouleurs), psychologue (métier) ; blessures par zone / saignements : qbx_medical.
+- Nouveaux métiers gs_jobs : moniteur, avocat, juge, Weazel News, bar, restaurant, mairie, psychologue.
+
+**Staff** : `/economie` (argent créé / détruit par source, masse monétaire, inflation 7 j, indice des prix, top fortunes,
+rapport quotidien Discord et alerte si création anormale) ; budget de performance vérifié à chaque test (docs/PERFORMANCE.md).
+Traductions françaises manquantes des scripts Qbox ajoutées par METTRE-A-JOUR (server/locales-fr).
+
+**Signatures** :
+1. **Carnets de route** (`/carnet`) : 3 itinéraires panoramiques, anecdotes, spots photo, bonus duo, titres, classement.
+2. **Saisons** (`/saison`) : 8 semaines, pass gratuit + premium **cosmétique** (paquet Tebex `season_pass`), classement, palmarès.
+3. **Vibe influence la ville** : #rassemblement (point de rendez-vous + XP), #promo (commerces −15 %), #course (courses sans mise).
+4. **Photos et stories** : appareil photo du téléphone, stories 24 h, bonus heure dorée (docs/PHOTOS.md).
+5. **Réputation** (`/reputation`) : rue / légale / média → remise fidélité, meilleurs prix « discrets », vendeurs qui te saluent.
+6. **Contrats dynamiques** : l'app Boulots suit la météo, la nuit, les événements et les quartiers sous tension.
+7. **Bodycam et preuves vidéo** : capture jointe aux rapports police, crimes filmés par les caméras consultables.
+8. **Bourse de la ville** : onglet de Vibe avec les indices (prix, carburant, métaux, immobilier, richesse) et leur évolution.
+
 ## Liens entre features
 `gs_weather` → visibilité de `gs_wanted` + prix de `gs_economy` ;
 `gs_duo` → crimes vers `gs_wanted`, chaleur partagée ; `gs_jobs` → police en service pour le dispatch.

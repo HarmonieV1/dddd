@@ -50,6 +50,7 @@ AddEventHandler('gs_casino:client:wheel', function()
     local n = #W.segments
     local target = 360.0 * 6 + (idx - 1) * (360.0 / n)
     local start = GetGameTimer()
+    -- par frame : animation de la roue, quelques secondes seulement
     while true do
         local t = math.min(1.0, (GetGameTimer() - start) / W.spinMs)
         local eased = 1.0 - (1.0 - t) ^ 3

@@ -7,6 +7,7 @@ RegisterNetEvent('gs_details:client:me', function(src, kind, text)
     if bubbles._running then return end
     bubbles._running = true
     CreateThread(function()
+        -- par frame : bulles /me /do affichées, la boucle s'arrête quand il n'y en a plus
         while true do
             local any = false
             for id, b in pairs(bubbles) do

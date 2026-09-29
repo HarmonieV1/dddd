@@ -39,7 +39,7 @@ end
 local function step() advance(11000) end
 
 -- Dates
-local s1 = os.time({ year = 2026, month = 10, day = 5, hour = 0 })
+local s1 = os.time({ year = 2026, month = 9, day = 28, hour = 0 })
 check('avant la saison 1 : aucune', Seasons.current(s1 - 10) == nil)
 check('pendant : saison 1', Seasons.current(s1 + 86400).id == 's1')
 check('après 8 semaines : plus la 1', (Seasons.current(s1 + 8 * 7 * 86400 + 10) or {}).id ~= 's1')

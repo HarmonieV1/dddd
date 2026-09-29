@@ -2,7 +2,7 @@
 Config = {}
 
 Config.JudgeJob, Config.LawyerJob, Config.PoliceJob = 'judge', 'lawyer', 'police'
-Config.Court = vec3(-545.1, -204.3, 38.2)
+Config.Court = vec3(-540.3, -209.9, 38.2)
 Config.CourtRadius = 30.0          -- prévenu, avocat et juge présents dans la salle pour un verdict
 Config.MaxFine = 250000
 Config.MaxJail = 120               -- minutes
