@@ -72,7 +72,7 @@ Config.NpcPolice = {
 -- Caméras de surveillance : un crime à moins de `radius` m d'une caméra est presque toujours signalé, avec une zone précise
 -- et la plaque lisible. Un pirate (gros coup en duo) peut les aveugler quelques minutes autour d'un site. Coords à compléter.
 Config.Cameras = {
-    radius = 35.0, chanceBonus = 0.45, precision = 0.85, blindSeconds = 600,
+    radius = 35.0, chanceBonus = 0.45, precision = 0.85, blindSeconds = 600, keep = 40, -- preuves vidéo gardées (Dossiers police)
     list = {
         { label = 'Legion Square', coords = vec3(195.2, -934.3, 30.7) },
         { label = 'Fleeca Legion Square', coords = vec3(149.4, -1040.5, 29.4) },

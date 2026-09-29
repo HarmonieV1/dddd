@@ -77,5 +77,23 @@ Gigs.active[3].startedAt = os.time() - Config.Timeout - 1
 ok, st = cb('gs_gigs:step', 3); step()
 check('trop tard : annulé', not ok and st:find('tard') and Gigs.active[3] == nil)
 
+-- Contrats dynamiques
+local calm = Gigs.roll(20, {})
+local special = 0
+for _, o in ipairs(calm) do if o.tag then special = special + 1 end end
+check('ville calme : aucune offre spéciale', special == 0)
+local stormy = Gigs.roll(20, { storm = true })
+local ok2 = true
+for _, o in ipairs(stormy) do
+    if o.kind == 'courier' and not (o.tag and o.tag:find('urgence')) then ok2 = false end
+end
+check('tempête : livraisons d\'urgence', ok2)
+local hot = Gigs.roll(30, { hot = 'grove', night = true })
+local found
+for _, o in ipairs(hot) do if o.kind == 'smuggler' then found = o end end
+check('quartier chaud : passage risqué mieux payé et plus signalé', found and found.tag:find('risqué') and found.report > Config.Types.smuggler.reportChance)
+local list = cb('gs_gigs:list', 4)
+check('offres publiques : libellé spécial sans coordonnées', list == nil or (list.offers[1] and list.offers[1].from == nil))
+
 io.write(('\n%d réussis, %d échoués\n'):format(passed, failed))
 os.exit(failed == 0 and 0 or 1)

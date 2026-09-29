@@ -71,11 +71,26 @@ local function validQty(q)
     return type(q) == 'number' and q == math.floor(q) and q >= 1 and q <= Config.MaxQuantity
 end
 
+--- Remise de fidélité (réputation légale, gs_reputation) : 0 à 0.10
+local function discount(src)
+    return GetResourceState('gs_reputation') == 'started' and (exports.gs_reputation:GetDiscount(src) or 0) or 0
+end
+local function discounted(price, d)
+    return d > 0 and math.max(1, math.floor(price * (1 - d) + 0.5)) or price
+end
+
 lib.callback.register('gs_economy:quote', function(src, kind, index)
     if not Security:RateLimit(src, 'gs_economy:quote', 10, 10000) then return nil end
     local place = (kind == 'sell' and Config.Resellers or Config.Shops)[index]
     if not place or not near(src, place) then return nil end
-    return Market.quote(place.items, kind == 'sell')
+    local list = Market.quote(place.items, kind == 'sell')
+    local d = kind ~= 'sell' and discount(src) or 0
+    if d > 0 then for _, q in ipairs(list) do q.price = discounted(q.price, d) end end
+    if kind ~= 'sell' and GetResourceState('gs_reputation') == 'started' and exports.gs_reputation:ShouldGreet(src) then
+        list.greet = (Bridge:GetCharInfo(src) or {}).firstname -- le vendeur te reconnaît
+        list.discount = d
+    end
+    return list
 end)
 
 lib.callback.register('gs_economy:buy', function(src, index, item, qty)
@@ -87,7 +102,7 @@ lib.callback.register('gs_economy:buy', function(src, index, item, qty)
     if not near(src, shop) then return false, 'Tu es trop loin.' end
     if not Bridge:CanCarry(src, item, qty) then return false, 'Tu ne peux pas porter ça.' end
 
-    local total = Market.buyPrice(item) * qty
+    local total = discounted(Market.buyPrice(item), discount(src)) * qty
     local paid = Bridge:RemoveMoney(src, 'cash', total, 'achat ' .. item) and 'cash'
         or (Bridge:RemoveMoney(src, 'bank', total, 'achat ' .. item) and 'bank')
     if not paid then return false, ('Il te faut %d $.'):format(total) end

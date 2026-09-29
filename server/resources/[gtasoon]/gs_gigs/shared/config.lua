@@ -17,6 +17,10 @@ Config.Types = {
         pickup = 'Récupérer la marchandise', drop = 'Déposer la marchandise', desc = 'Bien payé. Évite les flics. Paiement en liquide sale.' },
 }
 
+-- Contrats dynamiques : la ville adapte les offres (intempéries → livraisons d'urgence mieux payées, nuit → plus de passeurs,
+-- quartier « chaud » (chaleur gs_gangs ≥ hotHeat) → passages risqués très payés mais plus souvent signalés, événement → commandes spéciales).
+Config.Dynamic = { stormMult = 1.5, eventMult = 1.3, nightMult = 1.25, hotMult = 1.6, hotReport = 0.2, hotHeat = 5 }
+
 -- Points de rendez-vous (dehors, accessibles en voiture). À caler / compléter en jeu.
 Config.Points = {
     vec3(-1037.0, -2730.0, 20.2), vec3(229.4, -793.3, 30.6), vec3(-555.0, -190.0, 38.2), vec3(298.0, -584.0, 43.2),

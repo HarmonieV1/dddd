@@ -94,6 +94,7 @@ end
 
 --- Une activité a eu lieu (mission, achat, vente…) : fait avancer le défi du jour correspondant.
 function Progress.track(src, activity, amount)
+    TriggerEvent('gs_quests:server:activity', src, activity, amount) -- réputation (gs_reputation)
     local p = Progress.players[src]
     if not p then return false end
     local changed, allDone = false, true

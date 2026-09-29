@@ -121,6 +121,7 @@ RegisterNUICallback('vibe', function(b, cb)
     if b.op == 'open' then return cb(lib.callback.await('gs_social:open', false) or false) end
     if b.op == 'profile' then return cb(lib.callback.await('gs_social:profile', false, b.handle) or false) end
     if b.op == 'top' then return cb(lib.callback.await('gs_social:top', false) or false) end
+    if b.op == 'market' then return cb(GetResourceState('gs_market') == 'started' and lib.callback.await('gs_market:data', false) or false) end
     if b.op == 'post' then
         local ok, msg = lib.callback.await('gs_social:post', false, b.content, b.image)
         return cb({ ok = ok == true, message = msg })
@@ -138,14 +139,11 @@ end)
 -- Appareil photo : le téléphone se cache, capture (screenshot-basic), envoi au serveur qui l'héberge, puis retour.
 local uploads = {}
 RegisterNetEvent('gs_social:client:uploaded', function(token, url, err) if uploads[token] then uploads[token] = { url = url, err = err } end end)
-RegisterNUICallback('vibePhoto', function(_, cb)
-    if GetResourceState('screenshot-basic') ~= 'started' then return cb({ ok = false, message = 'Appareil photo indisponible (screenshot-basic).' }) end
+--- Capture l'écran et l'envoie à l'hébergeur via le serveur → url | nil, erreur. Utilisée par Vibe et par la bodycam police.
+local function takePhoto()
+    if GetResourceState('screenshot-basic') ~= 'started' then return nil, 'Appareil photo indisponible (screenshot-basic).' end
     local token = ('%d%d'):format(GetGameTimer(), math.random(1000, 9999))
     uploads[token] = true
-    SendNUIMessage({ action = 'hide' })
-    SetNuiFocus(false, false)
-    phoneInHand(false)
-    Wait(350)
     exports['screenshot-basic']:requestScreenshot({ encoding = 'jpg', quality = 0.6 }, function(data) -- [API] screenshot-basic
         TriggerLatentServerEvent('gs_social:server:upload', 250000, token, data)
     end)
@@ -153,9 +151,19 @@ RegisterNUICallback('vibePhoto', function(_, cb)
     while uploads[token] == true and GetGameTimer() < deadline do Wait(100) end
     local res = uploads[token]
     uploads[token] = nil
+    if type(res) ~= 'table' or not res.url then return nil, type(res) == 'table' and res.err or 'Envoi trop long, réessaie.' end
+    return res.url
+end
+exports('TakePhoto', takePhoto)
+
+RegisterNUICallback('vibePhoto', function(_, cb)
+    SendNUIMessage({ action = 'hide' })
+    SetNuiFocus(false, false)
+    phoneInHand(false)
+    Wait(350)
+    local url, err = takePhoto()
     if open then SetNuiFocus(true, true) SendNUIMessage({ action = 'show' }) phoneInHand(true) end
-    if type(res) ~= 'table' or not res.url then return cb({ ok = false, message = type(res) == 'table' and res.err or 'Envoi trop long, réessaie.' }) end
-    cb({ ok = true, url = res.url })
+    cb(url and { ok = true, url = url } or { ok = false, message = err })
 end)
 
 -- Temps réel : le fil Vibe se met à jour si le téléphone est ouvert

@@ -63,8 +63,9 @@ end }
 Actions.report_add = { job = 'police', run = function(src, _, data)
     local title = need(Security:Sanitize(data.title, 100), 'Titre obligatoire.')
     local body = need(Security:Sanitize(data.body, D.bodyMax), 'Rapport vide.')
-    Store.addReport(title, body, label(src), Bridge:GetIdentifier(src))
-    return 'Rapport enregistré'
+    local image = data.image and Security:ValidImageUrl(data.image) or nil -- capture bodycam (hébergeur autorisé seulement)
+    Store.addReport(title, body, label(src), Bridge:GetIdentifier(src), image)
+    return image and 'Rapport enregistré avec la capture bodycam' or 'Rapport enregistré'
 end }
 
 Actions.reports_list = { job = 'police', run = function() return Store.reports() end }
@@ -81,6 +82,11 @@ Actions.report_delete = { job = 'police', run = function(src, _, data)
     need(r.officer_cid == Bridge:GetIdentifier(src) or grade(src) >= D.reportDeleteGrade, 'Seul l\'auteur ou un gradé peut le supprimer.')
     Store.deleteReport(r.id)
     return 'Rapport supprimé'
+end }
+
+--- Preuves vidéo : crimes filmés par les caméras de surveillance (gs_wanted), du plus récent au plus ancien.
+Actions.evidence_list = { job = 'police', run = function()
+    return GetResourceState('gs_wanted') == 'started' and exports.gs_wanted:GetEvidence() or {}
 end }
 
 AddEventHandler('gs_bridge:server:playerUnloaded', function(src) Police.lastSearch[src] = nil end)

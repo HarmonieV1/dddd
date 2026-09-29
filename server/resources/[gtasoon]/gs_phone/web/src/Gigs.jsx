@@ -38,7 +38,7 @@ export default function Gigs({ onBack, say }) {
       )}
       {!data.active && data.cooldown > 0 && <div className="empty">Prochain boulot dans {data.cooldown} s.</div>}
       {!data.active && data.offers.map((o) => (
-        <div key={o.id} className={o.legal ? 'gig' : 'gig shady'}>
+        <div key={o.id} className={(o.legal ? 'gig' : 'gig shady') + (o.special ? ' special' : '')}>
           <div className="gig-head"><span className="gig-icon">{o.icon}</span><b>{o.label}</b><span className="gig-pay">{o.pay} $</span></div>
           <p className="muted small">{o.desc}</p>
           <div className="gig-foot"><span className="muted small">{o.km} km{o.legal ? '' : ' · illégal'}</span>

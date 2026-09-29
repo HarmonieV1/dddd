@@ -111,6 +111,7 @@ function Drugs.quote(src, drug, coords)
         if owner and gang and owner == gang then m = m * cfg.ownTerritory
         elseif owner then m = m * cfg.rivalTerritory end
     end
+    if started('gs_reputation') then m = m * (1 + (exports.gs_reputation:GetStreetBonus(src) or 0)) end -- réputation de rue
     local unit = math.floor(math.random(drug.sell.price[1], drug.sell.price[2]) * m)
     return math.max(1, unit), refuse
 end

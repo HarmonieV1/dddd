@@ -3,7 +3,7 @@ local Security = exports.gs_security
 local Bridge   = exports.gs_bridge
 local JobsApi  = exports.gs_jobs
 
-Wanted = { heat = {}, lastReport = {}, history = {}, nextId = 0, blind = {} } -- blind[i] = fin de panne de la caméra i
+Wanted = { heat = {}, lastReport = {}, history = {}, nextId = 0, blind = {}, evidence = {} } -- blind[i] = fin de panne de la caméra i
 
 local function clamp(v, a, b) return math.max(a, math.min(b, v)) end
 local function lerp(a, b, t) return a + (b - a) * t end
@@ -161,6 +161,11 @@ function Wanted.report(src, crimeType, coords, opts)
         report.plate = maskPlate(GetVehicleNumberPlateText(veh), precision)
     end
 
+    if camera then -- preuve vidéo pour la police (description, jamais l'identité)
+        table.insert(Wanted.evidence, 1, { label = crime.label, camera = camera, date = os.date('%d/%m %H:%M'), plate = report.plate,
+            gender = Bridge:GetGender(src) == 'female' and 'femme' or 'homme' })
+        Wanted.evidence[Config.Cameras.keep + 1] = nil
+    end
     Wanted.addHeat(src, crime.heat)
     TriggerEvent('gs_wanted:server:reported', src, crimeType, crime.heat)
     SetTimeout(report.delay * 1000, function()
@@ -240,6 +245,7 @@ function Wanted.blindCameras(coords, radius, seconds)
     return n
 end
 exports('BlindCameras', Wanted.blindCameras)
+exports('GetEvidence', function() return Wanted.evidence end)
 
 -- API pour les autres ressources (braquages, drogue, duo...) ---------------------------------------
 exports('ReportCrime', function(src, crimeType, coords, opts) return Wanted.report(src, crimeType, coords, opts) ~= nil end)

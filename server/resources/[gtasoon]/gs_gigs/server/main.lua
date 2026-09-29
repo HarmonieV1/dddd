@@ -10,21 +10,44 @@ local function pay(src, amount, dirty)
     Bridge:AddMoney(src, 'cash', amount, 'petit boulot')
 end
 
---- Tire `n` offres : type au hasard, A et B distincts et assez éloignés, paie estimée.
-function Gigs.roll(n)
-    local types = {}
-    for id in pairs(Config.Types) do types[#types + 1] = id end
-    table.sort(types)
+local function started(res) return GetResourceState(res) == 'started' end
+
+--- Contexte de la ville : météo, nuit, événement, quartier chaud (gangs). Rend les offres vivantes.
+function Gigs.context()
+    local ctx = {}
+    if started('gs_weather') then
+        local w = exports.gs_weather:GetWeather()
+        ctx.storm = w == 'THUNDER' or w == 'RAIN' or w == 'BLIZZARD'
+        local h = exports.gs_weather:GetGameTime()
+        ctx.night = h >= 22 or h < 5
+    end
+    if started('gs_events') then local e = exports.gs_events:Active() ctx.event = e and e.label or nil end
+    local terr = GlobalState.gsTerritories or {}
+    for id, t in pairs(terr) do if (t.heat or 0) >= Config.Dynamic.hotHeat then ctx.hot = id break end end
+    return ctx
+end
+
+--- Tire `n` offres : type selon le contexte, A et B distincts et assez éloignés, paie estimée (× bonus du contexte).
+function Gigs.roll(n, ctx)
+    ctx = ctx or Gigs.context()
+    local D = Config.Dynamic
+    local weights = { courier = 1.0, smuggler = ctx.night and 1.6 or 0.8 }
     local list, P = {}, Config.Points
     for i = 1, n do
+        local total = weights.courier + weights.smuggler
+        local kind = math.random() * total < weights.courier and 'courier' or 'smuggler'
         for _ = 1, 50 do
             local a, b = math.random(#P), math.random(#P)
             local d = #(P[a] - P[b])
             if a ~= b and d >= Config.MinDistance then
-                local kind = types[math.random(#types)]
                 local t = Config.Types[kind]
-                list[#list + 1] = { id = i, kind = kind, from = a, to = b, km = math.floor(d / 100) / 10,
-                    pay = t.base + math.floor(d / 1000 * t.perKm) }
+                local mult, tag, report = 1.0, nil, t.reportChance
+                if kind == 'courier' and ctx.storm then mult, tag = D.stormMult, 'Livraison d\'urgence (intempéries)'
+                elseif kind == 'courier' and ctx.event then mult, tag = D.eventMult, 'Commande spéciale · ' .. ctx.event
+                elseif kind == 'smuggler' and ctx.hot then mult, tag, report = D.hotMult, 'Passage risqué (quartier sous tension)', math.min(0.9, (report or 0) + D.hotReport)
+                elseif kind == 'smuggler' and ctx.night then mult, tag = D.nightMult, 'Livraison de nuit' end
+                list[#list + 1] = { id = i, kind = kind, from = a, to = b, km = math.floor(d / 100) / 10, tag = tag, report = report,
+                    pay = math.floor((t.base + d / 1000 * t.perKm) * mult) }
                 break
             end
         end
@@ -36,7 +59,7 @@ local function publicOffers(list)
     local out = {}
     for i, o in ipairs(list) do
         local t = Config.Types[o.kind]
-        out[i] = { id = o.id, kind = o.kind, label = t.label, icon = t.icon, desc = t.desc, legal = t.legal, km = o.km, pay = o.pay }
+        out[i] = { id = o.id, kind = o.kind, label = o.tag or t.label, icon = t.icon, desc = t.desc, legal = t.legal, km = o.km, pay = o.pay, special = o.tag ~= nil }
     end
     return out
 end
@@ -68,7 +91,7 @@ lib.callback.register('gs_gigs:accept', function(src, id)
     local offer
     for i, x in ipairs(o and o.list or {}) do if x.id == id then offer = x table.remove(o.list, i) break end end
     if not offer then return false, 'Offre expirée.' end
-    Gigs.active[src] = { kind = offer.kind, from = offer.from, to = offer.to, pay = offer.pay, stage = 1, startedAt = os.time() }
+    Gigs.active[src] = { kind = offer.kind, from = offer.from, to = offer.to, pay = offer.pay, stage = 1, startedAt = os.time(), report = offer.report }
     return true, status(src)
 end)
 
@@ -85,7 +108,7 @@ lib.callback.register('gs_gigs:step', function(src)
     local t = Config.Types[g.kind]
     if g.stage == 1 then
         g.stage, g.pickedAt = 2, GetGameTimer()
-        if not t.legal and math.random() < (t.reportChance or 0) and GetResourceState('gs_wanted') == 'started' then
+        if not t.legal and math.random() < (g.report or t.reportChance or 0) and GetResourceState('gs_wanted') == 'started' then
             exports.gs_wanted:ReportCrime(src, 'smuggling', point)
         end
         return true, status(src)

@@ -180,7 +180,10 @@ provide('gs_bridge', {
     end,
 })
 
-provide('gs_events', { GetXpMultiplier = function() return 1.0 end, GetBonus = function() return 0 end })
+provide('gs_reputation', { GetDiscount = function() return 0 end, GetStreetBonus = function() return 0 end, ShouldGreet = function() return false end })
+provide('gs_events', { GetXpMultiplier = function() return 1.0 end, GetBonus = function() return 0 end, Active = function() return nil end })
+-- gs_weather par défaut (les tests qui en ont besoin le remplacent)
+provide('gs_weather', { GetWeather = function() return 'CLEAR' end, GetGameTime = function() return 12, 0, 0 end, GetEvent = function() return nil end, IsBlackout = function() return false end })
 
 -- gs_quests simulé : XP reçue par activité (les tests de gs_quests chargent la vraie ressource)
 provide('gs_quests', { Reward = function(src, activity) W.rewards = W.rewards or {} W.rewards[#W.rewards + 1] = { src = src, activity = activity } return 1 end,

@@ -271,7 +271,7 @@ function Police.run(src, name, target, data)
         return false, 'Erreur interne.'
     end
     local QUIET = { records = true, identity = true, breathalyzer = true, dossier_search = true, dossier_open = true,
-        warrants_list = true, reports_list = true, report_read = true }
+        warrants_list = true, reports_list = true, report_read = true, evidence_list = true }
     if not QUIET[name] then
         Security:LogStaff(('[Police] %s → %s %s'):format(label(src), name, a.target and label(target) or ''), 'jobs')
     end

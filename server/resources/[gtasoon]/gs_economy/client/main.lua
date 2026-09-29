@@ -15,6 +15,10 @@ end
 local function openMarket(kind, index, place)
     local quote = lib.callback.await('gs_economy:quote', false, kind, index)
     if not quote then return lib.notify({ description = 'Tu es trop loin.', type = 'error' }) end
+    if quote.greet then
+        lib.notify({ title = 'Le vendeur', description = ('Salut %s ! Comme d\'habitude ?%s'):format(quote.greet,
+            (quote.discount or 0) > 0 and (' (remise fidélité %d %%)'):format(math.floor(quote.discount * 100)) or ''), icon = 'handshake', type = 'inform' })
+    end
     local options = {}
     for _, q in ipairs(quote) do
         options[#options + 1] = {

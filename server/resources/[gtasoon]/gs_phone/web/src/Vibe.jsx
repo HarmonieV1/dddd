@@ -19,7 +19,14 @@ const DEMO_TOP = {
   races: [{ id: 'sprint', label: 'Sprint centre-ville', top: [{ name: '@vice_lucia', time: '6:41.220' }, { name: 'Jason N.', time: '6:58.870' }] },
     { id: 'boucle', label: 'Boucle des plages', top: [] }],
 }
+const DEMO_MARKET = [
+  { id: 'prices', label: 'Indice des prix', unit: 'pts', icon: '🛒', value: 104.2, change: 2.1, history: [100, 101, 99.5, 102, 103.4, 104.2] },
+  { id: 'fuel', label: 'Carburant (jerrican)', unit: '$', icon: '⛽', value: 64, change: -3.2, history: [66, 67, 65, 66, 64] },
+  { id: 'housing', label: 'Immobilier (prix moyen)', unit: '$', icon: '🏠', value: 184000, change: 5.4, history: [170000, 172000, 178000, 184000] },
+  { id: 'wealth', label: 'Richesse de la ville', unit: 'M$', icon: '💰', value: 12.5, change: 1.1, history: [12.1, 12.3, 12.4, 12.5] },
+]
 const demo = (op, body) => {
+  if (op === 'market') return DEMO_MARKET
   if (op === 'top') return DEMO_TOP
   if (op === 'profile') return { handle: body.handle, badge: body.handle === 'lspd_officiel' ? 'verified' : null, verified: body.handle === 'lspd_officiel',
     followers: 12, following: false, mine: body.handle === DEMO.handle, posts: DEMO.feed.filter((p) => p.handle === body.handle) }
@@ -35,6 +42,15 @@ function timeAgo(t) {
   if (s < 86400) return `${Math.floor(s / 3600)} h`
   return `${Math.floor(s / 86400)} j`
 }
+
+// Mini-graphique (SVG) de l'historique d'un indice
+function Spark({ points, up }) {
+  if (!points || points.length < 2) return null
+  const min = Math.min(...points), max = Math.max(...points), w = 64, h = 26
+  const d = points.map((v, i) => `${(i / (points.length - 1)) * w},${h - ((v - min) / (max - min || 1)) * (h - 4) - 2}`).join(' ')
+  return <svg width={w} height={h} className="spark"><polyline points={d} fill="none" stroke={up ? '#39ff9a' : '#ff4d6d'} strokeWidth="2" strokeLinejoin="round" /></svg>
+}
+const fmtVal = (v, unit) => (unit === '$' ? `${Math.round(v).toLocaleString('fr-FR')} $` : unit === 'M$' ? `${v.toLocaleString('fr-FR')} M$` : `${v.toLocaleString('fr-FR')} ${unit}`)
 
 function Badge({ kind }) {
   if (kind === 'verified') return <span className="vibe-badge verified" title="Compte vérifié">✔</span>
@@ -54,6 +70,7 @@ export default function Vibe({ onBack }) {
   const [liked, setLiked] = useState({})
   const [tab, setTab] = useState('feed')
   const [top, setTop] = useState(null)
+  const [market, setMarket] = useState(null)
   const [profile, setProfile] = useState(null)
   const [draft, setDraft] = useState('')
   const [handle, setHandle] = useState('')
@@ -112,6 +129,7 @@ export default function Vibe({ onBack }) {
   }
 
   const openTop = async () => { setTab('top'); setProfile(null); setTop(await call('top')) }
+  const openMarket = async () => { setTab('market'); setProfile(null); setMarket(await call('market')) }
 
   const Author = ({ h, badge }) => <b className="vibe-author" onClick={() => openProfile(h)}>@{h}<Badge kind={badge} /></b>
 
@@ -172,6 +190,22 @@ export default function Vibe({ onBack }) {
         </div>
         {profile.posts.length === 0 && <div className="empty">Aucun post pour l’instant.</div>}
         {profile.posts.map((p) => <Post key={p.id} p={{ ...p, badge: profile.badge }} actions={false} />)}
+      </div>
+    )
+  } else if (tab === 'market') {
+    body = (
+      <div className="list">
+        {!market && <div className="empty">Chargement…</div>}
+        {market && market.length === 0 && <div className="empty">La Bourse ouvre bientôt.</div>}
+        {market && market.map((m) => (
+          <div key={m.id} className="vibe-index">
+            <span className="vibe-index-icon">{m.icon}</span>
+            <div className="vibe-index-main"><b>{m.label}</b><span>{fmtVal(m.value, m.unit)}</span></div>
+            <Spark points={m.history} up={m.change >= 0} />
+            <span className={m.change >= 0 ? 'vibe-change up' : 'vibe-change down'}>{m.change >= 0 ? '▲' : '▼'} {Math.abs(m.change).toFixed(1)} %</span>
+          </div>
+        ))}
+        {market && <p className="muted small">Variation sur 24 h. Les prix bougent avec les achats et reventes de toute la ville.</p>}
       </div>
     )
   } else if (tab === 'top') {
@@ -259,7 +293,8 @@ export default function Vibe({ onBack }) {
       {data?.handle && !profile && (
         <div className="vibe-tabs">
           <button className={tab === 'feed' ? 'on' : ''} onClick={() => setTab('feed')}>Fil</button>
-          <button className={tab === 'top' ? 'on' : ''} onClick={openTop}>Top semaine</button>
+          <button className={tab === 'top' ? 'on' : ''} onClick={openTop}>Top</button>
+          <button className={tab === 'market' ? 'on' : ''} onClick={openMarket}>Bourse</button>
         </div>
       )}
       {body}

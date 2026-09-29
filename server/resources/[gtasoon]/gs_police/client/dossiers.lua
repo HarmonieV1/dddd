@@ -63,6 +63,9 @@ local function readReport(id)
     lib.registerContext({ id = 'gs_police_report', title = r.title, menu = 'gs_police_reports', options = {
         { title = ('%s · %s'):format(r.officer, r.date), icon = 'user-shield', readOnly = true },
         { title = r.body, icon = 'file-lines', readOnly = true },
+        r.image and { title = 'Voir la capture bodycam', icon = 'camera', onSelect = function()
+            lib.alertDialog({ header = r.title, content = ('![bodycam](%s)'):format(r.image), centered = true, size = 'xl' })
+        end } or { title = 'Pas de capture', icon = 'camera', readOnly = true },
         { title = 'Supprimer ce rapport', icon = 'trash', iconColor = '#ff4d6d', onSelect = function()
             notify(act('report_delete', { id = id }))
         end },
@@ -79,7 +82,15 @@ reports = function()
                 { type = 'input', label = 'Titre', required = true, max = 100 },
                 { type = 'textarea', label = 'Contenu', required = true, max = 1500, autosize = true, min = 3 },
             })
-            if r then notify(act('report_add', { title = r[1], body = r[2] })) end
+            if not r then return end
+            local image
+            if GetResourceState('gs_phone') == 'started' and lib.alertDialog({ header = 'Bodycam', content = 'Joindre une capture de ta bodycam (ce que tu vois maintenant) ?',
+                centered = true, cancel = true, labels = { confirm = 'Capturer', cancel = 'Sans capture' } }) == 'confirm' then
+                local err
+                image, err = exports.gs_phone:TakePhoto()
+                if not image then notify(false, err) end
+            end
+            notify(act('report_add', { title = r[1], body = r[2], image = image }))
         end },
     }
     for _, x in ipairs(list) do
@@ -94,6 +105,18 @@ function GSPolice.dossiers()
         { title = 'Rechercher un citoyen', icon = 'magnifying-glass', onSelect = search },
         { title = 'Mandats actifs', icon = 'gavel', iconColor = '#ff4d6d', onSelect = warrants },
         { title = 'Rapports', icon = 'file-lines', onSelect = reports },
+        { title = 'Preuves vidéo (caméras)', icon = 'video', onSelect = function()
+            local ok, list = act('evidence_list')
+            if not ok then return notify(false, list) end
+            local options = {}
+            for _, e in ipairs(list) do
+                options[#options + 1] = { title = ('%s · %s'):format(e.label, e.camera), icon = 'video', readOnly = true,
+                    description = ('%s%s%s'):format(e.date, e.plate and (' · plaque ' .. e.plate) or '', e.gender and (' · suspect : ' .. e.gender) or '') }
+            end
+            if #options == 0 then options[1] = { title = 'Aucune image récente', icon = 'circle-check', readOnly = true } end
+            lib.registerContext({ id = 'gs_police_evidence', title = 'Preuves vidéo', menu = 'gs_police_dossiers', options = options })
+            lib.showContext('gs_police_evidence')
+        end },
     } })
     lib.showContext('gs_police_dossiers')
 end

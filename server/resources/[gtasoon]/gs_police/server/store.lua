@@ -28,9 +28,11 @@ function Store.init()
         `body` TEXT NOT NULL,
         `officer` VARCHAR(100) NOT NULL,
         `officer_cid` VARCHAR(50) NOT NULL,
+        `image` VARCHAR(300) NULL,
         `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
         PRIMARY KEY (`id`)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4]])
+    MySQL.query.await('ALTER TABLE `gs_police_reports` ADD COLUMN IF NOT EXISTS `image` VARCHAR(300) NULL')
     MySQL.query.await([[CREATE TABLE IF NOT EXISTS `gs_police_jail` (
         `citizenid` VARCHAR(50) NOT NULL,
         `until_ts` INT UNSIGNED NOT NULL,
@@ -81,15 +83,15 @@ end
 function Store.closeWarrantsOf(cid) return MySQL.update.await('UPDATE gs_police_warrants SET active = 0 WHERE citizenid = ? AND active = 1', { cid }) end
 function Store.closeWarrant(id) return MySQL.update.await('UPDATE gs_police_warrants SET active = 0 WHERE id = ? AND active = 1', { id }) > 0 end
 
-function Store.addReport(title, body, officer, officerCid)
-    return MySQL.insert.await('INSERT INTO gs_police_reports (title, body, officer, officer_cid) VALUES (?, ?, ?, ?)', { title, body, officer, officerCid })
+function Store.addReport(title, body, officer, officerCid, image)
+    return MySQL.insert.await('INSERT INTO gs_police_reports (title, body, officer, officer_cid, image) VALUES (?, ?, ?, ?, ?)', { title, body, officer, officerCid, image })
 end
 function Store.reports()
     return MySQL.query.await([[SELECT id, title, officer, DATE_FORMAT(created_at, '%d/%m %H:%i') AS date FROM gs_police_reports
         ORDER BY id DESC LIMIT 30]]) or {}
 end
 function Store.report(id)
-    return MySQL.single.await([[SELECT id, title, body, officer, officer_cid, DATE_FORMAT(created_at, '%d/%m %H:%i') AS date
+    return MySQL.single.await([[SELECT id, title, body, officer, officer_cid, image, DATE_FORMAT(created_at, '%d/%m %H:%i') AS date
         FROM gs_police_reports WHERE id = ?]], { id })
 end
 function Store.deleteReport(id) return MySQL.update.await('DELETE FROM gs_police_reports WHERE id = ?', { id }) > 0 end

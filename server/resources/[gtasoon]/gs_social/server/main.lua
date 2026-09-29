@@ -136,6 +136,7 @@ lib.callback.register('gs_social:like', function(src, id)
     post.likes = math.max(0, post.likes + (liked and 1 or -1))
     Store.setLike(post.id, cid, liked, post.likes)
     TriggerClientEvent('gs_social:client:likes', -1, post.id, post.likes)
+    if post.cid ~= cid then TriggerEvent('gs_social:server:liked', post.cid, liked) end -- réputation média de l'auteur
     return true, liked
 end)
 

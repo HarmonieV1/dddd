@@ -156,6 +156,7 @@ do
     local r2 = Wanted.report(7, 'carjack', at, { vehicle = car3 })
     check('sous caméra : signalé, caméra nommée', r2 and r2.camera == cam.label)
     check('sous caméra : plaque presque entière et zone précise', r2 and r2.plate:sub(1, 6) == 'GSOON9' and r2.radius < 100)
+    check('preuve vidéo : caméra, plaque, sans identité', Wanted.evidence[1] and Wanted.evidence[1].camera == cam.label and Wanted.evidence[1].plate and Wanted.evidence[1].cid == nil)
     Wanted.blindCameras(at, 60.0, 600)
     check('caméra aveuglée : de nouveau discret', Wanted.report(7, 'carjack', at) == nil)
     Wanted.blind = {}

@@ -172,3 +172,13 @@ button:disabled { opacity: .4; cursor: default; }
 .vibe-viewer { position: absolute; inset: 0; z-index: 10; background: rgba(0, 0, 0, .92); display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; border-radius: 34px; }
 .vibe-viewer img { max-width: 92%; max-height: 80%; border-radius: 14px; }
 .vibe-viewer-head { position: absolute; top: 40px; left: 20px; font-weight: 700; }
+.gig.special { box-shadow: 0 0 0 1px #ffd23f, 0 0 14px rgba(255, 210, 63, .25); }
+
+/* Bourse de la ville */
+.vibe-index { display: flex; align-items: center; gap: 8px; padding: 10px; margin-bottom: 8px; border-radius: 14px; background: rgba(255, 255, 255, .03); border: 1px solid var(--line); }
+.vibe-index-icon { font-size: 20px; }
+.vibe-index-main { flex: 1; display: flex; flex-direction: column; min-width: 0; font-size: 12px; }
+.vibe-index-main span { font-size: 15px; font-weight: 700; }
+.vibe-change { font-size: 11px; font-weight: 700; min-width: 52px; text-align: right; }
+.vibe-change.up { color: var(--green); } .vibe-change.down { color: var(--red); }
+.vibe-index-main b { font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
