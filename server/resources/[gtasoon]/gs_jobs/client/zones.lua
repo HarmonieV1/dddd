@@ -54,14 +54,35 @@ local function refreshMarkers()
     exports.gs_markers:RemovePrefix('gs_jobs:pt:')
     local job = GSJ.job and Jobs[GSJ.job.name]
     if not job then return end
-    local p = job.points
-    local function mark(key, coords, label) exports.gs_markers:Add('gs_jobs:pt:' .. key, { coords = coords, style = 'job', label = label }) end
-    for i, c in ipairs(p.duty or {}) do mark('duty' .. i, c, 'Prise de service') end
-    for i, c in ipairs(p.boss or {}) do mark('boss' .. i, c, 'Direction') end
-    for i, c in ipairs(p.armory or {}) do mark('armory' .. i, c, 'Armurerie') end
-    for i, s in ipairs(p.stash or {}) do mark('stash' .. i, s.coords, s.label or 'Coffre') end
-    for i, g in ipairs(p.garage or {}) do mark('garage' .. i, g.coords, 'Garage') end
+    local p, name = job.points, GSJ.job.name
+    local function mark(kind, i, coords, label)
+        exports.gs_markers:Add(('gs_jobs:pt:%s%d'):format(kind, i), { coords = coords, style = 'job', label = label,
+            event = 'gs_jobs:client:point', args = { name, kind, i } })
+    end
+    for i, c in ipairs(p.duty or {}) do mark('duty', i, c, 'Prise de service') end
+    for i, c in ipairs(p.boss or {}) do mark('boss', i, c, 'Direction') end
+    for i, c in ipairs(p.armory or {}) do mark('armory', i, c, 'Armurerie') end
+    for i, st in ipairs(p.stash or {}) do mark('stash', i, st.coords, st.label or 'Coffre') end
+    for i, g in ipairs(p.garage or {}) do mark('garage', i, g.coords, 'Garage') end
 end
+
+--- [E] sur un point de son métier : mêmes actions (et mêmes conditions) que les zones ox_target.
+AddEventHandler('gs_jobs:client:point', function(name, kind, i)
+    if not GSJ.isJob(name) then return end
+    if kind == 'duty' then return TriggerServerEvent('gs_jobs:server:toggleDuty') end
+    if kind == 'boss' then
+        if GSJ.isBoss(name) then return GSJ.openBossMenu() end
+        return GSJ.notify('Réservé à la direction.', 'error')
+    end
+    if not GSJ.isOnDuty(name) then return GSJ.notify('Prends d\'abord ton service.', 'error') end
+    if kind == 'armory' then return openArmory(name) end
+    if kind == 'garage' then return GSJ.openGarageMenu(name, i) end
+    if kind == 'stash' then
+        local st = Jobs[name].points.stash[i]
+        if GSJ.job.grade < (st.minGrade or 0) then return GSJ.notify('Grade insuffisant.', 'error') end
+        Bridge:OpenStash(('gs_%s_%d'):format(name, i))
+    end
+end)
 
 local function clear()
     for _, id in ipairs(zones) do exports.ox_target:removeZone(id) end

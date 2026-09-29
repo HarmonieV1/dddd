@@ -10,7 +10,11 @@ $QboxPatches = @(
     @{ res = 'qbx_medical'; file = 'config\client.lua'; find = 'deathTime\s*=\s*\d+'; repl = 'deathTime = 70'; why = 'réapparition possible après 70 s' },
     @{ res = 'qbx_ambulancejob'; file = 'config\shared.lua'; find = 'checkInCost\s*=\s*\d+'; repl = 'checkInCost = 500'; why = 'hôpital : 500 $' },
     @{ res = 'qbx_ambulancejob'; file = 'config\shared.lua'; find = 'minForCheckIn\s*=\s*\d+'; repl = 'minForCheckIn = 1'; why = 'accueil IA si aucun EMS' },
-    @{ res = 'qbx_ambulancejob'; file = 'config\server.lua'; find = 'wipeInvOnRespawn\s*=\s*true'; repl = 'wipeInvOnRespawn = false'; why = 'inventaire gardé à la réapparition' }
+    @{ res = 'qbx_ambulancejob'; file = 'config\server.lua'; find = 'wipeInvOnRespawn\s*=\s*true'; repl = 'wipeInvOnRespawn = false'; why = 'inventaire gardé à la réapparition' },
+    # Menus ox_lib : palette « dark » grise de Mantine remplacée par du noir-violet néon (DA GTA SOON)
+    @{ res = 'ox_lib'; dir = 'web\build\assets'; filter = '*.js'; why = 'menus ox_lib en noir néon'
+       find = '(?i)\["#C1C2C5","#A6A7AB","#909296","#5c5f66","#373A40","#2C2E33","#25262b","#1A1B1E","#141517","#101113"\]'
+       repl = '["#EDE4FF","#CBBBEA","#A493C7","#6F5E93","#3B2A5C","#2A1C45","#1E1433","#150D26","#0F091C","#0A0613"]' }
 )
 
 function Find-Resource($Res, $name) {
@@ -80,6 +84,18 @@ function Set-QboxOverrides($Res, $Repo, [scriptblock]$Say) {
     }
     foreach ($p in $QboxPatches) {
         $target = Find-Resource $Res $p.res
+        if ($p.dir) { # correctif sur des fichiers compilés (nom variable) : tous les fichiers du dossier
+            $folder = if ($target) { Join-Path $target.FullName $p.dir } else { $null }
+            if (-not $folder -or -not (Test-Path -LiteralPath $folder)) { & $Say "  $($p.res) : dossier $($p.dir) introuvable ($($p.why) non appliqué)" 'Yellow'; continue }
+            $done = $false
+            foreach ($f in Get-ChildItem -LiteralPath $folder -Filter $p.filter -File) {
+                $text = [IO.File]::ReadAllText($f.FullName)
+                if ($text -match $p.find) { Write-Utf8 $f.FullName ([regex]::Replace($text, $p.find, $p.repl)); $done = $true }
+                elseif ($text.Contains($p.repl)) { $done = $true }
+            }
+            & $Say "  $($p.res) : $($p.why)$(if (-not $done) { ' (motif introuvable, version différente ?)' })" $(if ($done) { 'Green' } else { 'Yellow' })
+            continue
+        }
         $file = if ($target) { Join-Path $target.FullName $p.file } else { $null }
         if (-not $file -or -not (Test-Path -LiteralPath $file)) { & $Say "  $($p.res)\$($p.file) introuvable : $($p.why) non appliqué" 'Yellow'; continue }
         $text = Get-Content -LiteralPath $file -Raw -Encoding UTF8

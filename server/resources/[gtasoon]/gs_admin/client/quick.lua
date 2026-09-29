@@ -1,4 +1,4 @@
--- gs_admin (client) : menu staff rapide (F11, flèches + Entrée). Chaque pouvoir est d'abord accordé par le serveur
+-- gs_admin (client) : menu staff rapide (F11, cliquable à la souris). Chaque pouvoir est d'abord accordé par le serveur
 -- (niveau + mode staff + journal), puis appliqué ici. Couper le mode staff coupe tous les pouvoirs.
 local Bridge = exports.gs_bridge
 local powers = { noclip = false, invisible = false, godmode = false, names = false }
@@ -234,57 +234,50 @@ local function vehicleType(hash)
     return 'automobile'
 end
 
-local function playerMenu(p)
-    local lvl = info.level
-    local options, actions = {}, {}
-    local function add(label, icon, minLvl, fn)
-        if lvl >= minLvl then options[#options + 1] = { label = label, icon = icon } actions[#options] = fn end
+-- Menus cliquables (souris) : chaque option porte sa propre action, aucune correspondance par position.
+local ON, OFF = '#5aff8c', '#6b6380'
+
+local function show(id, title, options, parent)
+    lib.registerContext({ id = id, title = title, menu = parent, options = options })
+    lib.showContext(id)
+end
+
+local function gradeMenu(parent, title, grades, apply)
+    local options = {}
+    for _, g in ipairs(grades) do
+        options[#options + 1] = { title = g.label, icon = 'user-tie', onSelect = function() apply(g.grade) end }
     end
-    add('Aller à lui', 'location-arrow', 1, function() notify(act('goto', p.id)) end)
-    add('L\'amener à moi', 'hand', 2, function() notify(act('bring', p.id)) end)
-    add('Spectate', 'eye', 2, function() local ok, msg = act('spectate', p.id) if not ok then notify(false, msg) end end)
-    add('Soigner', 'heart', 2, function() notify(act('heal', p.id)) end)
-    add('Réanimer', 'heart-pulse', 2, function() notify(act('revive', p.id)) end)
-    add('Figer / libérer', 'snowflake', 2, function() notify(act('freeze', p.id)) end)
-    add('Lui mettre un métier', 'briefcase', 3, function() openQuick('jobs', p) end)
-    add('Le mettre dans un gang', 'people-group', 3, function() openQuick('gangs', p) end)
-    add('Items (fondateur)', 'box-open', 4, function() openQuick('items', p) end)
-    lib.registerMenu({ id = 'gs_staff_player', title = ('[%d] %s'):format(p.id, p.name), position = 'top-right',
-        options = options, onClose = function() openQuick('players') end },
-        function(i) if actions[i] then actions[i]() end end)
-    lib.showMenu('gs_staff_player')
+    show('gs_staff_grade', title, options, parent)
 end
 
 local function jobsMenu(target)
     local options = {}
     for _, j in ipairs(info.jobs) do
-        local labels = {}
-        for _, g in ipairs(j.grades) do labels[#labels + 1] = ('%d · %s'):format(g.grade, g.label) end
-        options[#options + 1] = { label = j.label, values = labels, args = j, description = 'Gauche/droite : grade · Entrée : valider' }
+        options[#options + 1] = { title = j.label, icon = 'briefcase', arrow = true, onSelect = function()
+            gradeMenu('gs_staff_jobs', j.label .. ' · grade', j.grades, function(grade)
+                notify(act('setjob', target.id, { job = j.name, grade = grade }))
+            end)
+        end }
     end
-    if #options == 0 then options[1] = { label = 'Aucun métier' } end
-    lib.registerMenu({ id = 'gs_staff_jobs', title = 'Métier · ' .. target.name, position = 'top-right', options = options,
-        onClose = function() openQuick('main') end },
-        function(_, scroll, j)
-            if not j then return end
-            notify(act('setjob', target.id, { job = j.name, grade = j.grades[scroll or 1].grade }))
-        end)
-    lib.showMenu('gs_staff_jobs')
+    if #options == 0 then options[1] = { title = 'Aucun métier', readOnly = true } end
+    show('gs_staff_jobs', 'Métier · ' .. target.name, options, 'gs_staff_quick')
 end
 
+local GANG_GRADES = { { grade = 0, label = 'Recrue' }, { grade = 1, label = 'Membre' }, { grade = 2, label = 'Bras droit' }, { grade = 3, label = 'Chef' } }
+
 local function gangsMenu(target)
-    local options = { { label = 'Retirer de son gang', args = { name = 'none' } } }
+    local options = { { title = 'Retirer de son gang', icon = 'user-minus', iconColor = '#ff2e88', onSelect = function()
+        notify(act('setgang', target.id, { gang = 'none' }))
+    end } }
     for _, g in ipairs(info.gangs) do
-        options[#options + 1] = { label = g.label, values = { '0 · Recrue', '1 · Membre', '2 · Bras droit', '3 · Chef' }, args = g }
+        options[#options + 1] = { title = g.label, icon = 'people-group', arrow = true, onSelect = function()
+            gradeMenu('gs_staff_gangs', g.label .. ' · grade', GANG_GRADES, function(grade)
+                notify(act('setgang', target.id, { gang = g.name, grade = grade }))
+            end)
+        end }
     end
-    if #info.gangs == 0 then options[#options + 1] = { label = 'Aucun gang en base (redémarre : gangs par défaut créés)' } end
-    lib.registerMenu({ id = 'gs_staff_gangs', title = 'Gang · ' .. target.name, position = 'top-right', options = options,
-        onClose = function() openQuick('main') end },
-        function(_, scroll, g)
-            if not g then return end
-            notify(act('setgang', target.id, { gang = g.name, grade = (scroll or 1) - 1 }))
-        end)
-    lib.showMenu('gs_staff_gangs')
+    if #info.gangs == 0 then options[#options + 1] = { title = 'Aucun gang en base (redémarre : gangs par défaut créés)', readOnly = true } end
+    show('gs_staff_gangs', 'Gang · ' .. target.name, options, 'gs_staff_quick')
 end
 
 local function itemsMenu(target)
@@ -299,152 +292,152 @@ local function itemsMenu(target)
         })
         return r and r[1], r and r[2]
     end
-    local options = {
-        { label = 'Donner à ' .. target.name, icon = 'plus' },
-        { label = 'Retirer à ' .. target.name, icon = 'minus' },
-        { label = 'Poser au sol, ici', icon = 'box' },
-    }
-    lib.registerMenu({ id = 'gs_staff_items', title = 'Items (fondateur)', position = 'top-right', options = options,
-        onClose = function() openQuick('main') end },
-        function(i)
-            local item, count = ask(options[i].label)
-            if not item then return end
-            if i == 1 then notify(act('giveitem', target.id, { item = item, amount = count }))
-            elseif i == 2 then notify(act('removeitem', target.id, { item = item, amount = count }))
-            else notify(act('dropitem', nil, { item = item, amount = count })) end
-        end)
-    lib.showMenu('gs_staff_items')
+    show('gs_staff_items', 'Items (fondateur)', {
+        { title = 'Donner à ' .. target.name, icon = 'plus', onSelect = function()
+            local item, count = ask('Donner')
+            if item then notify(act('giveitem', target.id, { item = item, amount = count })) end
+        end },
+        { title = 'Retirer à ' .. target.name, icon = 'minus', onSelect = function()
+            local item, count = ask('Retirer')
+            if item then notify(act('removeitem', target.id, { item = item, amount = count })) end
+        end },
+        { title = 'Poser au sol, ici', icon = 'box', onSelect = function()
+            local item, count = ask('Poser au sol')
+            if item then notify(act('dropitem', nil, { item = item, amount = count })) end
+        end },
+    }, 'gs_staff_quick')
 end
 
---- Points de métier : choisir le métier, puis le point à déplacer à sa position actuelle.
-local function pointsMenu(job)
-    if not job then
-        local options = {}
-        for _, j in ipairs(info.jobs) do
-            if #(j.points or {}) > 0 then options[#options + 1] = { label = j.label, args = j, icon = 'briefcase' } end
-        end
-        lib.registerMenu({ id = 'gs_staff_points', title = 'Points de métier', position = 'top-right', options = options,
-            onClose = function() openQuick('main') end },
-            function(_, _, j) if j then pointsMenu(j) end end)
-        return lib.showMenu('gs_staff_points')
-    end
+local function pointsMenu()
     local options = {}
-    for _, pt in ipairs(job.points) do
-        options[#options + 1] = { label = pt.label, args = pt, description = pt.kind == 'garage_spawn'
-            and 'Place-toi (ou ton véhicule) là où les véhicules doivent sortir' or 'Déplacé exactement à ta position' }
+    for _, j in ipairs(info.jobs) do
+        if #(j.points or {}) > 0 then
+            options[#options + 1] = { title = j.label, icon = 'briefcase', arrow = true, onSelect = function()
+                local pts = {}
+                for _, pt in ipairs(j.points) do
+                    pts[#pts + 1] = { title = pt.label, icon = 'location-crosshairs',
+                        description = pt.kind == 'garage_spawn' and 'Place-toi (ou ton véhicule) là où les véhicules doivent sortir'
+                            or 'Déplacé exactement à ta position',
+                        onSelect = function() notify(act('jobpoint', nil, { job = j.name, kind = pt.kind, idx = pt.idx })) end }
+                end
+                show('gs_staff_points_job', j.label, pts, 'gs_staff_points')
+            end }
+        end
     end
-    lib.registerMenu({ id = 'gs_staff_points_job', title = job.label, position = 'top-right', options = options,
-        onClose = function() pointsMenu() end },
-        function(_, _, pt)
-            if not pt then return end
-            notify(act('jobpoint', nil, { job = job.name, kind = pt.kind, idx = pt.idx }))
-        end)
-    lib.showMenu('gs_staff_points_job')
+    show('gs_staff_points', 'Points de métier (placer ici)', options, 'gs_staff_quick')
+end
+
+local function animalsMenu()
+    local options = {}
+    if animal then options[1] = { title = 'Reprendre forme humaine', icon = 'person', iconColor = ON, onSelect = function() setAnimal(nil) end } end
+    for _, a in ipairs(Config.Animals) do
+        options[#options + 1] = { title = a.label, icon = 'paw', iconColor = animal == a.model and ON or nil,
+            onSelect = function() setAnimal(a.model) end }
+    end
+    show('gs_staff_animals', 'Se transformer', options, 'gs_staff_quick')
+end
+
+local function playerMenu(p)
+    local lvl = info.level
+    local options = {}
+    local function add(minLvl, opt) if lvl >= minLvl then options[#options + 1] = opt end end
+    add(1, { title = 'Aller à lui', icon = 'location-arrow', onSelect = function() notify(act('goto', p.id)) end })
+    add(2, { title = 'L\'amener à moi', icon = 'hand', onSelect = function() notify(act('bring', p.id)) end })
+    add(2, { title = 'Spectate', icon = 'eye', onSelect = function() local ok, msg = act('spectate', p.id) if not ok then notify(false, msg) end end })
+    add(2, { title = 'Soigner', icon = 'heart', onSelect = function() notify(act('heal', p.id)) end })
+    add(2, { title = 'Réanimer', icon = 'heart-pulse', onSelect = function() notify(act('revive', p.id)) end })
+    add(2, { title = 'Figer / libérer', icon = 'snowflake', onSelect = function() notify(act('freeze', p.id)) end })
+    add(3, { title = 'Lui mettre un métier', icon = 'briefcase', arrow = true, onSelect = function() jobsMenu(p) end })
+    add(3, { title = 'Le mettre dans un gang', icon = 'people-group', arrow = true, onSelect = function() gangsMenu(p) end })
+    add(4, { title = 'Items (fondateur)', icon = 'box-open', arrow = true, onSelect = function() itemsMenu(p) end })
+    show('gs_staff_player', ('[%d] %s'):format(p.id, p.name), options, 'gs_staff_players')
 end
 
 local function playersMenu()
     local options = {}
-    for _, p in ipairs(info.players) do options[#options + 1] = { label = ('[%d] %s'):format(p.id, p.name), args = p } end
-    if #options == 0 then options[1] = { label = 'Aucun joueur' } end
-    lib.registerMenu({ id = 'gs_staff_players', title = ('Joueurs (%d)'):format(#info.players), position = 'top-right',
-        options = options, onClose = function() openQuick('main') end },
-        function(_, _, p) if p then playerMenu(p) end end)
-    lib.showMenu('gs_staff_players')
+    for _, p in ipairs(info.players) do
+        options[#options + 1] = { title = ('[%d] %s'):format(p.id, p.name), icon = 'user', arrow = true, onSelect = function() playerMenu(p) end }
+    end
+    if #options == 0 then options[1] = { title = 'Aucun joueur', readOnly = true } end
+    show('gs_staff_players', ('Joueurs (%d)'):format(#info.players), options, 'gs_staff_quick')
 end
 
 local function mainMenu()
     local lvl = info.level
     local me = { id = info.me, name = 'moi' }
-    local options, actions = {}, {}
-    local function add(opt, minLvl, fn)
-        if lvl >= minLvl then options[#options + 1] = opt actions[#options] = fn end
-    end
-    local function toggle(label, icon, key, minLvl, fn)
-        add({ label = label, icon = icon, checked = powers[key] }, minLvl, fn)
+    local options = {}
+    local function add(minLvl, opt) if lvl >= minLvl then options[#options + 1] = opt end end
+    --- Interrupteur : état affiché dans le titre et la couleur, menu rouvert après le changement.
+    local function toggle(minLvl, label, icon, on, fn)
+        add(minLvl, { title = ('%s : %s'):format(label, on and 'ON' or 'OFF'), icon = icon, iconColor = on and ON or OFF,
+            onSelect = function() fn(not on) openQuick('main') end })
     end
 
-    add({ label = 'Mode staff', icon = 'shield-halved', checked = info.onDuty,
-        description = 'Tickets + pouvoirs. Tout se coupe en le désactivant.' }, 1, function(checked)
+    toggle(1, 'Mode staff', 'shield-halved', info.onDuty, function()
         local state = lib.callback.await('gs_admin:toggleDuty', false)
         if state == nil then return end
-        info.onDuty = state
         notify(true, state and 'Mode staff : ON' or 'Mode staff : OFF')
         if not state then powersOff() end
     end)
     if info.onDuty then
-        add({ label = 'Joueurs', icon = 'users', description = 'Aller à, amener, spectate, soigner, métier…' }, 1, function() playersMenu() end)
-        toggle('Noms et ID des joueurs', 'id-badge', 'names', Config.Powers.names, function(on)
+        add(1, { title = 'Joueurs', icon = 'users', arrow = true, description = 'Aller à, amener, spectate, soigner, métier…', onSelect = playersMenu })
+        toggle(Config.Powers.names, 'Noms et ID des joueurs', 'id-badge', powers.names, function(on)
             if on and not grant('names') then return end
             powers.names = on
             if on then namesLoop() end
         end)
-        toggle('Vol libre', 'feather', 'noclip', Config.Powers.noclip, function(on) setNoclip(on) end)
-        toggle('Invisible', 'ghost', 'invisible', Config.Powers.invisible, function(on)
+        toggle(Config.Powers.noclip, 'Vol libre', 'feather', powers.noclip, function(on) setNoclip(on) end)
+        toggle(Config.Powers.invisible, 'Invisible', 'ghost', powers.invisible, function(on)
             if on and not grant('invisible') then return end
             if not on then act('power', nil, { power = 'invisible', on = false }) end
             powers.invisible = on
             applyVisibility()
         end)
-        toggle('Invincible', 'shield', 'godmode', Config.Powers.godmode, function(on)
+        toggle(Config.Powers.godmode, 'Invincible', 'shield', powers.godmode, function(on)
             if on and not grant('godmode') then return end
             if not on then act('power', nil, { power = 'godmode', on = false }) end
             powers.godmode = on
             applyGodmode()
         end)
-        add({ label = 'Téléportation au marqueur', icon = 'map-pin' }, Config.Powers.tpm, teleportToMarker)
-        local animals = { 'Forme humaine' }
-        for _, a in ipairs(Config.Animals) do animals[#animals + 1] = a.label end
-        add({ label = 'Se transformer', icon = 'paw', values = animals, defaultIndex = animal and 2 or 1,
-            description = 'Gauche/droite : choisir · Entrée : appliquer' }, Config.Powers.animal, function(_, scroll)
-            if not scroll or scroll == 1 then setAnimal(nil) else setAnimal(Config.Animals[scroll - 1].model) end
-        end)
-        if animal then
-            add({ label = 'Reprendre forme humaine', icon = 'person' }, Config.Powers.animal, function() setAnimal(nil) end)
-        end
-        add({ label = 'Me soigner', icon = 'heart' }, 2, function() notify(act('revive', info.me)) end)
-        add({ label = 'Réparer mon véhicule', icon = 'wrench' }, 2, function() notify(act('fixveh', info.me)) end)
-        add({ label = 'Faire apparaître un véhicule', icon = 'car' }, 3, function()
+        add(Config.Powers.tpm, { title = 'Téléportation au marqueur', icon = 'map-pin', description = 'Pose d\'abord un point sur la carte (Échap → Carte)',
+            onSelect = teleportToMarker })
+        add(Config.Powers.animal, { title = animal and 'Animal : reprendre forme humaine / changer' or 'Se transformer en animal',
+            icon = 'paw', iconColor = animal and ON or nil, arrow = true, onSelect = animalsMenu })
+        add(2, { title = 'Me soigner et réanimer', icon = 'heart', onSelect = function() notify(act('revive', info.me)) end })
+        add(2, { title = 'Réparer mon véhicule', icon = 'wrench', onSelect = function() notify(act('fixveh', info.me)) end })
+        add(3, { title = 'Faire apparaître un véhicule', icon = 'car', onSelect = function()
             local r = input('Véhicule', { { type = 'input', label = 'Modèle (ex : sultan, faggio, buzzard)', required = true } })
             if not r then return end
             local model = r[1]:gsub('%s', ''):lower()
             local hash = GetHashKey(model)
             if not IsModelInCdimage(hash) or not IsModelAVehicle(hash) then return notify(false, 'Modèle inconnu : ' .. model) end
             notify(act('spawnveh', nil, { model = model, vtype = vehicleType(hash) }))
-        end)
-        add({ label = 'Supprimer le véhicule proche', icon = 'trash' }, 2, function()
+        end })
+        add(2, { title = 'Supprimer le véhicule proche', icon = 'trash', onSelect = function()
             local veh = nearestVehicle()
             if veh == 0 or not NetworkGetEntityIsNetworked(veh) then return notify(false, 'Aucun véhicule proche.') end
             notify(act('delveh', nil, { netId = VehToNet(veh) }))
-        end)
-        add({ label = 'Me mettre un métier', icon = 'briefcase' }, 3, function() jobsMenu(me) end)
-        add({ label = 'Me mettre dans un gang', icon = 'people-group' }, 3, function() gangsMenu(me) end)
-        add({ label = 'Points de métier (placer ici)', icon = 'location-crosshairs',
-            description = 'Service, coffre, armurerie, direction, garage : déplacés à ta position' }, 3, function() pointsMenu() end)
-        add({ label = 'Items (fondateur)', icon = 'box-open' }, 4, function() itemsMenu(me) end)
-        add({ label = 'Copier mes coordonnées', icon = 'crosshairs', description = 'vec4 dans le presse-papiers (calage des configs)' }, 1, function()
+        end })
+        add(3, { title = 'Me mettre un métier', icon = 'briefcase', arrow = true, onSelect = function() jobsMenu(me) end })
+        add(3, { title = 'Me mettre dans un gang', icon = 'people-group', arrow = true, onSelect = function() gangsMenu(me) end })
+        add(3, { title = 'Points de métier (placer ici)', icon = 'location-crosshairs', arrow = true,
+            description = 'Service, coffre, armurerie, direction, garage : déplacés à ta position', onSelect = pointsMenu })
+        add(4, { title = 'Items (fondateur)', icon = 'box-open', arrow = true, onSelect = function() itemsMenu(me) end })
+        add(1, { title = 'Copier mes coordonnées', icon = 'crosshairs', description = 'vec4 dans le presse-papiers (calage des configs)', onSelect = function()
             local ped = PlayerPedId()
             local c = GetEntityCoords(ped)
             lib.setClipboard(('vec4(%.2f, %.2f, %.2f, %.1f)'):format(c.x, c.y, c.z, GetEntityHeading(ped)))
             notify(true, 'Coordonnées copiées.')
-        end)
+        end })
     end
-    add({ label = 'Panel complet (F10)', icon = 'table-columns' }, 1, function() ExecuteCommand('admin') end)
-
-    lib.registerMenu({
-        id = 'gs_staff_quick', title = ('Staff · %s'):format(info.levelName or ''), position = 'top-right', options = options,
-        onCheck = function(i, checked) if actions[i] then actions[i](checked) openQuick('main') end end,
-    }, function(i, scroll) if actions[i] then actions[i](nil, scroll) end end)
-    lib.showMenu('gs_staff_quick')
+    add(1, { title = 'Panel complet (F10)', icon = 'table-columns', onSelect = function() ExecuteCommand('admin') end })
+    show('gs_staff_quick', ('Staff · %s'):format(info.levelName or ''), options)
 end
 
---- Ouvre un menu (données rafraîchies depuis le serveur).
-function openQuick(which, target)
+--- Ouvre le menu principal (données rafraîchies depuis le serveur).
+function openQuick()
     info = lib.callback.await('gs_admin:quick', false)
     if not info then return notify(false, 'Accès réservé au staff.') end
-    if which == 'players' then return playersMenu() end
-    if which == 'jobs' then return jobsMenu(target) end
-    if which == 'gangs' then return gangsMenu(target) end
-    if which == 'items' then return itemsMenu(target) end
     mainMenu()
 end
 

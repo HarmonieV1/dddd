@@ -40,6 +40,11 @@ local function openMarket(kind, index, place)
     lib.showContext('gs_economy')
 end
 
+AddEventHandler('gs_economy:client:open', function(kind, i)
+    local list = kind == 'sell' and Config.Resellers or Config.Shops
+    if list[i] then openMarket(kind, i, list[i]) end
+end)
+
 CreateThread(function()
     for kind, list in pairs({ buy = Config.Shops, sell = Config.Resellers }) do
         for i, place in ipairs(list) do
@@ -57,7 +62,8 @@ CreateThread(function()
                 addBlip(place.coords, style, place.label)
             end
             exports.gs_markers:Add(('gs_economy:%s:%d'):format(kind, i), { coords = place.coords, style = 'shop',
-                label = kind == 'sell' and 'Revendre' or 'Acheter', distance = 20.0 })
+                label = kind == 'sell' and 'Revendre' or 'Acheter', distance = 20.0,
+                event = 'gs_economy:client:open', args = { kind, i }, prompt = place.label })
         end
     end
 end)

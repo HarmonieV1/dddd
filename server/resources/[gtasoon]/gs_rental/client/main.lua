@@ -28,13 +28,16 @@ local function openMenu(pointId)
     lib.showContext('gs_rental')
 end
 
+AddEventHandler('gs_rental:client:open', function(i) openMenu(i) end)
+
 CreateThread(function()
     for i, p in ipairs(Config.Points) do
         zones[#zones + 1] = exports.ox_target:addSphereZone({ coords = p.coords, radius = 1.5, options = { {
             name = 'gs_rental_' .. i, icon = 'fa-solid fa-bicycle', label = 'Louer un véhicule',
             onSelect = function() openMenu(i) end,
         } } })
-        exports.gs_markers:Add('gs_rental:' .. i, { coords = p.coords, style = 'rental', label = 'Location', icon = 38 })
+        exports.gs_markers:Add('gs_rental:' .. i, { coords = p.coords, style = 'rental', label = 'Location', icon = 38,
+            event = 'gs_rental:client:open', args = { i }, prompt = 'Louer un véhicule' })
         local b = AddBlipForCoord(p.coords.x, p.coords.y, p.coords.z)
         SetBlipSprite(b, Config.Blip.sprite)
         SetBlipColour(b, Config.Blip.color)

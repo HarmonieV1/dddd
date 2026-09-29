@@ -186,6 +186,7 @@ function refresh()
 end
 
 RegisterNetEvent('gs_quests:client:refresh', function() refresh() end)
+AddEventHandler('gs_quests:client:talk', function(id) talk(id) end)
 RegisterNetEvent('gs_quests:client:daily', function(label)
     lib.notify({ title = 'Défi du jour réussi', description = label, type = 'success', icon = 'calendar-check', duration = 7000 })
 end)
@@ -337,6 +338,9 @@ RegisterKeyMapping('progression', 'Progression et quêtes', 'keyboard', Config.K
 -- encore chargé ou s'il est mal posé) ; la cabine de la Voix n'a pas de PNJ.
 CreateThread(function()
     for id, ch in pairs(Characters) do
+        Markers:Add('gs_quests:talk:' .. id, { coords = vec3(ch.coords.x, ch.coords.y, ch.coords.z), style = 'hidden', ring = false,
+            distance = 6.0, reach = 2.5, event = 'gs_quests:client:talk', args = { id },
+            prompt = ch.model and ('Parler à ' .. ch.name) or 'Décrocher le téléphone' })
         exports.ox_target:addSphereZone({ coords = vec3(ch.coords.x, ch.coords.y, ch.coords.z + 0.3), radius = 1.6, options = { {
             name = 'gs_quest_' .. id, icon = ch.model and 'fa-solid fa-comment' or 'fa-solid fa-phone',
             label = ch.model and ('Parler à ' .. ch.name) or 'Décrocher', distance = 3.0,

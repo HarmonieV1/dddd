@@ -1,5 +1,6 @@
 -- gs_markers (client) : tous les marqueurs GTA SOON dessinés par UN seul fil, avec le même style néon.
--- Les autres ressources déclarent leurs points : exports.gs_markers:Add(id, { coords, style, label?, icon?, distance?, height? })
+-- Les autres ressources déclarent leurs points : exports.gs_markers:Add(id, { coords, style, label?, icon?, distance?, height?,
+--   event?, args?, prompt?, reach? }) : avec `event`, la touche [E] à moins de `reach` m déclenche l'event local (en plus d'ox_target).
 -- Coût : un tri par distance toutes les 500 ms ; dessin à chaque frame seulement s'il y a un point à < 40 m.
 
 local STYLES = {
@@ -10,6 +11,7 @@ local STYLES = {
     shop   = { ring = { 255, 196, 0 }, icon = 29, iconColor = { 255, 196, 0 } },      -- commerce ($)
     job    = { ring = { 160, 110, 255 }, icon = 21, iconColor = { 160, 110, 255 } },  -- point de métier
     objective = { ring = { 255, 196, 0 }, icon = 0, iconColor = { 255, 196, 0 } },    -- objectif de quête (cône)
+    hidden = {},                                                                      -- rien de dessiné : juste [E]
 }
 
 local points = {}      -- [id] = { coords, style, label, drawDist }
@@ -25,6 +27,10 @@ local function add(id, def)
         ring = def.ring ~= false,
         height = def.height or 1.0,
         icon = def.icon,   -- remplace l'icône du style (ex : 36 voiture, 38 vélo)
+        event = def.event, -- [E] à proximité : TriggerEvent(event, table.unpack(args)) (évent local de la ressource)
+        args = def.args or {},
+        prompt = def.prompt or def.label,
+        reach = def.reach or 1.8,
     }
     return true
 end
@@ -70,9 +76,25 @@ CreateThread(function()
             Wait(500)
         else
             spin = (spin + 1.2) % 360.0
+            local me = GetEntityCoords(PlayerPedId())
+            local best, bestD
+            for _, n in ipairs(nearby) do
+                if n.p.event then
+                    local d = #(me - n.p.coords)
+                    if d < n.p.reach and (not bestD or d < bestD) then best, bestD = n.p, d end
+                end
+            end
+            if best and not IsPedInAnyVehicle(PlayerPedId(), false) then
+                SetTextFont(4) SetTextScale(0.0, 0.45) SetTextCentre(true) SetTextOutline()
+                SetTextColour(40, 224, 255, 240)
+                BeginTextCommandDisplayText('STRING')
+                AddTextComponentSubstringPlayerName('[E] ' .. (best.prompt or 'Interagir'))
+                EndTextCommandDisplayText(0.5, 0.88)
+                if IsControlJustReleased(0, 38) then TriggerEvent(best.event, table.unpack(best.args)) end
+            end
             for _, n in ipairs(nearby) do
                 local p, c, s = n.p, n.p.coords, n.p.style
-                if p.ring then
+                if p.ring and s.ring then
                     DrawMarker(25, c.x, c.y, c.z - 0.97, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.6, 1.6, 1.0,
                         s.ring[1], s.ring[2], s.ring[3], 170, false, false, 2, false, nil, nil, false)
                 end
@@ -82,11 +104,11 @@ CreateThread(function()
                         s.plumbob[1], s.plumbob[2], s.plumbob[3], 220, false, false, 2, false, nil, nil, false)
                     DrawMarker(0, c.x, c.y, z + 0.46, 180.0, 0.0, 0.0, 0.0, 0.0, spin, 0.22, 0.22, 0.28,
                         s.plumbob[1], s.plumbob[2], s.plumbob[3], 220, false, false, 2, false, nil, nil, false)
-                elseif p.icon or s.icon then
+                elseif (p.icon or s.icon) and s.iconColor then
                     DrawMarker(p.icon or s.icon, c.x, c.y, c.z + 0.2, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.55, 0.55, 0.55,
                         s.iconColor[1], s.iconColor[2], s.iconColor[3], 210, true, true, 2, false, nil, nil, false)
                 end
-                if p.label and n.d < 8.0 then text3d(vec3(c.x, c.y, c.z + (s.plumbob and p.height + 0.8 or 0.9)), p.label) end
+                if p.label and n.d < 8.0 and s ~= STYLES.hidden then text3d(vec3(c.x, c.y, c.z + (s.plumbob and p.height + 0.8 or 0.9)), p.label) end
             end
             Wait(0)
         end

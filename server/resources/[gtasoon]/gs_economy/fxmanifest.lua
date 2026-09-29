@@ -10,4 +10,4 @@ dependencies { 'oxmysql', 'ox_lib', 'ox_target', 'gs_security', 'gs_bridge', 'gs
 
 shared_scripts { '@ox_lib/init.lua', 'shared/config.lua', 'shared/pricing.lua' }
 server_scripts { '@oxmysql/lib/MySQL.lua', 'server/store.lua', 'server/main.lua' }
-client_scripts { 'client/main.lua', 'client/vices.lua' }
+client_scripts { 'client/main.lua', 'client/vices.lua', 'client/clerks.lua' }

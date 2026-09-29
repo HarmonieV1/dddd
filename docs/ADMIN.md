@@ -20,8 +20,7 @@
 
 ## Menu staff rapide (F11) — V2
 
-Menu classique en haut à droite : **flèches** pour naviguer, **Entrée** pour valider, **gauche/droite** pour les
-listes (grade, animal), **Retour** pour revenir. Les pouvoirs ne marchent **qu'en mode staff** (1re ligne),
+Menu **cliquable à la souris** (chaque ligne porte sa propre action, sous-menus avec flèche, retour en haut à gauche). Les pouvoirs ne marchent **qu'en mode staff** (1re ligne),
 et le couper coupe tout : vol, invisibilité, invincibilité, animal, spectate.
 
 | Fonction | Niveau |

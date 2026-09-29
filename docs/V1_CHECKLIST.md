@@ -61,3 +61,10 @@ Cocher dans l'ordre. Chaque ligne rouge en console = on s'arrête et on l'envoie
 - [ ] Gangs par défaut (Families, Ballas, Vagos, Marabunta, Lost MC) : F11 → Me mettre dans un gang ; blip QG + planque
 - [ ] Transformation animal (nouveaux animaux) → « Reprendre forme humaine » : on retrouve exactement son perso
 - [ ] Max le Guide : « Parler à Max » visible même de loin (zone fixe), PNJ posé au sol
+
+## V2.3 — à tester en jeu
+- [ ] [E] près de Max, d'un comptoir de location, d'une supérette, d'un point de métier, d'une planque : le menu s'ouvre
+- [ ] (ox_target reste dispo : maintenir ALT gauche puis viser)
+- [ ] Vendeur PNJ derrière chaque comptoir (sinon noter les coords avec F11 → Copier mes coordonnées)
+- [ ] F11 cliquable à la souris : chaque ligne fait bien ce qu'elle dit (TP marqueur ≠ soin)
+- [ ] Menus ox_lib noir-violet néon, accents roses (ligne verte « menus ox_lib en noir néon » dans METTRE-A-JOUR)

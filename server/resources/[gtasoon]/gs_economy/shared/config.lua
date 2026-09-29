@@ -58,26 +58,28 @@ local CAVISTE = { 'beer', 'wine', 'vodka', 'whiskey', 'gs_cigarettes', 'lighter'
 local QUINCAILLERIE = { 'repairkit', 'jerry_can', 'lockpick', 'radio', 'binoculars', 'phone' }
 
 -- Commerces (achat). Coords = comptoirs des magasins du jeu (mêmes points qu'ox_inventory) ; blip = style de Config.Blips.
+-- clerk = vendeur PNJ derrière le comptoir (vec4, à caler en jeu : F11 → Copier mes coordonnées).
+Config.ClerkModel = 'mp_m_shopkeep_01'
 Config.Shops = {
-    { label = 'Supérette Strawberry', coords = vec3(25.06, -1347.32, 29.5), items = SUPERETTE, blip = 'shop' },
-    { label = 'Supérette Little Seoul', coords = vec3(-707.4, -914.3, 19.2), items = SUPERETTE, blip = 'shop' },
-    { label = 'Supérette Mirror Park', coords = vec3(1163.4, -323.8, 69.2), items = SUPERETTE, blip = 'shop' },
-    { label = 'Supérette Sandy Shores', coords = vec3(1960.54, 3740.28, 32.34), items = SUPERETTE, blip = 'shop' },
-    { label = 'Supérette Chumash', coords = vec3(-3039.18, 585.13, 7.91), items = SUPERETTE, blip = 'shop' },
-    { label = 'Supérette Banham Canyon', coords = vec3(-3242.2, 1000.58, 12.83), items = SUPERETTE, blip = 'shop' },
-    { label = 'Supérette Paleto Bay', coords = vec3(1728.39, 6414.95, 35.04), items = SUPERETTE, blip = 'shop' },
-    { label = 'Supérette Grapeseed', coords = vec3(1698.37, 4923.43, 42.06), items = SUPERETTE, blip = 'shop' },
-    { label = 'Supérette Harmony', coords = vec3(548.5, 2671.25, 42.16), items = SUPERETTE, blip = 'shop' },
-    { label = 'Supérette Senora', coords = vec3(2678.29, 3279.94, 55.24), items = SUPERETTE, blip = 'shop' },
-    { label = 'Supérette Tataviam', coords = vec3(2557.19, 381.4, 108.62), items = SUPERETTE, blip = 'shop' },
-    { label = 'Supérette Vinewood', coords = vec3(373.13, 326.29, 103.57), items = SUPERETTE, blip = 'shop' },
-    { label = 'Caviste Mirror Park', coords = vec3(1134.9, -982.34, 46.41), items = CAVISTE, blip = 'liquor' },
-    { label = 'Caviste Vespucci', coords = vec3(-1222.33, -907.82, 12.43), items = CAVISTE, blip = 'liquor' },
-    { label = 'Caviste Morningwood', coords = vec3(-1486.67, -378.46, 40.26), items = CAVISTE, blip = 'liquor' },
-    { label = 'Caviste Chumash', coords = vec3(-2967.0, 390.9, 15.14), items = CAVISTE, blip = 'liquor' },
-    { label = 'Caviste Route 68', coords = vec3(1165.95, 2710.2, 38.26), items = CAVISTE, blip = 'liquor' },
-    { label = 'Caviste Sandy Shores', coords = vec3(1393.0, 3605.95, 35.11), items = CAVISTE, blip = 'liquor' },
-    { label = 'Quincaillerie Senora', coords = vec3(2746.8, 3473.13, 55.67), items = QUINCAILLERIE, blip = 'hardware' },
+    { label = 'Supérette Strawberry', coords = vec3(25.06, -1347.32, 29.5), items = SUPERETTE, blip = 'shop', clerk = vec4(24.47, -1346.62, 29.5, 271.66) },
+    { label = 'Supérette Little Seoul', coords = vec3(-707.4, -914.3, 19.2), items = SUPERETTE, blip = 'shop', clerk = vec4(-706.06, -913.97, 19.22, 88.04) },
+    { label = 'Supérette Mirror Park', coords = vec3(1163.4, -323.8, 69.2), items = SUPERETTE, blip = 'shop', clerk = vec4(1164.71, -322.94, 69.21, 101.72) },
+    { label = 'Supérette Sandy Shores', coords = vec3(1960.54, 3740.28, 32.34), items = SUPERETTE, blip = 'shop', clerk = vec4(1959.6, 3740.93, 32.34, 296.84) },
+    { label = 'Supérette Chumash', coords = vec3(-3039.18, 585.13, 7.91), items = SUPERETTE, blip = 'shop', clerk = vec4(-3039.54, 584.38, 7.91, 17.27) },
+    { label = 'Supérette Banham Canyon', coords = vec3(-3242.2, 1000.58, 12.83), items = SUPERETTE, blip = 'shop', clerk = vec4(-3242.97, 1000.01, 12.83, 357.57) },
+    { label = 'Supérette Paleto Bay', coords = vec3(1728.39, 6414.95, 35.04), items = SUPERETTE, blip = 'shop', clerk = vec4(1728.07, 6415.63, 35.04, 242.95) },
+    { label = 'Supérette Grapeseed', coords = vec3(1698.37, 4923.43, 42.06), items = SUPERETTE, blip = 'shop', clerk = vec4(1697.8, 4922.5, 42.06, 324.71) },
+    { label = 'Supérette Harmony', coords = vec3(548.5, 2671.25, 42.16), items = SUPERETTE, blip = 'shop', clerk = vec4(549.13, 2670.85, 42.16, 99.39) },
+    { label = 'Supérette Senora', coords = vec3(2678.29, 3279.94, 55.24), items = SUPERETTE, blip = 'shop', clerk = vec4(2677.47, 3279.76, 55.24, 335.08) },
+    { label = 'Supérette Tataviam', coords = vec3(2557.19, 381.4, 108.62), items = SUPERETTE, blip = 'shop', clerk = vec4(2556.66, 380.84, 108.62, 356.67) },
+    { label = 'Supérette Vinewood', coords = vec3(373.13, 326.29, 103.57), items = SUPERETTE, blip = 'shop', clerk = vec4(372.66, 326.98, 103.57, 253.73) },
+    { label = 'Caviste Mirror Park', coords = vec3(1134.9, -982.34, 46.41), items = CAVISTE, blip = 'liquor', clerk = vec4(1134.2, -983.26, 46.42, 277.24) },
+    { label = 'Caviste Vespucci', coords = vec3(-1222.33, -907.82, 12.43), items = CAVISTE, blip = 'liquor', clerk = vec4(-1221.58, -908.15, 12.33, 35.49) },
+    { label = 'Caviste Morningwood', coords = vec3(-1486.67, -378.46, 40.26), items = CAVISTE, blip = 'liquor', clerk = vec4(-1486.59, -377.68, 40.16, 139.51) },
+    { label = 'Caviste Chumash', coords = vec3(-2967.0, 390.9, 15.14), items = CAVISTE, blip = 'liquor', clerk = vec4(-2966.39, 391.42, 15.04, 87.48) },
+    { label = 'Caviste Route 68', coords = vec3(1165.95, 2710.2, 38.26), items = CAVISTE, blip = 'liquor', clerk = vec4(1165.28, 2710.8, 38.16, 179.43) },
+    { label = 'Caviste Sandy Shores', coords = vec3(1393.0, 3605.95, 35.11), items = CAVISTE, blip = 'liquor', clerk = vec4(1392.46, 3606.41, 34.98, 199.0) },
+    { label = 'Quincaillerie Senora', coords = vec3(2746.8, 3473.13, 55.67), items = QUINCAILLERIE, blip = 'hardware', clerk = vec4(2747.8, 3472.86, 55.67, 255.08) },
     { label = 'Quincaillerie La Mesa', coords = vec3(342.99, -1298.26, 32.51), items = QUINCAILLERIE, blip = 'hardware' },
 }
 

@@ -32,6 +32,10 @@ CreateThread(function() drawTerritories(GlobalState.gsTerritories) end)
 -- Appartenance + planque ------------------------------------------------------------------------------
 local qgBlip
 
+AddEventHandler('gs_gangs:client:openStash', function()
+    if membership then Bridge:OpenStash('gs_gang_' .. membership.gang) end
+end)
+
 RegisterNetEvent('gs_gangs:client:membership', function(m)
     membership = m
     if stashZone then exports.ox_target:removeZone(stashZone) stashZone = nil end
@@ -46,7 +50,8 @@ RegisterNetEvent('gs_gangs:client:membership', function(m)
         BeginTextCommandSetBlipName('STRING')
         AddTextComponentSubstringPlayerName('QG ' .. m.label)
         EndTextCommandSetBlipName(qgBlip)
-        exports.gs_markers:Add('gs_gangs:qg', { coords = m.stash, style = 'entry', label = 'Planque ' .. m.label })
+        exports.gs_markers:Add('gs_gangs:qg', { coords = m.stash, style = 'entry', label = 'Planque ' .. m.label,
+            event = 'gs_gangs:client:openStash', prompt = 'Ouvrir la planque' })
         stashZone = exports.ox_target:addSphereZone({
             coords = m.stash, radius = 1.5,
             options = { {
