@@ -200,6 +200,7 @@ Actions.identity = { job = 'police', target = true, run = function(_, target)
     return {
         name = ('%s %s'):format(ci.firstname or '?', ci.lastname or '?'), birthdate = ci.birthdate, nationality = ci.nationality,
         driver = lic.driver == true, weapon = lic.weapon == true, hunting = lic.hunting == true, records = #Store.records(Bridge:GetIdentifier(target)),
+        spouse = GetResourceState('gs_civil') == 'started' and exports.gs_civil:GetSpouseName(Bridge:GetIdentifier(target)) or nil,
         wanted = heat > 0, warrant = Store.hasWarrant and Store.hasWarrant(Bridge:GetIdentifier(target)) or false,
     }
 end }

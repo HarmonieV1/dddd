@@ -11,3 +11,5 @@ Config.MirrorToDiscord = true      -- copie des posts sur le salon public (conva
 Config.InfluencerFollowers = 25    -- badge « influenceur » à partir de N abonnés (le badge vérifié est posé par la modération)
 Config.TopSize = 5                 -- classements de la semaine (posts, créateurs, abonnés)
 Config.TopCacheSeconds = 60
+Config.PressJob = 'weazel'           -- journalistes : badge presse, « flash info » envoyé à toute la ville
+Config.FlashCooldown = 300          -- secondes entre deux flash info (toute la rédaction)

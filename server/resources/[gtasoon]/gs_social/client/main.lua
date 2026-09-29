@@ -60,3 +60,8 @@ end)
 AddEventHandler('onResourceStop', function(res)
     if res == GetCurrentResourceName() and open then SetNuiFocus(false, false) end
 end)
+
+RegisterNetEvent('gs_social:client:flash', function(handle, content)
+    PlaySoundFrontend(-1, 'Event_Message_Purple', 'GTAO_FM_Events_Soundset', false)
+    lib.notify({ title = '📰 FLASH INFO · Weazel News', description = ('@%s : %s'):format(handle, content:sub(1, 160)), type = 'warning', icon = 'newspaper', duration = 12000 })
+end)

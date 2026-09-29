@@ -29,7 +29,12 @@ end
 
 local function publicView(p, cid)
     return { id = p.id, handle = p.handle, content = p.content, likes = p.likes, time = p.time,
-             liked = cid ~= nil and p.likedBy[cid] == true, title = titleOf(p), badge = Neon.badge(p.handle) }
+             liked = cid ~= nil and p.likedBy[cid] == true, title = titleOf(p), badge = p.press and 'press' or Neon.badge(p.handle), flash = p.flash }
+end
+
+--- Journaliste en service (Weazel News) : ses posts portent le badge presse.
+function Neon.isPress(src)
+    return GetResourceState('gs_jobs') == 'started' and exports.gs_jobs:IsOnDutyAs(src, Config.PressJob) == true
 end
 
 function Neon.canModerate(src) return IsPlayerAceAllowed(src, Config.ModerateAce) end
@@ -73,7 +78,7 @@ lib.callback.register('gs_social:open', function(src)
     local title = GetResourceState('gs_quests') == 'started' and exports.gs_quests:GetTitle(src) or nil
     local me = handleOf(src)
     return { handle = me, title = title, feed = feed, canModerate = canModerate(src), maxLength = Config.MaxLength,
-             badge = me and Neon.badge(me), followers = me and Neon.followers[me] or 0 }
+             badge = me and Neon.badge(me), followers = me and Neon.followers[me] or 0, press = Neon.isPress(src) }
 end)
 
 lib.callback.register('gs_social:setHandle', function(src, handle)
@@ -97,7 +102,7 @@ lib.callback.register('gs_social:post', function(src, content)
 
     local id = Store.insertPost(cid, handle, content)
     if not id then return false, 'Erreur, réessaie.' end
-    local post = { id = id, cid = cid, handle = handle, content = content, likes = 0, time = os.time(), likedBy = {} }
+    local post = { id = id, cid = cid, handle = handle, content = content, likes = 0, time = os.time(), likedBy = {}, press = Neon.isPress(src) }
     post.title = titleOf(post)
     table.insert(Neon.feed, 1, post)
     Neon.feed[Config.FeedSize + 1] = nil

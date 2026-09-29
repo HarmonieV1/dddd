@@ -32,6 +32,7 @@ Config.Items = {
     gs_cigarettes = { label = 'Paquet de cigarettes', base = 15, min = 0.8, max = 1.6, volume = 40 },
     lighter   = { label = 'Briquet', base = 5, min = 0.8, max = 1.5, volume = 40 },
     phone     = { label = 'Téléphone', base = 450, min = 0.9, max = 1.3, volume = 10 },
+    painkillers = { label = 'Antidouleurs', base = 60, min = 0.8, max = 1.6, volume = 30 },
     scratch_ticket = { label = 'Ticket à gratter', base = 100, min = 1.0, max = 1.0, volume = 1000 }, -- prix fixe (gs_casino)
     -- Alcool (supérettes et cavistes)
     beer      = { label = 'Bière', base = 8, min = 0.7, max = 1.8, volume = 60 },
@@ -65,6 +66,7 @@ Config.EventMultipliers = {
 local SUPERETTE = { 'water', 'sprunk', 'coffee', 'gs_energy', 'burger', 'sandwich', 'gs_chips', 'gs_donut',
     'beer', 'wine', 'gs_cigarettes', 'lighter', 'bandage', 'phone', 'scratch_ticket' }
 local CAVISTE = { 'beer', 'wine', 'vodka', 'whiskey', 'gs_cigarettes', 'lighter', 'water', 'sprunk', 'gs_chips' }
+local PHARMACIE = { 'painkillers', 'bandage', 'water', 'gs_energy' }
 local QUINCAILLERIE = { 'repairkit', 'advancedrepairkit', 'cleaningkit', 'jerry_can', 'spraycan', 'plant_pot', 'fertilizer', 'fishingrod', 'pickaxe', 'axe', 'huntingknife', 'lockpick', 'radio', 'binoculars', 'phone' }
 
 -- Commerces (achat). Coords = comptoirs des magasins du jeu (mêmes points qu'ox_inventory) ; blip = style de Config.Blips.
@@ -90,6 +92,8 @@ Config.Shops = {
     { label = 'Caviste Route 68', coords = vec3(1165.95, 2710.2, 38.26), items = CAVISTE, blip = 'liquor', clerk = vec4(1165.28, 2710.8, 38.16, 179.43) },
     { label = 'Caviste Sandy Shores', coords = vec3(1393.0, 3605.95, 35.11), items = CAVISTE, blip = 'liquor', clerk = vec4(1392.46, 3606.41, 34.98, 199.0) },
     { label = 'Quincaillerie Senora', coords = vec3(2746.8, 3473.13, 55.67), items = QUINCAILLERIE, blip = 'hardware', clerk = vec4(2747.8, 3472.86, 55.67, 255.08) },
+    { label = 'Pharmacie Dollar Pills', coords = vec3(69.3, -1570.1, 29.6), items = PHARMACIE, blip = 'pharmacy' }, -- [À CALER]
+    { label = 'Pharmacie Pillbox', coords = vec3(318.4, -1076.8, 29.5), items = PHARMACIE, blip = 'pharmacy' },       -- [À CALER]
     { label = 'Quincaillerie La Mesa', coords = vec3(342.99, -1298.26, 32.51), items = QUINCAILLERIE, blip = 'hardware' },
 }
 
@@ -103,4 +107,5 @@ Config.Blips = {
     liquor = { sprite = 93, color = 27, scale = 0.7 },
     hardware = { sprite = 402, color = 47, scale = 0.7 },
     reseller = { sprite = 527, color = 47, scale = 0.7 },
+    pharmacy = { sprite = 51, color = 2, scale = 0.7 },
 }

@@ -115,7 +115,7 @@ end)
 -- App Vibe : relais vers gs_social (mêmes callbacks serveur, mêmes règles que l'ancienne app Néon)
 local VIBE = { setHandle = { 'gs_social:setHandle', 'handle' }, post = { 'gs_social:post', 'content' }, like = { 'gs_social:like', 'id' },
     delete = { 'gs_social:delete', 'id' }, report = { 'gs_social:report', 'id' },
-    follow = { 'gs_social:follow', 'handle' }, verify = { 'gs_social:verify', 'handle' } }
+    follow = { 'gs_social:follow', 'handle' }, verify = { 'gs_social:verify', 'handle' }, flash = { 'gs_social:flash', 'content' } }
 RegisterNUICallback('vibe', function(b, cb)
     if GetResourceState('gs_social') ~= 'started' then return cb(b.op == 'open' and false or { ok = false, message = 'Vibe est hors ligne.' }) end
     if b.op == 'open' then return cb(lib.callback.await('gs_social:open', false) or false) end

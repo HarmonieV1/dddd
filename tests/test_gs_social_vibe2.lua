@@ -2,6 +2,8 @@
 dofile('tests/mock.lua')
 local R = 'server/resources/[gtasoon]/'
 provide('gs_races', { GetTop = function() return { { id = 'sprint', label = 'Sprint', top = { { name = 'Jason N.', time = '6:41.220' } } } } end })
+local press = {}
+provide('gs_jobs', { IsOnDutyAs = function(src, job) return job == 'weazel' and press[src] == true end })
 loadResource('gs_security', { R .. 'gs_security/server/main.lua' })
 loadResource('gs_social', { R .. 'gs_social/shared/config.lua' })
 local profiles, follows, verified = { CID1 = 'lucia', CID2 = 'jason' }, {}, {}
@@ -16,6 +18,7 @@ Store = {
     setFollow = function(a, b, on) follows[a .. '>' .. b] = on or nil end,
     setVerified = function(h, on) verified[h] = on end,
     profilePosts = function() return { { id = 1, handle = 'jason', content = 'yo', likes = 3, time = 0 } } end,
+    insertPost = function() return 99 end,
     weekTop = function() weekQueries = weekQueries + 1 return { { id = 1, handle = 'jason', content = 'yo', likes = 3, time = 0 } },
         { { handle = 'jason', likes = 3, posts = 1 } } end,
 }
@@ -74,6 +77,16 @@ check('top : posts, créateurs, abonnés triés', top and #top.posts == 1 and to
 cb('gs_social:top', 2); step()
 check('top : cache (une seule requête)', weekQueries == 1)
 check('top : classement des courses', top.races and top.races[1].top[1].time == '6:41.220')
+
+-- Presse : flash info réservé aux journalistes en service, cooldown partagé
+local okf, msgf = cb('gs_social:flash', 1, 'Explosion au port !'); advance(31000)
+check('flash : réservé à la presse', not okf)
+press[1] = true
+okf = cb('gs_social:flash', 1, 'Explosion au port !'); advance(31000)
+check('flash publié : badge presse + annonce à tous', okf and Neon.feed[1].flash and Neon.feed[1].press and lastClientEvent('gs_social:client:flash', -1) ~= nil)
+press[2] = true
+okf, msgf = cb('gs_social:flash', 2, 'Encore ?'); advance(31000)
+check('flash : cooldown partagé par la rédaction', not okf and msgf:find('Prochain'))
 
 io.write(('\n%d réussis, %d échoués\n'):format(passed, failed))
 os.exit(failed == 0 and 0 or 1)

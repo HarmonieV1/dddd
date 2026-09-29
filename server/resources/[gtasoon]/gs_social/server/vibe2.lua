@@ -51,6 +51,30 @@ lib.callback.register('gs_social:verify', function(src, handle)
     return true, on
 end)
 
+--- Flash info (journaliste en service) : post avec badge presse + bandeau pour toute la ville. Cooldown partagé.
+Vibe2.lastFlash = 0
+lib.callback.register('gs_social:flash', function(src, content)
+    if not guard(src, 'flash', 2, 30000) then return false, 'Doucement.' end
+    if not Neon.isPress(src) then return false, 'Réservé aux journalistes en service.' end
+    local handle = Neon.handleOf(src)
+    if not handle then return false, 'Crée d\'abord ton profil Vibe.' end
+    content = Neon.clean(content)
+    if not content then return false, 'Flash vide.' end
+    local wait = Vibe2.lastFlash + Config.FlashCooldown - os.time()
+    if Vibe2.lastFlash > 0 and wait > 0 then return false, ('Prochain flash possible dans %d s.'):format(wait) end
+    local cid = Bridge:GetIdentifier(src)
+    local id = Store.insertPost(cid, handle, content)
+    if not id then return false, 'Erreur, réessaie.' end
+    Vibe2.lastFlash = os.time()
+    local post = { id = id, cid = cid, handle = handle, content = content, likes = 0, time = os.time(), likedBy = {}, press = true, flash = true }
+    table.insert(Neon.feed, 1, post)
+    Neon.feed[Config.FeedSize + 1] = nil
+    TriggerClientEvent('gs_social:client:new', -1, { id = id, handle = handle, content = content, likes = 0, time = post.time, badge = 'press', flash = true })
+    TriggerClientEvent('gs_social:client:flash', -1, handle, content)
+    Security:LogStaff(('[Vibe] FLASH INFO @%s : %s'):format(handle, content), 'social', true)
+    return true, 'Flash info publié.'
+end)
+
 --- Classements de la semaine (cache court : requêtes groupées, pas à chaque ouverture).
 lib.callback.register('gs_social:top', function(src)
     if not guard(src, 'top', 5, 10000) then return nil end

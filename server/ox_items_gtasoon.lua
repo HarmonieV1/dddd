@@ -46,3 +46,8 @@
 ['potato'] = { label = 'Pomme de terre', weight = 200, stack = true, client = { image = 'potato.png' } }, -- remplace
 ['meat'] = { label = 'Viande de gibier', weight = 1000, stack = true, client = { image = 'meat.png' } }, -- remplace
 ['leather'] = { label = 'Cuir', weight = 800, stack = true, client = { image = 'leather.png' } }, -- remplace
+['painkillers'] = { label = 'Antidouleurs', weight = 50, stack = true, close = true, description = '+30 PV en quelques secondes.', client = { image = 'painkillers.png', export = 'gs_details.painkillers' } }, -- remplace
+['gs_cocktail'] = { label = 'Cocktail Vice', weight = 400, stack = true, close = true, client = { status = { thirst = 60000 }, anim = 'drinking', usetime = 3500, image = 'wine.png', export = 'gs_economy.drink' } }, -- remplace
+['gs_whiskycola'] = { label = 'Whisky-cola', weight = 400, stack = true, close = true, client = { status = { thirst = 60000 }, anim = 'drinking', usetime = 3500, image = 'whiskey.png', export = 'gs_economy.drink' } }, -- remplace
+['gs_burger_deluxe'] = { label = 'Burger deluxe', weight = 350, stack = true, close = true, client = { status = { hunger = 350000 }, anim = 'eating', usetime = 3500, image = 'burger.png' } }, -- remplace
+['gs_fries'] = { label = 'Frites maison', weight = 200, stack = true, close = true, client = { status = { hunger = 150000 }, anim = 'eating', usetime = 2500, image = 'sandwich.png' } }, -- remplace

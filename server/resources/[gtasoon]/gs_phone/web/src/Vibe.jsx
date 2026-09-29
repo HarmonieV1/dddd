@@ -38,6 +38,7 @@ function timeAgo(t) {
 function Badge({ kind }) {
   if (kind === 'verified') return <span className="vibe-badge verified" title="Compte vérifié">✔</span>
   if (kind === 'influencer') return <span className="vibe-badge influencer" title="Influenceur">★</span>
+  if (kind === 'press') return <span className="vibe-badge press" title="Presse · Weazel News">P</span>
   return null
 }
 
@@ -97,7 +98,8 @@ export default function Vibe({ onBack }) {
   const Post = ({ p, actions = true }) => {
     const mine = p.handle === data.handle
     return (
-      <article className={mine ? 'vibe-post mine' : 'vibe-post'}>
+      <article className={p.flash ? 'vibe-post flash' : mine ? 'vibe-post mine' : 'vibe-post'}>
+        {p.flash && <div className="vibe-flash">📰 FLASH INFO</div>}
         <div className="vibe-head"><Author h={p.handle} badge={p.badge} />{p.title && <span className="vibe-title">{p.title}</span>}<span className="muted small">{timeAgo(p.time)}</span></div>
         <p><Content text={p.content} onHandle={openProfile} /></p>
         {actions ? (
@@ -192,6 +194,8 @@ export default function Vibe({ onBack }) {
           <textarea rows={2} maxLength={data.maxLength} placeholder="Quoi de neuf à Los Santos ?" value={draft} onChange={(e) => setDraft(e.target.value)} />
           <div className="vibe-foot">
             <span className="muted small">{draft.length}/{data.maxLength}</span>
+            {data.press && <button type="button" className="secondary slim" disabled={busy || !draft.trim()}
+              onClick={() => act('flash', { content: draft }, () => setDraft(''))}>Flash info</button>}
             <button className="primary slim" disabled={busy || !draft.trim()}>Publier</button>
           </div>
           {error && <div className="vibe-error">{error}</div>}

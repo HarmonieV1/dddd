@@ -153,3 +153,8 @@ button:disabled { opacity: .4; cursor: default; }
 .card-bank .secondary { margin-top: 8px; }
 
 .vibe-race { margin-bottom: 10px; } .vibe-race > b { display: block; margin: 4px 4px 6px; font-size: 12px; }
+
+.vibe-badge.press { background: #ff4d6d; color: #fff; font-weight: 800; }
+.vibe-post.flash { border-color: rgba(255, 77, 109, .7); background: rgba(255, 77, 109, .08); }
+.vibe-flash { font-size: 10px; font-weight: 800; letter-spacing: 1px; color: #ff4d6d; margin-bottom: 4px; }
+.secondary.slim { padding: 6px 10px; width: auto; margin-right: 6px; }

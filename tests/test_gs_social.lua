@@ -2,6 +2,7 @@
 dofile('tests/mock.lua')
 local R = 'server/resources/[gtasoon]/'
 local mirrored = {}
+provide('gs_jobs', { IsOnDutyAs = function() return false end })
 loadResource('gs_security', { R .. 'gs_security/server/main.lua' })
 provide('gs_security', {
     RateLimit = getExport('gs_security', 'RateLimit'),

@@ -223,6 +223,24 @@ local function RemoveItem(src, item, count, metadata)
     return OX:RemoveItem(src, item, count, metadata) and true or false
 end
 
+--- Contenu d'un coffre (commerces de joueurs) : compter, retirer, ajouter. [API] ox_inventory (inventaire par id de coffre)
+local function StashCount(id, item)
+    if type(id) ~= 'string' or type(item) ~= 'string' then return 0 end
+    return OX:GetItemCount(id, item) or 0
+end
+local function StashRemove(id, item, count)
+    if not positiveInt(count) or StashCount(id, item) < count then return false end
+    return OX:RemoveItem(id, item, count) and true or false
+end
+local function StashAdd(id, item, count)
+    if type(id) ~= 'string' or type(item) ~= 'string' or not positiveInt(count) then return false end
+    if not OX:CanCarryItem(id, item, count) then return false end
+    return OX:AddItem(id, item, count) and true or false
+end
+exports('StashCount', StashCount)
+exports('StashRemove', StashRemove)
+exports('StashAdd', StashAdd)
+
 --- Coffre ox_inventory. `groups` = { job = gradeMin } ; ox_inventory vérifie job + distance à l'ouverture.
 local function RegisterStash(id, label, slots, weight, groups, coords)
     local ok, err = pcall(function() OX:RegisterStash(id, label, slots, weight, false, groups, coords) end) -- [API]

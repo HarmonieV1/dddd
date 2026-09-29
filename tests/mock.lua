@@ -154,6 +154,9 @@ provide('gs_bridge', {
         return true
     end,
     RegisterStash = function() return true end,
+    StashCount = function(id, item) W.stashes = W.stashes or {} return (W.stashes[id] or {})[item] or 0 end,
+    StashRemove = function(id, item, n) W.stashes = W.stashes or {} local s = W.stashes[id] or {} if (s[item] or 0) < n then return false end s[item] = s[item] - n return true end,
+    StashAdd = function(id, item, n) W.stashes = W.stashes or {} W.stashes[id] = W.stashes[id] or {} if W.stashFull == true or W.stashFull == item then return false end W.stashes[id][item] = (W.stashes[id][item] or 0) + n return true end,
     Revive = function(src) W.players[src].revived = true W.players[src].downed = nil return true end,
     IsDowned = function(src) return W.players[src] ~= nil and W.players[src].downed == true end,
     RegisterGangs = function() return true end,

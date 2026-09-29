@@ -86,6 +86,7 @@ local function showIdentity(id)
     if not ok then return notify(false, d) end
     lib.registerContext({ id = 'gs_police_identity', title = 'Contrôle d\'identité', menu = 'gs_police_menu', options = {
         { title = d.name, icon = 'id-card', readOnly = true, description = ('Né(e) le %s · %s'):format(d.birthdate or '?', d.nationality or '?') },
+        { title = d.spouse and ('Marié(e) à %s'):format(d.spouse) or 'Célibataire', icon = 'heart', readOnly = true },
         { title = ('Permis de conduire : %s'):format(d.driver and 'valide' or 'aucun'), icon = 'car', iconColor = d.driver and '#5aff8c' or '#ff4d6d', readOnly = true },
         { title = ('Port d\'arme : %s'):format(d.weapon and 'oui' or 'non'), icon = 'gun', iconColor = d.weapon and '#5aff8c' or '#6b6380', readOnly = true },
         { title = ('Permis de chasse : %s'):format(d.hunting and 'oui' or 'non'), icon = 'crosshairs', iconColor = d.hunting and '#5aff8c' or '#6b6380', readOnly = true },

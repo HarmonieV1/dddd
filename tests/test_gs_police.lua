@@ -7,6 +7,7 @@ local duty = {}
 provide('gs_jobs', { IsOnDutyAs = function(src, job) return duty[src] == job end,
     GetOnDutyPlayers = function(job) local l = {} for s, j in pairs(duty) do if j == job then l[#l + 1] = s end end return l end })
 provide('gs_wanted', { GetHeat = function(s) return s == 2 and 40 or 0 end })
+provide('gs_civil', { GetSpouseName = function() return nil end })
 loadResource('gs_security', { R .. 'gs_security/server/main.lua' })
 loadResource('gs_police', { R .. 'gs_police/shared/config.lua' })
 local records, jail = {}, {}
