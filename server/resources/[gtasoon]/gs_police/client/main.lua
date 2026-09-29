@@ -81,8 +81,52 @@ local function showRecords(id)
     lib.showContext('gs_police_records')
 end
 
+local function showIdentity(id)
+    local ok, d = act('identity', id)
+    if not ok then return notify(false, d) end
+    lib.registerContext({ id = 'gs_police_identity', title = 'Contrôle d\'identité', menu = 'gs_police_menu', options = {
+        { title = d.name, icon = 'id-card', readOnly = true, description = ('Né(e) le %s · %s'):format(d.birthdate or '?', d.nationality or '?') },
+        { title = ('Permis de conduire : %s'):format(d.driver and 'valide' or 'aucun'), icon = 'car', iconColor = d.driver and '#5aff8c' or '#ff4d6d', readOnly = true },
+        { title = ('Port d\'arme : %s'):format(d.weapon and 'oui' or 'non'), icon = 'gun', iconColor = d.weapon and '#5aff8c' or '#6b6380', readOnly = true },
+        { title = ('Casier : %d mention(s)'):format(d.records), icon = 'folder-open', iconColor = d.records > 0 and '#ff8a3d' or '#5aff8c',
+          onSelect = function() showRecords(id) end },
+        { title = d.wanted and 'SIGNALÉ : recherché' or 'Non recherché', icon = 'triangle-exclamation', iconColor = d.wanted and '#ff4d6d' or '#6b6380', readOnly = true },
+    } })
+    lib.showContext('gs_police_identity')
+end
+
+local function checkPlate()
+    local veh = nearestVehicle(10.0)
+    if veh == 0 then return notify(false, 'Aucun véhicule proche.') end
+    local ok, d = act('plate', nil, { netId = VehToNet(veh) })
+    if not ok then return notify(false, d) end
+    lib.notify({ title = 'Plaque ' .. d.plate, description = d.owner and ('Propriétaire : ' .. d.owner) or 'Non enregistrée (volée, location ou véhicule local)',
+        type = d.owner and 'inform' or 'warning', icon = 'car', duration = 10000 })
+end
+
 local function policeOptions()
     return {
+        { title = 'Contrôle d\'identité', icon = 'id-card', onSelect = function() withTarget(showIdentity) end },
+        { title = 'Vérifier une plaque', icon = 'rectangle-list', onSelect = checkPlate },
+        { title = 'Amende (facture)', icon = 'file-invoice-dollar', onSelect = function()
+            withTarget(function(id)
+                local r = lib.inputDialog('Amende', {
+                    { type = 'number', label = 'Montant ($)', min = 1, max = 25000, required = true },
+                    { type = 'input', label = 'Motif', required = true, max = 80 },
+                })
+                if r then notify(lib.callback.await('gs_jobs:billing:create', false, id, r[1], r[2])) end
+            end)
+        end },
+        { title = 'Alcootest', icon = 'wine-bottle', onSelect = function()
+            withTarget(function(id)
+                local ok, level = act('breathalyzer', id)
+                if not ok then return notify(false, level) end
+                local g = ('%.2f g/L'):format(level * 0.25)
+                lib.notify({ title = 'Alcootest', description = level == 0 and 'Négatif (0,00 g/L)' or ('Positif : %s%s'):format(g, level >= 2 and ' · au-dessus de la limite' or ''),
+                    type = level >= 2 and 'error' or 'success', icon = 'wine-bottle', duration = 8000 })
+            end)
+        end },
+        { title = 'Demander des renforts', icon = 'tower-broadcast', iconColor = '#ff4d6d', onSelect = function() notify(act('backup')) end },
         { title = 'Menotter / démenotter', icon = 'handcuffs', onSelect = simple('cuff', { duration = 2500, label = 'Menottage…',
             anim = { dict = 'mp_arresting', clip = 'a_uncuff' } }) },
         { title = 'Escorter / lâcher', icon = 'person-walking-arrow-right', onSelect = simple('escort') },
@@ -220,6 +264,21 @@ RegisterNetEvent('gs_police:client:heal', function()
     local ped = PlayerPedId()
     SetEntityHealth(ped, GetEntityMaxHealth(ped))
     ClearPedBloodDamage(ped)
+end)
+
+-- Renforts : blip clignotant 90 s chez tous les policiers en service
+RegisterNetEvent('gs_police:client:backup', function(c, name)
+    PlaySoundFrontend(-1, 'Beep_Red', 'DLC_HEIST_HACKING_SNAKE_SOUNDS', true)
+    lib.notify({ title = 'RENFORTS DEMANDÉS', description = name .. ' a besoin d\'aide (position sur la carte)', type = 'error', icon = 'tower-broadcast', duration = 10000 })
+    local blip = AddBlipForCoord(c.x, c.y, c.z)
+    SetBlipSprite(blip, 526)
+    SetBlipColour(blip, 1)
+    SetBlipFlashes(blip, true)
+    SetBlipRoute(blip, true)
+    BeginTextCommandSetBlipName('STRING')
+    AddTextComponentSubstringPlayerName('Renforts : ' .. name)
+    EndTextCommandSetBlipName(blip)
+    SetTimeout(90000, function() RemoveBlip(blip) end)
 end)
 
 -- Prison : compte à rebours ----------------------------------------------------------------------------------------

@@ -192,6 +192,39 @@ Actions.clearobjects = { job = 'police', run = function(src)
     return 'Tes objets sont retirés'
 end }
 
+Actions.identity = { job = 'police', target = true, run = function(_, target)
+    local ci = Bridge:GetCharInfo(target) or {}
+    local lic = Bridge:GetLicences(target) or {}
+    local heat = GetResourceState('gs_wanted') == 'started' and exports.gs_wanted:GetHeat(target) or 0
+    return {
+        name = ('%s %s'):format(ci.firstname or '?', ci.lastname or '?'), birthdate = ci.birthdate, nationality = ci.nationality,
+        driver = lic.driver == true, weapon = lic.weapon == true, records = #Store.records(Bridge:GetIdentifier(target)),
+        wanted = heat > 0,
+    }
+end }
+
+Actions.plate = { job = 'police', run = function(src, _, data)
+    local veh = NetworkGetEntityFromNetworkId(tonumber(data.netId) or 0)
+    need(veh and veh ~= 0 and DoesEntityExist(veh) and GetEntityType(veh) == 2, 'Aucun véhicule.')
+    need(#(GetEntityCoords(veh) - GetEntityCoords(GetPlayerPed(src))) <= 25.0, 'Véhicule trop loin.')
+    local plate = GetVehicleNumberPlateText(veh) or '?'
+    return { plate = plate, owner = Bridge:GetVehicleOwner(plate) }
+end }
+
+Actions.breathalyzer = { job = 'police', target = true, run = function(_, target)
+    local level = tonumber(state(target).gsDrunk) or 0
+    return level
+end }
+
+Actions.backup = { job = 'police', run = function(src)
+    need(Security:RateLimit(src, 'gs_police:backup', 1, 30000), 'Renforts déjà demandés, patiente.')
+    local c = GetEntityCoords(GetPlayerPed(src))
+    for _, cop in ipairs(JobsApi:GetOnDutyPlayers(Config.PoliceJob)) do
+        TriggerClientEvent('gs_police:client:backup', cop, { x = c.x, y = c.y, z = c.z }, Bridge:GetName(src) or GetPlayerName(src))
+    end
+    return 'Renforts demandés'
+end }
+
 Actions.revive = { job = 'ems', target = true, run = function(src, target)
     need(downed(target), 'La personne n\'est pas à terre.')
     need(Bridge:RemoveItem(src, Config.Revive.item, 1), 'Il te faut une trousse de secours.')
@@ -224,7 +257,7 @@ function Police.run(src, name, target, data)
         print(('[gs_police] erreur %s : %s'):format(name, tostring(res)))
         return false, 'Erreur interne.'
     end
-    if name ~= 'records' then
+    if name ~= 'records' and name ~= 'identity' and name ~= 'breathalyzer' then
         Security:LogStaff(('[Police] %s → %s %s'):format(label(src), name, a.target and label(target) or ''), 'jobs')
     end
     return true, res

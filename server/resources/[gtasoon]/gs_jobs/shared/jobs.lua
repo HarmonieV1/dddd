@@ -8,6 +8,8 @@
 -- grades[n]   = { label, salary (par paie, en service), boss = true pour la direction }
 -- points      = duty / boss / stash / armory / garage (listes, plusieurs points possibles) ; déplaçables en jeu :
 --               menu staff F11 → « Points de métier » (sauvegardé en BDD, prioritaire sur ces coords)
+-- outfits     = tenues de service au vestiaire (points.cloakroom) : { label, minGrade, male = {…}, female = {…} }
+--               composants : [n° composant] = { drawable, texture } ; props : p0 chapeau, p1 lunettes (à caler en jeu)
 -- armory      = équipement de service gratuit (en service) : { item, max, minGrade } ; on complète jusqu'à `max`
 -- vehicles    = véhicules de service (minGrade), type = 'automobile' | 'bike' | 'heli' | 'boat'
 -- billing     = factures / amendes (nécessite society = true)
@@ -35,6 +37,7 @@ Jobs = {
                 { label = 'Saisies', coords = vec3(474.8, -994.5, 26.27), slots = 100, weight = 500000, minGrade = 0 },
             },
             armory = { vec3(451.7, -984.2, 30.69) },
+            cloakroom = { vec3(461.5, -998.4, 30.69) },
             garage = {
                 { coords = vec3(458.9, -1017.1, 28.2), spawn = vec4(446.1, -1025.4, 28.6, 5.0) },
             },
@@ -45,6 +48,17 @@ Jobs = {
             { model = 'police3', label = 'Interceptor', minGrade = 2 },
             { model = 'policeb', label = 'Moto', minGrade = 2, type = 'bike' },
             { model = 'fbi', label = 'Banalisée', minGrade = 3 },
+        },
+        outfits = {
+            { label = 'Cadet', minGrade = 0,
+              male = { [3] = { 30, 0 }, [4] = { 35, 0 }, [6] = { 25, 0 }, [8] = { 58, 0 }, [11] = { 55, 0 } },
+              female = { [3] = { 44, 0 }, [4] = { 34, 0 }, [6] = { 25, 0 }, [8] = { 35, 0 }, [11] = { 48, 0 } } },
+            { label = 'Patrouille (casquette)', minGrade = 1,
+              male = { [3] = { 30, 0 }, [4] = { 35, 0 }, [6] = { 25, 0 }, [8] = { 58, 0 }, [11] = { 55, 0 }, p0 = { 46, 0 } },
+              female = { [3] = { 44, 0 }, [4] = { 34, 0 }, [6] = { 25, 0 }, [8] = { 35, 0 }, [11] = { 48, 0 }, p0 = { 45, 0 } } },
+            { label = 'Officier supérieur (veste)', minGrade = 3,
+              male = { [3] = { 31, 0 }, [4] = { 35, 0 }, [6] = { 10, 0 }, [8] = { 58, 0 }, [11] = { 32, 0 } },
+              female = { [3] = { 44, 0 }, [4] = { 34, 0 }, [6] = { 29, 0 }, [8] = { 35, 0 }, [11] = { 25, 0 } } },
         },
         armory = {
             { item = 'radio', max = 1 }, { item = 'handcuffs', max = 2 }, { item = 'WEAPON_FLASHLIGHT', max = 1 },
@@ -74,6 +88,7 @@ Jobs = {
                 { label = 'Pharmacie', coords = vec3(301.0, -588.0, 43.28), slots = 60, weight = 150000, minGrade = 0 },
             },
             armory = { vec3(306.4, -601.5, 43.28) },
+            cloakroom = { vec3(300.3, -597.7, 43.28) },
             garage = {
                 { coords = vec3(294.5, -574.0, 43.18), spawn = vec4(290.0, -570.0, 43.2, 70.0) },
             },
@@ -81,6 +96,14 @@ Jobs = {
         vehicles = {
             { model = 'ambulance', label = 'Ambulance', minGrade = 0 },
             { model = 'lguard', label = 'Intervention rapide', minGrade = 2 },
+        },
+        outfits = {
+            { label = 'Tenue EMS', minGrade = 0,
+              male = { [3] = { 85, 0 }, [4] = { 96, 0 }, [6] = { 25, 0 }, [8] = { 129, 0 }, [11] = { 250, 0 } },
+              female = { [3] = { 109, 0 }, [4] = { 99, 0 }, [6] = { 25, 0 }, [8] = { 159, 0 }, [11] = { 258, 0 } } },
+            { label = 'Médecin (blouse)', minGrade = 3,
+              male = { [3] = { 88, 0 }, [4] = { 96, 0 }, [6] = { 10, 0 }, [8] = { 31, 0 }, [11] = { 250, 1 } },
+              female = { [3] = { 101, 0 }, [4] = { 99, 0 }, [6] = { 29, 0 }, [8] = { 38, 0 }, [11] = { 258, 1 } } },
         },
         armory = {
             { item = 'radio', max = 1 }, { item = 'bandage', max = 20 }, { item = 'firstaid', max = 10 },
@@ -106,6 +129,7 @@ Jobs = {
                 { label = 'Atelier', coords = vec3(738.5, -1085.0, 22.2), slots = 60, weight = 200000, minGrade = 0 },
             },
             armory = { vec3(733.4, -1088.6, 22.2) },
+            cloakroom = { vec3(736.6, -1072.4, 22.2) },
             garage = {
                 { coords = vec3(718.0, -1088.0, 22.3), spawn = vec4(706.0, -1080.0, 22.4, 90.0) },
             },
@@ -113,6 +137,11 @@ Jobs = {
         vehicles = {
             { model = 'towtruck', label = 'Dépanneuse', minGrade = 0 },
             { model = 'flatbed', label = 'Plateau', minGrade = 1 },
+        },
+        outfits = {
+            { label = 'Bleu de travail', minGrade = 0,
+              male = { [3] = { 0, 0 }, [4] = { 39, 0 }, [6] = { 25, 0 }, [8] = { 15, 0 }, [11] = { 66, 0 } },
+              female = { [3] = { 14, 0 }, [4] = { 39, 0 }, [6] = { 25, 0 }, [8] = { 14, 0 }, [11] = { 60, 0 } } },
         },
         armory = {
             { item = 'radio', max = 1 }, { item = 'repairkit', max = 5 }, { item = 'cleaningkit', max = 5 },
@@ -124,6 +153,36 @@ Jobs = {
                 duration = 10000, icon = 'fa-solid fa-wrench', anim = { scenario = 'PROP_HUMAN_BUM_BIN' } },
             clean = { label = 'Nettoyer', effect = 'clean', duration = 5000, icon = 'fa-solid fa-soap',
                 anim = { scenario = 'WORLD_HUMAN_MAID_CLEAN' } },
+        },
+    },
+
+    cardealer = {
+        label = 'Concession PDM', type = 'cardealer', whitelisted = true, society = true, salaryFrom = 'society',
+        platePrefix = 'PDM',
+        blip = { sprite = 326, color = 3, label = 'Concession Premium Deluxe' },
+        billing = { label = 'Vente / reprise véhicule', max = 500000 },
+        grades = {
+            [0] = { label = 'Vendeur stagiaire', salary = 200 },
+            [1] = { label = 'Vendeur', salary = 300 },
+            [2] = { label = 'Chef des ventes', salary = 400 },
+            [3] = { label = 'Directeur', salary = 500, boss = true },
+        },
+        points = {
+            duty = { vec3(-31.6, -1106.4, 26.42) },
+            boss = { vec3(-32.7, -1114.2, 26.42) },
+            stash = {
+                { label = 'Bureau', coords = vec3(-27.9, -1103.8, 26.42), slots = 30, weight = 50000, minGrade = 0 },
+            },
+            cloakroom = { vec3(-30.4, -1111.0, 26.42) },
+            garage = {
+                { coords = vec3(-18.4, -1113.9, 26.67), spawn = vec4(-15.8, -1105.5, 26.67, 160.0) },
+            },
+        },
+        vehicles = { { model = 'baller', label = 'Véhicule d\'essai', minGrade = 0 } },
+        outfits = {
+            { label = 'Costume', minGrade = 0,
+              male = { [3] = { 4, 0 }, [4] = { 10, 0 }, [6] = { 10, 0 }, [8] = { 31, 0 }, [11] = { 28, 0 } },
+              female = { [3] = { 5, 0 }, [4] = { 6, 0 }, [6] = { 29, 0 }, [8] = { 38, 0 }, [11] = { 25, 0 } } },
         },
     },
 

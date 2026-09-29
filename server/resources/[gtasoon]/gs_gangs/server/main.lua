@@ -373,6 +373,18 @@ end)
 AddEventHandler('onResourceStop', function(res) if res == GetCurrentResourceName() then Gangs.save() end end)
 
 --- Place la planque d'un gang (outil gs_builder). coords = vector3.
+--- Staff (menu F11) : crée un gang personnalisé. name = identifiant (lettres, chiffres, _), color = couleur de blip.
+exports('AdminCreateGang', function(name, label, color)
+    if type(name) ~= 'string' or not name:match('^[%w_]+$') or #name > 30 then return false, 'Identifiant : lettres, chiffres, _ (30 max).' end
+    label = type(label) == 'string' and label:sub(1, 50) or ''
+    if label == '' then return false, 'Nom affiché obligatoire.' end
+    color = tonumber(color) or 1
+    if Gangs.list[name] or not Store.createGang(name, label, color) then return false, 'Ce gang existe déjà.' end
+    Gangs.list[name] = { name = name, label = label, color = color }
+    Bridge:RegisterGangs({ [name] = label })
+    return true
+end)
+
 exports('SetStash', function(gang, coords)
     local g = Gangs.list[gang]
     if not g or not coords then return false end

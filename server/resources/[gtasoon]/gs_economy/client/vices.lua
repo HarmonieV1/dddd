@@ -7,14 +7,21 @@ local function drunkLoop()
     CreateThread(function()
         local ped = PlayerPedId()
         lib.requestAnimSet('move_m@drunk@slightlydrunk', 2000)
-        SetPedMovementClipset(ped, 'move_m@drunk@slightlydrunk', 1.0)
-        SetTimecycleModifier('spectator5')
+        local effects = false
         while GetGameTimer() < drunkUntil do
-            SetTimecycleModifierStrength(math.min(1.0, 0.15 * drunk))
-            ShakeGameplayCam('DRUNK_SHAKE', math.min(1.5, 0.3 * drunk))
+            if drunk >= 2 then -- effets visibles à partir du 2e verre
+                if not effects then
+                    effects = true
+                    SetPedMovementClipset(PlayerPedId(), 'move_m@drunk@slightlydrunk', 1.0)
+                    SetTimecycleModifier('spectator5')
+                end
+                SetTimecycleModifierStrength(math.min(1.0, 0.15 * drunk))
+                ShakeGameplayCam('DRUNK_SHAKE', math.min(1.5, 0.3 * drunk))
+            end
             Wait(5000)
         end
         drunk = 0
+        LocalPlayer.state:set('gsDrunk', nil, true) -- alcootest police : négatif
         ResetPedMovementClipset(PlayerPedId(), 1.0)
         ClearTimecycleModifier()
         StopGameplayCamShaking(true)
@@ -28,7 +35,8 @@ exports('drink', function(data)
         local wasDrunk = GetGameTimer() < drunkUntil
         drunk = drunk + 1
         drunkUntil = math.max(drunkUntil, GetGameTimer()) + 120000
-        if drunk >= 2 and not wasDrunk then drunkLoop() end
+        LocalPlayer.state:set('gsDrunk', drunk, true) -- lu par l'alcootest (gs_police)
+        if not wasDrunk then drunkLoop() end
         if drunk >= 5 then lib.notify({ description = 'Tu as un peu trop bu…', type = 'warning' }) end
     end)
 end)

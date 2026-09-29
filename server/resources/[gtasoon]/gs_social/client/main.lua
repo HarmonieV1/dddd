@@ -19,7 +19,7 @@ local function toggle()
 end
 
 RegisterCommand('neon', toggle, false)
-RegisterKeyMapping('neon', 'Réseau social Néon', 'keyboard', Config.Key)
+-- Pas de touche dédiée : Néon s'ouvre depuis le téléphone (app Néon) ou avec /neon.
 
 RegisterNUICallback('close', function(_, cb) close() cb(true) end)
 

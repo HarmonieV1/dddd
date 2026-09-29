@@ -327,6 +327,45 @@ local function pointsMenu()
     show('gs_staff_points', 'Points de métier (placer ici)', options, 'gs_staff_quick')
 end
 
+local GANG_COLORS = {
+    { value = 1, label = 'Rouge' }, { value = 3, label = 'Bleu' }, { value = 25, label = 'Vert' }, { value = 27, label = 'Violet' },
+    { value = 46, label = 'Jaune' }, { value = 47, label = 'Orange' }, { value = 40, label = 'Gris' }, { value = 48, label = 'Rose' },
+}
+local PAINTS = {
+    { value = 0, label = 'Noir' }, { value = 27, label = 'Rouge' }, { value = 53, label = 'Vert' }, { value = 70, label = 'Bleu' },
+    { value = 88, label = 'Jaune' }, { value = 145, label = 'Violet' }, { value = 135, label = 'Rose' }, { value = 111, label = 'Blanc' },
+}
+
+local function gangAdminMenu()
+    local function pickGang(title, cb2)
+        local opts = {}
+        for _, g in ipairs(info.gangs) do opts[#opts + 1] = { value = g.name, label = g.label } end
+        if #opts == 0 then return notify(false, 'Aucun gang.') end
+        local r = input(title, { { type = 'select', label = 'Gang', options = opts, required = true } })
+        if r then cb2(r[1]) end
+    end
+    show('gs_staff_gangadmin', 'Gangs (création, QG, garage)', {
+        { title = 'Créer un gang', icon = 'plus', description = 'Identifiant, nom affiché, couleur', onSelect = function()
+            local r = input('Nouveau gang', {
+                { type = 'input', label = 'Identifiant (ex : aztecas)', required = true, max = 30 },
+                { type = 'input', label = 'Nom affiché (ex : Varrios Los Aztecas)', required = true, max = 50 },
+                { type = 'select', label = 'Couleur', options = GANG_COLORS, required = true },
+            })
+            if r then notify(act('creategang', nil, { name = r[1], label = r[2], color = r[3] })) end
+        end },
+        { title = 'Placer la planque / QG ici', icon = 'house-flag', onSelect = function()
+            pickGang('Planque', function(gang) notify(act('gangplace', nil, { gang = gang, kind = 'stash' })) end)
+        end },
+        { title = 'Placer le garage ici', icon = 'warehouse', description = 'Place-toi (ou ton véhicule) à la sortie', onSelect = function()
+            local opts = {}
+            for _, g in ipairs(info.gangs) do opts[#opts + 1] = { value = g.name, label = g.label } end
+            local r = input('Garage', { { type = 'select', label = 'Gang', options = opts, required = true },
+                { type = 'select', label = 'Couleur des véhicules', options = PAINTS, required = true } })
+            if r then notify(act('gangplace', nil, { gang = r[1], kind = 'garage', paint = r[2] })) end
+        end },
+    }, 'gs_staff_quick')
+end
+
 local function animalsMenu()
     local options = {}
     if animal then options[1] = { title = 'Reprendre forme humaine', icon = 'person', iconColor = ON, onSelect = function() setAnimal(nil) end } end
@@ -420,6 +459,7 @@ local function mainMenu()
         end })
         add(3, { title = 'Me mettre un métier', icon = 'briefcase', arrow = true, onSelect = function() jobsMenu(me) end })
         add(3, { title = 'Me mettre dans un gang', icon = 'people-group', arrow = true, onSelect = function() gangsMenu(me) end })
+        add(3, { title = 'Gangs (création, QG, garage)', icon = 'people-group', arrow = true, onSelect = gangAdminMenu })
         add(3, { title = 'Points de métier (placer ici)', icon = 'location-crosshairs', arrow = true,
             description = 'Service, coffre, armurerie, direction, garage : déplacés à ta position', onSelect = pointsMenu })
         add(4, { title = 'Items (fondateur)', icon = 'box-open', arrow = true, onSelect = function() itemsMenu(me) end })

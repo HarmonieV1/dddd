@@ -56,6 +56,32 @@ local function GetGender(src)
     return tonumber(p.PlayerData.charinfo.gender) == 1 and 'female' or 'male'
 end
 
+--- Identité (contrôle police) : { firstname, lastname, birthdate, nationality, gender } [API] charinfo Qbox
+local function GetCharInfo(src)
+    local p = GetPlayer(src)
+    if not p then return nil end
+    local ci = p.PlayerData.charinfo
+    return { firstname = ci.firstname, lastname = ci.lastname, birthdate = ci.birthdate, nationality = ci.nationality,
+             gender = tonumber(ci.gender) == 1 and 'female' or 'male' }
+end
+
+--- Permis (metadata.licences Qbox) : { driver = bool, weapon = bool, ... } [API]
+local function GetLicences(src)
+    local p = GetPlayer(src)
+    return p and p.PlayerData.metadata and p.PlayerData.metadata.licences or {}
+end
+
+--- Propriétaire d'un véhicule par sa plaque : nom du personnage ou nil (véhicule volé / PNJ / location). [API] player_vehicles
+local function GetVehicleOwner(plate)
+    if type(plate) ~= 'string' then return nil end
+    plate = plate:gsub('^%s+', ''):gsub('%s+$', '')
+    local row = MySQL.single.await([[SELECT p.charinfo FROM player_vehicles v JOIN players p ON p.citizenid = v.citizenid
+        WHERE TRIM(v.plate) = ? LIMIT 1]], { plate })
+    if not row then return nil end
+    local ok, ci = pcall(json.decode, row.charinfo)
+    return ok and ci and ('%s %s'):format(ci.firstname, ci.lastname) or '?'
+end
+
 -- Jobs ---------------------------------------------------------------------------
 
 ---@return { name: string, label: string, grade: number, onduty: boolean }|nil
@@ -277,6 +303,9 @@ exports('GetIdentifier', GetIdentifier)
 exports('GetSourceByIdentifier', GetSourceByIdentifier)
 exports('GetName', GetName)
 exports('GetGender', GetGender)
+exports('GetCharInfo', GetCharInfo)
+exports('GetLicences', GetLicences)
+exports('GetVehicleOwner', GetVehicleOwner)
 exports('ListItems', ListItems)
 exports('CreateDrop', CreateDrop)
 exports('SpawnVehicle', SpawnVehicle)

@@ -16,7 +16,7 @@ PointsStore = PointsStore or {
     end,
 }
 
-GSJ.pointKinds = { duty = 'Prise de service', boss = 'Direction', stash = 'Coffre', armory = 'Armurerie', garage = 'Garage', garage_spawn = 'Sortie du garage' }
+GSJ.pointKinds = { duty = 'Prise de service', boss = 'Direction', stash = 'Coffre', armory = 'Armurerie', cloakroom = 'Vestiaire', garage = 'Garage', garage_spawn = 'Sortie du garage' }
 
 --- Applique un point sur la définition du job (mêmes règles côté client). Retourne true si le point existe.
 function GSJ.applyPoint(job, kind, idx, c)
@@ -64,7 +64,7 @@ end
 --- Liste des points d'un job (pour le menu staff).
 function GSJ.listPoints(job)
     local p, list = Jobs[job].points, {}
-    for _, kind in ipairs({ 'duty', 'boss', 'armory', 'stash', 'garage' }) do
+    for _, kind in ipairs({ 'duty', 'boss', 'armory', 'cloakroom', 'stash', 'garage' }) do
         for i, e in ipairs(p[kind] or {}) do
             local label = GSJ.pointKinds[kind] .. (e.label and (' · ' .. e.label) or (#p[kind] > 1 and (' ' .. i) or ''))
             list[#list + 1] = { kind = kind, idx = i, label = label }

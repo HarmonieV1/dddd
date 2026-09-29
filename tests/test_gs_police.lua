@@ -4,7 +4,9 @@ dofile('tests/mock.lua')
 local R = 'server/resources/[gtasoon]/'
 function SetEntityCoords(ped, x, y, z) W.players[ped - 1000].pos = vec3(x, y, z) end
 local duty = {}
-provide('gs_jobs', { IsOnDutyAs = function(src, job) return duty[src] == job end })
+provide('gs_jobs', { IsOnDutyAs = function(src, job) return duty[src] == job end,
+    GetOnDutyPlayers = function(job) local l = {} for s, j in pairs(duty) do if j == job then l[#l + 1] = s end end return l end })
+provide('gs_wanted', { GetHeat = function(s) return s == 2 and 40 or 0 end })
 loadResource('gs_security', { R .. 'gs_security/server/main.lua' })
 loadResource('gs_police', { R .. 'gs_police/shared/config.lua' })
 local records, jail = {}, {}
@@ -143,6 +145,26 @@ check('EMS ne menotte pas', not ok)
 W.players[3].items.bandage = 1
 ok = cb('gs_police:action', 3, 'heal', 4); step()
 check('soigné au bandage', ok and lastClientEvent('gs_police:client:heal', 4) ~= nil)
+
+-- Contrôles : identité, plaque, alcootest, renforts
+W.players[2].licences = { driver = true }
+local d
+ok, d = cb('gs_police:action', 1, 'identity', 2); step()
+check('identité : nom, permis, casier, recherché', ok and d.name == 'Suspect ' and d.driver and not d.weapon and d.records == 2 and d.wanted)
+local car2 = CreateVehicleServerSetter(0, 'automobile', 203.0, -800.0, 30.0)
+SetVehicleNumberPlateText(car2, 'GS 1234')
+W.owners = { ['GS 1234'] = 'Alpha Boss' }
+ok, d = cb('gs_police:action', 1, 'plate', nil, { netId = car2 }); step()
+check('plaque : propriétaire', ok and d.plate == 'GS 1234' and d.owner == 'Alpha Boss')
+Player(2).state:set('gsDrunk', 3)
+ok, d = cb('gs_police:action', 1, 'breathalyzer', 2); step()
+check('alcootest positif', ok and d == 3)
+ok = cb('gs_police:action', 3, 'breathalyzer', 2); step()
+check('alcootest réservé à la police', not ok)
+ok = cb('gs_police:action', 1, 'backup'); step()
+check('renforts envoyés aux policiers', ok and lastClientEvent('gs_police:client:backup', 1) ~= nil)
+ok = cb('gs_police:action', 1, 'backup'); step()
+check('renforts : pas de spam', not ok)
 
 io.write(('\n%d réussis, %d échoués\n'):format(passed, failed))
 os.exit(failed == 0 and 0 or 1)

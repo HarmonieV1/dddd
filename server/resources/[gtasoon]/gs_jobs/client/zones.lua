@@ -49,6 +49,42 @@ local function openArmory(name)
     lib.showContext('gs_jobs_armory')
 end
 
+-- Vestiaire : tenues de service selon le grade, retour à la tenue civile -----------------------------------------
+local inUniform = false
+
+local function wear(o)
+    local ped = PlayerPedId()
+    local female = GetEntityModel(ped) == GetHashKey('mp_f_freemode_01')
+    local set = female and o.female or o.male
+    if not set then return GSJ.notify('Tenue indisponible pour ce modèle.', 'error') end
+    if not inUniform then Bridge:SaveAppearance() end
+    inUniform = true
+    ClearPedProp(ped, 0)
+    for k, v in pairs(set) do
+        if type(k) == 'number' then SetPedComponentVariation(ped, k, v[1], v[2], 0)
+        elseif k == 'p0' then SetPedPropIndex(ped, 0, v[1], v[2], true)
+        elseif k == 'p1' then SetPedPropIndex(ped, 1, v[1], v[2], true) end
+    end
+    GSJ.notify(('Tenue : %s'):format(o.label), 'success')
+end
+
+local function openCloakroom(name)
+    local def = Jobs[name]
+    local options = {}
+    for _, o in ipairs(def.outfits or {}) do
+        local locked = GSJ.job.grade < (o.minGrade or 0)
+        options[#options + 1] = { title = o.label, icon = 'shirt', disabled = locked,
+            description = locked and ('Grade requis : %s'):format(GSJ.gradeLabel(name, o.minGrade)) or nil,
+            onSelect = function() wear(o) end }
+    end
+    options[#options + 1] = { title = 'Reprendre ma tenue civile', icon = 'user', onSelect = function()
+        inUniform = false
+        Bridge:RestoreAppearance()
+    end }
+    lib.registerContext({ id = 'gs_jobs_cloakroom', title = 'Vestiaire · ' .. def.label, options = options })
+    lib.showContext('gs_jobs_cloakroom')
+end
+
 -- Marqueurs au sol : seulement les points de ton métier actif --------------------------------------------------
 local function refreshMarkers()
     exports.gs_markers:RemovePrefix('gs_jobs:pt:')
@@ -62,6 +98,7 @@ local function refreshMarkers()
     for i, c in ipairs(p.duty or {}) do mark('duty', i, c, 'Prise de service') end
     for i, c in ipairs(p.boss or {}) do mark('boss', i, c, 'Direction') end
     for i, c in ipairs(p.armory or {}) do mark('armory', i, c, 'Armurerie') end
+    for i, c in ipairs(p.cloakroom or {}) do mark('cloakroom', i, c, 'Vestiaire') end
     for i, st in ipairs(p.stash or {}) do mark('stash', i, st.coords, st.label or 'Coffre') end
     for i, g in ipairs(p.garage or {}) do mark('garage', i, g.coords, 'Garage') end
 end
@@ -70,6 +107,7 @@ end
 AddEventHandler('gs_jobs:client:point', function(name, kind, i)
     if not GSJ.isJob(name) then return end
     if kind == 'duty' then return TriggerServerEvent('gs_jobs:server:toggleDuty') end
+    if kind == 'cloakroom' then return openCloakroom(name) end
     if kind == 'boss' then
         if GSJ.isBoss(name) then return GSJ.openBossMenu() end
         return GSJ.notify('Réservé à la direction.', 'error')
@@ -108,6 +146,14 @@ local function build()
                 name = ('gs_stash_%s_%d'):format(name, i), icon = 'fa-solid fa-box-archive', label = s.label,
                 canInteract = function() return GSJ.isOnDuty(name) and GSJ.job.grade >= (s.minGrade or 0) end,
                 onSelect = function() Bridge:OpenStash(('gs_%s_%d'):format(name, i)) end,
+            })
+        end
+
+        for i, coords in ipairs(p.cloakroom or {}) do
+            addZone(coords, {
+                name = ('gs_cloak_%s_%d'):format(name, i), icon = 'fa-solid fa-shirt', label = 'Vestiaire',
+                canInteract = function() return GSJ.isJob(name) end,
+                onSelect = function() openCloakroom(name) end,
             })
         end
 

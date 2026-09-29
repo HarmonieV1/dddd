@@ -21,6 +21,9 @@ provide('gs_wanted', { GetHeat = function(s) return heat[s] or 0 end, ClearHeat 
 provide('gs_social', { GetHandle = function() return 'vice_lucia' end })
 provide('gs_gangs', { GetGang = function(s) if s == 4 then return 'ballas', 1 end end,
     ListGangs = function() return { { name = 'ballas', label = 'Ballas' } } end,
+    AdminCreateGang = function(name, label) if name == 'ballas' then return false, 'Ce gang existe déjà.' end if not label then return false, 'Nom affiché obligatoire.' end W.newGang = name return true end,
+    SetStash = function(gang, c) if gang ~= 'ballas' then return false end W.gangStash = c return true end,
+    AdminSetGarage = function(gang, c, paint) if gang ~= 'ballas' then return false, 'Gang inconnu.' end W.gangGarage = { c = c, paint = paint } return true end,
     AdminSetGang = function(src, gang, grade) if gang and gang ~= 'ballas' then return false, 'Gang inconnu.' end W.players[src].gang = gang and { name = gang, grade = grade } or false return true end })
 provide('gs_duo', { GetPartner = function() return nil end, GetDuoLevel = function() return 0 end })
 local weatherSet
@@ -241,6 +244,16 @@ ok = cb('gs_admin:action', 6, 'dropitem', nil, { item = 'sandwich', amount = 3 }
 check('dépôt au sol', ok and W.drops and W.drops[1].items[1][1] == 'sandwich')
 check('liste des items réservée au fondateur', cb('gs_admin:items', 1) == nil and #cb('gs_admin:items', 6) == 1)
 step()
+ok = cb('gs_admin:action', 6, 'creategang', nil, { name = 'Aztecas', label = 'Varrios Los Aztecas', color = 3 }); step()
+check('créer un gang (identifiant en minuscules)', ok and W.newGang == 'aztecas')
+ok = cb('gs_admin:action', 6, 'creategang', nil, { name = 'ballas', label = 'Doublon', color = 3 }); step()
+check('gang existant refusé', not ok)
+ok = cb('gs_admin:action', 2, 'creategang', nil, { name = 'x', label = 'X', color = 3 }); step()
+check('modo : pas de création de gang', not ok)
+ok = cb('gs_admin:action', 6, 'gangplace', nil, { gang = 'ballas', kind = 'stash' }); step()
+check('planque placée à la position du staff', ok and W.gangStash and W.gangStash.x == W.players[6].pos.x)
+ok = cb('gs_admin:action', 6, 'gangplace', nil, { gang = 'ballas', kind = 'garage', paint = 145 }); step()
+check('garage placé avec couleur', ok and W.gangGarage.paint == 145 and W.gangGarage.c.w == 90.0)
 W.clientEvents = {}
 cb('gs_admin:toggleDuty', 6); step()
 check('fin du mode staff : pouvoirs coupés côté client', lastClientEvent('gs_admin:client:powersOff', 6) ~= nil)

@@ -53,7 +53,7 @@ Config.Streak = { xpPerDay = 50, maxDays = 7, weekCash = 1000 }
 
 Config.TalkRadius = 3.0
 Config.Tolerance = 3.0
-Config.Key = 'F5'         -- menu Progression (/progression)
+Config.Key = 'F2'         -- menu Progression (/progression) ; F5 = emotes
 
 -- Paquets cachés (clin d'œil aux premiers GTA) : invisibles sur la carte, un petit colis au sol quand on passe à côté.
 Config.Packages = {

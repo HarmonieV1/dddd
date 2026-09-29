@@ -332,7 +332,8 @@ local function openMenu()
 end
 
 RegisterCommand('progression', openMenu, false)
-RegisterKeyMapping('progression', 'Progression et quêtes', 'keyboard', Config.Key)
+RegisterCommand('menuprogression', openMenu, false) -- nom neuf : la touche F2 s'applique aussi à ceux qui avaient déjà F5
+RegisterKeyMapping('menuprogression', 'Progression et quêtes', 'keyboard', Config.Key)
 
 -- Interaction avec les personnages : une zone ox_target fixe par personnage (marche même si le PNJ n'a pas
 -- encore chargé ou s'il est mal posé) ; la cabine de la Voix n'a pas de PNJ.

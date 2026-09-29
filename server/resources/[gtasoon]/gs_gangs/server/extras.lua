@@ -13,7 +13,28 @@ TagsStore = TagsStore or {
     all = function() return MySQL.query.await('SELECT id, gang, x, y, z, heading FROM gs_gang_tags') or {} end,
     insert = function(gang, c, h) return MySQL.insert.await('INSERT INTO gs_gang_tags (gang, x, y, z, heading) VALUES (?, ?, ?, ?, ?)', { gang, c.x, c.y, c.z, h }) end,
     delete = function(id) MySQL.prepare('DELETE FROM gs_gang_tags WHERE id = ?', { id }) end,
+    garagesInit = function()
+        MySQL.query.await([[CREATE TABLE IF NOT EXISTS `gs_gang_garages` (
+            `gang` VARCHAR(30) NOT NULL, `x` FLOAT NOT NULL, `y` FLOAT NOT NULL, `z` FLOAT NOT NULL, `w` FLOAT NOT NULL,
+            `paint` SMALLINT UNSIGNED NOT NULL DEFAULT 0, PRIMARY KEY (`gang`)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4]])
+    end,
+    garages = function() return MySQL.query.await('SELECT gang, x, y, z, w, paint FROM gs_gang_garages') or {} end,
+    saveGarage = function(gang, c, paint)
+        MySQL.prepare('REPLACE INTO gs_gang_garages (gang, x, y, z, w, paint) VALUES (?, ?, ?, ?, ?, ?)', { gang, c.x, c.y, c.z, c.w or 0.0, paint })
+    end,
 }
+
+Config.DefaultGangVehicles = Config.DefaultGangVehicles or { 'buccaneer2', 'chino', 'manchez' }
+
+--- Garages (config + placés par le staff) publiés aux clients : { [gang] = { x, y, z, w, vehicles } }
+local function publishGarages()
+    local out = {}
+    for gang, g in pairs(Config.GangGarages) do
+        out[gang] = { x = g.garage.x, y = g.garage.y, z = g.garage.z, w = g.garage.w, vehicles = g.vehicles }
+    end
+    GlobalState.gsGangGarages = out
+end
 
 Extras = { tags = {}, vehicles = {} } -- tags[id] = { id, gang, x, y, z, heading } ; vehicles[src] = entity
 
@@ -170,8 +191,29 @@ AddEventHandler('gs_bridge:server:playerUnloaded', function(src)
     Extras.vehicles[src] = nil
 end)
 
+--- Staff : garage d'un gang à cette position (vec4), couleur de peinture GTA.
+exports('AdminSetGarage', function(gang, coords, paint)
+    if not Gangs.list[gang] then return false, 'Gang inconnu.' end
+    paint = math.floor(tonumber(paint) or 0)
+    local g = Config.GangGarages[gang] or { vehicles = Config.DefaultGangVehicles }
+    g.garage, g.paint = vec4(coords.x, coords.y, coords.z, coords.w or 0.0), paint
+    Config.GangGarages[gang] = g
+    TagsStore.saveGarage(gang, g.garage, paint)
+    publishGarages()
+    return true
+end)
+
 function Extras.init()
     TagsStore.init()
+    if TagsStore.garagesInit then
+        TagsStore.garagesInit()
+        for _, r in ipairs(TagsStore.garages()) do
+            local g = Config.GangGarages[r.gang] or { vehicles = Config.DefaultGangVehicles }
+            g.garage, g.paint = vec4(r.x, r.y, r.z, r.w), r.paint
+            Config.GangGarages[r.gang] = g
+        end
+    end
+    publishGarages()
     for _, row in ipairs(TagsStore.all()) do
         if Gangs.list[row.gang] then Extras.tags[row.id] = { id = row.id, gang = row.gang, x = row.x, y = row.y, z = row.z, heading = row.heading } end
     end

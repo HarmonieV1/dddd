@@ -67,7 +67,7 @@ end)
 
 -- Garage du gang ------------------------------------------------------------------------------------------------------
 AddEventHandler('gs_gangs:client:garage', function()
-    local g = member and Config.GangGarages[member.gang]
+    local g = member and (GlobalState.gsGangGarages or {})[member.gang]
     if not g then return end
     local options = {}
     for i, model in ipairs(g.vehicles) do
@@ -113,9 +113,9 @@ end
 RegisterNetEvent('gs_gangs:client:membership', function(m)
     member = m
     exports.gs_markers:Remove('gs_gangs:garage')
-    local g = m and Config.GangGarages[m.gang]
+    local g = m and (GlobalState.gsGangGarages or {})[m.gang]
     if g then
-        exports.gs_markers:Add('gs_gangs:garage', { coords = vec3(g.garage.x, g.garage.y, g.garage.z), style = 'entry', label = 'Garage du gang',
+        exports.gs_markers:Add('gs_gangs:garage', { coords = vec3(g.x, g.y, g.z), style = 'entry', label = 'Garage du gang',
             icon = 36, event = 'gs_gangs:client:garage', prompt = 'Garage du gang' })
     end
     refreshFence()
@@ -127,4 +127,9 @@ CreateThread(function()
         Wait(300000)
         if member then refreshFence() end
     end
+end)
+
+-- Garage déplacé par le staff : on remet le marqueur à jour
+AddStateBagChangeHandler('gsGangGarages', 'global', function()
+    SetTimeout(100, function() if member then TriggerEvent('gs_gangs:client:membership', member) end end)
 end)

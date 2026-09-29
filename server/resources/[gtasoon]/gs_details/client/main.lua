@@ -69,3 +69,17 @@ end
 
 RegisterCommand('mainsenlair', function() setHandsUp(not handsUp) end, false)
 RegisterKeyMapping('mainsenlair', 'Mains en l\'air', 'keyboard', Config.HandsUpKey)
+
+-- Menus cliquables (ox_lib context) : METTRE-A-JOUR règle ox_lib pour garder les déplacements menu ouvert
+-- (ZQSD, sprint). Ici on bloque seulement la caméra et le tir tant qu'un menu est ouvert (la souris sert au menu).
+local LOOK_AND_FIRE = { 1, 2, 24, 25, 68, 69, 70, 91, 92, 106, 114, 140, 141, 142, 143, 257, 263, 264 }
+CreateThread(function()
+    while true do
+        if lib.getOpenContextMenu() then -- [API] ox_lib
+            for _, c in ipairs(LOOK_AND_FIRE) do DisableControlAction(0, c, true) end
+            Wait(0)
+        else
+            Wait(250)
+        end
+    end
+end)

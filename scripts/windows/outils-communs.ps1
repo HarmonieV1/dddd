@@ -11,6 +11,11 @@ $QboxPatches = @(
     @{ res = 'qbx_ambulancejob'; file = 'config\shared.lua'; find = 'checkInCost\s*=\s*\d+'; repl = 'checkInCost = 500'; why = 'hôpital : 500 $' },
     @{ res = 'qbx_ambulancejob'; file = 'config\shared.lua'; find = 'minForCheckIn\s*=\s*\d+'; repl = 'minForCheckIn = 1'; why = 'accueil IA si aucun EMS' },
     @{ res = 'qbx_ambulancejob'; file = 'config\server.lua'; find = 'wipeInvOnRespawn\s*=\s*true'; repl = 'wipeInvOnRespawn = false'; why = 'inventaire gardé à la réapparition' },
+    @{ res = 'illenium-appearance'; file = 'shared\config.lua'; find = '(Config\.NewCharacterSections\s*=\s*\{\s*Ped\s*=\s*)true'; repl = '${1}false'; why = 'création : perso classique seulement (pas de ped GTA)' },
+    @{ res = 'illenium-appearance'; file = 'shared\config.lua'; find = 'Config\.EnablePedsForShops\s*=\s*true'; repl = 'Config.EnablePedsForShops = false'; why = 'magasins de vêtements : pas de ped GTA (boutique / staff seulement)' },
+    @{ res = 'illenium-appearance'; file = 'shared\config.lua'; find = 'Config\.EnablePedsForClothingRooms\s*=\s*true'; repl = 'Config.EnablePedsForClothingRooms = false'; why = 'vestiaires : pas de ped GTA' },
+    @{ res = 'illenium-appearance'; file = 'shared\config.lua'; find = 'Config\.EnablePedsForPlayerOutfitRooms\s*=\s*true'; repl = 'Config.EnablePedsForPlayerOutfitRooms = false'; why = 'garde-robes : pas de ped GTA' },
+    @{ res = 'ox_lib'; file = 'resource\interface\client\context.lua'; find = 'lib\.setNuiFocus\(false\)'; repl = 'lib.setNuiFocus(true)'; why = 'menus cliquables : on peut marcher menu ouvert' },
     # Menus ox_lib : palette « dark » grise de Mantine remplacée par du noir-violet néon (DA GTA SOON)
     @{ res = 'ox_lib'; dir = 'web\build\assets'; filter = '*.js'; why = 'menus ox_lib en noir néon'
        find = '(?i)\["#C1C2C5","#A6A7AB","#909296","#5c5f66","#373A40","#2C2E33","#25262b","#1A1B1E","#141517","#101113"\]'
@@ -102,7 +107,7 @@ function Set-QboxOverrides($Res, $Repo, [scriptblock]$Say) {
         if ($text -match $p.find) {
             Write-Utf8 $file ([regex]::Replace($text, $p.find, $p.repl))
             & $Say "  $($p.res) : $($p.why)" 'Green'
-        } elseif ($text -notmatch [regex]::Escape($p.repl)) {
+        } elseif (-not $p.repl.Contains('${') -and $text -notmatch [regex]::Escape($p.repl)) {
             & $Say "  $($p.res) : réglage « $($p.why) » introuvable (version différente ?)" 'Yellow'
         }
     }

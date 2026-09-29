@@ -376,6 +376,28 @@ Actions.jobpoint = { level = 3, duty = true, run = function(src, _, data)
     return ('Point %s %s #%s placé ici'):format(data.job, data.kind, data.idx)
 end }
 
+Actions.creategang = { level = 3, duty = true, run = function(_, _, data)
+    need(started('gs_gangs'), 'gs_gangs non démarré.')
+    local ok, err = exports.gs_gangs:AdminCreateGang(tostring(data.name or ''):lower(), Security:Sanitize(data.label, 50), tonumber(data.color))
+    need(ok, tostring(err))
+    return ('Gang %s créé : place sa planque et son garage'):format(data.name)
+end }
+
+Actions.gangplace = { level = 3, duty = true, run = function(src, _, data)
+    need(started('gs_gangs'), 'gs_gangs non démarré.')
+    local ped = GetPlayerPed(src)
+    local veh = GetVehiclePedIsIn(ped, false)
+    local ent = (data.kind == 'garage' and veh ~= 0) and veh or ped
+    local c = GetEntityCoords(ent)
+    if data.kind == 'stash' then
+        need(exports.gs_gangs:SetStash(tostring(data.gang), c), 'Gang inconnu.')
+        return 'Planque / QG placé ici'
+    end
+    local ok, err = exports.gs_gangs:AdminSetGarage(tostring(data.gang), vec4(c.x, c.y, c.z, GetEntityHeading(ent)), tonumber(data.paint) or 0)
+    need(ok, tostring(err))
+    return 'Garage du gang placé ici'
+end }
+
 local VEH_TYPES = { automobile = true, bike = true, boat = true, heli = true, plane = true }
 
 Actions.spawnveh = { level = 3, duty = true, run = function(src, _, data)
