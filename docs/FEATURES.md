@@ -67,7 +67,7 @@ Soleil couchant rétro, titre néon, astuces tournantes (FR), touches utiles, vr
   -- ['black_money'] existe déjà dans ox_inventory (argent sale)
   ```
 
-## gs_quests — progression et quêtes de départ (V2, F2 / `/menuprogression`)
+## gs_quests — progression et quêtes de départ (V2, F3 / `/progression` depuis la V5)
 - **XP et niveaux** (1 → 50) : quêtes, missions de métier, braquages, ventes de drogue. Chaque niveau rapporte un bonus en banque.
   Les annonces plein écran (« NIVEAU 4 », « MISSION RÉUSSIE ») sont faites façon anciens GTA.
 - **Personnages récurrents** repérables au **losange vert** au-dessus de la tête (façon Sims) : Max le Guide (mairie),
@@ -237,6 +237,26 @@ Traductions françaises manquantes des scripts Qbox ajoutées par METTRE-A-JOUR 
 6. **Contrats dynamiques** : l'app Boulots suit la météo, la nuit, les événements et les quartiers sous tension.
 7. **Bodycam et preuves vidéo** : capture jointe aux rapports police, crimes filmés par les caméras consultables.
 8. **Bourse de la ville** : onglet de Vibe avec les indices (prix, carburant, métaux, immobilier, richesse) et leur évolution.
+
+## V5 — touches sans doublon, staff à 5 rangs, radio, métiers plus profonds
+- **Départ en ville** : plus d'appartement gratuit à la création (réglage qbx_core `startingApartment = false` posé par
+  METTRE-A-JOUR). Le nouveau perso apparaît devant la mairie, guidé vers Max (« Ton premier jour »). Les logements
+  s'achètent / se louent auprès de l'agent immobilier.
+- **Touches** : progression F2 → **F3** (F2 = inventaire), mains en l'air X → **H** (à pied), radio **Verr. Maj**,
+  emotes scully sans doublon (X annuler, J pointer, ragdoll coupé). **I** ou `/touches` : aide de toutes les touches.
+- **Inventaire** : **double-clic** sur un objet = l'utiliser (en plus d'Alt + clic).
+- **Staff** : helper, modo, admin, **super-admin**, fondateur. Seul le fondateur promeut / rétrograde (en jeu, immédiat,
+  enregistré). Argent et items : super-admin minimum, motif obligatoire. Raccourcis en mode staff : Ctrl+Y TP marqueur,
+  Ctrl+U vol libre, Ctrl+O noms. Section **Fun** : course rapide, super saut, endurance, nage rapide, gravité lunaire,
+  visions nocturne et thermique.
+- **Décor** (super-admin et fondateur, `/builder`) : placer des objets (poubelles, bancs, lampadaires…) et **retirer
+  ceux de la map d'origine** pour tout le monde, réversible.
+- **gs_radio** : Z → Radio ou `/radio` : canal de son métier, canal privé de son gang, fréquence libre. On règle une fois,
+  on parle en maintenant Verr. Maj. Canaux réservés vérifiés par pma-voice côté serveur. Fréquence reprise à la connexion.
+- **Métiers** : salaires réglables par la direction (entreprises privées, 0,5× à 2× la base), **primes** depuis la
+  caisse, mécano : pneus, remettre sur ses roues, réparation capot ouvert (animations plus naturelles), « Établi et
+  outillage » au lieu d'« Armurerie » (EMS : « Matériel médical »), **double des clés** des véhicules de service.
+- **Marqueurs** : plus de cercle violet sur les points de métier (chevron blanc discret), cercles restants plus fins.
 
 ## Liens entre features
 `gs_weather` → visibilité de `gs_wanted` + prix de `gs_economy` ;

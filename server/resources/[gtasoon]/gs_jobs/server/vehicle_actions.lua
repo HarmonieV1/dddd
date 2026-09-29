@@ -42,6 +42,22 @@ lib.callback.register('gs_jobs:vehicle:finish', function(src)
     return true, L('action_done')
 end)
 
+-- Double des clés d'un véhicule de service : même métier, en service, plaque du métier, à côté du véhicule.
+lib.callback.register('gs_jobs:vehicle:keys', function(src, netId)
+    if not GSJ.guard(src, 'veh_keys', 5, 10000) then return false, L('slow_down') end
+    local job = Bridge:GetJob(src)
+    local def = job and Jobs[job.name]
+    if not def or not def.platePrefix or not job.onduty then return false, L('not_on_duty') end
+    local veh = NetworkGetEntityFromNetworkId(tonumber(netId) or 0)
+    if not veh or veh == 0 or not DoesEntityExist(veh) or GetEntityType(veh) ~= 2 then return false, L('invalid') end
+    if not Security:EntityInRange(src, veh, 5.0) then return false, L('too_far') end
+    local plate = (GetVehicleNumberPlateText(veh) or ''):gsub('^%s+', '')
+    if plate:sub(1, #def.platePrefix) ~= def.platePrefix then return false, 'Ce n\'est pas un véhicule de ton service.' end
+    Bridge:GiveVehicleKeys(src, veh)
+    DB.audit('veh_keys', job.name, GSJ.cid(src), nil, nil, plate)
+    return true, 'Clés récupérées.'
+end)
+
 RegisterNetEvent('gs_jobs:server:vehicleCancel', function()
     if Security:RateLimit(source, 'gs_jobs:veh_cancel', 5, 10000) then Pending[source] = nil end
 end)

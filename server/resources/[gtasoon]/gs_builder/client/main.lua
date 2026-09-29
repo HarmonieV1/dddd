@@ -28,6 +28,18 @@ local function set(data)
 end
 
 RegisterNetEvent('gs_builder:client:set', set)
+
+-- Objets de la map d'origine retirés (masque de modèle, persistant côté client jusqu'au retrait)
+local hides = {}
+local function hide(h)
+    hides[h.id] = h
+    CreateModelHide(h.x, h.y, h.z, Config.HideRadius, h.hash, true)
+end
+RegisterNetEvent('gs_builder:client:hide', hide)
+RegisterNetEvent('gs_builder:client:unhide', function(h)
+    hides[h.id] = nil
+    RemoveModelHide(h.x, h.y, h.z, Config.HideRadius, h.hash, false)
+end)
 RegisterNetEvent('gs_builder:client:remove', function(id)
     local o = objects[id]
     if o then despawn(o) objects[id] = nil end
@@ -35,6 +47,8 @@ end)
 
 CreateThread(function()
     for _, d in ipairs(lib.callback.await('gs_builder:list', false) or {}) do set(d) end
+    Wait(1000)
+    for _, h in ipairs(lib.callback.await('gs_builder:hides', false) or {}) do hide(h) end
     while true do
         local pos = GetEntityCoords(PlayerPedId())
         for id, o in pairs(objects) do
@@ -189,6 +203,40 @@ local function aimedObject()
     lib.notify({ description = 'Cet objet fait partie de la map d\'origine (non modifiable).', type = 'error' })
 end
 
+--- Retire (pour tout le monde) l'objet de la map d'origine visé : poubelle, banc, barrière…
+local function removeMapObject()
+    local hit, entity = lib.raycast.cam(16, 4, 30.0) -- [API] ox_lib
+    if not hit or entity == 0 or GetEntityType(entity) ~= 3 then return notify(false, 'Vise un objet du décor.') end
+    for _, o in pairs(objects) do
+        if o.handle == entity then return notify(false, 'Objet placé par le staff : utilise « Objets à proximité → Supprimer ».') end
+    end
+    local c = GetEntityCoords(entity)
+    local hash = GetEntityModel(entity)
+    if hash > 0x7FFFFFFF then hash = hash - 0x100000000 end -- hash signé (stockage)
+    SetEntityDrawOutline(entity, true)
+    local answer = lib.alertDialog({ header = 'Retirer cet objet de la map ?', content = 'Il disparaît pour tous les joueurs. Réversible (« Objets de la map retirés »).', centered = true, cancel = true })
+    SetEntityDrawOutline(entity, false)
+    if answer == 'confirm' then notify(lib.callback.await('gs_builder:hide', false, { hash = hash, x = c.x, y = c.y, z = c.z })) end
+end
+
+local function hiddenMenu()
+    local pos = GetEntityCoords(PlayerPedId())
+    local list = {}
+    for id, h in pairs(hides) do
+        local d = #(pos - vec3(h.x, h.y, h.z))
+        if d < 50.0 then list[#list + 1] = { id = id, dist = d } end
+    end
+    table.sort(list, function(a, b) return a.dist < b.dist end)
+    local options = {}
+    for _, e in ipairs(list) do
+        options[#options + 1] = { title = ('Objet retiré #%d'):format(e.id), description = ('%.1f m · cliquer pour le remettre'):format(e.dist), icon = 'rotate-left',
+            onSelect = function() notify(lib.callback.await('gs_builder:unhide', false, e.id)) end }
+    end
+    if #options == 0 then options[1] = { title = 'Aucun objet retiré à moins de 50 m', readOnly = true } end
+    lib.registerContext({ id = 'gs_builder_hidden', title = 'Objets de la map retirés', menu = 'gs_builder', options = options })
+    lib.showContext('gs_builder_hidden')
+end
+
 local function openMenu()
     if not lib.callback.await('gs_builder:canUse', false) then
         return lib.notify({ description = 'Accès réservé au staff.', type = 'error' })
@@ -207,6 +255,8 @@ local function openMenu()
         { title = 'Objets favoris', icon = 'star', menu = 'gs_builder_fav' },
         { title = 'Modifier l\'objet visé', icon = 'crosshairs', onSelect = aimedObject },
         { title = 'Objets à proximité', icon = 'list', onSelect = nearbyMenu },
+        { title = 'Retirer l\'objet de la map visé', icon = 'eraser', description = 'Poubelle, banc, barrière… disparaît pour tous', onSelect = removeMapObject },
+        { title = 'Objets de la map retirés', icon = 'rotate-left', onSelect = hiddenMenu },
         { title = 'Placer une planque de gang ici', icon = 'box', onSelect = function()
             local gangs = lib.callback.await('gs_builder:gangs', false) or {}
             if #gangs == 0 then return notify(false, 'Aucun gang (crée-le avec /gsgang create).') end

@@ -34,6 +34,6 @@ RegisterNetEvent('gs_onboarding:client:welcome', function()
     while rulesPending do Wait(500) end
     local c = vec3(-536.9, -218.4, 37.65) -- Max « le Guide » (gs_quests, personnage guide)
     SetNewWaypoint(c.x, c.y)
-    lib.notify({ title = 'Bienvenue à Los Santos !', description = 'Rejoins Max devant la mairie (GPS posé) pour ton premier jour. F2 : progression · F1 : téléphone · /regles : règlement.',
+    lib.notify({ title = 'Bienvenue à Los Santos !', description = 'Rejoins Max devant la mairie (GPS posé) pour ton premier jour. F3 : progression · F1 : téléphone · I : toutes les touches · /regles : règlement.',
         type = 'inform', icon = 'hand', duration = 15000 })
 end)

@@ -2,7 +2,7 @@
 Config = {}
 
 Config.Me = { range = 20.0, seconds = 7, maxLength = 120 }   -- /me et /do : texte au-dessus de la tête
-Config.HandsUpKey = 'X'
+Config.HandsUpKey = 'H'   -- à pied seulement (en voiture, H = démarrer sans clé) ; X = annuler une emote (scully)
 Config.SeatbeltKey = 'B'
 Config.Ejection = { minDrop = 18.0 }  -- m/s perdus d'un coup sans ceinture = éjection (~65 km/h)
 

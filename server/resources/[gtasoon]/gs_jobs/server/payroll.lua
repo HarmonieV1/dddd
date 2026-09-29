@@ -9,7 +9,7 @@ local function pay(src)
     if job.name == Config.UnemployedJob then
         amount, from, label = Config.UnemployedAllowance, 'state', L('allowance')
     elseif def and grade and job.onduty then
-        amount, from, label = grade.salary or 0, def.salaryFrom, def.label
+        amount, from, label = GSJ.salaryOf(job.name, job.grade), def.salaryFrom, def.label
     end
     if not amount or amount <= 0 then return end
 

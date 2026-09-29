@@ -16,7 +16,7 @@ PointsStore = PointsStore or {
     end,
 }
 
-GSJ.pointKinds = { duty = 'Prise de service', boss = 'Direction', stash = 'Coffre', armory = 'Armurerie', cloakroom = 'Vestiaire', garage = 'Garage', garage_spawn = 'Sortie du garage' }
+GSJ.pointKinds = { duty = 'Prise de service', boss = 'Direction', stash = 'Coffre', armory = 'Équipement de service', cloakroom = 'Vestiaire', garage = 'Garage', garage_spawn = 'Sortie du garage' }
 
 --- Applique un point sur la définition du job (mêmes règles côté client). Retourne true si le point existe.
 function GSJ.applyPoint(job, kind, idx, c)
@@ -66,7 +66,7 @@ function GSJ.listPoints(job)
     local p, list = Jobs[job].points, {}
     for _, kind in ipairs({ 'duty', 'boss', 'armory', 'cloakroom', 'stash', 'garage' }) do
         for i, e in ipairs(p[kind] or {}) do
-            local label = GSJ.pointKinds[kind] .. (e.label and (' · ' .. e.label) or (#p[kind] > 1 and (' ' .. i) or ''))
+            local label = (kind == 'armory' and Jobs[job].armoryLabel or GSJ.pointKinds[kind]) .. (e.label and (' · ' .. e.label) or (#p[kind] > 1 and (' ' .. i) or ''))
             list[#list + 1] = { kind = kind, idx = i, label = label }
             if kind == 'garage' then list[#list + 1] = { kind = 'garage_spawn', idx = i, label = GSJ.pointKinds.garage_spawn .. (#p.garage > 1 and (' ' .. i) or '') } end
         end
@@ -95,9 +95,9 @@ end
 lib.callback.register('gs_jobs:armory', function(src, item)
     if not GSJ.guard(src, 'armory', 8, 10000) then return false, 'Doucement.' end
     local job, def = GSJ.activeJob(src)
-    if not job or not def or not def.armory then return false, 'Pas d\'armurerie pour ton métier.' end
+    if not job or not def or not def.armory then return false, 'Pas d\'équipement de service pour ton métier.' end
     if not job.onduty then return false, 'Prends d\'abord ton service.' end
-    if not GSJ.nearAny(src, def.points.armory, 2.0) then return false, 'Trop loin de l\'armurerie.' end
+    if not GSJ.nearAny(src, def.points.armory, 2.0) then return false, 'Trop loin du point d\'équipement.' end
     local a = armoryEntry(def, item)
     if not a or not (GSJ.armoryOk[job.name] or {})[item] then return false, 'Équipement indisponible.' end
     if job.grade < (a.minGrade or 0) then return false, 'Grade insuffisant.' end

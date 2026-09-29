@@ -2,11 +2,22 @@
 Config = {}
 
 -- Niveaux (ACE, voir cfg/permissions.cfg). Un niveau inclut les précédents.
-Config.Aces = { 'gs.admin.helper', 'gs.admin.mod', 'gs.admin.admin', 'gs.admin.founder' }
-Config.LevelNames = { 'Helper', 'Modérateur', 'Admin', 'Fondateur' }
-Config.Key = 'F10'        -- panel complet
-Config.QuickKey = 'F11'   -- menu staff rapide (flèches + Entrée), pouvoirs actifs seulement en mode staff
+-- 1 helper, 2 modo, 3 admin, 4 super-admin, 5 fondateur.
+Config.Aces = { 'gs.admin.helper', 'gs.admin.mod', 'gs.admin.admin', 'gs.admin.superadmin', 'gs.admin.founder' }
+Config.LevelNames = { 'Helper', 'Modérateur', 'Admin', 'Super-admin', 'Fondateur' }
+Config.Key = 'F10'          -- panel complet
+Config.QuickKey = 'DELETE'  -- menu staff rapide (F11) ; F11 reste à pma-voice (portée de la voix)
 
+-- Rangs donnés en jeu : SEUL le fondateur promeut / rétrograde (jusqu'à super-admin). Les fondateurs se déclarent
+-- dans secrets.cfg (group.god), jamais depuis le jeu. Groupe ACE de chaque rang :
+Config.RankGroups = { 'group.helper', 'group.mod', 'group.admin', 'group.superadmin' }
+
+-- Raccourcis clavier du mode staff (maintenir Ctrl gauche + touche). Modifiables dans Paramètres → Raccourcis → FiveM.
+Config.Shortcuts = {
+    tpm = 'Y',      -- Ctrl + Y : téléportation au marqueur
+    noclip = 'U',   -- Ctrl + U : vol libre
+    names = 'O',    -- Ctrl + O : noms et ID
+}
 -- Pouvoirs du menu rapide : niveau minimum. Tous exigent le mode staff (/staff ou 1re ligne du menu).
 Config.Powers = {
     names = 1,       -- noms + ID au-dessus des joueurs
@@ -15,6 +26,14 @@ Config.Powers = {
     godmode = 2,
     animal = 2,      -- se transformer (Config.Animals)
     tpm = 2,         -- téléportation au marqueur
+    -- Section « Fun » (staff et événements) : sur soi uniquement, jamais sur un joueur
+    fastrun = 3,     -- course rapide
+    superjump = 3,   -- super saut
+    stamina = 3,     -- endurance infinie
+    lowgravity = 3,  -- gravité lunaire (sur ton écran seulement)
+    nightvision = 3, -- vision nocturne
+    thermal = 3,     -- vision thermique
+    fastswim = 3,    -- nage rapide
 }
 
 Config.Animals = {
@@ -47,6 +66,7 @@ Config.Jail = {
     maxMinutes = 240,
 }
 
+-- Argent et items : super-admin minimum (motif obligatoire, journalisé) ; le fondateur seul sans motif.
 Config.Give = { maxMoney = 100000, maxItems = 100 }
 
 -- Transparence (prompt maître) : sanctions publiées sur un salon public (convar gs_webhook_sanctions).

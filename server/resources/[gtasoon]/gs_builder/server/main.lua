@@ -2,7 +2,7 @@
 -- seulement à proximité : aucun coût réseau ni entité serveur, même avec des milliers d'objets.
 local Security = exports.gs_security
 
-Builder = { objects = {}, count = 0 }
+Builder = { objects = {}, count = 0, hides = {}, hideCount = 0 }
 
 local function allowed(src) return IsPlayerAceAllowed(src, Config.Ace) end
 
@@ -86,6 +86,45 @@ lib.callback.register('gs_builder:delete', function(src, id)
     return true
 end)
 
+-- Objets de la map d'origine (poubelle, banc, barrière…) : retirés pour tout le monde par un masque de modèle
+-- (CreateModelHide côté client). Le hash vient de l'objet visé ; réversible depuis le menu.
+lib.callback.register('gs_builder:hides', function(src)
+    if not Security:RateLimit(src, 'gs_builder:hides', 3, 10000) then return nil end
+    local list = {}
+    for _, h in pairs(Builder.hides) do list[#list + 1] = h end
+    return list
+end)
+
+lib.callback.register('gs_builder:hide', function(src, data)
+    local ok, err = guard(src, 'hide')
+    if not ok then return false, err end
+    if Builder.hideCount >= Config.MaxHides then return false, 'Limite d\'objets retirés atteinte.' end
+    if type(data) ~= 'table' or math.type(data.hash) ~= 'integer' or math.abs(data.hash) > 0xFFFFFFFF then return false, 'Objet invalide.' end
+    for _, k in ipairs({ 'x', 'y', 'z' }) do if not num(data[k]) then return false, 'Position invalide.' end end
+    local ped = GetPlayerPed(src)
+    if ped == 0 or #(GetEntityCoords(ped) - vec3(data.x, data.y, data.z)) > Config.MaxPlaceDistance then return false, 'Trop loin de toi.' end
+    local h = { hash = data.hash, x = data.x, y = data.y, z = data.z }
+    local id = Store.hideInsert(h, GetPlayerName(src) or '?')
+    if not id then return false, 'Erreur BDD.' end
+    h.id = id
+    Builder.hides[id], Builder.hideCount = h, Builder.hideCount + 1
+    TriggerClientEvent('gs_builder:client:hide', -1, h)
+    Security:LogStaff(('[Builder] %s retire un objet de la map #%d (%.1f, %.1f, %.1f)'):format(GetPlayerName(src), id, h.x, h.y, h.z))
+    return true, 'Objet retiré pour tout le monde.'
+end)
+
+lib.callback.register('gs_builder:unhide', function(src, id)
+    local ok, err = guard(src, 'unhide')
+    if not ok then return false, err end
+    id = tonumber(id)
+    local h = Builder.hides[id]
+    if not h then return false, 'Introuvable.' end
+    Builder.hides[id], Builder.hideCount = nil, Builder.hideCount - 1
+    Store.hideDelete(id)
+    TriggerClientEvent('gs_builder:client:unhide', -1, h)
+    return true, 'Objet de la map remis.'
+end)
+
 -- Points d'organisation (planques de gang) : position du staff
 lib.callback.register('gs_builder:gangs', function(src)
     if not guard(src, 'gangs') or GetResourceState('gs_gangs') ~= 'started' then return {} end
@@ -108,5 +147,9 @@ CreateThread(function()
         Builder.objects[o.id] = o
         Builder.count = Builder.count + 1
     end
-    print(('[gs_builder] %d objets chargés'):format(Builder.count))
+    for _, h in ipairs(Store.hides()) do
+        Builder.hides[h.id] = h
+        Builder.hideCount = Builder.hideCount + 1
+    end
+    print(('[gs_builder] %d objets chargés, %d objets de la map retirés'):format(Builder.count, Builder.hideCount))
 end)

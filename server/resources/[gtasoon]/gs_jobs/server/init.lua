@@ -3,6 +3,7 @@ CreateThread(function()
     DB.init()
     Bridge:RegisterJobs(Jobs)
     GSJ.loadPoints()
+    GSJ.loadSalaries()
     GSJ.registerStashes()
     GSJ.checkArmories()
     for name, def in pairs(Jobs) do

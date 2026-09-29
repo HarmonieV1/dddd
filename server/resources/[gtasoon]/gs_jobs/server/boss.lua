@@ -1,4 +1,4 @@
--- Menu Direction : recrutement (avec consentement), grades, licenciement, caisse.
+-- Menu Direction : recrutement (avec consentement), grades, licenciement, caisse, salaires, primes.
 -- Règle : un patron ne gère que les grades STRICTEMENT inférieurs au sien.
 local Offers = {} -- [cible] = { job, grade, from, expires }
 
@@ -27,6 +27,16 @@ lib.callback.register('gs_jobs:boss:getData', function(src)
         myCid = GSJ.cid(src),
         society = def.society and Society.balance(job.name) or nil,
         employees = employees,
+        salaries = (function()
+            if def.salaryFrom ~= 'society' then return nil end
+            local l = {}
+            for g, gd in pairs(def.grades) do
+                l[#l + 1] = { grade = g, label = gd.label, salary = GSJ.salaryOf(job.name, g),
+                    min = math.floor((gd.salary or 0) * Config.Salary.min), max = math.floor((gd.salary or 0) * Config.Salary.max) }
+            end
+            table.sort(l, function(a, b) return a.grade < b.grade end)
+            return l
+        end)(),
     }
 end)
 
@@ -101,6 +111,57 @@ function actions.withdraw(src, job, def, data)
     GSJ.log('Caisse %s : retrait de %s $ par %s (%s)', job.name, amount, GetPlayerName(src), GSJ.cid(src))
     DB.audit('withdraw', job.name, GSJ.cid(src), nil, amount, nil)
     return true, L('withdraw_ok', amount)
+end
+
+-- Salaires : seulement pour les entreprises payées par leur caisse (l'État fixe ceux de la police / EMS).
+-- Bornes : de Config.Salary.min à Config.Salary.max fois le salaire de base du grade.
+GSJ.salaries = {} -- [job] = { [grade] = salaire }
+
+function GSJ.salaryOf(jobName, grade)
+    local custom = GSJ.salaries[jobName] and GSJ.salaries[jobName][grade]
+    if custom then return custom end
+    local g = Jobs[jobName] and Jobs[jobName].grades[grade]
+    return g and g.salary or 0
+end
+
+function GSJ.loadSalaries()
+    GSJ.salaries = {}
+    for _, r in ipairs(DB.getSalaries()) do
+        GSJ.salaries[r.job] = GSJ.salaries[r.job] or {}
+        GSJ.salaries[r.job][r.grade] = r.salary
+    end
+end
+
+function actions.setSalary(src, job, def, data)
+    local grade, amount = tonumber(data.grade), tonumber(data.amount)
+    if def.salaryFrom ~= 'society' then return false, 'Salaires fixés par l\'État pour ce service.' end
+    if not grade or not def.grades[grade] then return false, L('grade_invalid') end
+    local base = def.grades[grade].salary or 0
+    local lo, hi = math.floor(base * Config.Salary.min), math.floor(base * Config.Salary.max)
+    if not GSJ.isInt(amount, lo, hi) then return false, ('Salaire entre %d et %d $.'):format(lo, hi) end
+    GSJ.salaries[job.name] = GSJ.salaries[job.name] or {}
+    GSJ.salaries[job.name][grade] = amount
+    DB.setSalary(job.name, grade, amount)
+    DB.audit('set_salary', job.name, GSJ.cid(src), nil, amount, tostring(grade))
+    return true, ('Salaire %s : %d $ par paie.'):format(GSJ.gradeLabel(job.name, grade), amount)
+end
+
+--- Prime : de la caisse de l'entreprise vers le compte d'un employé connecté.
+function actions.bonus(src, job, def, data)
+    local cid, amount = data.cid, tonumber(data.amount)
+    if not def.society or type(cid) ~= 'string' or cid == GSJ.cid(src) then return false, L('invalid') end
+    if not GSJ.isInt(amount, 1, Config.Salary.maxBonus) then return false, ('Prime : 1 à %d $.'):format(Config.Salary.maxBonus) end
+    if not DB.getMember(cid, job.name) then return false, L('not_member_target') end
+    local target = Bridge:GetSourceByIdentifier(cid)
+    if not target then return false, 'Employé hors ligne.' end
+    if not Society.remove(job.name, amount) then return false, L('society_empty') end
+    if not Bridge:AddMoney(target, 'bank', amount, 'prime ' .. job.name) then
+        Society.add(job.name, amount)
+        return false, L('error')
+    end
+    GSJ.notify(target, ('Prime de %d $ versée par %s.'):format(amount, def.label), 'success')
+    DB.audit('bonus', job.name, GSJ.cid(src), cid, amount, nil)
+    return true, ('Prime de %d $ versée.'):format(amount)
 end
 
 lib.callback.register('gs_jobs:boss:action', function(src, action, data)

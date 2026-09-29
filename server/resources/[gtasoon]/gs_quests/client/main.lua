@@ -332,8 +332,8 @@ local function openMenu()
 end
 
 -- Plus de commande « progression » : une ancienne touche F5 gardée par FiveM ouvrait ce menu en même temps que les emotes.
-RegisterCommand('menuprogression', openMenu, false) -- F2 (nom neuf : la touche par défaut s'applique à tout le monde)
-RegisterKeyMapping('menuprogression', 'Progression et quêtes', 'keyboard', Config.Key)
+RegisterCommand('progression', openMenu, false) -- F3 (nom neuf en V5 : la nouvelle touche par défaut s'applique à tout le monde)
+RegisterKeyMapping('progression', 'Progression et quêtes', 'keyboard', Config.Key)
 
 -- Interaction avec les personnages : une zone ox_target fixe par personnage (marche même si le PNJ n'a pas
 -- encore chargé ou s'il est mal posé) ; la cabine de la Voix n'a pas de PNJ.

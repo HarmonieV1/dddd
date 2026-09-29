@@ -45,7 +45,7 @@ local function openArmory(name)
             onSelect = function() GSJ.result(lib.callback.await('gs_jobs:armory', false, a.item)) openArmory(name) end,
         }
     end
-    lib.registerContext({ id = 'gs_jobs_armory', title = 'Armurerie · ' .. def.label, options = options })
+    lib.registerContext({ id = 'gs_jobs_armory', title = (def.armoryLabel or 'Équipement') .. ' · ' .. def.label, options = options })
     lib.showContext('gs_jobs_armory')
 end
 
@@ -97,7 +97,7 @@ local function refreshMarkers()
     end
     for i, c in ipairs(p.duty or {}) do mark('duty', i, c, 'Prise de service') end
     for i, c in ipairs(p.boss or {}) do mark('boss', i, c, 'Direction') end
-    for i, c in ipairs(p.armory or {}) do mark('armory', i, c, 'Armurerie') end
+    for i, c in ipairs(p.armory or {}) do mark('armory', i, c, job.armoryLabel or 'Équipement de service') end
     for i, c in ipairs(p.cloakroom or {}) do mark('cloakroom', i, c, 'Vestiaire') end
     for i, st in ipairs(p.stash or {}) do mark('stash', i, st.coords, st.label or 'Coffre') end
     for i, g in ipairs(p.garage or {}) do mark('garage', i, g.coords, 'Garage') end
@@ -159,7 +159,7 @@ local function build()
 
         for i, coords in ipairs(p.armory or {}) do
             addZone(coords, {
-                name = ('gs_armory_%s_%d'):format(name, i), icon = 'fa-solid fa-shield-halved', label = 'Armurerie',
+                name = ('gs_armory_%s_%d'):format(name, i), icon = 'fa-solid fa-shield-halved', label = Jobs[name].armoryLabel or 'Équipement de service',
                 canInteract = function() return GSJ.isOnDuty(name) end,
                 onSelect = function() openArmory(name) end,
             })

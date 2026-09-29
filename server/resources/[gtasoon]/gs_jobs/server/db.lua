@@ -40,7 +40,19 @@ local SCHEMA = {
         PRIMARY KEY (`id`),
         KEY `idx_job_date` (`job`, `created_at`)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4]],
+    [[CREATE TABLE IF NOT EXISTS `gs_job_salaries` (
+        `job` VARCHAR(50) NOT NULL,
+        `grade` TINYINT UNSIGNED NOT NULL,
+        `salary` INT UNSIGNED NOT NULL,
+        PRIMARY KEY (`job`, `grade`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4]],
 }
+
+-- Salaires fixés par la direction (entreprises payées par leur caisse) ------------------------------------
+function DB.getSalaries() return MySQL.query.await('SELECT job, grade, salary FROM gs_job_salaries') or {} end
+function DB.setSalary(job, grade, salary)
+    MySQL.update('REPLACE INTO gs_job_salaries (job, grade, salary) VALUES (?, ?, ?)', { job, grade, salary })
+end
 
 function DB.init()
     for _, query in ipairs(SCHEMA) do MySQL.query.await(query) end

@@ -9,7 +9,7 @@ local STYLES = {
     quest  = { ring = { 90, 255, 140 }, plumbob = { 90, 255, 140 } },              -- losange vert au-dessus des PNJ de quête
     entry  = { ring = { 40, 224, 255 }, icon = 20, iconColor = { 40, 224, 255 } },    -- entrée de bâtiment / interaction
     shop   = { ring = { 255, 196, 0 }, icon = 29, iconColor = { 255, 196, 0 } },      -- commerce ($)
-    job    = { ring = { 160, 110, 255 }, icon = 21, iconColor = { 160, 110, 255 } },  -- point de métier
+    job    = { icon = 21, iconColor = { 235, 240, 255 } },                           -- point de métier : chevron blanc discret, sans cercle au sol (V5)
     objective = { ring = { 255, 196, 0 }, icon = 0, iconColor = { 255, 196, 0 } },    -- objectif de quête (cône)
     hidden = {},                                                                      -- rien de dessiné : juste [E]
 }
@@ -95,8 +95,8 @@ CreateThread(function()
             for _, n in ipairs(nearby) do
                 local p, c, s = n.p, n.p.coords, n.p.style
                 if p.ring and s.ring then
-                    DrawMarker(25, c.x, c.y, c.z - 0.97, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.6, 1.6, 1.0,
-                        s.ring[1], s.ring[2], s.ring[3], 170, false, false, 2, false, nil, nil, false)
+                    DrawMarker(25, c.x, c.y, c.z - 0.97, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.3, 1.3, 1.0,
+                        s.ring[1], s.ring[2], s.ring[3], 110, false, false, 2, false, nil, nil, false)
                 end
                 if s.plumbob then -- losange façon Sims : deux cônes pointe à pointe qui tournent
                     local z = c.z + p.height

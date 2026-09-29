@@ -251,7 +251,7 @@ export default function App() {
             </form>
           )}
           <div className="card wide muted small">
-            <p style={{ margin: 0 }}>Pouvoirs (vol libre, spectate, animaux, véhicules, points de métier) : menu <code>F11</code>. Bans : txAdmin (<code>/tx</code>). Ce panneau gère le staff : tickets, fiches, sanctions, économie, journal.</p>
+            <p style={{ margin: 0 }}>Pouvoirs (vol libre, spectate, animaux, véhicules, points de métier) : menu <code>F11</code> (raccourcis staff : Ctrl+Y TP marqueur, Ctrl+U vol libre, Ctrl+O noms). Bans : txAdmin (<code>/tx</code>). Ce panneau gère le staff : tickets, fiches, sanctions, économie, journal.</p>
           </div>
         </div>
       )}

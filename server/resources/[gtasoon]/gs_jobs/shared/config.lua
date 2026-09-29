@@ -10,6 +10,8 @@ Config.OfferTimeout = 60           -- secondes pour accepter une offre d'embauch
 
 -- Paie
 Config.PayrollMinutes = 15
+-- Direction : salaires réglables (entreprises payées par leur caisse) entre min et max fois le salaire de base ; primes
+Config.Salary = { min = 0.5, max = 2.0, maxBonus = 5000 }
 Config.UnemployedAllowance = 50    -- allocation versée aux sans-emploi à chaque paie (0 = désactivé)
 Config.AntiAfk = true              -- pas de paie si le joueur n'a pas bougé de 2 m depuis la dernière paie
 

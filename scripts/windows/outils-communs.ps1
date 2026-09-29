@@ -16,6 +16,11 @@ $QboxPatches = @(
     @{ res = 'illenium-appearance'; file = 'shared\config.lua'; find = 'Config\.EnablePedsForShops\s*=\s*true'; repl = 'Config.EnablePedsForShops = false'; why = 'magasins de vêtements : pas de ped GTA (boutique / staff seulement)' },
     @{ res = 'illenium-appearance'; file = 'shared\config.lua'; find = 'Config\.EnablePedsForClothingRooms\s*=\s*true'; repl = 'Config.EnablePedsForClothingRooms = false'; why = 'vestiaires : pas de ped GTA' },
     @{ res = 'illenium-appearance'; file = 'shared\config.lua'; find = 'Config\.EnablePedsForPlayerOutfitRooms\s*=\s*true'; repl = 'Config.EnablePedsForPlayerOutfitRooms = false'; why = 'garde-robes : pas de ped GTA' },
+    @{ res = 'qbx_core'; file = 'config\client.lua'; find = 'startingApartment\s*=\s*true'; repl = 'startingApartment = false'; why = 'nouveau perso : apparition en ville (mairie), pas d''appartement gratuit' },
+    # Inventaire : double-clic sur un objet = l'utiliser (ox_inventory ne le fait qu'avec Alt + clic)
+    @{ res = 'ox_inventory'; file = 'web\build\index.html'; why = 'inventaire : double-clic pour utiliser un objet'
+       find = '(?<!<!--gs-dblclick-->)</body>'
+       repl = '<script>document.addEventListener("dblclick",function(e){if(e.target&&e.target.dispatchEvent){e.target.dispatchEvent(new MouseEvent("click",{bubbles:true,cancelable:true,altKey:true,view:window}))}},true)</script><!--gs-dblclick--></body>' },
     @{ res = 'ox_lib'; file = 'resource\interface\client\context.lua'; find = 'lib\.setNuiFocus\(false\)'; repl = 'lib.setNuiFocus(true)'; why = 'menus cliquables : on peut marcher menu ouvert' },
     # Menus ox_lib : palette « dark » grise de Mantine remplacée par du noir-violet néon (DA GTA SOON)
     @{ res = 'ox_lib'; dir = 'web\build\assets'; filter = '*.js'; why = 'menus ox_lib en noir néon'

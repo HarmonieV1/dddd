@@ -59,8 +59,8 @@ end
 local function step() advance(11000) end
 local here = vec3(100.0, 100.0, 30.0)
 
--- 1 admin, 2 modo, 3 helper, 4 joueur, 5 modo (même niveau que 2)
-join(1, 'CID1', 'Alpha Boss', here); W.players[1].aces = { ['gs.admin.admin'] = true }
+-- 1 super-admin, 2 modo, 3 helper, 4 joueur, 5 modo (même niveau que 2)
+join(1, 'CID1', 'Alpha Boss', here); W.players[1].aces = { ['gs.admin.superadmin'] = true }
 join(2, 'CID2', 'Modo Un', here); W.players[2].aces = { ['gs.admin.mod'] = true }
 join(3, 'CID3', 'Helper Trois', here); W.players[3].aces = { ['gs.admin.helper'] = true }
 join(4, 'CID4', 'Vice Lucia', vec3(500.0, 500.0, 30.0))
@@ -68,7 +68,7 @@ join(5, 'CID5', 'Modo Deux', here); W.players[5].aces = { ['gs.admin.mod'] = tru
 for s = 1, 5 do W.players[s].license = 'license:' .. s end
 
 -- Niveaux --------------------------------------------------------------------------------------------
-check('niveaux', Admin.level(1) == 3 and Admin.level(2) == 2 and Admin.level(3) == 1 and Admin.level(4) == 0)
+check('niveaux', Admin.level(1) == 4 and Admin.level(2) == 2 and Admin.level(3) == 1 and Admin.level(4) == 0)
 check('joueur : panel refusé', cb('gs_admin:open', 4) == nil)
 local data = cb('gs_admin:open', 3)
 check('helper : panel ouvert, pas de journal', data and data.level == 1 and #data.logs == 0)
@@ -184,11 +184,11 @@ check('action inconnue refusée', not ok)
 
 -- Menu rapide (F11) : mode staff obligatoire, niveaux par pouvoir, métier/gang de test, véhicules, items fondateur --
 join(6, 'CID6', 'Fondateur', here); W.players[6].aces = { ['gs.admin.founder'] = true }; W.players[6].license = 'license:6'
-join(7, 'CID7', 'Testeur', here)
-check('niveau fondateur', Admin.level(6) == 4)
+join(7, 'CID7', 'Testeur', here); W.players[7].license = 'license:7'
+check('niveau fondateur', Admin.level(6) == 5)
 check('menu rapide refusé au joueur', cb('gs_admin:quick', 7) == nil)
 local q = cb('gs_admin:quick', 6); step()
-check('menu rapide fondateur : jobs + gangs', q and q.level == 4 and #q.jobs == 1 and #q.gangs == 1 and not q.onDuty)
+check('menu rapide fondateur : jobs + gangs', q and q.level == 5 and q.ranks and #q.jobs == 1 and #q.gangs == 1 and not q.onDuty)
 q = cb('gs_admin:quick', 3); step()
 check('menu rapide helper : pas de jobs', q and #q.jobs == 0)
 ok, msg = cb('gs_admin:action', 6, 'power', nil, { power = 'noclip' }); step()
@@ -235,14 +235,45 @@ check('véhicule supprimé', ok and not W.entities[spawned])
 ok = cb('gs_admin:action', 6, 'giveitem', 7, { item = 'water', amount = 5 }); step()
 check('fondateur : don sans motif', ok and W.players[7].items.water == 5)
 ok = cb('gs_admin:action', 1, 'giveitem', 7, { item = 'water', amount = 1 }); step()
-check('admin : motif toujours obligatoire', not ok)
+check('super-admin : motif toujours obligatoire', not ok)
 ok = cb('gs_admin:action', 6, 'removeitem', 7, { item = 'water', amount = 50 }); step()
 check('retrait plafonné au stock', ok and W.players[7].items.water == 0)
 ok = cb('gs_admin:action', 1, 'removeitem', 7, { item = 'water', amount = 1 }); step()
 check('retrait réservé au fondateur', not ok)
 ok = cb('gs_admin:action', 6, 'dropitem', nil, { item = 'sandwich', amount = 3 }); step()
 check('dépôt au sol', ok and W.drops and W.drops[1].items[1][1] == 'sandwich')
-check('liste des items réservée au fondateur', cb('gs_admin:items', 1) == nil and #cb('gs_admin:items', 6) == 1)
+check('liste des items : super-admin et fondateur', cb('gs_admin:items', 2) == nil and #cb('gs_admin:items', 6) == 1)
+
+-- Admin (niveau 3) : plus d'argent ni d'items -------------------------------------------------------------------
+join(8, 'CID8', 'Admin Simple', here); W.players[8].aces = { ['gs.admin.admin'] = true }; W.players[8].license = 'license:8'
+step()
+ok, msg = cb('gs_admin:action', 8, 'givemoney', 7, { account = 'cash', amount = 100, reason = 'x' }); step()
+check('admin ne peut plus donner d\'argent', not ok and msg == 'Niveau insuffisant.')
+ok = cb('gs_admin:action', 8, 'giveitem', 7, { item = 'water', amount = 1, reason = 'x' }); step()
+check('admin ne peut plus donner d\'items', not ok)
+
+-- Rangs : fondateur seul, jusqu'à super-admin, appliqués tout de suite (principals) et enregistrés ----------------
+local cmds, ranks = {}, {}
+function ExecuteCommand(c) cmds[#cmds + 1] = c end
+Store.rankSet = function(lic, rank) ranks[lic] = rank end
+ok, msg = cb('gs_admin:action', 1, 'setrank', 7, { rank = 2 }); step()
+check('super-admin ne peut pas promouvoir', not ok and msg == 'Niveau insuffisant.')
+ok = cb('gs_admin:action', 8, 'setrank', 7, { rank = 1 }); step()
+check('admin ne peut pas promouvoir', not ok)
+ok = cb('gs_admin:action', 6, 'setrank', 7, { rank = 5 }); step()
+check('pas de fondateur créé en jeu', not ok)
+ok = cb('gs_admin:action', 6, 'setrank', 6, { rank = 1 }); step()
+check('pas de changement de son propre rang', not ok)
+cmds = {}
+ok = cb('gs_admin:action', 6, 'setrank', 7, { rank = 4 }); step()
+check('fondateur promeut super-admin', ok and ranks['license:7'] == 4 and cmds[#cmds] == 'add_principal identifier.license:7 group.superadmin')
+check('anciens groupes retirés avant', #cmds == 5 and cmds[1]:find('^remove_principal identifier.license:7'))
+cmds = {}
+ok = cb('gs_admin:action', 6, 'setrank', 7, { rank = 0 }); step()
+check('fondateur rétrograde', ok and ranks['license:7'] == 0 and #cmds == 4)
+W.players[7].aces = { ['gs.admin.founder'] = true }
+ok = cb('gs_admin:action', 6, 'setrank', 7, { rank = 1 }); step()
+check('un fondateur ne se rétrograde pas en jeu', not ok)
 step()
 ok = cb('gs_admin:action', 6, 'creategang', nil, { name = 'Aztecas', label = 'Varrios Los Aztecas', color = 3 }); step()
 check('créer un gang (identifiant en minuscules)', ok and W.newGang == 'aztecas')

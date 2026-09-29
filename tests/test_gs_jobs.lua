@@ -96,6 +96,23 @@ for _, bad in ipairs({ -50, 0, 1.5, 0 / 0, 1e12 }) do
 end
 check('caisse intacte après montants invalides', Society.balance('police') == 800)
 
+-- Salaires et primes (V5) ------------------------------------------------------------------------
+ok, msg = cb('gs_jobs:boss:action', 1, 'setSalary', { grade = 0, amount = 400 }); step()
+check('salaire police : fixé par l\'État', not ok and msg:find('État'))
+check('salaire par défaut', GSJ.salaryOf('police', 1) == 450)
+GSJ.salaries.mechanic = { [1] = 500 }
+check('salaire personnalisé lu', GSJ.salaryOf('mechanic', 1) == 500 and GSJ.salaryOf('mechanic', 0) == 250)
+local bank2 = W.players[2].money.bank
+ok = cb('gs_jobs:boss:action', 1, 'bonus', { cid = 'CID2', amount = 99999 }); step()
+check('prime plafonnée', not ok)
+ok = cb('gs_jobs:boss:action', 1, 'bonus', { cid = 'CID1', amount = 100 }); step()
+check('pas de prime à soi-même', not ok)
+ok = cb('gs_jobs:boss:action', 1, 'bonus', { cid = 'CID2', amount = 300 }); step()
+check('prime versée depuis la caisse', ok and Society.balance('police') == 500 and W.players[2].money.bank == bank2 + 300)
+ok = cb('gs_jobs:boss:action', 1, 'bonus', { cid = 'CID2', amount = 900 }); step()
+check('prime > caisse refusée', not ok and Society.balance('police') == 500)
+Society.add('police', 300)
+
 -- Factures -------------------------------------------------------------------------------------
 tp(1, P.duty[1])
 W.players[1].money.bank = 100

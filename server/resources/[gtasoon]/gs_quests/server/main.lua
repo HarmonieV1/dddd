@@ -243,7 +243,7 @@ lib.callback.register('gs_quests:start', function(src, questId)
     if not guard(src, 'start', 3, 10000) then return false, 'Doucement.' end
     local q, p = QuestById[questId], Progress.players[src]
     if not q or not p then return false, 'Quête inconnue.' end
-    if Progress.active[src] then return false, 'Termine ou abandonne ta quête en cours (F2).' end
+    if Progress.active[src] then return false, 'Termine ou abandonne ta quête en cours (F3).' end
     local ok, why = available(src, q)
     if not ok then return false, why end
     if q.night and not isNight() then return false, 'Reviens ce soir (entre 20 h et 5 h).' end

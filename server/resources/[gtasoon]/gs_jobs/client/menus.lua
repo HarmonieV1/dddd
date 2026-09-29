@@ -155,6 +155,13 @@ local function employeeMenu(data, e)
               if answer == 'confirm' then bossAction('fire', { cid = e.citizenid }) end
           end },
     }
+    if data.society then
+        table.insert(options, 2, { title = 'Verser une prime', icon = 'gift', description = e.online and 'Depuis la caisse de l\'entreprise' or 'Employé hors ligne',
+            disabled = not e.online, onSelect = function()
+                local amount = askAmount('Prime pour ' .. e.name)
+                if amount then bossAction('bonus', { cid = e.citizenid, amount = amount }) end
+            end })
+    end
     show('gs_jobs_employee', e.name, options, 'gs_jobs_employees')
 end
 
@@ -169,6 +176,18 @@ function GSJ.openBossMenu()
             onSelect = function() local a = askAmount(L('boss_deposit')); if a then bossAction('deposit', { amount = a }) end end }
         options[#options + 1] = { title = L('boss_withdraw'), icon = 'arrow-up',
             onSelect = function() local a = askAmount(L('boss_withdraw')); if a then bossAction('withdraw', { amount = a }) end end }
+    end
+    if data.salaries then
+        local list = {}
+        for _, s in ipairs(data.salaries) do
+            list[#list + 1] = { title = ('%s · %d $'):format(s.label, s.salary), description = ('Entre %d et %d $ par paie (payé par la caisse)'):format(s.min, s.max),
+                icon = 'money-bill-wave', onSelect = function()
+                    local r = lib.inputDialog('Salaire · ' .. s.label, { { type = 'number', label = '$ par paie', default = s.salary, min = s.min, max = s.max, required = true } })
+                    if r then bossAction('setSalary', { grade = s.grade, amount = tonumber(r[1]) }) end
+                end }
+        end
+        lib.registerContext({ id = 'gs_jobs_salaries', title = 'Salaires', menu = 'gs_jobs_boss', options = list })
+        options[#options + 1] = { title = 'Salaires par grade', icon = 'money-bill-wave', menu = 'gs_jobs_salaries' }
     end
     options[#options + 1] = { title = L('boss_recruit'), icon = 'user-plus', onSelect = function() recruit(data) end }
     options[#options + 1] = { title = L('boss_employees', #data.employees), icon = 'users', menu = 'gs_jobs_employees' }

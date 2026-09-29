@@ -16,7 +16,7 @@ Admin = {
 
 local function started(res) return GetResourceState(res) == 'started' end
 
---- Niveau staff : 0 (joueur), 1 helper, 2 modo, 3 admin, 4 fondateur.
+--- Niveau staff : 0 (joueur), 1 helper, 2 modo, 3 admin, 4 super-admin, 5 fondateur.
 function Admin.level(src)
     if type(src) ~= 'number' or src <= 0 then return 0 end
     for lvl = #Config.Aces, 1, -1 do
@@ -271,7 +271,7 @@ local function amountOf(data, max)
     return need(n and n == math.floor(n) and n >= 1 and n <= max and n, ('Montant : 1 à %d.'):format(max))
 end
 
-Actions.givemoney = { level = 3, target = true, run = function(_, target, data)
+Actions.givemoney = { level = 4, target = true, run = function(_, target, data)
     local account = need((data.account == 'cash' or data.account == 'bank') and data.account, 'Compte invalide.')
     local amount = amountOf(data, Config.Give.maxMoney)
     reasonOf(data)
@@ -279,7 +279,7 @@ Actions.givemoney = { level = 3, target = true, run = function(_, target, data)
     return ('+%d $ (%s)'):format(amount, account)
 end }
 
-Actions.removemoney = { level = 3, target = true, run = function(_, target, data)
+Actions.removemoney = { level = 4, target = true, run = function(_, target, data)
     local account = need((data.account == 'cash' or data.account == 'bank') and data.account, 'Compte invalide.')
     local amount = amountOf(data, Config.Give.maxMoney)
     reasonOf(data)
@@ -293,9 +293,9 @@ local function itemOf(data)
 end
 
 -- Motif obligatoire, sauf pour le fondateur (menu rapide).
-local function reasonUnlessFounder(src, data) if Admin.level(src) < 4 then reasonOf(data) end end
+local function reasonUnlessFounder(src, data) if Admin.level(src) < 5 then reasonOf(data) end end
 
-Actions.giveitem = { level = 3, target = true, run = function(src, target, data)
+Actions.giveitem = { level = 4, target = true, run = function(src, target, data)
     local item = itemOf(data)
     local count = amountOf(data, Config.Give.maxItems)
     reasonUnlessFounder(src, data)
@@ -303,7 +303,7 @@ Actions.giveitem = { level = 3, target = true, run = function(src, target, data)
     return ('+%d %s'):format(count, item)
 end }
 
-Actions.removeitem = { level = 4, target = true, run = function(_, target, data)
+Actions.removeitem = { level = 5, target = true, run = function(_, target, data)
     local item = itemOf(data)
     local have = Bridge:GetItemCount(target, item)
     need(have > 0, 'Il n\'en a pas.')
@@ -312,7 +312,7 @@ Actions.removeitem = { level = 4, target = true, run = function(_, target, data)
     return ('-%d %s'):format(count, item)
 end }
 
-Actions.dropitem = { level = 4, duty = true, run = function(src, _, data)
+Actions.dropitem = { level = 5, duty = true, run = function(src, _, data)
     local item = itemOf(data)
     local count = amountOf(data, Config.Give.maxItems)
     need(Bridge:CreateDrop({ { item, count } }, GetEntityCoords(GetPlayerPed(src))), 'Échec du dépôt.')
@@ -330,6 +330,27 @@ Actions.removejob = { level = 3, target = true, run = function(_, target, data)
     local ok, err = JobsApi:AdminRemoveContract(need(Bridge:GetIdentifier(target), 'Perso introuvable.'), tostring(data.job))
     need(ok, 'Refusé : ' .. tostring(err))
     return 'Contrat ' .. data.job .. ' retiré'
+end }
+
+-- Rangs staff : le fondateur seul promeut / rétrograde (0 = joueur … 4 = super-admin). Enregistré en base par licence
+-- et appliqué tout de suite (add_principal) : pas besoin de redémarrer ni de toucher aux fichiers cfg.
+function Admin.applyRank(lic, rank)
+    local who = 'identifier.' .. lic
+    for _, group in ipairs(Config.RankGroups) do ExecuteCommand(('remove_principal %s %s'):format(who, group)) end
+    if rank > 0 then ExecuteCommand(('add_principal %s %s'):format(who, Config.RankGroups[rank])) end
+end
+
+Actions.setrank = { level = 5, target = true, run = function(src, target, data)
+    local rank = tonumber(data.rank)
+    need(rank and rank == math.floor(rank) and rank >= 0 and rank <= #Config.RankGroups, 'Rang invalide.')
+    need(target ~= src, 'Tu ne peux pas changer ton propre rang.')
+    need(Admin.level(target) < 5, 'Un fondateur se déclare dans secrets.cfg, pas en jeu.')
+    local lic = need(license(target), 'Licence introuvable.')
+    Store.rankSet(lic, rank, label(src))
+    Admin.applyRank(lic, rank)
+    notify(target, rank > 0 and ('Tu es maintenant %s du staff.'):format(Config.LevelNames[rank]) or 'Tu ne fais plus partie du staff.', 'inform')
+    if rank == 0 then Admin.onDuty[target] = nil TriggerClientEvent('gs_admin:client:powersOff', target) end
+    return rank > 0 and ('Rang : %s'):format(Config.LevelNames[rank]) or 'Retiré du staff'
 end }
 
 -- Menu rapide : pouvoirs (appliqués par le client après accord), métier / gang de test, véhicules --------
@@ -523,14 +544,14 @@ lib.callback.register('gs_admin:quick', function(src)
     for _, p in ipairs(Admin.playerList()) do players[#players + 1] = { id = p.id, name = p.name } end
     return {
         level = lvl, levelName = Config.LevelNames[lvl], me = src, onDuty = Admin.onDuty[src] ~= nil, players = players,
-        jobs = lvl >= 3 and JobsApi:ListJobs() or {},
+        jobs = lvl >= 3 and JobsApi:ListJobs() or {}, ranks = lvl >= 5 and Config.LevelNames or nil,
         gangs = lvl >= 3 and started('gs_gangs') and exports.gs_gangs:ListGangs() or {},
     }
 end)
 
 --- Liste des items (fondateur) : pour le menu « Items ».
 lib.callback.register('gs_admin:items', function(src)
-    if not staffGuard(src, 'items', 5, 10000) or Admin.level(src) < 4 then return nil end
+    if not staffGuard(src, 'items', 5, 10000) or Admin.level(src) < 4 then return nil end -- super-admin et fondateur
     return Bridge:ListItems()
 end)
 
@@ -593,6 +614,7 @@ end)
 
 CreateThread(function()
     Store.init()
+    for _, row in ipairs(Store.ranks()) do Admin.applyRank(row.license, row.rank) end
     for _, row in ipairs(Store.recentLogs(Config.LogHistory)) do Admin.logs[#Admin.logs + 1] = row end
     while true do
         Wait(5000)

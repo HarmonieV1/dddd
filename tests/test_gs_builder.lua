@@ -14,6 +14,9 @@ Store = {
     insert = function(o) nextId = nextId + 1 rows[nextId] = o return nextId end,
     update = function(id, o) rows[id] = o end,
     delete = function(id) rows[id] = nil end,
+    hides = function() return {} end,
+    hideInsert = function(h) nextId = nextId + 1 rows[nextId] = h return nextId end,
+    hideDelete = function(id) rows[id] = nil end,
 }
 loadResource('gs_builder', { R .. 'gs_builder/server/main.lua' })
 
@@ -77,6 +80,21 @@ ok = cb('gs_builder:setStash', 1, 'inconnu'); step()
 check('gang inconnu', not ok)
 ok = cb('gs_builder:setStash', 2, 'ballas'); step()
 check('planque : permission requise', not ok)
+
+-- Objets de la map d'origine retirés (poubelle…)
+ok = cb('gs_builder:hide', 2, { hash = 123456, x = 101.0, y = 100.0, z = 30.0 }); step()
+check('retrait map : permission requise', not ok and Builder.hideCount == 0)
+ok = cb('gs_builder:hide', 1, { hash = 1.5, x = 101.0, y = 100.0, z = 30.0 }); step()
+check('retrait map : hash non entier refusé', not ok)
+ok = cb('gs_builder:hide', 1, { hash = -1234567, x = 900.0, y = 100.0, z = 30.0 }); step()
+check('retrait map : trop loin', not ok)
+ok = cb('gs_builder:hide', 1, { hash = -1234567, x = 101.0, y = 100.0, z = 30.0 }); step()
+local hev = lastClientEvent('gs_builder:client:hide', -1)
+check('retrait map : diffusé à tous', ok and Builder.hideCount == 1 and hev and hev.args[1].hash == -1234567)
+local hid = hev.args[1].id
+check('retrait map : listé', #cb('gs_builder:hides', 2) == 1)
+ok = cb('gs_builder:unhide', 1, hid); step()
+check('objet de la map remis', ok and Builder.hideCount == 0 and lastClientEvent('gs_builder:client:unhide', -1).args[1].id == hid)
 
 io.write(('\n%d réussis, %d échoués\n'):format(passed, failed))
 os.exit(failed == 0 and 0 or 1)

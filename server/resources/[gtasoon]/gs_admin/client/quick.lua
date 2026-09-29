@@ -194,9 +194,55 @@ RegisterNetEvent('gs_admin:client:spectate', function(target, coords)
     end)
 end)
 
+-- Section Fun (staff et événements) : effets sur soi uniquement ----------------------------------------------------
+local FUN = {
+    { id = 'fastrun', label = 'Course rapide', icon = 'person-running' },
+    { id = 'superjump', label = 'Super saut', icon = 'arrow-up' },
+    { id = 'stamina', label = 'Endurance infinie', icon = 'battery-full' },
+    { id = 'fastswim', label = 'Nage rapide', icon = 'person-swimming' },
+    { id = 'lowgravity', label = 'Gravité lunaire', icon = 'moon' },
+    { id = 'nightvision', label = 'Vision nocturne', icon = 'eye' },
+    { id = 'thermal', label = 'Vision thermique', icon = 'temperature-high' },
+}
+local fun = {}
+
+local function applyFun()
+    local pid = PlayerId()
+    SetRunSprintMultiplierForPlayer(pid, fun.fastrun and 1.49 or 1.0)
+    SetSwimMultiplierForPlayer(pid, fun.fastswim and 1.49 or 1.0)
+    SetGravityLevel(fun.lowgravity and 1 or 0)
+    SetNightvision(fun.nightvision == true)
+    SetSeethrough(fun.thermal == true)
+end
+
+local funLoopOn = false
+local function funLoop()
+    if funLoopOn then return end
+    funLoopOn = true
+    CreateThread(function()
+        -- par frame : seulement tant que super saut ou endurance infinie sont actifs (mode staff)
+        while fun.superjump or fun.stamina do
+            if fun.superjump then SetSuperJumpThisFrame(PlayerId()) end
+            if fun.stamina then RestorePlayerStamina(PlayerId(), 1.0) end
+            Wait(0)
+        end
+        funLoopOn = false
+    end)
+end
+
+local function setFun(id, on)
+    if on and not grant(id) then return end
+    if not on then act('power', nil, { power = id, on = false }) end
+    fun[id] = on or nil
+    applyFun()
+    if fun.superjump or fun.stamina then funLoop() end
+end
+
 --- Coupe tout (fin du mode staff, arrêt de la ressource).
 local function powersOff()
     powers.noclip, powers.invisible, powers.godmode, powers.names = false, false, false, false
+    fun = {}
+    applyFun()
     stopSpectate()
     if animal then animal = nil Bridge:RestoreAppearance() end
     applyVisibility()
@@ -282,21 +328,29 @@ end
 
 local function itemsMenu(target)
     local list = lib.callback.await('gs_admin:items', false)
-    if not list then return notify(false, 'Réservé au fondateur.') end
+    if not list then return notify(false, 'Réservé au super-admin et au fondateur.') end
+    local founder = info.level >= 5
     local choices = {}
     for _, it in ipairs(list) do choices[#choices + 1] = { value = it.name, label = ('%s (%s)'):format(it.label, it.name) } end
     local function ask(title)
-        local r = input(title, {
+        local fields = {
             { type = 'select', label = 'Item', options = choices, searchable = true, required = true },
             { type = 'number', label = 'Quantité', default = 1, min = 1, max = Config.Give.maxItems, required = true },
-        })
-        return r and r[1], r and r[2]
+        }
+        -- super-admin : motif obligatoire (journal + webhook) ; le fondateur seul s'en passe
+        if not founder then fields[3] = { type = 'input', label = 'Motif (journalisé)', required = true, max = 200 } end
+        local r = input(title, fields)
+        return r and r[1], r and r[2], r and r[3]
     end
-    show('gs_staff_items', 'Items (fondateur)', {
+    local options = {
         { title = 'Donner à ' .. target.name, icon = 'plus', onSelect = function()
-            local item, count = ask('Donner')
-            if item then notify(act('giveitem', target.id, { item = item, amount = count })) end
+            local item, count, reason = ask('Donner')
+            if item then notify(act('giveitem', target.id, { item = item, amount = count, reason = reason })) end
         end },
+    }
+    if not founder then return show('gs_staff_items', 'Items (super-admin)', options, 'gs_staff_quick') end
+    show('gs_staff_items', 'Items (fondateur)', {
+        options[1],
         { title = 'Retirer à ' .. target.name, icon = 'minus', onSelect = function()
             local item, count = ask('Retirer')
             if item then notify(act('removeitem', target.id, { item = item, amount = count })) end
@@ -376,6 +430,39 @@ local function animalsMenu()
     show('gs_staff_animals', 'Se transformer', options, 'gs_staff_quick')
 end
 
+--- Rang staff d'un joueur (fondateur seulement ; le serveur revérifie).
+local function rankMenu(p)
+    local options = { { title = 'Joueur (retirer du staff)', icon = 'user', iconColor = '#ff2e88', onSelect = function()
+        notify(act('setrank', p.id, { rank = 0 }))
+    end } }
+    for r = 1, 4 do
+        options[#options + 1] = { title = info.ranks[r], icon = 'user-shield', onSelect = function()
+            if lib.alertDialog({ header = ('%s → %s'):format(p.name, info.ranks[r]), content = 'Effet immédiat, enregistré en base.', centered = true, cancel = true }) == 'confirm' then
+                notify(act('setrank', p.id, { rank = r }))
+            end
+        end }
+    end
+    show('gs_staff_rank', 'Rang staff · ' .. p.name, options, 'gs_staff_player')
+end
+
+local function funMenu()
+    local options = {}
+    for _, f in ipairs(FUN) do
+        if info.level >= (Config.Powers[f.id] or 99) then
+            local on = fun[f.id] == true
+            options[#options + 1] = { title = ('%s : %s'):format(f.label, on and 'ON' or 'OFF'), icon = f.icon, iconColor = on and ON or OFF,
+                onSelect = function() setFun(f.id, not on) funMenu() end }
+        end
+    end
+    options[#options + 1] = { title = 'Tout couper', icon = 'power-off', onSelect = function()
+        for id in pairs(fun) do act('power', nil, { power = id, on = false }) end
+        fun = {}
+        applyFun()
+        funMenu()
+    end }
+    show('gs_staff_fun', 'Fun (sur toi · events)', options, 'gs_staff_quick')
+end
+
 local function playerMenu(p)
     local lvl = info.level
     local options = {}
@@ -388,7 +475,10 @@ local function playerMenu(p)
     add(2, { title = 'Figer / libérer', icon = 'snowflake', onSelect = function() notify(act('freeze', p.id)) end })
     add(3, { title = 'Lui mettre un métier', icon = 'briefcase', arrow = true, onSelect = function() jobsMenu(p) end })
     add(3, { title = 'Le mettre dans un gang', icon = 'people-group', arrow = true, onSelect = function() gangsMenu(p) end })
-    add(4, { title = 'Items (fondateur)', icon = 'box-open', arrow = true, onSelect = function() itemsMenu(p) end })
+    add(4, { title = 'Items', icon = 'box-open', arrow = true, onSelect = function() itemsMenu(p) end })
+    if info.ranks and p.id ~= info.me then
+        add(5, { title = 'Rang staff (fondateur)', icon = 'user-shield', arrow = true, onSelect = function() rankMenu(p) end })
+    end
     show('gs_staff_player', ('[%d] %s'):format(p.id, p.name), options, 'gs_staff_players')
 end
 
@@ -462,7 +552,9 @@ local function mainMenu()
         add(3, { title = 'Gangs (création, QG, garage)', icon = 'people-group', arrow = true, onSelect = gangAdminMenu })
         add(3, { title = 'Points de métier (placer ici)', icon = 'location-crosshairs', arrow = true,
             description = 'Service, coffre, armurerie, direction, garage : déplacés à ta position', onSelect = pointsMenu })
-        add(4, { title = 'Items (fondateur)', icon = 'box-open', arrow = true, onSelect = function() itemsMenu(me) end })
+        add(4, { title = 'Items', icon = 'box-open', arrow = true, onSelect = function() itemsMenu(me) end })
+        add(3, { title = 'Fun (events)', icon = 'wand-magic-sparkles', arrow = true, description = 'Course rapide, super saut, gravité lunaire…', onSelect = funMenu })
+        add(4, { title = 'Objets du décor (placer / retirer)', icon = 'cube', description = 'Bancs, poubelles, barrières… (/builder)', onSelect = function() ExecuteCommand('builder') end })
         add(1, { title = 'Copier mes coordonnées', icon = 'crosshairs', description = 'vec4 dans le presse-papiers (calage des configs)', onSelect = function()
             local ped = PlayerPedId()
             local c = GetEntityCoords(ped)
@@ -483,6 +575,22 @@ end
 
 RegisterCommand('staffmenu', function() openQuick('main') end, false)
 RegisterKeyMapping('staffmenu', 'Menu staff rapide', 'keyboard', Config.QuickKey)
+
+-- Raccourcis du mode staff : Ctrl gauche maintenu + touche (le serveur vérifie niveau et mode staff).
+local function ctrlHeld() return IsControlPressed(0, 36) or IsDisabledControlPressed(0, 36) end
+local SHORTCUTS = {
+    tpm = { label = 'Staff : TP au marqueur (Ctrl +)', run = teleportToMarker },
+    noclip = { label = 'Staff : vol libre (Ctrl +)', run = function() setNoclip(not powers.noclip) end },
+    names = { label = 'Staff : noms et ID (Ctrl +)', run = function()
+        if not powers.names and not grant('names') then return end
+        powers.names = not powers.names
+        if powers.names then namesLoop() end
+    end },
+}
+for id, sc in pairs(SHORTCUTS) do
+    RegisterCommand('staff_' .. id, function() if ctrlHeld() then sc.run() end end, false)
+    RegisterKeyMapping('staff_' .. id, sc.label, 'keyboard', Config.Shortcuts[id])
+end
 
 AddEventHandler('onResourceStop', function(res)
     if res == GetCurrentResourceName() then powersOff() end

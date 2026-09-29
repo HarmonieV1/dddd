@@ -68,8 +68,8 @@ local function setHandsUp(on)
     end)
 end
 
-RegisterCommand('mainsenlair', function() setHandsUp(not handsUp) end, false)
-RegisterKeyMapping('mainsenlair', 'Mains en l\'air', 'keyboard', Config.HandsUpKey)
+RegisterCommand('levermains', function() setHandsUp(not handsUp) end, false)
+RegisterKeyMapping('levermains', 'Mains en l\'air', 'keyboard', Config.HandsUpKey)
 
 -- Menus cliquables (ox_lib context) : METTRE-A-JOUR règle ox_lib pour garder les déplacements menu ouvert
 -- (ZQSD, sprint). Ici on bloque seulement la caméra et le tir tant qu'un menu est ouvert (la souris sert au menu).

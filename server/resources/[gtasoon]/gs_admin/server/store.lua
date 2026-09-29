@@ -27,6 +27,23 @@ function Store.init()
         `staff` VARCHAR(100) NOT NULL,
         PRIMARY KEY (`license`)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4]])
+    MySQL.query.await([[CREATE TABLE IF NOT EXISTS `gs_admin_ranks` (
+        `license` VARCHAR(64) NOT NULL,
+        `rank` TINYINT UNSIGNED NOT NULL,
+        `staff` VARCHAR(100) NOT NULL,
+        `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        PRIMARY KEY (`license`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4]])
+end
+
+--- Rangs donnés en jeu par un fondateur (0 = retiré : la ligne est supprimée).
+function Store.ranks()
+    return MySQL.query.await('SELECT license, `rank` FROM gs_admin_ranks') or {}
+end
+
+function Store.rankSet(license, rank, staff)
+    if rank == 0 then return MySQL.update.await('DELETE FROM gs_admin_ranks WHERE license = ?', { license }) end
+    MySQL.update.await('REPLACE INTO gs_admin_ranks (license, `rank`, staff) VALUES (?, ?, ?)', { license, rank, staff })
 end
 
 function Store.log(staff, action, target, details)

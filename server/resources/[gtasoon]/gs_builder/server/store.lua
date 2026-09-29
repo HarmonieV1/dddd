@@ -10,7 +10,22 @@ function Store.init()
         `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
         PRIMARY KEY (`id`)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4]])
+    MySQL.query.await([[CREATE TABLE IF NOT EXISTS `gs_builder_hides` (
+        `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+        `hash` BIGINT NOT NULL,
+        `x` FLOAT NOT NULL, `y` FLOAT NOT NULL, `z` FLOAT NOT NULL,
+        `created_by` VARCHAR(100) NOT NULL DEFAULT '',
+        `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4]])
 end
+
+-- Objets de la map d'origine retirés
+function Store.hides() return MySQL.query.await('SELECT id, hash, x, y, z FROM gs_builder_hides') or {} end
+function Store.hideInsert(h, by)
+    return MySQL.insert.await('INSERT INTO gs_builder_hides (hash, x, y, z, created_by) VALUES (?, ?, ?, ?, ?)', { h.hash, h.x, h.y, h.z, by })
+end
+function Store.hideDelete(id) MySQL.update('DELETE FROM gs_builder_hides WHERE id = ?', { id }) end
 
 function Store.all() return MySQL.query.await('SELECT id, model, x, y, z, rx, ry, rz FROM gs_builder_objects') or {} end
 

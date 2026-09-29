@@ -18,7 +18,7 @@
 
 Jobs = {
     police = {
-        label = 'LSPD', type = 'leo', whitelisted = true, society = true, salaryFrom = 'state',
+        label = 'LSPD', type = 'leo', whitelisted = true, society = true, salaryFrom = 'state', armoryLabel = 'Armurerie',
         platePrefix = 'LSPD',
         blip = { sprite = 60, color = 29, label = 'Commissariat de Mission Row' },
         billing = { label = 'Amende', max = 25000 },
@@ -70,7 +70,7 @@ Jobs = {
     },
 
     ambulance = {
-        label = 'EMS', type = 'ems', whitelisted = true, society = true, salaryFrom = 'state',
+        label = 'EMS', type = 'ems', whitelisted = true, society = true, salaryFrom = 'state', armoryLabel = 'Matériel médical',
         platePrefix = 'EMS',
         blip = { sprite = 61, color = 2, label = 'Hôpital Pillbox' },
         billing = { label = 'Soins', max = 5000 },
@@ -112,7 +112,7 @@ Jobs = {
     },
 
     mechanic = {
-        label = 'Mécano LS Customs', type = 'mechanic', whitelisted = true, society = true, salaryFrom = 'society',
+        label = 'Mécano LS Customs', type = 'mechanic', whitelisted = true, society = true, salaryFrom = 'society', armoryLabel = 'Établi et outillage',
         platePrefix = 'MECA',
         blip = { sprite = 446, color = 47, label = 'LS Customs' },
         billing = { label = 'Facture garage', max = 15000 },
@@ -149,8 +149,12 @@ Jobs = {
             { item = 'advancedrepairkit', max = 2, minGrade = 1 },
         },
         vehicleActions = {
-            repair = { label = 'Réparer', effect = 'repair', item = 'repairkit', itemLabel = 'Kit de réparation',
-                duration = 10000, icon = 'fa-solid fa-wrench', anim = { scenario = 'PROP_HUMAN_BUM_BIN' } },
+            repair = { label = 'Réparer le moteur et la carrosserie', effect = 'repair', item = 'repairkit', itemLabel = 'Kit de réparation',
+                duration = 10000, icon = 'fa-solid fa-wrench', hood = true, anim = { dict = 'mini@repair', clip = 'fixing_a_ped', flag = 1 } },
+            tyres = { label = 'Changer les pneus', effect = 'tyres', duration = 8000, icon = 'fa-solid fa-circle-dot',
+                anim = { dict = 'amb@medic@standing@tendtodead@idle_a', clip = 'idle_a', flag = 1 } },
+            flip = { label = 'Remettre sur ses roues', effect = 'flip', duration = 6000, icon = 'fa-solid fa-rotate',
+                anim = { dict = 'missfinale_c2ig_11', clip = 'pushcar_offcliff_m', flag = 1 } },
             clean = { label = 'Nettoyer', effect = 'clean', duration = 5000, icon = 'fa-solid fa-soap',
                 anim = { scenario = 'WORLD_HUMAN_MAID_CLEAN' } },
         },
