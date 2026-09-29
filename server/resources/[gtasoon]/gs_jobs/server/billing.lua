@@ -62,6 +62,7 @@ lib.callback.register('gs_jobs:billing:pay', function(src, id)
         share = 0 -- émetteur hors ligne : tout va à la caisse
     end
     if bill.amount - share > 0 then Society.add(bill.job, bill.amount - share) end
+    Society.recordRevenue(bill.job, bill.amount)
     DB.audit('bill_paid', bill.job, cid, bill.issuer_citizenid, bill.amount, nil)
     return true, L('bill_paid', bill.amount)
 end)

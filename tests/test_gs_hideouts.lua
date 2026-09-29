@@ -26,7 +26,7 @@ W.players[1].money.bank = 5000
 ok = cb('gs_hideouts:rent', 1, 'pinkcage', 9); step()
 check('trop de semaines', not ok)
 ok = cb('gs_hideouts:rent', 1, 'pinkcage', 2); step()
-check('location 2 semaines', ok and W.players[1].money.bank == 5000 - 700 and rows.CID1.site == 'pinkcage')
+check('location 2 semaines', ok and W.players[1].money.bank == 5000 - 900 and rows.CID1.site == 'pinkcage')
 ok, msg = cb('gs_hideouts:rent', 1, 'pinkcage', 3); step()
 check('prolongation plafonnée à 4 semaines', not ok and msg:find('maximum'))
 ok = cb('gs_hideouts:rent', 1, 'pinkcage', 2); step()

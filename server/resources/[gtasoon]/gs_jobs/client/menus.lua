@@ -177,6 +177,13 @@ function GSJ.openBossMenu()
         options[#options + 1] = { title = L('boss_withdraw'), icon = 'arrow-up',
             onSelect = function() local a = askAmount(L('boss_withdraw')); if a then bossAction('withdraw', { amount = a }) end end }
     end
+    if data.launderCap then
+        options[#options + 1] = { title = 'Blanchiment', icon = 'soap', description = ('Argent sale → caisse (-30 %%, 30 min) · encore %d $ aujourd\'hui'):format(data.launderCap),
+            disabled = data.launderCap <= 0, onSelect = function()
+                local a = askAmount('Blanchir (argent sale sur toi)')
+                if a then bossAction('launder', { amount = a }) end
+            end }
+    end
     if data.salaries then
         local list = {}
         for _, s in ipairs(data.salaries) do

@@ -34,6 +34,10 @@ exec cfg/convars.cfg
 ## ---- Ressources (ordre important) ----
 exec cfg/resources.cfg
 
+## Mods importés (véhicules, vêtements, maps) : écrit par IMPORTER-MODS.bat, jamais écrasé par METTRE-A-JOUR.
+## Absent tant que tu n'as rien importé (message « could not execute » sans conséquence).
+exec cfg/addons.cfg
+
 ## ---- Permissions ACE ----
 exec cfg/permissions.cfg
 

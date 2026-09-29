@@ -26,6 +26,7 @@ lib.callback.register('gs_jobs:boss:getData', function(src)
         myGrade = job.grade,
         myCid = GSJ.cid(src),
         society = def.society and Society.balance(job.name) or nil,
+        launderCap = def.salaryFrom == 'society' and def.launder ~= false and GSJ.launderCap(job.name) or nil,
         employees = employees,
         salaries = (function()
             if def.salaryFrom ~= 'society' then return nil end
@@ -163,6 +164,52 @@ function actions.bonus(src, job, def, data)
     DB.audit('bonus', job.name, GSJ.cid(src), cid, amount, nil)
     return true, ('Prime de %d $ versée.'):format(amount)
 end
+
+-- Blanchiment : entreprises privées seulement. L'argent sale part tout de suite, l'argent propre arrive dans la caisse
+-- après Config.Launder.delay (les dépôts en attente sont perdus au redémarrage : pas de stock caché).
+GSJ.laundering = {} -- { job, amount, readyAt, cid }
+
+function GSJ.launderCap(jobName)
+    local r = Society.revenueToday(jobName)
+    return math.max(0, math.min(Config.Launder.cap, math.floor(r.amount * Config.Launder.revenueRatio)) - r.laundered)
+end
+
+function actions.launder(src, job, def, data)
+    local amount = tonumber(data.amount)
+    if def.salaryFrom ~= 'society' or def.launder == false then return false, 'Pas de blanchiment dans ce service.' end
+    local cap = GSJ.launderCap(job.name)
+    if cap <= 0 then return false, 'Plafond atteint : l\'entreprise doit d\'abord faire du chiffre (factures, ventes).' end
+    if not GSJ.isInt(amount, 100, cap) then return false, ('Entre 100 et %d $ aujourd\'hui.'):format(cap) end
+    if not Bridge:RemoveItem(src, Config.Launder.dirtyItem, amount) then return false, 'Pas assez d\'argent sale sur toi.' end
+    local clean = math.floor(amount * (1 - Config.Launder.fee))
+    Society.revenueToday(job.name).laundered = Society.revenueToday(job.name).laundered + amount
+    GSJ.laundering[#GSJ.laundering + 1] = { job = job.name, amount = clean, readyAt = os.time() + Config.Launder.delay, cid = GSJ.cid(src) }
+    DB.audit('launder', job.name, GSJ.cid(src), nil, amount, nil)
+    -- Contrôle fiscal : plus on blanchit par rapport au chiffre du jour, plus c'est risqué
+    local r = Society.revenueToday(job.name)
+    local ratio = r.amount > 0 and r.laundered / r.amount or 1
+    local chance = math.min(Config.Launder.auditMax, Config.Launder.auditBase * (1 + ratio))
+    if math.random() < chance and GetResourceState('gs_wanted') == 'started' then
+        exports.gs_wanted:ReportCrime(src, 'money_laundering', GetEntityCoords(GetPlayerPed(src)), { alarm = true })
+        GSJ.log('Contrôle fiscal : blanchiment suspect chez %s (%d $)', job.name, amount)
+    end
+    return true, ('%d $ sales en traitement : %d $ propres arriveront dans la caisse dans %d min.'):format(amount, clean, Config.Launder.delay // 60)
+end
+
+function GSJ.launderTick()
+    local now, keep = os.time(), {}
+    for _, l in ipairs(GSJ.laundering) do
+        if now >= l.readyAt then Society.add(l.job, l.amount) else keep[#keep + 1] = l end
+    end
+    GSJ.laundering = keep
+end
+
+CreateThread(function()
+    while true do
+        Wait(60000)
+        if #GSJ.laundering > 0 then GSJ.launderTick() end
+    end
+end)
 
 lib.callback.register('gs_jobs:boss:action', function(src, action, data)
     if not GSJ.guard(src, 'boss_action', 5, 10000) then return false, L('slow_down') end

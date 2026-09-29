@@ -224,3 +224,50 @@ CreateThread(function()
     Wait(2000) -- après Gangs.init (liste des gangs)
     Extras.init()
 end)
+
+-- Atelier de munitions artisanales : dans la planque, ferraille + cuivre → munitions. En 2 temps (durée réelle
+-- vérifiée), plafond journalier par gang (anti-usine à balles).
+Extras.craft = { pending = {}, made = {} } -- made[gang] = { day, rounds }
+
+local function craftedToday(gang)
+    local d = Extras.craft.made[gang]
+    if not d or d.day ~= os.date('%Y-%m-%d') then d = { day = os.date('%Y-%m-%d'), rounds = 0 } Extras.craft.made[gang] = d end
+    return d
+end
+
+lib.callback.register('gs_gangs:craftBegin', function(src, item)
+    if not Security:RateLimit(src, 'gs_gangs:craftBegin', 4, 10000) then return false, 'Doucement.' end
+    local m = member(src)
+    local r = Config.AmmoCraft.recipes[item]
+    if not m or not r then return false, 'Invalide.' end
+    if m.grade < r.minGrade then return false, 'Grade insuffisant dans le gang.' end
+    local stash = Gangs.list[m.gang] and Gangs.list[m.gang].stash
+    if not stash or not Security:InRange(src, stash, Config.AmmoCraft.range) then return false, 'Ça se fait à la planque du gang.' end
+    if craftedToday(m.gang).rounds + r.out > Config.AmmoCraft.dailyCap then return false, 'L\'atelier a assez tourné aujourd\'hui.' end
+    if Bridge:GetItemCount(src, 'scrapmetal') < r.scrapmetal or Bridge:GetItemCount(src, 'copper') < r.copper then
+        return false, ('Il faut %d ferraille et %d cuivre (ferrailleur).'):format(r.scrapmetal, r.copper)
+    end
+    Extras.craft.pending[src] = { item = item, gang = m.gang, doneAt = GetGameTimer() + r.time - 750 }
+    return true, r.time
+end)
+
+lib.callback.register('gs_gangs:craftFinish', function(src)
+    if not Security:RateLimit(src, 'gs_gangs:craftFinish', 4, 10000) then return false, 'Doucement.' end
+    local p = Extras.craft.pending[src]
+    Extras.craft.pending[src] = nil
+    if not p or GetGameTimer() < p.doneAt then return false, 'Interrompu.' end
+    local r = Config.AmmoCraft.recipes[p.item]
+    if not Bridge:RemoveItem(src, 'scrapmetal', r.scrapmetal) then return false, 'Il manque de la ferraille.' end
+    if not Bridge:RemoveItem(src, 'copper', r.copper) then Bridge:AddItem(src, 'scrapmetal', r.scrapmetal) return false, 'Il manque du cuivre.' end
+    if not Bridge:AddItem(src, p.item, r.out) then
+        Bridge:AddItem(src, 'scrapmetal', r.scrapmetal) Bridge:AddItem(src, 'copper', r.copper)
+        return false, 'Tu ne peux pas porter plus.'
+    end
+    local d = craftedToday(p.gang)
+    d.rounds = d.rounds + r.out
+    return true, ('%s fabriquées (%d / %d aujourd\'hui pour le gang).'):format(r.label, d.rounds, Config.AmmoCraft.dailyCap)
+end)
+
+RegisterNetEvent('gs_gangs:server:craftCancel', function()
+    if Security:RateLimit(source, 'gs_gangs:craftCancel', 4, 10000) then Extras.craft.pending[source] = nil end
+end)

@@ -245,6 +245,28 @@ check('clôture refusée sans la prendre', not cb('gs_jobs:orders:close', 21, oi
 check('demande prise', cb('gs_jobs:orders:take', 21, oid) == true)
 check('demande clôturée', cb('gs_jobs:orders:close', 21, oid) == true and Orders.list[oid] == nil)
 
+-- Blanchiment (entreprise privée) ------------------------------------------------------------------------
+provide('gs_wanted', { ReportCrime = function() return true end, GetHeat = function() return 0 end })
+ok, msg = cb('gs_jobs:boss:action', 1, 'launder', { amount = 500 }); step()
+check('blanchiment : pas dans un service public', not ok and msg:find('Pas de blanchiment'))
+join(30, 'CID30', 'Patron Garage', Jobs.mechanic.points.boss[1])
+W.commands.gsjob(0, { action = 'add', target = 30, job = 'mechanic', grade = 3 })
+net('gs_jobs:server:switch', 30, 'mechanic'); step()
+W.players[30].items.black_money = 20000
+ok, msg = cb('gs_jobs:boss:action', 30, 'launder', { amount = 1000 }); step()
+check('blanchiment : pas de chiffre = pas de blanchiment', not ok and msg:find('chiffre'))
+Society.recordRevenue('mechanic', 2000)
+ok, msg = cb('gs_jobs:boss:action', 30, 'launder', { amount = 5000 }); step()
+check('blanchiment plafonné au chiffre × 1,5', not ok and msg:find('3000'))
+local before = Society.balance('mechanic')
+ok = cb('gs_jobs:boss:action', 30, 'launder', { amount = 3000 }); step()
+check('argent sale pris tout de suite', ok and W.players[30].items.black_money == 17000 and GSJ.launderCap('mechanic') == 0)
+GSJ.launderTick()
+check('rien avant le délai', Society.balance('mechanic') == before)
+GSJ.laundering[1].readyAt = os.time() - 1
+GSJ.launderTick()
+check('caisse créditée (-30 %)', Society.balance('mechanic') == before + 2100 and #GSJ.laundering == 0)
+
 print = io.write
 io.write(('\n%d réussis, %d échoués\n'):format(passed, failed))
 os.exit(failed == 0 and 0 or 1)

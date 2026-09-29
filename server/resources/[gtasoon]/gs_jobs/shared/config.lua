@@ -13,6 +13,9 @@ Config.PayrollMinutes = 15
 -- Direction : salaires réglables (entreprises payées par leur caisse) entre min et max fois le salaire de base ; primes
 -- Carnet de commandes : /depanneur (mécano), /taxi (chauffeur) ; les employés en service voient les demandes (/commandes)
 Config.Orders = { expire = 1800, jobs = { mechanic = 'mécano', taxi = 'taxi' } }
+-- Blanchiment (menu Direction des entreprises privées) : argent sale → caisse de l'entreprise, avec commission,
+-- délai de traitement, plafond = min(cap, ratio × chiffre d'affaires légal du jour), risque de contrôle fiscal.
+Config.Launder = { fee = 0.30, cap = 30000, revenueRatio = 1.5, delay = 1800, auditBase = 0.04, auditMax = 0.35, dirtyItem = 'black_money' }
 Config.Salary = { min = 0.5, max = 2.0, maxBonus = 5000 }
 Config.UnemployedAllowance = 50    -- allocation versée aux sans-emploi à chaque paie (0 = désactivé)
 Config.AntiAfk = true              -- pas de paie si le joueur n'a pas bougé de 2 m depuis la dernière paie

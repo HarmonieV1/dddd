@@ -29,6 +29,15 @@ Config.Activities = {
         spots = { vec3(-553.1, 5445.2, 63.9), vec3(-567.7, 5451.9, 61.4), vec3(-541.6, 5460.3, 66.4),
                   vec3(-611.2, 5470.7, 55.5), vec3(-596.3, 5438.5, 57.7) },
     },
+    -- Ferrailleur (sans outil) : trier les casses. Ferraille et cuivre se revendent, ou servent aux munitions
+    -- artisanales des gangs (atelier de la planque, gs_gangs).
+    scrapyard = {
+        label = 'Ferrailleur', verb = 'Fouiller la ferraille', tool = nil, duration = { 7000, 10000 },
+        scenario = 'PROP_HUMAN_BUM_BIN', blip = { sprite = 527, color = 47 },
+        loot = { { 'scrapmetal', 70, { 2, 4 } }, { 'copper', 30, { 1, 2 } } },
+        spots = { vec3(1012.4, -2521.8, 28.3), vec3(1022.6, -2530.1, 28.3), vec3(2346.8, 3048.1, 48.1),
+                  vec3(2335.2, 3057.9, 48.1), vec3(-468.9, -1717.2, 18.7), vec3(-458.3, -1706.5, 18.8) },
+    },
     farming = {
         label = 'Ferme', verb = 'Cueillir', tool = nil, duration = { 5000, 7000 },
         scenario = 'WORLD_HUMAN_GARDENER_PLANT', blip = { sprite = 285, color = 2 },

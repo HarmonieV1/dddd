@@ -12,7 +12,7 @@ Config.BucketBase = 5000
 
 -- Coords à caler en jeu (F11 → Copier mes coordonnées).
 Config.Sites = {
-    pinkcage = { label = 'Motel Pink Cage (Vinewood)', price = 350, entrance = vec4(313.2, -198.1, 54.2, 160.0) },
-    sandy = { label = 'Motor Motel (Sandy Shores)', price = 220, entrance = vec4(1142.3, 2664.1, 38.2, 90.0) },
-    paleto = { label = 'Dream View Motel (Paleto Bay)', price = 250, entrance = vec4(-106.6, 6315.9, 31.5, 315.0) },
+    pinkcage = { label = 'Motel Pink Cage (Vinewood)', price = 450, entrance = vec4(313.2, -198.1, 54.2, 160.0) },
+    sandy = { label = 'Motor Motel (Sandy Shores)', price = 300, entrance = vec4(1142.3, 2664.1, 38.2, 90.0) },
+    paleto = { label = 'Dream View Motel (Paleto Bay)', price = 320, entrance = vec4(-106.6, 6315.9, 31.5, 315.0) },
 }

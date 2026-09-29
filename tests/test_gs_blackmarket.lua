@@ -11,6 +11,10 @@ provide('gs_weather', { GetGameTime = function() return hour end, GetEvent = fun
 provide('gs_wanted', { GetHeat = function() return 0 end, ReportCrime = function() return true end })
 loadResource('gs_security', { R .. 'gs_security/server/main.lua' })
 loadResource('gs_blackmarket', { R .. 'gs_blackmarket/shared/config.lua', R .. 'gs_blackmarket/server/main.lua', R .. 'gs_blackmarket/server/legal.lua' })
+local crows, cnext = {}, 0
+CStore = { init = function() end, all = function() return {} end, insert = function(c) cnext = cnext + 1 crows[cnext] = c return cnext end,
+    setTaker = function(id, t) if crows[id] then crows[id].taker = t end end, delete = function(id) crows[id] = nil end }
+loadResource('gs_blackmarket', { R .. 'gs_blackmarket/server/contracts.lua' })
 
 local passed, failed = 0, 0
 local function check(name, cond)
@@ -77,6 +81,39 @@ ok, msg = Legal.check(4, 'ammo-9', 30)
 check('légal : plafond journalier', not ok and msg:find('120'))
 check('légal : couteau libre', Legal.check(4, 'WEAPON_KNIFE', 1) == true)
 check('légal : 1re arme ok, 2e refusée', Legal.check(4, 'WEAPON_PISTOL', 1) == true and not Legal.check(4, 'WEAPON_PISTOL', 1))
+
+-- Contrats entre joueurs ------------------------------------------------------------------------------------
+W.players[1].items.black_money = 1000
+ok, msg = cb('gs_contracts:post', 1, 'vol', 'Voler une Sultan', 'Parking Legion', 5000); step()
+check('contrat : argent sale insuffisant', not ok)
+W.players[1].items.black_money = 10000
+ok = cb('gs_contracts:post', 1, 'inconnu', 'x', '', 5000); step()
+check('contrat : type invalide', not ok)
+ok = cb('gs_contracts:post', 4, 'vol', 'x', '', 5000); step()
+check('contrat : sans accès refusé', not ok)
+ok, msg = cb('gs_contracts:post', 1, 'vol', 'Voler une Sultan', 'Parking Legion', 5000); step()
+check('contrat publié, récompense + 5 % bloqués', ok and W.players[1].items.black_money == 10000 - 5250)
+local cidc = next(Contracts.list)
+ok = cb('gs_contracts:take', 1, cidc); step()
+check('pas son propre contrat', not ok)
+local l2 = cb('gs_contracts:list', 2); step()
+check('liste visible (réputation)', l2 and #l2 == 1 and not l2[1].mine)
+ok = cb('gs_contracts:close', 1, cidc, 'done'); step()
+check('validation impossible sans preneur', not ok)
+ok = cb('gs_contracts:take', 2, cidc); step()
+check('contrat accepté', ok and Contracts.list[cidc].taker == 'CID2')
+ok = cb('gs_contracts:close', 1, cidc, 'cancel'); step()
+check('annulation impossible une fois pris', not ok)
+local b2 = W.players[2].items.black_money or 0
+ok = cb('gs_contracts:close', 2, cidc, 'done'); step()
+check('seul le commanditaire valide', not ok)
+ok = cb('gs_contracts:close', 1, cidc, 'done'); step()
+check('validé : preneur payé', ok and W.players[2].items.black_money == b2 + 5000 and Contracts.list[cidc] == nil)
+ok = cb('gs_contracts:post', 1, 'livraison', 'Colis', '', 1000); step()
+local c2 = next(Contracts.list)
+local b1 = W.players[1].items.black_money
+ok = cb('gs_contracts:close', 1, c2, 'cancel'); step()
+check('annulé : remboursé sans commission', ok and W.players[1].items.black_money == b1 + 1000)
 
 io.write(('\n%d réussis, %d échoués\n'):format(passed, failed))
 os.exit(failed == 0 and 0 or 1)

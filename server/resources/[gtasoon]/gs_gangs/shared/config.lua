@@ -54,6 +54,18 @@ Config.ColorRGB = { [1] = { 224, 50, 50 }, [3] = { 93, 182, 229 }, [25] = { 57, 
     [40] = { 190, 190, 190 }, [46] = { 240, 200, 80 }, default = { 255, 46, 136 } }
 
 -- Receleur (vente en gros) : grade minimum, quantité minimum, nuit seulement, lieu qui change toutes les heures
+-- Atelier de munitions artisanales (dans la planque du gang) : ferraille + cuivre (ferrailleur, gs_harvest).
+-- Moins cher que le marché noir, mais il faut récolter ; plafond par gang et par jour.
+Config.AmmoCraft = {
+    dailyCap = 600, range = 3.0,
+    recipes = {
+        ['ammo-9'] = { label = '9 mm (×20)', out = 20, scrapmetal = 6, copper = 2, time = 15000, minGrade = 1 },
+        ['ammo-45'] = { label = '.45 (×20)', out = 20, scrapmetal = 7, copper = 3, time = 15000, minGrade = 1 },
+        ['ammo-shotgun'] = { label = 'Cartouches (×10)', out = 10, scrapmetal = 6, copper = 2, time = 15000, minGrade = 1 },
+        ['ammo-rifle'] = { label = '5,56 (×30)', out = 30, scrapmetal = 12, copper = 5, time = 25000, minGrade = 2 },
+    },
+}
+
 Config.Fence = {
     minGrade = 1, minQty = 10, maxQty = 50, bonus = 1.35, hours = { 21, 5 }, rotateMinutes = 60, reportChance = 0.35,
     locations = { vec3(-1154.9, -1558.9, 4.4), vec3(1204.7, -3116.9, 5.5), vec3(716.0, -965.0, 30.4), vec3(2474.0, 3444.0, 50.1) },

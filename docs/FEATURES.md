@@ -284,6 +284,19 @@ Traductions françaises manquantes des scripts Qbox ajoutées par METTRE-A-JOUR 
 - **gs_hideouts — planques de départ** : chambres de motel (Pink Cage, Sandy, Paleto) louées à la semaine (1 à 4),
   coffre perso, garde-robe, monde séparé par locataire. Pour un vrai logement : l'agent immobilier.
 
+## V5.2 — économie de l'ombre, blanchiment, import de mods
+- **Blanchiment** (menu Direction des entreprises privées : garage, concession, bar, restaurant, agence…) : argent sale
+  → caisse de l'entreprise, -30 %, 30 min de traitement. Plafond = 1,5 × le **chiffre d'affaires légal du jour**
+  (factures payées, ventes) : une entreprise qui ne travaille pas ne blanchit pas. **Contrôle fiscal** possible (plus
+  risqué quand on blanchit beaucoup par rapport au chiffre) → signalement police.
+- **Contrats entre joueurs** (`/contrats`, gang ou réputation de rue) : vol, braquage, livraison, vente, élimination
+  (scène RP obligatoire). Récompense en argent sale **bloquée** à la publication, versée à la validation, commission 5 %.
+- **Munitions artisanales** : nouvelle activité **Ferrailleur** (casses de La Mesa, Sandy, Rogers) → ferraille + cuivre
+  → atelier de la planque du gang (F9) : 9 mm, .45, cartouches, 5,56 (grade 2). 600 munitions par gang et par jour.
+  Échelle des prix : artisanal (récolte) < Ammu-Nation (permis, plafond) < marché noir (rare, cher).
+- **Motels** un peu plus chers (450 / 300 / 320 $ la semaine) : pousse vers l'agent immobilier.
+- **IMPORTER-MODS.bat** : tri et installation automatiques des mods téléchargés (docs/IMPORTER_MODS.md).
+
 ## Liens entre features
 `gs_weather` → visibilité de `gs_wanted` + prix de `gs_economy` ;
 `gs_duo` → crimes vers `gs_wanted`, chaleur partagée ; `gs_jobs` → police en service pour le dispatch.

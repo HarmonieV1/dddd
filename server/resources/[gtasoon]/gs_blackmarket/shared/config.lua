@@ -48,3 +48,11 @@ Config.Catalog = {
 -- Armureries légales (ox_inventory, boutique « Ammunation ») : plafond par personnage et par jour.
 Config.Legal = { shopType = 'Ammunation', ammoPerDay = 120, weaponsPerDay = 1,
     free = { WEAPON_KNIFE = true, WEAPON_BAT = true, WEAPON_FLASHLIGHT = true } } -- armes blanches : pas de plafond
+
+-- Contrats entre joueurs (/contrats) : même accès que le marché noir. La récompense (argent sale) est bloquée à la
+-- publication et versée quand le commanditaire valide. Commission de 5 % (perdue) ; expiration 48 h (remboursé).
+-- Élimination : scène RP obligatoire (règlement : pas de RDM, préavis, pas de meurtre sans interaction).
+Config.Contracts = {
+    types = { vol = 'Vol', braquage = 'Braquage', livraison = 'Livraison', vente = 'Vente', elimination = 'Élimination', autre = 'Autre' },
+    minReward = 500, maxReward = 100000, fee = 0.05, expire = 172800, maxOpen = 3, maxTaken = 2, leakChance = 0.15,
+}

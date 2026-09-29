@@ -90,6 +90,21 @@ local function openMenu()
             if i then result(lib.callback.await('gs_gangs:bank', false, 'withdraw', i[1])) end
         end }
     end
+    options[#options + 1] = { title = 'Atelier : munitions artisanales', icon = 'hammer', description = 'À la planque : ferraille + cuivre', arrow = true, onSelect = function()
+        local o = {}
+        for item, r in pairs(Config.AmmoCraft.recipes) do
+            o[#o + 1] = { title = r.label, description = ('%d ferraille · %d cuivre · grade %d'):format(r.scrapmetal, r.copper, r.minGrade), icon = 'box', onSelect = function()
+                local ok, ms = lib.callback.await('gs_gangs:craftBegin', false, item)
+                if not ok then return result(false, ms) end
+                local done = lib.progressBar({ duration = ms, label = 'Fabrication : ' .. r.label, canCancel = true,
+                    disable = { move = true, car = true, combat = true }, anim = { dict = 'mini@repair', clip = 'fixing_a_ped', flag = 1 } })
+                if not done then return TriggerServerEvent('gs_gangs:server:craftCancel') end
+                result(lib.callback.await('gs_gangs:craftFinish', false))
+            end }
+        end
+        lib.registerContext({ id = 'gs_gangs_craft', title = 'Atelier', menu = 'gs_gang', options = o })
+        lib.showContext('gs_gangs_craft')
+    end }
     if info.canManage then
         options[#options + 1] = { title = 'Recruter le joueur le plus proche', icon = 'user-plus', onSelect = function()
             local target = lib.getClosestPlayer(GetEntityCoords(cache.ped), Config.InviteRange, false)

@@ -22,6 +22,8 @@ Config.Crimes = {
     mugging = { label = 'Racket à main armée', heat = 12, chance = 0.40 },
     teller_robbery = { label = 'Braquage de guichet', heat = 35, chance = 0.70 },
     black_market = { label = 'Trafic d\'armes', heat = 15, chance = 0.10 },
+    money_laundering = { label = 'Blanchiment d\'argent (contrôle fiscal)', heat = 20, chance = 1.0 },
+    contract = { label = 'Contrat criminel', heat = 10, chance = 0.15 },
 }
 
 Config.Witness = {

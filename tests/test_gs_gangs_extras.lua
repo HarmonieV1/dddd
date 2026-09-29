@@ -107,5 +107,26 @@ hour = 14
 ok, msg = cb('gs_gangs:fenceSell', 1, 'weed'); step()
 check('fermé le jour', not ok and msg:find('nuit'))
 
+-- Atelier de munitions artisanales ----------------------------------------------------------------------------
+Gangs.list.ballas.stash = vec3(10.0, 10.0, 30.0)
+tp(1, vec3(500.0, 500.0, 30.0))
+ok, msg = cb('gs_gangs:craftBegin', 1, 'ammo-9'); step()
+check('atelier : à la planque seulement', not ok and msg:find('planque'))
+tp(1, Gangs.list.ballas.stash)
+ok, msg = cb('gs_gangs:craftBegin', 1, 'ammo-9'); step()
+check('atelier : matériaux requis', not ok and msg:find('ferraille'))
+W.players[1].items.scrapmetal, W.players[1].items.copper = 20, 5
+ok = cb('gs_gangs:craftBegin', 3, 'ammo-9'); step()
+check('atelier : civil refusé', not ok)
+ok = cb('gs_gangs:craftBegin', 1, 'ammo-9'); step()
+ok, msg = cb('gs_gangs:craftFinish', 1); step()
+check('atelier : durée réelle vérifiée', not ok)
+ok = cb('gs_gangs:craftBegin', 1, 'ammo-9'); advance(15000)
+ok, msg = cb('gs_gangs:craftFinish', 1); step()
+check('munitions fabriquées', ok and W.players[1].items['ammo-9'] == 20 and W.players[1].items.scrapmetal == 14 and W.players[1].items.copper == 3)
+Extras.craft.made.ballas.rounds = Config.AmmoCraft.dailyCap
+ok, msg = cb('gs_gangs:craftBegin', 1, 'ammo-9'); step()
+check('plafond journalier du gang', not ok and msg:find('assez'))
+
 io.write(('\n%d réussis, %d échoués\n'):format(passed, failed))
 os.exit(failed == 0 and 0 or 1)

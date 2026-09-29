@@ -65,7 +65,7 @@ lib.callback.register('gs_business:buy', function(src, id, item, qty)
         return false, 'Rupture de stock.'
     end
     Bridge:AddItem(src, item, qty)
-    JobsApi:AddSocietyMoney(id, total)
+    JobsApi:AddSocietyMoney(id, total, true)
     Store.log(id, 'sale', item, qty, total, name(src))
     return true, ('%d × %s : %d $. Merci !'):format(qty, b.products[item].label, total)
 end)
