@@ -13,7 +13,7 @@ loadResource('gs_jobs', {
     R .. 'gs_jobs/server/society.lua', R .. 'gs_jobs/server/members.lua', R .. 'gs_jobs/server/payroll.lua',
     R .. 'gs_jobs/server/garage.lua', R .. 'gs_jobs/server/stash.lua', R .. 'gs_jobs/server/boss.lua',
     R .. 'gs_jobs/server/billing.lua', R .. 'gs_jobs/server/vehicle_actions.lua',
-    R .. 'gs_jobs/server/missions.lua', R .. 'gs_jobs/server/admin.lua',
+    R .. 'gs_jobs/server/missions.lua', R .. 'gs_jobs/server/admin.lua', R .. 'gs_jobs/server/orders.lua',
 })
 DB.init()
 
@@ -228,6 +228,22 @@ net('gs_jobs:server:resign', 2, 'taxi'); step()
 check('démission', Members[2].jobs.taxi == nil and DB.countMemberships('CID2') == 1)
 TriggerEvent('gs_bridge:server:playerUnloaded', 2)
 check('déconnexion nettoyée', Members[2] == nil)
+
+-- Carnet de commandes (mécano) -------------------------------------------------------------------------
+join(20, 'CID20', 'Client Panne', far)
+join(21, 'CID21', 'Meca Service', far)
+W.players[21].job = { name = 'mechanic', grade = 1, onduty = true }
+local okO, msgO = cb('gs_jobs:orders:create', 20, 'mechanic', 'Pneu crevé')
+check('demande de dépannage envoyée', okO and lastClientEvent('gs_jobs:client:orderNew', 21))
+check('une seule demande à la fois', not cb('gs_jobs:orders:create', 20, 'mechanic', 'encore'))
+check('job sans carnet refusé', not cb('gs_jobs:orders:create', 20, 'police', 'x'))
+local listO = cb('gs_jobs:orders:list', 21)
+check('liste des demandes (mécano en service)', listO and #listO == 1 and listO[1].message == 'Pneu crevé')
+check('liste refusée au client', cb('gs_jobs:orders:list', 20) == nil)
+local oid = listO[1].id
+check('clôture refusée sans la prendre', not cb('gs_jobs:orders:close', 21, oid))
+check('demande prise', cb('gs_jobs:orders:take', 21, oid) == true)
+check('demande clôturée', cb('gs_jobs:orders:close', 21, oid) == true and Orders.list[oid] == nil)
 
 print = io.write
 io.write(('\n%d réussis, %d échoués\n'):format(passed, failed))

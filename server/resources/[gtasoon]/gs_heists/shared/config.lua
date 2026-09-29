@@ -51,5 +51,19 @@ Config.Big = {
         radius = 25.0, start = vec3(144.8, -1043.5, 29.4), terminal = vec3(146.2, -1045.1, 29.4), vault = { vec3(147.0, -1046.0, 29.4), vec3(150.2, -1045.0, 29.4) },
         hackAction = 20000, hackFail = 0.15, lootAction = 15000, reward = { 9000, 14000 }, escapeDistance = 900.0, escapeTime = 240 },
 }
+-- Cayo Perico (île, gs_world) : repérage obligatoire avant le coup (les points ci-dessous, par l'un des deux, < 48 h),
+-- cible principale tirée au sort dans le bureau d'El Rubio, gardes armés si l'alarme saute, fuite par la mer (bateau).
+-- Pas de minimum de policiers (île isolée) : la police IA prend le relais. Coords approximatives, à caler en jeu.
+Config.Big.cayo = { label = 'Gros coup : Cayo Perico', minPolice = 0, cooldown = 14400, center = vec3(5010.0, -5750.0, 15.5),
+    radius = 90.0, start = vec3(4930.0, -5170.0, 2.5), terminal = vec3(4989.5, -5718.0, 19.9),
+    vault = { vec3(5007.9, -5755.6, 15.5), vec3(5081.0, -5720.0, 15.8), vec3(5020.0, -5690.0, 17.9) },
+    hackAction = 25000, hackFail = 0.25, lootAction = 18000, reward = { 16000, 24000 }, escapeDistance = 1500.0, escapeTime = 420,
+    scout = { vec3(4437.5, -4448.2, 4.3), vec3(4930.0, -5170.0, 2.5), vec3(4976.5, -5704.6, 19.9) }, scoutValid = 172800,
+    primary = { { label = 'Bouteille de tequila Sinsimito', mult = 0.8 }, { label = 'Collier de rubis', mult = 1.0 },
+        { label = 'Obligations au porteur', mult = 1.1 }, { label = 'Diamant rose', mult = 1.3 }, { label = 'Statue de la panthère', mult = 1.8, chance = 0.05 } },
+    guardModel = 's_m_m_highsec_01', guardWeapon = 'WEAPON_CARBINERIFLE',
+    guards = { vec4(4990.0, -5725.0, 19.9, 0.0), vec4(5000.0, -5745.0, 15.8, 90.0), vec4(5015.0, -5760.0, 15.5, 180.0), vec4(5030.0, -5735.0, 17.5, 270.0) },
+}
+
 Config.BigStartRadius = 30.0       -- les deux partenaires près du site pour lancer
 Config.BigPartnerRadius = 80.0     -- pirate / conducteur ensemble pendant la fuite

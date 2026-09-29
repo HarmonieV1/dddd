@@ -463,6 +463,20 @@ local function funMenu()
     show('gs_staff_fun', 'Fun (sur toi · events)', options, 'gs_staff_quick')
 end
 
+local function eventsMenu()
+    local options = {}
+    for id, ev in pairs(Config.Events) do
+        options[#options + 1] = { title = ev.label, icon = ev.icon, description = ('%d min · centré sur toi%s'):format(ev.minutes, ev.radius > 0 and (' · %d m'):format(math.floor(ev.radius)) or ''),
+            onSelect = function()
+                if lib.alertDialog({ header = ev.label, content = ev.text .. '\n\nTout le monde reçoit l\'annonce et le GPS vers ta position.', centered = true, cancel = true }) == 'confirm' then
+                    notify(act('event', nil, { kind = id }))
+                end
+            end }
+    end
+    table.sort(options, function(a, b) return a.title < b.title end)
+    show('gs_staff_events', 'Événements en un clic', options, 'gs_staff_quick')
+end
+
 local function playerMenu(p)
     local lvl = info.level
     local options = {}
@@ -553,6 +567,7 @@ local function mainMenu()
         add(3, { title = 'Points de métier (placer ici)', icon = 'location-crosshairs', arrow = true,
             description = 'Service, coffre, armurerie, direction, garage : déplacés à ta position', onSelect = pointsMenu })
         add(4, { title = 'Items', icon = 'box-open', arrow = true, onSelect = function() itemsMenu(me) end })
+        add(3, { title = 'Événements en un clic', icon = 'champagne-glasses', arrow = true, description = 'Course super vitesse, chute lunaire, boxe, course de rue', onSelect = eventsMenu })
         add(3, { title = 'Fun (events)', icon = 'wand-magic-sparkles', arrow = true, description = 'Course rapide, super saut, gravité lunaire…', onSelect = funMenu })
         add(4, { title = 'Objets du décor (placer / retirer)', icon = 'cube', description = 'Bancs, poubelles, barrières… (/builder)', onSelect = function() ExecuteCommand('builder') end })
         add(1, { title = 'Copier mes coordonnées', icon = 'crosshairs', description = 'vec4 dans le presse-papiers (calage des configs)', onSelect = function()

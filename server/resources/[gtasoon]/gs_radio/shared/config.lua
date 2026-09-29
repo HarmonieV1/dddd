@@ -17,6 +17,7 @@ Config.JobChannels = {
     [8] = { jobs = { 'weazel' }, label = 'Weazel News', onDuty = false },
     [9] = { jobs = { 'judge', 'lawyer', 'cityhall' }, label = 'Justice et mairie', onDuty = false },
     [10] = { jobs = { 'realestate', 'cardealer' }, label = 'Commerciaux', onDuty = false },
+    [11] = { jobs = { 'police', 'ambulance', 'mechanic' }, label = 'Urgences (tous services)', onDuty = true },
 }
 
 -- Chaque gang a son canal privé dans cette plage (attribué automatiquement, fixe tant que le gang existe).

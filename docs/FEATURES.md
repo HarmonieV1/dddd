@@ -258,6 +258,32 @@ Traductions françaises manquantes des scripts Qbox ajoutées par METTRE-A-JOUR 
   outillage » au lieu d'« Armurerie » (EMS : « Matériel médical »), **double des clés** des véhicules de service.
 - **Marqueurs** : plus de cercle violet sur les points de métier (chevron blanc discret), cercles restants plus fins.
 
+## V5.1 — économie illégale, solo annexe, Cayo Perico
+- **gs_stickup — braquage solo de PNJ** (annexe ; les gros coups restent en duo / groupe) : vise un passant, un caissier
+  ou un guichetier Fleeca avec une arme → [E]. La **peur** monte avec l'arme pointée et **la voix** : chuchoter < parler
+  < **crier** (portée ², touche N pour parler). Arme baissée : il s'enfuit. Toujours signalé (gs_wanted) : police
+  joueurs, sinon **police IA**. Anti-farm : cooldowns (joueur, caisse), 6 par heure, 5 000 $ par jour. Caisse / guichet
+  = argent sale.
+- **gs_blackmarket — marché noir** : `/contact` (gang, ou réputation de rue ≥ 15) → planque qui change toutes les 2 h,
+  la nuit. Munitions de tous calibres, armes non déclarées (1 par jour, armes lourdes réservées aux gangs), silencieux,
+  crochets, gilets. Stock du jour, **prix qui montent avec la rareté**, -10 % sur son territoire, argent sale (ou liquide
+  +40 %), signalement possible.
+- **Munitions cohérentes** : Ammu-Nation = pistolet, pistolet compact, fusil à pompe, munitions 9 mm / .45 / cartouches,
+  **permis obligatoire** pour armes et munitions, **120 munitions et 1 arme à feu par jour**. L'ancien « Black Market »
+  absurde d'ox_inventory (1 000 $ la balle) est retiré.
+- **Cayo Perico — gros coup en duo** : `/reperage` (3 points sur l'île, vol à LSIA), puis lancement au port : pirate
+  (terminal de la villa) + conducteur (bureau d'El Rubio + 2 réserves), cible principale au hasard (tequila → statue de
+  la panthère, rare), **gardes armés si l'alarme saute**, fuite à 1,5 km (bateau). Pas de minimum de policiers.
+- **Clés** : voitures PNJ moins souvent verrouillées (garées 50 %, en circulation 35 %), fouille (H) 65 %.
+- **Métiers** : animations de mission (carton porté, sac poubelle, bloc-notes routier), petit geste de fin de service,
+  **mécano : livraison de pièces** (tâche payée), **carnet de commandes** : `/depanneur` et `/taxi` pour les joueurs,
+  `/commandes` pour les employés en service (prendre → GPS, clôturer → facture).
+- **Radio** : canal 11 « Urgences » (police, EMS, mécanos en service), « Qui est sur le canal ? ».
+- **Staff — événements en un clic** (F11, admin) : course à super vitesse, chute lunaire, concours de super saut,
+  soirée boxe (armes rangées dans la zone), course de rue (inscription gratuite). Annonce + GPS à tous.
+- **gs_hideouts — planques de départ** : chambres de motel (Pink Cage, Sandy, Paleto) louées à la semaine (1 à 4),
+  coffre perso, garde-robe, monde séparé par locataire. Pour un vrai logement : l'agent immobilier.
+
 ## Liens entre features
 `gs_weather` → visibilité de `gs_wanted` + prix de `gs_economy` ;
 `gs_duo` → crimes vers `gs_wanted`, chaleur partagée ; `gs_jobs` → police en service pour le dispatch.

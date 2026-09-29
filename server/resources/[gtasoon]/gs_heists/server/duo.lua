@@ -4,7 +4,7 @@ local Bridge    = exports.gs_bridge
 local JobsApi   = exports.gs_jobs
 local WantedApi = exports.gs_wanted
 
-Big = { sessions = {}, cooldowns = {}, byPlayer = {}, pending = {} }
+Big = { sessions = {}, cooldowns = {}, byPlayer = {}, pending = {}, scouted = {} } -- scouted[cid][site][i] = os.time()
 local function started(res) return GetResourceState(res) == 'started' end
 local ROLES = { hacker = 'Pirate', driver = 'Conducteur' }
 
@@ -49,15 +49,19 @@ lib.callback.register('gs_heists:bigStart', function(src, id, role)
     if not partner or not Bridge:IsLoaded(partner) then return false, 'Il te faut ton partenaire de duo (F7), en ville.' end
     if Big.byPlayer[partner] then return false, 'Ton partenaire est déjà occupé.' end
     if JobsApi:IsOnDutyAs(src, Config.PoliceJob) or JobsApi:IsOnDutyAs(partner, Config.PoliceJob) then return false, 'Pas en service de police.' end
-    if not nearPoint(src, site.center, Config.BigStartRadius) or not nearPoint(partner, site.center, Config.BigStartRadius) then
+    local startAt = site.start or site.center
+    if not nearPoint(src, startAt, Config.BigStartRadius) or not nearPoint(partner, startAt, Config.BigStartRadius) then
         return false, 'Vous devez être tous les deux sur place.'
     end
     if GetSelectedPedWeapon(GetPlayerPed(src)) == GetHashKey('WEAPON_UNARMED') then return false, 'Il te faut une arme en main.' end
     if Big.sessions[id] then return false, 'Un coup est déjà en cours ici.' end
     if (Big.cooldowns[id] or 0) > os.time() then return false, 'L\'endroit est sous haute surveillance, reviens plus tard.' end
     if Heists.policeCount() < site.minPolice then return false, ('Pas assez de policiers en ville (%d requis).'):format(site.minPolice) end
+    if site.scout and not (Big.hasScouted(src, id) or Big.hasScouted(partner, id)) then
+        return false, ('Repérage d\'abord : visitez les %d points de repérage (/reperage), il y a moins de 48 h.'):format(#site.scout)
+    end
     local other = role == 'hacker' and 'driver' or 'hacker'
-    local sess = { id = id, phase = 'hack', done = {}, startedAt = os.time(), [role] = src, [other] = partner }
+    local sess = { id = id, phase = 'hack', done = {}, startedAt = os.time(), [role] = src, [other] = partner, primary = Big.pickPrimary(site) }
     Big.sessions[id] = sess
     Big.byPlayer[src], Big.byPlayer[partner] = id, id
     Security:LogStaff(('[Gros coup] %s (%s) et partenaire lancent %s'):format(GetPlayerName(src), ROLES[role], site.label), 'jobs')
@@ -108,6 +112,7 @@ lib.callback.register('gs_heists:bigFinish', function(src)
         if not nearPoint(src, site.terminal, 1.8) then return false, 'Tu t\'es éloigné.' end
         local alarm = math.random() < site.hackFail
         WantedApi:ReportCrime(src, 'bank', site.center, { alarm = alarm })
+        if alarm and site.guards then TriggerClientEvent('gs_heists:client:guards', src, sess.id) end -- gardes créés par le pirate
         sess.phase = 'loot'
         if not alarm and started('gs_wanted') then exports.gs_wanted:BlindCameras(site.center, 80.0) end -- caméras aveuglées quelques minutes
         sync(sess)
@@ -126,7 +131,7 @@ end)
 
 local function payout(sess)
     local site = Config.Big[sess.id]
-    local total = math.floor(math.random(site.reward[1], site.reward[2]) * Heists.multiplier(sess.driver, site))
+    local total = math.floor(math.random(site.reward[1], site.reward[2]) * Heists.multiplier(sess.driver, site) * (sess.primary and sess.primary.mult or 1))
     local each = total // 2
     local lines = {}
     for _, src in ipairs({ sess.hacker, sess.driver }) do
@@ -134,7 +139,7 @@ local function payout(sess)
         if started('gs_quests') then exports.gs_quests:Reward(src, 'heist') end
     end
     Security:LogStaff(('[Gros coup] %s réussi : %d $ (%d chacun)'):format(site.label, total, each), 'jobs')
-    return ('Butin partagé : %s chacun'):format(lines[1])
+    return ('%sButin partagé : %s chacun'):format(sess.primary and (sess.primary.label .. ' récupéré(e). ') or '', lines[1])
 end
 
 --- Vérifie l'avancée des fuites et les échecs (toutes les 2 s, seulement s'il y a une session).
@@ -169,6 +174,44 @@ CreateThread(function()
         Wait(2000)
         if next(Big.sessions) then Big.tick() end
     end
+end)
+
+--- Cible principale (Cayo) : tirage pondéré, la plus rare a sa propre chance.
+function Big.pickPrimary(site)
+    if not site.primary then return nil end
+    local common = {}
+    for _, p in ipairs(site.primary) do
+        if p.chance then if math.random() < p.chance then return p end else common[#common + 1] = p end
+    end
+    return common[math.random(#common)]
+end
+
+function Big.hasScouted(src, id)
+    local site = Config.Big[id]
+    local cid = Bridge:GetIdentifier(src)
+    local s = cid and Big.scouted[cid] and Big.scouted[cid][id]
+    if not s then return false end
+    for i in ipairs(site.scout) do
+        if not s[i] or os.time() - s[i] > site.scoutValid then return false end
+    end
+    return true
+end
+
+--- Repérage : photo d'un point (sur place). Retourne ok, message.
+lib.callback.register('gs_heists:scout', function(src, id, i)
+    if not Security:RateLimit(src, 'gs_heists:scout', 5, 10000) then return false, 'Doucement.' end
+    local site = Config.Big[id]
+    i = tonumber(i)
+    local c = site and site.scout and i and site.scout[i]
+    if not c then return false, 'Invalide.' end
+    if not nearPoint(src, c, 8.0) then return false, 'Trop loin du point de repérage.' end
+    local cid = Bridge:GetIdentifier(src)
+    Big.scouted[cid] = Big.scouted[cid] or {}
+    Big.scouted[cid][id] = Big.scouted[cid][id] or {}
+    Big.scouted[cid][id][i] = os.time()
+    local n = 0
+    for j in ipairs(site.scout) do if Big.scouted[cid][id][j] then n = n + 1 end end
+    return true, n >= #site.scout and 'Repérage terminé : le coup peut être lancé (48 h).' or ('Repérage %d / %d.'):format(n, #site.scout)
 end)
 
 lib.callback.register('gs_heists:bigSites', function(src)

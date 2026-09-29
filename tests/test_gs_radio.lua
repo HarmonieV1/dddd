@@ -26,7 +26,7 @@ check('civil : canal police refusé', not Radio.allowed(2, 1) and not Radio.allo
 W.players[1].job.onduty = false
 check('police hors service : refusé', not Radio.allowed(1, 1))
 check('mécano sans service requis', Radio.allowed(5, 5) and not Radio.allowed(5, 4))
-check('fréquence libre', Radio.allowed(2, 42.5) and Radio.allowed(2, 11))
+check('fréquence libre', Radio.allowed(2, 42.5) and Radio.allowed(2, 12) and not Radio.allowed(2, 11))
 check('bornes', not Radio.allowed(2, 0) and not Radio.allowed(2, -3) and not Radio.allowed(2, 5000) and not Radio.allowed(2, 'abc'))
 
 local b, v, f = Radio.gangChannels.ballas, Radio.gangChannels.vagos, Radio.gangChannels.families
@@ -42,7 +42,7 @@ check('canaux stables', Radio.gangChannels.ballas == b and Radio.gangChannels.va
 
 W.players[1].job.onduty = true
 local p = cb('gs_radio:presets', 1)
-check('présélections police', p and p[1].channel == 1 and #p == 3)
+check('présélections police', p and p[1].channel == 1 and #p == 4 and p[4].channel == 11)
 p = cb('gs_radio:presets', 3)
 check('présélection gang', p and #p == 1 and p[1].gang and p[1].channel == b)
 check('canJoin', cb('gs_radio:canJoin', 2, 42) == true and cb('gs_radio:canJoin', 2, 1) == false)

@@ -54,6 +54,21 @@ Config.Animals = {
 }
 -- Les animaux absents du build du jeu sont refusés proprement (« modèle absent »). Aquatiques : à utiliser dans l'eau.
 
+-- Événements staff en un clic (admin+, mode staff) : centrés sur TA position, annonce + GPS pour tout le monde,
+-- effet appliqué aux joueurs dans le rayon pendant `minutes`. fx : fastrun, superjump, lowgravity, melee (boxe : armes rangées).
+Config.Events = {
+    speedrace = { label = 'Course à super vitesse', icon = 'person-running', fx = 'fastrun', radius = 250.0, minutes = 10,
+        text = 'Course à pied en super vitesse ! Rejoins le point GPS.' },
+    moon = { label = 'Chute lunaire', icon = 'moon', fx = 'lowgravity', radius = 250.0, minutes = 10,
+        text = 'Gravité lunaire activée : sautez du plus haut possible !' },
+    jump = { label = 'Concours de super saut', icon = 'arrow-up', fx = 'superjump', radius = 200.0, minutes = 10,
+        text = 'Concours de super saut : qui ira le plus haut ?' },
+    boxing = { label = 'Soirée boxe', icon = 'hand-fist', fx = 'melee', radius = 30.0, minutes = 20,
+        text = 'Soirée boxe : aux poings seulement, armes rangées automatiquement dans la zone.' },
+    streetrace = { label = 'Course de rue (inscription gratuite)', icon = 'flag-checkered', radius = 0.0, minutes = 30, freeRaces = true,
+        text = 'Course de rue organisée : inscription gratuite, rendez-vous au point GPS !' },
+}
+
 Config.Vehicle = { maxDeleteDistance = 10.0 }
 
 Config.Report = { cooldown = 120000, maxLength = 250 }

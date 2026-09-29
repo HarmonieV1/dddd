@@ -30,6 +30,7 @@ local function sendStep(src, m)
         coords = m.steps[m.index],
         label = mdef.stepLabels and mdef.stepLabels[m.index] or mdef.stepLabel or '',
         duration = mdef.stepDuration or 2000,
+        anim = mdef.anim, prop = mdef.prop,
     })
 end
 

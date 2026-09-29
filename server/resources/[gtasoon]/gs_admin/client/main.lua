@@ -127,3 +127,33 @@ end)
 AddEventHandler('onResourceStop', function(res)
     if res == GetCurrentResourceName() and open then SetNuiFocus(false, false) end
 end)
+
+-- Événements staff (Actions.event) : annonce + GPS pour tous ; effet temporaire dans le rayon du point -------------
+local eventOn = nil
+local UNARMED_HASH = GetHashKey('WEAPON_UNARMED')
+RegisterNetEvent('gs_admin:client:eventStart', function(ev)
+    PlaySoundFrontend(-1, 'Event_Start_Text', 'GTAO_FM_Events_Soundset', false)
+    lib.notify({ title = 'Événement : ' .. ev.label, description = ev.text, type = 'inform', icon = 'champagne-glasses', position = 'top', duration = 15000 })
+    SetNewWaypoint(ev.x, ev.y)
+    if not ev.fx then return end
+    eventOn = { fx = ev.fx, center = vec3(ev.x, ev.y, ev.z), radius = ev.radius, untilAt = GetGameTimer() + math.min(ev.seconds, 3600) * 1000 }
+    CreateThread(function()
+        local pid = PlayerId()
+        -- par frame : seulement pendant un événement staff (super saut / boxe ont besoin d'un appel à chaque image)
+        while eventOn and GetGameTimer() < eventOn.untilAt do
+            local inside = #(GetEntityCoords(cache.ped) - eventOn.center) <= eventOn.radius
+            if eventOn.fx == 'fastrun' then SetRunSprintMultiplierForPlayer(pid, inside and 1.49 or 1.0)
+            elseif eventOn.fx == 'lowgravity' then SetGravityLevel(inside and 1 or 0)
+            elseif eventOn.fx == 'superjump' and inside then SetSuperJumpThisFrame(pid)
+            elseif eventOn.fx == 'melee' and inside then
+                if GetSelectedPedWeapon(cache.ped) ~= UNARMED_HASH then SetCurrentPedWeapon(cache.ped, UNARMED_HASH, true) end
+                DisableControlAction(0, 37, true) -- roue des armes
+            end
+            Wait(0)
+        end
+        SetRunSprintMultiplierForPlayer(pid, 1.0)
+        SetGravityLevel(0)
+        eventOn = nil
+        lib.notify({ description = 'Fin de l\'événement. Merci d\'avoir joué !', type = 'inform' })
+    end)
+end)

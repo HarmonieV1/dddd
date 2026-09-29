@@ -53,7 +53,7 @@ local function openMenu()
             iconColor = current == p.channel and '#5aff8c' or nil, onSelect = function() join(p.channel, p.label) end }
     end
     options[#options + 1] = { title = 'Fréquence libre…', icon = 'sliders', onSelect = function()
-        local r = lib.inputDialog('Fréquence', { { type = 'number', label = 'MHz (11 à 499 : libres)', min = 1, max = Config.MaxChannel, precision = 2, step = 0.1, required = true } })
+        local r = lib.inputDialog('Fréquence', { { type = 'number', label = 'MHz (12 à 499 : libres)', min = 1, max = Config.MaxChannel, precision = 2, step = 0.1, required = true } })
         if r then join(r[1]) end
     end }
     local last = tonumber(GetResourceKvpString('gs_radio:last') or '')
@@ -61,6 +61,14 @@ local function openMenu()
         options[#options + 1] = { title = ('Reprendre %s MHz'):format(last), icon = 'rotate-left', onSelect = function() join(last) end }
     end
     if current ~= 0 then
+        options[#options + 1] = { title = 'Qui est sur le canal ?', icon = 'users', onSelect = function()
+            local list = lib.callback.await('gs_radio:members', false) or {}
+            local o = {}
+            for _, m in ipairs(list) do o[#o + 1] = { title = m.name .. (m.me and ' (toi)' or ''), icon = m.talking and 'volume-high' or 'user', readOnly = true } end
+            if #o == 0 then o[1] = { title = 'Personne', readOnly = true } end
+            lib.registerContext({ id = 'gs_radio_members', title = ('Canal %s MHz · %d'):format(current, #list), menu = 'gs_radio', options = o })
+            lib.showContext('gs_radio_members')
+        end }
         options[#options + 1] = { title = 'Éteindre la radio', icon = 'power-off', iconColor = '#ff2e88', onSelect = function() leave() end }
     end
     lib.registerContext({ id = 'gs_radio', title = current ~= 0 and ('Radio · %s MHz'):format(current) or 'Radio · éteinte', options = options })

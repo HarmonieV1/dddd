@@ -439,6 +439,22 @@ Actions.delveh = { level = 2, duty = true, run = function(src, _, data)
     return 'Véhicule supprimé'
 end }
 
+--- Événement en un clic : annonce + GPS à tous, effet aux joueurs dans le rayon.
+Actions.event = { level = 3, duty = true, run = function(src, _, data)
+    local ev = need(Config.Events[data.kind], 'Événement inconnu.')
+    local c = GetEntityCoords(GetPlayerPed(src))
+    local seconds = ev.minutes * 60
+    local n = 0
+    for _, id in ipairs(GetPlayers()) do
+        local p = tonumber(id)
+        TriggerClientEvent('gs_admin:client:eventStart', p, { kind = data.kind, label = ev.label, text = ev.text, x = c.x, y = c.y, z = c.z,
+            fx = ev.fx, radius = ev.radius, seconds = seconds })
+        n = n + 1
+    end
+    if ev.freeRaces and started('gs_races') then exports.gs_races:SetFreeEntry(seconds) end
+    return ('%s lancé (%d joueurs prévenus, %d min)'):format(ev.label, n, ev.minutes)
+end }
+
 Actions.announce = { level = 3, run = function(_, _, data)
     local text = need(Security:Sanitize(data.text, 200), 'Annonce vide.')
     TriggerClientEvent('gs_admin:client:announce', -1, text)

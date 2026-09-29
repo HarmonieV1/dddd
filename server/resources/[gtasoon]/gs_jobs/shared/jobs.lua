@@ -148,6 +148,13 @@ Jobs = {
             { item = 'jerry_can', max = 2 }, { item = 'WEAPON_WRENCH', max = 1 },
             { item = 'advancedrepairkit', max = 2, minGrade = 1 },
         },
+        -- Tâche d'employé : aller chercher des pièces au dépôt et les ramener (payé par l'État, comme les autres missions)
+        mission = {
+            pool = 'depots', stops = 2, stepDuration = 5000, stepLabels = { 'Récupérer les pièces détachées', 'Livrer les pièces à l\'atelier' },
+            payPerStop = { 140, 200 }, perKm = 60, completionBonus = 120,
+            anim = { dict = 'anim@heists@box_carry@', clip = 'idle', flag = 49 },
+            prop = { model = 'prop_car_engine_01', bone = 60309, pos = vec3(0.0, 0.1, 0.25), rot = vec3(-145.0, 290.0, 0.0) },
+        },
         vehicleActions = {
             repair = { label = 'Réparer le moteur et la carrosserie', effect = 'repair', item = 'repairkit', itemLabel = 'Kit de réparation',
                 duration = 10000, icon = 'fa-solid fa-wrench', hood = true, anim = { dict = 'mini@repair', clip = 'fixing_a_ped', flag = 1 } },
@@ -293,6 +300,7 @@ Jobs = {
             pool = 'depots', stops = 2, stepDuration = 6000,
             stepLabels = { 'Charger la marchandise', 'Décharger la marchandise' },
             payPerStop = { 150, 250 }, perKm = 180, completionBonus = 150,
+            anim = { scenario = 'WORLD_HUMAN_CLIPBOARD' },
         },
     },
 
@@ -342,6 +350,8 @@ Jobs = {
         mission = {
             pool = 'shops', stops = 3, stepDuration = 3000, stepLabel = 'Livrer le colis',
             payPerStop = { 180, 260 }, perKm = 0, completionBonus = 100,
+            anim = { dict = 'anim@heists@box_carry@', clip = 'idle', flag = 49 },
+            prop = { model = 'hei_prop_heist_box', bone = 60309, pos = vec3(0.025, 0.08, 0.255), rot = vec3(-145.0, 290.0, 0.0) },
         },
     },
 
@@ -358,6 +368,8 @@ Jobs = {
         mission = {
             pool = 'shops', stops = 4, stepDuration = 4000, stepLabel = 'Vider les poubelles',
             payPerStop = { 120, 180 }, perKm = 0, completionBonus = 80,
+            anim = { dict = 'missfbi4prepp1', clip = '_bag_throw_garbage_man', flag = 48 },
+            prop = { model = 'prop_cs_rub_binbag_01', bone = 57005, pos = vec3(0.12, 0.0, -0.05), rot = vec3(220.0, 120.0, 0.0) },
         },
     },
 }

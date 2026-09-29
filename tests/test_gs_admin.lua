@@ -299,5 +299,18 @@ sanctions = {}
 TriggerEvent('txAdmin:events:playerBanned', { targetName = 'Tricheur', reason = 'Menu de triche', expiration = false })
 check('ban txAdmin publié', #sanctions == 1 and sanctions[1]:find('Bannissement') and sanctions[1]:find('définitif'))
 
+-- Événements en un clic
+provide('gs_races', { SetFreeEntry = function(sec) W.freeRaces = sec return true end })
+Admin.onDuty[8] = nil
+ok = cb('gs_admin:action', 8, 'event', nil, { kind = 'moon' }); step()
+check('événement : mode staff requis', not ok)
+Admin.onDuty[8] = os.time()
+ok = cb('gs_admin:action', 8, 'event', nil, { kind = 'inconnu' }); step()
+check('événement inconnu', not ok)
+ok = cb('gs_admin:action', 8, 'event', nil, { kind = 'streetrace' }); step()
+check('course de rue : annonce à tous + inscription gratuite', ok and lastClientEvent('gs_admin:client:eventStart', 4) and W.freeRaces == 1800)
+ok = cb('gs_admin:action', 2, 'event', nil, { kind = 'moon' }); step()
+check('événement : modo refusé', not ok)
+
 io.write(('\n%d réussis, %d échoués\n'):format(passed, failed))
 os.exit(failed == 0 and 0 or 1)

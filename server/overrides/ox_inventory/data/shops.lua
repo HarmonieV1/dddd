@@ -11,10 +11,17 @@ return {
 		blip = {
 			id = 110, colour = 69, scale = 0.8
 		}, inventory = {
-			{ name = 'ammo-9', price = 5, },
+			-- Légal = peu de calibres, permis obligatoire pour armes ET munitions, 120 munitions / jour (gs_blackmarket)
 			{ name = 'WEAPON_KNIFE', price = 200 },
 			{ name = 'WEAPON_BAT', price = 100 },
-			{ name = 'WEAPON_PISTOL', price = 1000, metadata = { registered = true }, license = 'weapon' }
+			{ name = 'WEAPON_FLASHLIGHT', price = 80 },
+			{ name = 'WEAPON_PISTOL', price = 2500, metadata = { registered = true }, license = 'weapon' },
+			{ name = 'WEAPON_SNSPISTOL', price = 1800, metadata = { registered = true }, license = 'weapon' },
+			{ name = 'WEAPON_PUMPSHOTGUN', price = 5500, metadata = { registered = true }, license = 'weapon' },
+			{ name = 'ammo-9', price = 6, license = 'weapon' },
+			{ name = 'ammo-45', price = 7, license = 'weapon' },
+			{ name = 'ammo-shotgun', price = 12, license = 'weapon' },
+			{ name = 'at_flashlight', price = 350, license = 'weapon' }
 		}, locations = {
 			vec3(-662.180, -934.961, 21.829),
 			vec3(810.25, -2157.60, 29.62),
@@ -55,20 +62,7 @@ return {
 		}
 	},
 
-	BlackMarketArms = {
-		name = 'Black Market (Arms)',
-		inventory = {
-			{ name = 'WEAPON_DAGGER', price = 5000, metadata = { registered = false	}, currency = 'black_money' },
-			{ name = 'WEAPON_CERAMICPISTOL', price = 50000, metadata = { registered = false }, currency = 'black_money' },
-			{ name = 'at_suppressor_light', price = 50000, currency = 'black_money' },
-			{ name = 'ammo-rifle', price = 1000, currency = 'black_money' },
-			{ name = 'ammo-rifle2', price = 1000, currency = 'black_money' }
-		}, locations = {
-			vec3(309.09, -913.75, 56.46)
-		}, targets = {
-
-		}
-	},
+	-- Marché noir : voir gs_blackmarket (contact qui change de planque, /contact)
 
 	VendingMachineDrinks = {
 		name = 'Vending Machine',

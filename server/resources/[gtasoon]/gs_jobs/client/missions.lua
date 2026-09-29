@@ -40,9 +40,12 @@ RegisterNetEvent('gs_jobs:client:missionStep', function(step)
             busy, shown = true, false
             lib.hideTextUI()
             CreateThread(function()
+                -- Animation du métier (à pied seulement), ex : carton porté, sac poubelle jeté
+                local onFoot = not cache.vehicle
                 local done = lib.progressBar({
                     duration = step.duration, label = step.label, canCancel = true,
                     disable = { move = true, car = true, combat = true },
+                    anim = onFoot and step.anim or nil, prop = onFoot and step.prop or nil,
                 })
                 if done then
                     local ok, msg = lib.callback.await('gs_jobs:mission:step', false)
@@ -64,6 +67,10 @@ RegisterNetEvent('gs_jobs:client:missionEnd', function(reason, earned)
     clear()
     if reason == 'done' then
         GSJ.notify(L('mission_done', earned or 0), 'success')
+        if not cache.vehicle then -- petite animation de fin de service
+            lib.requestAnimDict('gestures@m@standing@casual', 1500)
+            TaskPlayAnim(cache.ped, 'gestures@m@standing@casual', 'gesture_pleased', 8.0, -8.0, 2000, 48, 0, false, false, false)
+        end
     else
         GSJ.notify(L('mission_cancelled'), 'inform')
     end

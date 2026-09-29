@@ -31,6 +31,7 @@ server_scripts {
     'server/vehicle_actions.lua',
     'server/missions.lua',
     'server/admin.lua',
+    'server/orders.lua',
     'server/init.lua',
 }
 
@@ -40,4 +41,5 @@ client_scripts {
     'client/menus.lua',
     'client/missions.lua',
     'client/vehicle_actions.lua',
+    'client/orders.lua',
 }

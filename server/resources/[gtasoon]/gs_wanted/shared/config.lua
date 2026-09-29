@@ -19,6 +19,9 @@ Config.Crimes = {
     street_race = { label = 'Course de rue illégale', heat = 10, chance = 0.35 },
     smuggling = { label = 'Transport de marchandise illégale', heat = 15, chance = 0.4 },
     poaching = { label = 'Braconnage (chasse sans permis)', heat = 6, chance = 0.35 },
+    mugging = { label = 'Racket à main armée', heat = 12, chance = 0.40 },
+    teller_robbery = { label = 'Braquage de guichet', heat = 35, chance = 0.70 },
+    black_market = { label = 'Trafic d\'armes', heat = 15, chance = 0.10 },
 }
 
 Config.Witness = {

@@ -216,5 +216,11 @@ exports('SetPromo', function(factor, seconds)
     return true
 end)
 exports('GetSellPrice', Market.sellPrice)
+--- Vendeurs PNJ derrière les comptoirs (braquage solo gs_stickup).
+exports('GetClerks', function()
+    local l = {}
+    for i, sh in ipairs(Config.Shops) do if sh.clerk then l[#l + 1] = { id = 'shop' .. i, label = sh.label, coords = sh.clerk } end end
+    return l
+end)
 exports('RecordBuy', function(item, qty) if Config.Items[item] and qty > 0 then Market.push(item, qty) end end)
 exports('RecordSell', function(item, qty) if Config.Items[item] and qty > 0 then Market.push(item, -qty) end end)

@@ -71,6 +71,19 @@ lib.callback.register('gs_radio:presets', function(src)
     return list
 end)
 
+--- Qui est sur mon canal (seulement si j'y suis moi-même). [API] pma-voice getPlayersInRadioChannel
+lib.callback.register('gs_radio:members', function(src)
+    if not Security:RateLimit(src, 'gs_radio:members', 5, 10000) then return nil end
+    local channel = Player(src).state.radioChannel
+    if not channel or channel == 0 or not started('pma-voice') then return nil end
+    local list = {}
+    for member, talking in pairs(exports['pma-voice']:getPlayersInRadioChannel(channel) or {}) do
+        list[#list + 1] = { name = Bridge:GetName(member) or GetPlayerName(member) or '?', talking = talking == true, me = member == src }
+    end
+    table.sort(list, function(a, b) return a.name < b.name end)
+    return list
+end)
+
 lib.callback.register('gs_radio:canJoin', function(src, channel)
     if not Security:RateLimit(src, 'gs_radio:canJoin', 10, 10000) then return false end
     return Radio.allowed(src, channel)
