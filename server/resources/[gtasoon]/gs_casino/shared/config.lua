@@ -51,3 +51,14 @@ Config.Scratch = {
         { cash = 10000, chance = 2 },
     },
 }
+
+-- Loto hebdomadaire : tickets numérotés (10 par semaine et par personne), tirage le dimanche à 20 h (heure du serveur).
+-- La cagnotte = report + 80 % des ventes. 3 gagnants (60 / 25 / 15 %), tirés parmi les tickets vendus. Sous 3 tickets : report.
+-- Gains versés en banque (à la connexion si le gagnant est hors ligne).
+Config.Lotto = {
+    price = 100, maxPerWeek = 10, potShare = 0.8, minTickets = 3,
+    drawWday = 0, drawHour = 20,          -- os.date('%w') : 0 = dimanche
+    shares = { 0.60, 0.25, 0.15 },
+    cashier = vec3(1115.5, 220.0, -49.4), -- [À CALER] caisse du casino
+    range = 4.0,
+}

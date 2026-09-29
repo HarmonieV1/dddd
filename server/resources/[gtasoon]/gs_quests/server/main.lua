@@ -31,6 +31,7 @@ function Progress.addXP(src, amount, reason)
     local p = Progress.players[src]
     amount = math.floor(tonumber(amount) or 0)
     if not p or amount <= 0 or amount > 100000 then return nil end
+    if GetResourceState('gs_events') == 'started' then amount = math.floor(amount * (exports.gs_events:GetXpMultiplier() or 1.0)) end -- événement en cours
     local before = Progress.levelOf(p.xp)
     p.xp = p.xp + amount
     local after, floor, nextXp = Progress.levelOf(p.xp)

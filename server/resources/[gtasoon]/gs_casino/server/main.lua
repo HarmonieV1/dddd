@@ -6,6 +6,11 @@ Casino = {}
 
 function Casino.today() return os.date('%Y-%m-%d') end
 
+--- Tours de roue gratuits par jour : 1 + bonus d'événement (gs_events).
+function Casino.wheelAllowed()
+    return 1 + (GetResourceState('gs_events') == 'started' and exports.gs_events:GetBonus('wheel') or 0)
+end
+
 --- Tirage pondéré : index d'une case de la roue.
 function Casino.pickSegment()
     local total = 0
@@ -45,7 +50,7 @@ lib.callback.register('gs_casino:status', function(src)
     local cid = Bridge:GetIdentifier(src)
     if not cid then return nil end
     local day = Casino.today()
-    return { wheel = Store.used(cid, 'wheel', day) == 0, scratchLeft = Config.Scratch.perDay - Store.used(cid, 'scratch', day) }
+    return { wheel = Store.used(cid, 'wheel', day) < Casino.wheelAllowed(), scratchLeft = Config.Scratch.perDay - Store.used(cid, 'scratch', day) }
 end)
 
 lib.callback.register('gs_casino:spin', function(src)
@@ -54,7 +59,7 @@ lib.callback.register('gs_casino:spin', function(src)
     if not cid then return false end
     if not Security:InRange(src, Config.Wheel.stand, Config.Wheel.range + 2.0) then return false, 'Approche-toi de la roue.' end
     local day = Casino.today()
-    if Store.used(cid, 'wheel', day) > 0 then return false, 'Tu as déjà tourné la roue aujourd\'hui. Reviens demain !' end
+    if Store.used(cid, 'wheel', day) >= Casino.wheelAllowed() then return false, 'Tu as déjà tourné la roue aujourd\'hui. Reviens demain !' end
     Store.bump(cid, 'wheel', day) -- compté AVANT de payer : pas de double tour en spammant
     local i = Casino.pickSegment()
     local seg = Config.Wheel.segments[i]

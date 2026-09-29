@@ -177,6 +177,8 @@ provide('gs_bridge', {
     end,
 })
 
+provide('gs_events', { GetXpMultiplier = function() return 1.0 end, GetBonus = function() return 0 end })
+
 -- gs_quests simulé : XP reçue par activité (les tests de gs_quests chargent la vraie ressource)
 provide('gs_quests', { Reward = function(src, activity) W.rewards = W.rewards or {} W.rewards[#W.rewards + 1] = { src = src, activity = activity } return 1 end,
     AddXP = function() return 1 end, GetLevel = function() return 1 end,

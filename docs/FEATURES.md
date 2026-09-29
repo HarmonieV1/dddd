@@ -195,6 +195,16 @@ réparation de fortune (moteur 75 %), réparation avancée (complète), nettoyag
 - **Assurance auto** (gs_insurance, Mors Mutual) : 4 % du prix du véhicule pour 7 jours (28 max d'avance) ; un véhicule assuré ne paie que
   **25 %** de la fourrière (patch de qbx_garages posé par METTRE-A-JOUR).
 
+## V3.9 — événements, loto, personnalisation
+- **gs_events** : événements saisonniers du calendrier (été +10 % XP, Halloween et fêtes +25 % XP et +1 tour de roue, anniversaire du serveur +50 %)
+  et événements staff `/gsevent start double_xp|lucky <minutes>` (ACE gs.events.manage), `/gsevent stop|status`. Annonce à la connexion.
+- **Loto hebdomadaire** (gs_casino, caisse du casino) : 100 $ le ticket (10 max / semaine), tirage le dimanche à 20 h (heure du serveur,
+  rattrapé si le serveur était éteint), 3 gagnants distincts (60 / 25 / 15 % de la cagnotte = report + 80 % des ventes), report sous 3 tickets.
+  Gains en banque, ou à la prochaine connexion si le gagnant est hors ligne.
+- **Personnalisation** (gs_tuning, LS Customs) : **néons** (9 couleurs, 800 $, écrits dans les modifications du véhicule : persistent) et
+  **plaque personnalisée** (2 500 $, 2–8 caractères A-Z 0-9 / espaces, préfixes réservés et mots interdits refusés, unique).
+  Uniquement sur ses propres véhicules, au volant, dans un salon. Cosmétique : aucun effet sur les performances.
+
 ## Liens entre features
 `gs_weather` → visibilité de `gs_wanted` + prix de `gs_economy` ;
 `gs_duo` → crimes vers `gs_wanted`, chaleur partagée ; `gs_jobs` → police en service pour le dispatch.

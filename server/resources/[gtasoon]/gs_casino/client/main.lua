@@ -81,6 +81,32 @@ exports('scratch', function()
     end
 end)
 
+AddEventHandler('gs_casino:client:lotto', function()
+    local info = lib.callback.await('gs_casino:lottoInfo', false)
+    if not info then return notify(false, 'Caisse indisponible.') end
+    local last = info.last
+    local lines = {}
+    if last then
+        if #last.winners == 0 then lines[1] = ('Dernier tirage : reporté (%d $)'):format(last.carried)
+        else for i, w in ipairs(last.winners) do lines[#lines + 1] = ('%d. %s : %d $'):format(i, w.name, w.amount) end end
+    end
+    lib.registerContext({ id = 'gs_lotto', title = 'Loto de Los Santos', options = {
+        { title = ('Cagnotte : %d $'):format(info.pot), description = ('%d ticket(s) vendus · tirage dimanche %dh'):format(info.sold, Config.Lotto.drawHour), icon = 'sack-dollar', readOnly = true },
+        { title = ('Tes tickets : %d / %d'):format(info.mine, info.max), icon = 'ticket', readOnly = true },
+        { title = ('Acheter (%d $ le ticket)'):format(info.price), icon = 'cart-shopping', onSelect = function()
+            local r = lib.inputDialog('Loto', { { type = 'number', label = 'Combien de tickets ?', default = 1, min = 1, max = info.max - info.mine, required = true } })
+            if r then notify(lib.callback.await('gs_casino:lottoBuy', false, r[1])) end
+        end },
+        { title = last and 'Dernier tirage' or 'Aucun tirage pour l\'instant', description = table.concat(lines, ' · '), icon = 'trophy', readOnly = true },
+    } })
+    lib.showContext('gs_lotto')
+end)
+
+CreateThread(function()
+    exports.gs_markers:Add('gs_casino:lotto', { coords = Config.Lotto.cashier, style = 'shop', label = 'Loto', event = 'gs_casino:client:lotto',
+        prompt = 'Loto hebdomadaire', reach = Config.Lotto.range, distance = 20.0 })
+end)
+
 AddEventHandler('onResourceStop', function(res)
     if res == GetCurrentResourceName() then despawnWheel() exports.gs_markers:RemovePrefix('gs_casino:') end
 end)
