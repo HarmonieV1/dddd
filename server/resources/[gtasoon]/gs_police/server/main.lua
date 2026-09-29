@@ -95,6 +95,7 @@ end
 -- job : 'police' | 'ems' | 'both' ; target : cible joueur à portée requise
 
 local Actions = {}
+Police.Actions, Police.need, Police.label = Actions, need, label -- partagés avec server/dossiers.lua
 
 Actions.cuff = { job = 'police', target = true, run = function(src, target)
     need(Bridge:GetItemCount(src, Config.CuffItem) > 0, 'Il te faut des menottes.')
@@ -199,7 +200,7 @@ Actions.identity = { job = 'police', target = true, run = function(_, target)
     return {
         name = ('%s %s'):format(ci.firstname or '?', ci.lastname or '?'), birthdate = ci.birthdate, nationality = ci.nationality,
         driver = lic.driver == true, weapon = lic.weapon == true, hunting = lic.hunting == true, records = #Store.records(Bridge:GetIdentifier(target)),
-        wanted = heat > 0,
+        wanted = heat > 0, warrant = Store.hasWarrant and Store.hasWarrant(Bridge:GetIdentifier(target)) or false,
     }
 end }
 
@@ -268,7 +269,9 @@ function Police.run(src, name, target, data)
         print(('[gs_police] erreur %s : %s'):format(name, tostring(res)))
         return false, 'Erreur interne.'
     end
-    if name ~= 'records' and name ~= 'identity' and name ~= 'breathalyzer' then
+    local QUIET = { records = true, identity = true, breathalyzer = true, dossier_search = true, dossier_open = true,
+        warrants_list = true, reports_list = true, report_read = true }
+    if not QUIET[name] then
         Security:LogStaff(('[Police] %s → %s %s'):format(label(src), name, a.target and label(target) or ''), 'jobs')
     end
     return true, res

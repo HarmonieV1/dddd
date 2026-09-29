@@ -10,6 +10,7 @@ provide('gs_wanted', { GetHeat = function(s) return s == 2 and 40 or 0 end })
 loadResource('gs_security', { R .. 'gs_security/server/main.lua' })
 loadResource('gs_police', { R .. 'gs_police/shared/config.lua' })
 local records, jail = {}, {}
+local warrants, reports, nextW, nextR = {}, {}, 0, 0
 Store = {
     init = function() end,
     addRecord = function(cid, charge, fine, j, officer) records[#records + 1] = { cid = cid, charge = charge, fine = fine, jail = j, officer = officer } end,
@@ -17,8 +18,23 @@ Store = {
     jailSet = function(cid, u, r) jail[cid] = { until_ts = u, reason = r } end,
     jailGet = function(cid) return jail[cid] end,
     jailClear = function(cid) jail[cid] = nil end,
+    searchCitizens = function(term)
+        local l = {}
+        for cid, n in pairs({ CID2 = 'Suspect', CID4 = 'Civil' }) do if n:lower():find(term:lower(), 1, true) then l[#l + 1] = { citizenid = cid, firstname = n, lastname = 'X', birthdate = '1990-01-01' } end end
+        return l
+    end,
+    addWarrant = function(cid, name, reason, officer, ocid) nextW = nextW + 1 warrants[nextW] = { id = nextW, cid = cid, name = name, reason = reason, officer = officer, ocid = ocid, active = true } return nextW end,
+    hasWarrant = function(cid) for _, w in pairs(warrants) do if w.cid == cid and w.active then return true end end return false end,
+    warrantsOf = function(cid) local l = {} for _, w in pairs(warrants) do if w.cid == cid and w.active then l[#l + 1] = w end end return l end,
+    activeWarrants = function() local l = {} for _, w in pairs(warrants) do if w.active then l[#l + 1] = w end end return l end,
+    countOfficerWarrants = function(ocid) local n = 0 for _, w in pairs(warrants) do if w.ocid == ocid and w.active then n = n + 1 end end return n end,
+    closeWarrant = function(id) local w = warrants[id] if w and w.active then w.active = false return true end return false end,
+    addReport = function(t, b, o, ocid) nextR = nextR + 1 reports[nextR] = { id = nextR, title = t, body = b, officer = o, officer_cid = ocid } return nextR end,
+    reports = function() local l = {} for _, r in pairs(reports) do l[#l + 1] = r end return l end,
+    report = function(id) local r = reports[id] return r and { id = r.id, title = r.title, body = r.body, officer = r.officer, officer_cid = r.officer_cid } end,
+    deleteReport = function(id) if reports[id] then reports[id] = nil return true end return false end,
 }
-loadResource('gs_police', { R .. 'gs_police/server/main.lua' })
+loadResource('gs_police', { R .. 'gs_police/server/main.lua', R .. 'gs_police/server/dossiers.lua' })
 
 local passed, failed = 0, 0
 local function check(name, cond)
@@ -183,6 +199,45 @@ ok = cb('gs_police:action', 1, 'licence', 2, { kind = 'hunting', on = true }); s
 check('permis de chasse délivré', ok and W.players[2].licences.hunting == true)
 ok = cb('gs_police:action', 1, 'licence', 2, { kind = 'hunting', on = false }); step()
 check('permis retiré', ok and W.players[2].licences.hunting == false)
+
+-- Dossiers : recherche par nom, mandats, rapports
+W.players[1].job.grade = 1
+local ok2, list = cb('gs_police:action', 1, 'dossier_search', nil, { term = 'susp' }); step()
+check('recherche par nom', ok2 and #list == 1 and list[1].name:find('Suspect') and list[1].cid == nil)
+ok2 = cb('gs_police:action', 1, 'dossier_search', nil, { term = 'a' }); step()
+check('recherche : 2 lettres minimum', not ok2)
+ok2 = cb('gs_police:action', 4, 'dossier_search', nil, { term = 'susp' }); step()
+check('dossiers réservés à la police en service', not ok2)
+ok2, d = cb('gs_police:action', 1, 'dossier_open', nil, { index = 9 }); step()
+check('dossier : index inconnu', not ok2)
+ok2, d = cb('gs_police:action', 1, 'dossier_open', nil, { index = 1 }); step()
+check('dossier ouvert : casier + mandats', ok2 and d.name:find('Suspect') and #d.records >= 1 and #d.warrants == 0)
+ok2 = cb('gs_police:action', 1, 'warrant_add', nil, { index = 1, reason = '' }); step()
+check('mandat : motif obligatoire', not ok2)
+W.players[1].job.grade = 0
+ok2 = cb('gs_police:action', 1, 'warrant_add', nil, { index = 1, reason = 'Braquage' }); step()
+check('mandat : grade insuffisant', not ok2)
+W.players[1].job.grade = 1
+ok2 = cb('gs_police:action', 1, 'warrant_add', nil, { index = 1, reason = 'Braquage de la banque' }); step()
+check('mandat délivré', ok2 and Store.hasWarrant('CID2'))
+ok2, d = cb('gs_police:action', 1, 'identity', 2); step()
+check('identité : mandat actif signalé', ok2 and d.warrant == true)
+ok2 = cb('gs_police:action', 1, 'warrant_close', nil, { id = 1 }); step()
+check('clore : grade insuffisant', not ok2 and Store.hasWarrant('CID2'))
+W.players[1].job.grade = Config.Dossiers.closeGrade
+ok2 = cb('gs_police:action', 1, 'warrant_close', nil, { id = 1 }); step()
+check('mandat clos', ok2 and not Store.hasWarrant('CID2'))
+ok2 = cb('gs_police:action', 1, 'report_add', nil, { title = 'Course-poursuite', body = 'Deux suspects, une Sultan noire.' }); step()
+check('rapport ajouté', ok2 and #Store.reports() == 1)
+ok2 = cb('gs_police:action', 1, 'report_add', nil, { title = 'Vide', body = '' }); step()
+check('rapport vide refusé', not ok2)
+ok2, d = cb('gs_police:action', 1, 'report_read', nil, { id = 1 }); step()
+check('rapport lu : auteur sans citizenid', ok2 and d.mine == true and d.officer_cid == nil)
+join(5, 'CID5', 'Agent Cinq', here, { name = 'police', grade = 1, onduty = true }); duty[5] = 'police'
+ok2 = cb('gs_police:action', 5, 'report_delete', nil, { id = 1 }); step()
+check('rapport : un autre agent (grade bas) ne supprime pas', not ok2 and #Store.reports() == 1)
+ok2 = cb('gs_police:action', 1, 'report_delete', nil, { id = 1 }); step()
+check('rapport : l\'auteur supprime', ok2 and #Store.reports() == 0)
 
 io.write(('\n%d réussis, %d échoués\n'):format(passed, failed))
 os.exit(failed == 0 and 0 or 1)

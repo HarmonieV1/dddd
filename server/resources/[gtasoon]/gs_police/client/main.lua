@@ -100,6 +100,7 @@ local function showIdentity(id)
         end },
         { title = ('Casier : %d mention(s)'):format(d.records), icon = 'folder-open', iconColor = d.records > 0 and '#ff8a3d' or '#5aff8c',
           onSelect = function() showRecords(id) end },
+        { title = d.warrant and 'MANDAT ACTIF (voir Dossiers)' or 'Aucun mandat', icon = 'gavel', iconColor = d.warrant and '#ff4d6d' or '#6b6380', readOnly = true },
         { title = d.wanted and 'SIGNALÉ : recherché' or 'Non recherché', icon = 'triangle-exclamation', iconColor = d.wanted and '#ff4d6d' or '#6b6380', readOnly = true },
     } })
     lib.showContext('gs_police_identity')
@@ -117,6 +118,7 @@ end
 local function policeOptions()
     return {
         { title = 'Contrôle d\'identité', icon = 'id-card', onSelect = function() withTarget(showIdentity) end },
+        { title = 'Dossiers (citoyens, mandats, rapports)', icon = 'database', arrow = true, onSelect = function() GSPolice.dossiers() end },
         { title = 'Vérifier une plaque', icon = 'rectangle-list', onSelect = checkPlate },
         { title = 'Amende (facture)', icon = 'file-invoice-dollar', onSelect = function()
             withTarget(function(id)

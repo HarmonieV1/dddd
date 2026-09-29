@@ -167,6 +167,14 @@ réparation de fortune (moteur 75 %), réparation avancée (complète), nettoyag
   crédible exigé, 15 min max, 1 min entre deux boulots.
 - **Filtre Vice** : réglage du téléphone, couleurs saturées + léger vignettage (mémorisé par joueur).
 
+## V3.6 — banque et base de données police
+- **gs_bank** : distributeurs (ox_target sur les props du jeu, partout) et guichets Fleeca / Pacific / Blaine (marqueur [E], blip).
+  Menu : solde, retrait, dépôt, historique. Plafonds : distributeur 5 000 $ / opération et 15 000 $ / jour, guichet 100 000 $ / 250 000 $.
+  Virements entre joueurs : app Banque du téléphone.
+- **Dossiers LSPD** (F4 → Dossiers) : recherche d'un citoyen par nom (même hors ligne), casier, **mandats** (grade ≥ 1 pour délivrer,
+  ≥ 2 pour clore, 5 actifs max par agent), **rapports** (tous les agents lisent, l'auteur ou un gradé ≥ 3 supprime).
+  Le contrôle d'identité affiche « mandat actif ». Amendes : facture (gs_jobs), déjà en place.
+
 ## Liens entre features
 `gs_weather` → visibilité de `gs_wanted` + prix de `gs_economy` ;
 `gs_duo` → crimes vers `gs_wanted`, chaleur partagée ; `gs_jobs` → police en service pour le dispatch.

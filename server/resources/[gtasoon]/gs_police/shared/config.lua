@@ -40,3 +40,6 @@ Config.Heal = { item = 'bandage', duration = 4000 }
 
 -- Radar de vitesse (police en véhicule) : /radar
 Config.Radar = { range = 60.0, unit = 3.6 } -- 3.6 = km/h
+
+-- Base de données de la police (F4 → Dossiers) : recherche d'un citoyen par nom, mandats, rapports.
+Config.Dossiers = { warrantGrade = 1, closeGrade = 2, reportDeleteGrade = 3, maxWarrantsPerOfficer = 5, reasonMax = 200, bodyMax = 1500 }
