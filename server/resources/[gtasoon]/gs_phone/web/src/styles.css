@@ -151,3 +151,5 @@ button:disabled { opacity: .4; cursor: default; }
 .gig-pay { margin-left: auto; font-weight: 800; color: var(--green); }
 .gig-foot { display: flex; justify-content: space-between; align-items: center; }
 .card-bank .secondary { margin-top: 8px; }
+
+.vibe-race { margin-bottom: 10px; } .vibe-race > b { display: block; margin: 4px 4px 6px; font-size: 12px; }

@@ -123,6 +123,31 @@ local function openMenu()
     end
     lib.registerContext({ id = 'gs_gang_terr', title = 'Territoires', menu = 'gs_gang', options = terr })
     options[#options + 1] = { title = 'Territoires', icon = 'map', menu = 'gs_gang_terr' }
+    options[#options + 1] = { title = 'Guerres de territoire', icon = 'skull-crossbones', iconColor = '#ff4d6d', arrow = true, onSelect = function()
+        local w = lib.callback.await('gs_gangs:wars', false)
+        if not w then return result(false, 'Indisponible.') end
+        local opts = {}
+        local now = GetCloudTimeAsInt()
+        for id, war in pairs(w.wars) do
+            local left = math.max(0, (war.started and war.endsAt or war.startsAt) - now)
+            opts[#opts + 1] = { title = ('%s contre %s'):format(war.attacker, war.defender), icon = 'fire', iconColor = '#ff4d6d', readOnly = true, progress = nil,
+                description = ('%s · %d – %d · %s dans %d min'):format(Config.Territories[id].label, war.a, war.d, war.started and 'fin' or 'début', math.ceil(left / 60)) }
+        end
+        if w.canDeclare then
+            for _, t in ipairs(w.targets) do
+                opts[#opts + 1] = { title = ('Déclarer la guerre : %s'):format(t.label), description = ('Tenu par %s · frais %s $ (caisse)%s'):format(t.owner, w.cost,
+                    w.cooldown > 0 and (' · repos ' .. math.ceil(w.cooldown / 60) .. ' min') or ''), icon = 'crosshairs', disabled = t.war,
+                    onSelect = function()
+                        if lib.alertDialog({ header = 'Guerre pour ' .. t.label, content = ('Préavis de 10 min, puis 20 min de combat. Frais : %s $.'):format(w.cost), centered = true, cancel = true }) == 'confirm' then
+                            result(lib.callback.await('gs_gangs:declareWar', false, t.id))
+                        end
+                    end }
+            end
+        end
+        if #opts == 0 then opts[1] = { title = 'Aucune guerre. Aucun quartier ennemi à attaquer pour l\'instant.', icon = 'dove', readOnly = true } end
+        lib.registerContext({ id = 'gs_gang_wars', title = 'Guerres de territoire', menu = 'gs_gang', options = opts })
+        lib.showContext('gs_gang_wars')
+    end }
     options[#options + 1] = { title = 'Quitter le gang', icon = 'door-open', iconColor = '#ff2e88', onSelect = function()
         if lib.alertDialog({ header = 'Quitter le gang', content = 'Sûr ?', centered = true, cancel = true }) == 'confirm' then
             TriggerServerEvent('gs_gangs:server:leave')

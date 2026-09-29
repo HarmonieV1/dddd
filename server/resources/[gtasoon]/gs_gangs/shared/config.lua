@@ -70,3 +70,18 @@ Config.Territories = {
     sandy    = { label = 'Sandy Shores',      center = vec3(1850.0, 3700.0, 33.0),  radius = 400.0 },
     paleto   = { label = 'Paleto Bay',        center = vec3(-200.0, 6300.0, 31.0),  radius = 400.0 },
 }
+
+-- Guerres de territoire déclarées : un chef (grade avec gestion) déclare la guerre au gang qui tient un quartier.
+-- Préavis, durée, coût (caisse du gang), points par joueur adverse mis à terre dans le quartier. Le vainqueur prend le quartier.
+Config.Wars = {
+    cost = 5000,                 -- prélevé dans la caisse du gang attaquant
+    notice = 600,                -- secondes avant le début (les défenseurs sont prévenus)
+    duration = 1200,             -- secondes de guerre
+    cooldown = 21600,            -- 6 h avant qu'un gang attaquant puisse en redéclarer une
+    defenderCooldown = 3600,     -- 1 h de répit pour le défenseur après une guerre
+    minAttackers = 2, minDefenders = 1,   -- membres en ligne requis à la déclaration
+    killPoints = 3, winMargin = 3,        -- points par joueur mis à terre ; écart minimal pour l'emporter
+    hitWindow = 15,              -- secondes entre le dernier coup reçu et la chute pour compter
+    victimCooldown = 60,         -- une même victime ne rapporte qu'une fois par minute
+    winInfluence = 65,           -- influence du vainqueur sur le quartier (dépasse le seuil de 50)
+}

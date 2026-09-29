@@ -45,6 +45,7 @@ Config.Daily = {
         { id = 'playtime', label = 'Passe 30 minutes en ville', goal = 30 },
         { id = 'drug_sale', label = 'Réussis 3 ventes discrètes', goal = 3 },
         { id = 'heist', label = 'Récupère un butin de braquage', goal = 1 },
+        { id = 'race', label = 'Termine une course de rue', goal = 1 },
         { id = 'harvest', label = 'Pêche, mine, coupe du bois ou chasse (5 fois)', goal = 5 },
     },
 }

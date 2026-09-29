@@ -60,7 +60,8 @@ lib.callback.register('gs_social:top', function(src)
         for h, n in pairs(Neon.followers) do if n > 0 then fol[#fol + 1] = { handle = h, followers = n } end end
         table.sort(fol, function(a, b) return a.followers > b.followers or (a.followers == b.followers and a.handle < b.handle) end)
         for i = #fol, Config.TopSize + 1, -1 do fol[i] = nil end
-        local out = { posts = {}, creators = {}, followers = fol }
+        local out = { posts = {}, creators = {}, followers = fol,
+            races = GetResourceState('gs_races') == 'started' and exports.gs_races:GetTop(3) or {} }
         for i, p in ipairs(posts) do out.posts[i] = { id = p.id, handle = p.handle, content = p.content, likes = p.likes, time = p.time, badge = Neon.badge(p.handle) } end
         for i, c in ipairs(creators) do out.creators[i] = { handle = c.handle, likes = tonumber(c.likes) or 0, posts = tonumber(c.posts) or 0, badge = Neon.badge(c.handle) } end
         for _, f in ipairs(fol) do f.badge = Neon.badge(f.handle) end

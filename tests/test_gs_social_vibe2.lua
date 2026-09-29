@@ -1,6 +1,7 @@
 -- Tests Vibe 2 : profils publics (sans citizenid), abonnements, badge vérifié (modération), influenceur, classements.
 dofile('tests/mock.lua')
 local R = 'server/resources/[gtasoon]/'
+provide('gs_races', { GetTop = function() return { { id = 'sprint', label = 'Sprint', top = { { name = 'Jason N.', time = '6:41.220' } } } } end })
 loadResource('gs_security', { R .. 'gs_security/server/main.lua' })
 loadResource('gs_social', { R .. 'gs_social/shared/config.lua' })
 local profiles, follows, verified = { CID1 = 'lucia', CID2 = 'jason' }, {}, {}
@@ -72,6 +73,7 @@ check('top : posts, créateurs, abonnés triés', top and #top.posts == 1 and to
     and top.followers[1].handle == 'lucia' and top.followers[2].handle == 'jason')
 cb('gs_social:top', 2); step()
 check('top : cache (une seule requête)', weekQueries == 1)
+check('top : classement des courses', top.races and top.races[1].top[1].time == '6:41.220')
 
 io.write(('\n%d réussis, %d échoués\n'):format(passed, failed))
 os.exit(failed == 0 and 0 or 1)

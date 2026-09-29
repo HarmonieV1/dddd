@@ -175,6 +175,16 @@ réparation de fortune (moteur 75 %), réparation avancée (complète), nettoyag
   ≥ 2 pour clore, 5 actifs max par agent), **rapports** (tous les agents lisent, l'auteur ou un gradé ≥ 3 supprime).
   Le contrôle d'identité affiche « mandat actif ». Amendes : facture (gs_jobs), déjà en place.
 
+## V3.7 — courses de rue classées, guerres de territoire
+- **gs_races** : 3 circuits (points à caler en jeu). **Chrono solo** ou **course à mise** (500 $ liquide, 45 s pour rejoindre, ≥ 2 pilotes ;
+  cagnotte − 10 %, répartie 70/30 à 2, 60/30/10 à 3+). Le serveur chronomètre et valide chaque point (ordre, position, vitesse crédible,
+  au volant). Mise remboursée si moins de 2 pilotes ou pilote hors ligne. Une course à plusieurs peut être signalée à la police.
+  **Classement par circuit** dans Vibe → Top semaine → « Courses de rue ».
+- **Guerres de territoire** (gs_gangs, menu F9 → Guerres) : un cadre déclare la guerre au gang qui tient un quartier (5 000 $ de la caisse,
+  2 membres en ligne min., 1 en face). Préavis 10 min (police prévenue), puis 20 min : chaque adversaire mis à terre dans le quartier
+  rapporte 3 points (détection serveur : coup d'arme + état « à terre »). Écart ≥ 3 : l'attaquant prend le quartier, sinon le défenseur le garde.
+  Repos : 6 h pour l'attaquant, 1 h pour le défenseur.
+
 ## Liens entre features
 `gs_weather` → visibilité de `gs_wanted` + prix de `gs_economy` ;
 `gs_duo` → crimes vers `gs_wanted`, chaleur partagée ; `gs_jobs` → police en service pour le dispatch.

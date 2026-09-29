@@ -15,6 +15,8 @@ const DEMO_TOP = {
   posts: [{ id: 3, handle: 'vice_lucia', content: 'Coucher de soleil sur Vespucci, la ville est à nous ce soir 🌴', likes: 12, time: now() - 120, badge: 'influencer' }],
   creators: [{ handle: 'vice_lucia', likes: 58, posts: 9, badge: 'influencer' }, { handle: 'lspd_officiel', likes: 21, posts: 4, badge: 'verified' }],
   followers: [{ handle: 'vice_lucia', followers: 31, badge: 'influencer' }, { handle: 'lspd_officiel', followers: 12, badge: 'verified' }],
+  races: [{ id: 'sprint', label: 'Sprint centre-ville', top: [{ name: '@vice_lucia', time: '6:41.220' }, { name: 'Jason N.', time: '6:58.870' }] },
+    { id: 'boucle', label: 'Boucle des plages', top: [] }],
 }
 const demo = (op, body) => {
   if (op === 'top') return DEMO_TOP
@@ -161,6 +163,14 @@ export default function Vibe({ onBack }) {
             <h4 className="vibe-section">🏆 Créateurs les plus aimés (7 jours)</h4>
             {top.creators.map((c, i) => (
               <div key={c.handle} className="vibe-rank"><span className="vibe-pos">{i + 1}</span><Author h={c.handle} badge={c.badge} /><span className="muted small">♥ {c.likes} · {c.posts} post{c.posts > 1 ? 's' : ''}</span></div>
+            ))}
+            {top.races?.length > 0 && <h4 className="vibe-section">🏁 Courses de rue</h4>}
+            {top.races?.map((r) => (
+              <div key={r.id} className="vibe-race">
+                <b>{r.label}</b>
+                {r.top.length === 0 && <span className="muted small">Aucun temps</span>}
+                {r.top.map((t, i) => <div key={i} className="vibe-rank"><span className="vibe-pos">{i + 1}</span><b>{t.name}</b><span className="muted small">{t.time}</span></div>)}
+              </div>
             ))}
             <h4 className="vibe-section">⭐ Plus suivis</h4>
             {top.followers.map((f, i) => (

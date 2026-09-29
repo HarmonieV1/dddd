@@ -208,6 +208,20 @@ local function resolveOwner(id, t)
     end
 end
 
+--- Fin de guerre : le vainqueur prend (ou garde) le quartier avec une influence confortable, les autres perdent du terrain.
+function Gangs.awardTerritory(id, gang)
+    local t = Gangs.territories[id]
+    if not t or not Gangs.list[gang] then return false end
+    for g, v in pairs(t.influence) do
+        if g ~= gang then local n = clamp(v - 30) t.influence[g] = n > 0 and n or nil end
+    end
+    t.influence[gang] = clamp(math.max(t.influence[gang] or 0, Config.Wars.winInfluence))
+    resolveOwner(id, t)
+    Gangs.dirty = true
+    publish()
+    return true
+end
+
 --- Tick d'influence : présence des membres, présence policière, déclin des absents.
 function Gangs.tick()
     local presence, police = {}, {}
