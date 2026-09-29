@@ -193,6 +193,7 @@ Log 'Qbox installé.' 'Green'
 Log "`n[3/4] Branchement GTA SOON" 'Cyan'
 $Res = Join-Path $Data 'resources'
 Copy-Item -LiteralPath (Join-Path $Repo 'server\resources\[gtasoon]') -Destination $Res -Recurse -Force
+if (-not (Test-Path -LiteralPath (Join-Path $Res '[addons]'))) { Copy-Item -LiteralPath (Join-Path $Repo 'server\resources\[addons]') -Destination $Res -Recurse -Force }
 [void][IO.Directory]::CreateDirectory((Join-Path $Data 'cfg'))
 Get-ChildItem -LiteralPath (Join-Path $Repo 'server\cfg') -File | Where-Object { $_.Name -ne 'secrets.cfg' } |
     ForEach-Object { Copy-Item -LiteralPath $_.FullName -Destination (Join-Path $Data 'cfg') -Force }

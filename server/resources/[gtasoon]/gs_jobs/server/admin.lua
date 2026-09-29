@@ -3,6 +3,35 @@ exports('AdminAddContract', function(cid, job, grade, name) return GSJ.addMember
 exports('AdminRemoveContract', function(cid, job) return GSJ.removeMembership(cid, job) end)
 exports('AdminSetGrade', function(cid, job, grade) return GSJ.setMembershipGrade(cid, job, grade) end)
 
+--- Staff (tests) : contrat créé ou regradé si besoin, puis job actif (hors service). Retourne ok, err.
+exports('AdminSetActive', function(src, job, grade)
+    local m = Members[src]
+    if not m then return false, 'not_loaded' end
+    grade = tonumber(grade) or 0
+    if not Jobs[job] or not Jobs[job].grades[grade] then return false, 'invalid' end
+    local ok, err = true, nil
+    if m.jobs[job] == nil then ok, err = GSJ.addMembership(m.cid, job, grade, Bridge:GetName(src))
+    elseif m.jobs[job] ~= grade then ok, err = GSJ.setMembershipGrade(m.cid, job, grade) end
+    if not ok then return false, err end
+    GSJ.endService(src)
+    Bridge:SetJob(src, job, grade)
+    Bridge:SetDuty(src, false)
+    return true
+end)
+
+--- { { name, label, grades = { { grade, label } } } } triés (menus staff).
+exports('ListJobs', function()
+    local list = {}
+    for name, j in pairs(Jobs) do
+        local grades = {}
+        for g, d in pairs(j.grades) do grades[#grades + 1] = { grade = g, label = d.label } end
+        table.sort(grades, function(a, b) return a.grade < b.grade end)
+        list[#list + 1] = { name = name, label = j.label, grades = grades }
+    end
+    table.sort(list, function(a, b) return a.label < b.label end)
+    return list
+end)
+
 -- /gsjob <add|remove|grade|list> <id> [job] [grade] : gestion staff. ACE : group.admin (auto par ox_lib).
 -- Remplace le /setjob du framework : passer par ici pour garder les contrats cohérents.
 local function reply(src, msg, ntype)

@@ -105,6 +105,7 @@ lib.callback.register('gs_jobs:mission:step', function(src)
         Cooldown[src] = os.time() + Config.Missions.cooldown
         DB.audit('mission', m.job, GSJ.cid(src), nil, m.earned, ('%d étapes, %.1f km'):format(#m.steps, m.distance / 1000))
         TriggerClientEvent('gs_jobs:client:missionEnd', src, 'done', m.earned)
+        if GetResourceState('gs_quests') == 'started' then exports.gs_quests:Reward(src, 'job_mission') end
         return true
     end
     m.index = m.index + 1

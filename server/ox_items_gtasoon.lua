@@ -10,3 +10,7 @@
 ['copper'] = { label = 'Cuivre', weight = 500, stack = true },
 ['weed_leaf'] = { label = 'Feuille de cannabis', weight = 50, stack = true },
 ['weed_bag'] = { label = 'Sachet de cannabis', weight = 20, stack = true },
+['coca_leaf'] = { label = 'Feuille de coca', weight = 50, stack = true },
+['coke_bag'] = { label = 'Pochon de cocaïne', weight = 20, stack = true },
+['gs_parcel'] = { label = 'Colis', weight = 800, stack = true, description = 'Objet de quête' },
+['gs_envelope'] = { label = 'Enveloppe', weight = 20, stack = true, description = 'Objet de quête' },

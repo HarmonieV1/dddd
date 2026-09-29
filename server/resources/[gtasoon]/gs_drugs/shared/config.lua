@@ -19,6 +19,26 @@ Config.Drugs = {
         },
         sell = { item = 'weed_bag', price = { 70, 120 } },
     },
+    coke = {
+        label = 'Cocaïne',
+        harvest = {
+            item = 'coca_leaf', amount = { 1, 2 }, duration = 6000, radius = 30.0,
+            center = vec3(2434.0, 4968.0, 46.8),                 -- serre de la ferme de Grapeseed (à caler)
+            points = { vec3(2432.0, 4966.0, 46.8), vec3(2437.0, 4970.0, 46.8), vec3(2429.0, 4971.0, 46.8) },
+        },
+        process = {
+            input = 'coca_leaf', inputCount = 4, output = 'coke_bag', outputCount = 1, duration = 12000, radius = 3.0,
+            center = vec3(1093.0, -3196.0, -39.0),               -- labo (intérieur du jeu, à caler)
+        },
+        sell = { item = 'coke_bag', price = { 160, 240 } },
+    },
+}
+
+-- Mode deal (/deal) : des passants viennent à toi quand tu attends à un coin de rue.
+Config.Deal = {
+    interval = { 20, 40 },        -- secondes entre deux clients
+    searchRadius = 45.0,          -- les clients viennent d'aussi loin
+    wait = 25,                    -- secondes pendant lesquelles le client attend à côté de toi
 }
 
 Config.Sell = {

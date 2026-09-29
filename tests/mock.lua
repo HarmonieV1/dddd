@@ -160,7 +160,20 @@ provide('gs_bridge', {
     GiveVehicle = function(src, model) if model == "casse" then return false end W.players[src].vehicles = (W.players[src].vehicles or 0) + 1 return true end,
     GiveVehicleKeys = function() return true end,
     Notify = function(src, msg, t) W.notes[src] = { msg = msg, type = t } end,
+    GetGender = function(src) return W.players[src] and (W.players[src].gender or 'male') end,
+    ListItems = function() return { { name = 'sandwich', label = 'Sandwich' } } end,
+    CreateDrop = function(items, coords) W.drops = W.drops or {} W.drops[#W.drops + 1] = { items = items, coords = coords } return true end,
+    SpawnVehicle = function(src, model, vtype, c, heading, plate, warp)
+        if model == 'casse' then return 0 end
+        local veh = CreateVehicleServerSetter(model, vtype, c.x, c.y, c.z, heading)
+        W.entities[veh].model, W.entities[veh].plate, W.entities[veh].driver = model, plate, warp and src or nil
+        return veh
+    end,
 })
+
+-- gs_quests simulé : XP reçue par activité (les tests de gs_quests chargent la vraie ressource)
+provide('gs_quests', { Reward = function(src, activity) W.rewards = W.rewards or {} W.rewards[#W.rewards + 1] = { src = src, activity = activity } return 1 end,
+    AddXP = function() return 1 end, GetLevel = function() return 1 end })
 
 -- BDD simulée (même API que gs_jobs/server/db.lua) ---------------------------------------------
 function mockDB()
@@ -240,6 +253,7 @@ function GetPlayers() local l = {} for s in pairs(W.players) do l[#l + 1] = tost
 function GetSelectedPedWeapon(ped) return W.players[ped - 1000].weapon or joaat('WEAPON_UNARMED') end
 function GetVehiclePedIsIn(ped) return W.players[ped - 1000].vehicle or 0 end
 function GetEntityModel(ent) return W.entities[ent].model or 0 end
+function GetEntityHeading() return 90.0 end
 --- Ajoute `n` PNJ vivants autour de `pos`.
 function spawnPeds(pos, n)
     for i = 1, n do

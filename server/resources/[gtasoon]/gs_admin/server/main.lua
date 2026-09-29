@@ -16,7 +16,7 @@ Admin = {
 
 local function started(res) return GetResourceState(res) == 'started' end
 
---- Niveau staff : 0 (joueur), 1 helper, 2 modo, 3 admin.
+--- Niveau staff : 0 (joueur), 1 helper, 2 modo, 3 admin, 4 fondateur.
 function Admin.level(src)
     if type(src) ~= 'number' or src <= 0 then return 0 end
     for lvl = #Config.Aces, 1, -1 do
@@ -286,13 +286,36 @@ Actions.removemoney = { level = 3, target = true, run = function(_, target, data
     return ('-%d $ (%s)'):format(amount, account)
 end }
 
-Actions.giveitem = { level = 3, target = true, run = function(_, target, data)
+local function itemOf(data)
     local item = need(type(data.item) == 'string' and data.item:match('^[%w_]+$') and data.item, 'Item invalide.')
-    need(Bridge:ItemExists(item), 'Item inconnu d\'ox_inventory.')
+    return need(Bridge:ItemExists(item) and item, 'Item inconnu d\'ox_inventory.')
+end
+
+-- Motif obligatoire, sauf pour le fondateur (menu rapide).
+local function reasonUnlessFounder(src, data) if Admin.level(src) < 4 then reasonOf(data) end end
+
+Actions.giveitem = { level = 3, target = true, run = function(src, target, data)
+    local item = itemOf(data)
     local count = amountOf(data, Config.Give.maxItems)
-    reasonOf(data)
+    reasonUnlessFounder(src, data)
     need(Bridge:AddItem(target, item, count), 'Inventaire plein.')
     return ('+%d %s'):format(count, item)
+end }
+
+Actions.removeitem = { level = 4, target = true, run = function(_, target, data)
+    local item = itemOf(data)
+    local have = Bridge:GetItemCount(target, item)
+    need(have > 0, 'Il n\'en a pas.')
+    local count = math.min(amountOf(data, Config.Give.maxItems), have)
+    need(Bridge:RemoveItem(target, item, count), 'Échec.')
+    return ('-%d %s'):format(count, item)
+end }
+
+Actions.dropitem = { level = 4, duty = true, run = function(src, _, data)
+    local item = itemOf(data)
+    local count = amountOf(data, Config.Give.maxItems)
+    need(Bridge:CreateDrop({ { item, count } }, GetEntityCoords(GetPlayerPed(src))), 'Échec du dépôt.')
+    return ('%d %s posés au sol'):format(count, item)
 end }
 
 Actions.addjob = { level = 3, target = true, run = function(_, target, data)
@@ -306,6 +329,59 @@ Actions.removejob = { level = 3, target = true, run = function(_, target, data)
     local ok, err = JobsApi:AdminRemoveContract(need(Bridge:GetIdentifier(target), 'Perso introuvable.'), tostring(data.job))
     need(ok, 'Refusé : ' .. tostring(err))
     return 'Contrat ' .. data.job .. ' retiré'
+end }
+
+-- Menu rapide : pouvoirs (appliqués par le client après accord), métier / gang de test, véhicules --------
+
+Actions.power = { level = 1, duty = true, run = function(src, _, data)
+    local min = need(Config.Powers[data.power], 'Pouvoir inconnu.')
+    need(Admin.level(src) >= min, 'Niveau insuffisant.')
+    if data.power == 'animal' and data.model then
+        local ok = false
+        for _, a in ipairs(Config.Animals) do if a.model == data.model then ok = true end end
+        need(ok, 'Animal inconnu.')
+    end
+    return ('%s %s'):format(data.power, data.model or (data.on == false and 'OFF' or 'ON'))
+end }
+
+Actions.spectate = { level = 2, duty = true, target = true, run = function(src, target)
+    need(target ~= src, 'Tu ne peux pas te regarder toi-même.')
+    TriggerClientEvent('gs_admin:client:spectate', src, target, GetEntityCoords(GetPlayerPed(target)))
+    return 'Spectate'
+end }
+
+Actions.setjob = { level = 3, target = true, run = function(_, target, data)
+    local ok, err = JobsApi:AdminSetActive(target, tostring(data.job), tonumber(data.grade) or 0)
+    need(ok, 'Refusé : ' .. tostring(err))
+    return ('Job actif %s grade %s'):format(data.job, data.grade or 0)
+end }
+
+Actions.setgang = { level = 3, target = true, run = function(_, target, data)
+    need(started('gs_gangs'), 'gs_gangs non démarré.')
+    local gang = data.gang ~= 'none' and tostring(data.gang) or nil
+    local ok, err = exports.gs_gangs:AdminSetGang(target, gang, tonumber(data.grade) or 0)
+    need(ok, 'Refusé : ' .. tostring(err))
+    return gang and ('Gang %s grade %s'):format(gang, data.grade or 0) or 'Retiré de son gang'
+end }
+
+local VEH_TYPES = { automobile = true, bike = true, boat = true, heli = true, plane = true }
+
+Actions.spawnveh = { level = 3, duty = true, run = function(src, _, data)
+    local model = need(type(data.model) == 'string' and #data.model <= 30 and data.model:match('^[%w_]+$') and data.model:lower(), 'Modèle invalide.')
+    local vtype = need(VEH_TYPES[data.vtype] and data.vtype, 'Type de véhicule invalide.')
+    local ped = GetPlayerPed(src)
+    local c = GetEntityCoords(ped)
+    local veh = Bridge:SpawnVehicle(src, model, vtype, c, GetEntityHeading(ped), 'STAFF', true)
+    need(veh and veh ~= 0, 'Création impossible.')
+    return 'Véhicule ' .. model
+end }
+
+Actions.delveh = { level = 2, duty = true, run = function(src, _, data)
+    local veh = NetworkGetEntityFromNetworkId(tonumber(data.netId) or 0)
+    need(veh and veh ~= 0 and DoesEntityExist(veh) and GetEntityType(veh) == 2, 'Aucun véhicule.')
+    need(#(GetEntityCoords(veh) - GetEntityCoords(GetPlayerPed(src))) <= Config.Vehicle.maxDeleteDistance + 3.0, 'Trop loin.')
+    DeleteEntity(veh)
+    return 'Véhicule supprimé'
 end }
 
 Actions.announce = { level = 3, run = function(_, _, data)
@@ -358,6 +434,7 @@ function Admin.run(src, name, target, data)
         Security:LogStaff(('[Staff] %s a tenté %s sans le niveau requis'):format(label(src), name))
         return false, 'Niveau insuffisant.'
     end
+    if action.duty and not Admin.onDuty[src] then return false, 'Active d\'abord le mode staff.' end
     data = type(data) == 'table' and data or {}
     target = tonumber(target)
     if action.target then
@@ -404,6 +481,25 @@ lib.callback.register('gs_admin:open', function(src)
     }
 end)
 
+--- Menu rapide : ce que ce staff peut faire (le client n'affiche que ça ; le serveur revérifie tout).
+lib.callback.register('gs_admin:quick', function(src)
+    if not staffGuard(src, 'quick', 10, 10000) then return nil end
+    local lvl = Admin.level(src)
+    local players = {}
+    for _, p in ipairs(Admin.playerList()) do players[#players + 1] = { id = p.id, name = p.name } end
+    return {
+        level = lvl, levelName = Config.LevelNames[lvl], me = src, onDuty = Admin.onDuty[src] ~= nil, players = players,
+        jobs = lvl >= 3 and JobsApi:ListJobs() or {},
+        gangs = lvl >= 3 and started('gs_gangs') and exports.gs_gangs:ListGangs() or {},
+    }
+end)
+
+--- Liste des items (fondateur) : pour le menu « Items ».
+lib.callback.register('gs_admin:items', function(src)
+    if not staffGuard(src, 'items', 5, 10000) or Admin.level(src) < 4 then return nil end
+    return Bridge:ListItems()
+end)
+
 lib.callback.register('gs_admin:dossier', function(src, target)
     if not staffGuard(src, 'dossier', 20, 10000) then return nil end
     target = tonumber(target)
@@ -422,6 +518,7 @@ lib.callback.register('gs_admin:toggleDuty', function(src)
         local minutes = math.floor((os.time() - Admin.onDuty[src]) / 60)
         Admin.onDuty[src] = nil
         Admin.log(src, 'staff_off', nil, minutes .. ' min de service')
+        TriggerClientEvent('gs_admin:client:powersOff', src)
         return false
     end
     Admin.onDuty[src] = os.time()

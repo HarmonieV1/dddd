@@ -49,6 +49,13 @@ local function GetName(src)
     return ('%s %s'):format(ci.firstname, ci.lastname)
 end
 
+--- 'male' | 'female' (charinfo.gender Qbox : 0 = homme, 1 = femme). [API]
+local function GetGender(src)
+    local p = GetPlayer(src)
+    if not p then return nil end
+    return tonumber(p.PlayerData.charinfo.gender) == 1 and 'female' or 'male'
+end
+
 -- Jobs ---------------------------------------------------------------------------
 
 ---@return { name: string, label: string, grade: number, onduty: boolean }|nil
@@ -179,11 +186,42 @@ local function RegisterStash(id, label, slots, weight, groups, coords)
     return ok
 end
 
+--- Liste triée { name, label } de tous les items ox_inventory (menus staff). [API]
+local function ListItems()
+    local list = {}
+    local ok, items = pcall(function() return OX:Items() end)
+    if not ok or type(items) ~= 'table' then return list end
+    for name, it in pairs(items) do list[#list + 1] = { name = name, label = it.label or name } end
+    table.sort(list, function(a, b) return a.label < b.label end)
+    return list
+end
+
+--- Dépôt au sol ramassable par tous. items = { { name, count }, ... }. [API] ox_inventory CustomDrop
+local function CreateDrop(items, coords)
+    local ok, err = pcall(function() OX:CustomDrop('Dépôt', items, coords) end)
+    if not ok then print(('[gs_bridge] CreateDrop a échoué : %s'):format(err)) end
+    return ok
+end
+
 -- Véhicules ----------------------------------------------------------------------
 
 local function GiveVehicleKeys(src, vehicle)
     if GetResourceState('qbx_vehiclekeys') ~= 'started' then return false end
     return (pcall(function() exports.qbx_vehiclekeys:GiveKeys(src, vehicle) end)) -- [API]
+end
+
+local VEHICLE_TYPES = { automobile = true, bike = true, boat = true, heli = true, plane = true, submarine = true, trailer = true, train = true }
+
+--- Véhicule temporaire (location, quête, staff) créé côté serveur, clés données, joueur placé dedans si warp.
+--- Retourne l'entité (0 si échec). La plaque est `plate` (8 caractères max).
+local function SpawnVehicle(src, model, vtype, coords, heading, plate, warp)
+    if type(model) ~= 'string' or not VEHICLE_TYPES[vtype or 'automobile'] then return 0 end
+    local veh = CreateVehicleServerSetter(GetHashKey(model), vtype or 'automobile', coords.x, coords.y, coords.z, heading or 0.0)
+    if not veh or veh == 0 then return 0 end
+    if plate then SetVehicleNumberPlateText(veh, plate:sub(1, 8)) end
+    if warp then TaskWarpPedIntoVehicle(GetPlayerPed(src), veh, -1) end
+    GiveVehicleKeys(src, veh)
+    return veh
 end
 
 --- Véhicule possédé ajouté au garage du personnage (boutique, récompenses). Retourne true si créé.
@@ -231,6 +269,10 @@ exports('GetPlayers', GetPlayers)
 exports('GetIdentifier', GetIdentifier)
 exports('GetSourceByIdentifier', GetSourceByIdentifier)
 exports('GetName', GetName)
+exports('GetGender', GetGender)
+exports('ListItems', ListItems)
+exports('CreateDrop', CreateDrop)
+exports('SpawnVehicle', SpawnVehicle)
 exports('GetJob', GetJob)
 exports('IsOnDuty', IsOnDuty)
 exports('SetJob', SetJob)

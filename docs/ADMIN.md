@@ -18,8 +18,25 @@
 - **Transparence** : avertissements, isolements, expulsions **et bans/warns/kicks txAdmin** publiés sur un salon public (`gs_webhook_sanctions`), staff anonyme.
 - **Journal** : toutes les actions staff en BDD (`gs_admin_log`) + webhook staff + onglet Journal (modo+).
 
+## Menu staff rapide (F11) — V2
+
+Menu classique en haut à droite : **flèches** pour naviguer, **Entrée** pour valider, **gauche/droite** pour les
+listes (grade, animal), **Retour** pour revenir. Les pouvoirs ne marchent **qu'en mode staff** (1re ligne),
+et le couper coupe tout : vol, invisibilité, invincibilité, animal, spectate.
+
+| Fonction | Niveau |
+|---|---|
+| Mode staff, noms et ID au-dessus des joueurs, aller à un joueur, copier ses coordonnées | Helper |
+| Vol libre, invisible, invincible, se transformer en animal, TP au marqueur, spectate, amener, soigner, figer, supprimer un véhicule | Modérateur |
+| Se mettre (ou mettre un joueur) un **métier et un grade**, dans un **gang**, faire apparaître un véhicule | Admin |
+| **Items** : donner, retirer, poser au sol (sans motif) | Fondateur (`group.god`) |
+
+Chaque action est revérifiée par le serveur (niveau, mode staff, cible) et journalisée (F10 → Journal, webhook staff).
+Vol libre : ZQSD, Espace/Ctrl pour monter/descendre, Shift vite, Alt lent. Spectate : Retour pour arrêter.
+
 ## Donner les droits
-Dans `cfg/secrets.cfg` : `add_principal identifier.license:XXXX group.helper` (ou `group.mod`, `group.admin`).
+Dans `cfg/secrets.cfg` : `add_principal identifier.license:XXXX group.helper` (ou `group.mod`, `group.admin`, `group.god` = fondateur).
+Le plus simple pour toi : `DEVENIR-ADMIN.bat` (te met en `group.god`).
 Hiérarchie : god > admin > mod > helper (chaque groupe hérite du précédent, voir `cfg/permissions.cfg`).
 
 ## Tests

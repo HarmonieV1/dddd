@@ -81,6 +81,16 @@ check('payé en argent sale au prix minimum', W.players[1].items.black_money == 
 check('vente signalable (témoins)', reports >= 1)
 ok = sellTo(1)
 check('même PNJ : une seule fois', not ok)
+check('XP de vente accordée', W.rewards and W.rewards[#W.rewards].activity == 'drug_sale')
+W.players[1].items.coke_bag = 2
+at(2)
+ok = cb('gs_drugs:sell', 1, peds[2], 'coke'); advance(7000)
+check('produit choisi : cocaïne vendue, pas le cannabis', ok and W.players[1].items.coke_bag == 1 and W.players[1].items.weed_bag == 19)
+at(3)
+W.players[1].items.coke_bag = 0
+ok = cb('gs_drugs:sell', 1, peds[3], 'coke'); advance(7000)
+check('produit choisi absent : refusé', not ok and W.players[1].items.weed_bag == 19)
+Entity(peds[3]).state:set('gsSold', nil)
 at(1)
 ok = cb('gs_drugs:sell', 1, peds[12]); advance(7000)
 check('PNJ trop loin : refusé', not ok)
@@ -91,7 +101,7 @@ check('impossible de « vendre » à un joueur', not ok)
 
 -- Saturation : chaque vente fait baisser le prix dans le quartier
 local sat = Drugs.saturation('grove')
-check('saturation après 1 vente', math.abs(sat - (1 - Config.Sell.saturationStep)) < 1e-9)
+check('saturation après 2 ventes', math.abs(sat - (1 - 2 * Config.Sell.saturationStep)) < 1e-9)
 for _ = 1, 30 do table.insert(Drugs.sales.grove, os.time()) end
 check('saturation plafonnée', Drugs.saturation('grove') == Config.Sell.saturationFloor)
 advance((Config.Sell.saturationWindow + 10) * 1000)
@@ -135,9 +145,9 @@ ok, msg = cb('gs_drugs:sell', 1, peds[9])
 check('rate-limit des ventes', not ok and msg:find('Doucement'))
 
 -- Items manquants → drogue désactivée
-Config.Drugs.coke = { harvest = { item = 'introuvable' }, process = { output = 'x' }, sell = { item = 'y' } }
+Config.Drugs.fake = { harvest = { item = 'introuvable' }, process = { output = 'x' }, sell = { item = 'y' } }
 Drugs.init()
-check('item manquant : drogue désactivée', not Drugs.enabled.coke)
+check('item manquant : drogue désactivée', not Drugs.enabled.fake and Drugs.enabled.coke)
 
 io.write(('\n%d réussis, %d échoués\n'):format(passed, failed))
 os.exit(failed == 0 and 0 or 1)

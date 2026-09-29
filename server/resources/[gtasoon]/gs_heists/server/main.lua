@@ -99,6 +99,7 @@ lib.callback.register('gs_heists:finish', function(src)
 
     local amount = math.floor(math.random(site.reward[1], site.reward[2]) * Heists.multiplier(src, site))
     local loot = giveLoot(src, amount)
+    if started('gs_quests') then exports.gs_quests:Reward(src, 'heist') end
     local remaining = 0
     for i in ipairs(site.points) do if not session.done[i] then remaining = remaining + 1 end end
     if remaining == 0 then endSession(p.id) end

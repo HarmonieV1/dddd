@@ -54,7 +54,7 @@ Soleil couchant rétro, titre néon, astuces tournantes (FR), touches utiles, vr
   × quartier tenu par ton gang (+ influence gagnée). Durée d'action vérifiée serveur (impossible de sauter la barre).
 - Staff : `/braquages` (état, cooldowns).
 
-## gs_drugs — drogue (cannabis, extensible)
+## gs_drugs — drogue (cannabis, cocaïne, extensible)
 - **Boucle** : récolte au champ (Grapeseed) → préparation (Sandy Shores, 3 feuilles → 1 sachet) → vente aux passants (ox_target « Proposer quelque chose »).
 - **Vente** : 1 fois par PNJ (state bag serveur), prix calculé serveur :
   × nuit, × quartier (ton gang +20 %, rival −15 %), × **saturation** (−4 % par vente récente dans le quartier, plancher 55 %, se remet en 1 h).
@@ -66,6 +66,31 @@ Soleil couchant rétro, titre néon, astuces tournantes (FR), touches utiles, vr
   ['weed_bag']  = { label = 'Sachet de cannabis', weight = 20, stack = true },
   -- ['black_money'] existe déjà dans ox_inventory (argent sale)
   ```
+
+## gs_quests — progression et quêtes de départ (V2, F5 / `/progression`)
+- **XP et niveaux** (1 → 50) : quêtes, missions de métier, braquages, ventes de drogue. Chaque niveau rapporte un bonus en banque.
+  Les annonces plein écran (« NIVEAU 4 », « MISSION RÉUSSIE ») sont faites façon anciens GTA.
+- **Personnages récurrents** repérables au **losange vert** au-dessus de la tête (façon Sims) : Max le Guide (mairie),
+  Big Sal (chaîne **homme**), Mama Rosa (chaîne **femme**), Lenny, Kiki Starlight, DJ Nova, le Contact du port,
+  et **la Voix** (cabine téléphonique, dès le niveau 3).
+- Types d'étapes : aller à, conduire (chrono), livrer, ramasser, parler. Tout est vérifié par le serveur ; le véhicule
+  et les items prêtés sont repris à la fin, à l'abandon ou à la déconnexion.
+- **20 paquets cachés** sur la carte : +50 XP chacun, et 2 500 XP + 5 000 $ quand on les a tous.
+- Autres ressources : `exports.gs_quests:Reward(src, 'job_mission' | 'drug_sale' | 'heist')` ou `AddXP(src, n, raison)`.
+
+## gs_rental — location de véhicules (V2)
+- 5 comptoirs (mairie, Legion Square, Del Perro, Sandy Shores, Paleto) signalés par un blip et un cercle au sol.
+- BMX 15 $, vélo 20 $, scooter 45 $, mini citadine 90 $, petite décapotable 140 $ : 30 à 60 min, une location à la fois.
+  Le véhicule est rendu à n'importe quel comptoir et récupéré à l'échéance (avec un délai de grâce si le joueur est encore dedans).
+
+## gs_markers — marqueurs unifiés (V2)
+Un seul fil pour tous les cercles au sol et icônes (location, quêtes, entrées, commerces, métiers) : 0 coût loin des points.
+`exports.gs_markers:Add(id, { coords, style = 'rental' | 'quest' | 'entry' | 'shop' | 'job' | 'objective', label })`.
+
+## gs_drugs (V2) — vente directe et mode deal
+- Viser un passant (ox_target) → **Proposer quelque chose**. Si tu as plusieurs produits, tu choisis lequel.
+  L'échange est animé (main à main).
+- **`/deal`** : reste à un coin de rue, des passants viennent à toi toutes les 20 à 40 s. Le mode se coupe si tu montes en véhicule.
 
 ## Liens entre features
 `gs_weather` → visibilité de `gs_wanted` + prix de `gs_economy` ;

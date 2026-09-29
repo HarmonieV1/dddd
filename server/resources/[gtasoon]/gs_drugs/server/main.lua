@@ -100,7 +100,7 @@ function Drugs.quote(src, drug, coords)
     return math.max(1, unit), refuse
 end
 
-lib.callback.register('gs_drugs:sell', function(src, netId)
+lib.callback.register('gs_drugs:sell', function(src, netId, drugId)
     if not Security:RateLimit(src, 'gs_drugs:sell', 1, 6000) then return false, 'Doucement, les clients se méfient.' end
     local ped = NetworkGetEntityFromNetworkId(tonumber(netId) or 0)
     if not ped or ped == 0 or not DoesEntityExist(ped) or GetEntityType(ped) ~= 1 or IsPedAPlayer(ped) or GetEntityHealth(ped) <= 0 then
@@ -111,10 +111,10 @@ lib.callback.register('gs_drugs:sell', function(src, netId)
     local state = Entity(ped).state
     if state.gsSold then return false, 'Il t\'a déjà dit non.' end
 
-    -- Premier produit vendable dans l'inventaire
+    -- Produit choisi par le joueur, sinon le premier vendable de l'inventaire
     local drug, have
     for id, d in pairs(Config.Drugs) do
-        if Drugs.enabled[id] then
+        if Drugs.enabled[id] and (drugId == nil or drugId == id) then
             local n = Bridge:GetItemCount(src, d.sell.item)
             if n > 0 then drug, have = d, n break end
         end
@@ -137,6 +137,7 @@ lib.callback.register('gs_drugs:sell', function(src, netId)
     Drugs.sales[zone] = Drugs.sales[zone] or {}
     table.insert(Drugs.sales[zone], os.time())
     WantedApi:ReportCrime(src, 'drug_sale', coords)
+    if started('gs_quests') then exports.gs_quests:Reward(src, 'drug_sale') end
     if started('gs_gangs') then
         local gang = exports.gs_gangs:GetGang(src)
         local tz = exports.gs_gangs:GetTerritoryAt(coords)

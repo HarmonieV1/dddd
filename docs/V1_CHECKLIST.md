@@ -36,3 +36,13 @@ Cocher dans l'ordre. Chaque ligne rouge en console = on s'arrête et on l'envoie
 - [ ] Backups automatiques (`scripts/backup_db.sh` / backups txAdmin) + test de restauration
 - [ ] Boutique : PLA Cfx 2026 lu et validé (docs/BOUTIQUE.md) avant `Config.Enabled = true`
 - [ ] Merge `feature/phase1-bridge` → `main` (validation Alpha)
+
+## V2 — à tester en jeu (Alpha)
+- [ ] F11 : mode staff ON, vol libre, invisible, invincible, animal puis forme humaine, spectate, TP marqueur, noms/ID
+- [ ] F11 : me mettre police grade 2, puis un gang ; items (fondateur) : donner / retirer / poser au sol
+- [ ] Nouveau perso homme → Max (mairie) → Big Sal ; nouveau perso femme → Mama Rosa (chaînes différentes)
+- [ ] Livraison chronométrée (Big Sal) ; Nuit Néon refusée le jour, OK après 20 h
+- [ ] F5 : barre d'XP, abandon de quête ; un paquet caché ; annonce NIVEAU SUPÉRIEUR
+- [ ] Location : louer une citadine, la rendre, laisser expirer
+- [ ] Drogue : vente avec choix du produit + échange animé ; `/deal` (un client vient)
+- [ ] Caler les coords (F11 → Copier mes coordonnées) : personnages, comptoirs, paquets, labo coke

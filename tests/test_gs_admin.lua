@@ -14,10 +14,14 @@ provide('gs_jobs', {
     GetOnDutyPlayers = function() return {} end,
     AdminAddContract = function(_, job) if job == 'police' then return true end return false, 'invalid' end,
     AdminRemoveContract = function() return true end,
+    AdminSetActive = function(src, job, grade) if job == 'police' then W.players[src].job = { name = job, grade = grade } return true end return false, 'invalid' end,
+    ListJobs = function() return { { name = 'police', label = 'LSPD', grades = { { grade = 0, label = 'Cadet' } } } } end,
 })
 provide('gs_wanted', { GetHeat = function(s) return heat[s] or 0 end, ClearHeat = function(s) heat[s] = nil cleared[s] = true end })
 provide('gs_social', { GetHandle = function() return 'vice_lucia' end })
-provide('gs_gangs', { GetGang = function(s) if s == 4 then return 'ballas', 1 end end })
+provide('gs_gangs', { GetGang = function(s) if s == 4 then return 'ballas', 1 end end,
+    ListGangs = function() return { { name = 'ballas', label = 'Ballas' } } end,
+    AdminSetGang = function(src, gang, grade) if gang and gang ~= 'ballas' then return false, 'Gang inconnu.' end W.players[src].gang = gang and { name = gang, grade = grade } or false return true end })
 provide('gs_duo', { GetPartner = function() return nil end, GetDuoLevel = function() return 0 end })
 local weatherSet
 provide('gs_weather', {
@@ -175,8 +179,76 @@ check('cible hors ligne refusée', not ok)
 ok = cb('gs_admin:action', 1, 'nimporte', 4); step()
 check('action inconnue refusée', not ok)
 
+-- Menu rapide (F11) : mode staff obligatoire, niveaux par pouvoir, métier/gang de test, véhicules, items fondateur --
+join(6, 'CID6', 'Fondateur', here); W.players[6].aces = { ['gs.admin.founder'] = true }; W.players[6].license = 'license:6'
+join(7, 'CID7', 'Testeur', here)
+check('niveau fondateur', Admin.level(6) == 4)
+check('menu rapide refusé au joueur', cb('gs_admin:quick', 7) == nil)
+local q = cb('gs_admin:quick', 6); step()
+check('menu rapide fondateur : jobs + gangs', q and q.level == 4 and #q.jobs == 1 and #q.gangs == 1 and not q.onDuty)
+q = cb('gs_admin:quick', 3); step()
+check('menu rapide helper : pas de jobs', q and #q.jobs == 0)
+ok, msg = cb('gs_admin:action', 6, 'power', nil, { power = 'noclip' }); step()
+check('pouvoir hors mode staff refusé', not ok and msg:find('mode staff'))
+cb('gs_admin:toggleDuty', 6); step()
+ok = cb('gs_admin:action', 6, 'power', nil, { power = 'noclip' }); step()
+check('vol libre accordé en mode staff', ok)
+ok = cb('gs_admin:action', 6, 'power', nil, { power = 'teleportall' }); step()
+check('pouvoir inconnu refusé', not ok)
+ok = cb('gs_admin:action', 6, 'power', nil, { power = 'animal', model = 'a_c_husky' }); step()
+check('animal de la liste accordé', ok)
+ok = cb('gs_admin:action', 6, 'power', nil, { power = 'animal', model = 'mp_m_freemode_01' }); step()
+check('modèle hors liste refusé', not ok)
+ok = cb('gs_admin:action', 3, 'power', nil, { power = 'noclip' }); step()
+check('helper : pas de vol libre', not ok)
+ok = cb('gs_admin:action', 3, 'power', nil, { power = 'names' }); step()
+check('helper : noms des joueurs', ok)
+ok = cb('gs_admin:action', 6, 'spectate', 7); step()
+check('spectate : coords envoyées au staff seulement', ok and lastClientEvent('gs_admin:client:spectate', 6).args[1] == 7)
+ok = cb('gs_admin:action', 6, 'spectate', 6); step()
+check('pas de spectate sur soi', not ok)
+ok = cb('gs_admin:action', 6, 'setjob', 6, { job = 'police', grade = 0 }); step()
+check('se mettre un métier', ok and W.players[6].job.name == 'police')
+ok = cb('gs_admin:action', 2, 'setjob', 2, { job = 'police', grade = 0 }); step()
+check('modo : pas de métier de test', not ok)
+ok = cb('gs_admin:action', 6, 'setgang', 7, { gang = 'ballas', grade = 3 }); step()
+check('mettre un joueur dans un gang', ok and W.players[7].gang.name == 'ballas' and W.players[7].gang.grade == 3)
+ok = cb('gs_admin:action', 6, 'setgang', 7, { gang = 'none' }); step()
+check('retirer du gang', ok and W.players[7].gang == false)
+ok = cb('gs_admin:action', 6, 'spawnveh', nil, { model = 'sultan', vtype = 'automobile' }); step()
+local spawned
+for id, e in pairs(W.entities) do if e.model == 'sultan' then spawned = id end end
+check('véhicule staff créé, staff au volant', ok and spawned and W.entities[spawned].driver == 6)
+ok = cb('gs_admin:action', 6, 'spawnveh', nil, { model = "sultan'; --", vtype = 'automobile' }); step()
+check('modèle injecté refusé', not ok)
+ok = cb('gs_admin:action', 6, 'spawnveh', nil, { model = 'sultan', vtype = 'fusee' }); step()
+check('type inconnu refusé', not ok)
+W.entities[spawned].pos = vec3(900.0, 0.0, 0.0)
+ok = cb('gs_admin:action', 6, 'delveh', nil, { netId = spawned }); step()
+check('suppression : trop loin', not ok and W.entities[spawned])
+W.entities[spawned].pos = here
+ok = cb('gs_admin:action', 6, 'delveh', nil, { netId = spawned }); step()
+check('véhicule supprimé', ok and not W.entities[spawned])
+ok = cb('gs_admin:action', 6, 'giveitem', 7, { item = 'water', amount = 5 }); step()
+check('fondateur : don sans motif', ok and W.players[7].items.water == 5)
+ok = cb('gs_admin:action', 1, 'giveitem', 7, { item = 'water', amount = 1 }); step()
+check('admin : motif toujours obligatoire', not ok)
+ok = cb('gs_admin:action', 6, 'removeitem', 7, { item = 'water', amount = 50 }); step()
+check('retrait plafonné au stock', ok and W.players[7].items.water == 0)
+ok = cb('gs_admin:action', 1, 'removeitem', 7, { item = 'water', amount = 1 }); step()
+check('retrait réservé au fondateur', not ok)
+ok = cb('gs_admin:action', 6, 'dropitem', nil, { item = 'sandwich', amount = 3 }); step()
+check('dépôt au sol', ok and W.drops and W.drops[1].items[1][1] == 'sandwich')
+check('liste des items réservée au fondateur', cb('gs_admin:items', 1) == nil and #cb('gs_admin:items', 6) == 1)
+step()
+W.clientEvents = {}
+cb('gs_admin:toggleDuty', 6); step()
+check('fin du mode staff : pouvoirs coupés côté client', lastClientEvent('gs_admin:client:powersOff', 6) ~= nil)
+ok = cb('gs_admin:action', 6, 'spawnveh', nil, { model = 'sultan', vtype = 'automobile' }); step()
+check('hors mode staff : plus de véhicule', not ok)
+
 -- Journal ---------------------------------------------------------------------------------------------------------------
-check('journal alimenté', #Admin.logs > 5 and Admin.logs[1].action == 'goto' or Admin.logs[1].action == 'kick')
+check('journal alimenté', #Admin.logs > 5)
 
 -- txAdmin : bans publiés -----------------------------------------------------------------------------------------------
 sanctions = {}

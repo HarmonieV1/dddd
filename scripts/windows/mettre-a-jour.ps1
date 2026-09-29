@@ -46,6 +46,8 @@ Say "  Sauvegarde : $zip" 'Green'
 Say "[3/4] Installation de la nouvelle version" 'Cyan'
 if (Test-Path -LiteralPath $Ours) { [IO.Directory]::Delete($Ours, $true) } # retire aussi les fichiers supprimés
 Copy-Item -LiteralPath (Join-Path $Repo 'server\resources\[gtasoon]') -Destination $Res -Recurse -Force
+# [addons] (tes véhicules / mods) : copié seulement s'il n'existe pas encore, jamais écrasé
+if (-not (Test-Path -LiteralPath (Join-Path $Res '[addons]'))) { Copy-Item -LiteralPath (Join-Path $Repo 'server\resources\[addons]') -Destination $Res -Recurse -Force }
 Get-ChildItem -LiteralPath (Join-Path $Repo 'server\cfg') -File | Where-Object { $_.Name -ne 'secrets.cfg' } |
     ForEach-Object { Copy-Item -LiteralPath $_.FullName -Destination (Join-Path $Data 'cfg') -Force }
 Copy-Item -LiteralPath (Join-Path $Repo 'server\server.cfg.example') -Destination (Join-Path $Data 'server.cfg') -Force

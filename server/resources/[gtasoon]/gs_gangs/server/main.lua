@@ -373,6 +373,16 @@ exports('SetStash', function(gang, coords)
     for s, m in pairs(Gangs.online) do if m.gang == g.name then syncMember(s) end end
     return true
 end)
+--- Staff (tests) : place le joueur dans `gang` au `grade` (quitte son gang actuel). gang = nil : retire.
+exports('AdminSetGang', function(src, gang, grade)
+    local m = Gangs.online[src]
+    if not m then return false, 'Joueur non chargé.' end
+    if gang ~= nil and not Gangs.list[gang] then return false, 'Gang inconnu.' end
+    if m.gang then Gangs.removeMember(m.cid) end
+    if gang == nil then return true end
+    return Gangs.addMember(m.cid, gang, tonumber(grade) or 0, Bridge:GetName(src))
+end)
+
 exports('ListGangs', function()
     local l = {}
     for name, g in pairs(Gangs.list) do l[#l + 1] = { name = name, label = g.label } end
