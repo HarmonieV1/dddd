@@ -16,6 +16,7 @@ Config.Crimes = {
     jewelry = { label = 'Braquage de bijouterie', heat = 45, chance = 0.70 },
     bank = { label = 'Braquage de banque', heat = 60, chance = 0.80 },
     drug_sale = { label = 'Vente de stupéfiants', heat = 8, chance = 0.12 },
+    smuggling = { label = 'Transport de marchandise illégale', heat = 15, chance = 0.4 },
     poaching = { label = 'Braconnage (chasse sans permis)', heat = 6, chance = 0.35 },
 }
 

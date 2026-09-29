@@ -6,7 +6,15 @@ local Bridge   = exports.gs_bridge
 Neon = {
     feed = {},      -- posts du plus récent au plus ancien : { id, cid, handle, content, likes, time, likedBy = {} }
     handles = {},   -- [src] = pseudo (cache)
+    verified = {},  -- [handle] = true (badge vérifié, posé par la modération)
+    followers = {}, -- [handle] = nombre d'abonnés
 }
+
+--- Badge public : 'verified' (modération) > 'influencer' (seuil d'abonnés) > nil
+function Neon.badge(handle)
+    if Neon.verified[handle] then return 'verified' end
+    if (Neon.followers[handle] or 0) >= Config.InfluencerFollowers then return 'influencer' end
+end
 
 local function findPost(id)
     for i, p in ipairs(Neon.feed) do if p.id == id then return p, i end end
@@ -21,9 +29,10 @@ end
 
 local function publicView(p, cid)
     return { id = p.id, handle = p.handle, content = p.content, likes = p.likes, time = p.time,
-             liked = cid ~= nil and p.likedBy[cid] == true, title = titleOf(p) }
+             liked = cid ~= nil and p.likedBy[cid] == true, title = titleOf(p), badge = Neon.badge(p.handle) }
 end
 
+function Neon.canModerate(src) return IsPlayerAceAllowed(src, Config.ModerateAce) end
 local function canModerate(src) return IsPlayerAceAllowed(src, Config.ModerateAce) end
 
 --- Nettoie un post : caractères de contrôle, balises, liens / invitations (pub, phishing).
@@ -50,6 +59,8 @@ local function handleOf(src)
     return Neon.handles[src] or nil
 end
 
+Neon.handleOf = handleOf
+
 local function guard(src, key, max, window)
     return Security:RateLimit(src, 'gs_social:' .. key, max, window) and Bridge:IsLoaded(src)
 end
@@ -60,7 +71,9 @@ lib.callback.register('gs_social:open', function(src)
     local feed = {}
     for i, p in ipairs(Neon.feed) do feed[i] = publicView(p, cid) end
     local title = GetResourceState('gs_quests') == 'started' and exports.gs_quests:GetTitle(src) or nil
-    return { handle = handleOf(src), title = title, feed = feed, canModerate = canModerate(src), maxLength = Config.MaxLength }
+    local me = handleOf(src)
+    return { handle = me, title = title, feed = feed, canModerate = canModerate(src), maxLength = Config.MaxLength,
+             badge = me and Neon.badge(me), followers = me and Neon.followers[me] or 0 }
 end)
 
 lib.callback.register('gs_social:setHandle', function(src, handle)

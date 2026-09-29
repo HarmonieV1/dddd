@@ -41,6 +41,7 @@ local function openPhone()
     if data == false then return lib.notify({ description = 'Tu n\'as pas de téléphone.', type = 'error' }) end
     if not data then return end
     data.clock, data.silent = clock(), silent
+    data.vice = GetResourceState('gs_world') == 'started' and exports.gs_world:GetViceFilter() or false
     open = true
     SetNuiFocus(true, true)
     SendNUIMessage({ action = 'open', data = data })
@@ -113,10 +114,13 @@ end)
 
 -- App Vibe : relais vers gs_social (mêmes callbacks serveur, mêmes règles que l'ancienne app Néon)
 local VIBE = { setHandle = { 'gs_social:setHandle', 'handle' }, post = { 'gs_social:post', 'content' }, like = { 'gs_social:like', 'id' },
-    delete = { 'gs_social:delete', 'id' }, report = { 'gs_social:report', 'id' } }
+    delete = { 'gs_social:delete', 'id' }, report = { 'gs_social:report', 'id' },
+    follow = { 'gs_social:follow', 'handle' }, verify = { 'gs_social:verify', 'handle' } }
 RegisterNUICallback('vibe', function(b, cb)
     if GetResourceState('gs_social') ~= 'started' then return cb(b.op == 'open' and false or { ok = false, message = 'Vibe est hors ligne.' }) end
     if b.op == 'open' then return cb(lib.callback.await('gs_social:open', false) or false) end
+    if b.op == 'profile' then return cb(lib.callback.await('gs_social:profile', false, b.handle) or false) end
+    if b.op == 'top' then return cb(lib.callback.await('gs_social:top', false) or false) end
     local route = VIBE[b.op]
     if not route then return cb({ ok = false }) end
     local ok, msg = lib.callback.await(route[1], false, b[route[2]])
@@ -127,6 +131,22 @@ end)
 RegisterNetEvent('gs_social:client:new', function(post) if open then SendNUIMessage({ action = 'vibeNew', post = post }) end end)
 RegisterNetEvent('gs_social:client:likes', function(id, likes) if open then SendNUIMessage({ action = 'vibeLikes', id = id, likes = likes }) end end)
 RegisterNetEvent('gs_social:client:removed', function(id) if open then SendNUIMessage({ action = 'vibeRemoved', id = id }) end end)
+
+-- App Boulots (gs_gigs)
+local function gigsUp() return GetResourceState('gs_gigs') == 'started' end
+RegisterNUICallback('gigsList', function(_, cb) cb(gigsUp() and exports.gs_gigs:List() or false) end)
+RegisterNUICallback('gigsAccept', function(b, cb)
+    if not gigsUp() then return cb({ ok = false, message = 'Service indisponible.' }) end
+    local ok, msg = exports.gs_gigs:Accept(tonumber(b.id))
+    cb({ ok = ok == true, message = msg })
+end)
+RegisterNUICallback('gigsCancel', function(_, cb) cb({ ok = gigsUp() and exports.gs_gigs:Cancel() == true, message = 'Boulot annulé.' }) end)
+
+-- Filtre « Vice » (gs_world)
+RegisterNUICallback('viceFilter', function(b, cb)
+    if GetResourceState('gs_world') == 'started' then exports.gs_world:SetViceFilter(b.on == true) end
+    cb(true)
+end)
 
 RegisterNUICallback('silent', function(b, cb)
     silent = b.silent == true

@@ -158,6 +158,15 @@ réparation de fortune (moteur 75 %), réparation avancée (complète), nettoyag
 - **Cayo Perico** (gs_world) : l'île du jeu se charge seulement à moins de 2,2 km (zéro coût en ville). Vols réguliers LSIA ↔ île (350 $).
 - **Moins de PNJ** : piétons 60 %, circulation 65 %, voitures garées 75 % (réglable dans gs_world/shared/config.lua).
 
+## V3.5 — Vibe 2, petits boulots, filtre Vice
+- **Vibe 2** : profils publics (clic sur un pseudo), **abonnements** (notif à la personne suivie), badge **vérifié** posé par la
+  modération (ACE gs.social.moderate), badge **influenceur** dès 25 abonnés, onglet **Top semaine** (posts, créateurs les plus aimés
+  sur 7 jours, plus suivis ; cache 60 s). Aucun citizenid n'est envoyé aux clients.
+- **App Boulots** (gs_gigs) : 3 offres tirées par le serveur, renouvelées toutes les 5 min. **Livraison express** (légal, liquide)
+  ou **Passeur** (illégal, argent sale, 35 % de chance d'être signalé au chargement). GPS vers A puis B, [E] sur place, temps de trajet
+  crédible exigé, 15 min max, 1 min entre deux boulots.
+- **Filtre Vice** : réglage du téléphone, couleurs saturées + léger vignettage (mémorisé par joueur).
+
 ## Liens entre features
 `gs_weather` → visibilité de `gs_wanted` + prix de `gs_economy` ;
 `gs_duo` → crimes vers `gs_wanted`, chaleur partagée ; `gs_jobs` → police en service pour le dispatch.

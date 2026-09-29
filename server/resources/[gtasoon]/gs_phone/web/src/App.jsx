@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { nui, isBrowser, DEMO } from './nui.js'
 import Vibe from './Vibe.jsx'
+import Gigs from './Gigs.jsx'
 
 const APPS = [
   { id: 'messages', label: 'Messages', icon: '💬', color: '#28e0ff' },
@@ -10,6 +11,7 @@ const APPS = [
   { id: 'bank', label: 'Banque', icon: '💳', color: '#ffd23f' },
   { id: 'bills', label: 'Factures', icon: '🧾', color: '#ff8a3d' },
   { id: 'job', label: 'Emploi', icon: '💼', color: '#5ab0ff' },
+  { id: 'gigs', label: 'Boulots', icon: '🛵', color: '#39ff9a' },
   { id: 'emergency', label: 'Urgences', icon: '🚨', color: '#ff4d6d' },
   { id: 'settings', label: 'Réglages', icon: '⚙️', color: '#9b8bb8' },
 ]
@@ -148,6 +150,8 @@ export default function App() {
         </div>
       </div>
     )
+  } else if (screen === 'gigs') {
+    content = <Gigs onBack={home} say={say} />
   } else if (screen === 'vibe') {
     content = <Vibe onBack={home} />
   } else if (screen === 'messages') {
@@ -290,6 +294,10 @@ export default function App() {
         <Header title="Réglages" onBack={home} />
         <div className="form">
           <div className="setting"><span>Mon numéro</span><b>{data.number}</b></div>
+          <label className="setting">
+            <span>Filtre Vice (couleurs sunset)</span>
+            <input type="checkbox" checked={!!data.vice} onChange={(e) => { nui('viceFilter', { on: e.target.checked }); setData({ ...data, vice: e.target.checked }) }} />
+          </label>
           <label className="setting">
             <span>Mode silencieux</span>
             <input type="checkbox" checked={data.silent} onChange={(e) => { nui('silent', { silent: e.target.checked }); setData({ ...data, silent: e.target.checked }) }} />

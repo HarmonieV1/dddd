@@ -123,3 +123,31 @@ button:disabled { opacity: .4; cursor: default; }
 .vibe-like.on { color: var(--pink); box-shadow: 0 0 10px rgba(255, 46, 136, .35); }
 .mention { color: var(--cyan); font-weight: 600; }
 .vibe-error { color: var(--red); font-size: 12px; }
+.vibe-tabs { display: flex; gap: 6px; margin: 0 10px 8px; padding: 3px; border-radius: 12px; background: var(--panel); border: 1px solid var(--line); }
+.vibe-tabs button { flex: 1; padding: 6px; border-radius: 9px; font-size: 12px; font-weight: 600; color: var(--muted); }
+.vibe-tabs button.on { background: var(--sunset); color: #1a0710; }
+.vibe-author { cursor: pointer; }
+.vibe-author:hover { color: var(--cyan); }
+.mention { cursor: pointer; }
+.vibe-me span:first-child { cursor: pointer; }
+.vibe-count { margin-left: auto; float: right; }
+.vibe-badge { display: inline-grid; place-items: center; width: 14px; height: 14px; margin-left: 4px; border-radius: 50%; font-size: 9px; vertical-align: middle; }
+.vibe-badge.verified { background: var(--cyan); color: #04121a; }
+.vibe-badge.influencer { background: #ffd23f; color: #2a1a00; }
+.vibe-profile { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 8px 0 14px; text-align: center; }
+.vibe-profile h3 { margin: 6px 0 0; }
+.vibe-profile-actions { display: flex; gap: 8px; margin-top: 8px; align-items: center; }
+.vibe-section { margin: 12px 4px 8px; font-size: 13px; color: var(--muted); }
+.vibe-rank { display: flex; align-items: center; gap: 8px; padding: 8px; border-radius: 12px; background: rgba(255, 255, 255, .03); margin-bottom: 6px; }
+.vibe-rank .small { margin-left: auto; }
+.vibe-pos { width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; font-size: 11px; font-weight: 800; background: var(--sunset); color: #1a0710; }
+
+/* App Boulots */
+.gig { padding: 10px; margin-bottom: 8px; border-radius: 14px; background: rgba(255, 255, 255, .03); border: 1px solid var(--line); }
+.gig.shady { border-color: rgba(255, 77, 109, .45); background: rgba(255, 77, 109, .05); }
+.gig p { margin: 6px 0; }
+.gig-head { display: flex; align-items: center; gap: 8px; }
+.gig-icon { font-size: 20px; }
+.gig-pay { margin-left: auto; font-weight: 800; color: var(--green); }
+.gig-foot { display: flex; justify-content: space-between; align-items: center; }
+.card-bank .secondary { margin-top: 8px; }
