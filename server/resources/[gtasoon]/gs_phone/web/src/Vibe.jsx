@@ -5,7 +5,8 @@ import { nui, isBrowser } from './nui.js'
 // Onglets Fil / Top de la semaine, profils publics avec abonnement, badges vérifié / influenceur.
 const now = () => Date.now() / 1000
 const DEMO = {
-  handle: 'vice_lucia', canModerate: true, maxLength: 280, title: 'Habitué', badge: 'influencer', followers: 31,
+  handle: 'vice_lucia', canModerate: true, maxLength: 280, title: 'Habitué', badge: 'influencer', followers: 31, photos: true, press: true,
+  stories: [{ id: 1, handle: 'kiki_star', url: '', time: now() - 600 }, { id: 2, handle: 'dj_nova', url: '', time: now() - 900 }],
   feed: [
     { id: 3, handle: 'vice_lucia', content: 'Coucher de soleil sur Vespucci, la ville est à nous ce soir 🌴', likes: 12, time: now() - 120, badge: 'influencer' },
     { id: 2, handle: 'lspd_officiel', content: 'Rappel : 50 en ville. Même en Infernus. @vice_lucia', likes: 4, time: now() - 3600, badge: 'verified' },
@@ -58,6 +59,8 @@ export default function Vibe({ onBack }) {
   const [handle, setHandle] = useState('')
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
+  const [photo, setPhoto] = useState(null)      // URL de la photo prise, en attente de publication
+  const [viewer, setViewer] = useState(null)    // story / photo ouverte en grand
   const feedRef = useRef(null)
 
   useEffect(() => {
@@ -70,6 +73,7 @@ export default function Vibe({ onBack }) {
       if (msg.action === 'vibeNew') setData((d) => d && { ...d, feed: [msg.post, ...d.feed.filter((p) => p.id !== msg.post.id)].slice(0, 60) })
       else if (msg.action === 'vibeLikes') setData((d) => d && { ...d, feed: d.feed.map((p) => (p.id === msg.id ? { ...p, likes: msg.likes } : p)) })
       else if (msg.action === 'vibeRemoved') setData((d) => d && { ...d, feed: d.feed.filter((p) => p.id !== msg.id) })
+      else if (msg.action === 'vibeStory') setData((d) => d && { ...d, stories: [msg.story, ...(d.stories || [])].slice(0, 60) })
     }
     window.addEventListener('message', onMessage)
     return () => window.removeEventListener('message', onMessage)
@@ -91,6 +95,22 @@ export default function Vibe({ onBack }) {
     setError('')
     setProfile(p)
   }
+  const takePhoto = async () => {
+    if (busy) return
+    setBusy(true)
+    const res = isBrowser ? { ok: true, url: 'https://picsum.photos/seed/vice/400/600' } : await nui('vibePhoto')
+    setBusy(false)
+    if (!res?.ok) return setError(res?.message || 'Photo impossible.')
+    setError('')
+    setPhoto(res.url)
+  }
+  // Stories regroupées par auteur (la plus récente d'abord)
+  const storyGroups = []
+  for (const st of data?.stories || []) {
+    const g = storyGroups.find((x) => x.handle === st.handle)
+    if (g) g.items.push(st); else storyGroups.push({ handle: st.handle, items: [st] })
+  }
+
   const openTop = async () => { setTab('top'); setProfile(null); setTop(await call('top')) }
 
   const Author = ({ h, badge }) => <b className="vibe-author" onClick={() => openProfile(h)}>@{h}<Badge kind={badge} /></b>
@@ -102,6 +122,7 @@ export default function Vibe({ onBack }) {
         {p.flash && <div className="vibe-flash">📰 FLASH INFO</div>}
         <div className="vibe-head"><Author h={p.handle} badge={p.badge} />{p.title && <span className="vibe-title">{p.title}</span>}<span className="muted small">{timeAgo(p.time)}</span></div>
         <p><Content text={p.content} onHandle={openProfile} /></p>
+        {p.image && <img className="vibe-img" src={p.image} alt="" onClick={() => setViewer({ url: p.image, handle: p.handle })} />}
         {actions ? (
           <div className="vibe-actions">
             <button className={liked[p.id] ? 'vibe-like on' : 'vibe-like'} onClick={() => act('like', { id: p.id }, (r) => setLiked({ ...liked, [p.id]: r.message === true }))}>♥ {p.likes}</button>
@@ -185,18 +206,37 @@ export default function Vibe({ onBack }) {
   } else {
     body = (
       <>
+        {storyGroups.length > 0 && (
+          <div className="vibe-stories">
+            {storyGroups.map((g) => (
+              <button key={g.handle} className="vibe-story" onClick={() => setViewer({ url: g.items[0].url, handle: g.handle, items: g.items, index: 0 })}>
+                <span className="vibe-story-ring">{g.handle.slice(0, 1).toUpperCase()}</span><span className="small">@{g.handle}</span>
+              </button>
+            ))}
+          </div>
+        )}
         <form className="vibe-composer" onSubmit={(e) => {
           e.preventDefault()
-          if (draft.trim()) act('post', { content: draft }, () => { setDraft(''); feedRef.current?.scrollTo({ top: 0, behavior: 'smooth' }) })
+          if (draft.trim() || photo) act('post', { content: draft, image: photo }, () => { setDraft(''); setPhoto(null); feedRef.current?.scrollTo({ top: 0, behavior: 'smooth' }) })
         }}>
           <div className="vibe-me"><span onClick={() => openProfile(data.handle)}>@{data.handle}<Badge kind={data.badge} /></span>
             {data.title && <span className="vibe-title">{data.title}</span>}<span className="muted small vibe-count">{data.followers || 0} abonnés</span></div>
           <textarea rows={2} maxLength={data.maxLength} placeholder="Quoi de neuf à Los Santos ?" value={draft} onChange={(e) => setDraft(e.target.value)} />
+          {photo && (
+            <div className="vibe-preview">
+              <img src={photo} alt="" />
+              <div>
+                <button type="button" className="secondary slim" onClick={() => act('story', { url: photo }, (r) => { setPhoto(null); setError(''); if (r.message) setError(r.message) })}>En story (24 h)</button>
+                <button type="button" className="mini" onClick={() => setPhoto(null)}>Retirer</button>
+              </div>
+            </div>
+          )}
           <div className="vibe-foot">
             <span className="muted small">{draft.length}/{data.maxLength}</span>
+            {data.photos && <button type="button" className="mini" title="Appareil photo (heure dorée : 18 h – 20 h = bonus XP)" disabled={busy} onClick={takePhoto}>📷</button>}
             {data.press && <button type="button" className="secondary slim" disabled={busy || !draft.trim()}
               onClick={() => act('flash', { content: draft }, () => setDraft(''))}>Flash info</button>}
-            <button className="primary slim" disabled={busy || !draft.trim()}>Publier</button>
+            <button className="primary slim" disabled={busy || (!draft.trim() && !photo)}>Publier</button>
           </div>
           {error && <div className="vibe-error">{error}</div>}
         </form>
@@ -223,6 +263,15 @@ export default function Vibe({ onBack }) {
         </div>
       )}
       {body}
+      {viewer && (
+        <div className="vibe-viewer" onClick={() => {
+          if (viewer.items && viewer.index + 1 < viewer.items.length) setViewer({ ...viewer, index: viewer.index + 1, url: viewer.items[viewer.index + 1].url })
+          else setViewer(null)
+        }}>
+          <div className="vibe-viewer-head">@{viewer.handle}{viewer.items && ` · ${viewer.index + 1}/${viewer.items.length}`}</div>
+          <img src={viewer.url} alt="" />
+        </div>
+      )}
     </>
   )
 }

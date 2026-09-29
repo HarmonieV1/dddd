@@ -34,6 +34,7 @@ function Progress.addXP(src, amount, reason)
     if GetResourceState('gs_events') == 'started' then amount = math.floor(amount * (exports.gs_events:GetXpMultiplier() or 1.0)) end -- événement en cours
     local before = Progress.levelOf(p.xp)
     p.xp = p.xp + amount
+    TriggerEvent('gs_quests:server:xp', src, amount, reason) -- saisons (gs_seasons) : l'XP gagnée compte aussi pour le pass
     local after, floor, nextXp = Progress.levelOf(p.xp)
     Store.save(p.cid, p)
     for lvl = before + 1, after do Bridge:AddMoney(src, 'bank', Config.LevelReward(lvl), 'niveau ' .. lvl) end

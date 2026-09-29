@@ -152,4 +152,15 @@ exports('InRange', InRange)
 exports('PlayersInRange', PlayersInRange)
 exports('EntityInRange', EntityInRange)
 exports('Sanitize', Sanitize)
+
+--- URL d'image acceptée seulement si elle vient de l'hébergeur configuré (convar gs_photo_allowed_host, ex : https://r2.fivemanage.com/).
+--- Empêche d'afficher une image d'un site tiers (traçage d'IP des joueurs, contenus choquants hors modération).
+local function ValidImageUrl(url)
+    local host = GetConvar('gs_photo_allowed_host', '')
+    if host == '' or type(url) ~= 'string' or #url > 300 then return nil end
+    if url:sub(1, #host) ~= host then return nil end
+    if not url:match('^https://[%w%.%-_/%%?=&]+$') then return nil end
+    return url
+end
+exports('ValidImageUrl', ValidImageUrl)
 exports('LogStaff', LogStaff)

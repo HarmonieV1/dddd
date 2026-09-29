@@ -16,6 +16,7 @@ function Store.init()
         `content` VARCHAR(320) NOT NULL,
         `likes` INT UNSIGNED NOT NULL DEFAULT 0,
         `deleted` TINYINT(1) NOT NULL DEFAULT 0,
+        `image` VARCHAR(300) NULL,
         `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
         PRIMARY KEY (`id`),
         KEY `idx_feed` (`deleted`, `id`)
@@ -28,7 +29,7 @@ function Store.init()
 end
 
 function Store.loadFeed(limit)
-    local posts = MySQL.query.await([[SELECT id, citizenid, handle, content, likes, UNIX_TIMESTAMP(created_at) AS time
+    local posts = MySQL.query.await([[SELECT id, citizenid, handle, content, likes, image, UNIX_TIMESTAMP(created_at) AS time
         FROM gs_social_posts WHERE deleted = 0 ORDER BY id DESC LIMIT ?]], { limit }) or {}
     local likes = {}
     if #posts > 0 then
@@ -54,9 +55,30 @@ function Store.createProfile(cid, handle)
     return MySQL.update.await('INSERT IGNORE INTO gs_social_profiles (citizenid, handle) VALUES (?, ?)', { cid, handle }) > 0
 end
 
-function Store.insertPost(cid, handle, content)
-    return MySQL.insert.await('INSERT INTO gs_social_posts (citizenid, handle, content) VALUES (?, ?, ?)', { cid, handle, content })
+function Store.insertPost(cid, handle, content, image)
+    return MySQL.insert.await('INSERT INTO gs_social_posts (citizenid, handle, content, image) VALUES (?, ?, ?, ?)', { cid, handle, content, image })
 end
+
+-- Stories (24 h) et photos --------------------------------------------------------------------------------
+function Store.initPhotos()
+    MySQL.query.await('ALTER TABLE `gs_social_posts` ADD COLUMN IF NOT EXISTS `image` VARCHAR(300) NULL')
+    MySQL.query.await([[CREATE TABLE IF NOT EXISTS `gs_social_stories` (
+        `id` INT UNSIGNED NOT NULL AUTO_INCREMENT, `citizenid` VARCHAR(50) NOT NULL, `handle` VARCHAR(20) NOT NULL,
+        `url` VARCHAR(300) NOT NULL, `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (`id`), KEY `idx_time` (`created_at`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4]])
+    MySQL.query.await([[CREATE TABLE IF NOT EXISTS `gs_social_golden` (
+        `citizenid` VARCHAR(50) NOT NULL, `day` VARCHAR(10) NOT NULL, PRIMARY KEY (`citizenid`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4]])
+end
+function Store.addStory(cid, handle, url) return MySQL.insert.await('INSERT INTO gs_social_stories (citizenid, handle, url) VALUES (?, ?, ?)', { cid, handle, url }) end
+function Store.stories(hours)
+    return MySQL.query.await([[SELECT id, handle, url, UNIX_TIMESTAMP(created_at) AS time FROM gs_social_stories
+        WHERE created_at >= DATE_SUB(NOW(), INTERVAL ? HOUR) ORDER BY id DESC LIMIT 60]], { hours }) or {}
+end
+function Store.purgeStories(hours) MySQL.update('DELETE FROM gs_social_stories WHERE created_at < DATE_SUB(NOW(), INTERVAL ? HOUR)', { hours }) end
+function Store.goldenDay(cid) return MySQL.scalar.await('SELECT day FROM gs_social_golden WHERE citizenid = ?', { cid }) end
+function Store.setGoldenDay(cid, day) MySQL.query.await('REPLACE INTO gs_social_golden (citizenid, day) VALUES (?, ?)', { cid, day }) end
 
 function Store.deletePost(id)
     MySQL.update('UPDATE gs_social_posts SET deleted = 1 WHERE id = ?', { id })

@@ -29,7 +29,7 @@ end
 
 local function publicView(p, cid)
     return { id = p.id, handle = p.handle, content = p.content, likes = p.likes, time = p.time,
-             liked = cid ~= nil and p.likedBy[cid] == true, title = titleOf(p), badge = p.press and 'press' or Neon.badge(p.handle), flash = p.flash }
+             liked = cid ~= nil and p.likedBy[cid] == true, title = titleOf(p), badge = p.press and 'press' or Neon.badge(p.handle), flash = p.flash, image = p.image }
 end
 
 --- Journaliste en service (Weazel News) : ses posts portent le badge presse.
@@ -78,7 +78,9 @@ lib.callback.register('gs_social:open', function(src)
     local title = GetResourceState('gs_quests') == 'started' and exports.gs_quests:GetTitle(src) or nil
     local me = handleOf(src)
     return { handle = me, title = title, feed = feed, canModerate = canModerate(src), maxLength = Config.MaxLength,
-             badge = me and Neon.badge(me), followers = me and Neon.followers[me] or 0, press = Neon.isPress(src) }
+             badge = me and Neon.badge(me), followers = me and Neon.followers[me] or 0, press = Neon.isPress(src),
+             photos = GetConvar('gs_photo_upload_url', '') ~= '' and GetConvar('gs_photo_allowed_host', '') ~= '',
+             stories = Photos and Store.stories(Config.Photos.storyHours) or {} }
 end)
 
 lib.callback.register('gs_social:setHandle', function(src, handle)
@@ -93,20 +95,23 @@ lib.callback.register('gs_social:setHandle', function(src, handle)
     return true, handle
 end)
 
-lib.callback.register('gs_social:post', function(src, content)
+lib.callback.register('gs_social:post', function(src, content, image)
     if not guard(src, 'post', 1, Config.PostCooldown) then return false, 'Attends un peu avant de reposter.' end
     local handle, cid = handleOf(src), Bridge:GetIdentifier(src)
     if not handle or not cid then return false, 'Choisis d\'abord un pseudo.' end
-    content = Neon.clean(content)
+    image = image and Security:ValidImageUrl(image) or nil
+    content = Neon.clean(content) or (image and '📸' or nil)
     if not content then return false, 'Post vide.' end
 
-    local id = Store.insertPost(cid, handle, content)
+    local id = Store.insertPost(cid, handle, content, image)
     if not id then return false, 'Erreur, réessaie.' end
-    local post = { id = id, cid = cid, handle = handle, content = content, likes = 0, time = os.time(), likedBy = {}, press = Neon.isPress(src) }
+    local post = { id = id, cid = cid, handle = handle, content = content, likes = 0, time = os.time(), likedBy = {}, press = Neon.isPress(src), image = image }
     post.title = titleOf(post)
     table.insert(Neon.feed, 1, post)
     Neon.feed[Config.FeedSize + 1] = nil
     TriggerClientEvent('gs_social:client:new', -1, publicView(post))
+    if Trends then Trends.onPost(cid, content) end -- hashtags tendance (server/trends.lua)
+    if image and Photos then Photos.onImagePost(src, cid) end -- heure dorée (server/photos.lua)
 
     -- Mentions : notification aux personnes citées (en ligne)
     local notified = {}
@@ -169,7 +174,7 @@ function Neon.init()
     Neon.feed = {}
     for _, p in ipairs(posts) do
         Neon.feed[#Neon.feed + 1] = { id = p.id, cid = p.citizenid, handle = p.handle, content = p.content,
-            likes = p.likes, time = p.time, likedBy = likes[p.id] or {} }
+            likes = p.likes, time = p.time, likedBy = likes[p.id] or {}, image = p.image }
     end
 end
 

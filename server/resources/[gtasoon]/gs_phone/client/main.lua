@@ -121,16 +121,48 @@ RegisterNUICallback('vibe', function(b, cb)
     if b.op == 'open' then return cb(lib.callback.await('gs_social:open', false) or false) end
     if b.op == 'profile' then return cb(lib.callback.await('gs_social:profile', false, b.handle) or false) end
     if b.op == 'top' then return cb(lib.callback.await('gs_social:top', false) or false) end
+    if b.op == 'post' then
+        local ok, msg = lib.callback.await('gs_social:post', false, b.content, b.image)
+        return cb({ ok = ok == true, message = msg })
+    end
+    if b.op == 'story' then
+        local ok, msg = lib.callback.await('gs_social:story', false, b.url)
+        return cb({ ok = ok == true, message = msg })
+    end
     local route = VIBE[b.op]
     if not route then return cb({ ok = false }) end
     local ok, msg = lib.callback.await(route[1], false, b[route[2]])
     cb({ ok = ok == true, message = msg })
 end)
 
+-- Appareil photo : le téléphone se cache, capture (screenshot-basic), envoi au serveur qui l'héberge, puis retour.
+local uploads = {}
+RegisterNetEvent('gs_social:client:uploaded', function(token, url, err) if uploads[token] then uploads[token] = { url = url, err = err } end end)
+RegisterNUICallback('vibePhoto', function(_, cb)
+    if GetResourceState('screenshot-basic') ~= 'started' then return cb({ ok = false, message = 'Appareil photo indisponible (screenshot-basic).' }) end
+    local token = ('%d%d'):format(GetGameTimer(), math.random(1000, 9999))
+    uploads[token] = true
+    SendNUIMessage({ action = 'hide' })
+    SetNuiFocus(false, false)
+    phoneInHand(false)
+    Wait(350)
+    exports['screenshot-basic']:requestScreenshot({ encoding = 'jpg', quality = 0.6 }, function(data) -- [API] screenshot-basic
+        TriggerLatentServerEvent('gs_social:server:upload', 250000, token, data)
+    end)
+    local deadline = GetGameTimer() + 20000
+    while uploads[token] == true and GetGameTimer() < deadline do Wait(100) end
+    local res = uploads[token]
+    uploads[token] = nil
+    if open then SetNuiFocus(true, true) SendNUIMessage({ action = 'show' }) phoneInHand(true) end
+    if type(res) ~= 'table' or not res.url then return cb({ ok = false, message = type(res) == 'table' and res.err or 'Envoi trop long, réessaie.' }) end
+    cb({ ok = true, url = res.url })
+end)
+
 -- Temps réel : le fil Vibe se met à jour si le téléphone est ouvert
 RegisterNetEvent('gs_social:client:new', function(post) if open then SendNUIMessage({ action = 'vibeNew', post = post }) end end)
 RegisterNetEvent('gs_social:client:likes', function(id, likes) if open then SendNUIMessage({ action = 'vibeLikes', id = id, likes = likes }) end end)
 RegisterNetEvent('gs_social:client:removed', function(id) if open then SendNUIMessage({ action = 'vibeRemoved', id = id }) end end)
+RegisterNetEvent('gs_social:client:story', function(story) if open then SendNUIMessage({ action = 'vibeStory', story = story }) end end)
 
 -- App Boulots (gs_gigs)
 local function gigsUp() return GetResourceState('gs_gigs') == 'started' end

@@ -65,3 +65,35 @@ RegisterNetEvent('gs_social:client:flash', function(handle, content)
     PlaySoundFrontend(-1, 'Event_Message_Purple', 'GTAO_FM_Events_Soundset', false)
     lib.notify({ title = '📰 FLASH INFO · Weazel News', description = ('@%s : %s'):format(handle, content:sub(1, 160)), type = 'warning', icon = 'newspaper', duration = 12000 })
 end)
+
+-- Tendances Vibe : annonce + rassemblement (blip, présence comptée automatiquement sur place)
+RegisterNetEvent('gs_social:client:trend', function(msg)
+    PlaySoundFrontend(-1, 'Event_Start_Text', 'GTAO_FM_Events_Soundset', false)
+    lib.notify({ title = '🔥 Tendance sur Vibe', description = msg, type = 'inform', icon = 'hashtag', duration = 12000 })
+end)
+
+local gatherBlip, gatherWatch = nil, false
+local function onGathering(g)
+    if gatherBlip then RemoveBlip(gatherBlip) gatherBlip = nil end
+    if not g then return end
+    gatherBlip = AddBlipForCoord(g.x, g.y, g.z)
+    SetBlipSprite(gatherBlip, 280) SetBlipColour(gatherBlip, 48) SetBlipScale(gatherBlip, 1.1) SetBlipFlashes(gatherBlip, true)
+    BeginTextCommandSetBlipName('STRING') AddTextComponentSubstringPlayerName('#rassemblement · ' .. g.label) EndTextCommandSetBlipName(gatherBlip)
+    if gatherWatch then return end
+    gatherWatch = true
+    CreateThread(function()
+        local counted = false
+        while GlobalState.gsVibeGathering and not counted do
+            local cur = GlobalState.gsVibeGathering
+            if #(GetEntityCoords(cache.ped) - vec3(cur.x, cur.y, cur.z)) < Config.Trends.rassemblement.radius then
+                local ok, msg = lib.callback.await('gs_social:attend', false)
+                if ok then lib.notify({ description = msg, type = 'success' }) end
+                counted = true
+            end
+            Wait(3000)
+        end
+        gatherWatch = false
+    end)
+end
+AddStateBagChangeHandler('gsVibeGathering', 'global', function(_, _, value) onGathering(value) end)
+CreateThread(function() onGathering(GlobalState.gsVibeGathering) end)

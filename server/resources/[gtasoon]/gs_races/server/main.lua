@@ -5,6 +5,11 @@ local Bridge   = exports.gs_bridge
 
 Races = { lobbies = {}, runs = {}, solo = {}, nextId = 0, topCache = nil, topAt = 0 }
 
+--- Mise d'une course à plusieurs : gratuite pendant une « course improvisée » (tendance Vibe #course).
+Races.freeUntil = 0
+function Races.entry() return os.time() < Races.freeUntil and 0 or Config.Entry end
+exports('SetFreeEntry', function(seconds) Races.freeUntil = os.time() + math.max(0, math.min(3600, tonumber(seconds) or 0)) return true end)
+
 local function started(res) return GetResourceState(res) == 'started' end
 
 --- Nom affiché dans les classements : pseudo Vibe si le joueur en a un, sinon « Prénom N. ».
@@ -73,10 +78,11 @@ lib.callback.register('gs_races:start', function(src, circuitId, mode)
     local lobby
     for _, l in pairs(Races.lobbies) do if l.circuit == circuitId and l.state == 'open' then lobby = l break end end
     if lobby and #lobby.players >= Config.MaxPlayers then return false, 'Course complète.' end
-    if not Bridge:RemoveMoney(src, 'cash', Config.Entry, 'mise de course') then return false, ('Mise : %d $ en liquide.'):format(Config.Entry) end
+    local entry = lobby and lobby.entry or Races.entry() -- on paie la mise du lobby rejoint (gratuit s'il a été ouvert gratuit)
+    if entry > 0 and not Bridge:RemoveMoney(src, 'cash', entry, 'mise de course') then return false, ('Mise : %d $ en liquide.'):format(entry) end
     if not lobby then
         Races.nextId = Races.nextId + 1
-        lobby = { id = Races.nextId, circuit = circuitId, players = {}, state = 'open', entry = Config.Entry, pot = 0, finished = 0,
+        lobby = { id = Races.nextId, circuit = circuitId, players = {}, state = 'open', entry = entry, pot = 0, finished = 0,
             startAt = os.time() + Config.JoinWindow }
         Races.lobbies[lobby.id] = lobby
         if math.random() < Config.PoliceChance and started('gs_wanted') then
@@ -84,7 +90,7 @@ lib.callback.register('gs_races:start', function(src, circuitId, mode)
         end
     end
     table.insert(lobby.players, src)
-    lobby.pot = lobby.pot + Config.Entry
+    lobby.pot = lobby.pot + lobby.entry
     Races.runs[src] = { lobby = lobby, waiting = true }
     return true, ('Inscrit. Départ dans %d s si au moins 2 pilotes.'):format(math.max(0, lobby.startAt - os.time()))
 end)
@@ -188,7 +194,7 @@ lib.callback.register('gs_races:list', function(src)
         out[#out + 1] = { id = id, label = c.label, top = top, open = open, points = #c.points }
     end
     table.sort(out, function(a, b) return a.label < b.label end)
-    return { circuits = out, entry = Config.Entry }
+    return { circuits = out, entry = Races.entry() }
 end)
 
 --- Classements (Vibe) : { { id, label, top = { { name, time } } } } ; cache 60 s.

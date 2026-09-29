@@ -130,6 +130,8 @@ lib.callback.register('gs_store:claim', function(src, transaction)
     for _, g in ipairs(package.grants) do
         if g.type == 'vehicle' then
             if Bridge:GiveVehicle(src, g.model) then given[#given + 1] = g.label or g.model else failed[#failed + 1] = g.model end
+        elseif g.type == 'season_pass' and GetResourceState('gs_seasons') == 'started' and exports.gs_seasons:GrantPremium(cid) then
+            given[#given + 1] = 'Pass de saison (piste premium)'
         elseif (g.type == 'ped' and Config.Peds[g.id]) or (g.type == 'outfit' and Config.Outfits[g.id]) then
             Store.unlock(cid, g.type, g.id, transaction)
             given[#given + 1] = (g.type == 'ped' and Config.Peds or Config.Outfits)[g.id].label
@@ -182,4 +184,13 @@ AddEventHandler('gs_bridge:server:playerUnloaded', function(src) Shop.unlocks[sr
 CreateThread(function()
     Store.init()
     if not Config.Enabled then print('^3[gs_store] boutique DÉSACTIVÉE (Config.Enabled) : les achats Tebex sont enregistrés, pas réclamables^7') end
+end)
+
+--- Tenue offerte par un autre système (récompense de saison) : débloquée comme un achat. Retourne true si la tenue existe.
+exports('UnlockOutfit', function(cid, id, ref)
+    if type(cid) ~= 'string' or not Config.Outfits[id] then return false end
+    Store.unlock(cid, 'outfit', id, ref or 'recompense')
+    local src = Bridge:GetSourceByIdentifier(cid)
+    if src then Shop.loadUnlocks(src) end
+    return true
 end)

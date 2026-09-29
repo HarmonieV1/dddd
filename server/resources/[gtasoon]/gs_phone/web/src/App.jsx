@@ -37,6 +37,7 @@ function Header({ title, onBack, right }) {
 
 export default function App() {
   const [visible, setVisible] = useState(isBrowser)
+  const [hidden, setHidden] = useState(false) // masqué le temps d'une photo
   const [data, setData] = useState(isBrowser ? DEMO : null)
   const [screen, setScreen] = useState('home')
   const [peer, setPeer] = useState(null)
@@ -57,6 +58,8 @@ export default function App() {
     const onMessage = ({ data: msg }) => {
       if (msg.action === 'open') { setData(msg.data); setVisible(true) }
       else if (msg.action === 'close') setVisible(false)
+      else if (msg.action === 'hide') setHidden(true)
+      else if (msg.action === 'show') setHidden(false)
       else if (msg.action === 'clock') setData((d) => d && { ...d, clock: msg.clock })
       else if (msg.action === 'message') {
         const m = msg.message
@@ -308,7 +311,7 @@ export default function App() {
   }
 
   return (
-    <div className="phone">
+    <div className="phone" style={hidden ? { visibility: 'hidden' } : undefined}>
       <div className="notch" />
       <div className="status"><span>{data.clock}</span><span>5G ▮▮▮</span></div>
       <div className="screen">{content}</div>
