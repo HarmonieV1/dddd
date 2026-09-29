@@ -68,3 +68,12 @@ Cocher dans l'ordre. Chaque ligne rouge en console = on s'arrête et on l'envoie
 - [ ] Vendeur PNJ derrière chaque comptoir (sinon noter les coords avec F11 → Copier mes coordonnées)
 - [ ] F11 cliquable à la souris : chaque ligne fait bien ce qu'elle dit (TP marqueur ≠ soin)
 - [ ] Menus ox_lib noir-violet néon, accents roses (ligne verte « menus ox_lib en noir néon » dans METTRE-A-JOUR)
+
+## V3 — à tester en jeu
+- [ ] F4 police : menotter, escorter, véhicule, fouiller, casier, prison, fourrière, cônes / herse, /radar
+- [ ] F4 EMS : réanimer (trousse), soigner (bandage), porter, ambulance
+- [ ] Z en véhicule (portes, moteur, places, vitres), B ceinture, X mains en l'air, /me /do
+- [ ] Kits : réparation (moteur), avancé (complet), nettoyage — utilisables sans métier
+- [ ] Gang : bombe de peinture → tag ; [G] effacer ; garage du gang ; receleur la nuit ; porte du labo → préparation ×2
+- [ ] F10 : tiroir compact à droite ; F11 inchangé
+- [ ] Inventaire : vraies icônes (cigarettes, drogues, snacks, colis)

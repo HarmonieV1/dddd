@@ -114,6 +114,24 @@ Un seul fil pour tous les cercles au sol et icônes (location, quêtes, entrées
   L'échange est animé (main à main).
 - **`/deal`** : reste à un coin de rue, des passants viennent à toi toutes les 20 à 40 s. Le mode se coupe si tu montes en véhicule.
 
+## gs_police — interventions (V3, F4, en service)
+- **Police** : menotter (menottes requises), escorter, mettre / sortir du véhicule, fouiller (menotté, à terre ou mains en l'air),
+  casier judiciaire (lecture / ajout), prison RP (grade ≥ 1, 1-60 min, persistante, évasion ramenée), fourrière,
+  cônes / barrières / **herse** (crève les pneus), **radar de vitesse** (`/radar`, en véhicule).
+- **EMS** : réanimer (trousse), soigner (bandage), porter le patient, le mettre dans l'ambulance.
+
+## gs_details — petits détails (V3)
+Radial véhicule (**Z** en véhicule : moteur, portes, places, vitres, ceinture), `/me` `/do` (texte au-dessus de la tête,
+visible à 20 m), **mains en l'air** (X), **ceinture** (B, éjection en cas de choc sans ceinture), kits utilisables par tous :
+réparation de fortune (moteur 75 %), réparation avancée (complète), nettoyage.
+
+## gs_gangs — gangs vivants (V3)
+- **Tags** : bombe de peinture (quincaillerie), 15 tags max par gang, 25 m entre deux tags, +influence de quartier ;
+  n'importe qui peut effacer un tag ([G]), le gang est prévenu.
+- **Garage du gang** au QG : véhicules aux couleurs du gang, un par membre.
+- **Receleur** (grade ≥ 1, la nuit, lieu qui change toutes les heures) : vente en gros (10 à 50 pochons), prix ×1,35, argent sale.
+- **Labos** (gs_interiors) : intérieurs cachés du jeu derrière une porte réservée au gang ; préparation ×2.
+
 ## Liens entre features
 `gs_weather` → visibilité de `gs_wanted` + prix de `gs_economy` ;
 `gs_duo` → crimes vers `gs_wanted`, chaleur partagée ; `gs_jobs` → police en service pour le dispatch.

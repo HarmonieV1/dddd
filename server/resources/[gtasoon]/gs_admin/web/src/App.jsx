@@ -251,7 +251,7 @@ export default function App() {
             </form>
           )}
           <div className="card wide muted small">
-            <p style={{ margin: 0 }}>Noclip, spectate, bans et véhicules : menu txAdmin (commande <code>/tx</code>). Ce panel gère le RP : tickets, fiches, isolement, économie, jobs.</p>
+            <p style={{ margin: 0 }}>Pouvoirs (vol libre, spectate, animaux, véhicules, points de métier) : menu <code>F11</code>. Bans : txAdmin (<code>/tx</code>). Ce panneau gère le staff : tickets, fiches, sanctions, économie, journal.</p>
           </div>
         </div>
       )}
