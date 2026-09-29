@@ -110,6 +110,11 @@ RegisterCommand('deal', function()
     end)
 end, false)
 
+AddEventHandler('gs_drugs:client:act', function(id, stage)
+    if stage == 'harvest' then act(id, 'harvest', 'Récolte…', { scenario = 'WORLD_HUMAN_GARDENER_PLANT' })
+    else act(id, 'process', 'Préparation…', { dict = 'mp_arresting', clip = 'a_uncuff' }) end
+end)
+
 CreateThread(function()
     for id, d in pairs(Config.Drugs) do
         for i, c in ipairs(d.harvest.points) do
@@ -122,6 +127,17 @@ CreateThread(function()
             name = 'gs_drug_p_' .. id, icon = 'fa-solid fa-flask', label = 'Préparer',
             onSelect = function() act(id, 'process', 'Préparation…', { dict = 'mp_arresting', clip = 'a_uncuff' }) end,
         } } })
+        -- [E] discret (aucun cercle : les spots restent secrets)
+        for i, c in ipairs(d.harvest.points) do
+            exports.gs_markers:Add(('gs_drugs:h:%s:%d'):format(id, i), { coords = c, style = 'hidden', ring = false, distance = 5.0,
+                event = 'gs_drugs:client:act', args = { id, 'harvest' }, prompt = 'Récolter' })
+        end
+        local spots = { d.process.center }
+        for _, c in ipairs((Config.Labs or {})[id] or {}) do spots[#spots + 1] = c end
+        for i, c in ipairs(spots) do
+            exports.gs_markers:Add(('gs_drugs:p:%s:%d'):format(id, i), { coords = c, style = 'hidden', ring = false, distance = 5.0,
+                event = 'gs_drugs:client:act', args = { id, 'process' }, prompt = i == 1 and 'Préparer' or 'Préparer (labo ×2)' })
+        end
     end
 
     exports.ox_target:addGlobalPed({ {
@@ -134,4 +150,5 @@ end)
 AddEventHandler('onResourceStop', function(res)
     if res ~= GetCurrentResourceName() then return end
     for _, z in ipairs(zones) do exports.ox_target:removeZone(z) end
+    exports.gs_markers:RemovePrefix('gs_drugs:')
 end)

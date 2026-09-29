@@ -40,6 +40,9 @@ Config.Items = {
     -- Quincaillerie
     jerry_can = { label = 'Jerrican', base = 60, min = 0.8, max = 1.6, volume = 20 },
     binoculars = { label = 'Jumelles', base = 150, min = 0.8, max = 1.5, volume = 15 },
+    spraycan  = { label = 'Bombe de peinture', base = 40, min = 0.8, max = 1.6, volume = 20 },
+    advancedrepairkit = { label = 'Kit de réparation avancé', base = 900, min = 0.8, max = 1.5, volume = 10 },
+    cleaningkit = { label = 'Kit de nettoyage', base = 25, min = 0.8, max = 1.5, volume = 30 },
     scrapmetal = { label = 'Ferraille', base = 12, min = 0.3, max = 1.5, volume = 200, buy = false },
     copper     = { label = 'Cuivre', base = 30, min = 0.3, max = 1.6, volume = 120, buy = false },
 }
@@ -55,7 +58,7 @@ Config.EventMultipliers = {
 local SUPERETTE = { 'water', 'sprunk', 'coffee', 'gs_energy', 'burger', 'sandwich', 'gs_chips', 'gs_donut',
     'beer', 'wine', 'gs_cigarettes', 'lighter', 'bandage', 'phone' }
 local CAVISTE = { 'beer', 'wine', 'vodka', 'whiskey', 'gs_cigarettes', 'lighter', 'water', 'sprunk', 'gs_chips' }
-local QUINCAILLERIE = { 'repairkit', 'jerry_can', 'lockpick', 'radio', 'binoculars', 'phone' }
+local QUINCAILLERIE = { 'repairkit', 'advancedrepairkit', 'cleaningkit', 'jerry_can', 'spraycan', 'lockpick', 'radio', 'binoculars', 'phone' }
 
 -- Commerces (achat). Coords = comptoirs des magasins du jeu (mêmes points qu'ox_inventory) ; blip = style de Config.Blips.
 -- clerk = vendeur PNJ derrière le comptoir (vec4, à caler en jeu : F11 → Copier mes coordonnées).

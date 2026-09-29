@@ -174,6 +174,7 @@ local function territoryAt(coords)
         if #(coords - t.center) <= t.radius then return id end
     end
 end
+Gangs.territoryAt = territoryAt
 
 local function publish()
     local now, out = os.time(), {}
@@ -401,7 +402,7 @@ end)
 exports('GetGang', function(src) local m = Gangs.online[src] return m and m.gang, m and m.grade end)
 exports('GetTerritoryAt', function(coords) return territoryAt(coords) end)
 exports('GetTerritoryOwner', function(id) return Gangs.territories[id] and Gangs.territories[id].owner end)
-exports('AddInfluence', function(gang, id, n)
+function Gangs.addInfluence(gang, id, n)
     local t = Gangs.territories[id]
     if not t or not Gangs.list[gang] or type(n) ~= 'number' then return false end
     t.influence[gang] = clamp((t.influence[gang] or 0) + n)
@@ -409,4 +410,5 @@ exports('AddInfluence', function(gang, id, n)
     Gangs.dirty = true
     publish()
     return true
-end)
+end
+exports('AddInfluence', Gangs.addInfluence)

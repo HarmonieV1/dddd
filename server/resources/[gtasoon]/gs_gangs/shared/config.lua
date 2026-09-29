@@ -37,6 +37,28 @@ Config.DefaultGangs = {
     { name = 'lostmc', label = 'Lost MC', color = 40, stash = vec3(986.6, -95.1, 74.8) },         -- club-house, East Vinewood
 }
 
+-- Garage des gangs par défaut (un véhicule par membre, aux couleurs du gang). garage = sortie ; paint = couleur GTA.
+Config.GangGarages = {
+    families = { garage = vec4(113.7, -1948.6, 20.7, 50.0), paint = 53, vehicles = { 'chino', 'buccaneer2', 'manchez' } },
+    ballas = { garage = vec4(11.6, -1823.6, 25.3, 140.0), paint = 145, vehicles = { 'faction2', 'buccaneer2', 'manchez' } },
+    vagos = { garage = vec4(331.5, -2033.4, 20.9, 50.0), paint = 88, vehicles = { 'chino2', 'moonbeam2', 'manchez' } },
+    marabunta = { garage = vec4(1429.9, -1497.1, 62.0, 170.0), paint = 70, vehicles = { 'voodoo', 'tornado', 'manchez' } },
+    lostmc = { garage = vec4(972.7, -114.6, 74.4, 225.0), paint = 0, vehicles = { 'daemon', 'hexer', 'gburrito' } },
+}
+
+-- Tags : bombe de peinture (item spraycan). Limite par gang, distance mini entre deux tags, influence de quartier.
+Config.Tags = { maxPerGang = 15, minDistance = 25.0, range = 3.0, influence = 2, drawDistance = 30.0, sprayTime = 6000, eraseTime = 8000 }
+
+-- Couleurs d'affichage (tags) par couleur de blip GTA
+Config.ColorRGB = { [1] = { 224, 50, 50 }, [3] = { 93, 182, 229 }, [25] = { 57, 200, 90 }, [27] = { 170, 90, 255 },
+    [40] = { 190, 190, 190 }, [46] = { 240, 200, 80 }, default = { 255, 46, 136 } }
+
+-- Receleur (vente en gros) : grade minimum, quantité minimum, nuit seulement, lieu qui change toutes les heures
+Config.Fence = {
+    minGrade = 1, minQty = 10, maxQty = 50, bonus = 1.35, hours = { 21, 5 }, rotateMinutes = 60, reportChance = 0.35,
+    locations = { vec3(-1154.9, -1558.9, 4.4), vec3(1204.7, -3116.9, 5.5), vec3(716.0, -965.0, 30.4), vec3(2474.0, 3444.0, 50.1) },
+}
+
 -- Quartiers (coords approximatives, à caler en jeu)
 Config.Territories = {
     grove    = { label = 'Grove Street',      center = vec3(105.0, -1940.0, 20.8),  radius = 220.0 },

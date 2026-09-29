@@ -286,3 +286,19 @@ end
 
 -- Ajouts pour gs_social
 function IsPlayerAceAllowed(src, ace) return W.players[src] ~= nil and W.players[src].aces ~= nil and W.players[src].aces[ace] == true end
+
+-- Ajouts pour gs_police / gs_details : state bags joueur, objets serveur
+W.pstate = {}
+function Player(src)
+    W.pstate[src] = W.pstate[src] or {}
+    local st = W.pstate[src]
+    return { state = setmetatable({ set = function(_, k, v) st[k] = v end }, { __index = st }) }
+end
+function CreateObjectNoOffset(hash, x, y, z)
+    W.nextEntity = W.nextEntity + 1
+    W.entities[W.nextEntity] = { type = 3, pos = vec3(x, y, z), model = hash }
+    return W.nextEntity
+end
+function SetEntityHeading() end
+function FreezeEntityPosition(ent, on) if W.entities[ent] then W.entities[ent].frozen = on elseif ent > 1000 and ent < 2000 and W.players[ent - 1000] then W.players[ent - 1000].frozen = on end end
+if not GetPedInVehicleSeat then function GetPedInVehicleSeat(veh) return W.entities[veh] and W.entities[veh].driver and (1000 + W.entities[veh].driver) or 0 end end

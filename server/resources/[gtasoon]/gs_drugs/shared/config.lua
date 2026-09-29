@@ -34,6 +34,13 @@ Config.Drugs = {
     },
 }
 
+-- Labos de gangs (intérieurs gs_interiors) : préparation réservée au gang propriétaire, production ×2.
+Config.Labs = {
+    weed = { vec3(1060.5, -3182.0, -39.16), vec3(1134.6, -3194.5, -39.67) },
+    coke = { vec3(1093.0, -3196.0, -39.0), vec3(1005.8, -3200.4, -38.52) },
+}
+Config.LabBonus = 2
+
 -- Mode deal (/deal) : des passants viennent à toi quand tu attends à un coin de rue.
 Config.Deal = {
     interval = { 20, 40 },        -- secondes entre deux clients

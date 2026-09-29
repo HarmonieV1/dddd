@@ -1,0 +1,184 @@
+-- gs_gangs (serveur) : tags, garage du gang, receleur (vente en gros). Tout est revérifié ici.
+local Security = exports.gs_security
+local Bridge   = exports.gs_bridge
+
+TagsStore = TagsStore or {
+    init = function()
+        MySQL.query.await([[CREATE TABLE IF NOT EXISTS `gs_gang_tags` (
+            `id` INT UNSIGNED NOT NULL AUTO_INCREMENT, `gang` VARCHAR(30) NOT NULL,
+            `x` FLOAT NOT NULL, `y` FLOAT NOT NULL, `z` FLOAT NOT NULL, `heading` FLOAT NOT NULL DEFAULT 0,
+            `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, PRIMARY KEY (`id`)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4]])
+    end,
+    all = function() return MySQL.query.await('SELECT id, gang, x, y, z, heading FROM gs_gang_tags') or {} end,
+    insert = function(gang, c, h) return MySQL.insert.await('INSERT INTO gs_gang_tags (gang, x, y, z, heading) VALUES (?, ?, ?, ?, ?)', { gang, c.x, c.y, c.z, h }) end,
+    delete = function(id) MySQL.prepare('DELETE FROM gs_gang_tags WHERE id = ?', { id }) end,
+}
+
+Extras = { tags = {}, vehicles = {} } -- tags[id] = { id, gang, x, y, z, heading } ; vehicles[src] = entity
+
+local function notifyGang(gang, msg, t)
+    for s, m in pairs(Gangs.online) do if m.gang == gang then Bridge:Notify(s, msg, t or 'inform') end end
+end
+
+local function member(src) local m = Gangs.online[src] return m and m.gang and m or nil end
+local function started(res) return GetResourceState(res) == 'started' end
+
+-- Tags -------------------------------------------------------------------------------------------------------------
+
+local function publishTags()
+    local list = {}
+    for _, t in pairs(Extras.tags) do
+        local g = Gangs.list[t.gang]
+        if g then
+            local rgb = Config.ColorRGB[g.color] or Config.ColorRGB.default
+            list[#list + 1] = { id = t.id, label = g.label, r = rgb[1], g = rgb[2], b = rgb[3], x = t.x, y = t.y, z = t.z, h = t.heading }
+        end
+    end
+    GlobalState.gsTags = list
+end
+
+function Extras.countTags(gang)
+    local n = 0
+    for _, t in pairs(Extras.tags) do if t.gang == gang then n = n + 1 end end
+    return n
+end
+
+lib.callback.register('gs_gangs:tag', function(src, coords, heading)
+    if not Security:RateLimit(src, 'gs_gangs:tag', 2, 10000) then return false, 'Doucement.' end
+    local m = member(src)
+    if not m then return false, 'Il faut être dans un gang pour taguer.' end
+    local c = type(coords) == 'table' and tonumber(coords.x) and vec3(coords.x, coords.y, coords.z)
+    if not c or not Security:InRange(src, c, Config.Tags.range + 1.0) then return false, 'Trop loin du mur.' end
+    if Extras.countTags(m.gang) >= Config.Tags.maxPerGang then
+        return false, ('Ton gang a déjà %d tags : efface-en un avant.'):format(Config.Tags.maxPerGang)
+    end
+    for _, t in pairs(Extras.tags) do
+        if #(vec3(t.x, t.y, t.z) - c) < Config.Tags.minDistance then return false, 'Un tag existe déjà juste à côté.' end
+    end
+    if not Bridge:RemoveItem(src, 'spraycan', 1) then return false, 'Il te faut une bombe de peinture.' end
+    local h = tonumber(heading) or 0.0
+    local id = TagsStore.insert(m.gang, c, h)
+    if not id then return false, 'Erreur.' end
+    Extras.tags[id] = { id = id, gang = m.gang, x = c.x, y = c.y, z = c.z, heading = h }
+    publishTags()
+    local zone = Gangs.territoryAt(c)
+    if zone then Gangs.addInfluence(m.gang, zone, Config.Tags.influence) end
+    return true, 'Tag posé.'
+end)
+
+lib.callback.register('gs_gangs:eraseTag', function(src, id)
+    if not Security:RateLimit(src, 'gs_gangs:erase', 2, 10000) then return false, 'Doucement.' end
+    local t = Extras.tags[tonumber(id) or -1]
+    if not t then return false, 'Tag introuvable.' end
+    if not Security:InRange(src, vec3(t.x, t.y, t.z), Config.Tags.range + 1.0) then return false, 'Trop loin.' end
+    Extras.tags[t.id] = nil
+    TagsStore.delete(t.id)
+    publishTags()
+    local m = member(src)
+    if m and m.gang ~= t.gang then
+        local zone = Gangs.territoryAt(vec3(t.x, t.y, t.z))
+        if zone then Gangs.addInfluence(t.gang, zone, -Config.Tags.influence) end
+        notifyGang(t.gang, ('Un de vos tags a été effacé par %s.'):format(Gangs.list[m.gang].label), 'warning')
+    end
+    return true, 'Tag effacé.'
+end)
+
+-- Garage du gang ------------------------------------------------------------------------------------------------------
+
+local BIKES = { manchez = true, daemon = true, hexer = true, zombiea = true, sanchez = true }
+
+lib.callback.register('gs_gangs:garage', function(src, index)
+    if not Security:RateLimit(src, 'gs_gangs:garage', 3, 10000) then return false, 'Doucement.' end
+    local m = member(src)
+    local g = m and Config.GangGarages[m.gang]
+    if not g then return false, 'Pas de garage pour ton gang.' end
+    local model = g.vehicles[tonumber(index) or 0]
+    if not model then return false, 'Véhicule inconnu.' end
+    if not Security:InRange(src, vec3(g.garage.x, g.garage.y, g.garage.z), 6.0) then return false, 'Approche-toi du garage.' end
+    local old = Extras.vehicles[src]
+    if old and DoesEntityExist(old) then return false, 'Range d\'abord ton véhicule.' end
+    local veh = Bridge:SpawnVehicle(src, model, BIKES[model] and 'bike' or 'automobile',
+        g.garage, g.garage.w, m.gang:upper():sub(1, 4) .. math.random(1000, 9999), true)
+    if not veh or veh == 0 then return false, 'Véhicule indisponible.' end
+    SetVehicleColours(veh, g.paint, g.paint)
+    Extras.vehicles[src] = veh
+    return true, 'Véhicule sorti.'
+end)
+
+lib.callback.register('gs_gangs:garageStore', function(src)
+    if not Security:RateLimit(src, 'gs_gangs:store', 3, 10000) then return false, 'Doucement.' end
+    local veh = Extras.vehicles[src]
+    if not veh or not DoesEntityExist(veh) then Extras.vehicles[src] = nil return false, 'Aucun véhicule du gang sorti.' end
+    if #(GetEntityCoords(veh) - GetEntityCoords(GetPlayerPed(src))) > 15.0 then return false, 'Ramène le véhicule au garage.' end
+    DeleteEntity(veh)
+    Extras.vehicles[src] = nil
+    return true, 'Véhicule rangé.'
+end)
+
+-- Receleur ------------------------------------------------------------------------------------------------------------
+
+function Extras.fenceLocation()
+    local f = Config.Fence
+    return f.locations[math.floor(os.time() / (f.rotateMinutes * 60)) % #f.locations + 1]
+end
+
+local function fenceOpen()
+    if not started('gs_weather') then return true end
+    local hour = exports.gs_weather:GetGameTime()
+    local from, to = Config.Fence.hours[1], Config.Fence.hours[2]
+    return hour >= from or hour < to
+end
+
+lib.callback.register('gs_gangs:fenceInfo', function(src)
+    if not Security:RateLimit(src, 'gs_gangs:fenceInfo', 5, 10000) then return nil end
+    local m = member(src)
+    if not m or m.grade < Config.Fence.minGrade then return nil end
+    return { coords = Extras.fenceLocation(), open = fenceOpen() }
+end)
+
+lib.callback.register('gs_gangs:fenceSell', function(src, drugId)
+    if not Security:RateLimit(src, 'gs_gangs:fenceSell', 2, 10000) then return false, 'Doucement.' end
+    local m = member(src)
+    if not m or m.grade < Config.Fence.minGrade then return false, 'Le receleur ne te connaît pas.' end
+    if not fenceOpen() then return false, 'Le receleur ne travaille que la nuit.' end
+    if not Security:InRange(src, Extras.fenceLocation(), 4.0) then return false, 'Trop loin.' end
+    if not started('gs_drugs') then return false, 'Indisponible.' end
+    local product
+    for _, p in ipairs(exports.gs_drugs:GetSellables()) do if p.id == drugId then product = p end end
+    if not product then return false, 'Produit inconnu.' end
+    local have = Bridge:GetItemCount(src, product.item)
+    if have < Config.Fence.minQty then return false, ('Il en veut au moins %d.'):format(Config.Fence.minQty) end
+    local qty = math.min(have, Config.Fence.maxQty)
+    local unit = math.floor((product.price[1] + product.price[2]) / 2 * Config.Fence.bonus)
+    if not Bridge:RemoveItem(src, product.item, qty) then return false, 'Erreur.' end
+    local total = unit * qty
+    if not (Bridge:ItemExists('black_money') and Bridge:AddItem(src, 'black_money', total)) then Bridge:AddMoney(src, 'cash', total, 'receleur') end
+    local zone = Gangs.territoryAt(GetEntityCoords(GetPlayerPed(src)))
+    if zone then Gangs.addInfluence(m.gang, zone, 3) end
+    if started('gs_wanted') and math.random() < Config.Fence.reportChance then
+        exports.gs_wanted:ReportCrime(src, 'drug_sale', GetEntityCoords(GetPlayerPed(src)))
+    end
+    return true, ('%d × %s vendus %d $ (argent sale)'):format(qty, product.label, total)
+end)
+
+-- Cycle de vie --------------------------------------------------------------------------------------------------------
+
+AddEventHandler('gs_bridge:server:playerUnloaded', function(src)
+    local veh = Extras.vehicles[src]
+    if veh and DoesEntityExist(veh) then DeleteEntity(veh) end
+    Extras.vehicles[src] = nil
+end)
+
+function Extras.init()
+    TagsStore.init()
+    for _, row in ipairs(TagsStore.all()) do
+        if Gangs.list[row.gang] then Extras.tags[row.id] = { id = row.id, gang = row.gang, x = row.x, y = row.y, z = row.z, heading = row.heading } end
+    end
+    publishTags()
+end
+
+CreateThread(function()
+    Wait(2000) -- après Gangs.init (liste des gangs)
+    Extras.init()
+end)

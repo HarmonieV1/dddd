@@ -15,6 +15,16 @@ local function pay(src, amount)
     Bridge:AddMoney(src, 'cash', amount, 'vente')
 end
 
+--- Dans un labo de son gang pour cette drogue ? (point de travail + accès vérifié par gs_interiors)
+function Drugs.atLab(src, drugId)
+    local spots = Config.Labs and Config.Labs[drugId]
+    if not spots or not started('gs_interiors') then return false end
+    for _, c in ipairs(spots) do
+        if near(src, c, 2.0) then return exports.gs_interiors:InLab(src, drugId) end
+    end
+    return false
+end
+
 -- Récolte / transformation ---------------------------------------------------------------------------------
 
 lib.callback.register('gs_drugs:begin', function(src, drugId, stage)
@@ -22,12 +32,13 @@ lib.callback.register('gs_drugs:begin', function(src, drugId, stage)
     local drug = Drugs.enabled[drugId] and Config.Drugs[drugId]
     local step = drug and (stage == 'harvest' or stage == 'process') and drug[stage]
     if not step then return false, 'Indisponible.' end
-    if not near(src, step.center, step.radius) then return false, 'Trop loin.' end
+    local lab = stage == 'process' and Drugs.atLab(src, drugId)
+    if not lab and not near(src, step.center, step.radius) then return false, 'Trop loin.' end
     if Drugs.pending[src] then return false, 'Déjà occupé.' end
     if stage == 'process' and Bridge:GetItemCount(src, step.input) < step.inputCount then
         return false, ('Il te faut %d × %s.'):format(step.inputCount, step.input)
     end
-    Drugs.pending[src] = { drug = drugId, stage = stage, doneAt = GetGameTimer() + step.duration - 750 }
+    Drugs.pending[src] = { drug = drugId, stage = stage, lab = lab, doneAt = GetGameTimer() + step.duration - 750 }
     return true, step.duration
 end)
 
@@ -37,19 +48,20 @@ lib.callback.register('gs_drugs:finish', function(src)
     Drugs.pending[src] = nil
     if not p or GetGameTimer() < p.doneAt then return false, 'Interrompu.' end
     local step = Config.Drugs[p.drug][p.stage]
-    if not near(src, step.center, step.radius) then return false, 'Tu t\'es éloigné.' end
+    if not (p.lab and Drugs.atLab(src, p.drug)) and not near(src, step.center, step.radius) then return false, 'Tu t\'es éloigné.' end
     if p.stage == 'harvest' then
         local n = math.random(step.amount[1], step.amount[2])
         if not Bridge:AddItem(src, step.item, n) then return false, 'Tu ne peux plus rien porter.' end
         return true, ('+%d %s'):format(n, step.item)
     end
-    if not Bridge:CanCarry(src, step.output, step.outputCount) then return false, 'Tu ne peux plus rien porter.' end
+    local out = step.outputCount * (p.lab and Config.LabBonus or 1)
+    if not Bridge:CanCarry(src, step.output, out) then return false, 'Tu ne peux plus rien porter.' end
     if not Bridge:RemoveItem(src, step.input, step.inputCount) then return false, 'Il te manque la matière première.' end
-    if not Bridge:AddItem(src, step.output, step.outputCount) then
+    if not Bridge:AddItem(src, step.output, out) then
         Bridge:AddItem(src, step.input, step.inputCount) -- remboursement
         return false, 'Erreur, matière rendue.'
     end
-    return true, ('+%d %s'):format(step.outputCount, step.output)
+    return true, ('+%d %s%s'):format(out, step.output, p.lab and ' (labo ×' .. Config.LabBonus .. ')' or '')
 end)
 
 RegisterNetEvent('gs_drugs:server:cancel', function()
@@ -161,3 +173,12 @@ function Drugs.init()
 end
 
 CreateThread(Drugs.init)
+
+--- Produits vendables actifs (receleur de gs_gangs) : { { id, label, item, price = { min, max } } }
+exports('GetSellables', function()
+    local l = {}
+    for id, d in pairs(Config.Drugs) do
+        if Drugs.enabled[id] then l[#l + 1] = { id = id, label = d.label, item = d.sell.item, price = d.sell.price } end
+    end
+    return l
+end)
