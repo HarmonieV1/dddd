@@ -6,7 +6,9 @@
 -- salaryFrom  = 'state' (payé par la ville) | 'society' (payé par la caisse du job)
 -- dutyAnywhere= true   → prise de service depuis le menu /job (sinon au point 'duty')
 -- grades[n]   = { label, salary (par paie, en service), boss = true pour la direction }
--- points      = duty / boss / stash / garage (listes, plusieurs points possibles)
+-- points      = duty / boss / stash / armory / garage (listes, plusieurs points possibles) ; déplaçables en jeu :
+--               menu staff F11 → « Points de métier » (sauvegardé en BDD, prioritaire sur ces coords)
+-- armory      = équipement de service gratuit (en service) : { item, max, minGrade } ; on complète jusqu'à `max`
 -- vehicles    = véhicules de service (minGrade), type = 'automobile' | 'bike' | 'heli' | 'boat'
 -- billing     = factures / amendes (nécessite society = true)
 -- vehicleActions = actions sur véhicule (effect = 'repair' | 'clean')
@@ -29,9 +31,10 @@ Jobs = {
             duty = { vec3(441.0, -981.9, 30.69) },
             boss = { vec3(447.9, -973.3, 30.69) },
             stash = {
-                { label = 'Armurerie', coords = vec3(452.3, -980.0, 30.69), slots = 80, weight = 300000, minGrade = 1 },
+                { label = 'Coffre du commissariat', coords = vec3(452.3, -980.0, 30.69), slots = 80, weight = 300000, minGrade = 1 },
                 { label = 'Saisies', coords = vec3(474.8, -994.5, 26.27), slots = 100, weight = 500000, minGrade = 0 },
             },
+            armory = { vec3(451.7, -984.2, 30.69) },
             garage = {
                 { coords = vec3(458.9, -1017.1, 28.2), spawn = vec4(446.1, -1025.4, 28.6, 5.0) },
             },
@@ -42,6 +45,13 @@ Jobs = {
             { model = 'police3', label = 'Interceptor', minGrade = 2 },
             { model = 'policeb', label = 'Moto', minGrade = 2, type = 'bike' },
             { model = 'fbi', label = 'Banalisée', minGrade = 3 },
+        },
+        armory = {
+            { item = 'radio', max = 1 }, { item = 'handcuffs', max = 2 }, { item = 'WEAPON_FLASHLIGHT', max = 1 },
+            { item = 'WEAPON_NIGHTSTICK', max = 1 }, { item = 'WEAPON_STUNGUN', max = 1 }, { item = 'armour', max = 1 },
+            { item = 'bandage', max = 5 }, { item = 'binoculars', max = 1 }, { item = 'empty_evidence_bag', max = 10 },
+            { item = 'WEAPON_PISTOL', max = 1, minGrade = 1 }, { item = 'ammo-9', max = 60, minGrade = 1 },
+            { item = 'WEAPON_CARBINERIFLE', max = 1, minGrade = 3 }, { item = 'ammo-rifle', max = 90, minGrade = 3 },
         },
     },
 
@@ -63,6 +73,7 @@ Jobs = {
             stash = {
                 { label = 'Pharmacie', coords = vec3(301.0, -588.0, 43.28), slots = 60, weight = 150000, minGrade = 0 },
             },
+            armory = { vec3(306.4, -601.5, 43.28) },
             garage = {
                 { coords = vec3(294.5, -574.0, 43.18), spawn = vec4(290.0, -570.0, 43.2, 70.0) },
             },
@@ -70,6 +81,10 @@ Jobs = {
         vehicles = {
             { model = 'ambulance', label = 'Ambulance', minGrade = 0 },
             { model = 'lguard', label = 'Intervention rapide', minGrade = 2 },
+        },
+        armory = {
+            { item = 'radio', max = 1 }, { item = 'bandage', max = 20 }, { item = 'firstaid', max = 10 },
+            { item = 'painkillers', max = 10 }, { item = 'ifaks', max = 5 }, { item = 'WEAPON_FLASHLIGHT', max = 1 },
         },
     },
 
@@ -90,6 +105,7 @@ Jobs = {
             stash = {
                 { label = 'Atelier', coords = vec3(738.5, -1085.0, 22.2), slots = 60, weight = 200000, minGrade = 0 },
             },
+            armory = { vec3(733.4, -1088.6, 22.2) },
             garage = {
                 { coords = vec3(718.0, -1088.0, 22.3), spawn = vec4(706.0, -1080.0, 22.4, 90.0) },
             },
@@ -97,6 +113,11 @@ Jobs = {
         vehicles = {
             { model = 'towtruck', label = 'Dépanneuse', minGrade = 0 },
             { model = 'flatbed', label = 'Plateau', minGrade = 1 },
+        },
+        armory = {
+            { item = 'radio', max = 1 }, { item = 'repairkit', max = 5 }, { item = 'cleaningkit', max = 5 },
+            { item = 'jerry_can', max = 2 }, { item = 'WEAPON_WRENCH', max = 1 },
+            { item = 'advancedrepairkit', max = 2, minGrade = 1 },
         },
         vehicleActions = {
             repair = { label = 'Réparer', effect = 'repair', item = 'repairkit', itemLabel = 'Kit de réparation',

@@ -231,6 +231,7 @@ end
 
 lib.callback.register('gs_quests:state', function(src)
     if not guard(src, 'state', 10, 10000) then return nil end
+    if not Progress.players[src] and Bridge:IsLoaded(src) then Progress.loadPlayer(src) end
     return Progress.state(src)
 end)
 
@@ -329,15 +330,23 @@ end)
 
 -- Cycle de vie ------------------------------------------------------------------------------------------------------
 
-AddEventHandler('gs_bridge:server:playerLoaded', function(src)
+--- Charge la progression d'un joueur (connexion, ou rattrapage si la ressource a démarré après lui).
+function Progress.loadPlayer(src)
     local cid = Bridge:GetIdentifier(src)
-    if not cid then return end
-    local p = Store.load(cid)
+    if not cid then return nil end
+    local ok, p = pcall(Store.load, cid)
+    if not ok or not p then
+        print(('^1[gs_quests] chargement de %s impossible : %s^7'):format(cid, tostring(p)))
+        return nil
+    end
     p.cid = cid
     Progress.players[src] = p
     Progress.login(src)
     TriggerClientEvent('gs_quests:client:refresh', src)
-end)
+    return p
+end
+
+AddEventHandler('gs_bridge:server:playerLoaded', function(src) Progress.loadPlayer(src) end)
 
 AddEventHandler('gs_bridge:server:playerUnloaded', function(src)
     Progress.cleanup(src)

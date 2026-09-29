@@ -19,14 +19,17 @@ exports('AdminSetActive', function(src, job, grade)
     return true
 end)
 
---- { { name, label, grades = { { grade, label } } } } triés (menus staff).
+--- Staff : déplace un point de métier (coffre, service, armurerie…) à `coords` (vec4). Retourne ok, err.
+exports('AdminSetPoint', function(job, kind, idx, coords) return GSJ.setPoint(job, kind, idx, coords) end)
+
+--- { { name, label, grades = { { grade, label } }, points = { { kind, idx, label } } } } triés (menus staff).
 exports('ListJobs', function()
     local list = {}
     for name, j in pairs(Jobs) do
         local grades = {}
         for g, d in pairs(j.grades) do grades[#grades + 1] = { grade = g, label = d.label } end
         table.sort(grades, function(a, b) return a.grade < b.grade end)
-        list[#list + 1] = { name = name, label = j.label, grades = grades }
+        list[#list + 1] = { name = name, label = j.label, grades = grades, points = GSJ.listPoints(name) }
     end
     table.sort(list, function(a, b) return a.label < b.label end)
     return list

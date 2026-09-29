@@ -54,3 +54,10 @@ Cocher dans l'ordre. Chaque ligne rouge en console = on s'arrête et on l'envoie
 - [ ] Crime sans policier en service : étoiles GTA, puis « la police a perdu ta trace »
 - [ ] Choix du lieu d'apparition (persos existants) : Mairie, Legion, Pôle Emploi, Del Perro, Motels, Sandy, Paleto
 - [ ] F5 : titre, série, 3 défis du jour, badges ; Néon : titre à côté du pseudo ; F10 : progression dans la fiche
+
+## V2.2 — à tester en jeu
+- [ ] Police / EMS / mécano en service : cercles violets (service, armurerie, coffre, direction, garage) ; armurerie = équipement gratuit selon le grade
+- [ ] F11 → Points de métier : déplacer l'armurerie / le coffre LSPD dans une partie ouverte du commissariat
+- [ ] Gangs par défaut (Families, Ballas, Vagos, Marabunta, Lost MC) : F11 → Me mettre dans un gang ; blip QG + planque
+- [ ] Transformation animal (nouveaux animaux) → « Reprendre forme humaine » : on retrouve exactement son perso
+- [ ] Max le Guide : « Parler à Max » visible même de loin (zone fixe), PNJ posé au sol

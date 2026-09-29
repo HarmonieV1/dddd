@@ -23,6 +23,8 @@ Store = {
     removeMember = function(cid) local had = members[cid] ~= nil members[cid] = nil return had end,
 }
 loadResource('gs_gangs', { R .. 'gs_gangs/server/main.lua' })
+local defaults = Config.DefaultGangs
+Config.DefaultGangs = {}
 Gangs.init()
 
 local passed, failed = 0, 0
@@ -139,6 +141,25 @@ check('chaleur retombe après une heure', GlobalState.gsTerritories.grove.heat =
 -- Suppression -----------------------------------------------------------------------------------------------------
 W.commands.gsgang(0, { action = 'delete', a = 'vagos' })
 check('gang supprimé : quartier libéré et membre désaffecté', t.owner == nil and Gangs.online[3].gang == nil)
+
+-- Gangs par défaut (Families, Ballas, Vagos…) : créés une seule fois, avec leur planque / QG
+local created = {}
+Store.createGang = function(n, l, c) if created[n] then return false end created[n] = { label = l, color = c } return true end
+Store.setStash = function(n, c) created[n].stash = c end
+Store.gangs = function()
+    local l = {}
+    for n, g in pairs(created) do l[#l + 1] = { name = n, label = g.label, color = g.color, stash_x = g.stash.x, stash_y = g.stash.y, stash_z = g.stash.z } end
+    return l
+end
+Config.DefaultGangs = defaults
+Gangs.init()
+local n = 0
+for _ in pairs(created) do n = n + 1 end
+check('gangs par défaut créés avec QG', n == #defaults and Gangs.list.families and Gangs.list.families.stash ~= nil)
+Gangs.init()
+local n2 = 0
+for _ in pairs(created) do n2 = n2 + 1 end
+check('pas de doublon au redémarrage', n2 == n)
 
 io.write(('\n%d réussis, %d échoués\n'):format(passed, failed))
 os.exit(failed == 0 and 0 or 1)

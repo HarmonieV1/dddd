@@ -29,6 +29,7 @@ et le couper coupe tout : vol, invisibilité, invincibilité, animal, spectate.
 | Mode staff, noms et ID au-dessus des joueurs, aller à un joueur, copier ses coordonnées | Helper |
 | Vol libre, invisible, invincible, se transformer en animal, TP au marqueur, spectate, amener, soigner, figer, supprimer un véhicule | Modérateur |
 | Se mettre (ou mettre un joueur) un **métier et un grade**, dans un **gang**, faire apparaître un véhicule | Admin |
+| **Points de métier** : déplacer service / coffre / armurerie / direction / garage à sa position (bâtiments fermés, futurs MLO) | Admin |
 | **Items** : donner, retirer, poser au sol (sans motif) | Fondateur (`group.god`) |
 
 Chaque action est revérifiée par le serveur (niveau, mode staff, cible) et journalisée (F10 → Journal, webhook staff).

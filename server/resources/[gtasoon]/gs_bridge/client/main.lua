@@ -90,9 +90,31 @@ CreateThread(function()
     if LocalPlayer.state.isLoggedIn then refresh(); pushJob(); pushStatus() end
 end)
 
---- Remet l'apparence sauvegardée du personnage (après un skin boutique). [API] illenium-appearance
+local savedAppearance
+
+--- Mémorise l'apparence actuelle (avant un skin boutique / une transformation staff). [API] illenium-appearance
+exports('SaveAppearance', function()
+    local ok, app = pcall(function() return exports['illenium-appearance']:getPedAppearance(PlayerPedId()) end)
+    if ok and app then savedAppearance = app end
+    return ok and app ~= nil
+end)
+
+--- Remet l'apparence du personnage : celle mémorisée, sinon modèle freemode (selon le genre) + skin enregistré.
+--- Asynchrone (thread interne) : un export appelé depuis une autre ressource ne doit pas attendre.
 exports('RestoreAppearance', function()
-    TriggerEvent('illenium-appearance:client:reloadSkin')
+    local app = savedAppearance
+    savedAppearance = nil
+    CreateThread(function()
+        local female = playerData.charinfo and tonumber(playerData.charinfo.gender) == 1
+        local hash = GetHashKey(female and 'mp_f_freemode_01' or 'mp_m_freemode_01')
+        lib.requestModel(hash, 5000)
+        SetPlayerModel(PlayerId(), hash) -- d'abord un corps humain (depuis un animal, illenium refuse sinon)
+        SetPedDefaultComponentVariation(PlayerPedId())
+        SetModelAsNoLongerNeeded(hash)
+        Wait(250)
+        if app and pcall(function() exports['illenium-appearance']:setPlayerAppearance(app) end) then return end -- [API]
+        TriggerEvent('illenium-appearance:client:reloadSkin', true) -- [API] recharge le skin sauvegardé en BDD
+    end)
 end)
 
 exports('GetJob', GetJob)

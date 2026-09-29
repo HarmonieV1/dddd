@@ -2,7 +2,9 @@
 CreateThread(function()
     DB.init()
     Bridge:RegisterJobs(Jobs)
+    GSJ.loadPoints()
     GSJ.registerStashes()
+    GSJ.checkArmories()
     for name, def in pairs(Jobs) do
         for action, a in pairs(def.vehicleActions or {}) do
             if a.item and not Bridge:ItemExists(a.item) then

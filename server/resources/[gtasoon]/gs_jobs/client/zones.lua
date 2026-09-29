@@ -1,4 +1,5 @@
--- Zones ox_target (0 ms au repos : pas de boucle) + blips. La visibilité dépend du job, le serveur revalide.
+-- Zones ox_target (0 ms au repos : pas de boucle) + blips + marqueurs au sol pour SON métier.
+-- Les points déplacés par le staff (GlobalState.gsJobPoints) remplacent ceux de jobs.lua, zones reconstruites à chaud.
 local zones, blips = {}, {}
 
 local function addZone(coords, option)
@@ -20,7 +21,56 @@ local function addBlip(coords, b)
     blips[#blips + 1] = blip
 end
 
-CreateThread(function()
+--- Même règle que le serveur (server/points.lua).
+local function applyPoint(o)
+    local p = Jobs[o.job] and Jobs[o.job].points
+    local list = p and p[o.kind == 'garage_spawn' and 'garage' or o.kind]
+    if type(list) ~= 'table' or not list[o.idx] then return end
+    if o.kind == 'stash' or o.kind == 'garage' then list[o.idx].coords = vec3(o.x, o.y, o.z)
+    elseif o.kind == 'garage_spawn' then list[o.idx].spawn = vec4(o.x, o.y, o.z, o.w or 0.0)
+    else list[o.idx] = vec3(o.x, o.y, o.z) end
+end
+
+-- Armurerie ------------------------------------------------------------------------------------------------
+local function openArmory(name)
+    local def = Jobs[name]
+    local options = {}
+    for _, a in ipairs(def.armory or {}) do
+        local item = exports.ox_inventory:Items(a.item) -- [API] ox_inventory (client)
+        local have = exports.ox_inventory:Search('count', a.item) or 0
+        local locked = GSJ.job.grade < (a.minGrade or 0)
+        options[#options + 1] = {
+            title = item and item.label or a.item, icon = 'box-open', disabled = locked or have >= a.max,
+            description = locked and ('Grade requis : %s'):format(GSJ.gradeLabel(name, a.minGrade)) or ('%d / %d'):format(have, a.max),
+            onSelect = function() GSJ.result(lib.callback.await('gs_jobs:armory', false, a.item)) openArmory(name) end,
+        }
+    end
+    lib.registerContext({ id = 'gs_jobs_armory', title = 'Armurerie · ' .. def.label, options = options })
+    lib.showContext('gs_jobs_armory')
+end
+
+-- Marqueurs au sol : seulement les points de ton métier actif --------------------------------------------------
+local function refreshMarkers()
+    exports.gs_markers:RemovePrefix('gs_jobs:pt:')
+    local job = GSJ.job and Jobs[GSJ.job.name]
+    if not job then return end
+    local p = job.points
+    local function mark(key, coords, label) exports.gs_markers:Add('gs_jobs:pt:' .. key, { coords = coords, style = 'job', label = label }) end
+    for i, c in ipairs(p.duty or {}) do mark('duty' .. i, c, 'Prise de service') end
+    for i, c in ipairs(p.boss or {}) do mark('boss' .. i, c, 'Direction') end
+    for i, c in ipairs(p.armory or {}) do mark('armory' .. i, c, 'Armurerie') end
+    for i, s in ipairs(p.stash or {}) do mark('stash' .. i, s.coords, s.label or 'Coffre') end
+    for i, g in ipairs(p.garage or {}) do mark('garage' .. i, g.coords, 'Garage') end
+end
+
+local function clear()
+    for _, id in ipairs(zones) do exports.ox_target:removeZone(id) end
+    for _, blip in ipairs(blips) do RemoveBlip(blip) end
+    zones, blips = {}, {}
+end
+
+local function build()
+    clear()
     for name, def in pairs(Jobs) do
         local p = def.points
 
@@ -37,6 +87,14 @@ CreateThread(function()
                 name = ('gs_stash_%s_%d'):format(name, i), icon = 'fa-solid fa-box-archive', label = s.label,
                 canInteract = function() return GSJ.isOnDuty(name) and GSJ.job.grade >= (s.minGrade or 0) end,
                 onSelect = function() Bridge:OpenStash(('gs_%s_%d'):format(name, i)) end,
+            })
+        end
+
+        for i, coords in ipairs(p.armory or {}) do
+            addZone(coords, {
+                name = ('gs_armory_%s_%d'):format(name, i), icon = 'fa-solid fa-shield-halved', label = 'Armurerie',
+                canInteract = function() return GSJ.isOnDuty(name) end,
+                onSelect = function() openArmory(name) end,
             })
         end
 
@@ -65,10 +123,28 @@ CreateThread(function()
         onSelect = function() GSJ.openJobCenter() end,
     })
     addBlip(Config.JobCenter.coords, Config.JobCenter.blip)
+    exports.gs_markers:Add('gs_jobs:center', { coords = Config.JobCenter.coords, style = 'entry', label = 'Pôle Emploi' })
+    refreshMarkers()
+end
+
+local function applyAll(list)
+    for _, o in ipairs(list or {}) do applyPoint(o) end
+end
+
+CreateThread(function()
+    applyAll(GlobalState.gsJobPoints)
+    build()
 end)
+
+AddStateBagChangeHandler('gsJobPoints', 'global', function(_, _, value)
+    applyAll(value)
+    build()
+end)
+
+AddEventHandler('gs_bridge:client:jobUpdated', function() Wait(0) refreshMarkers() end)
 
 AddEventHandler('onResourceStop', function(res)
     if res ~= GetCurrentResourceName() then return end
-    for _, id in ipairs(zones) do exports.ox_target:removeZone(id) end
-    for _, blip in ipairs(blips) do RemoveBlip(blip) end
+    clear()
+    exports.gs_markers:RemovePrefix('gs_jobs:')
 end)

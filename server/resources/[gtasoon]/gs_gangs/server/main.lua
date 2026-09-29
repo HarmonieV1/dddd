@@ -31,7 +31,7 @@ local function syncMember(src)
     if m and m.gang then Bridge:SetGang(src, m.gang, m.grade) else Bridge:SetGang(src, 'none', 0) end
     TriggerClientEvent('gs_gangs:client:membership', src, m and m.gang and {
         gang = m.gang, label = Gangs.list[m.gang].label, grade = m.grade,
-        gradeLabel = Config.Grades[m.grade].label, stash = Gangs.list[m.gang].stash,
+        gradeLabel = Config.Grades[m.grade].label, stash = Gangs.list[m.gang].stash, color = Gangs.list[m.gang].color,
     } or nil)
 end
 
@@ -322,6 +322,14 @@ AddEventHandler('gs_bridge:server:playerUnloaded', function(src) Gangs.online[sr
 
 function Gangs.init()
     Store.init()
+    local existing = {}
+    for _, row in ipairs(Store.gangs()) do existing[row.name] = true end
+    for _, g in ipairs(Config.DefaultGangs or {}) do
+        if not existing[g.name] and Store.createGang(g.name, g.label, g.color) then
+            Store.setStash(g.name, g.stash)
+            print(('[gs_gangs] gang par défaut créé : %s'):format(g.label))
+        end
+    end
     for _, row in ipairs(Store.gangs()) do
         local g = { name = row.name, label = row.label, color = row.color }
         if row.stash_x then g.stash = vec3(row.stash_x, row.stash_y, row.stash_z) end

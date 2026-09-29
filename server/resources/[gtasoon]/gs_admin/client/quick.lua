@@ -112,6 +112,7 @@ local function setAnimal(model)
     end
     local hash = GetHashKey(model)
     if not IsModelInCdimage(hash) then return notify(false, 'Modèle absent de ce build du jeu.') end
+    if not animal then Bridge:SaveAppearance() end -- pour retrouver exactement son perso ensuite
     lib.requestModel(hash, 10000)
     SetPlayerModel(PlayerId(), hash)
     SetPedDefaultComponentVariation(PlayerPedId())
@@ -276,6 +277,7 @@ local function gangsMenu(target)
     for _, g in ipairs(info.gangs) do
         options[#options + 1] = { label = g.label, values = { '0 · Recrue', '1 · Membre', '2 · Bras droit', '3 · Chef' }, args = g }
     end
+    if #info.gangs == 0 then options[#options + 1] = { label = 'Aucun gang en base (redémarre : gangs par défaut créés)' } end
     lib.registerMenu({ id = 'gs_staff_gangs', title = 'Gang · ' .. target.name, position = 'top-right', options = options,
         onClose = function() openQuick('main') end },
         function(_, scroll, g)
@@ -312,6 +314,32 @@ local function itemsMenu(target)
             else notify(act('dropitem', nil, { item = item, amount = count })) end
         end)
     lib.showMenu('gs_staff_items')
+end
+
+--- Points de métier : choisir le métier, puis le point à déplacer à sa position actuelle.
+local function pointsMenu(job)
+    if not job then
+        local options = {}
+        for _, j in ipairs(info.jobs) do
+            if #(j.points or {}) > 0 then options[#options + 1] = { label = j.label, args = j, icon = 'briefcase' } end
+        end
+        lib.registerMenu({ id = 'gs_staff_points', title = 'Points de métier', position = 'top-right', options = options,
+            onClose = function() openQuick('main') end },
+            function(_, _, j) if j then pointsMenu(j) end end)
+        return lib.showMenu('gs_staff_points')
+    end
+    local options = {}
+    for _, pt in ipairs(job.points) do
+        options[#options + 1] = { label = pt.label, args = pt, description = pt.kind == 'garage_spawn'
+            and 'Place-toi (ou ton véhicule) là où les véhicules doivent sortir' or 'Déplacé exactement à ta position' }
+    end
+    lib.registerMenu({ id = 'gs_staff_points_job', title = job.label, position = 'top-right', options = options,
+        onClose = function() pointsMenu() end },
+        function(_, _, pt)
+            if not pt then return end
+            notify(act('jobpoint', nil, { job = job.name, kind = pt.kind, idx = pt.idx }))
+        end)
+    lib.showMenu('gs_staff_points_job')
 end
 
 local function playersMenu()
@@ -366,10 +394,13 @@ local function mainMenu()
         add({ label = 'Téléportation au marqueur', icon = 'map-pin' }, Config.Powers.tpm, teleportToMarker)
         local animals = { 'Forme humaine' }
         for _, a in ipairs(Config.Animals) do animals[#animals + 1] = a.label end
-        add({ label = 'Se transformer', icon = 'paw', values = animals, defaultIndex = 1,
+        add({ label = 'Se transformer', icon = 'paw', values = animals, defaultIndex = animal and 2 or 1,
             description = 'Gauche/droite : choisir · Entrée : appliquer' }, Config.Powers.animal, function(_, scroll)
             if not scroll or scroll == 1 then setAnimal(nil) else setAnimal(Config.Animals[scroll - 1].model) end
         end)
+        if animal then
+            add({ label = 'Reprendre forme humaine', icon = 'person' }, Config.Powers.animal, function() setAnimal(nil) end)
+        end
         add({ label = 'Me soigner', icon = 'heart' }, 2, function() notify(act('revive', info.me)) end)
         add({ label = 'Réparer mon véhicule', icon = 'wrench' }, 2, function() notify(act('fixveh', info.me)) end)
         add({ label = 'Faire apparaître un véhicule', icon = 'car' }, 3, function()
@@ -387,6 +418,8 @@ local function mainMenu()
         end)
         add({ label = 'Me mettre un métier', icon = 'briefcase' }, 3, function() jobsMenu(me) end)
         add({ label = 'Me mettre dans un gang', icon = 'people-group' }, 3, function() gangsMenu(me) end)
+        add({ label = 'Points de métier (placer ici)', icon = 'location-crosshairs',
+            description = 'Service, coffre, armurerie, direction, garage : déplacés à ta position' }, 3, function() pointsMenu() end)
         add({ label = 'Items (fondateur)', icon = 'box-open' }, 4, function() itemsMenu(me) end)
         add({ label = 'Copier mes coordonnées', icon = 'crosshairs', description = 'vec4 dans le presse-papiers (calage des configs)' }, 1, function()
             local ped = PlayerPedId()

@@ -26,6 +26,17 @@ Config.Territory = {
     heatWindow = 3600,       -- chaleur de quartier = crimes signalés sur la dernière heure
 }
 
+-- Gangs créés automatiquement au 1er démarrage (si absents), avec leur QG / planque dans leur quartier du jeu.
+-- Le staff peut ensuite déplacer une planque (/builder → « Placer une planque de gang ici ») ou en créer d'autres.
+-- color = couleur de blip GTA. Coords à caler en jeu.
+Config.DefaultGangs = {
+    { name = 'families', label = 'Families', color = 25, stash = vec3(107.8, -1942.9, 20.8) },    -- Grove Street
+    { name = 'ballas', label = 'Ballas', color = 27, stash = vec3(4.9, -1819.3, 29.2) },          -- Davis
+    { name = 'vagos', label = 'Vagos', color = 46, stash = vec3(336.3, -2040.2, 21.4) },          -- Rancho / Jamestown
+    { name = 'marabunta', label = 'Marabunta Grande', color = 3, stash = vec3(1437.0, -1492.0, 63.6) }, -- El Burro Heights
+    { name = 'lostmc', label = 'Lost MC', color = 40, stash = vec3(986.6, -95.1, 74.8) },         -- club-house, East Vinewood
+}
+
 -- Quartiers (coords approximatives, à caler en jeu)
 Config.Territories = {
     grove    = { label = 'Grove Street',      center = vec3(105.0, -1940.0, 20.8),  radius = 220.0 },

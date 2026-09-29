@@ -6,7 +6,7 @@ name 'gs_jobs'
 description 'Multi-job : contrats, service, direction, caisse société, paie, garages, coffres, factures, missions, actions véhicule'
 version '0.1.0'
 
-dependencies { 'oxmysql', 'ox_lib', 'ox_target', 'gs_security', 'gs_bridge' }
+dependencies { 'oxmysql', 'ox_lib', 'ox_target', 'gs_security', 'gs_bridge', 'gs_markers' }
 
 shared_scripts {
     '@ox_lib/init.lua',
@@ -25,6 +25,7 @@ server_scripts {
     'server/payroll.lua',
     'server/garage.lua',
     'server/stash.lua',
+    'server/points.lua',
     'server/boss.lua',
     'server/billing.lua',
     'server/vehicle_actions.lua',

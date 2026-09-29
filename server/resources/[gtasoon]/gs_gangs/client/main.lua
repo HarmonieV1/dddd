@@ -30,10 +30,23 @@ AddStateBagChangeHandler('gsTerritories', 'global', function(_, _, value) drawTe
 CreateThread(function() drawTerritories(GlobalState.gsTerritories) end)
 
 -- Appartenance + planque ------------------------------------------------------------------------------
+local qgBlip
+
 RegisterNetEvent('gs_gangs:client:membership', function(m)
     membership = m
     if stashZone then exports.ox_target:removeZone(stashZone) stashZone = nil end
+    if qgBlip then RemoveBlip(qgBlip) qgBlip = nil end
+    exports.gs_markers:Remove('gs_gangs:qg')
     if m and m.stash then
+        qgBlip = AddBlipForCoord(m.stash.x, m.stash.y, m.stash.z)
+        SetBlipSprite(qgBlip, 437)
+        SetBlipColour(qgBlip, m.color or 1)
+        SetBlipScale(qgBlip, 0.85)
+        SetBlipAsShortRange(qgBlip, true)
+        BeginTextCommandSetBlipName('STRING')
+        AddTextComponentSubstringPlayerName('QG ' .. m.label)
+        EndTextCommandSetBlipName(qgBlip)
+        exports.gs_markers:Add('gs_gangs:qg', { coords = m.stash, style = 'entry', label = 'Planque ' .. m.label })
         stashZone = exports.ox_target:addSphereZone({
             coords = m.stash, radius = 1.5,
             options = { {

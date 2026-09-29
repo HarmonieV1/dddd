@@ -365,6 +365,17 @@ Actions.setgang = { level = 3, target = true, run = function(_, target, data)
     return gang and ('Gang %s grade %s'):format(gang, data.grade or 0) or 'Retiré de son gang'
 end }
 
+Actions.jobpoint = { level = 3, duty = true, run = function(src, _, data)
+    local ped = GetPlayerPed(src)
+    local veh = GetVehiclePedIsIn(ped, false)
+    local ent = (data.kind == 'garage_spawn' and veh ~= 0) and veh or ped
+    local c = GetEntityCoords(ent)
+    local ok, err = JobsApi:AdminSetPoint(tostring(data.job), tostring(data.kind), tonumber(data.idx),
+        vec4(c.x, c.y, c.z, GetEntityHeading(ent)))
+    need(ok, tostring(err))
+    return ('Point %s %s #%s placé ici'):format(data.job, data.kind, data.idx)
+end }
+
 local VEH_TYPES = { automobile = true, bike = true, boat = true, heli = true, plane = true }
 
 Actions.spawnveh = { level = 3, duty = true, run = function(src, _, data)

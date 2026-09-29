@@ -62,7 +62,7 @@ end
 
 local function talk(charId)
     refresh()
-    if not state then return end
+    if not state then return notify(false, 'Ta progression charge encore, réessaie dans quelques secondes.') end
     local ch = Characters[charId]
     local step = activeStep()
     if step and (step.type == 'talk' or step.type == 'deliver') and step.character == charId then return advance() end
@@ -97,22 +97,20 @@ local function spawnPed(id, ch)
     if not IsModelInCdimage(hash) then hash = GetHashKey('a_m_m_business_01') end
     lib.requestModel(hash, 5000)
     local c = ch.coords
-    local ped = CreatePed(4, hash, c.x, c.y, c.z - 1.0, c.w, false, true)
+    -- Posé au sol quelle que soit la façon dont la coord a été relevée (pieds ou bassin)
+    RequestCollisionAtCoord(c.x, c.y, c.z)
+    local found, gz = GetGroundZFor_3dCoord(c.x, c.y, c.z + 2.0, false)
+    local ped = CreatePed(4, hash, c.x, c.y, found and gz or (c.z - 1.0), c.w, false, true)
     SetModelAsNoLongerNeeded(hash)
     SetEntityInvincible(ped, true)
     FreezeEntityPosition(ped, true)
     SetBlockingOfNonTemporaryEvents(ped, true)
     TaskStartScenarioInPlace(ped, 'WORLD_HUMAN_STAND_IMPATIENT', 0, true)
-    exports.ox_target:addLocalEntity(ped, { {
-        name = 'gs_quest_' .. id, icon = 'fa-solid fa-comment', label = 'Parler à ' .. ch.name,
-        onSelect = function() talk(id) end,
-    } })
     peds[id] = ped
 end
 
 local function despawnPed(id)
     if peds[id] then
-        exports.ox_target:removeLocalEntity(peds[id])
         DeleteEntity(peds[id])
         peds[id] = nil
     end
@@ -335,14 +333,15 @@ end
 RegisterCommand('progression', openMenu, false)
 RegisterKeyMapping('progression', 'Progression et quêtes', 'keyboard', Config.Key)
 
--- Cabine sans PNJ (la Voix) : zone ox_target
+-- Interaction avec les personnages : une zone ox_target fixe par personnage (marche même si le PNJ n'a pas
+-- encore chargé ou s'il est mal posé) ; la cabine de la Voix n'a pas de PNJ.
 CreateThread(function()
     for id, ch in pairs(Characters) do
-        if not ch.model then
-            exports.ox_target:addSphereZone({ coords = vec3(ch.coords.x, ch.coords.y, ch.coords.z), radius = 1.2, options = { {
-                name = 'gs_quest_' .. id, icon = 'fa-solid fa-phone', label = 'Décrocher', onSelect = function() talk(id) end,
-            } } })
-        end
+        exports.ox_target:addSphereZone({ coords = vec3(ch.coords.x, ch.coords.y, ch.coords.z + 0.3), radius = 1.6, options = { {
+            name = 'gs_quest_' .. id, icon = ch.model and 'fa-solid fa-comment' or 'fa-solid fa-phone',
+            label = ch.model and ('Parler à ' .. ch.name) or 'Décrocher', distance = 3.0,
+            onSelect = function() talk(id) end,
+        } } })
     end
     if LocalPlayer.state.isLoggedIn then refresh() end -- [API] Qbox : redémarrage de la ressource en jeu
 end)
