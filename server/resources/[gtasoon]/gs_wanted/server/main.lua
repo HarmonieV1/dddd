@@ -3,7 +3,7 @@ local Security = exports.gs_security
 local Bridge   = exports.gs_bridge
 local JobsApi  = exports.gs_jobs
 
-Wanted = { heat = {}, lastReport = {}, history = {}, nextId = 0 }
+Wanted = { heat = {}, lastReport = {}, history = {}, nextId = 0, blind = {} } -- blind[i] = fin de panne de la caméra i
 
 local function clamp(v, a, b) return math.max(a, math.min(b, v)) end
 local function lerp(a, b, t) return a + (b - a) * t end
@@ -34,6 +34,14 @@ function Wanted.inSafeZone(coords)
         if #(coords - z.coords) <= z.radius then return true end
     end
     return false
+end
+
+--- Caméra en état de marche qui couvre `coords` → son nom, ou nil.
+function Wanted.cameraAt(coords)
+    local now = os.time()
+    for i, cam in ipairs(Config.Cameras.list) do
+        if (Wanted.blind[i] or 0) <= now and #(coords - cam.coords) <= Config.Cameras.radius then return cam.label end
+    end
 end
 
 --- Témoins autour de `coords` : PNJ vivants + joueurs (hors suspect). Détecte aussi un policier en service.
@@ -122,6 +130,12 @@ function Wanted.report(src, crimeType, coords, opts)
         chance = clamp(chance, 0, Config.Witness.maxChance)
         precision = clamp(count * 0.15 + visibility * 0.4, 0, 1)
     end
+    -- Caméra de surveillance : signalement quasi certain, zone précise, plaque lisible
+    local camera = not police and Wanted.cameraAt(coords) or nil
+    if camera then
+        chance = clamp(chance + Config.Cameras.chanceBonus, 0, Config.Witness.maxChance)
+        precision = math.max(precision, Config.Cameras.precision)
+    end
     -- Alarme silencieuse (braquage) : signalement certain et précis, quels que soient les témoins.
     if opts.alarm then chance, precision = 1.0, math.max(precision, 0.85) end
     if math.random() >= chance then return nil end
@@ -137,6 +151,7 @@ function Wanted.report(src, crimeType, coords, opts)
         coords = vec3(coords.x + math.cos(angle) * shift, coords.y + math.sin(angle) * shift, coords.z),
         radius = math.floor(radius),
         witnesses = police and -1 or count,  -- -1 = constaté par un agent
+        camera = camera,
         precision = precision,
         delay = police and 0 or math.floor(lerp(Config.Precision.delayMax, Config.Precision.delayMin, precision)),
     }
@@ -215,6 +230,16 @@ lib.addCommand('effacerrecherche', {
     Wanted.clearHeat(args.target)
     Security:LogStaff(('/effacerrecherche %s par %s'):format(args.target, src == 0 and 'console' or GetPlayerName(src)))
 end)
+
+--- Aveugle les caméras à moins de `radius` m de `coords` pendant `seconds` (pirate d'un gros coup).
+function Wanted.blindCameras(coords, radius, seconds)
+    local n, until_ = 0, os.time() + (seconds or Config.Cameras.blindSeconds)
+    for i, cam in ipairs(Config.Cameras.list) do
+        if #(toVec3(coords) - cam.coords) <= (radius or 60.0) then Wanted.blind[i] = until_ n = n + 1 end
+    end
+    return n
+end
+exports('BlindCameras', Wanted.blindCameras)
 
 -- API pour les autres ressources (braquages, drogue, duo...) ---------------------------------------
 exports('ReportCrime', function(src, crimeType, coords, opts) return Wanted.report(src, crimeType, coords, opts) ~= nil end)

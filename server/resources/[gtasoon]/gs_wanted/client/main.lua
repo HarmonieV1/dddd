@@ -73,6 +73,7 @@ local function describe(r)
     local who = r.witnesses == -1 and 'constaté par un agent'
         or (r.witnesses == 0 and 'appel anonyme' or ('%d témoin(s)'):format(r.witnesses))
     local parts = { ('%s · ±%d m'):format(street, r.radius), who }
+    if r.camera then parts[#parts + 1] = 'Caméra : ' .. r.camera end
     if r.model then
         local name = GetLabelText(GetDisplayNameFromVehicleModel(r.model))
         parts[#parts + 1] = ('%s %s'):format(name, r.plate or '')

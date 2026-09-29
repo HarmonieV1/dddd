@@ -65,7 +65,26 @@ Config.SafeZones = {
 -- du jeu (étoiles GTA) sur le suspect. La ville ne reste jamais sans police. 0 = désactivé.
 Config.NpcPolice = {
     minCops = 1,
+    search = { seconds = 120, radius = 180.0 },   -- après avoir semé la police IA : elle fouille la dernière zone connue
     stars = { { heat = 10, stars = 1 }, { heat = 30, stars = 2 }, { heat = 45, stars = 3 }, { heat = 999, stars = 4 } },
+}
+
+-- Caméras de surveillance : un crime à moins de `radius` m d'une caméra est presque toujours signalé, avec une zone précise
+-- et la plaque lisible. Un pirate (gros coup en duo) peut les aveugler quelques minutes autour d'un site. Coords à compléter.
+Config.Cameras = {
+    radius = 35.0, chanceBonus = 0.45, precision = 0.85, blindSeconds = 600,
+    list = {
+        { label = 'Legion Square', coords = vec3(195.2, -934.3, 30.7) },
+        { label = 'Fleeca Legion Square', coords = vec3(149.4, -1040.5, 29.4) },
+        { label = 'Bijouterie Vangelico', coords = vec3(-622.0, -231.0, 38.1) },
+        { label = 'Aéroport LSIA', coords = vec3(-1037.8, -2737.8, 20.2) },
+        { label = 'Pillbox Hill', coords = vec3(298.0, -584.0, 43.2) },
+        { label = 'Jetée de Del Perro', coords = vec3(-1604.0, -1049.0, 13.0) },
+        { label = 'Mission Row', coords = vec3(441.0, -981.0, 30.7) },
+        { label = 'Casino Diamond', coords = vec3(924.4, 46.9, 81.1) },
+        { label = 'Pacific Standard', coords = vec3(247.0, 222.0, 106.3) },
+        { label = 'Mirror Park', coords = vec3(1163.4, -323.8, 69.2) },
+    },
 }
 
 Config.Dispatch = {

@@ -10,4 +10,4 @@ dependencies { 'ox_lib', 'gs_security', 'gs_bridge', 'gs_jobs' }
 
 shared_scripts { '@ox_lib/init.lua', 'shared/config.lua' }
 server_scripts { 'server/main.lua' }
-client_scripts { 'client/main.lua' }
+client_scripts { 'client/main.lua', 'client/search.lua' }

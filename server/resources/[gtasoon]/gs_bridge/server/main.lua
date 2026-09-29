@@ -81,6 +81,14 @@ local function SetLicence(src, name, value)
     return true
 end
 
+--- Prix catalogue d'un modèle (qbx_core VEHICLES) ou nil. [API] qbx_core
+local function GetVehiclePrice(model)
+    if type(model) ~= 'string' then return nil end
+    local ok, list = pcall(function() return exports.qbx_core:GetVehiclesByName() end)
+    local v = ok and list and list[model]
+    return v and tonumber(v.price) or nil
+end
+
 --- Propriétaire d'un véhicule par sa plaque : nom du personnage ou nil (véhicule volé / PNJ / location). [API] player_vehicles
 local function GetVehicleOwner(plate)
     if type(plate) ~= 'string' then return nil end
@@ -317,6 +325,7 @@ exports('GetCharInfo', GetCharInfo)
 exports('GetLicences', GetLicences)
 exports('SetLicence', SetLicence)
 exports('GetVehicleOwner', GetVehicleOwner)
+exports('GetVehiclePrice', GetVehiclePrice)
 exports('ListItems', ListItems)
 exports('CreateDrop', CreateDrop)
 exports('SpawnVehicle', SpawnVehicle)

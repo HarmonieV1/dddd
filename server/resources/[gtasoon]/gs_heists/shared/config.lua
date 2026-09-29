@@ -40,3 +40,16 @@ Config.Sites = {
         points = { vec3(147.0, -1046.0, 29.4), vec3(150.2, -1045.0, 29.4), vec3(149.2, -1047.8, 29.4) },
         verb = 'Forcer le coffre' },
 }
+
+-- Gros coups en duo (rôles distincts, il faut un partenaire de gs_duo à côté de soi) :
+--  1. PIRATE : pirate le terminal (coupe l'alarme, 15 % de chances de la déclencher quand même)
+--  2. CONDUCTEUR : vide les coffres (les deux coffres, 15 s chacun)
+--  3. FUITE : le conducteur au volant s'éloigne de `escapeDistance` m du site, le pirate à moins de 80 m de lui, avant `escapeTime` s
+-- Butin partagé 50 / 50 en argent sale. Coords à caler en jeu.
+Config.Big = {
+    fleeca_legion = { label = 'Gros coup : Fleeca Legion Square', minPolice = 4, cooldown = 7200, center = vec3(149.0, -1042.0, 29.4),
+        radius = 25.0, terminal = vec3(150.4, -1041.2, 29.4), vault = { vec3(147.0, -1046.0, 29.4), vec3(150.2, -1045.0, 29.4) },
+        hackAction = 20000, hackFail = 0.15, lootAction = 15000, reward = { 9000, 14000 }, escapeDistance = 900.0, escapeTime = 240 },
+}
+Config.BigStartRadius = 30.0       -- les deux partenaires près du site pour lancer
+Config.BigPartnerRadius = 80.0     -- pirate / conducteur ensemble pendant la fuite

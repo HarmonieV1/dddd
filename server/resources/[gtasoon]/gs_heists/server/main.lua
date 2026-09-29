@@ -47,6 +47,8 @@ local function giveLoot(src, amount)
     return ('%d $'):format(amount)
 end
 
+Heists.giveLoot = giveLoot -- partagé avec server/duo.lua
+
 local function endSession(id)
     Heists.sessions[id] = nil
     Heists.cooldowns[id] = now() + Config.Sites[id].cooldown

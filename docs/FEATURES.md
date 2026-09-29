@@ -185,6 +185,16 @@ réparation de fortune (moteur 75 %), réparation avancée (complète), nettoyag
   rapporte 3 points (détection serveur : coup d'arme + état « à terre »). Écart ≥ 3 : l'attaquant prend le quartier, sinon le défenseur le garde.
   Repos : 6 h pour l'attaquant, 1 h pour le défenseur.
 
+## V3.8 — gros coups en duo, police plus maligne, assurance auto
+- **Gros coup en duo** (gs_heists, Fleeca Legion : marqueur au site, partenaire de duo F7 obligatoire, 4 policiers min.) :
+  **Pirate** (pirate le terminal 20 s : coupe l'alarme, 15 % d'échec bruyant, aveugle les caméras 10 min) → **Conducteur** (vide 2 coffres, 15 s chacun)
+  → **Fuite** (conducteur au volant à 900 m du site, pirate à moins de 80 m, 4 min). Butin 9–14 k$ en argent sale, 50/50. Échec si l'un est à terre / parti.
+- **Police IA plus maligne** : **caméras de surveillance** (10 points de la ville) : crime filmé = signalement quasi certain, zone précise, plaque
+  lisible, caméra nommée dans le dispatch. Après avoir semé les policiers du jeu, ils **fouillent la dernière zone connue** 2 min :
+  y rester ou y retourner relance la recherche (cercle jaune sur la carte).
+- **Assurance auto** (gs_insurance, Mors Mutual) : 4 % du prix du véhicule pour 7 jours (28 max d'avance) ; un véhicule assuré ne paie que
+  **25 %** de la fourrière (patch de qbx_garages posé par METTRE-A-JOUR).
+
 ## Liens entre features
 `gs_weather` → visibilité de `gs_wanted` + prix de `gs_economy` ;
 `gs_duo` → crimes vers `gs_wanted`, chaleur partagée ; `gs_jobs` → police en service pour le dispatch.

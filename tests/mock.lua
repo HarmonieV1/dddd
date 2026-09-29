@@ -165,6 +165,7 @@ provide('gs_bridge', {
     GetCharInfo = function(src) local p = W.players[src] if not p then return nil end local f, l = p.name:match('^(%S+)%s*(.*)$') return { firstname = f, lastname = l, birthdate = '1990-01-01', nationality = 'USA' } end,
     GetLicences = function(src) return W.players[src] and W.players[src].licences or {} end,
     SetLicence = function(src, name, v) local p = W.players[src] if not p then return false end p.licences = p.licences or {} p.licences[name] = v == true return true end,
+    GetVehiclePrice = function(model) return ({ sultan = 40000, panto = 8000 })[model] end,
     GetVehicleOwner = function(plate) return W.owners and W.owners[plate] or nil end,
     ListItems = function() return { { name = 'sandwich', label = 'Sandwich' } } end,
     CreateDrop = function(items, coords) W.drops = W.drops or {} W.drops[#W.drops + 1] = { items = items, coords = coords } return true end,

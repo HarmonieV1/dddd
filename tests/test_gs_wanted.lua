@@ -142,5 +142,25 @@ fixRandom()
 TriggerEvent('gs_bridge:server:playerUnloaded', 1)
 check('chaleur nettoyée', Wanted.heat[1] == nil)
 
+-- Caméras de surveillance : signalement quasi certain, zone précise, plaque lisible, panne
+do
+    local cam = Config.Cameras.list[1]
+    local at = vec3(cam.coords.x + 5.0, cam.coords.y, cam.coords.z)
+    join(7, 'CID7', 'Filmé', at)
+    clearPeds()
+    Wanted.blind = {}
+    fixRandom(0.45) -- sans caméra : 0,15 de base → pas signalé
+    check('sans caméra, vol discret non signalé', Wanted.report(7, 'carjack', vec3(3000.0, 3000.0, 30.0)) == nil)
+    local car3 = CreateVehicleServerSetter(0, 'automobile', at.x, at.y, at.z)
+    SetVehicleNumberPlateText(car3, 'GSOON999')
+    local r2 = Wanted.report(7, 'carjack', at, { vehicle = car3 })
+    check('sous caméra : signalé, caméra nommée', r2 and r2.camera == cam.label)
+    check('sous caméra : plaque presque entière et zone précise', r2 and r2.plate:sub(1, 6) == 'GSOON9' and r2.radius < 100)
+    Wanted.blindCameras(at, 60.0, 600)
+    check('caméra aveuglée : de nouveau discret', Wanted.report(7, 'carjack', at) == nil)
+    Wanted.blind = {}
+    fixRandom(nil)
+end
+
 io.write(('\n%d réussis, %d échoués\n'):format(passed, failed))
 os.exit(failed == 0 and 0 or 1)
