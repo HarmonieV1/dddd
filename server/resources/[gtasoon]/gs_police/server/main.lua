@@ -198,9 +198,20 @@ Actions.identity = { job = 'police', target = true, run = function(_, target)
     local heat = GetResourceState('gs_wanted') == 'started' and exports.gs_wanted:GetHeat(target) or 0
     return {
         name = ('%s %s'):format(ci.firstname or '?', ci.lastname or '?'), birthdate = ci.birthdate, nationality = ci.nationality,
-        driver = lic.driver == true, weapon = lic.weapon == true, records = #Store.records(Bridge:GetIdentifier(target)),
+        driver = lic.driver == true, weapon = lic.weapon == true, hunting = lic.hunting == true, records = #Store.records(Bridge:GetIdentifier(target)),
         wanted = heat > 0,
     }
+end }
+
+Actions.licence = { job = 'police', target = true, run = function(src, target, data)
+    local job = Bridge:GetJob(src)
+    need(job and job.grade >= Config.Licences.minGrade, 'Grade insuffisant pour délivrer un permis.')
+    need(Config.Licences.kinds[data.kind] ~= nil, 'Permis inconnu.')
+    local on = data.on == true
+    need(Bridge:SetLicence(target, data.kind, on), 'Erreur.')
+    local what = Config.Licences.kinds[data.kind]
+    Bridge:Notify(target, ('%s %s par la police.'):format(what, on and 'délivré' or 'retiré'), on and 'success' or 'error')
+    return ('%s %s.'):format(what, on and 'délivré' or 'retiré')
 end }
 
 Actions.plate = { job = 'police', run = function(src, _, data)

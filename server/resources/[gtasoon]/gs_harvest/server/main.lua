@@ -79,6 +79,10 @@ lib.callback.register('gs_harvest:skin', function(src, netId)
     if #gained == 0 then return false, 'Tu ne peux plus rien porter.' end
     Harvest.animals[ent] = nil
     DeleteEntity(ent)
+    if not (Bridge:GetLicences(src) or {})[H.licence] and GetResourceState('gs_wanted') == 'started' then
+        exports.gs_wanted:ReportCrime(src, 'poaching', GetEntityCoords(GetPlayerPed(src)))
+        return true, '+' .. table.concat(gained, ', ') .. ' · sans permis : braconnage, la police peut être prévenue.'
+    end
     if GetResourceState('gs_quests') == 'started' then exports.gs_quests:Track(src, 'harvest') end
     return true, '+' .. table.concat(gained, ', ')
 end)
@@ -117,6 +121,19 @@ CreateThread(function()
         Wait(Config.Hunting.respawnSeconds * 1000)
         Harvest.huntTick()
     end
+end)
+
+lib.callback.register('gs_harvest:buyLicence', function(src)
+    if not Security:RateLimit(src, 'gs_harvest:buyLicence', 2, 10000) then return false, 'Doucement.' end
+    local H = Config.Hunting
+    if not Security:InRange(src, H.lodge, 4.0 + Config.Tolerance) then return false, 'Trop loin.' end
+    if (Bridge:GetLicences(src) or {})[H.licence] then return false, 'Tu as déjà ton permis de chasse.' end
+    if not Bridge:RemoveMoney(src, 'cash', H.licencePrice, 'permis de chasse')
+        and not Bridge:RemoveMoney(src, 'bank', H.licencePrice, 'permis de chasse') then
+        return false, ('Il te faut %d $.'):format(H.licencePrice)
+    end
+    Bridge:SetLicence(src, H.licence, true)
+    return true, 'Permis de chasse obtenu. Le fusil se vend à l\'armurerie du pavillon.'
 end)
 
 -- Revente -------------------------------------------------------------------------------------------------

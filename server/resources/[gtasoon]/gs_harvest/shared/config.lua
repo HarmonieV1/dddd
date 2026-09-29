@@ -39,7 +39,11 @@ Config.Activities = {
 }
 
 -- Chasse : animaux créés par le serveur dans la zone (pas de faux gibier), dépecés au couteau une fois abattus.
+-- Permis de chasse (licence Qbox 'hunting') : acheté au pavillon de chasse de Paleto. Le fusil (armurerie du pavillon,
+-- ox_inventory) l'exige ; dépecer sans permis = braconnage signalé à la police.
 Config.Hunting = {
+    licence = 'hunting', licencePrice = 750,
+    lodge = vec3(-679.35, 5839.24, 17.33),   -- [À CALER] pavillon de chasse (Paleto), armurier PNJ juste à côté
     label = 'Chasse', tool = 'huntingknife', skinTime = 6000, max = 6, respawnSeconds = 90, playerRadius = 500.0,
     blip = { sprite = 141, color = 1 }, center = vec3(-580.0, 5010.0, 140.0),
     animals = {

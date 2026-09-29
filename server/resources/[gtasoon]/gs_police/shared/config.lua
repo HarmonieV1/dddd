@@ -8,6 +8,10 @@ Config.EmsJob = 'ambulance'
 Config.Range = 3.0              -- distance max agent ↔ cible
 Config.Tolerance = 2.0
 
+-- Permis délivrés / retirés par la police (grade ≥ minGrade) depuis le contrôle d'identité. Sans permis d'arme :
+-- pas d'arme de poing à Ammu-Nation (ox_inventory). Le permis de chasse s'achète aussi au pavillon de chasse.
+Config.Licences = { minGrade = 2, kinds = { weapon = 'Port d\'arme', hunting = 'Permis de chasse' } }
+
 Config.CuffItem = 'handcuffs'   -- consommé ? non : il faut juste en avoir sur soi
 
 -- Prison RP (peine décidée en jeu par un policier, grade ≥ minGrade)

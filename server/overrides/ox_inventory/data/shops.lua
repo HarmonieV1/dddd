@@ -40,6 +40,21 @@ return {
 
 
 
+	-- Pavillon de chasse (Paleto) : fusil réservé aux titulaires du permis de chasse (acheté au même endroit, gs_harvest)
+	HuntingShop = {
+		name = 'Armurerie de chasse',
+		blip = { id = 141, colour = 5, scale = 0.7 },
+		inventory = {
+			{ name = 'WEAPON_MUSKET', price = 1500, metadata = { registered = true }, license = 'hunting' },
+			{ name = 'ammo-musket', price = 8, license = 'hunting' },
+			{ name = 'huntingknife', price = 140 },
+		}, locations = {
+			vec3(-677.9, 5837.6, 17.33)
+		}, targets = {
+			{ ped = `ig_hunter`, scenario = 'WORLD_HUMAN_SMOKING', loc = vec3(-677.9, 5837.6, 16.33), heading = 45.0, distance = 2.5 }
+		}
+	},
+
 	BlackMarketArms = {
 		name = 'Black Market (Arms)',
 		inventory = {

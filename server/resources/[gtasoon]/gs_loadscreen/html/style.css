@@ -25,6 +25,8 @@ main { position: relative; z-index: 2; height: 78vh; display: flex; flex-directi
   text-shadow: 0 0 10px var(--pink), 0 0 30px var(--pink), 0 0 60px rgba(255, 46, 136, .7);
   animation: flicker 6s infinite; }
 @keyframes flicker { 0%, 93%, 100% { opacity: 1 } 94% { opacity: .55 } 95% { opacity: 1 } 97% { opacity: .7 } }
+.subtitle { margin-top: .2em; font-size: 1.6vh; font-weight: 300; letter-spacing: .6em; text-transform: lowercase;
+  color: rgba(255, 255, 255, .75); text-shadow: 0 0 8px rgba(40, 224, 255, .6); }
 .tagline { margin: .6em 0 2.5em; color: var(--cyan); letter-spacing: .25em; text-transform: uppercase; font-size: 1.8vh;
   padding: 6px 16px; border-radius: 999px; background: rgba(11, 7, 20, .6);
   text-shadow: 0 0 10px rgba(40, 224, 255, .7); }

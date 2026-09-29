@@ -3,6 +3,8 @@
 dofile('tests/mock.lua')
 local R = 'server/resources/[gtasoon]/'
 loadResource('gs_security', { R .. 'gs_security/server/main.lua' })
+local crimes = {}
+provide('gs_wanted', { ReportCrime = function(_, t) crimes[#crimes + 1] = t return true end })
 loadResource('gs_harvest', { R .. 'gs_harvest/shared/config.lua', R .. 'gs_harvest/server/main.lua' })
 
 local passed, failed = 0, 0
@@ -96,6 +98,21 @@ ok = cb('gs_harvest:sell', 1, 2); step()
 check('plus rien à vendre', not ok)
 ok = cb('gs_harvest:sell', 1, 99); step()
 check('acheteur inconnu', not ok)
+
+check('dépecer sans permis = braconnage signalé', crimes[1] == 'poaching')
+
+-- Permis de chasse au pavillon
+W.players[1].money.cash, W.players[1].money.bank = 0, 0
+ok = cb('gs_harvest:buyLicence', 1); step()
+check('permis : trop loin', not ok)
+tp(1, H.lodge)
+ok, msg = cb('gs_harvest:buyLicence', 1); step()
+check('permis : pas assez d\'argent', not ok and msg:find('%$'))
+W.players[1].money.bank = 1000
+ok = cb('gs_harvest:buyLicence', 1); step()
+check('permis acheté (banque)', ok and W.players[1].licences.hunting and W.players[1].money.bank == 1000 - H.licencePrice)
+ok = cb('gs_harvest:buyLicence', 1); step()
+check('déjà titulaire', not ok)
 
 io.write(('\n%d réussis, %d échoués\n'):format(passed, failed))
 os.exit(failed == 0 and 0 or 1)

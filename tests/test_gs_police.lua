@@ -173,5 +173,16 @@ check('renforts envoyés aux policiers', ok and lastClientEvent('gs_police:clien
 ok = cb('gs_police:action', 1, 'backup'); step()
 check('renforts : pas de spam', not ok)
 
+-- Permis : grade minimum, délivrer puis retirer
+ok, d = cb('gs_police:action', 1, 'licence', 2, { kind = 'weapon', on = true }); step()
+check('permis : grade insuffisant', not ok)
+W.players[1].job.grade = Config.Licences.minGrade
+ok = cb('gs_police:action', 1, 'licence', 2, { kind = 'nimporte', on = true }); step()
+check('permis inconnu', not ok)
+ok = cb('gs_police:action', 1, 'licence', 2, { kind = 'hunting', on = true }); step()
+check('permis de chasse délivré', ok and W.players[2].licences.hunting == true)
+ok = cb('gs_police:action', 1, 'licence', 2, { kind = 'hunting', on = false }); step()
+check('permis retiré', ok and W.players[2].licences.hunting == false)
+
 io.write(('\n%d réussis, %d échoués\n'):format(passed, failed))
 os.exit(failed == 0 and 0 or 1)

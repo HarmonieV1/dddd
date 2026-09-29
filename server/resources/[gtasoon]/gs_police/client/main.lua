@@ -88,6 +88,16 @@ local function showIdentity(id)
         { title = d.name, icon = 'id-card', readOnly = true, description = ('Né(e) le %s · %s'):format(d.birthdate or '?', d.nationality or '?') },
         { title = ('Permis de conduire : %s'):format(d.driver and 'valide' or 'aucun'), icon = 'car', iconColor = d.driver and '#5aff8c' or '#ff4d6d', readOnly = true },
         { title = ('Port d\'arme : %s'):format(d.weapon and 'oui' or 'non'), icon = 'gun', iconColor = d.weapon and '#5aff8c' or '#6b6380', readOnly = true },
+        { title = ('Permis de chasse : %s'):format(d.hunting and 'oui' or 'non'), icon = 'crosshairs', iconColor = d.hunting and '#5aff8c' or '#6b6380', readOnly = true },
+        { title = 'Délivrer / retirer un permis', icon = 'stamp', arrow = true, onSelect = function()
+            local r = lib.inputDialog('Permis', {
+                { type = 'select', label = 'Permis', required = true, default = 'weapon', options = {
+                    { value = 'weapon', label = 'Port d\'arme' }, { value = 'hunting', label = 'Permis de chasse' } } },
+                { type = 'select', label = 'Action', required = true, default = 'on', options = {
+                    { value = 'on', label = 'Délivrer' }, { value = 'off', label = 'Retirer' } } },
+            })
+            if r then notify(act('licence', id, { kind = r[1], on = r[2] == 'on' })) end
+        end },
         { title = ('Casier : %d mention(s)'):format(d.records), icon = 'folder-open', iconColor = d.records > 0 and '#ff8a3d' or '#5aff8c',
           onSelect = function() showRecords(id) end },
         { title = d.wanted and 'SIGNALÉ : recherché' or 'Non recherché', icon = 'triangle-exclamation', iconColor = d.wanted and '#ff4d6d' or '#6b6380', readOnly = true },

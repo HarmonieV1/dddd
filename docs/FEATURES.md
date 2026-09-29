@@ -150,6 +150,14 @@ réparation de fortune (moteur 75 %), réparation avancée (complète), nettoyag
 - **Vibe** (ex-Néon) : le réseau social est une **app du téléphone** (F1), en temps réel. `/vibe` garde la version grand écran.
 - **Correctifs** : retour humain après un animal (menu staff), F5 n'ouvre plus la progression (ancienne commande supprimée).
 
+## V3.4 — Roadtrip, permis, Cayo Perico, densité
+- **Nom** : ROADTRIP, sous-titre « new generation » (écran de chargement, liste des serveurs).
+- **Permis** : port d'arme obligatoire pour les armes de poing d'Ammu-Nation (déjà en place) ; **permis de chasse** (750 $ au pavillon
+  de chasse de Paleto) obligatoire pour le fusil ; dépecer sans permis = **braconnage** signalé. La police (grade ≥ 2) délivre / retire
+  les deux permis depuis le contrôle d'identité (F4).
+- **Cayo Perico** (gs_world) : l'île du jeu se charge seulement à moins de 2,2 km (zéro coût en ville). Vols réguliers LSIA ↔ île (350 $).
+- **Moins de PNJ** : piétons 60 %, circulation 65 %, voitures garées 75 % (réglable dans gs_world/shared/config.lua).
+
 ## Liens entre features
 `gs_weather` → visibilité de `gs_wanted` + prix de `gs_economy` ;
 `gs_duo` → crimes vers `gs_wanted`, chaleur partagée ; `gs_jobs` → police en service pour le dispatch.

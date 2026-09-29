@@ -5,7 +5,7 @@ const tips = [
   'En duo, tout se partage : la paie, les contrats… et la chaleur quand la police vous cherche.',
   'Jusqu’à 3 emplois par personnage. F6 pour passer de l’un à l’autre.',
   'Le Pôle Emploi (mairie) propose taxi, livreur et éboueur. Le métier le plus respecté de LS. Si, si.',
-  'Néon (F3) : ton réseau social. Pas de lien, pas de pub, juste du RP.',
+  'Vibe, dans ton téléphone (F1) : le réseau social de la ville. Pas de lien, pas de pub, juste du RP.',
   'Tempête tropicale annoncée ? Rentre les flamants roses et évite les coupures de courant.',
   'Une amende LSPD se paie avec /factures. Oui, même si tu roulais « juste un peu vite ».',
   'Zéro pay-to-win ici : la boutique ne vend que du style, jamais d’avantage.',

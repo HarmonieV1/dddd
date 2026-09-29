@@ -16,6 +16,10 @@ AddEventHandler('gs_harvest:client:do', function(id)
     notify(lib.callback.await('gs_harvest:finish', false))
 end)
 
+AddEventHandler('gs_harvest:client:licence', function()
+    notify(lib.callback.await('gs_harvest:buyLicence', false))
+end)
+
 AddEventHandler('gs_harvest:client:sell', function(i)
     notify(lib.callback.await('gs_harvest:sell', false, i))
 end)
@@ -42,6 +46,8 @@ CreateThread(function()
             event = 'gs_harvest:client:sell', args = { i }, prompt = 'Vendre · ' .. b.label, distance = 20.0 })
     end
     blip(Config.Hunting.center, Config.Hunting.blip, Config.Hunting.label)
+    exports.gs_markers:Add('gs_harvest:licence', { coords = Config.Hunting.lodge, style = 'shop', label = 'Permis de chasse',
+        event = 'gs_harvest:client:licence', prompt = ('Permis de chasse (%d $)'):format(Config.Hunting.licencePrice), distance = 20.0 })
 
     -- Dépecer : ox_target sur les animaux abattus (le serveur vérifie que c'est bien du gibier de la zone)
     local models = {}

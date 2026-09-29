@@ -71,6 +71,16 @@ local function GetLicences(src)
     return p and p.PlayerData.metadata and p.PlayerData.metadata.licences or {}
 end
 
+--- Donne / retire un permis (metadata.licences Qbox, lu aussi par ox_inventory pour les achats d'armes). [API]
+local function SetLicence(src, name, value)
+    local p = GetPlayer(src)
+    if not p or type(name) ~= 'string' then return false end
+    local l = p.PlayerData.metadata.licences or {}
+    l[name] = value == true
+    p.Functions.SetMetaData('licences', l)
+    return true
+end
+
 --- Propriétaire d'un véhicule par sa plaque : nom du personnage ou nil (véhicule volé / PNJ / location). [API] player_vehicles
 local function GetVehicleOwner(plate)
     if type(plate) ~= 'string' then return nil end
@@ -305,6 +315,7 @@ exports('GetName', GetName)
 exports('GetGender', GetGender)
 exports('GetCharInfo', GetCharInfo)
 exports('GetLicences', GetLicences)
+exports('SetLicence', SetLicence)
 exports('GetVehicleOwner', GetVehicleOwner)
 exports('ListItems', ListItems)
 exports('CreateDrop', CreateDrop)
