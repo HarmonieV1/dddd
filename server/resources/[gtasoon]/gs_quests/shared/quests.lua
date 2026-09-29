@@ -24,15 +24,18 @@ Characters = {
 Quests = {
     -- Tout le monde ----------------------------------------------------------------------------------------------
     {
-        id = 'welcome', title = 'Bienvenue à Los Santos', giver = 'guide',
-        intro = 'Nouveau en ville ? Moi c\'est Max. Ici, on commence par un boulot et des roues. Suis le guide, je te paie le café.',
-        outro = 'Tu vois, c\'est pas sorcier. Reviens me voir de temps en temps : je connais du monde.',
+        id = 'welcome', title = 'Ton premier jour', giver = 'guide',
+        intro = 'Nouveau en ville ? Moi c\'est Max. Premier jour : je te fais visiter l\'essentiel. Suis le GPS, et reviens me voir à la fin : je te paie le café.',
+        outro = 'Voilà, tu connais la base : papiers, banque, boulot, permis. Le reste, c\'est toi qui l\'écris. Bienvenue à Los Santos !',
         steps = {
-            { type = 'goto', label = 'Passe au Pôle Emploi', coords = vec3(-265.0, -963.6, 31.22), radius = 6.0 },
-            { type = 'goto', label = 'Repère la location de véhicules de la mairie', coords = vec3(-515.6, -262.5, 35.5), radius = 6.0 },
+            { type = 'goto', label = 'Mairie : papiers et état civil', coords = vec3(-545.1, -204.3, 38.2), radius = 8.0 },
+            { type = 'goto', label = 'Banque : ton compte (distributeurs partout en ville)', coords = vec3(149.4, -1040.5, 29.4), radius = 6.0 },
+            { type = 'goto', label = 'Pôle Emploi : trouve un premier boulot (F6)', coords = vec3(-265.0, -963.6, 31.22), radius = 6.0 },
+            { type = 'goto', label = 'Auto-école : passe ton permis de conduire', coords = vec3(239.5, -1381.0, 33.7), radius = 8.0 },
+            { type = 'goto', label = 'Location : un scooter en attendant le permis', coords = vec3(-515.6, -262.5, 35.5), radius = 6.0 },
             { type = 'talk', label = 'Retourne voir Max', character = 'guide' },
         },
-        reward = { xp = 150, cash = 250 },
+        reward = { xp = 300, cash = 500 },
     },
     {
         id = 'voice', title = 'La Voix au bout du fil', giver = 'voice', requires = 'welcome', minLevel = 3,

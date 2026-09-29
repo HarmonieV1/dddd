@@ -207,6 +207,74 @@ Jobs = {
         vehicles = { { model = 'tailgater', label = 'Voiture de l\'agence', minGrade = 0 } },
     },
 
+    -- V4 : services publics, justice, presse, commerces tenus par des joueurs. Points [À CALER] en jeu.
+    drivingschool = {
+        label = 'Auto-école de Los Santos', type = 'drivingschool', whitelisted = true, society = true, salaryFrom = 'society',
+        dutyAnywhere = true, platePrefix = 'AUTO',
+        blip = { sprite = 545, color = 3, label = 'Auto-école' },
+        billing = { label = 'Leçon de conduite', max = 5000 },
+        grades = { [0] = { label = 'Moniteur', salary = 250 }, [1] = { label = 'Directeur', salary = 400, boss = true } },
+        points = { boss = { vec3(241.4, -1378.9, 33.7) }, garage = { { coords = vec3(226.0, -1390.0, 30.5), spawn = vec4(232.4, -1393.6, 30.5, 140.0) } } },
+        vehicles = { { model = 'blista', label = 'Voiture-école', minGrade = 0 } },
+    },
+
+    lawyer = {
+        label = 'Cabinet d\'avocats', type = 'lawyer', whitelisted = true, society = true, salaryFrom = 'society', dutyAnywhere = true,
+        blip = { sprite = 408, color = 0, label = 'Cabinet d\'avocats' },
+        billing = { label = 'Honoraires', max = 50000 },
+        grades = { [0] = { label = 'Avocat stagiaire', salary = 200 }, [1] = { label = 'Avocat', salary = 350 }, [2] = { label = 'Associé', salary = 500, boss = true } },
+        points = { boss = { vec3(-551.6, -196.1, 38.2) }, stash = { { label = 'Dossiers', coords = vec3(-549.9, -193.2, 38.2), slots = 20, weight = 20000, minGrade = 0 } } },
+    },
+
+    judge = {
+        label = 'Tribunal de Los Santos', type = 'judge', whitelisted = true, society = true, salaryFrom = 'state', dutyAnywhere = true,
+        blip = { sprite = 419, color = 0, label = 'Tribunal (mairie)' },
+        grades = { [0] = { label = 'Juge', salary = 450 }, [1] = { label = 'Président du tribunal', salary = 600, boss = true } },
+        points = { boss = { vec3(-547.1, -199.4, 38.2) } },
+    },
+
+    weazel = {
+        label = 'Weazel News', type = 'press', whitelisted = true, society = true, salaryFrom = 'society', dutyAnywhere = true, platePrefix = 'NEWS',
+        blip = { sprite = 459, color = 1, label = 'Weazel News' },
+        billing = { label = 'Encart publicitaire', max = 20000 },
+        grades = { [0] = { label = 'Pigiste', salary = 150 }, [1] = { label = 'Journaliste', salary = 280 }, [2] = { label = 'Rédacteur en chef', salary = 450, boss = true } },
+        points = { boss = { vec3(-598.9, -929.9, 23.9) }, garage = { { coords = vec3(-582.4, -931.0, 23.9), spawn = vec4(-577.3, -935.9, 23.9, 90.0) } } },
+        vehicles = { { model = 'rumpo', label = 'Van de reportage', minGrade = 0 } },
+    },
+
+    bar = {
+        label = 'Bar Le Néon', type = 'business', whitelisted = true, society = true, salaryFrom = 'society',
+        blip = { sprite = 93, color = 48, label = 'Bar Le Néon' },
+        billing = { label = 'Consommations', max = 10000 },
+        grades = { [0] = { label = 'Serveur', salary = 150 }, [1] = { label = 'Barman', salary = 220 }, [2] = { label = 'Gérant', salary = 350, boss = true } },
+        points = { duty = { vec3(-561.8, 286.9, 82.2) }, boss = { vec3(-563.9, 289.0, 82.2) },
+                   stash = { { label = 'Réserve', coords = vec3(-565.2, 285.7, 82.2), slots = 50, weight = 150000, minGrade = 0 } } },
+    },
+
+    restaurant = {
+        label = 'Horny\'s Burgers', type = 'business', whitelisted = true, society = true, salaryFrom = 'society',
+        blip = { sprite = 106, color = 5, label = 'Horny\'s Burgers' },
+        billing = { label = 'Commande', max = 10000 },
+        grades = { [0] = { label = 'Équipier', salary = 150 }, [1] = { label = 'Cuisinier', salary = 220 }, [2] = { label = 'Gérant', salary = 350, boss = true } },
+        points = { duty = { vec3(1241.4, -366.1, 69.1) }, boss = { vec3(1243.5, -363.9, 69.1) },
+                   stash = { { label = 'Chambre froide', coords = vec3(1245.1, -365.2, 69.1), slots = 50, weight = 150000, minGrade = 0 } } },
+    },
+
+    cityhall = {
+        label = 'Mairie de Los Santos', type = 'government', whitelisted = true, society = true, salaryFrom = 'state', dutyAnywhere = true,
+        blip = { sprite = 419, color = 5, label = 'Mairie' },
+        grades = { [0] = { label = 'Agent d\'état civil', salary = 250 }, [1] = { label = 'Adjoint au maire', salary = 400 }, [2] = { label = 'Maire', salary = 600, boss = true } },
+        points = { boss = { vec3(-545.1, -204.3, 38.2) } },
+    },
+
+    psy = {
+        label = 'Cabinet de psychologie', type = 'health', whitelisted = true, society = true, salaryFrom = 'society', dutyAnywhere = true,
+        blip = { sprite = 403, color = 8, label = 'Psychologue' },
+        billing = { label = 'Séance', max = 5000 },
+        grades = { [0] = { label = 'Psychologue', salary = 250 }, [1] = { label = 'Psychiatre', salary = 400, boss = true } },
+        points = { boss = { vec3(-449.7, -340.7, 34.5) } },
+    },
+
     trucker = {
         label = 'Routier', whitelisted = false, dutyAnywhere = true, salaryFrom = 'state',
         description = 'Des kilomètres de bitume et une cabine qui sent le café.',

@@ -19,6 +19,17 @@ lib.callback.register('gs_jobs:billing:create', function(src, target, amount, re
     return true, L('bill_sent')
 end)
 
+--- Facture émise par un autre système (tribunal, services) : payée comme les autres via /factures. Retourne true si créée.
+exports('CreateBill', function(cid, job, amount, reason, issuerCid, issuerName)
+    amount = tonumber(amount)
+    if type(cid) ~= 'string' or not Jobs[job] or not GSJ.isInt(amount, 1, 10000000) then return false end
+    DB.createBill(cid, job, amount, Security:Sanitize(reason, Config.Billing.reasonMaxLength) or 'Facture', issuerCid or '', issuerName or '')
+    DB.audit('bill', job, issuerCid, cid, amount, reason)
+    local target = Bridge:GetSourceByIdentifier(cid)
+    if target then GSJ.notify(target, L('bill_received', Jobs[job].label, amount, reason or ''), 'inform') end
+    return true
+end)
+
 lib.callback.register('gs_jobs:billing:list', function(src)
     if not GSJ.guard(src, 'bill_list', 5, 10000) then return {} end
     local cid = GSJ.cid(src)

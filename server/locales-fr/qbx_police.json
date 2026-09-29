@@ -1,0 +1,35 @@
+{
+  "error": {
+    "in_vehicle": "Impossible depuis un véhicule",
+    "vehicle_flag": "Véhicule déjà signalé",
+    "no_rob": "Cette personne n'est ni menottée, ni à terre, ni mains en l'air",
+    "target_too_far": "La cible est trop loin",
+    "player_not_found": "Joueur introuvable",
+    "insufficient_funds": "Le joueur n'a pas assez d'argent",
+    "invalid_fine": "Amende invalide",
+    "fine_payment_failed": "Le paiement de l'amende a échoué ; le citoyen a été remboursé"
+  },
+  "success": {
+    "escapedcuff": "Tu t'es libéré des menottes !",
+    "fine_issued": "Tu as reçu une amende de %d $ pour : %s, par l'agent %s (%s)",
+    "fine_sent": "Tu as mis une amende à %s : %d $"
+  },
+  "info": {
+    "camera_id_help": "ID de la caméra",
+    "searched_success": "Fouille terminée",
+    "grab_veh": "[E] - Garage de service",
+    "evidence": "[E] - Pièces à conviction",
+    "plate_triggered": "Un véhicule immatriculé %s a été flashé sur %s par le radar n°%s",
+    "plate_triggered_blip": "Véhicule flashé par le radar n°%s",
+    "fine_title": "Dresser une amende",
+    "law_violated": "Infraction",
+    "law_placeholder": "ex : excès de vitesse, feu rouge grillé",
+    "fine_amount": "Montant ($)",
+    "officer_notes": "Notes de l'agent (facultatif)",
+    "notes_placeholder": "Précisions sur l'infraction…",
+    "select_citizen": "Choisir le citoyen"
+  },
+  "commands": {
+    "fine": "Mettre une amende à un joueur proche (police)"
+  }
+}

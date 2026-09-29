@@ -345,3 +345,13 @@ end)
 
 exports('IsCuffed', function(src) return cuffed(src) end)
 exports('IsJailed', function(src) return Police.jailed[src] ~= nil end)
+-- Pour le tribunal (gs_justice) : peine de prison, mention au casier, casier, clôture des mandats.
+exports('Jail', function(src, minutes, reason)
+    minutes = tonumber(minutes)
+    if not minutes or minutes < 1 or minutes > Config.Jail.maxMinutes * 3 or not Bridge:IsLoaded(src) then return false end
+    Police.jail(src, math.floor(minutes), reason or 'Décision du tribunal')
+    return true
+end)
+exports('AddRecord', function(cid, charge, fine, jail, by) Store.addRecord(cid, charge, fine or 0, jail or 0, by or 'Tribunal') return true end)
+exports('GetRecords', function(cid) return Store.records(cid) end)
+exports('CloseWarrants', function(cid) return Store.closeWarrantsOf and Store.closeWarrantsOf(cid) or 0 end)

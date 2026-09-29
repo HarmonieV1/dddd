@@ -1,0 +1,18 @@
+{
+  "error": {
+    "character_delete_failed": "La suppression du personnage a échoué. Réessaie.",
+    "not_optin": "Tu n'es pas en service staff. (/optin pour basculer)"
+  },
+  "success": {
+    "optin_set": "Service staff : %s."
+  },
+  "info": {
+    "fetching_user": "Récupération du compte…",
+    "creating_user": "Création du compte…"
+  },
+  "command": {
+    "car": { "params": { "keepCurrentVehicle": { "name": "garder", "help": "Garder le véhicule actuel (vide = le supprimer)" } } },
+    "dv": { "params": { "radius": { "name": "rayon", "help": "Rayon de suppression des véhicules (mètres)" } } },
+    "optin": { "help": "Activer / couper le service staff (admin)" }
+  }
+}

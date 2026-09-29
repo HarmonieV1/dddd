@@ -371,6 +371,7 @@ exports('Reward', function(src, activity)
 end)
 --- Défi du jour seul (rental, shop_buy, sell…), sans XP directe.
 exports('Track', function(src, activity, amount) return Progress.track(src, activity, amount) end)
+exports('HasDone', function(src, id) local p = Progress.players[src] return p ~= nil and p.done[id] == true end)
 exports('GetLevel', function(src) local p = Progress.players[src] return p and (Progress.levelOf(p.xp)) or 0 end)
 exports('GetTitle', function(src)
     local p = Progress.players[src]

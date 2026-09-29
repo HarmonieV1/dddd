@@ -1,0 +1,35 @@
+{
+  "menu": {
+    "manage_job_grades": "Gérer les postes",
+    "manage_gang_grades": "Gérer les rangs du gang",
+    "manage_job_grades_desc": "Postes et salaires",
+    "manage_gang_grades_desc": "Rangs du gang",
+    "manage_job_grade": "Modifier le poste",
+    "manage_gang_grade": "Modifier le rang",
+    "confirm_hire_header": "Confirmer l'embauche",
+    "confirm_hire_content": "%s te propose de rejoindre %s"
+  },
+  "grade": {
+    "label": "Titre",
+    "pay": "Salaire",
+    "boss": "Patron",
+    "bank": "Accès à la caisse",
+    "success": "Mise à jour effectuée"
+  },
+  "error": {
+    "too_far": "Cette personne est trop loin…",
+    "hire_declined": "La personne a refusé ton offre."
+  },
+  "logs": {
+    "retrieved_employees": "Employés récupérés pour le groupe %s de type %s",
+    "updated_grade": "Grade du citoyen %s passé de %d à %d dans le groupe %s de type %s",
+    "hired_employee": "%s | %s a embauché %s dans %s au grade %s",
+    "retrieved_players": "Liste des joueurs embauchables récupérée",
+    "fired_employee": "Employé %s renvoyé du groupe %s de type %s",
+    "fired_employee_success": "%s | %s a renvoyé %s de %s",
+    "retrieved_boss_menus": "Menus patron récupérés",
+    "registered_boss_menu": "Menu patron enregistré pour le groupe %s",
+    "player_checkin": "Joueur %s en service pour %s",
+    "player_unload": "Joueur %d déconnecté"
+  }
+}

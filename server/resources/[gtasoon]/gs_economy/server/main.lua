@@ -13,7 +13,19 @@ function Market.eventMult(item)
     return m
 end
 
-function Market.buyPrice(item) return Pricing.buyPrice(item, Market.pressure[item], Market.eventMult(item)) end
+--- Promo temporaire sur tous les achats (tendance Vibe #promo, événements) : { factor, untilTs } ou nil
+Market.promo = nil
+local function promoMult()
+    if Market.promo and os.time() < Market.promo.untilTs then return Market.promo.factor end
+    Market.promo = nil
+    return 1.0
+end
+
+function Market.buyPrice(item)
+    local price = Pricing.buyPrice(item, Market.pressure[item], Market.eventMult(item))
+    local m = promoMult()
+    return m ~= 1.0 and math.max(1, math.floor(price * m + 0.5)) or price
+end
 function Market.sellPrice(item) return Pricing.sellPrice(item, Market.pressure[item], Market.eventMult(item)) end
 
 function Market.push(item, delta)
@@ -173,6 +185,21 @@ end)
 
 -- API pour d'autres commerces (garages, armureries...) ----------------------------------------------
 exports('GetBuyPrice', Market.buyPrice)
+--- Indice des prix : moyenne (prix courant / prix d'équilibre) des produits en vente, 1.0 = équilibre.
+exports('GetPriceIndex', function()
+    local sum, n = 0, 0
+    for item, def in pairs(Config.Items) do
+        if def.buy ~= false then sum, n = sum + Market.buyPrice(item) / def.base, n + 1 end
+    end
+    return n > 0 and sum / n or 1.0
+end)
+--- Promo sur tous les commerces : factor (0.5 à 1.0) pendant `seconds`.
+exports('SetPromo', function(factor, seconds)
+    factor, seconds = tonumber(factor), tonumber(seconds)
+    if not factor or factor < 0.5 or factor > 1.0 or not seconds or seconds <= 0 or seconds > 7200 then return false end
+    Market.promo = { factor = factor, untilTs = os.time() + math.floor(seconds) }
+    return true
+end)
 exports('GetSellPrice', Market.sellPrice)
 exports('RecordBuy', function(item, qty) if Config.Items[item] and qty > 0 then Market.push(item, qty) end end)
 exports('RecordSell', function(item, qty) if Config.Items[item] and qty > 0 then Market.push(item, -qty) end end)

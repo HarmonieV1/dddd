@@ -78,6 +78,7 @@ end
 function Store.countOfficerWarrants(officerCid)
     return MySQL.scalar.await('SELECT COUNT(*) FROM gs_police_warrants WHERE officer_cid = ? AND active = 1', { officerCid }) or 0
 end
+function Store.closeWarrantsOf(cid) return MySQL.update.await('UPDATE gs_police_warrants SET active = 0 WHERE citizenid = ? AND active = 1', { cid }) end
 function Store.closeWarrant(id) return MySQL.update.await('UPDATE gs_police_warrants SET active = 0 WHERE id = ? AND active = 1', { id }) > 0 end
 
 function Store.addReport(title, body, officer, officerCid)

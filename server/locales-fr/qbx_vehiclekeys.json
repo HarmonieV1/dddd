@@ -1,0 +1,16 @@
+{
+  "addcom": {
+    "removekeys_id": "id",
+    "removekeys_id_help": "ID du joueur",
+    "removekeys_plate": "plaque",
+    "removekeys_plate_help": "Plaque"
+  },
+  "info": {
+    "search_keys": "Chercher les clés du véhicule"
+  },
+  "notify": {
+    "keys_removed": "Tu as perdu les clés du véhicule !",
+    "not_optin": "Tu n'es pas en service staff. (/optin pour basculer)",
+    "require_on_duty": "Ce véhicule est réservé au personnel en service."
+  }
+}

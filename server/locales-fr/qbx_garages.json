@@ -1,0 +1,12 @@
+{
+  "error": {
+    "no_space": "Une autre voiture occupe déjà la place.",
+    "spawn_failed": "Un problème est survenu à la sortie du véhicule.",
+    "spawn_in_progress": "Patiente, ton véhicule arrive…"
+  },
+  "info": {
+    "car_radial": "Garage",
+    "park_radial": "Garer",
+    "impound_radial": "Fourrière"
+  }
+}

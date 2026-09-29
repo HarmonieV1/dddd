@@ -62,12 +62,14 @@ check('étape goto : pas encore arrivé', not ok and Progress.active[1].step == 
 tp(1, Q.welcome.steps[1].coords)
 ok = cb('gs_quests:advance', 1); step()
 check('étape 1 validée', ok and Progress.active[1].step == 2)
-tp(1, Q.welcome.steps[2].coords)
-cb('gs_quests:advance', 1); step()
+for i = 2, #Q.welcome.steps - 1 do -- « premier jour » : toutes les étapes goto, puis retour à Max
+    tp(1, Q.welcome.steps[i].coords)
+    cb('gs_quests:advance', 1); step()
+end
 tp(1, at(Characters.guide.coords))
 ok = cb('gs_quests:advance', 1); step()
-check('welcome terminée : argent + XP + marquée', ok and not Progress.active[1] and W.players[1].money.cash == 250
-    and Progress.players[1].xp >= xp0 + 150 and db.CID1.done.welcome)
+check('welcome terminée : argent + XP + marquée', ok and not Progress.active[1] and W.players[1].money.cash == Q.welcome.reward.cash
+    and Progress.players[1].xp >= xp0 + Q.welcome.reward.xp and db.CID1.done.welcome)
 check('annonce client', lastClientEvent('gs_quests:client:completed', 1).args[1] == 'welcome')
 check('badge Premier contrat', Progress.players[1].badges.first_quest and lastClientEvent('gs_quests:client:badge', 1) ~= nil)
 ok = cb('gs_quests:start', 1, 'welcome'); step()

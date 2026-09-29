@@ -112,4 +112,41 @@ function Set-QboxOverrides($Res, $Repo, [scriptblock]$Say) {
             & $Say "  $($p.res) : réglage « $($p.why) » introuvable (version différente ?)" 'Yellow'
         }
     }
+    Merge-FrenchLocales $Res $Repo $Say
+}
+
+#--- Ajoute nos traductions (server\locales-fr\<ressource>.json) aux locales\fr.json des ressources Qbox.
+#    N'écrase jamais une traduction existante : seules les clés absentes sont ajoutées (Qbox reste à jour).
+function Merge-JsonMissing($target, $source) {
+    $added = 0
+    foreach ($prop in $source.PSObject.Properties) {
+        $cur = $target.PSObject.Properties[$prop.Name]
+        if ($prop.Value -is [pscustomobject]) {
+            if (-not $cur) { $target | Add-Member -NotePropertyName $prop.Name -NotePropertyValue ([pscustomobject]@{}); $cur = $target.PSObject.Properties[$prop.Name] }
+            if ($cur.Value -is [pscustomobject]) { $added += Merge-JsonMissing $cur.Value $prop.Value }
+        } elseif (-not $cur) {
+            $target | Add-Member -NotePropertyName $prop.Name -NotePropertyValue $prop.Value
+            $added++
+        }
+    }
+    return $added
+}
+
+function Merge-FrenchLocales($Res, $Repo, [scriptblock]$Say) {
+    $dir = Join-Path $Repo 'server\locales-fr'
+    if (-not (Test-Path -LiteralPath $dir)) { return }
+    foreach ($f in Get-ChildItem -LiteralPath $dir -Filter '*.json') {
+        $target = Find-Resource $Res $f.BaseName
+        if (-not $target) { continue }
+        $frFile = Join-Path $target.FullName 'locales\fr.json'
+        try {
+            $fr = if (Test-Path -LiteralPath $frFile) { Get-Content -LiteralPath $frFile -Raw -Encoding UTF8 | ConvertFrom-Json } else { [pscustomobject]@{} }
+            $ours = Get-Content -LiteralPath $f.FullName -Raw -Encoding UTF8 | ConvertFrom-Json
+            $n = Merge-JsonMissing $fr $ours
+            if ($n -gt 0) {
+                Write-Utf8 $frFile ($fr | ConvertTo-Json -Depth 20)
+                & $Say "  $($f.BaseName) : $n traduction(s) française(s) ajoutée(s)" 'Green'
+            }
+        } catch { & $Say "  $($f.BaseName) : traduction non fusionnée ($($_.Exception.Message))" 'Yellow' }
+    }
 }

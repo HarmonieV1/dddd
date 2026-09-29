@@ -1,0 +1,8 @@
+{
+  "error": {
+    "no_vehicle_nearby": "Aucun véhicule à retourner à proximité."
+  },
+  "success": {
+    "flipped_car": "Véhicule remis sur ses roues !"
+  }
+}
