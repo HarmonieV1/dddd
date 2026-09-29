@@ -67,6 +67,22 @@ end)
 
 -- Rate-limit -------------------------------------------------------------------
 
+-- Anti-flood : un joueur qui enchaîne les refus de rate-limit (script de triche qui spamme les events)
+-- est expulsé. Un joueur normal n'approche jamais ce seuil (les menus sont eux-mêmes limités côté client).
+local FLOOD_MAX, FLOOD_WINDOW = 60, 30000
+local floods = {}
+local function Flood(src, key)
+    local now = GetGameTimer()
+    local f = floods[src]
+    if not f or now >= f.resetAt then f = { count = 0, resetAt = now + FLOOD_WINDOW } floods[src] = f end
+    f.count = f.count + 1
+    if f.count == FLOOD_MAX and GetPlayerName(src) then
+        LogStaff(('[Anti-flood] %s [%s] expulsé : %d requêtes refusées en %d s (dernière : %s)'):format(
+            GetPlayerName(src), src, FLOOD_MAX, FLOOD_WINDOW // 1000, key))
+        DropPlayer(src, 'Trop de requêtes envoyées au serveur (protection anti-flood).')
+    end
+end
+
 --- Autorise au plus `max` appels par `windowMs` et par joueur/clé.
 ---@return boolean ok false si le joueur dépasse la limite (loggé une fois par fenêtre)
 local function RateLimit(src, key, max, windowMs)
@@ -84,6 +100,7 @@ local function RateLimit(src, key, max, windowMs)
         if e.count == max + 1 then
             LogStaff(('Rate-limit dépassé : id %s (%s) sur %s'):format(src, GetPlayerName(src) or '?', key))
         end
+        Flood(src, key)
         return false
     end
     return true
@@ -125,7 +142,10 @@ local function Sanitize(text, maxLen)
     return text ~= '' and text or nil
 end
 
-AddEventHandler('playerDropped', function() buckets[source] = nil end)
+AddEventHandler('playerDropped', function() buckets[source] = nil floods[source] = nil end)
+
+-- Partagé avec server/anticheat.lua (même ressource)
+GSSec = { RateLimit = RateLimit, LogStaff = LogStaff }
 
 exports('RateLimit', RateLimit)
 exports('InRange', InRange)

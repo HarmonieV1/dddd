@@ -50,6 +50,13 @@ check('menotté (state bag)', ok and st(2).gsCuffed == true)
 ok = cb('gs_police:action', 1, 'cuff', 1); step()
 check('pas sur soi-même', not ok)
 
+-- Anti-triche : le suspect se démenotte lui-même → annulé
+W.pstate[2].gsCuffed = nil
+W.sbh.gsCuffed('player:2', 'gsCuffed', nil)
+check('démenottage côté client annulé', st(2).gsCuffed == true)
+W.sbh.gsEscortedBy('player:4', 'gsEscortedBy', 1)
+check('escorte inventée côté client annulée', st(4).gsEscortedBy == nil)
+
 -- Fouille
 ok = cb('gs_police:action', 1, 'search', 4); step()
 check('fouille refusée si ni menotté ni mains en l\'air', not ok)

@@ -136,6 +136,26 @@ for res, files in res_files.items():
             if not re.search(r"RateLimit|guard\(|staffGuard\(", text[m.end(): m.end() + 400]):
                 errors.append(f"{f.relative_to(ROOT)} event serveur sans rate-limit : {m.group(1)}")
 
+# Règle sécurité n°2 : pas d'injection SQL. Une requête MySQL.* ne se construit jamais par concaténation (..) :
+# valeurs en paramètres (?). Exception explicite et relue : commentaire « sql-safe » sur la ligne.
+for res, files in res_files.items():
+    for f in files:
+        if side(f) != "server":
+            continue
+        for n, line in enumerate(f.read_text(encoding="utf-8").splitlines(), 1):
+            m = re.search(r"MySQL\.[\w.]+\((.*)", line)
+            if m and ".." in m.group(1).split("--")[0] and "sql-safe" not in line:
+                errors.append(f"{f.relative_to(ROOT)}:{n} requête SQL construite par concaténation (utiliser des paramètres ?)")
+
+# Règle sécurité n°3 : pas d'exécution de code dynamique côté serveur
+for res, files in res_files.items():
+    for f in files:
+        if side(f) != "server":
+            continue
+        text = strip_comments(f.read_text(encoding="utf-8"))
+        for m in re.finditer(r"(?<![.:\w])(loadstring|load)\s*\(", text):
+            errors.append(f"{f.relative_to(ROOT)}:{text.count(chr(10), 0, m.start()) + 1} exécution de code dynamique interdite ({m.group(1)})")
+
 # Clés de locale
 for res, files in res_files.items():
     loc = ROOT / res / "shared" / "locale.lua"

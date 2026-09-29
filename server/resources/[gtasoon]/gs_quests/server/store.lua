@@ -18,7 +18,7 @@ function Store.init()
         PRIMARY KEY (`citizenid`)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4]])
     for _, col in ipairs(EXTRA_COLUMNS) do
-        MySQL.query.await('ALTER TABLE `gs_progress` ADD COLUMN IF NOT EXISTS ' .. col)
+        MySQL.query.await('ALTER TABLE `gs_progress` ADD COLUMN IF NOT EXISTS ' .. col) -- sql-safe : constante du fichier
     end
     MySQL.query.await([[CREATE TABLE IF NOT EXISTS `gs_quests_done` (
         `citizenid` VARCHAR(50) NOT NULL,

@@ -305,3 +305,5 @@ end
 function SetEntityHeading() end
 function FreezeEntityPosition(ent, on) if W.entities[ent] then W.entities[ent].frozen = on elseif ent > 1000 and ent < 2000 and W.players[ent - 1000] then W.players[ent - 1000].frozen = on end end
 if not GetPedInVehicleSeat then function GetPedInVehicleSeat(veh) return W.entities[veh] and W.entities[veh].driver and (1000 + W.entities[veh].driver) or 0 end end
+W.sbh = {}
+function AddStateBagChangeHandler(key, _, fn) W.sbh[key] = fn end

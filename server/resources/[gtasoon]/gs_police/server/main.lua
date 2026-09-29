@@ -268,6 +268,37 @@ lib.callback.register('gs_police:action', function(src, name, target, data)
     return Police.run(src, name, target, data)
 end)
 
+-- Anti-triche : un client peut écrire dans son propre state bag. gsCuffed / gsEscortedBy ne sont écrits QUE par ce
+-- fichier ; toute autre modification (client qui se démenotte) est annulée et journalisée.
+Police.authority = {} -- [src] = { gsCuffed = v, gsEscortedBy = v } : dernière valeur posée par le serveur
+
+local rawState = state
+state = function(src)
+    local bag = rawState(src)
+    return setmetatable({ set = function(_, key, value, replicated)
+        if key == 'gsCuffed' or key == 'gsEscortedBy' then
+            Police.authority[src] = Police.authority[src] or {}
+            Police.authority[src][key] = value == nil and false or value
+        end
+        bag:set(key, value, replicated)
+    end }, { __index = function(_, k) return bag[k] end })
+end
+
+for _, key in ipairs({ 'gsCuffed', 'gsEscortedBy' }) do
+    AddStateBagChangeHandler(key, nil, function(bagName, _, value)
+        local src = tonumber(bagName:match('^player:(%d+)$'))
+        if not src then return end
+        local auth = Police.authority[src] or {}
+        local expected = auth[key]
+        if expected == nil then expected = false end
+        local got = value == nil and false or value
+        if got ~= expected then
+            SetTimeout(0, function() rawState(src):set(key, expected ~= false and expected or nil, true) end)
+            Security:LogStaff(('[Anti-triche] %s a modifié %s lui-même (annulé)'):format(label(src), key))
+        end
+    end)
+end
+
 -- Cycle de vie ----------------------------------------------------------------------------------------------------
 
 AddEventHandler('gs_bridge:server:playerLoaded', function(src)
@@ -286,6 +317,7 @@ AddEventHandler('gs_bridge:server:playerUnloaded', function(src)
     if escorted and online(escorted) then stopEscort(escorted) end
     Police.escorting[src] = nil
     Police.jailed[src] = nil
+    Police.authority[src] = nil
 end)
 
 CreateThread(function()
