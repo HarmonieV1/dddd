@@ -168,6 +168,7 @@ function Admin.dossier(src, target)
         local gang, grade = exports.gs_gangs:GetGang(target)
         d.gang = gang and ('%s (grade %d)'):format(gang, grade) or nil
     end
+    if started('gs_quests') then d.progress = exports.gs_quests:GetSummary(target) end
     if lvl >= 2 then
         d.license = license(target)
         d.notes = d.license and Store.notes(d.license) or {}

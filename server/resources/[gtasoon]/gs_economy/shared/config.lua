@@ -24,6 +24,22 @@ Config.Items = {
     repairkit = { label = 'Kit de réparation', base = 250, min = 0.7, max = 1.8, volume = 20 },
     lockpick  = { label = 'Crochet', base = 150, min = 0.8, max = 2.0, volume = 15 },
     radio     = { label = 'Radio', base = 300, min = 0.8, max = 1.5, volume = 15 },
+    -- Supérette : snacks, boissons, tabac, téléphone
+    gs_chips  = { label = 'Chips', base = 5, min = 0.7, max = 1.8, volume = 60 },
+    gs_donut  = { label = 'Donut', base = 6, min = 0.7, max = 1.8, volume = 60 },
+    coffee    = { label = 'Café', base = 6, min = 0.7, max = 1.8, volume = 60 },
+    gs_energy = { label = 'Boisson énergisante', base = 9, min = 0.7, max = 1.8, volume = 50 },
+    gs_cigarettes = { label = 'Paquet de cigarettes', base = 15, min = 0.8, max = 1.6, volume = 40 },
+    lighter   = { label = 'Briquet', base = 5, min = 0.8, max = 1.5, volume = 40 },
+    phone     = { label = 'Téléphone', base = 450, min = 0.9, max = 1.3, volume = 10 },
+    -- Alcool (supérettes et cavistes)
+    beer      = { label = 'Bière', base = 8, min = 0.7, max = 1.8, volume = 60 },
+    wine      = { label = 'Vin', base = 25, min = 0.7, max = 1.6, volume = 30 },
+    vodka     = { label = 'Vodka', base = 35, min = 0.7, max = 1.6, volume = 25 },
+    whiskey   = { label = 'Whisky', base = 45, min = 0.7, max = 1.6, volume = 25 },
+    -- Quincaillerie
+    jerry_can = { label = 'Jerrican', base = 60, min = 0.8, max = 1.6, volume = 20 },
+    binoculars = { label = 'Jumelles', base = 150, min = 0.8, max = 1.5, volume = 15 },
     scrapmetal = { label = 'Ferraille', base = 12, min = 0.3, max = 1.5, volume = 200, buy = false },
     copper     = { label = 'Cuivre', base = 30, min = 0.3, max = 1.6, volume = 120, buy = false },
 }
@@ -35,13 +51,34 @@ Config.EventMultipliers = {
     fog = {},
 }
 
--- Commerces (achat) et reventes. Coords à caler en jeu.
+-- Catalogues (ordre = ordre d'affichage)
+local SUPERETTE = { 'water', 'sprunk', 'coffee', 'gs_energy', 'burger', 'sandwich', 'gs_chips', 'gs_donut',
+    'beer', 'wine', 'gs_cigarettes', 'lighter', 'bandage', 'phone' }
+local CAVISTE = { 'beer', 'wine', 'vodka', 'whiskey', 'gs_cigarettes', 'lighter', 'water', 'sprunk', 'gs_chips' }
+local QUINCAILLERIE = { 'repairkit', 'jerry_can', 'lockpick', 'radio', 'binoculars', 'phone' }
+
+-- Commerces (achat). Coords = comptoirs des magasins du jeu (mêmes points qu'ox_inventory) ; blip = style de Config.Blips.
 Config.Shops = {
-    { label = 'Supérette Strawberry', coords = vec3(25.7, -1347.3, 29.5), items = { 'water', 'sprunk', 'burger', 'sandwich', 'bandage' }, blip = true },
-    { label = 'Supérette Little Seoul', coords = vec3(-707.4, -914.3, 19.2), items = { 'water', 'sprunk', 'burger', 'sandwich', 'bandage' }, blip = true },
-    { label = 'Supérette Mirror Park', coords = vec3(1163.4, -323.8, 69.2), items = { 'water', 'sprunk', 'burger', 'sandwich', 'bandage' }, blip = true },
-    { label = 'Supérette Sandy Shores', coords = vec3(1961.5, 3740.7, 32.3), items = { 'water', 'sprunk', 'burger', 'sandwich', 'bandage' }, blip = true },
-    { label = 'Quincaillerie', coords = vec3(2748.0, 3472.0, 55.7), items = { 'repairkit', 'lockpick', 'radio' }, blip = true },
+    { label = 'Supérette Strawberry', coords = vec3(25.06, -1347.32, 29.5), items = SUPERETTE, blip = 'shop' },
+    { label = 'Supérette Little Seoul', coords = vec3(-707.4, -914.3, 19.2), items = SUPERETTE, blip = 'shop' },
+    { label = 'Supérette Mirror Park', coords = vec3(1163.4, -323.8, 69.2), items = SUPERETTE, blip = 'shop' },
+    { label = 'Supérette Sandy Shores', coords = vec3(1960.54, 3740.28, 32.34), items = SUPERETTE, blip = 'shop' },
+    { label = 'Supérette Chumash', coords = vec3(-3039.18, 585.13, 7.91), items = SUPERETTE, blip = 'shop' },
+    { label = 'Supérette Banham Canyon', coords = vec3(-3242.2, 1000.58, 12.83), items = SUPERETTE, blip = 'shop' },
+    { label = 'Supérette Paleto Bay', coords = vec3(1728.39, 6414.95, 35.04), items = SUPERETTE, blip = 'shop' },
+    { label = 'Supérette Grapeseed', coords = vec3(1698.37, 4923.43, 42.06), items = SUPERETTE, blip = 'shop' },
+    { label = 'Supérette Harmony', coords = vec3(548.5, 2671.25, 42.16), items = SUPERETTE, blip = 'shop' },
+    { label = 'Supérette Senora', coords = vec3(2678.29, 3279.94, 55.24), items = SUPERETTE, blip = 'shop' },
+    { label = 'Supérette Tataviam', coords = vec3(2557.19, 381.4, 108.62), items = SUPERETTE, blip = 'shop' },
+    { label = 'Supérette Vinewood', coords = vec3(373.13, 326.29, 103.57), items = SUPERETTE, blip = 'shop' },
+    { label = 'Caviste Mirror Park', coords = vec3(1134.9, -982.34, 46.41), items = CAVISTE, blip = 'liquor' },
+    { label = 'Caviste Vespucci', coords = vec3(-1222.33, -907.82, 12.43), items = CAVISTE, blip = 'liquor' },
+    { label = 'Caviste Morningwood', coords = vec3(-1486.67, -378.46, 40.26), items = CAVISTE, blip = 'liquor' },
+    { label = 'Caviste Chumash', coords = vec3(-2967.0, 390.9, 15.14), items = CAVISTE, blip = 'liquor' },
+    { label = 'Caviste Route 68', coords = vec3(1165.95, 2710.2, 38.26), items = CAVISTE, blip = 'liquor' },
+    { label = 'Caviste Sandy Shores', coords = vec3(1393.0, 3605.95, 35.11), items = CAVISTE, blip = 'liquor' },
+    { label = 'Quincaillerie Senora', coords = vec3(2746.8, 3473.13, 55.67), items = QUINCAILLERIE, blip = 'hardware' },
+    { label = 'Quincaillerie La Mesa', coords = vec3(342.99, -1298.26, 32.51), items = QUINCAILLERIE, blip = 'hardware' },
 }
 
 Config.Resellers = {
@@ -51,5 +88,7 @@ Config.Resellers = {
 
 Config.Blips = {
     shop = { sprite = 52, color = 2, scale = 0.7 },
+    liquor = { sprite = 93, color = 27, scale = 0.7 },
+    hardware = { sprite = 402, color = 47, scale = 0.7 },
     reseller = { sprite = 527, color = 47, scale = 0.7 },
 }

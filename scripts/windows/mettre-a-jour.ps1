@@ -9,6 +9,9 @@ $ErrorActionPreference = 'Stop'
 function Say($m, $c = 'Gray') { Write-Host $m -ForegroundColor $c }
 function Fail($m) { Say "ERREUR : $m" 'Red'; Read-Host 'Entrée pour quitter'; exit 1 }
 Add-Type -AssemblyName System.IO.Compression.FileSystem
+$common = Join-Path $PSScriptRoot 'outils-communs.ps1'
+if (-not (Test-Path -LiteralPath $common)) { Fail "outils-communs.ps1 manquant à côté de ce script : réextrais le zip GTA SOON complet." }
+. $common
 
 $Repo = Resolve-Path (Join-Path $PSScriptRoot '..\..') -ErrorAction SilentlyContinue
 $Data = 'C:\GTASOON\server-data'
@@ -53,20 +56,11 @@ Get-ChildItem -LiteralPath (Join-Path $Repo 'server\cfg') -File | Where-Object {
 Copy-Item -LiteralPath (Join-Path $Repo 'server\server.cfg.example') -Destination (Join-Path $Data 'server.cfg') -Force
 Say '  Ressources GTA SOON + config remplacées (secrets.cfg et base de données intacts)' 'Green'
 
-$items = Get-ChildItem -LiteralPath $Res -Recurse -Filter items.lua -ErrorAction SilentlyContinue | Where-Object { $_.FullName -match 'ox_inventory\\data\\items\.lua$' } | Select-Object -First 1
-if ($items) {
-    $content = Get-Content -LiteralPath $items.FullName -Raw -Encoding UTF8
-    $add = @()
-    foreach ($line in Get-Content -LiteralPath (Join-Path $Repo 'server\ox_items_gtasoon.lua') -Encoding UTF8) {
-        if ($line -match "^\['([a-z_]+)'\]" -and $content -notmatch ("\['" + $Matches[1] + "'\]")) { $add += '    ' + $line }
-    }
-    if ($add.Count -gt 0) {
-        $i = $content.LastIndexOf('}')
-        $content = $content.Substring(0, $i) + "`n    -- GTA SOON`n" + ($add -join "`n") + "`n" + $content.Substring($i)
-        [IO.File]::WriteAllText($items.FullName, $content, (New-Object Text.UTF8Encoding $false))
-    }
-    Say "  $($add.Count) item(s) ajouté(s) à ox_inventory" 'Green'
-}
+$r = Merge-GtaSoonItems $Res $Repo
+if ($r) { Say "  ox_inventory : $($r.added) item(s) ajouté(s), $($r.replaced) amélioré(s)" 'Green' }
+else { Say '  items.lua d''ox_inventory introuvable : items GTA SOON non ajoutés' 'Yellow' }
+Say '  Réglages Qbox (spawn, magasins, hôpital) :' 'Cyan'
+Set-QboxOverrides $Res $Repo { param($m, $c) Say $m $c }
 
 # Lanceur : on garde le chemin de FXServer.exe de l'installation
 $batPath = Join-Path $Data 'DEMARRER.bat'

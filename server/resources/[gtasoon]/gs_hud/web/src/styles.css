@@ -2,8 +2,8 @@
 :root { --text: #f3eaff; --muted: #c9b8e8; --pink: #ff2e88; --cyan: #28e0ff; font-family: 'Segoe UI', system-ui, sans-serif; }
 * { box-sizing: border-box; }
 html, body { margin: 0; background: transparent; overflow: hidden; user-select: none; pointer-events: none; color: var(--text); }
-.top-right, .location, .speedo { text-shadow: 0 1px 3px rgba(0, 0, 0, .9);
-  background: rgba(11, 7, 20, .55); backdrop-filter: blur(4px); border-radius: 14px; padding: 8px 12px; }
+/* Pas de cadre : seulement le texte néon, lisible grâce à une ombre portée renforcée. */
+.top-right, .location, .speedo { text-shadow: 0 0 2px #000, 0 1px 3px rgba(0, 0, 0, .95), 0 0 12px rgba(0, 0, 0, .55); padding: 4px 6px; }
 
 .top-right { position: fixed; top: 2.2vh; right: 1.6vw; display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
 .clock { font-size: 26px; font-weight: 800; letter-spacing: 1px; text-shadow: 0 0 10px rgba(255, 46, 136, .8), 0 1px 3px #000; }
@@ -18,13 +18,13 @@ html, body { margin: 0; background: transparent; overflow: hidden; user-select: 
 .status.with-map { bottom: 25vh; }
 .ring { position: relative; width: 44px; height: 44px; display: grid; place-items: center; filter: drop-shadow(0 1px 3px rgba(0, 0, 0, .8)); }
 .ring svg { position: absolute; inset: 0; transform: rotate(-90deg); }
-.ring circle { fill: rgba(11, 7, 20, .55); stroke-width: 4; }
+.ring circle { fill: rgba(11, 7, 20, .3); stroke-width: 4; }
 .ring .track { stroke: rgba(255, 255, 255, .12); }
 .ring .bar { fill: none; stroke-linecap: round; transition: stroke-dashoffset .4s; filter: drop-shadow(0 0 3px currentColor); }
 .ring span { position: relative; font-size: 15px; }
 .ring.low span { animation: blink 1s steps(2) infinite; }
 @keyframes blink { 50% { opacity: .3 } }
-.voice { width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; background: rgba(11, 7, 20, .55); font-size: 15px; line-height: 1;
+.voice { width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; background: rgba(11, 7, 20, .3); font-size: 15px; line-height: 1;
   border: 2px solid rgba(255, 255, 255, .12); }
 .voice small { font-size: 8px; color: var(--muted); }
 .voice.on { border-color: var(--cyan); box-shadow: 0 0 12px rgba(40, 224, 255, .7); }

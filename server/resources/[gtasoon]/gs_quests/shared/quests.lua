@@ -5,7 +5,7 @@
 -- Quête : id, title, giver (personnage), gender ('male' | 'female' | nil = tous), requires (quête terminée avant),
 --         minLevel, night (20 h → 5 h), intro (texte du personnage), outro, give (items au départ),
 --         vehicle (prêté au départ, repris à la fin), cleanup (items quête retirés en fin / abandon),
---         steps (objectifs dans l'ordre), reward { xp, cash, items }
+--         steps (objectifs dans l'ordre), reward { xp, cash, items }, badge (Config.Badges, débloqué à la fin)
 -- Étapes : talk { character } · goto { coords, radius } · drive { coords, radius, limit? } (dans un véhicule)
 --          deliver { coords | character, item, count } · collect { points, item? } (un ramassage par point)
 --          limit = secondes pour finir l'étape (sinon quête échouée, à relancer)
@@ -46,7 +46,7 @@ Quests = {
             { type = 'deliver', label = 'Rappelle la Voix depuis la cabine', character = 'voice', item = 'gs_parcel', count = 5 },
         },
         cleanup = { 'gs_parcel' },
-        reward = { xp = 800, cash = 1500 },
+        reward = { xp = 800, cash = 1500 }, badge = 'voice',
     },
 
     -- Chaîne homme : les affaires de Big Sal ----------------------------------------------------------------------
@@ -85,7 +85,7 @@ Quests = {
             { type = 'drive', label = 'Fonce au port en véhicule (5 min)', coords = vec3(1204.1, -3102.3, 5.9), radius = 12.0, limit = 300 },
             { type = 'talk', label = 'Parle au contact du port', character = 'dock' },
         },
-        reward = { xp = 500, cash = 1000 },
+        reward = { xp = 500, cash = 1000 }, badge = 'sal_family',
     },
 
     -- Chaîne femme : le cercle de Mama Rosa -----------------------------------------------------------------------
@@ -123,6 +123,6 @@ Quests = {
             { type = 'drive', label = 'Rejoins la jetée de Del Perro en voiture (6 min)', coords = vec3(-1630.1, -1072.8, 13.0), radius = 15.0, limit = 360 },
             { type = 'talk', label = 'Salue DJ Nova', character = 'nova' },
         },
-        reward = { xp = 500, cash = 1000 },
+        reward = { xp = 500, cash = 1000 }, badge = 'rosa_circle',
     },
 }

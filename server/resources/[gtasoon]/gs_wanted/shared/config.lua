@@ -58,6 +58,13 @@ Config.SafeZones = {
     { coords = vec3(821.0, -2163.0, 29.6), radius = 25.0 },  -- Ammu-Nation Cypress Flats
 }
 
+-- Police IA : quand il y a moins de `minCops` policiers joueurs en service, un crime signalé déclenche la police
+-- du jeu (étoiles GTA) sur le suspect. La ville ne reste jamais sans police. 0 = désactivé.
+Config.NpcPolice = {
+    minCops = 1,
+    stars = { { heat = 10, stars = 1 }, { heat = 30, stars = 2 }, { heat = 45, stars = 3 }, { heat = 999, stars = 4 } },
+}
+
 Config.Dispatch = {
     blipSeconds = 90,
     history = 20,

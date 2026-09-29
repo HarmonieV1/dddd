@@ -154,7 +154,8 @@ provide('gs_bridge', {
         return true
     end,
     RegisterStash = function() return true end,
-    Revive = function(src) W.players[src].revived = true return true end,
+    Revive = function(src) W.players[src].revived = true W.players[src].downed = nil return true end,
+    IsDowned = function(src) return W.players[src] ~= nil and W.players[src].downed == true end,
     RegisterGangs = function() return true end,
     SetGang = function(src, name, grade) W.players[src].gang = { name = name, grade = grade } return true end,
     GiveVehicle = function(src, model) if model == "casse" then return false end W.players[src].vehicles = (W.players[src].vehicles or 0) + 1 return true end,
@@ -173,7 +174,10 @@ provide('gs_bridge', {
 
 -- gs_quests simulé : XP reçue par activité (les tests de gs_quests chargent la vraie ressource)
 provide('gs_quests', { Reward = function(src, activity) W.rewards = W.rewards or {} W.rewards[#W.rewards + 1] = { src = src, activity = activity } return 1 end,
-    AddXP = function() return 1 end, GetLevel = function() return 1 end })
+    AddXP = function() return 1 end, GetLevel = function() return 1 end,
+    Track = function(src, activity) W.tracks = W.tracks or {} W.tracks[#W.tracks + 1] = { src = src, activity = activity } return true end,
+    GetTitle = function() return 'Habitué' end,
+    GetSummary = function() return { level = 3, title = 'Habitué', xp = 600, streak = 2, badges = { 'Premier contrat' } } end })
 
 -- BDD simulée (même API que gs_jobs/server/db.lua) ---------------------------------------------
 function mockDB()

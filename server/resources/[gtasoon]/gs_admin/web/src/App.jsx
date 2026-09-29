@@ -85,6 +85,8 @@ function Dossier({ d, level, maxJail, onAction }) {
         <div><span>Duo</span>{d.duo ? `${d.duo} · niv. ${d.duoLevel}` : '—'}</div>
         <div><span>Néon</span>{d.handle ? `@${d.handle}` : '—'}</div>
         <div><span>Gang</span>{d.gang || '—'}</div>
+        {d.progress && <div><span>Progression</span>{`Niv. ${d.progress.level} · ${d.progress.title} · série ${d.progress.streak} j`}</div>}
+        {d.progress && <div><span>Badges</span>{d.progress.badges.length ? d.progress.badges.join(', ') : 'aucun'}</div>}
         <div><span>État</span>{[d.frozen && 'figé', d.jailedFor > 0 && `isolé ${duration(d.jailedFor)}`].filter(Boolean).join(', ') || 'normal'}</div>
         {d.money && <div><span>Argent</span>{d.money.cash.toLocaleString('fr-FR')} $ · banque {d.money.bank.toLocaleString('fr-FR')} $</div>}
         {d.citizenid && <div><span>CitizenID</span>{d.citizenid}</div>}

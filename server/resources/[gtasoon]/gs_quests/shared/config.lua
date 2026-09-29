@@ -14,6 +14,43 @@ Config.XP = {
     heist = 20,           -- point de butin d'un braquage
 }
 
+-- Titres affichés sur Néon et dans le panel staff (le plus haut atteint)
+Config.Titles = {
+    { level = 1, label = 'Nouveau venu' }, { level = 3, label = 'Habitué' }, { level = 5, label = 'Débrouillard' },
+    { level = 8, label = 'Figure locale' }, { level = 12, label = 'Pointure' }, { level = 18, label = 'Vétéran' },
+    { level = 25, label = 'Légende urbaine' }, { level = 35, label = 'Icône de Los Santos' }, { level = 50, label = 'Mythe' },
+}
+
+-- Badges (succès) : débloqués une fois pour toutes
+Config.Badges = {
+    first_quest = { label = 'Premier contrat', desc = 'Terminer une quête' },
+    sal_family  = { label = 'Ami de la famille', desc = 'Terminer l\'histoire de Big Sal' },
+    rosa_circle = { label = 'Le cercle de Rosa', desc = 'Terminer l\'histoire de Mama Rosa' },
+    voice       = { label = 'Au bout du fil', desc = 'Répondre à la Voix jusqu\'au bout' },
+    collector   = { label = 'Collectionneur', desc = 'Trouver tous les paquets cachés' },
+    streak7     = { label = 'Fidèle', desc = '7 jours de connexion d\'affilée' },
+    daily10     = { label = 'Assidu', desc = 'Réussir 10 défis du jour' },
+}
+
+-- Défis du jour : 3 tirés au sort par personnage et par jour (même tirage toute la journée)
+Config.Daily = {
+    count = 3, xp = 150, allXp = 300, allCash = 500,
+    pool = {
+        { id = 'job_mission', label = 'Termine une mission de métier', goal = 1 },
+        { id = 'quest', label = 'Termine une quête', goal = 1 },
+        { id = 'package', label = 'Trouve un paquet caché', goal = 1 },
+        { id = 'rental', label = 'Loue un véhicule', goal = 1 },
+        { id = 'shop_buy', label = 'Fais 3 achats en magasin', goal = 3 },
+        { id = 'sell', label = 'Revends des matériaux à la casse', goal = 1 },
+        { id = 'playtime', label = 'Passe 30 minutes en ville', goal = 30 },
+        { id = 'drug_sale', label = 'Réussis 3 ventes discrètes', goal = 3 },
+        { id = 'heist', label = 'Récupère un butin de braquage', goal = 1 },
+    },
+}
+
+-- Connexion quotidienne : XP × jours d'affilée (plafonné), bonus chaque semaine complète
+Config.Streak = { xpPerDay = 50, maxDays = 7, weekCash = 1000 }
+
 Config.TalkRadius = 3.0
 Config.Tolerance = 3.0
 Config.Key = 'F5'         -- menu Progression (/progression)

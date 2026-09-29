@@ -52,7 +52,12 @@ CreateThread(function()
                     onSelect = function() openMarket(kind, i, place) end,
                 } },
             })
-            if place.blip then addBlip(place.coords, kind == 'sell' and Config.Blips.reseller or Config.Blips.shop, place.label) end
+            if place.blip then
+                local style = Config.Blips[place.blip] or (kind == 'sell' and Config.Blips.reseller or Config.Blips.shop)
+                addBlip(place.coords, style, place.label)
+            end
+            exports.gs_markers:Add(('gs_economy:%s:%d'):format(kind, i), { coords = place.coords, style = 'shop',
+                label = kind == 'sell' and 'Revendre' or 'Acheter', distance = 20.0 })
         end
     end
 end)

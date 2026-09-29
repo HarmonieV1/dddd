@@ -74,3 +74,6 @@ button:disabled { opacity: .45; cursor: default; }
 .like:hover { background: rgba(255, 46, 136, .1); }
 
 .error { color: #ff6b8b; font-size: 13px; margin-top: 8px; }
+/* Titre de progression (gs_quests) à côté du pseudo */
+.title-badge { margin-left: 6px; padding: 1px 7px; border-radius: 999px; font-size: 10px; font-weight: 700; letter-spacing: .3px;
+  vertical-align: middle; color: #0b0714; background: linear-gradient(90deg, #ff2e88, #28e0ff); }

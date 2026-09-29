@@ -110,7 +110,7 @@ export default function App() {
       ) : (
         <>
           <form className="composer" onSubmit={submitPost}>
-            <div className="me">@{data.handle}</div>
+            <div className="me">@{data.handle}{data.title && <span className="title-badge">{data.title}</span>}</div>
             <textarea value={draft} maxLength={data.maxLength} rows={3} placeholder="Quoi de neuf à Los Santos ?"
               onChange={(e) => setDraft(e.target.value)}
               onKeyDown={(e) => { if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) submitPost(e) }} />
@@ -128,7 +128,7 @@ export default function App() {
               return (
                 <article key={post.id} className={mine ? 'post mine' : 'post'}>
                   <div className="post-head">
-                    <span className="author">@{post.handle}</span>
+                    <span className="author">@{post.handle}{post.title && <span className="title-badge">{post.title}</span>}</span>
                     <span className="time">{timeAgo(post.time)}</span>
                   </div>
                   <p><Content text={post.content} /></p>

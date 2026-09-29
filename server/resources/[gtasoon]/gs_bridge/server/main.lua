@@ -243,6 +243,13 @@ local function Revive(src)
     return true
 end
 
+--- Joueur à terre ou mort (qbx_medical : 1 vivant, 2 à terre, 3 mort). [API] state bag qbx_medical
+local function IsDowned(src)
+    if not IsLoaded(src) then return false end
+    local state = Player(src).state['qbx_medical:deathState']
+    return state ~= nil and state >= 2
+end
+
 -- UI -----------------------------------------------------------------------------
 
 --- type: 'inform' | 'success' | 'error' | 'warning'
@@ -293,4 +300,5 @@ exports('RegisterStash', RegisterStash)
 exports('GiveVehicleKeys', GiveVehicleKeys)
 exports('GiveVehicle', GiveVehicle)
 exports('Revive', Revive)
+exports('IsDowned', IsDowned)
 exports('Notify', Notify)

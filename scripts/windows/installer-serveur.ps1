@@ -16,6 +16,9 @@ $LogFile = Join-Path $Desktop 'installer-log.txt'
 "=== Installeur GTA SOON $(Get-Date) ===" | Set-Content -LiteralPath $LogFile -Encoding UTF8
 function Log($m, $c = 'Gray') { Write-Host $m -ForegroundColor $c; Add-Content -LiteralPath $LogFile -Value $m -Encoding UTF8 }
 function Fail($m) { Log "ERREUR : $m" 'Red'; Log "Envoie $LogFile à [DEV]." 'Red'; Read-Host 'Entrée pour quitter'; exit 1 }
+$common = Join-Path $PSScriptRoot 'outils-communs.ps1'
+if (-not (Test-Path -LiteralPath $common)) { Fail "outils-communs.ps1 manquant à côté de ce script : réextrais le zip GTA SOON complet." }
+. $common
 Add-Type -AssemblyName System.Windows.Forms
 function PickFolder($desc, $default) {
     $d = New-Object System.Windows.Forms.FolderBrowserDialog
@@ -231,21 +234,11 @@ $secrets = $secrets -replace 'set mysql_connection_string "[^"]*"', ('set mysql_
 [IO.File]::WriteAllText((Join-Path $Data 'cfg\secrets.cfg'), $secrets, (New-Object Text.UTF8Encoding $false))
 Log '  secrets.cfg créé (licence + base de données)' 'Green'
 
-# Items GTA SOON dans ox_inventory (seulement ceux qui manquent)
-$items = Get-ChildItem -LiteralPath $Res -Recurse -Filter items.lua -ErrorAction SilentlyContinue | Where-Object { $_.FullName -match 'ox_inventory\\data\\items\.lua$' } | Select-Object -First 1
-if ($items) {
-    $content = Get-Content -LiteralPath $items.FullName -Raw -Encoding UTF8
-    $add = @()
-    foreach ($line in Get-Content -LiteralPath (Join-Path $Repo 'server\ox_items_gtasoon.lua') -Encoding UTF8) {
-        if ($line -match "^\['([a-z_]+)'\]" -and $content -notmatch ("\['" + $Matches[1] + "'\]")) { $add += '    ' + $line }
-    }
-    if ($add.Count -gt 0) {
-        $i = $content.LastIndexOf('}')
-        $content = $content.Substring(0, $i) + "`n    -- GTA SOON`n" + ($add -join "`n") + "`n" + $content.Substring($i)
-        [IO.File]::WriteAllText($items.FullName, $content, (New-Object Text.UTF8Encoding $false))
-    }
-    Log "  $($add.Count) item(s) GTA SOON ajouté(s) à ox_inventory" 'Green'
-} else { Log '  items.lua d''ox_inventory introuvable : ajoute server\ox_items_gtasoon.lua à la main' 'Yellow' }
+# Items GTA SOON dans ox_inventory + réglages Qbox (spawn, magasins, hôpital)
+$r = Merge-GtaSoonItems $Res $Repo
+if ($r) { Log "  ox_inventory : $($r.added) item(s) ajouté(s), $($r.replaced) amélioré(s)" 'Green' }
+else { Log '  items.lua d''ox_inventory introuvable : ajoute server\ox_items_gtasoon.lua à la main' 'Yellow' }
+Set-QboxOverrides $Res $Repo { param($m, $c) Log $m $c }
 
 # Lanceur
 $bat = "@echo off`r`ntitle Serveur GTA SOON`r`ncd /d `"%~dp0`"`r`n`"$FxExe`" +set onesync on +exec server.cfg`r`npause`r`n"

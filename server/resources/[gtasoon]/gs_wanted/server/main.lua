@@ -97,6 +97,12 @@ end
 
 --- Évalue un crime. Retourne le signalement envoyé à la police, ou nil s'il passe inaperçu.
 ---@param opts table|nil { silenced = bool, vehicle = entity, alarm = bool }
+--- Étoiles de la police IA pour un crime de cette gravité.
+function Wanted.npcStars(heat)
+    for _, s in ipairs(Config.NpcPolice.stars) do if heat <= s.heat then return s.stars end end
+    return 4
+end
+
 function Wanted.report(src, crimeType, coords, opts)
     local crime = Config.Crimes[crimeType]
     if not crime or not coords then return nil end
@@ -145,8 +151,12 @@ function Wanted.report(src, crimeType, coords, opts)
     SetTimeout(report.delay * 1000, function()
         table.insert(Wanted.history, 1, report)
         Wanted.history[Config.Dispatch.history + 1] = nil
-        for _, cop in ipairs(JobsApi:GetOnDutyPlayers(Config.PoliceJob)) do
+        local cops = JobsApi:GetOnDutyPlayers(Config.PoliceJob)
+        for _, cop in ipairs(cops) do
             TriggerClientEvent('gs_wanted:client:dispatch', cop, report)
+        end
+        if #cops < Config.NpcPolice.minCops then
+            TriggerClientEvent('gs_wanted:client:npcPolice', src, Wanted.npcStars(crime.heat))
         end
     end)
     return report

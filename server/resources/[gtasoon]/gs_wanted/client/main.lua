@@ -115,3 +115,31 @@ RegisterCommand('dispatch', function()
     lib.registerContext({ id = 'gs_dispatch', title = 'Central LSPD', options = options })
     lib.showContext('gs_dispatch')
 end, false)
+
+-- Police IA (aucun policier joueur en service) : étoiles du jeu, puis retour au calme --------------------------
+local npcActive = false
+
+local function setDispatch(on)
+    for i = 1, 15 do EnableDispatchService(i, on) end
+    SetMaxWantedLevel(on and 5 or 0)
+end
+
+RegisterNetEvent('gs_wanted:client:npcPolice', function(stars)
+    stars = math.max(1, math.min(5, tonumber(stars) or 1))
+    local pid = PlayerId()
+    setDispatch(true)
+    if GetPlayerWantedLevel(pid) < stars then
+        SetPlayerWantedLevel(pid, stars, false)
+        SetPlayerWantedLevelNow(pid, false)
+    end
+    lib.notify({ title = 'Police de Los Santos', description = ('Tu es recherché (%d ★). Sème-les !'):format(stars), type = 'error', icon = 'handcuffs' })
+    if npcActive then return end
+    npcActive = true
+    CreateThread(function()
+        Wait(5000)
+        while GetPlayerWantedLevel(PlayerId()) > 0 do Wait(2000) end
+        setDispatch(false)
+        npcActive = false
+        lib.notify({ description = 'La police a perdu ta trace.', type = 'success' })
+    end)
+end)

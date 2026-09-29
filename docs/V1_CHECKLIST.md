@@ -46,3 +46,11 @@ Cocher dans l'ordre. Chaque ligne rouge en console = on s'arrête et on l'envoie
 - [ ] Location : louer une citadine, la rendre, laisser expirer
 - [ ] Drogue : vente avec choix du produit + échange animé ; `/deal` (un client vient)
 - [ ] Caler les coords (F11 → Copier mes coordonnées) : personnages, comptoirs, paquets, labo coke
+
+## V2.1 — à tester en jeu
+- [ ] HUD sans cadre (texte néon seul)
+- [ ] Supérette : acheter téléphone, bière (effet), cigarettes + briquet ; caviste ; quincaillerie
+- [ ] À terre sans EMS : [G] secours IA, paiement ; réapparition possible après 70 s, hôpital 500 $, inventaire gardé
+- [ ] Crime sans policier en service : étoiles GTA, puis « la police a perdu ta trace »
+- [ ] Choix du lieu d'apparition (persos existants) : Mairie, Legion, Pôle Emploi, Del Perro, Motels, Sandy, Paleto
+- [ ] F5 : titre, série, 3 défis du jour, badges ; Néon : titre à côté du pseudo ; F10 : progression dans la fiche

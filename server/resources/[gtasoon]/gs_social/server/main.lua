@@ -12,9 +12,16 @@ local function findPost(id)
     for i, p in ipairs(Neon.feed) do if p.id == id then return p, i end end
 end
 
+--- Titre de progression (gs_quests) de l'auteur : à jour s'il est connecté, sinon celui du moment du post.
+local function titleOf(p)
+    if GetResourceState('gs_quests') ~= 'started' then return p.title end
+    local src = Bridge:GetSourceByIdentifier(p.cid)
+    return src and exports.gs_quests:GetTitle(src) or p.title
+end
+
 local function publicView(p, cid)
     return { id = p.id, handle = p.handle, content = p.content, likes = p.likes, time = p.time,
-             liked = cid ~= nil and p.likedBy[cid] == true }
+             liked = cid ~= nil and p.likedBy[cid] == true, title = titleOf(p) }
 end
 
 local function canModerate(src) return IsPlayerAceAllowed(src, Config.ModerateAce) end
@@ -52,7 +59,8 @@ lib.callback.register('gs_social:open', function(src)
     local cid = Bridge:GetIdentifier(src)
     local feed = {}
     for i, p in ipairs(Neon.feed) do feed[i] = publicView(p, cid) end
-    return { handle = handleOf(src), feed = feed, canModerate = canModerate(src), maxLength = Config.MaxLength }
+    local title = GetResourceState('gs_quests') == 'started' and exports.gs_quests:GetTitle(src) or nil
+    return { handle = handleOf(src), title = title, feed = feed, canModerate = canModerate(src), maxLength = Config.MaxLength }
 end)
 
 lib.callback.register('gs_social:setHandle', function(src, handle)
@@ -77,6 +85,7 @@ lib.callback.register('gs_social:post', function(src, content)
     local id = Store.insertPost(cid, handle, content)
     if not id then return false, 'Erreur, réessaie.' end
     local post = { id = id, cid = cid, handle = handle, content = content, likes = 0, time = os.time(), likedBy = {} }
+    post.title = titleOf(post)
     table.insert(Neon.feed, 1, post)
     Neon.feed[Config.FeedSize + 1] = nil
     TriggerClientEvent('gs_social:client:new', -1, publicView(post))

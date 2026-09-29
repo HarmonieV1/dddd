@@ -78,6 +78,28 @@ Soleil couchant rétro, titre néon, astuces tournantes (FR), touches utiles, vr
 - **20 paquets cachés** sur la carte : +50 XP chacun, et 2 500 XP + 5 000 $ quand on les a tous.
 - Autres ressources : `exports.gs_quests:Reward(src, 'job_mission' | 'drug_sale' | 'heist')` ou `AddXP(src, n, raison)`.
 
+### Défis du jour, série de connexions, titres, badges (V2.1)
+- **3 défis par jour** tirés au sort par personnage (mission de métier, quête, paquet caché, location, 3 achats,
+  revente, 30 min en ville, ventes discrètes, butin) : 150 XP chacun, et +300 XP + 500 $ quand les 3 sont faits.
+- **Série de connexions** : 50 XP × jours d'affilée (7 max), 1 000 $ et le badge « Fidèle » tous les 7 jours.
+- **Titres** selon le niveau (Nouveau venu → Mythe), affichés sur **Néon** à côté du pseudo et dans la fiche du **panel staff**.
+- **Badges** : Premier contrat, Ami de la famille, Le cercle de Rosa, Au bout du fil, Collectionneur, Fidèle, Assidu.
+
+## gs_services — secours IA (V2.1)
+Aucun EMS joueur en service → à terre, **[G] Appeler les secours** : un secouriste PNJ arrive, fait un massage
+cardiaque et te relève (300 $, banque puis liquide ; gratuit si tu n'as rien). Dès qu'un EMS joueur prend son
+service, le secours IA s'efface. Réglages Qbox posés par METTRE-A-JOUR : à terre 90 s, réapparition après 70 s,
+hôpital 500 $, inventaire conservé.
+
+## gs_wanted — police IA (V2.1)
+Moins de `Config.NpcPolice.minCops` policiers joueurs en service → un crime signalé déclenche la police du jeu
+(1 à 4 étoiles selon la gravité). La ville n'est jamais sans police ; les vrais policiers reprennent la main dès qu'ils sont en service.
+
+## gs_economy — commerces (V2.1)
+12 supérettes, 6 cavistes, 2 quincailleries aux vrais comptoirs du jeu (blip + cercle au sol) : boissons, snacks,
+alcool (effet d'ivresse), cigarettes (briquet requis), téléphone, bandages, jerricans… Les magasins ox_inventory
+par défaut (vides) sont retirés par METTRE-A-JOUR.
+
 ## gs_rental — location de véhicules (V2)
 - 5 comptoirs (mairie, Legion Square, Del Perro, Sandy Shores, Paleto) signalés par un blip et un cercle au sol.
 - BMX 15 $, vélo 20 $, scooter 45 $, mini citadine 90 $, petite décapotable 140 $ : 30 à 60 min, une location à la fois.

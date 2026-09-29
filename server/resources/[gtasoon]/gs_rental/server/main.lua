@@ -40,6 +40,7 @@ lib.callback.register('gs_rental:rent', function(src, pointId, vehicleId)
         return false, 'Véhicule indisponible, remboursé.'
     end
     Rental.active[src] = { veh = veh, model = v.model, expires = os.time() + v.minutes * 60 }
+    if GetResourceState('gs_quests') == 'started' then exports.gs_quests:Track(src, 'rental') end
     return true, ('%s loué %d min pour %d $. Rends-le à n\'importe quel point de location.'):format(v.label, v.minutes, v.price)
 end)
 

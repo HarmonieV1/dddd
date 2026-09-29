@@ -123,6 +123,21 @@ check('historique dispatch pour la police', #cb('gs_wanted:history', 2) > 0)
 check('historique refusé aux civils', #cb('gs_wanted:history', 3) == 0)
 fixRandom()
 
+-- Police IA : aucun policier joueur en service → étoiles du jeu sur le suspect ------------------------------------
+fixRandom(0.0)
+local savedDuty = duty
+duty = {}
+W.clientEvents = {}
+Wanted.report(1, 'bank', street, { alarm = true })
+local npc = lastClientEvent('gs_wanted:client:npcPolice', 1)
+check('sans policier : police IA déclenchée', npc ~= nil and npc.args[1] == 4)
+check('étoiles selon la gravité', Wanted.npcStars(8) == 1 and Wanted.npcStars(30) == 2 and Wanted.npcStars(45) == 3)
+duty = savedDuty
+W.clientEvents = {}
+Wanted.report(1, 'bank', street, { alarm = true })
+check('policier en service : pas de police IA', lastClientEvent('gs_wanted:client:npcPolice', 1) == nil)
+fixRandom()
+
 -- Nettoyage à la déconnexion -------------------------------------------------------------------------------------
 TriggerEvent('gs_bridge:server:playerUnloaded', 1)
 check('chaleur nettoyée', Wanted.heat[1] == nil)

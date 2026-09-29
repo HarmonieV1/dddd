@@ -7,11 +7,13 @@ provide('gs_weather', { GetGameTime = function() return hour, 0 end })
 loadResource('gs_security', { R .. 'gs_security/server/main.lua' })
 loadResource('gs_quests', { R .. 'gs_quests/shared/config.lua', R .. 'gs_quests/shared/quests.lua' })
 local db = {}
+local function copy(t) local c = {} for k, v in pairs(t) do c[k] = type(v) == 'table' and copy(v) or v end return c end
+local function blank() return { xp = 0, packages = {}, done = {}, dailyDate = '', daily = {}, dailyTotal = 0, streak = 0, lastLogin = '', badges = {} } end
 Store = {
     init = function() end,
-    load = function(cid) return db[cid] and { xp = db[cid].xp, packages = db[cid].packages, done = db[cid].done } or { xp = 0, packages = {}, done = {} } end,
-    save = function(cid, p) db[cid] = db[cid] or { done = {} } db[cid].xp, db[cid].packages = p.xp, p.packages end,
-    markDone = function(cid, q) db[cid] = db[cid] or { xp = 0, packages = {}, done = {} } db[cid].done[q] = true end,
+    load = function(cid) return db[cid] and copy(db[cid]) or blank() end,
+    save = function(cid, p) local done = db[cid] and db[cid].done or {} db[cid] = copy(p) db[cid].done = done db[cid].cid = nil end,
+    markDone = function(cid, q) db[cid] = db[cid] or blank() db[cid].done[q] = true end,
 }
 loadResource('gs_quests', { R .. 'gs_quests/server/main.lua' })
 
@@ -49,6 +51,8 @@ tp(1, vec3(0.0, 0.0, 0.0))
 ok = cb('gs_quests:start', 1, 'welcome'); step()
 check('démarrage refusé loin du personnage', not ok)
 tp(1, at(Characters.guide.coords))
+local xp0 = Progress.players[1].xp
+check('connexion du jour : XP de série', xp0 == Config.Streak.xpPerDay and Progress.players[1].streak == 1)
 ok = cb('gs_quests:start', 1, 'welcome'); step()
 check('welcome démarrée', ok and Progress.active[1].step == 1)
 ok = cb('gs_quests:start', 1, 'welcome'); step()
@@ -63,8 +67,9 @@ cb('gs_quests:advance', 1); step()
 tp(1, at(Characters.guide.coords))
 ok = cb('gs_quests:advance', 1); step()
 check('welcome terminée : argent + XP + marquée', ok and not Progress.active[1] and W.players[1].money.cash == 250
-    and Progress.players[1].xp == 150 and db.CID1.done.welcome)
+    and Progress.players[1].xp >= xp0 + 150 and db.CID1.done.welcome)
 check('annonce client', lastClientEvent('gs_quests:client:completed', 1).args[1] == 'welcome')
+check('badge Premier contrat', Progress.players[1].badges.first_quest and lastClientEvent('gs_quests:client:badge', 1) ~= nil)
 ok = cb('gs_quests:start', 1, 'welcome'); step()
 check('pas deux fois', not ok)
 
@@ -185,6 +190,50 @@ local last = #Config.Packages.points
 tp(1, Config.Packages.points[last])
 ok, msg = cb('gs_quests:package', 1, last); step()
 check('tous les paquets : bonus', ok and msg:find('TOUS') and W.players[1].money.bank >= cash + Config.Packages.allCash)
+
+-- Titres
+check('titres par niveau', Progress.titleFor(1) == 'Nouveau venu' and Progress.titleFor(4) == 'Habitué' and Progress.titleFor(60) == 'Mythe')
+check('GetTitle', exports.gs_quests:GetTitle(1) == Progress.titleFor(exports.gs_quests:GetLevel(1)))
+local sum = exports.gs_quests:GetSummary(1)
+check('résumé staff : badges lisibles', sum and sum.level >= 1 and #sum.badges >= 2)
+check('badge de fin d\'histoire (Big Sal) : pas encore', not Progress.players[1].badges.sal_family)
+
+-- Défis du jour : tirage fixe par jour, progression, XP, bonus quand tout est fait
+local p1 = Progress.players[1]
+local list = Progress.dailyList(p1)
+check('3 défis distincts', #list == 3 and list[1].id ~= list[2].id and list[2].id ~= list[3].id and list[1].id ~= list[3].id)
+local again = Progress.dailyChoice(p1.cid, p1.dailyDate)
+check('même tirage toute la journée', again[1].id == list[1].id and again[3].id == list[3].id)
+check('activité hors défis : ignorée', not exports.gs_quests:Track(1, 'nimporte'))
+local xpD, bankD = p1.xp, W.players[1].money.bank
+local todo = 0
+for _, d in ipairs(list) do if not d.done then todo = todo + 1 end end
+local bonusDue = not p1.daily._all
+for _, d in ipairs(list) do
+    for _ = 1, d.goal do Progress.track(1, d.id, 1) end
+end
+local after = Progress.dailyList(p1)
+check('défis réussis', after[1].done and after[2].done and after[3].done and p1.dailyTotal >= 3)
+check('XP des défis + bonus complet', bonusDue and p1.xp >= xpD + todo * Config.Daily.xp + Config.Daily.allXp and W.players[1].money.bank >= bankD + Config.Daily.allCash)
+local xpDone = p1.xp
+Progress.track(1, list[1].id, 5)
+check('défi terminé : plus rien', p1.xp == xpDone)
+advance(86400 * 1000)
+local next = Progress.dailyList(p1)
+check('lendemain : nouveaux défis à zéro', next[1].n == 0 and not p1.daily._all)
+
+-- Série de connexions : lendemain = +1, jour sauté = remise à 1, 7 jours = badge + bonus
+p1.lastLogin = os.date('%Y-%m-%d', os.time() - 86400)
+p1.streak = 6
+local bankS = W.players[1].money.bank
+Progress.login(1)
+check('7e jour d\'affilée : badge Fidèle + bonus', p1.streak == 7 and p1.badges.streak7 and W.players[1].money.bank >= bankS + Config.Streak.weekCash)
+local xpL = p1.xp
+Progress.login(1)
+check('2e connexion du même jour : rien', p1.xp == xpL and p1.streak == 7)
+p1.lastLogin = os.date('%Y-%m-%d', os.time() - 3 * 86400)
+Progress.login(1)
+check('jour sauté : série remise à 1', p1.streak == 1)
 
 -- Persistance
 TriggerEvent('gs_bridge:server:playerUnloaded', 1)

@@ -188,6 +188,12 @@ function refresh()
 end
 
 RegisterNetEvent('gs_quests:client:refresh', function() refresh() end)
+RegisterNetEvent('gs_quests:client:daily', function(label)
+    lib.notify({ title = 'Défi du jour réussi', description = label, type = 'success', icon = 'calendar-check', duration = 7000 })
+end)
+RegisterNetEvent('gs_quests:client:badge', function(label, desc)
+    shard('BADGE DÉBLOQUÉ', ('%s · %s'):format(label, desc), { 'RANK_UP', 'HUD_AWARDS' })
+end)
 RegisterNetEvent('gs_quests:client:completed', function(id)
     shard('MISSION RÉUSSIE', QuestById[id] and QuestById[id].title or '', { 'Mission_Pass_Notify', 'DLC_HEISTS_GENERAL_FRONTEND_SOUNDS' })
     refresh()
@@ -280,9 +286,26 @@ local function openMenu()
     if not state then return end
     local pct = state.nextXp and math.floor((state.xp - state.floor) / (state.nextXp - state.floor) * 100) or 100
     local options = {
-        { title = ('Niveau %d'):format(state.level), icon = 'star', progress = pct, colorScheme = 'teal',
+        { title = ('Niveau %d · %s'):format(state.level, state.title), icon = 'star', progress = pct, colorScheme = 'teal',
           description = state.nextXp and ('%d / %d XP'):format(state.xp - state.floor, state.nextXp - state.floor) or 'Niveau maximum' },
+        { title = ('Série : %d jour(s) d\'affilée'):format(state.streak), icon = 'fire', iconColor = '#ff8a3d', readOnly = true,
+          description = 'Connecte-toi chaque jour : plus d\'XP, et un bonus tous les 7 jours' },
     }
+    for _, d in ipairs(state.daily) do
+        options[#options + 1] = {
+            title = (d.done and '✔ ' or '') .. d.label, icon = 'calendar-check', iconColor = d.done and '#5aff8c' or '#28e0ff',
+            progress = math.floor(d.n / d.goal * 100), colorScheme = d.done and 'green' or 'cyan', readOnly = true,
+            description = ('Défi du jour · %d / %d · %d XP'):format(d.n, d.goal, Config.Daily.xp),
+        }
+    end
+    local unlocked, badgeOptions = 0, {}
+    for _, b in ipairs(state.badges) do
+        if b.unlocked then unlocked = unlocked + 1 end
+        badgeOptions[#badgeOptions + 1] = { title = b.label, description = b.desc, readOnly = true,
+            icon = b.unlocked and 'medal' or 'lock', iconColor = b.unlocked and '#ffd23f' or '#6b6380' }
+    end
+    lib.registerContext({ id = 'gs_badges', title = 'Badges', menu = 'gs_progress', options = badgeOptions })
+    options[#options + 1] = { title = ('Badges : %d / %d'):format(unlocked, #state.badges), icon = 'medal', iconColor = '#ffd23f', menu = 'gs_badges' }
     local step, q = activeStep()
     if step then
         options[#options + 1] = { title = 'En cours : ' .. q.title, description = step.label, icon = 'location-dot', iconColor = '#5aff8c' }

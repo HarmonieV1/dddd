@@ -84,6 +84,7 @@ lib.callback.register('gs_economy:buy', function(src, index, item, qty)
         return false, 'Erreur inventaire, remboursé.'
     end
     Market.push(item, qty)
+    if GetResourceState('gs_quests') == 'started' then exports.gs_quests:Track(src, 'shop_buy') end
     return true, ('%d × %s pour %d $.'):format(qty, Config.Items[item].label, total)
 end)
 
@@ -101,6 +102,7 @@ lib.callback.register('gs_economy:sell', function(src, index, item, qty)
     end
     Bridge:AddMoney(src, 'cash', unit * qty, 'revente ' .. item)
     Market.push(item, -qty)
+    if GetResourceState('gs_quests') == 'started' then exports.gs_quests:Track(src, 'sell') end
     return true, ('%d × %s revendus %d $.'):format(qty, Config.Items[item].label, unit * qty)
 end)
 
