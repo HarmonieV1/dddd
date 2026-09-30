@@ -17,3 +17,4 @@ backups/
 
 # NUI compilées : livrées avec la ressource (FiveM ne build pas)
 !server/resources/*/*/web/dist/
+livraison/

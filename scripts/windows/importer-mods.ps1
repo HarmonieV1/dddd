@@ -176,7 +176,13 @@ foreach ($p in $packages) {
             $i++
             $final += [pscustomobject]@{ Name = $(if ($mans.Count -gt 1) { "$($p.Name)_$i" } else { $p.Name }); FullName = $m.DirectoryName }
         }
-    } else { $final += [pscustomobject]@{ Name = $p.Name; FullName = $p.FullName } }
+    } else {
+        # Plusieurs ressources FiveM côte à côte dans une même archive (ex : vêtements homme + femme) : une par manifest.
+        $all = @(Get-ChildItem -LiteralPath $p.FullName -Recurse -File -Force -Filter 'fxmanifest.lua')
+        if ($all.Count -gt 1) {
+            foreach ($m in $all) { $final += [pscustomobject]@{ Name = $m.Directory.Name; FullName = $m.DirectoryName } }
+        } else { $final += [pscustomobject]@{ Name = $p.Name; FullName = $p.FullName } }
+    }
 }
 $packages = $final
 
