@@ -2,10 +2,12 @@
 Config = {}
 
 Config.Density = {
-    peds = 0.6,          -- piétons
-    scenarios = 0.6,     -- PNJ assis, au travail, sur les bancs…
-    vehicles = 0.65,     -- circulation
-    parked = 0.75,       -- voitures garées
+    peds = 0.35,         -- piétons
+    scenarios = 0.3,     -- PNJ assis, au travail, sur les bancs…
+    vehicles = 0.3,      -- circulation
+    parked = 0.4,        -- voitures garées
+    -- Serveur plein : tout est encore réduit (x1 jusqu'à `from` joueurs, puis jusqu'à x`min` à `to` joueurs)
+    crowd = { from = 24, to = 96, min = 0.45 },
 }
 
 -- Cayo Perico : chargée (terrain, eau, minimap, sons, PNJ) seulement à moins de `loadRadius` m du centre de l'île.

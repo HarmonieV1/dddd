@@ -25,6 +25,13 @@ $QboxPatches = @(
     @{ res = 'ox_inventory'; file = 'web\build\index.html'; why = 'inventaire : double-clic pour utiliser un objet'
        find = '(?<!<!--gs-dblclick-->)</body>'
        repl = '<script>document.addEventListener("dblclick",function(e){if(e.target&&e.target.dispatchEvent){e.target.dispatchEvent(new MouseEvent("click",{bubbles:true,cancelable:true,altKey:true,view:window}))}},true)</script><!--gs-dblclick--></body>' },
+    # Carte d'identité montrée : se ferme seule après 6 s (sinon restait à l'écran), Échap ou Retour arrière la ferment aussi
+    @{ res = 'qbx_idcard'; file = 'config\shared.lua'; find = 'status\s*=\s*false,[^\n]*\n\s*time\s*=\s*\d+'; repl = "status = true,`n            time = 6000"; why = 'carte d''identité : fermeture auto après 6 s' }
+    @{ res = 'qbx_idcard'; file = 'web\js\config.js'; find = 'status:\s*false,[^\n]*\n\s*time:\s*\d+'; repl = "status: true,`n            time: 6000"; why = 'carte d''identité (page) : fermeture auto' }
+    @{ res = 'qbx_idcard'; file = 'web\js\main.js'; find = 'if \(e\.key !== config\.idCardSettings\.closeKey\) return;'; repl = 'if (e.key !== config.idCardSettings.closeKey && e.key !== ''Escape'') return;'; why = 'carte d''identité : Échap la ferme' }
+    @{ res = 'qbx_idcard'; file = 'config\shared.lua'; find = "header = 'Identity'"; repl = "header = 'Carte d\'identité'"; why = 'carte d''identité en français' }
+    @{ res = 'qbx_idcard'; file = 'config\shared.lua'; find = "header = 'Driver License'"; repl = "header = 'Permis de conduire'"; why = 'permis en français' }
+    @{ res = 'qbx_idcard'; file = 'config\shared.lua'; find = "header = 'Weapon License'"; repl = "header = 'Permis de port d\'arme'"; why = 'permis d''arme en français' }
     @{ res = 'ox_lib'; file = 'resource\interface\client\context.lua'; find = 'lib\.setNuiFocus\(false\)'; repl = 'lib.setNuiFocus(true)'; why = 'menus cliquables : on peut marcher menu ouvert' },
     # Menus ox_lib : palette « dark » grise de Mantine remplacée par du noir-violet néon (DA GTA SOON)
     @{ res = 'ox_lib'; dir = 'web\build\assets'; filter = '*.js'; why = 'menus ox_lib en noir néon'

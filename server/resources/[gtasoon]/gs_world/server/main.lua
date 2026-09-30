@@ -31,3 +31,11 @@ lib.callback.register('gs_world:fly', function(src, side)
     SetEntityHeading(ped, to.w)
     return true, side == 'mainland' and 'Bienvenue à Cayo Perico.' or 'Retour à Los Santos.'
 end)
+
+-- Nombre de joueurs connectés, lu par les clients pour réduire PNJ / trafic quand le serveur se remplit.
+CreateThread(function()
+    while true do
+        GlobalState.gsPlayers = #GetPlayers()
+        Wait(30000)
+    end
+end)

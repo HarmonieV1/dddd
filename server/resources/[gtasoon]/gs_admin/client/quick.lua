@@ -294,6 +294,23 @@ local function vehicleType(hash)
     return 'automobile'
 end
 
+-- Véhicules importés (IMPORTER-MODS) + véhicules de service ajoutés : retrouvés sans connaître leur nom de spawn.
+local function addonVehiclesMenu()
+    local list = lib.callback.await('gs_admin:addonVehicles', false)
+    if not list then return end
+    local options = {}
+    for _, v in ipairs(list) do
+        local hash = GetHashKey(v.model)
+        local here = IsModelInCdimage(hash)
+        options[#options + 1] = { title = v.name, icon = here and 'car' or 'triangle-exclamation', disabled = not here,
+            description = ('spawn : %s%s%s'):format(v.model, v.price and (' · %d $'):format(v.price) or '', here and '' or ' · mod non installé'),
+            onSelect = function() notify(act('spawnveh', nil, { model = v.model, vtype = vehicleType(hash) })) end }
+    end
+    if #options == 0 then options[1] = { title = 'Aucun véhicule importé', description = 'Lance IMPORTER-MODS.bat', disabled = true } end
+    lib.registerContext({ id = 'gs_staff_addonveh', title = 'Véhicules ajoutés (' .. #list .. ')', menu = 'gs_staff_quick', options = options })
+    lib.showContext('gs_staff_addonveh')
+end
+
 -- Menus cliquables (souris) : chaque option porte sa propre action, aucune correspondance par position.
 local ON, OFF = '#5aff8c', '#6b6380'
 
@@ -570,6 +587,8 @@ local function mainMenu()
             if not IsModelInCdimage(hash) or not IsModelAVehicle(hash) then return notify(false, 'Modèle inconnu : ' .. model) end
             notify(act('spawnveh', nil, { model = model, vtype = vehicleType(hash) }))
         end })
+        add(3, { title = 'Véhicules ajoutés (mods)', icon = 'car-side', arrow = true, description = 'Liste des voitures importées : nom, prix, spawn en un clic',
+            onSelect = addonVehiclesMenu })
         add(2, { title = 'Supprimer le véhicule proche', icon = 'trash', onSelect = function()
             local veh = nearestVehicle()
             if veh == 0 or not NetworkGetEntityIsNetworked(veh) then return notify(false, 'Aucun véhicule proche.') end

@@ -79,3 +79,14 @@ lib.addCommand('gsjob', {
     DB.audit('admin_' .. args.action, job, src == 0 and 'console' or GSJ.cid(src), m.cid, grade, nil)
     reply(src, L('action_done'), 'success')
 end)
+
+-- Véhicules de service ajoutés par mod (addon = true) : listés dans le menu staff pour les retrouver.
+exports('GetAddonVehicles', function()
+    local list = {}
+    for name, def in pairs(Jobs) do
+        for _, v in ipairs(def.vehicles or {}) do
+            if v.addon then list[#list + 1] = { model = v.model, name = v.label .. ' (' .. (def.label or name) .. ')', job = name } end
+        end
+    end
+    return list
+end)

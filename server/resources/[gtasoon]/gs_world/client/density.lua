@@ -1,13 +1,23 @@
 -- gs_world (client) : densité PNJ / trafic appliquée à chaque frame (seule façon que GTA la respecte).
 local D = Config.Density
 
-CreateThread(function()
+-- Facteur selon le nombre de joueurs connectés (GlobalState.gsPlayers, tenu à jour par le serveur).
+local function crowdFactor()
+    local c, n = D.crowd, GlobalState.gsPlayers or 0
+    if not c or n <= c.from then return 1.0 end
+    if n >= c.to then return c.min end
+    return 1.0 - (1.0 - c.min) * (n - c.from) / (c.to - c.from)
+end
+
+CreateThread(function() -- par frame : GTA oublie la densité à chaque image
+    local k, nextCheck = 1.0, 0
     while true do
-        SetPedDensityMultiplierThisFrame(D.peds)
-        SetScenarioPedDensityMultiplierThisFrame(D.scenarios, D.scenarios)
-        SetVehicleDensityMultiplierThisFrame(D.vehicles)
-        SetRandomVehicleDensityMultiplierThisFrame(D.vehicles)
-        SetParkedVehicleDensityMultiplierThisFrame(D.parked)
+        if GetGameTimer() > nextCheck then k = crowdFactor(); nextCheck = GetGameTimer() + 10000 end
+        SetPedDensityMultiplierThisFrame(D.peds * k)
+        SetScenarioPedDensityMultiplierThisFrame(D.scenarios * k, D.scenarios * k)
+        SetVehicleDensityMultiplierThisFrame(D.vehicles * k)
+        SetRandomVehicleDensityMultiplierThisFrame(D.vehicles * k)
+        SetParkedVehicleDensityMultiplierThisFrame(D.parked * k)
         Wait(0)
     end
 end)

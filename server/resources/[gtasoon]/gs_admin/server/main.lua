@@ -576,6 +576,24 @@ lib.callback.register('gs_admin:items', function(src)
     return Bridge:ListItems()
 end)
 
+--- Véhicules ajoutés par IMPORTER-MODS (bloc « GTA SOON ADDONS » du catalogue Qbox) + véhicules de service ajoutés
+--- aux garages des métiers : pour les retrouver sans connaître leur nom de spawn.
+lib.callback.register('gs_admin:addonVehicles', function(src)
+    if not staffGuard(src, 'addonveh', 5, 10000) or Admin.level(src) < 3 then return nil end
+    local list, seen = {}, {}
+    local text = LoadResourceFile('qbx_core', 'shared/vehicles.lua') or ''
+    local block = text:match('%-%- GTA SOON ADDONS DEBUT(.-)%-%- GTA SOON ADDONS FIN') or ''
+    for model, name, price in block:gmatch("%['([%w_]+)'%]%s*=%s*{%s*name%s*=%s*'([^']*)'.-price%s*=%s*(%d+)") do
+        seen[model] = true
+        list[#list + 1] = { model = model, name = name, price = tonumber(price) }
+    end
+    for _, v in ipairs(exports.gs_jobs:GetAddonVehicles() or {}) do
+        if not seen[v.model] then seen[v.model] = true; list[#list + 1] = v end
+    end
+    table.sort(list, function(a, b) return a.name < b.name end)
+    return list
+end)
+
 lib.callback.register('gs_admin:dossier', function(src, target)
     if not staffGuard(src, 'dossier', 20, 10000) then return nil end
     target = tonumber(target)
