@@ -7,7 +7,15 @@ local spectating = nil      -- { target, back = vec3 }
 local info = nil            -- dernier retour de gs_admin:quick
 
 local function notify(ok, msg) if msg then lib.notify({ description = msg, type = ok and 'success' or 'error' }) end end
-local function act(name, target, data) return lib.callback.await('gs_admin:action', false, name, target, data) end
+local function act(name, target, data)
+    local ok, msg = lib.callback.await('gs_admin:action', false, name, target, data)
+    -- Action refusée car le mode staff est coupé : on l'active (journalisé côté serveur) et on réessaie une fois.
+    if not ok and type(msg) == 'string' and msg:find('mode staff', 1, true) and lib.callback.await('gs_admin:toggleDuty', false) then
+        lib.notify({ description = 'Mode staff activé', type = 'inform' })
+        ok, msg = lib.callback.await('gs_admin:action', false, name, target, data)
+    end
+    return ok, msg
+end
 
 --- Demande l'accord du serveur pour un pouvoir. Retourne true si accordé.
 local function grant(power, data)

@@ -280,6 +280,11 @@ local function SpawnVehicle(src, model, vtype, coords, heading, plate, warp)
     if type(model) ~= 'string' or not VEHICLE_TYPES[vtype or 'automobile'] then return 0 end
     local veh = CreateVehicleServerSetter(GetHashKey(model), vtype or 'automobile', coords.x, coords.y, coords.z, heading or 0.0)
     if not veh or veh == 0 then return 0 end
+    local deadline = GetGameTimer() + 5000 -- l'entité met quelques frames à exister (sinon warp / plaque ignorés)
+    while not DoesEntityExist(veh) do
+        if GetGameTimer() > deadline then return 0 end
+        Wait(0)
+    end
     if plate then SetVehicleNumberPlateText(veh, plate:sub(1, 8)) end
     if warp then TaskWarpPedIntoVehicle(GetPlayerPed(src), veh, -1) end
     GiveVehicleKeys(src, veh)
