@@ -27,6 +27,7 @@ $QboxPatches = @(
        repl = '<script>document.addEventListener("dblclick",function(e){if(e.target&&e.target.dispatchEvent){e.target.dispatchEvent(new MouseEvent("click",{bubbles:true,cancelable:true,altKey:true,view:window}))}},true)</script><!--gs-dblclick--></body>' },
     # Concession PDM : catégorie « Imports ROADTRIP » en tête, avec toutes les voitures importées (IMPORTER-MODS)
     @{ res = 'qbx_vehicleshop'; file = 'config\shared.lua'; find = "(categories = \{\s*\n(\s*))sportsclassics = 'Sports Classics',"; repl = "`${1}roadtrip = ' ★ Imports ROADTRIP',`n`${2}sportsclassics = 'Sports Classics',"; why = 'concession : catégorie Imports ROADTRIP' }
+    @{ res = 'illenium-appearance'; file = 'locales\fr.lua'; find = 'description = "tu resteras moche"'; repl = 'description = "Ton apparence sera enregistrée"'; why = 'création perso : texte d''enregistrement propre' }
     # Carte d'identité montrée : se ferme seule après 6 s (sinon restait à l'écran), Échap ou Retour arrière la ferment aussi
     @{ res = 'qbx_idcard'; file = 'config\shared.lua'; find = 'status\s*=\s*false,[^\n]*\n\s*time\s*=\s*\d+'; repl = "status = true,`n            time = 6000"; why = 'carte d''identité : fermeture auto après 6 s' }
     @{ res = 'qbx_idcard'; file = 'web\js\config.js'; find = 'status:\s*false,[^\n]*\n\s*time:\s*\d+'; repl = "status: true,`n            time: 6000"; why = 'carte d''identité (page) : fermeture auto' }

@@ -264,7 +264,7 @@ function Analyze($pkg) {
     if ($slim.Count -gt 0) { [void]$pre.Add("$($slim.Count) pièces de tuning trop lourdes retirées (kit $($slim[0])…) : la voiture reste complète") }
     $all = @(Get-ChildItem -LiteralPath $pkg.FullName -Recurse -File -Force)
     $r = [ordered]@{ name = (Clean-Name $pkg.Name); source = $pkg.Name; type = 'rejete'; sizeMB = MB (($all | Measure-Object Length -Sum).Sum)
-        issues = New-Object System.Collections.ArrayList; notes = $pre; root = $pkg.FullName; models = @(); install = $false }
+        issues = New-Object System.Collections.ArrayList; notes = $pre; root = $pkg.FullName; models = @(); install = $false; risk = $null }
     $ext = { param($e) @($all | Where-Object { $_.Extension -ieq $e }) }
     $manifest = $all | Where-Object { $_.Name -ieq 'fxmanifest.lua' -or $_.Name -ieq '__resource.lua' } | Select-Object -First 1
     $lua = @($all | Where-Object { $_.Extension -ieq '.lua' -and $_.Name -notmatch '^(fxmanifest|__resource)\.lua$' })
@@ -354,10 +354,35 @@ function Build-Resource($r, $dest) {
 # Optimiseur de textures (tools\textures) : .ytd trop lourds allégés avant installation (« Oversized assets » dans la console).
 $TexKit = Join-Path $PSScriptRoot '..\..\tools\textures'
 $TexReady = $false
-try {
+# DÉSACTIVÉ par défaut (crash « Streamer crashed » signalé en jeu après optimisation) : les mods sont installés avec
+# leurs textures d'origine. Pour réactiver (tests) : variable d'environnement GTASOON_TEXOPT=1.
+if ($env:GTASOON_TEXOPT -eq '1') { try {
     foreach ($d in 'SharpDX.dll', 'SharpDX.Mathematics.dll', 'CodeWalker.Core.dll', 'GtaSoonTex.dll') { Add-Type -Path (Join-Path $TexKit $d) }
     $TexReady = $true
-} catch { Say "  Optimiseur de textures indisponible ($($_.Exception.Message)) : mods installés sans optimisation" 'Yellow' }
+} catch { Say "  Optimiseur de textures indisponible ($($_.Exception.Message)) : mods installés sans optimisation" 'Yellow' } }
+# Mémoire réelle d'un fichier du jeu (en-tête RSC7 : mêmes chiffres que « uses X MiB of physical memory » de FiveM).
+function Get-RscMemory([string]$path) {
+    $fs = [IO.File]::OpenRead($path)
+    try { $b = New-Object byte[] 16; if ($fs.Read($b, 0, 16) -lt 16) { return $null } } finally { $fs.Dispose() }
+    if ([BitConverter]::ToUInt32($b, 0) -ne 0x37435352) { return $null }   # 'RSC7'
+    $size = { param([uint32]$f)
+        $n = ((($f -shr 27) -band 1)) + ((($f -shr 26) -band 1) -shl 1) + ((($f -shr 25) -band 1) -shl 2) + ((($f -shr 24) -band 1) -shl 3) +
+             ((($f -shr 17) -band 0x7F) -shl 4) + ((($f -shr 11) -band 0x3F) -shl 5) + ((($f -shr 7) -band 0xF) -shl 6) +
+             ((($f -shr 5) -band 3) -shl 7) + ((($f -shr 4) -band 1) -shl 8)
+        [long](0x200 -shl ($f -band 0xF)) * $n }
+    [pscustomobject]@{ virt = (& $size ([BitConverter]::ToUInt32($b, 8))); phys = (& $size ([BitConverter]::ToUInt32($b, 12))) }
+}
+# Seuil au-delà duquel FiveM signale « Oversized assets » (crash du streamer possible, surtout à plusieurs).
+$OversizedMB = 48
+function Get-Oversized($dir) {
+    $list = @()
+    foreach ($f in @(Get-ChildItem -LiteralPath $dir -Recurse -File -Force | Where-Object { $_.Extension -match '^\.(ytd|yft|ydd|ydr)$' })) {
+        $m = Get-RscMemory $f.FullName
+        if ($m -and ($m.phys -gt $OversizedMB * 1MB -or $m.virt -gt 64MB)) { $list += "$($f.Name) ($(MB ([math]::Max($m.phys, $m.virt))) Mo)" }
+    }
+    return $list
+}
+
 function Optimize-Textures($dir, $r) {
     if (-not $TexReady) { return }
     foreach ($f in @(Get-ChildItem -LiteralPath $dir -Recurse -File -Filter '*.ytd' | Where-Object { $_.Length -gt 1MB })) {
@@ -385,7 +410,15 @@ if ($canInstall) { [void][IO.Directory]::CreateDirectory($Addons) }
 foreach ($r in $results) {
     $sorted = Join-Path (Join-Path $Out $Cats[$r.type]) $r.name
     try { Build-Resource $r $sorted } catch { [void]$r.issues.Add("rangement impossible : $($_.Exception.Message)"); $r.install = $false }
-    if ($r.install) { Optimize-Textures $sorted $r }
+    if ($r.install) {
+        Optimize-Textures $sorted $r
+        # Sécurité : vêtements convertis (jamais testés en jeu) installés mais DÉSACTIVÉS dans addons.cfg
+        # Les véhicules lourds restent ACTIFS (ils tournent) : simple signalement dans le rapport.
+        $heavy = @(Get-Oversized $sorted)
+        if ($heavy.Count -gt 0) { [void]$r.notes.Add("lourd pour FiveM : $($heavy -join ', ') (à alléger plus tard)") }
+        if ($r.name -like 'roadtrip_*') { $r.risk = 'vêtements convertis, à tester un par un' }
+        if ($r.risk) { [void]$r.issues.Add("désactivé par sécurité ($($r.risk)) : pour tester, retire le # de sa ligne dans cfg\addons.cfg") }
+    }
     if ($r.install -and $canInstall) {
         $name = 'gsa_' + $r.name
         $dest = Join-Path $Addons $name
@@ -396,14 +429,25 @@ foreach ($r in $results) {
 }
 if ($canInstall) {
     $cfg = @('## Mods importés par IMPORTER-MODS.bat (véhicules, vêtements, maps). Ce fichier n''est jamais écrasé par METTRE-A-JOUR.',
-        '## Mets un # devant une ligne pour désactiver un mod.')
+        '## Mets un # devant une ligne pour désactiver un mod.',
+        '## « désactivé par sécurité » = pas encore testé en jeu : retire le # pour l''essayer, ton choix est gardé.')
     $previous = Join-Path $Data 'cfg\addons.cfg'
     $keep = @()
     if (Test-Path -LiteralPath $previous) { $keep = @(Get-Content -LiteralPath $previous | Where-Object { $_ -match '^#?\s*ensure gsa_' }) }
-    $names = @($installed) + @($keep | ForEach-Object { ($_ -replace '^#?\s*ensure\s+', '').Trim() }) | Sort-Object -Unique
+    $names = @($installed) + @($keep | ForEach-Object { (($_ -replace '^#?\s*ensure\s+', '').Trim() -split '\s+')[0] }) | Sort-Object -Unique
+    $notes = @()
+    if (Test-Path -LiteralPath $previous) { $notes = @(Get-Content -LiteralPath $previous | Where-Object { $_ -match '^## gsa_\S+ : désactivé' } | ForEach-Object { ($_ -split '\s+')[1] }) }
+    $risks = @{}
+    foreach ($r in $results) { if ($r.install -and $r.risk) { $risks['gsa_' + $r.name] = $r.risk } }
     foreach ($n in $names) {
-        $wasOff = $keep | Where-Object { $_ -match '^#' -and $_ -match [regex]::Escape($n) }
-        $cfg += $(if ($wasOff) { "# ensure $n" } else { "ensure $n" })
+        $line = $keep | Where-Object { $_ -match ('^#?\s*ensure\s+' + [regex]::Escape($n) + '(\s|$)') } | Select-Object -First 1
+        $wasOff = $line -and $line -match '^#'
+        # Mod déjà désactivé par sécurité et dont le joueur a retiré le # : son choix est respecté
+        $forcedOn = $line -and -not $wasOff -and ($notes -contains $n)
+        if ($risks.ContainsKey($n)) {
+            $cfg += "## $n : désactivé par sécurité ($($risks[$n])), retire le # de la ligne suivante pour l'activer"
+            $cfg += $(if ($forcedOn) { "ensure $n" } else { "# ensure $n" })
+        } else { $cfg += $(if ($wasOff) { "# ensure $n" } else { "ensure $n" }) }
     }
     [IO.File]::WriteAllLines($previous, $cfg, (New-Object Text.UTF8Encoding $false))
 }
@@ -428,7 +472,7 @@ $vehEntries = @()
 # vêtements seuls viderait la concession).
 $sources = @()
 if ($canInstall) {
-    $active = @(Get-Content -LiteralPath (Join-Path $Data 'cfg\addons.cfg') | Where-Object { $_ -match '^\s*ensure\s+gsa_' } | ForEach-Object { ($_ -replace '^\s*ensure\s+', '').Trim() })
+    $active = @(Get-Content -LiteralPath (Join-Path $Data 'cfg\addons.cfg') | Where-Object { $_ -match '^\s*ensure\s+gsa_' } | ForEach-Object { (($_ -replace '^\s*ensure\s+', '').Trim() -split '\s+')[0] })
     foreach ($dir in @(Get-ChildItem -LiteralPath $Addons -Directory -Filter 'gsa_*' | Where-Object { $active -contains $_.Name })) {
         $sources += [pscustomobject]@{ name = $dir.Name.Substring(4); root = $dir.FullName }
     }
