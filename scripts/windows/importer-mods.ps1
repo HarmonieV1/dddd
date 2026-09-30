@@ -23,6 +23,19 @@ $Cats   = @{ vehicule = 'vehicules'; vetement = 'vetements'; map = 'maps'; scrip
 
 [void][IO.Directory]::CreateDirectory($Src)
 $archives = @(Get-ChildItem -LiteralPath $Src -File | Where-Object { $_.Extension -match '^\.(zip|rar|7z)$' })
+# Rien dans mods-a-trier ? On regarde « Google Drive pour ordinateur » (lecteur G:, H:…) : dossier GTA de Mon Drive.
+if ($archives.Count -eq 0) {
+    foreach ($d in Get-PSDrive -PSProvider FileSystem -ErrorAction SilentlyContinue) {
+        foreach ($sub in 'Mon Drive\GTA', 'My Drive\GTA') {
+            $g = Join-Path $d.Root $sub
+            if (Test-Path -LiteralPath $g) {
+                $found = @(Get-ChildItem -LiteralPath $g -File | Where-Object { $_.Extension -match '^\.(zip|rar|7z)$' })
+                if ($found.Count -gt 0) { Say "Dossier Google Drive trouvé : $g ($($found.Count) archives)" 'Green'; $archives = $found; break }
+            }
+        }
+        if ($archives.Count -gt 0) { break }
+    }
+}
 if ($archives.Count -eq 0) {
     Say "Mets tes fichiers (.zip / .rar / .7z) dans $Src puis relance IMPORTER-MODS.bat." 'Yellow'
     Start-Process explorer.exe $Src
