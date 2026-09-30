@@ -275,8 +275,12 @@ function Analyze($pkg) {
     if (@($all | Where-Object { $_.Extension -match '^\.(oiv|asi|dll)$' -or $_.Name -match 'reshade|visualsettings|timecycle' }).Count -gt 0) {
         [void]$r.notes.Add('contient un mod graphique / solo (oiv, asi, reshade) : inutile côté serveur')
     }
+    $yftNames = @($all | Where-Object { $_.Extension -ieq '.yft' } | ForEach-Object { $_.BaseName.ToLower() })
     foreach ($m in @($all | Where-Object { $_.Name -ieq 'vehicles.meta' })) {
-        $r.models += @([regex]::Matches((Get-Content -LiteralPath $m.FullName -Raw), '<modelName>\s*([^<\s]+)\s*</modelName>') | ForEach-Object { $_.Groups[1].Value.ToLower() })
+        foreach ($name in @([regex]::Matches((Get-Content -LiteralPath $m.FullName -Raw), '<modelName>\s*([^<\s]+)\s*</modelName>') | ForEach-Object { $_.Groups[1].Value.ToLower() })) {
+            if ($yftNames.Count -eq 0 -or $yftNames -contains $name) { $r.models += $name }
+            else { [void]$r.notes.Add("$name déclaré dans vehicles.meta mais absent du pack : ignoré") }
+        }
     }
     if ($manifest) {
         $r.root = $manifest.DirectoryName
@@ -431,11 +435,14 @@ if ($canInstall) {
 }
 $seen = @{}
 foreach ($r in $sources) {
+    # Modèles réellement livrés (.yft présent) : certains packs déclarent des voitures sans leurs fichiers 3D
+    $yfts = @(Get-ChildItem -LiteralPath $r.root -Recurse -File -Force -Filter '*.yft' | ForEach-Object { $_.BaseName.ToLower() })
     foreach ($m in @(Get-ChildItem -LiteralPath $r.root -Recurse -File -Force | Where-Object { $_.Name -ieq 'vehicles.meta' })) {
         try { [xml]$doc = Get-Content -LiteralPath $m.FullName -Raw } catch { continue }
         foreach ($item in @($doc.SelectNodes('//InitDatas/Item'))) {
             $model = "$($item.modelName)".Trim().ToLower(); $vc = "$($item.vehicleClass)".Trim()
             if (-not $model -or $seen[$model]) { continue }; $seen[$model] = $true
+            if ($yfts -notcontains $model) { continue }   # déclaré mais pas livré : la concession planterait (failed to load model)
             if ($vc -eq 'VC_EMERGENCY') { continue }   # véhicules de service : garages des métiers, pas la concession
             $cls = $ClassMap[$vc]; if (-not $cls) { $cls = @('sports', 150000) }
             $brand = ($Brands | Where-Object { $r.name -match $_ } | Select-Object -First 1)
