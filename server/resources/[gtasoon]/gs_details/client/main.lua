@@ -84,3 +84,9 @@ CreateThread(function()
         end
     end
 end)
+
+-- Portée de la voix (pma-voice / Mumble, touche ²) : rappel à l'écran à chaque changement.
+local VOICE_MODES = { 'Chuchoter (très proche)', 'Normal', 'Crier (loin)' }
+AddEventHandler('pma-voice:setTalkingMode', function(mode)
+    lib.notify({ description = 'Voix : ' .. (VOICE_MODES[mode] or ('mode ' .. tostring(mode))), type = 'inform', icon = 'microphone', duration = 1500 })
+end)
