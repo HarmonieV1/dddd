@@ -198,6 +198,25 @@ function Find-FxServer($Data) {
     return $null
 }
 
+#--- FXServer dans OneDrive (Bureau / Documents synchronisés) = crashs du serveur (fichiers verrouillés ou « en ligne
+#    uniquement » pendant qu'il tourne). On le copie une fois dans C:\FXServer\server et on utilise cette copie.
+function Move-FxServerOutOfOneDrive($FxExe, [scriptblock]$Say) {
+    if (-not $FxExe -or $FxExe -notmatch '\\OneDrive') { return $FxExe }
+    $src = Split-Path $FxExe
+    $dst = 'C:\FXServer\server'
+    & $Say "  FXServer est dans OneDrive ($src) : cause connue de crashs. Copie vers $dst…" 'Yellow'
+    Get-Process -Name FXServer -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
+    [void][IO.Directory]::CreateDirectory($dst)
+    & robocopy.exe $src $dst /E /R:2 /W:2 /XD crashes cache /NFL /NDL /NJH /NJS /NP | Out-Null
+    $new = Join-Path $dst 'FXServer.exe'
+    if ($LASTEXITCODE -lt 8 -and (Test-Path -LiteralPath $new) -and (Test-Path -LiteralPath (Join-Path $dst 'citizen'))) {
+        & $Say "  FXServer copié dans $dst (l'ancien dossier OneDrive n'est plus utilisé, tu pourras le supprimer)" 'Green'
+        return $new
+    }
+    & $Say "  Copie impossible (code $LASTEXITCODE) : on garde $FxExe. Déplace le dossier à la main hors de OneDrive (ex. C:\FXServer\server)." 'Yellow'
+    return $FxExe
+}
+
 #--- Écrit DEMARRER.bat (encodage de la console Windows : les chemins avec accents restent valides) avec un contrôle
 #    clair si FXServer.exe disparaît un jour (déplacé, antivirus…).
 function Write-Launcher($Data, $FxExe) {

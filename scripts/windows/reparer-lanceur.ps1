@@ -16,6 +16,7 @@ if (-not (Test-Path -LiteralPath (Join-Path $Data 'cfg\secrets.cfg'))) { Fail "c
 
 Say '[1/3] Recherche de FXServer.exe' 'Cyan'
 $fx = Find-FxServer $Data
+$fx = Move-FxServerOutOfOneDrive $fx ${function:Say}
 if (-not $fx) { Fail 'FXServer.exe introuvable : télécharge les artefacts serveur FiveM (server.7z), extrais-les dans C:\FXServer\server, puis relance.' }
 Say "  FXServer : $fx" 'Green'
 if (-not (Test-Path -LiteralPath (Join-Path (Split-Path $fx) 'citizen'))) { Say '  Attention : dossier citizen absent à côté de FXServer.exe (extraction incomplète ?)' 'Yellow' }

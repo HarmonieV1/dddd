@@ -68,6 +68,7 @@ Set-QboxOverrides $Res $Repo { param($m, $c) Say $m $c }
 # Lanceur : on garde le chemin de FXServer.exe de l'installation
 $batPath = Join-Path $Data 'DEMARRER.bat'
 $fx = Find-FxServer $Data
+$fx = Move-FxServerOutOfOneDrive $fx ${function:Say}
 if (-not $fx) { Fail 'FXServer.exe introuvable : extrais server.7z (artefacts FiveM) dans C:\FXServer\server puis relance.' }
 Say "  FXServer : $fx" 'Green'
 Write-Launcher $Data $fx
