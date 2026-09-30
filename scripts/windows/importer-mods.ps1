@@ -385,11 +385,13 @@ function Get-Oversized($dir) {
 
 function Optimize-Textures($dir, $r) {
     if (-not $TexReady) { return }
-    foreach ($f in @(Get-ChildItem -LiteralPath $dir -Recurse -File -Filter '*.ytd' | Where-Object { $_.Length -gt 1MB })) {
+    # Seulement les fichiers au-dessus de la limite FiveM : ceux qui marchent déjà ne sont pas touchés
+    foreach ($f in @(Get-ChildItem -LiteralPath $dir -Recurse -File -Filter '*.ytd' | Where-Object { $m = Get-RscMemory $_.FullName; $m -and $m.phys -gt $OversizedMB * 1MB })) {
         try {
-            $res = [GtaSoon.Tex]::Ytd($f.FullName, 40MB, 512)
-            if ($res -and [long]($res -split '\|')[1] -gt 46MB) {   # encore trop lourd : 2e passage, textures jusqu'à 256 px
-                $res2 = [GtaSoon.Tex]::Ytd($f.FullName, 40MB, 256)
+            # Budget 34 Mo de données : une fois arrondi par le jeu (pages mémoire), on reste sous la limite de 48 Mo
+            $res = [GtaSoon.Tex]::Ytd($f.FullName, 34MB, 512)
+            if ($res -and [long]($res -split '\|')[1] -gt 36MB) {   # encore trop lourd : 2e passage, textures jusqu'à 256 px
+                $res2 = [GtaSoon.Tex]::Ytd($f.FullName, 34MB, 256)
                 if ($res2) { $res = ($res -split '\|')[0] + '|' + ($res2 -split '\|')[1] }
             }
             if ($res) { $a, $b = $res -split '\|'; [void]$r.notes.Add("textures $($f.Name) allégées : $(MB $a) → $(MB $b) Mo en mémoire") }
