@@ -20,6 +20,13 @@ try {
   . (Join-Path $PSScriptRoot 'rcon.ps1')
 
   if ((Invoke-Rcon 'list') -match 'injoignable') {
+    $worlds = Get-ChildItem $srv -Directory -ErrorAction SilentlyContinue | Where-Object { $_.Name -like 'world*' } | ForEach-Object { $_.FullName }
+    if ($worlds) {
+      $bdir = Join-Path $root 'backups'; New-Item -ItemType Directory -Force $bdir | Out-Null
+      Compress-Archive -Path $worlds -DestinationPath (Join-Path $bdir ("auto-{0}.zip" -f (Get-Date -Format 'yyyy-MM-dd_HH-mm'))) -Force
+      Get-ChildItem $bdir -Filter 'auto-*.zip' | Sort-Object LastWriteTime -Descending | Select-Object -Skip 10 | Remove-Item -Force
+      Write-Host '>> Sauvegarde automatique du monde faite.' -ForegroundColor Yellow
+    }
     Write-Host '>> Demarrage du serveur dans une nouvelle fenetre (ne la ferme pas)...' -ForegroundColor Yellow
     Start-Process powershell -ArgumentList '-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', "`"$(Join-Path $PSScriptRoot 'start.ps1')`""
     $ok = $false

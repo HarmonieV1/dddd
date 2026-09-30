@@ -33,6 +33,8 @@ while ($true) {
   Write-Host ' 5  Retirer op                12  Mode de jeu d''un joueur'
   Write-Host ' 6  Sauvegarder le monde     13  Commande libre'
   Write-Host ' 7  Arreter le serveur       14  Mettre a jour Minecraft (sauvegarde auto)'
+  Write-Host '15  Invisible on/off        17  Fly + creatif (toi ou un pote)'
+  Write-Host '16  Invincible on/off        18  Te teleporter a un joueur'
   Write-Host ' 0  Quitter'
   switch (Ask "`nChoix") {
     '1'  { Run 'list' }
@@ -52,6 +54,10 @@ while ($true) {
       if ((Invoke-Rcon 'list') -notmatch 'injoignable') { Write-Host 'Arrete d''abord le serveur (option 7).' -ForegroundColor Red }
       else { Backup; & (Join-Path $PSScriptRoot 'install.ps1') }
     }
+    '15' { $j = Ask 'Pseudo'; if ((Ask 'on / off') -eq 'off') { Run "effect clear $j minecraft:invisibility" } else { Run "effect give $j minecraft:invisibility infinite 0 true" } }
+    '16' { $j = Ask 'Pseudo'; if ((Ask 'on / off') -eq 'off') { Run "effect clear $j minecraft:resistance" } else { Run "effect give $j minecraft:resistance infinite 4 true" } }
+    '17' { $j = Ask 'Pseudo'; Run "gamemode creative $j" }
+    '18' { $j = Ask 'Ton pseudo'; Run "tp $j $(Ask 'Pseudo de la cible')" }
     '0'  { exit }
   }
   Read-Host "`nEntree pour revenir au menu"
