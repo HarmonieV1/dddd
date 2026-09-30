@@ -15,6 +15,9 @@ Config.TopSize = 5                 -- classements de la semaine (posts, créateu
 Config.TopCacheSeconds = 60
 Config.PressJob = 'weazel'           -- journalistes : badge presse, « flash info » envoyé à toute la ville
 Config.FlashCooldown = 300          -- secondes entre deux flash info (toute la rédaction)
+-- Journal Weazel News (/journal) : articles longs écrits par les journalistes en service. Chaque article publié rapporte
+-- `pay` $ à la caisse de la rédaction (société weazel), au plus `paidPerDay` articles payés par jour pour toute la rédaction.
+Config.Journal = { cooldown = 600, pay = 400, paidPerDay = 8, titleMin = 5, titleMax = 80, bodyMin = 40, bodyMax = 2000, list = 20 }
 
 -- Vibe influence la ville : un hashtag repris par `authors` personnes différentes en `TrendWindow` secondes déclenche l'effet.
 Config.TrendWindow = 1800

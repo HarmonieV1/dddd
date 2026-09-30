@@ -3,7 +3,14 @@
 local Security = exports.gs_security
 local Bridge   = exports.gs_bridge
 
-Roadbook = { runs = {} } -- runs[src] = { route, step, photos = {}, startedAt, lastAt, lastPos }
+Roadbook = { runs = {}, recent = {} } -- runs[src] = { route, step, photos = {}, startedAt, lastAt, lastPos } ; recent = arrivées
+
+--- Road trip du mois : carnet en vedette (rotation), clé du mois ('2026-09'), nom du mois.
+function Roadbook.monthly()
+    local t = os.date('*t')
+    local rot = Config.Monthly.rotation
+    return rot[((t.year * 12 + t.month) % #rot) + 1], ('%04d-%02d'):format(t.year, t.month), Config.MonthNames[t.month]
+end
 
 local function started(res) return GetResourceState(res) == 'started' end
 
@@ -31,7 +38,11 @@ lib.callback.register('gs_roadbook:list', function(src)
     table.sort(out, function(a, b) return a.label < b.label end)
     local count = 0
     for _ in pairs(done) do count = count + 1 end
-    return { routes = out, active = Roadbook.runs[src] and Roadbook.runs[src].route, title = Roadbook.titleFor(count) }
+    local mid, month, monthName = Roadbook.monthly()
+    local monthly = { id = mid, label = Config.Routes[mid].label, month = monthName, done = Store.monthDone(cid, month),
+        xpMult = Config.Monthly.xpMult, money = Config.Monthly.money, top = {} }
+    for i, r in ipairs(Store.monthTop(month, 5)) do monthly.top[i] = { name = r.name, minutes = r.seconds // 60, convoy = r.convoy } end
+    return { routes = out, active = Roadbook.runs[src] and Roadbook.runs[src].route, title = Roadbook.titleFor(count), monthly = monthly }
 end)
 
 lib.callback.register('gs_roadbook:start', function(src, id)
@@ -93,13 +104,39 @@ function Roadbook.finish(src, run)
         local partner = exports.gs_duo:GetPartner(src)
         if partner and Security:PlayersInRange(src, partner, Config.DuoRadius) then mult, duo = Config.DuoBonus, true end
     end
+    -- Road trip du mois : premier fini du mois = XP multipliée + prime ; convoi = équipiers arrivés juste avant, à côté
+    local monthly
+    local mid, month = Roadbook.monthly()
+    local now = os.time()
+    if run.route == mid and not Store.monthDone(cid, month) then
+        local M, convoy = Config.Monthly, 0
+        for _, f in ipairs(Roadbook.recent) do
+            if f.src ~= src and f.route == run.route and now - f.at <= M.convoyWindow and Security:PlayersInRange(src, f.src, M.convoyRadius) then
+                convoy = convoy + 1
+            end
+        end
+        convoy = math.min(convoy, M.convoyMax)
+        mult = mult * M.xpMult * (1 + convoy * M.convoyBonus)
+        Store.monthFinish(cid, month, display(src), seconds, convoy)
+        Bridge:AddMoney(src, 'bank', M.money, 'road trip du mois')
+        monthly = { money = M.money, convoy = convoy }
+    end
+    table.insert(Roadbook.recent, 1, { src = src, route = run.route, at = now })
+    Roadbook.recent[21] = nil
     local xp = math.floor(r.xp * mult * (1 + photos * 0.1))
     if started('gs_quests') then exports.gs_quests:AddXP(src, xp, 'carnet de route') end
     local newTitle = after > before and Roadbook.titleFor(after) ~= Roadbook.titleFor(before) and Roadbook.titleFor(after) or nil
-    return { route = r.label, seconds = seconds, photos = photos, xp = xp, duo = duo, title = newTitle }
+    return { route = r.label, seconds = seconds, photos = photos, xp = xp, duo = duo, title = newTitle, monthly = monthly }
 end
 
 exports('GetExplorers', function(limit) return Store.explorers(limit or 5) end)
+
+--- Départ du road trip du mois (événement staff) : point de départ et nom du carnet en vedette.
+exports('MonthlyStart', function()
+    local mid = Roadbook.monthly()
+    local r = Config.Routes[mid]
+    return r.steps[1].coords, r.label
+end)
 
 AddEventHandler('gs_bridge:server:playerUnloaded', function(src) Roadbook.runs[src] = nil end)
 CreateThread(function() Store.init() end)

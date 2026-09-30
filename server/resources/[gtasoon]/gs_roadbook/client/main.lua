@@ -51,8 +51,10 @@ local function watch()
                         local d = done
                         clear()
                         lib.notify({ title = '🏁 Carnet terminé : ' .. d.route, type = 'success', duration = 15000,
-                            description = ('%d min · %d photo(s) · +%d XP%s%s'):format(d.seconds // 60, d.photos, d.xp, d.duo and ' (bonus duo)' or '',
-                                d.title and ('\nNouveau titre : ' .. d.title) or '') })
+                            description = ('%d min · %d photo(s) · +%d XP%s%s%s'):format(d.seconds // 60, d.photos, d.xp, d.duo and ' (bonus duo)' or '',
+                                d.title and ('\nNouveau titre : ' .. d.title) or '',
+                                d.monthly and ('\n★ Road trip du mois : +%d $%s'):format(d.monthly.money,
+                                    d.monthly.convoy > 0 and (' · convoi de %d'):format(d.monthly.convoy + 1) or '') or '') })
                     else target() end
                 elseif not ok and step then notify(false, step) clear() end
                 Wait(1500)
@@ -66,8 +68,17 @@ RegisterCommand('carnet', function()
     local d = lib.callback.await('gs_roadbook:list', false)
     if not d then return end
     local options = { { title = d.title and ('Titre : ' .. d.title) or 'Aucun carnet terminé', icon = 'map', readOnly = true } }
+    local m = d.monthly
+    if m then
+        local top = {}
+        for i, t in ipairs(m.top) do top[i] = ('%d. %s — %d min%s'):format(i, t.name, t.minutes, t.convoy > 0 and ' (convoi)' or '') end
+        options[#options + 1] = { title = ('★ Road trip de %s : %s'):format(m.month, m.label), icon = 'star', iconColor = '#ffd84a', readOnly = true,
+            description = (m.done and 'Fait ce mois-ci ✔' or ('Premier fini du mois : XP x%s + %d $ · bonus si vous arrivez en convoi'):format(m.xpMult, m.money))
+                .. (#top > 0 and ('\n' .. table.concat(top, '\n')) or '') }
+    end
     for _, r in ipairs(d.routes) do
-        options[#options + 1] = { title = r.label, icon = r.best and 'circle-check' or 'route', iconColor = r.best and '#5aff8c' or nil,
+        local star = m and r.id == m.id
+        options[#options + 1] = { title = (star and '★ ' or '') .. r.label, icon = r.best and 'circle-check' or 'route', iconColor = star and '#ffd84a' or (r.best and '#5aff8c' or nil),
             description = ('%s\n%d étapes · %d XP%s'):format(r.desc, r.steps, r.xp, r.best and (' · meilleur temps %d min'):format(r.best // 60) or ''),
             onSelect = function()
                 local first = Config.Routes[r.id].steps[1]

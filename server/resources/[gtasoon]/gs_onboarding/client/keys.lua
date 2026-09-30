@@ -21,6 +21,9 @@ local KEYS = [[
 | **B** | Ceinture |
 | **Ctrl gauche** | S'accroupir |
 | **I** | Cette aide |
+
+**Commandes utiles** : **/journal** le journal Weazel News · **/quartiers** l'ambiance des quartiers · **/carnet** carnets de route
+et road trip du mois · **/report** appeler le staff
 ]]
 
 local STAFF = [[

@@ -12,8 +12,14 @@ local rows = {}
 Store = { init = function() end,
     done = function(cid) local o = {} for k, v in pairs(rows) do local c, r = k:match('^(.-)|(.*)$') if c == cid then o[r] = v end end return o end,
     finish = function(cid, route, _, s) local k = cid .. '|' .. route rows[k] = math.min(rows[k] or s, s) end,
-    explorers = function() return {} end }
+    explorers = function() return {} end,
+    monthDone = function(cid, m) return months[cid .. '|' .. m] ~= nil end,
+    monthFinish = function(cid, m, name, s, convoy) months[cid .. '|' .. m] = { name = name, seconds = s, convoy = convoy } end,
+    monthTop = function(m) local o = {} for k, v in pairs(months) do if k:sub(-#m) == m then o[#o + 1] = v end end
+        table.sort(o, function(a, b) return a.seconds < b.seconds end) return o end }
+months = {}
 loadResource('gs_roadbook', { R .. 'gs_roadbook/server/main.lua' })
+Config.Monthly.rotation = { 'ouest' } -- premières vérifications hors road trip du mois
 
 local passed, failed = 0, 0
 local function check(name, cond)
@@ -74,6 +80,41 @@ Roadbook.runs[1].startedAt = os.time() - Config.MaxHours * 3600 - 5
 tp(1, S[2].coords) advance(600000)
 ok, res = cb('gs_roadbook:step', 1)
 check('carnet expiré', not ok and res:find('expiré'))
+
+-- Road trip du mois : bonus XP + prime une fois par mois, convoi = équipiers arrivés juste avant, à côté
+Config.Monthly.rotation = { 'desert' }
+local D = Config.Routes.desert.steps
+local function ride(src)
+    tp(src, D[1].coords)
+    local okStart = cb('gs_roadbook:start', src, 'desert'); step()
+    local fin
+    for i = 2, #D do advance(600000) tp(src, D[i].coords); local _, _, d = cb('gs_roadbook:step', src); step(); fin = d or fin end
+    return okStart and fin
+end
+l = cb('gs_roadbook:list', 1)
+check('liste : carnet du mois annoncé', l.monthly and l.monthly.id == 'desert' and not l.monthly.done)
+join(3, 'CID3', 'Leader', D[1].coords)
+join(4, 'CID4', 'Suiveur', D[1].coords)
+local d3 = ride(3)
+check('1er road trip du mois : prime en banque', d3 and d3.monthly and W.players[3].money.bank == Config.Monthly.money)
+check('seul : pas de convoi, XP multipliée', d3.monthly.convoy == 0 and d3.xp == math.floor(Config.Routes.desert.xp * Config.Monthly.xpMult))
+-- Convoi : 3 et 4 roulent ensemble (3 a déjà sa prime, seul 4 est concerné par le bonus)
+tp(3, D[1].coords) tp(4, D[1].coords)
+cb('gs_roadbook:start', 3, 'desert'); step()
+cb('gs_roadbook:start', 4, 'desert'); step()
+local d4
+for i = 2, #D do
+    advance(600000) tp(3, D[i].coords) tp(4, D[i].coords)
+    cb('gs_roadbook:step', 3); step()
+    local _, _, d = cb('gs_roadbook:step', 4); step(); d4 = d or d4
+end
+check('arrivé juste après, à côté : bonus convoi', d4 and d4.monthly and d4.monthly.convoy == 1
+    and d4.xp == math.floor(Config.Routes.desert.xp * Config.Monthly.xpMult * (1 + Config.Monthly.convoyBonus)))
+check('une seule prime par mois', W.players[3].money.bank == Config.Monthly.money)
+l = cb('gs_roadbook:list', 3)
+check('liste : fait ce mois-ci + classement', l.monthly.done and #l.monthly.top == 2)
+local at, label = getExport('gs_roadbook', 'MonthlyStart')()
+check('départ staff : 1er point du carnet du mois', at == D[1].coords and label == Config.Routes.desert.label)
 
 io.write(('\n%d réussis, %d échoués\n'):format(passed, failed))
 os.exit(failed == 0 and 0 or 1)

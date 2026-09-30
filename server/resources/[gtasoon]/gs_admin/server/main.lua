@@ -443,6 +443,12 @@ end }
 Actions.event = { level = 3, duty = true, run = function(src, _, data)
     local ev = need(Config.Events[data.kind], 'Événement inconnu.')
     local c = ev.at or GetEntityCoords(GetPlayerPed(src))
+    local text = ev.text
+    if ev.roadtrip then -- départ au premier point du carnet du mois (gs_roadbook)
+        need(started('gs_roadbook'), 'gs_roadbook non démarré.')
+        local at, label = exports.gs_roadbook:MonthlyStart()
+        c, text = at, ('%s (%s)'):format(ev.text, label)
+    end
     local seconds = ev.minutes * 60
     if ev.party then
         need(started('gs_world'), 'gs_world non démarré.')
@@ -451,12 +457,12 @@ Actions.event = { level = 3, duty = true, run = function(src, _, data)
     local n = 0
     for _, id in ipairs(GetPlayers()) do
         local p = tonumber(id)
-        TriggerClientEvent('gs_admin:client:eventStart', p, { kind = data.kind, label = ev.label, text = ev.text, x = c.x, y = c.y, z = c.z,
+        TriggerClientEvent('gs_admin:client:eventStart', p, { kind = data.kind, label = ev.label, text = text, x = c.x, y = c.y, z = c.z,
             fx = ev.fx, radius = ev.radius, seconds = seconds })
         n = n + 1
     end
     if ev.freeRaces and started('gs_races') then exports.gs_races:SetFreeEntry(seconds) end
-    if started('gs_social') then exports.gs_social:Newsroom('event', ('ÉVÉNEMENT · %s : %s'):format(ev.label, ev.text)) end
+    if started('gs_social') then exports.gs_social:Newsroom('event', ('ÉVÉNEMENT · %s : %s'):format(ev.label, text)) end
     return ('%s lancé (%d joueurs prévenus, %d min)'):format(ev.label, n, ev.minutes)
 end }
 

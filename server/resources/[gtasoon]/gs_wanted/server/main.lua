@@ -111,6 +111,13 @@ function Wanted.npcStars(heat)
     return 4
 end
 
+--- Los Santos réactif (gs_city) : valeur du quartier, ou `default` si la ressource est arrêtée.
+function Wanted.city(fn, coords, default)
+    if GetResourceState('gs_city') ~= 'started' then return default end
+    local ok, v = pcall(function() return exports.gs_city[fn](exports.gs_city, coords) end)
+    return ok and tonumber(v) or default
+end
+
 function Wanted.report(src, crimeType, coords, opts)
     local crime = Config.Crimes[crimeType]
     if not crime or not coords then return nil end
@@ -127,6 +134,7 @@ function Wanted.report(src, crimeType, coords, opts)
         chance = crime.chance + count * Config.Witness.perWitness
         chance = chance * visibility * (opts.silenced and Config.SilencedFactor or 1.0)
         chance = chance * (1 + (Wanted.heat[src] or 0) / Config.Heat.recognition)
+        chance = chance * Wanted.city('ReportFactor', coords, 1.0) -- quartier tendu (gs_city) : témoins plus prompts
         chance = clamp(chance, 0, Config.Witness.maxChance)
         precision = clamp(count * 0.15 + visibility * 0.4, 0, 1)
     end
@@ -167,7 +175,7 @@ function Wanted.report(src, crimeType, coords, opts)
         Wanted.evidence[Config.Cameras.keep + 1] = nil
     end
     Wanted.addHeat(src, crime.heat)
-    TriggerEvent('gs_wanted:server:reported', src, crimeType, crime.heat)
+    TriggerEvent('gs_wanted:server:reported', src, crimeType, crime.heat, coords)
     SetTimeout(report.delay * 1000, function()
         table.insert(Wanted.history, 1, report)
         Wanted.history[Config.Dispatch.history + 1] = nil
@@ -176,7 +184,7 @@ function Wanted.report(src, crimeType, coords, opts)
             TriggerClientEvent('gs_wanted:client:dispatch', cop, report)
         end
         if #cops < Config.NpcPolice.minCops then
-            TriggerClientEvent('gs_wanted:client:npcPolice', src, Wanted.npcStars(crime.heat))
+            TriggerClientEvent('gs_wanted:client:npcPolice', src, math.min(5, Wanted.npcStars(crime.heat) + Wanted.city('NpcBonus', coords, 0)))
         end
     end)
     return report

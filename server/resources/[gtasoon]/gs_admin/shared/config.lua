@@ -69,6 +69,8 @@ Config.Events = {
         at = vec3(4893.2, -4924.0, 3.37), text = 'Soirée DJ sur la plage de Cayo Perico ! Vol gratuit au comptoir de l\'aéroport (LSIA).' },
     streetrace = { label = 'Course de rue (inscription gratuite)', icon = 'flag-checkered', radius = 0.0, minutes = 30, freeRaces = true,
         text = 'Course de rue organisée : inscription gratuite, rendez-vous au point GPS !' },
+    roadtrip = { label = 'Départ du road trip du mois', icon = 'route', radius = 0.0, minutes = 30, roadtrip = true,
+        text = 'Grand départ du road trip du mois : rendez-vous au point GPS, puis /carnet. Bonus pour ceux qui arrivent en convoi !' },
 }
 
 Config.Vehicle = { maxDeleteDistance = 10.0 }

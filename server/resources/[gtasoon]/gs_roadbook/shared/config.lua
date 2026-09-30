@@ -10,6 +10,13 @@ Config.DuoRadius = 60.0         -- partenaire de duo (gs_duo) à côté à l'arr
 Config.DuoBonus = 1.5
 Config.Titles = { { count = 1, label = 'Routard' }, { count = 3, label = 'Explorateur' }, { count = 5, label = 'Globe-trotteur de San Andreas' } }
 
+-- Road trip du mois : un carnet différent chaque mois (rotation). Le premier fini du mois rapporte XP x`xpMult` + `money` $
+-- en banque ; bonus convoi : +`convoyBonus` par équipier arrivé au même carnet dans les `convoyWindow` s, à moins de
+-- `convoyRadius` m (au plus `convoyMax`). Staff : F11 → Événements → « Départ du road trip du mois » (GPS pour tous).
+Config.Monthly = { rotation = { 'ouest', 'desert', 'sunset' }, xpMult = 2.0, money = 2500,
+    convoyRadius = 80.0, convoyWindow = 180, convoyBonus = 0.25, convoyMax = 4 }
+Config.MonthNames = { 'janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre' }
+
 Config.Routes = {
     ouest = {
         label = 'La côte Ouest', xp = 400, desc = 'De la jetée de Del Perro aux pins de Paleto, l\'océan à ta gauche.',

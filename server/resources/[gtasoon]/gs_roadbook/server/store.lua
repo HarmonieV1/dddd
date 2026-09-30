@@ -11,6 +11,29 @@ function Store.init()
         `runs` INT UNSIGNED NOT NULL DEFAULT 1,
         PRIMARY KEY (`citizenid`, `route`)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4]])
+    MySQL.query.await([[CREATE TABLE IF NOT EXISTS `gs_roadtrip_month` (
+        `citizenid` VARCHAR(50) NOT NULL,
+        `month` CHAR(7) NOT NULL,
+        `name` VARCHAR(40) NOT NULL,
+        `seconds` INT UNSIGNED NOT NULL,
+        `convoy` TINYINT UNSIGNED NOT NULL DEFAULT 0,
+        PRIMARY KEY (`citizenid`, `month`), KEY `month` (`month`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4]])
+end
+
+--- Road trip du mois : déjà fait ce mois-ci ?
+function Store.monthDone(cid, month)
+    return MySQL.scalar.await('SELECT 1 FROM gs_roadtrip_month WHERE citizenid = ? AND month = ?', { cid, month }) ~= nil
+end
+
+function Store.monthFinish(cid, month, name, seconds, convoy)
+    MySQL.insert.await('INSERT IGNORE INTO gs_roadtrip_month (citizenid, month, name, seconds, convoy) VALUES (?, ?, ?, ?, ?)',
+        { cid, month, name, seconds, convoy })
+end
+
+--- Classement du mois : les plus rapides.
+function Store.monthTop(month, limit)
+    return MySQL.query.await('SELECT name, seconds, convoy FROM gs_roadtrip_month WHERE month = ? ORDER BY seconds ASC LIMIT ?', { month, limit }) or {}
 end
 
 function Store.done(cid)

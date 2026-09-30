@@ -10,13 +10,22 @@ local function crowdFactor()
 end
 
 CreateThread(function() -- par frame : GTA oublie la densité à chaque image
-    local k, nextCheck = 1.0, 0
+    local k, cp, cv, nextCheck = 1.0, 1.0, 1.0, 0
     while true do
-        if GetGameTimer() > nextCheck then k = crowdFactor(); nextCheck = GetGameTimer() + 10000 end
-        SetPedDensityMultiplierThisFrame(D.peds * k)
-        SetScenarioPedDensityMultiplierThisFrame(D.scenarios * k, D.scenarios * k)
-        SetVehicleDensityMultiplierThisFrame(D.vehicles * k)
-        SetRandomVehicleDensityMultiplierThisFrame(D.vehicles * k)
+        if GetGameTimer() > nextCheck then
+            k = crowdFactor()
+            -- Los Santos réactif (gs_city) : quartier tendu = passants et trafic plus rares
+            cp, cv = 1.0, 1.0
+            if GetResourceState('gs_city') == 'started' then
+                local ok, a, b = pcall(function() return exports.gs_city:GetDensity() end)
+                if ok then cp, cv = tonumber(a) or 1.0, tonumber(b) or 1.0 end
+            end
+            nextCheck = GetGameTimer() + 10000
+        end
+        SetPedDensityMultiplierThisFrame(D.peds * k * cp)
+        SetScenarioPedDensityMultiplierThisFrame(D.scenarios * k * cp, D.scenarios * k * cp)
+        SetVehicleDensityMultiplierThisFrame(D.vehicles * k * cv)
+        SetRandomVehicleDensityMultiplierThisFrame(D.vehicles * k * cv)
         SetParkedVehicleDensityMultiplierThisFrame(D.parked * k)
         Wait(0)
     end

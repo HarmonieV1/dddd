@@ -7,6 +7,7 @@ V.__index = V
 local function vec(x, y, z, w) return setmetatable({ x = x, y = y, z = z or 0.0, w = w }, V) end
 V.__sub = function(a, b) return vec(a.x - b.x, a.y - b.y, a.z - b.z) end
 V.__len = function(a) return math.sqrt(a.x ^ 2 + a.y ^ 2 + a.z ^ 2) end
+function vec2(x, y) return vec(x, y, 0.0) end
 function vec3(x, y, z) return vec(x, y, z) end
 function vec4(x, y, z, w) return vec(x, y, z, w) end
 

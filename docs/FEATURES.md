@@ -323,3 +323,20 @@ Traductions françaises manquantes des scripts Qbox ajoutées par METTRE-A-JOUR 
 - Tables : `gs_economy`, `gs_duos` (créées au démarrage). gs_wanted : mémoire uniquement.
 - Risques : coords et noms d'items à caler en jeu ; équilibrage des prix/chances à ajuster après la bêta.
 - Rollback : retirer l'`ensure` concerné (gs_duo dépend de gs_wanted : les retirer dans l'ordre inverse).
+
+## V6.20 — les 3 signatures ROADTRIP
+
+- **Los Santos réactif** (`gs_city`) : chaque crime signalé (gs_wanted) fait monter la tension du quartier où il a lieu
+  (9 quartiers : centre, South LS, East LS, Vespucci, Rockford, Vinewood, port, Sandy, Paleto). Elle retombe seule
+  (~45 min sans nouveau crime). Quartier **tendu** / **chaud** : passants et trafic plus rares, témoins plus prompts à
+  appeler, police IA plus nombreuse (sans LSPD en ligne), message en entrant, brèves Weazel automatiques (« sous tension »,
+  « retour au calme »). `/quartiers` : ambiance de chaque quartier. Réglages : `gs_city/shared/config.lua`.
+- **Weazel News joué par les joueurs** (`/journal`) : les journalistes en service (métier weazel) écrivent des articles
+  (titre + texte, liens bloqués), annoncés à toute la ville, relayés dans Vibe ; chaque article rapporte 400 $ à la
+  rédaction (8 payés par jour max), 1 article / 10 min par journaliste. Tout le monde lit `/journal`. Le flash info Vibe
+  et les brèves automatiques restent.
+- **Road trip du mois** (`/carnet`) : un carnet en vedette chaque mois (rotation côte Ouest → Nord de Blaine → Vinewood).
+  Premier fini du mois : XP x2 + 2 500 $ ; bonus convoi +25 % par équipier arrivé juste avant, à côté (4 max) ;
+  classement du mois dans `/carnet`. Staff : F11 → Événements → « Départ du road trip du mois » (GPS pour tous, brève
+  Weazel).
+
