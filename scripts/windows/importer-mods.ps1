@@ -533,6 +533,8 @@ foreach ($grp in ($results | Group-Object type | Sort-Object Name)) {
 $lines += 'Envoie-moi ce fichier (copier-coller) : je branche les véhicules (concession, garages), les maps (coords, blips) et je relis les scripts.'
 [IO.File]::WriteAllLines($Report, $lines, (New-Object Text.UTF8Encoding $false))
 if ($canInstall) { [IO.File]::WriteAllText($Stamp, $signature, (New-Object Text.UTF8Encoding $false)) }
+# Copie décompressée temporaire (1 à 3 Go) : supprimée, elle est refaite au prochain import
+if (Test-Path -LiteralPath $Work) { Remove-Item -LiteralPath $Work -Recurse -Force -ErrorAction SilentlyContinue }
 Say "`nTerminé : $($results.Count) mods analysés, $($installed.Count) installés." 'Green'
 Say "Rapport : $Report" 'Green'
 if (-not $canInstall) { Say "Serveur non installé ($Data) : rien d'installé, tout est rangé dans $Out." 'Yellow' }
