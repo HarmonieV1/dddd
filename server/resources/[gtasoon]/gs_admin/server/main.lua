@@ -456,6 +456,7 @@ Actions.event = { level = 3, duty = true, run = function(src, _, data)
         n = n + 1
     end
     if ev.freeRaces and started('gs_races') then exports.gs_races:SetFreeEntry(seconds) end
+    if started('gs_social') then exports.gs_social:Newsroom('event', ('ÉVÉNEMENT · %s : %s'):format(ev.label, ev.text)) end
     return ('%s lancé (%d joueurs prévenus, %d min)'):format(ev.label, n, ev.minutes)
 end }
 

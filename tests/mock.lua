@@ -180,6 +180,7 @@ provide('gs_bridge', {
     end,
 })
 
+provide('gs_social', { Newsroom = function(kind, text) W.news = W.news or {} W.news[#W.news + 1] = { kind = kind, text = text } return true end, GetHandle = function() return nil end })
 provide('gs_reputation', { Add = function() end, Get = function() return { street = 0, legal = 0, media = 0 } end, GetDiscount = function() return 0 end, GetStreetBonus = function() return 0 end, ShouldGreet = function() return false end })
 provide('gs_events', { GetXpMultiplier = function() return 1.0 end, GetBonus = function() return 0 end, Active = function() return nil end })
 -- gs_weather par défaut (les tests qui en ont besoin le remplacent)

@@ -55,7 +55,7 @@ RegisterNetEvent('gs_duo:client:contractStep', function(s)
     local text = ('[E] %s (%d/%d)'):format(s.label, s.index, s.total)
     local point = lib.points.new({ coords = c, distance = 60.0 })
     function point:nearby()
-        DrawMarker(1, c.x, c.y, c.z - 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 5.0, 5.0, 1.0, 180, 60, 255, 120, false, false, 2, false, nil, nil, false)
+        DrawMarker(1, c.x, c.y, c.z - 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 5.0, 5.0, 0.6, 90, 200, 255, 70, false, false, 2, false, nil, nil, false)
         local inside = self.currentDistance <= 5.0
         if inside ~= shown and not busy then
             shown = inside

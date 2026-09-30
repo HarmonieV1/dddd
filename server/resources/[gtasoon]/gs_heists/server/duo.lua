@@ -139,6 +139,7 @@ local function payout(sess)
         if started('gs_quests') then exports.gs_quests:Reward(src, 'heist') end
     end
     Security:LogStaff(('[Gros coup] %s réussi : %d $ (%d chacun)'):format(site.label, total, each), 'jobs')
+    if started('gs_social') then exports.gs_social:Newsroom('bigheist', ('ALERTE · Coup spectaculaire à %s : près de %d 000 $ envolés, les auteurs sont en fuite.'):format(site.label:gsub('^Gros coup : ', ''), total // 1000)) end
     return ('%sButin partagé : %s chacun'):format(sess.primary and (sess.primary.label .. ' récupéré(e). ') or '', lines[1])
 end
 

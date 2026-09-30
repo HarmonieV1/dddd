@@ -18,7 +18,7 @@ provide('gs_jobs', {
     ListJobs = function() return { { name = 'police', label = 'LSPD', grades = { { grade = 0, label = 'Cadet' } } } } end,
 })
 provide('gs_wanted', { GetHeat = function(s) return heat[s] or 0 end, ClearHeat = function(s) heat[s] = nil cleared[s] = true end })
-provide('gs_social', { GetHandle = function() return 'vice_lucia' end })
+provide('gs_social', { GetHandle = function() return 'vice_lucia' end, Newsroom = function() return true end })
 provide('gs_gangs', { GetGang = function(s) if s == 4 then return 'ballas', 1 end end,
     ListGangs = function() return { { name = 'ballas', label = 'Ballas' } } end,
     AdminCreateGang = function(name, label) if name == 'ballas' then return false, 'Ce gang existe déjà.' end if not label then return false, 'Nom affiché obligatoire.' end W.newGang = name return true end,

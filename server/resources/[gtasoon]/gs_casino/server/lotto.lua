@@ -71,6 +71,7 @@ function Lotto.draw(week)
         or ('TIRAGE DU LOTO : pas assez de participants, la cagnotte de %d $ est reportée.'):format(result.carried)
     for _, s in ipairs(Bridge:GetPlayers()) do Bridge:Notify(s, msg, 'inform') end
     Security:LogStaff('[Loto] ' .. msg)
+    if GetResourceState('gs_social') == 'started' then exports.gs_social:Newsroom('lotto', msg) end
     return result
 end
 

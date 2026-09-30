@@ -20,6 +20,15 @@ TagsStore = TagsStore or {
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4]])
     end,
     garages = function() return MySQL.query.await('SELECT gang, x, y, z, w, paint FROM gs_gang_garages') or {} end,
+    fleetInit = function()
+        MySQL.query.await([[CREATE TABLE IF NOT EXISTS `gs_gang_fleet` (
+            `gang` VARCHAR(30) NOT NULL, `models` TEXT NOT NULL, `custom` TEXT NULL, PRIMARY KEY (`gang`)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4]])
+    end,
+    fleetAll = function() return MySQL.query.await('SELECT gang, models, custom FROM gs_gang_fleet') or {} end,
+    fleetSave = function(gang, models, custom)
+        MySQL.prepare('REPLACE INTO gs_gang_fleet (gang, models, custom) VALUES (?, ?, ?)', { gang, json.encode(models), custom and json.encode(custom) or nil })
+    end,
     saveGarage = function(gang, c, paint)
         MySQL.prepare('REPLACE INTO gs_gang_garages (gang, x, y, z, w, paint) VALUES (?, ?, ?, ?, ?, ?)', { gang, c.x, c.y, c.z, c.w or 0.0, paint })
     end,
@@ -31,7 +40,7 @@ Config.DefaultGangVehicles = Config.DefaultGangVehicles or { 'buccaneer2', 'chin
 local function publishGarages()
     local out = {}
     for gang, g in pairs(Config.GangGarages) do
-        out[gang] = { x = g.garage.x, y = g.garage.y, z = g.garage.z, w = g.garage.w, vehicles = g.vehicles }
+        out[gang] = { x = g.garage.x, y = g.garage.y, z = g.garage.z, w = g.garage.w, vehicles = g.vehicles, custom = g.custom }
     end
     GlobalState.gsGangGarages = out
 end
@@ -114,7 +123,8 @@ lib.callback.register('gs_gangs:garage', function(src, index)
     local m = member(src)
     local g = m and Config.GangGarages[m.gang]
     if not g then return false, 'Pas de garage pour ton gang.' end
-    local model = g.vehicles[tonumber(index) or 0]
+    local custom = index == 'custom' and g.custom or nil
+    local model = custom and custom.model or g.vehicles[tonumber(index) or 0]
     if not model then return false, 'Véhicule inconnu.' end
     if not Security:InRange(src, vec3(g.garage.x, g.garage.y, g.garage.z), 6.0) then return false, 'Approche-toi du garage.' end
     local old = Extras.vehicles[src]
@@ -122,7 +132,7 @@ lib.callback.register('gs_gangs:garage', function(src, index)
     local veh = Bridge:SpawnVehicle(src, model, BIKES[model] and 'bike' or 'automobile',
         g.garage, g.garage.w, m.gang:upper():sub(1, 4) .. math.random(1000, 9999), true)
     if not veh or veh == 0 then return false, 'Véhicule indisponible.' end
-    SetVehicleColours(veh, g.paint, g.paint)
+    if custom then SetVehicleColours(veh, custom.c1, custom.c2) else SetVehicleColours(veh, g.paint, g.paint) end
     Extras.vehicles[src] = veh
     return true, 'Véhicule sorti.'
 end)
@@ -135,6 +145,52 @@ lib.callback.register('gs_gangs:garageStore', function(src)
     DeleteEntity(veh)
     Extras.vehicles[src] = nil
     return true, 'Véhicule rangé.'
+end)
+
+-- Flotte du gang (chef) ------------------------------------------------------------------------------------------------
+
+local function allowedModel(m) for _, c in ipairs(Config.GangFleet.choices) do if c == m then return true end end return false end
+local function colour(c) c = tonumber(c) return c and c == math.floor(c) and c >= 0 and c <= 159 and c or nil end
+
+function Extras.applyFleet(gang, models, custom)
+    local g = Config.GangGarages[gang]
+    if not g then return false end
+    if models and #models > 0 then g.vehicles = models end
+    g.custom = custom
+    publishGarages()
+    return true
+end
+
+lib.callback.register('gs_gangs:setFleet', function(src, models)
+    if not Security:RateLimit(src, 'gs_gangs:setFleet', 3, 10000) then return false, 'Doucement.' end
+    local m = member(src)
+    if not m or m.grade < 3 then return false, 'Réservé au chef du gang.' end
+    if not Config.GangGarages[m.gang] then return false, 'Place d\'abord le garage du gang (staff).' end
+    if type(models) ~= 'table' or #models < 1 or #models > Config.GangFleet.max then return false, ('1 à %d véhicules.'):format(Config.GangFleet.max) end
+    local seen, clean = {}, {}
+    for _, v in ipairs(models) do
+        if type(v) ~= 'string' or not allowedModel(v) or seen[v] then return false, 'Modèle non autorisé.' end
+        seen[v] = true
+        clean[#clean + 1] = v
+    end
+    Extras.applyFleet(m.gang, clean, Config.GangGarages[m.gang].custom)
+    if TagsStore.fleetSave then TagsStore.fleetSave(m.gang, clean, Config.GangGarages[m.gang].custom) end
+    return true, 'Flotte du gang mise à jour.'
+end)
+
+lib.callback.register('gs_gangs:setCustom', function(src, model, c1, c2)
+    if not Security:RateLimit(src, 'gs_gangs:setCustom', 3, 10000) then return false, 'Doucement.' end
+    local m = member(src)
+    if not m or m.grade < 3 then return false, 'Réservé au chef du gang.' end
+    local g = Config.GangGarages[m.gang]
+    if not g then return false, 'Place d\'abord le garage du gang (staff).' end
+    if type(model) ~= 'string' or not allowedModel(model) then return false, 'Modèle non autorisé.' end
+    c1, c2 = colour(c1), colour(c2)
+    if not c1 or not c2 then return false, 'Couleurs : 0 à 159.' end
+    local custom = { model = model, c1 = c1, c2 = c2 }
+    Extras.applyFleet(m.gang, g.vehicles, custom)
+    if TagsStore.fleetSave then TagsStore.fleetSave(m.gang, g.vehicles, custom) end
+    return true, 'Véhicule personnalisé du gang enregistré.'
 end)
 
 -- Receleur ------------------------------------------------------------------------------------------------------------
@@ -211,6 +267,14 @@ function Extras.init()
             local g = Config.GangGarages[r.gang] or { vehicles = Config.DefaultGangVehicles }
             g.garage, g.paint = vec4(r.x, r.y, r.z, r.w), r.paint
             Config.GangGarages[r.gang] = g
+        end
+    end
+    if TagsStore.fleetInit then
+        TagsStore.fleetInit()
+        for _, r in ipairs(TagsStore.fleetAll()) do
+            local ok1, models = pcall(json.decode, r.models)
+            local ok2, custom = pcall(json.decode, r.custom or 'null')
+            if Config.GangGarages[r.gang] then Extras.applyFleet(r.gang, ok1 and models or nil, ok2 and custom or nil) end
         end
     end
     publishGarages()

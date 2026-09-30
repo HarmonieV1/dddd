@@ -303,6 +303,17 @@ Traductions françaises manquantes des scripts Qbox ajoutées par METTRE-A-JOUR 
 - **IMPORTER-MODS** : ouvre les dlc.rpf (mods solo), préfère les dossiers FiveM, détecte les packs chiffrés, ajoute
   les véhicules au catalogue Qbox (concession) avec prix.
 
+## V6 — flotte des gangs, Weazel automatique, import chaîné, guides PDF
+- **Flotte du gang** (F9, chef) : jusqu'à 4 modèles choisis dans une liste (lowriders, muscle, motos, utilitaires) +
+  **1 véhicule personnalisé** (modèle + 2 couleurs), au garage du gang.
+- **Weazel News automatique** : brèves dans Vibe (@WeazelNews) pour les braquages, gros coups, courses, loto et
+  événements staff ; jamais de nom de suspect ; anti-spam.
+- **METTRE-A-JOUR** lance aussi l'import des mods posés dans `C:\GTASOON\mods-a-trier`.
+- **IMPORTER-MODS** : un mod avec un fichier > 16 Mo n'est plus installé (à optimiser d'abord).
+- Derniers cercles violets / roses (missions de métier, duo) remplacés par un cercle bleu discret.
+- **PDF** (`docs/pdf`, régénérés par `tools/points.lua` + `tools/pdf.py`) : guide complet, fiche de tests, carte des
+  points (419 points + maps importées).
+
 ## Liens entre features
 `gs_weather` → visibilité de `gs_wanted` + prix de `gs_economy` ;
 `gs_duo` → crimes vers `gs_wanted`, chaleur partagée ; `gs_jobs` → police en service pour le dispatch.

@@ -98,6 +98,10 @@ lib.callback.register('gs_stickup:finish', function(src)
     end
     if started('gs_reputation') then exports.gs_reputation:Add(src, 'street', 1) end
     Security:LogStaff(('[Braquage solo] %s : %s (%s)'):format(GetPlayerName(src) or src, kind.label, msg), 'jobs')
+    if p.zone and started('gs_social') then
+        local z = Stickup.zones()[p.zone]
+        exports.gs_social:Newsroom('stickup', ('FAITS DIVERS · %s braqué(e) à main armée : %s sous le choc, l\'auteur court toujours.'):format(z and z.label or 'Un commerce', p.kind == 'teller' and 'le guichetier' or 'le caissier'))
+    end
     return true, ('Butin : %s. File avant l\'arrivée de la police !'):format(msg)
 end)
 

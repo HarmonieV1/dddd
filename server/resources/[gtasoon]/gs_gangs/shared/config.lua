@@ -54,6 +54,15 @@ Config.ColorRGB = { [1] = { 224, 50, 50 }, [3] = { 93, 182, 229 }, [25] = { 57, 
     [40] = { 190, 190, 190 }, [46] = { 240, 200, 80 }, default = { 255, 46, 136 } }
 
 -- Receleur (vente en gros) : grade minimum, quantité minimum, nuit seulement, lieu qui change toutes les heures
+-- Flotte du gang : le chef (grade 3) choisit jusqu'à `max` modèles pour le garage, plus UN véhicule personnalisé
+-- (modèle + 2 couleurs GTA 0-159). Liste des modèles autorisés (lowriders, muscle, motos, utilitaires discrets).
+Config.GangFleet = {
+    max = 4,
+    choices = { 'chino', 'chino2', 'buccaneer2', 'faction', 'faction2', 'faction3', 'moonbeam2', 'voodoo', 'voodoo2', 'tornado', 'tornado5',
+        'primo2', 'sabregt2', 'virgo2', 'virgo3', 'minivan2', 'slamvan3', 'blade', 'dominator', 'gauntlet', 'ellie', 'impaler',
+        'baller', 'cavalcade', 'granger', 'patriot', 'gburrito', 'speedo', 'manchez', 'sanchez', 'daemon', 'hexer', 'zombiea', 'bati' },
+}
+
 -- Atelier de munitions artisanales (dans la planque du gang) : ferraille + cuivre (ferrailleur, gs_harvest).
 -- Moins cher que le marché noir, mais il faut récolter ; plafond par gang et par jour.
 Config.AmmoCraft = {

@@ -3,7 +3,7 @@
 dofile('tests/mock.lua')
 local R = 'server/resources/[gtasoon]/'
 local reports = 0
-provide('gs_social', { GetHandle = function() return nil end })
+provide('gs_social', { GetHandle = function() return nil end, Newsroom = function() return true end })
 provide('gs_wanted', { ReportCrime = function() reports = reports + 1 return true end })
 loadResource('gs_security', { R .. 'gs_security/server/main.lua' })
 loadResource('gs_races', { R .. 'gs_races/shared/config.lua' })

@@ -5,7 +5,7 @@ local R = 'server/resources/[gtasoon]/'
 local xp, partner = 0, {}
 provide('gs_quests', { AddXP = function(_, n) xp = xp + n return 1 end })
 provide('gs_duo', { GetPartner = function(src) return partner[src] end })
-provide('gs_social', { GetHandle = function() return nil end })
+provide('gs_social', { GetHandle = function() return nil end, Newsroom = function() return true end })
 loadResource('gs_security', { R .. 'gs_security/server/main.lua' })
 loadResource('gs_roadbook', { R .. 'gs_roadbook/shared/config.lua' })
 local rows = {}

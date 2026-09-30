@@ -105,6 +105,26 @@ local function openMenu()
         lib.registerContext({ id = 'gs_gangs_craft', title = 'Atelier', menu = 'gs_gang', options = o })
         lib.showContext('gs_gangs_craft')
     end }
+    if info.grade == 3 then
+        options[#options + 1] = { title = 'Flotte du gang (chef)', icon = 'car-side', description = ('Jusqu\'à %d modèles + 1 véhicule personnalisé'):format(Config.GangFleet.max), arrow = true, onSelect = function()
+            local choices = {}
+            for _, mdl in ipairs(Config.GangFleet.choices) do choices[#choices + 1] = { value = mdl, label = GetLabelText(GetDisplayNameFromVehicleModel(GetHashKey(mdl))) .. ' (' .. mdl .. ')' } end
+            lib.registerContext({ id = 'gs_gang_fleet', title = 'Flotte du gang', menu = 'gs_gang', options = {
+                { title = 'Choisir les véhicules du garage', icon = 'list-check', onSelect = function()
+                    local r = lib.inputDialog('Flotte', { { type = 'multi-select', label = ('Jusqu\'à %d modèles'):format(Config.GangFleet.max), options = choices, required = true, searchable = true } })
+                    if r then result(lib.callback.await('gs_gangs:setFleet', false, r[1])) end
+                end },
+                { title = 'Véhicule personnalisé', icon = 'palette', description = 'Modèle + 2 couleurs (0-159)', onSelect = function()
+                    local r = lib.inputDialog('Véhicule personnalisé', {
+                        { type = 'select', label = 'Modèle', options = choices, required = true, searchable = true },
+                        { type = 'number', label = 'Couleur principale (0-159)', min = 0, max = 159, default = 0, required = true },
+                        { type = 'number', label = 'Couleur secondaire (0-159)', min = 0, max = 159, default = 0, required = true } })
+                    if r then result(lib.callback.await('gs_gangs:setCustom', false, r[1], r[2], r[3])) end
+                end },
+            } })
+            lib.showContext('gs_gang_fleet')
+        end }
+    end
     if info.canManage then
         options[#options + 1] = { title = 'Recruter le joueur le plus proche', icon = 'user-plus', onSelect = function()
             local target = lib.getClosestPlayer(GetEntityCoords(cache.ped), Config.InviteRange, false)

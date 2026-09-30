@@ -30,7 +30,7 @@ RegisterNetEvent('gs_jobs:client:missionStep', function(step)
 
     function point:nearby()
         DrawMarker(1, c.x, c.y, c.z - 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 4.0, 4.0, 1.0,
-            255, 46, 136, 120, false, false, 2, false, nil, nil, false)
+            90, 200, 255, 70, false, false, 2, false, nil, nil, false)
         local inside = self.currentDistance <= Config.Missions.checkpointRadius
         if inside ~= shown and not busy then
             shown = inside

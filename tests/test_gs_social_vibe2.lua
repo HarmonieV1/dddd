@@ -88,5 +88,15 @@ press[2] = true
 okf, msgf = cb('gs_social:flash', 2, 'Encore ?'); advance(31000)
 check('flash : cooldown partagé par la rédaction', not okf and msgf:find('Prochain'))
 
+-- Weazel News automatique
+local nf = #Neon.feed
+check('brève publiée', Vibe2.newsroom('heist', 'BRAQUAGE · test') and #Neon.feed == nf + 1 and Neon.feed[1].handle == 'WeazelNews' and Neon.feed[1].press)
+check('anti-spam par sujet', not Vibe2.newsroom('heist', 'encore'))
+check('autre sujet ok', Vibe2.newsroom('race', 'course'))
+check('texte vide refusé', not Vibe2.newsroom('x', ''))
+Vibe2.news.hour = {}
+for i = 1, Config.Newsroom.perHour do Vibe2.news.hour[i] = os.time() end
+check('plafond horaire', not Vibe2.newsroom('lotto', 'tirage'))
+
 io.write(('\n%d réussis, %d échoués\n'):format(passed, failed))
 os.exit(failed == 0 and 0 or 1)

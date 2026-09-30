@@ -75,6 +75,10 @@ AddEventHandler('gs_gangs:client:garage', function()
             notify(lib.callback.await('gs_gangs:garage', false, i))
         end }
     end
+    if g.custom then
+        options[#options + 1] = { title = GetLabelText(GetDisplayNameFromVehicleModel(GetHashKey(g.custom.model))) .. ' (perso du gang)', icon = 'star',
+            onSelect = function() notify(lib.callback.await('gs_gangs:garage', false, 'custom')) end }
+    end
     options[#options + 1] = { title = 'Ranger mon véhicule', icon = 'warehouse', onSelect = function()
         notify(lib.callback.await('gs_gangs:garageStore', false))
     end }

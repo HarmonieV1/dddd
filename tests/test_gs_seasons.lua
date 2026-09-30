@@ -16,7 +16,7 @@ end
 local R = 'server/resources/[gtasoon]/'
 local unlocked = {}
 provide('gs_store', { UnlockOutfit = function(cid, id) unlocked[#unlocked + 1] = id return true end })
-provide('gs_social', { GetHandle = function() return nil end })
+provide('gs_social', { GetHandle = function() return nil end, Newsroom = function() return true end })
 loadResource('gs_security', { R .. 'gs_security/server/main.lua' })
 loadResource('gs_seasons', { R .. 'gs_seasons/shared/config.lua' })
 local rows, hall = {}, {}

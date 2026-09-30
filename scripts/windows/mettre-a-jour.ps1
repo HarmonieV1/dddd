@@ -69,6 +69,17 @@ if (-not $fx) { Fail 'FXServer.exe introuvable : extrais server.7z (artefacts Fi
 Say "  FXServer : $fx" 'Green'
 Write-Launcher $Data $fx
 
+# 3b. Mods posés dans C:\GTASOON\mods-a-trier (ou Google Drive pour ordinateur) : importés automatiquement
+$importer = Join-Path $PSScriptRoot 'importer-mods.ps1'
+if (Test-Path -LiteralPath $importer) {
+    Say "`n[3b] Import des mods (si C:\GTASOON\mods-a-trier contient des archives)" 'Cyan'
+    $env:GTASOON_CHAIN = '1'
+    # processus séparé : une erreur de l'import n'arrête jamais la mise à jour
+    $ps = (Get-Process -Id $PID).Path
+    try { & $ps -NoProfile -ExecutionPolicy Bypass -File $importer } catch { Say "  Import des mods : $($_.Exception.Message) (relance IMPORTER-MODS.bat seul)" 'Yellow' }
+    Remove-Item Env:\GTASOON_CHAIN -ErrorAction SilentlyContinue
+}
+
 # 4. Relance
 Say "[4/4] Relance du serveur" 'Cyan'
 Start-Process -FilePath $batPath -WorkingDirectory $Data

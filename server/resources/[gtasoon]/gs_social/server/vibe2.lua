@@ -75,6 +75,30 @@ lib.callback.register('gs_social:flash', function(src, content)
     return true, 'Flash info publié.'
 end)
 
+--- Weazel News automatique : les grands événements de la ville (braquages, courses, soirées, loto…) deviennent des
+--- brèves publiées dans Vibe sous le compte @WeazelNews. Jamais de nom de suspect ; anti-spam (1 brève par sujet / 2 min,
+--- 15 par heure au plus). kind = sujet (ex : 'heist'), text = la brève.
+Vibe2.news = { last = {}, hour = {} }
+function Vibe2.newsroom(kind, text)
+    if not Config.Newsroom.enabled or type(text) ~= 'string' or text == '' then return false end
+    local now = os.time()
+    if (Vibe2.news.last[kind] or 0) + Config.Newsroom.perKind > now then return false end
+    local keep = {}
+    for _, t in ipairs(Vibe2.news.hour) do if now - t < 3600 then keep[#keep + 1] = t end end
+    if #keep >= Config.Newsroom.perHour then Vibe2.news.hour = keep return false end
+    keep[#keep + 1] = now
+    Vibe2.news.hour, Vibe2.news.last[kind] = keep, now
+    local content = text:sub(1, 280)
+    local id = Store.insertPost('WEAZEL', Config.Newsroom.handle, content)
+    if not id then return false end
+    local post = { id = id, cid = 'WEAZEL', handle = Config.Newsroom.handle, content = content, likes = 0, time = now, likedBy = {}, press = true }
+    table.insert(Neon.feed, 1, post)
+    Neon.feed[Config.FeedSize + 1] = nil
+    TriggerClientEvent('gs_social:client:new', -1, { id = id, handle = post.handle, content = content, likes = 0, time = now, badge = 'press' })
+    return true
+end
+exports('Newsroom', Vibe2.newsroom)
+
 --- Classements de la semaine (cache court : requêtes groupées, pas à chaque ouverture).
 lib.callback.register('gs_social:top', function(src)
     if not guard(src, 'top', 5, 10000) then return nil end

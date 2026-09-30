@@ -104,7 +104,10 @@ lib.callback.register('gs_heists:finish', function(src)
     if started('gs_quests') then exports.gs_quests:Reward(src, 'heist') end
     local remaining = 0
     for i in ipairs(site.points) do if not session.done[i] then remaining = remaining + 1 end end
-    if remaining == 0 then endSession(p.id) end
+    if remaining == 0 then
+        endSession(p.id)
+        if started('gs_social') then exports.gs_social:Newsroom('heist', ('BRAQUAGE · %s : les malfaiteurs ont pris la fuite. La police lance un appel à témoins.'):format(site.label)) end
+    end
     return true, ('Butin : %s%s'):format(loot, remaining > 0 and (' · encore %d'):format(remaining) or ' · tout est vidé, file !')
 end)
 

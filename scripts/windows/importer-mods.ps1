@@ -36,6 +36,7 @@ if ($archives.Count -eq 0) {
         if ($archives.Count -gt 0) { break }
     }
 }
+if ($archives.Count -eq 0 -and $env:GTASOON_CHAIN) { return }
 if ($archives.Count -eq 0) {
     Say "Mets tes fichiers (.zip / .rar / .7z) dans $Src puis relance IMPORTER-MODS.bat." 'Yellow'
     Start-Process explorer.exe $Src
@@ -227,7 +228,7 @@ function Analyze($pkg) {
     }
     if ($r.issues | Where-Object { $_ -match 'escrow|ESX|obfusqué' }) { $r.install = $false; $r.type = 'rejete' }
     if ($r.sizeMB -gt 300 -and $r.install) { $r.install = $false; [void]$r.issues.Add('trop lourd pour être installé tel quel (> 300 Mo) : on choisira 2 ou 3 éléments du pack') }
-    if ($big.Count -gt 0 -and $r.type -in 'vehicule', 'vetement', 'map') { [void]$r.notes.Add('installé quand même, mais à optimiser avant l''ouverture publique') }
+    if ($big.Count -gt 0 -and $r.install) { $r.install = $false; [void]$r.issues.Add('pas installé : à optimiser d''abord (fichier > 16 Mo). Je peux l''alléger si tu me l''envoies') }
     return [pscustomobject]$r
 }
 
@@ -351,4 +352,4 @@ $lines += 'Envoie-moi ce fichier (copier-coller) : je branche les véhicules (co
 Say "`nTerminé : $($results.Count) mods analysés, $($installed.Count) installés." 'Green'
 Say "Rapport : $Report" 'Green'
 if (-not $canInstall) { Say "Serveur non installé ($Data) : rien d'installé, tout est rangé dans $Out." 'Yellow' }
-if (-not $env:GTASOON_TEST) { Start-Process notepad.exe $Report; Read-Host 'Entrée pour quitter' }
+if (-not $env:GTASOON_TEST -and -not $env:GTASOON_CHAIN) { Start-Process notepad.exe $Report; Read-Host 'Entrée pour quitter' }

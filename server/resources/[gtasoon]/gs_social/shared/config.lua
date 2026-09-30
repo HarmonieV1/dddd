@@ -3,6 +3,8 @@ Config = {}
 
 Config.MaxLength = 280
 Config.FeedSize = 60               -- posts gardés en mémoire et affichés
+-- Weazel News automatique (brèves des grands événements de la ville, sans nom de suspect)
+Config.Newsroom = { enabled = true, handle = 'WeazelNews', perKind = 120, perHour = 15 }
 Config.PostCooldown = 30000        -- ms entre deux posts d'un même joueur
 Config.HandleMin, Config.HandleMax = 3, 16
 Config.BlockLinks = true           -- liens et invitations Discord remplacés par [lien] (pub, phishing)

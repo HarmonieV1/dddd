@@ -128,5 +128,20 @@ Extras.craft.made.ballas.rounds = Config.AmmoCraft.dailyCap
 ok, msg = cb('gs_gangs:craftBegin', 1, 'ammo-9'); step()
 check('plafond journalier du gang', not ok and msg:find('assez'))
 
+-- Flotte du gang
+Config.GangGarages.ballas = Config.GangGarages.ballas or { garage = vec4(0.0, 0.0, 0.0, 0.0), paint = 145, vehicles = { 'chino' } }
+ok, msg = cb('gs_gangs:setFleet', 2, { 'chino' }); step()
+check('flotte : réservée au chef', not ok)
+ok, msg = cb('gs_gangs:setFleet', 1, { 'adder' }); step()
+check('flotte : modèle non autorisé', not ok)
+ok, msg = cb('gs_gangs:setFleet', 1, { 'chino', 'chino', 'voodoo' }); step()
+check('flotte : doublon refusé', not ok)
+ok = cb('gs_gangs:setFleet', 1, { 'voodoo', 'manchez' }); step()
+check('flotte appliquée et publiée', ok and GlobalState.gsGangGarages.ballas.vehicles[1] == 'voodoo')
+ok, msg = cb('gs_gangs:setCustom', 1, 'faction3', 145, 300); step()
+check('perso : couleur invalide', not ok)
+ok = cb('gs_gangs:setCustom', 1, 'faction3', 145, 12); step()
+check('perso enregistré', ok and GlobalState.gsGangGarages.ballas.custom.model == 'faction3' and Config.GangGarages.ballas.vehicles[2] == 'manchez')
+
 io.write(('\n%d réussis, %d échoués\n'):format(passed, failed))
 os.exit(failed == 0 and 0 or 1)
