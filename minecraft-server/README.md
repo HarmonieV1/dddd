@@ -4,6 +4,8 @@ Serveur Java **Paper** (fork optimisé de Minecraft, compatible client vanilla),
 Windows uniquement pour l'instant (scripts `.bat` + PowerShell).
 
 ## En local (gratuit)
+0. **Version express : double-clic sur `JOUER.bat`** (fait tout ci-dessous, te demande juste ton pseudo, affiche l'adresse `localhost`).
+
 1. Double-clic **`INSTALLER.bat`** : trouve la dernière version de Minecraft via l'API PaperMC, installe Java (Temurin via `winget`) si besoin, télécharge et vérifie le jar, accepte le CLUF (il te le demande).
 2. Double-clic **`LANCER.bat`** : démarre le serveur (RAM auto : 4 Go max, jamais plus de la moitié du PC). Écris `stop` dans la fenêtre pour l'arrêter proprement.
 3. Double-clic **`ADMIN.bat`** (serveur démarré) : menu numéroté — whitelist, op, kick/ban, sauvegarde du monde, message, jour/beau temps, gamemode, commande libre, arrêt, mise à jour (avec sauvegarde auto).
