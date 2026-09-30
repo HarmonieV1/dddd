@@ -37,7 +37,9 @@ if (-not $env:GTASOON_ROOT) {
         }
     }
 }
-if ($archives.Count -eq 0 -and $env:GTASOON_CHAIN) { return }
+if ($archives.Count -eq 0 -and $env:GTASOON_CHAIN) {
+    Say "  Mods : aucun fichier dans $Src (voitures, maps, vêtements du Drive : mets-les là, tels quels)." 'Yellow'; return
+}
 # Lancé par METTRE-A-JOUR : si ni les archives ni cet importeur n'ont changé depuis le dernier import, rien à refaire
 # (évite de tout redécompresser à chaque mise à jour).
 $Stamp = Join-Path $Out '.derniere-signature'
@@ -421,7 +423,8 @@ foreach ($r in $sources) {
             $brand = if ($brand) { (Get-Culture).TextInfo.ToTitleCase($brand) } else { '' }
             $cat = $cls[0]
             if ($Labels.ContainsKey($model)) { $label = $Labels[$model][0]; $brand = $Labels[$model][1]; if ($Labels[$model][2]) { $cat = $Labels[$model][2] } }
-            $vehEntries += "    ['$model'] = { name = '$($label -replace "'", '')', brand = '$brand', model = '$model', price = $price, category = '$cat', type = 'automobile', hash = ``$model`` },"
+            # Catégorie « roadtrip » : tous les véhicules importés regroupés à part à la concession (PDM)
+            $vehEntries += "    ['$model'] = { name = '$($label -replace "'", '')', brand = '$brand', model = '$model', price = $price, category = 'roadtrip', type = 'automobile', hash = ``$model`` },"
         }
     }
 }
