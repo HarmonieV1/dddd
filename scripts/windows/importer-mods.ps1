@@ -347,6 +347,27 @@ function Build-Resource($r, $dest) {
     Write-Manifest $dest $r
 }
 
+# Optimiseur de textures (tools\textures) : .ytd trop lourds allégés avant installation (« Oversized assets » dans la console).
+$TexKit = Join-Path $PSScriptRoot '..\..\tools\textures'
+$TexReady = $false
+try {
+    foreach ($d in 'SharpDX.dll', 'SharpDX.Mathematics.dll', 'CodeWalker.Core.dll', 'GtaSoonTex.dll') { Add-Type -Path (Join-Path $TexKit $d) }
+    $TexReady = $true
+} catch { Say "  Optimiseur de textures indisponible ($($_.Exception.Message)) : mods installés sans optimisation" 'Yellow' }
+function Optimize-Textures($dir, $r) {
+    if (-not $TexReady) { return }
+    foreach ($f in @(Get-ChildItem -LiteralPath $dir -Recurse -File -Filter '*.ytd' | Where-Object { $_.Length -gt 1MB })) {
+        try {
+            $res = [GtaSoon.Tex]::Ytd($f.FullName, 40MB, 512)
+            if ($res -and [long]($res -split '\|')[1] -gt 46MB) {   # encore trop lourd : 2e passage, textures jusqu'à 256 px
+                $res2 = [GtaSoon.Tex]::Ytd($f.FullName, 40MB, 256)
+                if ($res2) { $res = ($res -split '\|')[0] + '|' + ($res2 -split '\|')[1] }
+            }
+            if ($res) { $a, $b = $res -split '\|'; [void]$r.notes.Add("textures $($f.Name) allégées : $(MB $a) → $(MB $b) Mo en mémoire") }
+        } catch { [void]$r.notes.Add("textures $($f.Name) : optimisation impossible, gardé tel quel") }
+    }
+}
+
 Say "[2/3] Analyse et tri" 'Cyan'
 $results = @()
 foreach ($p in $packages) { try { $results += Analyze $p } catch { Say "  $($p.Name) : analyse impossible ($($_.Exception.Message))" 'Yellow' } }
@@ -360,6 +381,7 @@ if ($canInstall) { [void][IO.Directory]::CreateDirectory($Addons) }
 foreach ($r in $results) {
     $sorted = Join-Path (Join-Path $Out $Cats[$r.type]) $r.name
     try { Build-Resource $r $sorted } catch { [void]$r.issues.Add("rangement impossible : $($_.Exception.Message)"); $r.install = $false }
+    if ($r.install) { Optimize-Textures $sorted $r }
     if ($r.install -and $canInstall) {
         $name = 'gsa_' + $r.name
         $dest = Join-Path $Addons $name

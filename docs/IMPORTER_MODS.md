@@ -27,6 +27,8 @@ Vêtements « solo » : ceux pour le perso FiveM sont convertis par Claude (outi
 ROADTRIP-*.zip) ; ceux pour Franklin / Michael / Trevor et les simples recolorations ne sont pas convertibles.
 Lancé par METTRE-A-JOUR : l'import est sauté si rien n'a changé dans mods-a-trier (et si l'importeur n'a pas changé).
 
+Textures trop lourdes (« Oversized assets » dans la console) : allégées automatiquement à l'import (tools/textures,
+mipmaps retirés / réduction 2x, ~40 Mo max par .ytd, jamais sous 256-512 px). Ex. : Charger 209 → 54 Mo, Fenomeno 175 → 44 Mo.
 Contrôles : textures > 16 Mo (disparition de textures / crash), mod > 150 Mo, noms de spawn des véhicules.
 À la fin : `RAPPORT-MODS.txt` s'ouvre → copie-colle-le moi : je branche les véhicules (concession, garages), les maps
 (coords, blips, portes) et je relis les scripts.
