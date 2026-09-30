@@ -46,5 +46,5 @@ Config.Missions = {
 
 Config.JobCenter = {
     coords = vec3(-265.0, -963.6, 31.22),
-    blip = { sprite = 407, color = 27, scale = 0.8, label = 'Pôle Emploi' },
+    blip = { sprite = 407, color = 27, scale = 0.8, label = 'Pôle Emploi & services (papiers)' },
 }

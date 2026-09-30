@@ -354,9 +354,8 @@ function Build-Resource($r, $dest) {
 # Optimiseur de textures (tools\textures) : .ytd trop lourds allégés avant installation (« Oversized assets » dans la console).
 $TexKit = Join-Path $PSScriptRoot '..\..\tools\textures'
 $TexReady = $false
-# DÉSACTIVÉ par défaut (crash « Streamer crashed » signalé en jeu après optimisation) : les mods sont installés avec
-# leurs textures d'origine. Pour réactiver (tests) : variable d'environnement GTASOON_TEXOPT=1.
-if ($env:GTASOON_TEXOPT -eq '1') { try {
+# Actif par défaut (ne touche que les fichiers au-dessus de la limite FiveM). Pour le couper : GTASOON_TEXOPT=0.
+if ($env:GTASOON_TEXOPT -ne '0') { try {
     foreach ($d in 'SharpDX.dll', 'SharpDX.Mathematics.dll', 'CodeWalker.Core.dll', 'GtaSoonTex.dll') { Add-Type -Path (Join-Path $TexKit $d) }
     $TexReady = $true
 } catch { Say "  Optimiseur de textures indisponible ($($_.Exception.Message)) : mods installés sans optimisation" 'Yellow' } }
@@ -415,10 +414,11 @@ foreach ($r in $results) {
     if ($r.install) {
         Optimize-Textures $sorted $r
         # Sécurité : vêtements convertis (jamais testés en jeu) installés mais DÉSACTIVÉS dans addons.cfg
-        # Les véhicules lourds restent ACTIFS (ils tournent) : simple signalement dans le rapport.
+        # Encore trop lourd après allègement : mis en pause (crash « bad_alloc » / « Streamer crashed » sur les PC à 8 Go).
+        # Le joueur peut le forcer en retirant le # dans addons.cfg (son choix est gardé).
         $heavy = @(Get-Oversized $sorted)
-        if ($heavy.Count -gt 0) { [void]$r.notes.Add("lourd pour FiveM : $($heavy -join ', ') (à alléger plus tard)") }
-        if ($r.name -like 'roadtrip_*') { $r.risk = 'vêtements convertis, à tester un par un' }
+        if ($heavy.Count -gt 0) { $r.risk = "trop lourd même allégé : $($heavy[0]) — cherche une version 2K / FiveM ready" }
+        elseif ($r.name -like 'roadtrip_*') { $r.risk = 'vêtements convertis, à tester un par un' }
         if ($r.risk) { [void]$r.issues.Add("désactivé par sécurité ($($r.risk)) : pour tester, retire le # de sa ligne dans cfg\addons.cfg") }
     }
     if ($r.install -and $canInstall) {

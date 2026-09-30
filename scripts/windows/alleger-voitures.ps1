@@ -6,7 +6,7 @@
 function Say($m, $c = 'Gray') { Write-Host $m -ForegroundColor $c }
 Get-Process -Name FXServer -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
 Say '[1/2] Réimport des mods avec optimisation des textures (quelques minutes)' 'Cyan'
-$env:GTASOON_TEXOPT = '1'; $env:GTASOON_TEST = '1'
+$env:GTASOON_TEST = '1'
 & (Join-Path $PSScriptRoot 'importer-mods.ps1')
 $report = 'C:\GTASOON\mods-tri\RAPPORT-MODS.txt'
 if (Test-Path -LiteralPath $report) { Get-Content -LiteralPath $report | Where-Object { $_ -match 'allégées|indisponible|impossible' } | ForEach-Object { Say $_ 'Green' } }

@@ -28,6 +28,10 @@ $QboxPatches = @(
     # Concession PDM : catégorie « Imports ROADTRIP » en tête, avec toutes les voitures importées (IMPORTER-MODS)
     @{ res = 'qbx_vehicleshop'; file = 'config\shared.lua'; find = "(categories = \{\s*\n(\s*))sportsclassics = 'Sports Classics',"; repl = "`${1}roadtrip = ' ★ Imports ROADTRIP',`n`${2}sportsclassics = 'Sports Classics',"; why = 'concession : catégorie Imports ROADTRIP' }
     @{ res = 'illenium-appearance'; file = 'locales\fr.lua'; find = 'description = "tu resteras moche"'; repl = 'description = "Ton apparence sera enregistrée"'; why = 'création perso : texte d''enregistrement propre' }
+    # Doubles logos sur la carte : nos icônes (en français) gardées, celles de Qbox au même endroit masquées
+    @{ res = 'qbx_cityhall'; file = 'config\shared.lua'; find = 'showBlip = true'; repl = 'showBlip = false'; why = 'carte : un seul logo Pôle Emploi / services' }
+    @{ res = 'qbx_vehicleshop'; file = 'config\shared.lua'; find = "(label = 'Premium Deluxe Motorsport',\s*\n\s*coords = [^\n]*\n\s*show = )true"; repl = '${1}false'; why = 'carte : un seul logo concession PDM' }
+    @{ res = 'qbx_ambulancejob'; file = 'client\main.lua'; find = 'for _, station in pairs\(sharedConfig\.locations\.stations\) do(\s*\n\s*local blip = AddBlipForCoord)'; repl = 'for _, station in pairs({}) do -- logo géré par gs_jobs${1}'; why = 'carte : un seul logo hôpital' }
     # Carte d'identité montrée : se ferme seule après 6 s (sinon restait à l'écran), Échap ou Retour arrière la ferment aussi
     @{ res = 'qbx_idcard'; file = 'config\shared.lua'; find = 'status\s*=\s*false,[^\n]*\n\s*time\s*=\s*\d+'; repl = "status = true,`n            time = 6000"; why = 'carte d''identité : fermeture auto après 6 s' }
     @{ res = 'qbx_idcard'; file = 'web\js\config.js'; find = 'status:\s*false,[^\n]*\n\s*time:\s*\d+'; repl = "status: true,`n            time: 6000"; why = 'carte d''identité (page) : fermeture auto' }
