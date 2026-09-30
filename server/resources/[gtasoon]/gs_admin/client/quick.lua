@@ -306,7 +306,12 @@ local function addonVehiclesMenu()
             description = ('spawn : %s%s%s'):format(v.model, v.price and (' · %d $'):format(v.price) or '', here and '' or ' · mod non installé'),
             onSelect = function() notify(act('spawnveh', nil, { model = v.model, vtype = vehicleType(hash) })) end }
     end
-    if #options == 0 then options[1] = { title = 'Aucun véhicule importé', description = 'Lance IMPORTER-MODS.bat', disabled = true } end
+    local installed = 0
+    for _, o in ipairs(options) do if not o.disabled then installed = installed + 1 end end
+    if installed == 0 then
+        table.insert(options, 1, { title = 'Aucun mod de véhicule installé sur ce serveur', icon = 'circle-info', disabled = true,
+            description = 'Mets les fichiers du Drive (dossier GTA) dans C:\\GTASOON\\mods-a-trier puis lance IMPORTER-MODS.bat' })
+    end
     lib.registerContext({ id = 'gs_staff_addonveh', title = 'Véhicules ajoutés (' .. #list .. ')', menu = 'gs_staff_quick', options = options })
     lib.showContext('gs_staff_addonveh')
 end

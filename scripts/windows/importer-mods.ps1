@@ -23,17 +23,18 @@ $Cats   = @{ vehicule = 'vehicules'; vetement = 'vetements'; map = 'maps'; scrip
 
 [void][IO.Directory]::CreateDirectory($Src)
 $archives = @(Get-ChildItem -LiteralPath $Src -File | Where-Object { $_.Extension -match '^\.(zip|rar|7z)$' })
-# Rien dans mods-a-trier ? On regarde « Google Drive pour ordinateur » (lecteur G:, H:…) : dossier GTA de Mon Drive.
-if ($archives.Count -eq 0) {
+# En plus de mods-a-trier : « Google Drive pour ordinateur » (lecteur G:, H:…), dossier GTA de Mon Drive, s'il existe.
+# (Un fichier présent aux deux endroits n'est pris qu'une fois.)
+if (-not $env:GTASOON_ROOT) {
     foreach ($d in Get-PSDrive -PSProvider FileSystem -ErrorAction SilentlyContinue) {
         foreach ($sub in 'Mon Drive\GTA', 'My Drive\GTA') {
             $g = Join-Path $d.Root $sub
             if (Test-Path -LiteralPath $g) {
-                $found = @(Get-ChildItem -LiteralPath $g -File | Where-Object { $_.Extension -match '^\.(zip|rar|7z)$' })
-                if ($found.Count -gt 0) { Say "Dossier Google Drive trouvé : $g ($($found.Count) archives)" 'Green'; $archives = $found; break }
+                $names = @($archives | ForEach-Object { $_.Name })
+                $found = @(Get-ChildItem -LiteralPath $g -File | Where-Object { $_.Extension -match '^\.(zip|rar|7z)$' -and $names -notcontains $_.Name })
+                if ($found.Count -gt 0) { Say "Dossier Google Drive trouvé : $g (+$($found.Count) archives)" 'Green'; $archives += $found }
             }
         }
-        if ($archives.Count -gt 0) { break }
     }
 }
 if ($archives.Count -eq 0 -and $env:GTASOON_CHAIN) { return }
