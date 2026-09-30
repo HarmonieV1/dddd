@@ -15,14 +15,14 @@ local function openMenu(pointId)
         }
     end
     for i, v in ipairs(Config.Vehicles) do
-        options[#options + 1] = {
-            title = v.label, icon = v.type == 'bike' and 'bicycle' or 'car', disabled = status ~= nil,
+        if v.kind == Config.Points[pointId].kind then options[#options + 1] = {
+            title = v.label, icon = v.type == 'boat' and 'ship' or v.type == 'bike' and 'bicycle' or 'car', disabled = status ~= nil,
             description = ('%d $ · %d min'):format(v.price, v.minutes),
             onSelect = function()
                 local ok, msg = lib.callback.await('gs_rental:rent', false, pointId, i)
                 lib.notify({ description = msg, type = ok and 'success' or 'error' })
             end,
-        }
+        } end
     end
     lib.registerContext({ id = 'gs_rental', title = Config.Points[pointId].label, options = options })
     lib.showContext('gs_rental')

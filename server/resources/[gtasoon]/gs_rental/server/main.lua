@@ -28,7 +28,7 @@ end
 lib.callback.register('gs_rental:rent', function(src, pointId, vehicleId)
     if not Security:RateLimit(src, 'gs_rental:rent', 3, 10000) then return false, 'Doucement.' end
     local point, v = Config.Points[tonumber(pointId)], Config.Vehicles[tonumber(vehicleId)]
-    if not point or not v then return false, 'Indisponible.' end
+    if not point or not v or v.kind ~= point.kind then return false, 'Indisponible.' end
     if not Security:InRange(src, point.coords, Config.Radius + 2.0) then return false, 'Approche-toi du comptoir.' end
     if Rental.active[src] then return false, 'Tu as déjà une location en cours : rends-la d\'abord.' end
     if not spotFree(point.spawn) then return false, 'La place est occupée, libère-la.' end

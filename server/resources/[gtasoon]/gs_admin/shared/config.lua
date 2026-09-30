@@ -65,6 +65,8 @@ Config.Events = {
         text = 'Concours de super saut : qui ira le plus haut ?' },
     boxing = { label = 'Soirée boxe', icon = 'hand-fist', fx = 'melee', radius = 30.0, minutes = 20,
         text = 'Soirée boxe : aux poings seulement, armes rangées automatiquement dans la zone.' },
+    cayoparty = { label = 'Soirée DJ plage de Cayo Perico', icon = 'music', radius = 0.0, minutes = 60, party = true,
+        at = vec3(4893.2, -4924.0, 3.37), text = 'Soirée DJ sur la plage de Cayo Perico ! Vol gratuit au comptoir de l\'aéroport (LSIA).' },
     streetrace = { label = 'Course de rue (inscription gratuite)', icon = 'flag-checkered', radius = 0.0, minutes = 30, freeRaces = true,
         text = 'Course de rue organisée : inscription gratuite, rendez-vous au point GPS !' },
 }

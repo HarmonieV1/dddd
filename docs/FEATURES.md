@@ -295,6 +295,14 @@ Traductions françaises manquantes des scripts Qbox ajoutées par METTRE-A-JOUR 
 - **Motels** un peu plus chers (450 / 300 / 320 $ la semaine) : pousse vers l'agent immobilier.
 - **IMPORTER-MODS.bat** : tri et installation automatiques des mods téléchargés (docs/IMPORTER_MODS.md).
 
+## V5.4 — Cayo vivant, vols animés, import de mods automatique
+- **Vol LSIA ↔ Cayo** : petit film (avion au-dessus de l'océan, [Espace] = transfert rapide), gratuit.
+- **Soirée DJ plage de Cayo** (F11 → Événements en un clic) : sono, lumières, danseurs, musique de l'île, 1 h.
+- **Location de bateaux** : marina de LS et jetée de Cayo (jet-ski, semi-rigide, hors-bord).
+- **Staff** : « Noms et ID » jusqu'à 150 m avec PV et indicateur « parle » (rouge), activé automatiquement en spectate.
+- **IMPORTER-MODS** : ouvre les dlc.rpf (mods solo), préfère les dossiers FiveM, détecte les packs chiffrés, ajoute
+  les véhicules au catalogue Qbox (concession) avec prix.
+
 ## Liens entre features
 `gs_weather` → visibilité de `gs_wanted` + prix de `gs_economy` ;
 `gs_duo` → crimes vers `gs_wanted`, chaleur partagée ; `gs_jobs` → police en service pour le dispatch.

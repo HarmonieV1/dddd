@@ -442,8 +442,12 @@ end }
 --- Événement en un clic : annonce + GPS à tous, effet aux joueurs dans le rayon.
 Actions.event = { level = 3, duty = true, run = function(src, _, data)
     local ev = need(Config.Events[data.kind], 'Événement inconnu.')
-    local c = GetEntityCoords(GetPlayerPed(src))
+    local c = ev.at or GetEntityCoords(GetPlayerPed(src))
     local seconds = ev.minutes * 60
+    if ev.party then
+        need(started('gs_world'), 'gs_world non démarré.')
+        exports.gs_world:StartParty(seconds)
+    end
     local n = 0
     for _, id in ipairs(GetPlayers()) do
         local p = tonumber(id)

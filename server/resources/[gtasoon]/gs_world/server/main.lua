@@ -4,6 +4,19 @@ local Bridge   = exports.gs_bridge
 
 World = {}
 
+--- Soirée plage de Cayo Perico (appelée par gs_admin, événements en un clic). seconds = 0 pour arrêter.
+function World.party(seconds)
+    seconds = tonumber(seconds) or 0
+    if seconds <= 0 then GlobalState.gsCayoParty = nil return true end
+    GlobalState.gsCayoParty = { untilAt = os.time() + math.min(seconds, 4 * 3600) }
+    SetTimeout(math.min(seconds, 4 * 3600) * 1000, function()
+        local g = GlobalState.gsCayoParty
+        if g and os.time() >= g.untilAt then GlobalState.gsCayoParty = nil end
+    end)
+    return true
+end
+exports('StartParty', World.party)
+
 lib.callback.register('gs_world:fly', function(src, side)
     if not Security:RateLimit(src, 'gs_world:fly', 2, 10000) then return false, 'Doucement.' end
     local f = Config.Island.flight

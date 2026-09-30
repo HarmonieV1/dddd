@@ -79,22 +79,35 @@ local function setNoclip(on)
     if on then noclipLoop() end
 end
 
+--- Noms et ID (modération / spectate) : [ID] nom, vie, « parle » en rouge quand il parle, jusqu'à 150 m.
+--- La liste des joueurs proches est recalculée toutes les 500 ms ; l'affichage seul tourne à chaque image.
 local function namesLoop()
     CreateThread(function()
+        local near, nextScan = {}, 0
         while powers.names do
-            local me = GetEntityCoords(PlayerPedId())
-            for _, pid in ipairs(GetActivePlayers()) do
-                local ped = GetPlayerPed(pid)
-                local c = GetEntityCoords(ped)
-                if pid ~= PlayerId() and #(me - c) < 60.0 then
-                    local onScreen, x, y = GetScreenCoordFromWorldCoord(c.x, c.y, c.z + 1.1)
-                    if onScreen then
-                        SetTextFont(4) SetTextScale(0.0, 0.32) SetTextCentre(true) SetTextOutline()
-                        SetTextColour(40, 224, 255, 230)
-                        BeginTextCommandDisplayText('STRING')
-                        AddTextComponentSubstringPlayerName(('[%d] %s'):format(GetPlayerServerId(pid), GetPlayerName(pid)))
-                        EndTextCommandDisplayText(x, y)
+            local now = GetGameTimer()
+            local me = GetFinalRenderedCamCoord()
+            if now > nextScan then
+                nextScan, near = now + 500, {}
+                for _, pid in ipairs(GetActivePlayers()) do
+                    local ped = GetPlayerPed(pid)
+                    if pid ~= PlayerId() and #(me - GetEntityCoords(ped)) < 150.0 then
+                        near[#near + 1] = { pid = pid, ped = ped, label = ('[%d] %s'):format(GetPlayerServerId(pid), GetPlayerName(pid)) }
                     end
+                end
+            end
+            -- par frame : seulement tant que « Noms et ID » est actif (mode staff)
+            for _, n in ipairs(near) do
+                local c = GetEntityCoords(n.ped)
+                local onScreen, x, y = GetScreenCoordFromWorldCoord(c.x, c.y, c.z + 1.1)
+                if onScreen then
+                    local talking = NetworkIsPlayerTalking(n.pid)
+                    local hp = math.max(0, GetEntityHealth(n.ped) - 100)
+                    SetTextFont(4) SetTextScale(0.0, 0.34) SetTextCentre(true) SetTextOutline()
+                    if talking then SetTextColour(255, 80, 110, 240) else SetTextColour(40, 224, 255, 230) end
+                    BeginTextCommandDisplayText('STRING')
+                    AddTextComponentSubstringPlayerName(('%s  ·  %d PV%s'):format(n.label, hp, talking and '  ·  parle' or ''))
+                    EndTextCommandDisplayText(x, y)
                 end
             end
             Wait(0)
@@ -181,6 +194,7 @@ RegisterNetEvent('gs_admin:client:spectate', function(target, coords)
     end
     if player == -1 then stopSpectate() return notify(false, 'Joueur introuvable (trop loin ?).') end
     NetworkSetInSpectatorMode(true, GetPlayerPed(player))
+    if not powers.names then powers.names = true namesLoop() end -- noms et ID visibles pendant le spectate
     lib.showTextUI(('SPECTATE [%d]  ·  [Retour] arrêter'):format(target), { position = 'top-center' })
     CreateThread(function()
         while spectating do

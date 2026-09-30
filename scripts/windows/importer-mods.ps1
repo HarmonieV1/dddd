@@ -101,19 +101,98 @@ foreach ($a in $archives) {
     try { $packages += Expand-Package $a.FullName (Join-Path $Work (Clean-Name $a.Name)) } catch { Say "    échec : $($_.Exception.Message)" 'Yellow' }
 }
 
+# 1b. Archives dlc.rpf (mods « solo » faits avec OpenIV) : extraction directe si non chiffrées (format OPEN), sans
+#     OpenIV. Les fichiers « ressource » (yft, ytd, ymap…) sont copiés tels quels (en-tête RSC7 compris), les autres
+#     décompressés. Les .rpf imbriqués (x64\vehicles.rpf…) sont ouverts aussi.
+function Expand-Rpf([byte[]]$buf, [long]$base, [string]$dest) {
+    $magic = [BitConverter]::ToUInt32($buf, $base)
+    if ($magic -ne 0x52504637) { return $false }                       # 'RPF7'
+    $count = [BitConverter]::ToUInt32($buf, $base + 4)
+    $namesLen = [BitConverter]::ToUInt32($buf, $base + 8)
+    $enc = [BitConverter]::ToUInt32($buf, $base + 12)
+    if ($enc -ne 0x4E45504F -and $enc -ne 0) { return $false }          # chiffré (AES / NG) : non géré
+    $entries = $base + 16
+    $names = $entries + 16 * $count
+    function Name($off) { $e = $names + $off; $n = $e; while ($buf[$n] -ne 0) { $n++ }; [Text.Encoding]::ASCII.GetString($buf, $e, $n - $e) }
+    function Walk($index, $path) {
+        $o = $entries + 16 * $index
+        $x = [BitConverter]::ToUInt32($buf, $o); $y = [BitConverter]::ToUInt32($buf, $o + 4)
+        if ($y -eq 0x7FFFFF00) {
+            $first = [BitConverter]::ToUInt32($buf, $o + 8); $n = [BitConverter]::ToUInt32($buf, $o + 12)
+            $dir = if ($index -eq 0) { $path } else { Join-Path $path (Name ($x -band 0xFFFF)) }
+            [void][IO.Directory]::CreateDirectory($dir)
+            for ($k = 0; $k -lt $n; $k++) { Walk ($first + $k) $dir }
+            return
+        }
+        $raw = [BitConverter]::ToUInt64($buf, $o)
+        $name = Name ([uint32]($raw -band 0xFFFF))
+        $size = [long](($raw -shr 16) -band 0xFFFFFF)
+        $offset = $base + [long](($raw -shr 40) -band 0x7FFFFF) * 512
+        $file = Join-Path $path $name
+        if (($y -band 0x80000000) -ne 0) {                               # ressource (RSC7)
+            if ($size -eq 0xFFFFFF) { $size = [long]$buf[$offset + 7] -bor ([long]$buf[$offset + 14] -shl 8) -bor ([long]$buf[$offset + 5] -shl 16) -bor ([long]$buf[$offset + 2] -shl 24) }
+            $out = New-Object byte[] $size; [Array]::Copy($buf, $offset, $out, 0, $size)
+            [IO.File]::WriteAllBytes($file, $out)
+        } else {
+            $usize = [BitConverter]::ToUInt32($buf, $o + 8)
+            if ($size -eq 0) {
+                if ($name -like '*.rpf') { [void](Expand-Rpf $buf $offset ($file -replace '\.rpf$', '_rpf')); return }
+                $out = New-Object byte[] $usize; [Array]::Copy($buf, $offset, $out, 0, $usize)
+            } else {
+                $ms = New-Object IO.MemoryStream($buf, [int]$offset, [int]$size)
+                $ds = New-Object IO.Compression.DeflateStream($ms, [IO.Compression.CompressionMode]::Decompress)
+                $out = New-Object byte[] $usize; $read = 0
+                while ($read -lt $usize) { $r = $ds.Read($out, $read, $usize - $read); if ($r -le 0) { break }; $read += $r }
+                $ds.Dispose()
+            }
+            if ($name -like '*.rpf') { [void](Expand-Rpf $out 0 ($file -replace '\.rpf$', '_rpf')) } else { [IO.File]::WriteAllBytes($file, $out) }
+        }
+    }
+    Walk 0 $dest
+    return $true
+}
+function Expand-RpfFiles($pkgDir) {
+    foreach ($rpf in @(Get-ChildItem -LiteralPath $pkgDir -Recurse -File -Filter '*.rpf')) {
+        if ($rpf.Length -gt 1.5GB) { continue }
+        try {
+            $ok = Expand-Rpf ([IO.File]::ReadAllBytes($rpf.FullName)) 0 (Join-Path $rpf.DirectoryName ($rpf.BaseName + '_rpf'))
+            if ($ok) { Remove-Item -LiteralPath $rpf.FullName -Force }
+        } catch { Say "    $($rpf.Name) : extraction impossible ($($_.Exception.Message))" 'Yellow' }
+    }
+}
+Say "[1b] Ouverture des dlc.rpf (mods solo)" 'Cyan'
+foreach ($p in $packages) { Expand-RpfFiles $p.FullName }
+
+# Un mod livré avec un dossier « FiveM » (souvent à côté d'une version solo) : on installe la version FiveM,
+# une ressource par fxmanifest trouvé dedans (ex : haut + bas d'un maillot).
+$final = @()
+foreach ($p in $packages) {
+    $fivem = @(Get-ChildItem -LiteralPath $p.FullName -Recurse -Directory -Force | Where-Object { $_.Name -match '^five\s*m$' })
+    $mans = @($fivem | ForEach-Object { Get-ChildItem -LiteralPath $_.FullName -Recurse -File -Force -Filter 'fxmanifest.lua' })
+    if ($mans.Count -gt 0) {
+        $i = 0
+        foreach ($m in $mans) {
+            $i++
+            $final += [pscustomobject]@{ Name = $(if ($mans.Count -gt 1) { "$($p.Name)_$i" } else { $p.Name }); FullName = $m.DirectoryName }
+        }
+    } else { $final += [pscustomobject]@{ Name = $p.Name; FullName = $p.FullName } }
+}
+$packages = $final
+
 # 2. Analyse ----------------------------------------------------------------------------------------------------------
+function Find-Resource($Res, $name) { Get-ChildItem -LiteralPath $Res -Directory -Recurse -Filter $name -ErrorAction SilentlyContinue | Select-Object -First 1 }
 function MB($bytes) { [math]::Round($bytes / 1MB, 1) }
 function Analyze($pkg) {
-    $all = @(Get-ChildItem -LiteralPath $pkg.FullName -Recurse -File)
+    $all = @(Get-ChildItem -LiteralPath $pkg.FullName -Recurse -File -Force)
     $r = [ordered]@{ name = (Clean-Name $pkg.Name); source = $pkg.Name; type = 'rejete'; sizeMB = MB (($all | Measure-Object Length -Sum).Sum)
         issues = New-Object System.Collections.ArrayList; notes = New-Object System.Collections.ArrayList; root = $pkg.FullName; models = @(); install = $false }
     $ext = { param($e) @($all | Where-Object { $_.Extension -ieq $e }) }
     $manifest = $all | Where-Object { $_.Name -ieq 'fxmanifest.lua' -or $_.Name -ieq '__resource.lua' } | Select-Object -First 1
-    $lua = & $ext '.lua'
+    $lua = @($all | Where-Object { $_.Extension -ieq '.lua' -and $_.Name -notmatch '^(fxmanifest|__resource)\.lua$' })
     $big = @($all | Where-Object { $_.Extension -match '^\.(ytd|yft|ydd|ydr)$' -and $_.Length -gt 16MB })
     foreach ($b in $big) { [void]$r.issues.Add("fichier trop lourd $($b.Name) ($(MB $b.Length) Mo > 16 Mo) : textures qui disparaissent / crash, à optimiser") }
     if ($r.sizeMB -gt 150) { [void]$r.issues.Add("mod très lourd ($($r.sizeMB) Mo) : temps de chargement et mémoire des joueurs") }
-    if (@($all | Where-Object { $_.Extension -ieq '.fxap' }).Count -gt 0) { [void]$r.issues.Add('script chiffré (escrow Tebex) : ne marche que pour le compte qui l''a acheté') }
+    if (@($all | Where-Object { $_.Name -ieq '.fxap' -or $_.Extension -ieq '.fxap' }).Count -gt 0) { [void]$r.issues.Add('script chiffré (escrow Tebex) : ne marche que pour le compte qui l''a acheté') }
     if (@($all | Where-Object { $_.Extension -match '^\.(oiv|asi|dll)$' -or $_.Name -match 'reshade|visualsettings|timecycle' }).Count -gt 0) {
         [void]$r.notes.Add('contient un mod graphique / solo (oiv, asi, reshade) : inutile côté serveur')
     }
@@ -122,7 +201,7 @@ function Analyze($pkg) {
     }
     if ($manifest) {
         $r.root = $manifest.DirectoryName
-        if ($lua.Count -gt 1) {
+        if ($lua.Count -gt 0) {
             $r.type = 'script'
             $code = ($lua | ForEach-Object { Get-Content -LiteralPath $_.FullName -Raw -ErrorAction SilentlyContinue }) -join "`n"
             if ($code -match 'es_extended|ESX\.') { [void]$r.issues.Add('script ESX : incompatible avec notre base Qbox (à réécrire)') }
@@ -146,7 +225,8 @@ function Analyze($pkg) {
         } elseif ($rpf.Count -gt 0) { $r.type = 'convertir'; [void]$r.issues.Add('mod solo (dlc.rpf) : ouvrir avec OpenIV ou CodeWalker et extraire le contenu, puis relancer') }
         else { [void]$r.issues.Add('rien d''utilisable pour FiveM trouvé') }
     }
-    if ($r.issues | Where-Object { $_ -match 'escrow|ESX|obfusqué' }) { $r.install = $false; if ($r.type -eq 'script') { $r.type = 'rejete' } }
+    if ($r.issues | Where-Object { $_ -match 'escrow|ESX|obfusqué' }) { $r.install = $false; $r.type = 'rejete' }
+    if ($r.sizeMB -gt 300 -and $r.install) { $r.install = $false; [void]$r.issues.Add('trop lourd pour être installé tel quel (> 300 Mo) : on choisira 2 ou 3 éléments du pack') }
     if ($big.Count -gt 0 -and $r.type -in 'vehicule', 'vetement', 'map') { [void]$r.notes.Add('installé quand même, mais à optimiser avant l''ouverture publique') }
     return [pscustomobject]$r
 }
@@ -158,7 +238,7 @@ function Write-Manifest($dir, $r) {
     if ($r.type -eq 'map') { $lines += "this_is_a_map 'yes'" }
     if ($meta.Count -gt 0) { $lines += "files { 'data/**/*.meta' }" }
     $kinds = @{ 'handling.meta' = 'HANDLING_FILE'; 'vehicles.meta' = 'VEHICLE_METADATA_FILE'; 'carcols.meta' = 'CARCOLS_FILE'
-        'carvariations.meta' = 'VEHICLE_VARIATION_FILE'; 'vehiclelayouts.meta' = 'VEHICLE_LAYOUTS_FILE'; 'dlctext.meta' = 'DLCTEXT_FILE' }
+        'carvariations.meta' = 'VEHICLE_VARIATION_FILE'; 'vehiclelayouts.meta' = 'VEHICLE_LAYOUTS_FILE' }
     foreach ($k in $kinds.Keys) { if ($meta | Where-Object { $_.Name -ieq $k }) { $lines += "data_file '$($kinds[$k])' 'data/**/$k'" } }
     foreach ($y in $ytyp) { $lines += "data_file 'DLC_ITYP_REQUEST' 'stream/$($y.Name)'" }
     [IO.File]::WriteAllLines((Join-Path $dir 'fxmanifest.lua'), $lines, (New-Object Text.UTF8Encoding $false))
@@ -167,7 +247,7 @@ function Write-Manifest($dir, $r) {
 #--- Crée une ressource FiveM propre : stream\ (modèles, textures, collisions) + data\ (fichiers .meta), sans doublons.
 function Build-Resource($r, $dest) {
     if (Test-Path -LiteralPath $dest) { Remove-Item -LiteralPath $dest -Recurse -Force }
-    $existing = Get-ChildItem -LiteralPath $r.root -Recurse -File | Where-Object { $_.Name -ieq 'fxmanifest.lua' -or $_.Name -ieq '__resource.lua' } | Select-Object -First 1
+    $existing = Get-ChildItem -LiteralPath $r.root -Recurse -File -Force | Where-Object { $_.Name -ieq 'fxmanifest.lua' -or $_.Name -ieq '__resource.lua' } | Select-Object -First 1
     if ($existing) { Copy-Item -LiteralPath $r.root -Destination $dest -Recurse -Force; return }
     [void][IO.Directory]::CreateDirectory((Join-Path $dest 'stream'))
     [void][IO.Directory]::CreateDirectory((Join-Path $dest 'data'))
@@ -215,6 +295,43 @@ if ($canInstall) {
         $cfg += $(if ($wasOff) { "# ensure $n" } else { "ensure $n" })
     }
     [IO.File]::WriteAllLines($previous, $cfg, (New-Object Text.UTF8Encoding $false))
+}
+
+# Catalogue Qbox : les véhicules installés sont ajoutés à qbx_core\shared\vehicles.lua (concession, garages, prix),
+# dans un bloc balisé réécrit à chaque import (le reste du fichier n'est pas touché).
+$Prices = @{ fenomeno = 3200000; evcs500c = 185000; snpurosangue23 = 460000; panamera25 = 265000; '6gt24dd' = 215000; gxetron = 165000
+    '392slimshakersc' = 95000; ghoulcharger22 = 115000; glasshuracansc = 320000; stospydersc = 345000; gle21 = 150000; gls600 = 255000; golf8beast = 48000 }
+$ClassMap = @{ VC_SUPER = @('super', 1500000); VC_SPORT = @('sports', 250000); VC_SPORT_CLASSIC = @('sportsclassics', 200000); VC_SUV = @('suvs', 120000)
+    VC_SEDAN = @('sedans', 60000); VC_COMPACT = @('compacts', 30000); VC_MUSCLE = @('muscle', 85000); VC_COUPE = @('coupes', 90000)
+    VC_OFF_ROAD = @('offroad', 70000); VC_MOTORCYCLE = @('motorcycles', 40000); VC_VAN = @('vans', 45000); VC_EMERGENCY = @('emergency', 0) }
+$Brands = 'lamborghini', 'mercedes', 'ferrari', 'porsche', 'audi', 'dodge', 'volkswagen', 'bmw', 'nissan', 'toyota', 'ford', 'chevrolet', 'bugatti', 'mclaren'
+$vehEntries = @()
+foreach ($r in $results | Where-Object { $_.type -eq 'vehicule' -and $_.install }) {
+    foreach ($m in @(Get-ChildItem -LiteralPath $r.root -Recurse -File -Force | Where-Object { $_.Name -ieq 'vehicles.meta' })) {
+        $xml = Get-Content -LiteralPath $m.FullName -Raw
+        foreach ($item in [regex]::Matches($xml, '(?s)<Item>\s*<modelName>\s*([^<\s]+)\s*</modelName>.*?(?:<vehicleClass>\s*([A-Z_]+)\s*</vehicleClass>|</Item>)')) {
+            $model = $item.Groups[1].Value.ToLower()
+            $cls = $ClassMap[$item.Groups[2].Value]; if (-not $cls) { $cls = @('sports', 150000) }
+            $brand = ($Brands | Where-Object { $r.name -match $_ } | Select-Object -First 1)
+            $label = (($r.name -replace '_', ' ') -replace '\b(v\d.*|by .*)$', '').Trim()
+            $label = (Get-Culture).TextInfo.ToTitleCase($label)
+            $price = if ($Prices.ContainsKey($model)) { $Prices[$model] } else { $cls[1] }
+            $vehEntries += "    ['$model'] = { name = '$($label -replace "'", '')', brand = '$(if ($brand) { (Get-Culture).TextInfo.ToTitleCase($brand) })', model = '$model', price = $price, category = '$($cls[0])', type = 'automobile', hash = ``$model`` },"
+        }
+    }
+}
+$qbxVeh = $null
+if ($canInstall) { $core = Find-Resource (Join-Path $Data 'resources') 'qbx_core'; if ($core) { $qbxVeh = Join-Path $core.FullName 'shared\vehicles.lua' } }
+if ($qbxVeh -and (Test-Path -LiteralPath $qbxVeh)) {
+    $text = [IO.File]::ReadAllText($qbxVeh)
+    $text = [regex]::Replace($text, '(?s)\s*-- GTA SOON ADDONS DEBUT.*?-- GTA SOON ADDONS FIN\r?\n', "`n")
+    if ($vehEntries.Count -gt 0) {
+        $last = $text.LastIndexOf('}')
+        $blockText = "`n    -- GTA SOON ADDONS DEBUT (IMPORTER-MODS.bat : réécrit à chaque import)`n" + ($vehEntries -join "`n") + "`n    -- GTA SOON ADDONS FIN`n"
+        $text = $text.Substring(0, $last) + $blockText + $text.Substring($last)
+    }
+    [IO.File]::WriteAllText($qbxVeh, $text, (New-Object Text.UTF8Encoding $false))
+    Say "  $($vehEntries.Count) véhicule(s) ajouté(s) au catalogue Qbox (concession, garages)" 'Green'
 }
 
 # Rapport ---------------------------------------------------------------------------------------------------------------

@@ -14,6 +14,12 @@ contrôle et le range dans `C:\GTASOON\mods-tri\` :
 - **scripts-a-verifier** : scripts, jamais installés sans relecture ;
 - **rejetes** : scripts chiffrés (escrow), ESX, code obfusqué, packs graphiques (reshade, oiv).
 
+Mods « solo » (dlc.rpf faits avec OpenIV) : ouverts automatiquement (archives non chiffrées), sans OpenIV.
+Mods livrés avec un dossier « FiveM » : c'est cette version qui est installée.
+Véhicules : ajoutés au catalogue Qbox (`qbx_core/shared/vehicles.lua`, bloc « GTA SOON ADDONS ») → concession et
+garages ; prix réglés dans `importer-mods.ps1` ($Prices), sinon selon la catégorie. Packs > 300 Mo : pas installés
+(on choisit 2-3 éléments). Vêtements « solo » (remplacement) : à convertir (durty cloth tool), pas automatique.
+
 Contrôles : textures > 16 Mo (disparition de textures / crash), mod > 150 Mo, noms de spawn des véhicules.
 À la fin : `RAPPORT-MODS.txt` s'ouvre → copie-colle-le moi : je branche les véhicules (concession, garages), les maps
 (coords, blips, portes) et je relis les scripts.
