@@ -18,6 +18,7 @@ check('loin du comptoir', not ok)
 tp(1, F.mainland.counter)
 ok = cb('gs_world:fly', 1, 'lune'); step()
 check('vol inconnu', not ok)
+F.price = 350 -- tarif testé, même si le vol est gratuit par défaut
 ok = cb('gs_world:fly', 1, 'mainland'); step()
 check('sans argent', not ok and W.players[1].pos == F.mainland.counter)
 W.players[1].money.bank = 1000
@@ -30,6 +31,11 @@ check('arrivée sur l\'île, billet payé', ok and W.players[1].money.bank == 10
 tp(1, F.island.counter)
 ok = cb('gs_world:fly', 1, 'island'); step()
 check('retour à LS', ok and #(W.players[1].pos - F.mainland.arrival) < 1)
+F.price = 0
+W.players[1].money.bank = 0
+tp(1, F.mainland.counter)
+ok = cb('gs_world:fly', 1, 'mainland'); step()
+check('vol gratuit (accès libre)', ok and #(W.players[1].pos - F.island.arrival) < 1)
 
 io.write(('\n%d réussis, %d échoués\n'):format(passed, failed))
 os.exit(failed == 0 and 0 or 1)

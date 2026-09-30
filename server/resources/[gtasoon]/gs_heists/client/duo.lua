@@ -62,7 +62,7 @@ end)
 
 AddEventHandler('gs_heists:client:bigStart', function(id)
     local r = lib.inputDialog(Config.Big[id].label, { { type = 'select', label = 'Ton rôle (ton partenaire de duo prend l\'autre)', required = true,
-        options = { { value = 'hacker', label = 'Pirate informatique : coupe l\'alarme' }, { value = 'driver', label = id == 'cayo' and 'Conducteur : vide la villa et pilote le bateau de fuite' or 'Conducteur : vide les coffres et conduit la fuite' } } } })
+        options = { { value = 'hacker', label = 'Pirate informatique : coupe l\'alarme' }, { value = 'driver', label = 'Conducteur : vide les coffres et conduit la fuite' } } } })
     if r then notify(lib.callback.await('gs_heists:bigStart', false, id, r[1])) end
 end)
 
@@ -73,34 +73,18 @@ CreateThread(function()
     end
 end)
 
--- Repérage (Cayo Perico) : /reperage affiche les points ; [E] sur place pour photographier.
-local scouting = false
-AddEventHandler('gs_heists:client:scout', function(id, i) notify(lib.callback.await('gs_heists:scout', false, id, i)) end)
-RegisterCommand('reperage', function()
-    scouting = not scouting
-    exports.gs_markers:RemovePrefix('gs_heists:scout:')
-    if not scouting then return notify(true, 'Repérage masqué.') end
-    for id, site in pairs(Config.Big) do
-        for i, c in ipairs(site.scout or {}) do
-            exports.gs_markers:Add(('gs_heists:scout:%s:%d'):format(id, i), { coords = c, style = 'objective', label = 'Repérage', event = 'gs_heists:client:scout',
-                args = { id, i }, prompt = 'Photographier les lieux', reach = 6.0, distance = 80.0 })
-        end
-    end
-    notify(true, 'Points de repérage affichés (Cayo Perico : vol à l\'aéroport LSIA).')
-end, false)
-
--- Gardes de Cayo Perico : créés par le pirate quand l'alarme saute (entités réseau, visibles par les deux).
+-- Gardes armés (sites avec `guards`) : créés par le pirate quand l'alarme saute (entités réseau, visibles par les deux).
 local guards = {}
 RegisterNetEvent('gs_heists:client:guards', function(id)
     local site = Config.Big[id]
     if not site or not site.guards then return end
     local hash = GetHashKey(site.guardModel)
     lib.requestModel(hash, 10000)
-    AddRelationshipGroup('GS_CAYO_GUARDS')
-    SetRelationshipBetweenGroups(5, GetHashKey('GS_CAYO_GUARDS'), GetHashKey('PLAYER'))
+    AddRelationshipGroup('GS_HEIST_GUARDS')
+    SetRelationshipBetweenGroups(5, GetHashKey('GS_HEIST_GUARDS'), GetHashKey('PLAYER'))
     for _, g in ipairs(site.guards) do
         local ped = CreatePed(4, hash, g.x, g.y, g.z - 1.0, g.w, true, true)
-        SetPedRelationshipGroupHash(ped, GetHashKey('GS_CAYO_GUARDS'))
+        SetPedRelationshipGroupHash(ped, GetHashKey('GS_HEIST_GUARDS'))
         GiveWeaponToPed(ped, GetHashKey(site.guardWeapon), 250, false, true)
         SetPedArmour(ped, 50)
         SetPedAccuracy(ped, 35)
@@ -118,5 +102,5 @@ end
 RegisterNetEvent('gs_heists:client:bigPhase', function(info) if not info then clearGuards() end end)
 
 AddEventHandler('onResourceStop', function(res)
-    if res == GetCurrentResourceName() then clear() clearGuards() exports.gs_markers:RemovePrefix('gs_heists:bigstart:') exports.gs_markers:RemovePrefix('gs_heists:scout:') end
+    if res == GetCurrentResourceName() then clear() clearGuards() exports.gs_markers:RemovePrefix('gs_heists:bigstart:') end
 end)

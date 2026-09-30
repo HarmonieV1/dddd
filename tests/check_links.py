@@ -156,6 +156,19 @@ for res, files in res_files.items():
         for m in re.finditer(r"(?<![.:\w])(loadstring|load)\s*\(", text):
             errors.append(f"{f.relative_to(ROOT)}:{text.count(chr(10), 0, m.start()) + 1} exécution de code dynamique interdite ({m.group(1)})")
 
+# os.date : le Lua de FiveM n'accepte que les formats C89 (sinon SCRIPT ERROR « invalid conversion specifier »)
+C89 = set("aAbBcdHIjmMpSUwWxXyYZ%")
+for res, files in res_files.items():
+    for f in files:
+        text = strip_comments(f.read_text(encoding="utf-8"))
+        for m in re.finditer(r"os\.date\(\s*(['\"])(.*?)\1", text):
+            fmt = m.group(2).lstrip("!")
+            if fmt.startswith("*t"):
+                continue
+            bad = [c for c in re.findall(r"%(.)", fmt) if c not in C89]
+            if bad:
+                errors.append(f"{f.relative_to(ROOT)}:{text.count(chr(10), 0, m.start()) + 1} os.date : format %{bad[0]} refusé par FiveM (C89 seulement)")
+
 # Clés de locale
 for res, files in res_files.items():
     loc = ROOT / res / "shared" / "locale.lua"

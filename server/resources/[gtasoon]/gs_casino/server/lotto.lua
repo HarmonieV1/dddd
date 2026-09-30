@@ -6,7 +6,16 @@ local L = Config.Lotto
 
 Lotto = {}
 
-function Lotto.clock() return { week = os.date('%G-%V'), wday = tonumber(os.date('%w')), hour = tonumber(os.date('%H')) } end
+--- Semaine ISO « AAAA-SS » calculée à la main : le Lua de FiveM n'accepte que les formats de date C89 (pas %G / %V).
+function Lotto.isoWeek(ts)
+    ts = ts or os.time()
+    local t = os.date('*t', ts)
+    local w = (t.wday + 5) % 7 + 1                       -- lundi = 1 … dimanche = 7
+    local thursday = os.date('*t', ts + (4 - w) * 86400) -- l'année ISO est celle du jeudi de la semaine
+    return ('%04d-%02d'):format(thursday.year, (thursday.yday - 1) // 7 + 1)
+end
+
+function Lotto.clock() return { week = Lotto.isoWeek(), wday = tonumber(os.date('%w')), hour = tonumber(os.date('%H')) } end
 
 --- La semaine `week` peut-elle être tirée ? (semaine passée, ou semaine courante après l'heure du tirage)
 function Lotto.due(week, clock)

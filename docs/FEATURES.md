@@ -271,9 +271,7 @@ Traductions françaises manquantes des scripts Qbox ajoutées par METTRE-A-JOUR 
 - **Munitions cohérentes** : Ammu-Nation = pistolet, pistolet compact, fusil à pompe, munitions 9 mm / .45 / cartouches,
   **permis obligatoire** pour armes et munitions, **120 munitions et 1 arme à feu par jour**. L'ancien « Black Market »
   absurde d'ox_inventory (1 000 $ la balle) est retiré.
-- **Cayo Perico — gros coup en duo** : `/reperage` (3 points sur l'île, vol à LSIA), puis lancement au port : pirate
-  (terminal de la villa) + conducteur (bureau d'El Rubio + 2 réserves), cible principale au hasard (tequila → statue de
-  la panthère, rare), **gardes armés si l'alarme saute**, fuite à 1,5 km (bateau). Pas de minimum de policiers.
+- **Cayo Perico** : accès libre (vol gratuit à LSIA, ou bateau / avion) ; le braquage de l'île a été retiré (V5.2).
 - **Clés** : voitures PNJ moins souvent verrouillées (garées 50 %, en circulation 35 %), fouille (H) 65 %.
 - **Métiers** : animations de mission (carton porté, sac poubelle, bloc-notes routier), petit geste de fin de service,
   **mécano : livraison de pièces** (tâche payée), **carnet de commandes** : `/depanneur` et `/taxi` pour les joueurs,

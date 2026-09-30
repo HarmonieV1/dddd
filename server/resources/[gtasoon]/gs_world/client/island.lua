@@ -27,7 +27,7 @@ end)
 -- Vols réguliers LS ↔ île
 AddEventHandler('gs_world:client:fly', function(side)
     local f = I.flight
-    local alert = lib.alertDialog({ header = f[side].label, content = ('Billet : %d $ (banque). On y va ?'):format(f.price), centered = true, cancel = true })
+    local alert = lib.alertDialog({ header = f[side].label, content = f.price > 0 and ('Billet : %d $ (banque). On y va ?'):format(f.price) or 'Vol gratuit. On y va ?', centered = true, cancel = true })
     if alert ~= 'confirm' then return end
     DoScreenFadeOut(600)
     while not IsScreenFadedOut() do Wait(0) end

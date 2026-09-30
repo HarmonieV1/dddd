@@ -58,7 +58,7 @@ lib.callback.register('gs_heists:bigStart', function(src, id, role)
     if (Big.cooldowns[id] or 0) > os.time() then return false, 'L\'endroit est sous haute surveillance, reviens plus tard.' end
     if Heists.policeCount() < site.minPolice then return false, ('Pas assez de policiers en ville (%d requis).'):format(site.minPolice) end
     if site.scout and not (Big.hasScouted(src, id) or Big.hasScouted(partner, id)) then
-        return false, ('Repérage d\'abord : visitez les %d points de repérage (/reperage), il y a moins de 48 h.'):format(#site.scout)
+        return false, ('Repérage d\'abord : visitez les %d points de repérage, il y a moins de 48 h.'):format(#site.scout)
     end
     local other = role == 'hacker' and 'driver' or 'hacker'
     local sess = { id = id, phase = 'hack', done = {}, startedAt = os.time(), [role] = src, [other] = partner, primary = Big.pickPrimary(site) }
@@ -176,7 +176,7 @@ CreateThread(function()
     end
 end)
 
---- Cible principale (Cayo) : tirage pondéré, la plus rare a sa propre chance.
+--- Cible principale (sites avec `primary`) : tirage pondéré, la plus rare a sa propre chance.
 function Big.pickPrimary(site)
     if not site.primary then return nil end
     local common = {}

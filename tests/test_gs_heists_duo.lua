@@ -125,30 +125,5 @@ sess.phase, sess.escapeAt = 'escape', os.time() - S.escapeTime - 5
 Big.tick()
 check('fuite trop lente : échec', Big.sessions.fleeca_legion == nil)
 
--- Cayo Perico : repérage obligatoire, pas de minimum de police, cible principale, gardes à l'alarme --------------
-local C = Config.Big.cayo
-police = {}
-tp(1, C.start) tp(2, C.start)
-ok, msg = cb('gs_heists:bigStart', 1, 'cayo', 'hacker'); step()
-check('cayo : repérage exigé', not ok and msg:find('Repérage'))
-ok = cb('gs_heists:scout', 1, 'cayo', 1); step()
-check('repérage : trop loin', not ok)
-for i, c in ipairs(C.scout) do tp(1, c) ok, msg = cb('gs_heists:scout', 1, 'cayo', i); step() end
-check('repérage terminé', ok and msg:find('terminé') and Big.hasScouted(1, 'cayo'))
-tp(1, C.start)
-ok = cb('gs_heists:bigStart', 2, 'cayo', 'driver'); step()
-local cs = Big.sessions.cayo
-check('cayo lancé sans police (repérage du partenaire compte)', ok and cs and cs.primary and cs.primary.mult)
-Big.scouted.CID1.cayo[1] = os.time() - C.scoutValid - 10
-check('repérage périmé après 48 h', not Big.hasScouted(1, 'cayo'))
-local counts = {}
-for _ = 1, 400 do local p = Big.pickPrimary(C) counts[p.label] = (counts[p.label] or 0) + 1 end
-check('panthère rare', (counts['Statue de la panthère'] or 0) < 60 and (counts['Diamant rose'] or 0) > 0)
-C.hackFail = 1.0
-tp(1, C.terminal)
-cb('gs_heists:bigBegin', 1); advance(C.hackAction)
-ok = cb('gs_heists:bigFinish', 1); step()
-check('alarme cayo : gardes envoyés au pirate', ok and lastClientEvent('gs_heists:client:guards', 1).args[1] == 'cayo')
-
 io.write(('\n%d réussis, %d échoués\n'):format(passed, failed))
 os.exit(failed == 0 and 0 or 1)
