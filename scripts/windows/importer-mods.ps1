@@ -64,7 +64,20 @@ if (-not $7z) {
 }
 
 # 1. Décompression (récursive : un zip du Drive contient lui-même des .rar) ------------------------------------------
-if (Test-Path -LiteralPath $Work) { Remove-Item -LiteralPath $Work -Recurse -Force }
+# Dossier temporaire de l'import précédent : supprimé. Si un fichier est verrouillé (antivirus, Explorateur, import
+# encore en cours), on réessaie, puis on travaille dans un nouveau dossier plutôt que de s'arrêter.
+if (Test-Path -LiteralPath $Work) {
+    for ($try = 0; $try -lt 3 -and (Test-Path -LiteralPath $Work); $try++) {
+        Remove-Item -LiteralPath $Work -Recurse -Force -ErrorAction SilentlyContinue
+        if (Test-Path -LiteralPath $Work) { Start-Sleep -Seconds 2 }
+    }
+    if (Test-Path -LiteralPath $Work) {
+        Say "  (ancien dossier temporaire verrouillé par un autre programme : il sera nettoyé au prochain import)" 'Yellow'
+        $Work = Join-Path $Out ('_extraction_' + (Get-Date -Format 'HHmmss'))
+    }
+}
+# Restes d'imports interrompus
+Get-ChildItem -LiteralPath $Out -Directory -Filter '_extraction_*' -ErrorAction SilentlyContinue | ForEach-Object { Remove-Item -LiteralPath $_.FullName -Recurse -Force -ErrorAction SilentlyContinue }
 [void][IO.Directory]::CreateDirectory($Work)
 function Clean-Name([string]$n) {
     $n = [IO.Path]::GetFileNameWithoutExtension($n)
@@ -83,7 +96,7 @@ function Expand-One($file, $dest) {
         if ($inner.Count -eq 0) { break }
         foreach ($i in $inner) {
             & $7z x $i.FullName ("-o" + (Join-Path $i.DirectoryName ([IO.Path]::GetFileNameWithoutExtension($i.Name)))) -y -bso0 -bsp0 | Out-Null
-            Remove-Item -LiteralPath $i.FullName -Force
+            Remove-Item -LiteralPath $i.FullName -Force -ErrorAction SilentlyContinue
         }
     }
 }
@@ -96,13 +109,13 @@ function Expand-Package($file, $dest) {
         foreach ($i in $inner) {
             $sub = Join-Path $Work (Clean-Name $i.Name)
             Expand-One $i.FullName $sub
-            Remove-Item -LiteralPath $i.FullName -Force
+            Remove-Item -LiteralPath $i.FullName -Force -ErrorAction SilentlyContinue
             $list += Get-Item -LiteralPath $sub
         }
-        Remove-Item -LiteralPath $dest -Recurse -Force
+        Remove-Item -LiteralPath $dest -Recurse -Force -ErrorAction SilentlyContinue
         return $list
     }
-    Remove-Item -LiteralPath $dest -Recurse -Force
+    Remove-Item -LiteralPath $dest -Recurse -Force -ErrorAction SilentlyContinue
     Expand-One $file $dest
     return @(Get-Item -LiteralPath $dest)
 }
@@ -424,9 +437,14 @@ foreach ($r in $results) {
     if ($r.install -and $canInstall) {
         $name = 'gsa_' + $r.name
         $dest = Join-Path $Addons $name
-        if (Test-Path -LiteralPath $dest) { Remove-Item -LiteralPath $dest -Recurse -Force }
-        Copy-Item -LiteralPath $sorted -Destination $dest -Recurse -Force
-        $installed += $name
+        try {
+            if (Test-Path -LiteralPath $dest) { Remove-Item -LiteralPath $dest -Recurse -Force }
+            Copy-Item -LiteralPath $sorted -Destination $dest -Recurse -Force
+            $installed += $name
+        } catch {
+            [void]$r.issues.Add("installation impossible (fichier utilisé par un autre programme : serveur lancé ?) — ferme le serveur puis relance")
+            if (Test-Path -LiteralPath $dest) { $installed += $name }   # l'ancienne version reste en place
+        }
     }
 }
 if ($canInstall) {
