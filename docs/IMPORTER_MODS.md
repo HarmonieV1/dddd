@@ -17,8 +17,15 @@ contrôle et le range dans `C:\GTASOON\mods-tri\` :
 Mods « solo » (dlc.rpf faits avec OpenIV) : ouverts automatiquement (archives non chiffrées), sans OpenIV.
 Mods livrés avec un dossier « FiveM » : c'est cette version qui est installée.
 Véhicules : ajoutés au catalogue Qbox (`qbx_core/shared/vehicles.lua`, bloc « GTA SOON ADDONS ») → concession et
-garages ; prix réglés dans `importer-mods.ps1` ($Prices), sinon selon la catégorie. Packs > 300 Mo : pas installés
-(on choisit 2-3 éléments). Vêtements « solo » (remplacement) : à convertir (durty cloth tool), pas automatique.
+garages ; prix et noms réglés dans `importer-mods.ps1` ($Prices, $Labels), sinon selon la catégorie. Le catalogue
+est reconstruit depuis tous les mods actifs de `addons.cfg`. Véhicules de service (VC_EMERGENCY) : pas en concession,
+mais dans le garage du métier (ex. police : Charger 2023, Explorer, Tahoe, Charger banalisée, visibles seulement si le
+mod est installé).
+Packs > 300 Mo : pas installés, sauf ceux de `$PackPick` réduits aux modèles choisis (Dallas : 4 véhicules, 117 Mo).
+Kits de tuning > 16 Mo (ex. Panamera) : retirés automatiquement avec leurs pièces liées (162 → 46 Mo), la voiture reste.
+Vêtements « solo » : ceux pour le perso FiveM sont convertis par Claude (outil `tools/vetements/`, zips
+ROADTRIP-*.zip) ; ceux pour Franklin / Michael / Trevor et les simples recolorations ne sont pas convertibles.
+Lancé par METTRE-A-JOUR : l'import est sauté si rien n'a changé dans mods-a-trier (et si l'importeur n'a pas changé).
 
 Contrôles : textures > 16 Mo (disparition de textures / crash), mod > 150 Mo, noms de spawn des véhicules.
 À la fin : `RAPPORT-MODS.txt` s'ouvre → copie-colle-le moi : je branche les véhicules (concession, garages), les maps

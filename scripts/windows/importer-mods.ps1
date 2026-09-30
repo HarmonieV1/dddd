@@ -19,7 +19,7 @@ $Work   = Join-Path $Out '_extraction'
 $Data   = Join-Path $Root 'server-data'
 $Addons = Join-Path $Data 'resources\[addons]'
 $Report = Join-Path $Out 'RAPPORT-MODS.txt'
-$Cats   = @{ vehicule = 'vehicules'; vetement = 'vetements'; map = 'maps'; script = 'scripts-a-verifier'; convertir = 'a-convertir'; rejete = 'rejetes' }
+$Cats   = @{ vehicule = 'vehicules'; vetement = 'vetements'; map = 'maps'; script = 'scripts-a-verifier'; convertir = 'a-convertir'; converti = 'deja-convertis'; rejete = 'rejetes' }
 
 [void][IO.Directory]::CreateDirectory($Src)
 $archives = @(Get-ChildItem -LiteralPath $Src -File | Where-Object { $_.Extension -match '^\.(zip|rar|7z)$' })
@@ -37,6 +37,14 @@ if ($archives.Count -eq 0) {
     }
 }
 if ($archives.Count -eq 0 -and $env:GTASOON_CHAIN) { return }
+# Lancé par METTRE-A-JOUR : si ni les archives ni cet importeur n'ont changé depuis le dernier import, rien à refaire
+# (évite de tout redécompresser à chaque mise à jour).
+$Stamp = Join-Path $Out '.derniere-signature'
+$signature = (@($archives | Sort-Object Name | ForEach-Object { "$($_.Name)|$($_.Length)|$($_.LastWriteTimeUtc.Ticks)" }) +
+    (Get-FileHash -LiteralPath $PSCommandPath -Algorithm SHA1).Hash) -join "`n"
+if ($env:GTASOON_CHAIN -and (Test-Path -LiteralPath $Stamp) -and (Get-Content -LiteralPath $Stamp -Raw).Trim() -eq $signature.Trim()) {
+    Say '  Mods : rien de nouveau depuis le dernier import.' 'Green'; return
+}
 if ($archives.Count -eq 0) {
     Say "Mets tes fichiers (.zip / .rar / .7z) dans $Src puis relance IMPORTER-MODS.bat." 'Yellow'
     Start-Process explorer.exe $Src
@@ -189,10 +197,71 @@ $packages = $final
 # 2. Analyse ----------------------------------------------------------------------------------------------------------
 function Find-Resource($Res, $name) { Get-ChildItem -LiteralPath $Res -Directory -Recurse -Filter $name -ErrorAction SilentlyContinue | Select-Object -First 1 }
 function MB($bytes) { [math]::Round($bytes / 1MB, 1) }
+# Packs trop lourds : on ne garde que quelques modèles choisis (le reste des fichiers et des entrées .meta est retiré).
+# Vêtements solo déjà convertis par nos soins (zips ROADTRIP-*.zip) : signalés comme tels au lieu de « à convertir ».
+$Converted = @{ mp_male_the_goat = 'ROADTRIP-vetements_homme.zip'; brilliantovaja_cep_pervyjj_dollar = 'ROADTRIP-vetements_homme.zip'
+    vine_cross_diamond_chain_mp_male = 'ROADTRIP-vetements_homme.zip'; basic = 'ROADTRIP-coiffures_femme_1.zip'; box_braids = 'ROADTRIP-coiffures_femme_1.zip'
+    dreads = 'ROADTRIP-coiffures_femme_1.zip'; edgar = 'ROADTRIP-coiffures_femme_2.zip'; leopard_print = 'ROADTRIP-coiffures_femme_2.zip'
+    locs = 'ROADTRIP-coiffures_femme_2.zip' }
+$PackPick = @{ dallas_police = @('dpd23char', 'dpd20fpiu', 'dpd21hoe', 'dpdunchar') }
+function Save-Xml($x, $path) {
+    $s = New-Object Xml.XmlWriterSettings; $s.Encoding = New-Object Text.UTF8Encoding $false; $s.Indent = $true
+    $w = [Xml.XmlWriter]::Create($path, $s); $x.Save($w); $w.Close()
+}
+function Pick-Models($root, [string[]]$keep) {
+    $metas = @(Get-ChildItem -LiteralPath $root -Recurse -File -Force | Where-Object { $_.Name -match '^(vehicles|carvariations)\.meta$' })
+    $gone = @()
+    foreach ($m in $metas) {
+        [xml]$x = Get-Content -LiteralPath $m.FullName -Raw
+        foreach ($item in @($x.SelectNodes('//InitDatas/Item | //variationData/Item'))) {
+            $name = "$($item.modelName)".Trim().ToLower()
+            if ($name -and $keep -notcontains $name) { $gone += $name; [void]$item.ParentNode.RemoveChild($item) }
+        }
+        Save-Xml $x $m.FullName
+    }
+    $gone = @($gone | Sort-Object -Unique)
+    foreach ($f in @(Get-ChildItem -LiteralPath $root -Recurse -File -Force | Where-Object { $_.Extension -match '^\.(yft|ytd)$' })) {
+        $base = ($f.BaseName.ToLower() -replace '(\+hi|_hi)$', '')
+        if ($gone -contains $base) { Remove-Item -LiteralPath $f.FullName -Force }
+    }
+    return $gone.Count
+}
+# Pièces de tuning (kits carrosserie) de plus de 16 Mo : retirées avec les pièces liées, et enlevées du carcols.meta.
+# La voiture reste complète, seul ce kit disparaît du garage de tuning.
+function Slim-Tuning($root) {
+    $big = @(Get-ChildItem -LiteralPath $root -Recurse -File -Force -Filter '*.yft' | Where-Object { $_.Length -gt 16MB } | ForEach-Object { $_.BaseName.ToLower() })
+    if ($big.Count -eq 0) { return @() }
+    $drop = @()
+    foreach ($c in @(Get-ChildItem -LiteralPath $root -Recurse -File -Force -Filter 'carcols.meta')) {
+        try { [xml]$x = Get-Content -LiteralPath $c.FullName -Raw } catch { continue }
+        $changed = $false
+        foreach ($item in @($x.SelectNodes('//visibleMods/Item'))) {
+            $name = "$($item.modelName)".Trim().ToLower()
+            $linked = @($item.SelectNodes('linkedModels/Item') | ForEach-Object { $_.InnerText.Trim().ToLower() })
+            if ($big -contains $name -or @($linked | Where-Object { $big -contains $_ }).Count -gt 0) {
+                $drop += @($name) + $linked; [void]$item.ParentNode.RemoveChild($item); $changed = $true
+            }
+        }
+        foreach ($item in @($x.SelectNodes('//linkMods/Item'))) {
+            if ($drop -contains "$($item.modelName)".Trim().ToLower()) { [void]$item.ParentNode.RemoveChild($item); $changed = $true }
+        }
+        if ($changed) { Save-Xml $x $c.FullName }
+    }
+    $removed = @()
+    foreach ($f in @(Get-ChildItem -LiteralPath $root -Recurse -File -Force -Filter '*.yft' | Where-Object { $drop -contains $_.BaseName.ToLower() })) {
+        $removed += $f.BaseName; Remove-Item -LiteralPath $f.FullName -Force
+    }
+    return $removed
+}
 function Analyze($pkg) {
+    $pre = New-Object System.Collections.ArrayList
+    $pick = $PackPick[(Clean-Name $pkg.Name)]
+    if ($pick) { $n = Pick-Models $pkg.FullName $pick; [void]$pre.Add("pack allégé : $n modèles retirés, gardés : $($pick -join ', ')") }
+    $slim = @(Slim-Tuning $pkg.FullName)
+    if ($slim.Count -gt 0) { [void]$pre.Add("$($slim.Count) pièces de tuning trop lourdes retirées (kit $($slim[0])…) : la voiture reste complète") }
     $all = @(Get-ChildItem -LiteralPath $pkg.FullName -Recurse -File -Force)
     $r = [ordered]@{ name = (Clean-Name $pkg.Name); source = $pkg.Name; type = 'rejete'; sizeMB = MB (($all | Measure-Object Length -Sum).Sum)
-        issues = New-Object System.Collections.ArrayList; notes = New-Object System.Collections.ArrayList; root = $pkg.FullName; models = @(); install = $false }
+        issues = New-Object System.Collections.ArrayList; notes = $pre; root = $pkg.FullName; models = @(); install = $false }
     $ext = { param($e) @($all | Where-Object { $_.Extension -ieq $e }) }
     $manifest = $all | Where-Object { $_.Name -ieq 'fxmanifest.lua' -or $_.Name -ieq '__resource.lua' } | Select-Object -First 1
     $lua = @($all | Where-Object { $_.Extension -ieq '.lua' -and $_.Name -notmatch '^(fxmanifest|__resource)\.lua$' })
@@ -228,7 +297,13 @@ function Analyze($pkg) {
         elseif ($ydd.Count -gt 0 -or @($all | Where-Object { $_.Name -match '^(jbib|lowr|feet|uppr|accs|hair|teef|decl|task|p_head|p_eyes)_' }).Count -gt 0) {
             $r.type = 'vetement'
             if (@($all | Where-Object { $_.Name -match '\^' }).Count -gt 0 -and @($all | Where-Object { $_.Extension -ieq '.ymt' }).Count -gt 0) { $r.install = $true }
-            else { $r.type = 'convertir'; [void]$r.issues.Add('vêtement au format solo (remplace un vêtement du jeu) : à convertir en ajout FiveM (outil durty cloth tool) — je peux le faire si tu me l''envoies') }
+            elseif ($Converted[$r.name]) { $r.type = 'converti'; [void]$r.notes.Add("déjà converti : c'est $($Converted[$r.name]) (à mettre dans mods-a-trier)") }
+            elseif (@($all | Where-Object { $_.FullName -match '(?i)franklin|trevor|mich(ae|ea)l|player_(zero|one|two)' }).Count -gt 0 -or
+                    @($all | Where-Object { $_.Name -match '^uppr_' }).Count -gt 0) {
+                $r.type = 'rejete'; [void]$r.issues.Add('vêtement pour Franklin / Michael / Trevor (perso solo) : pas convertible pour les persos FiveM')
+            } elseif ($ydd.Count -eq 0) {
+                $r.type = 'rejete'; [void]$r.issues.Add('textures seules (recoloration d''un vêtement du jeu) : pas convertible en ajout')
+            } else { $r.type = 'convertir'; [void]$r.issues.Add('vêtement au format solo (remplace un vêtement du jeu) : à convertir en ajout FiveM — je peux le faire si tu me l''envoies') }
         } elseif ($rpf.Count -gt 0) { $r.type = 'convertir'; [void]$r.issues.Add('mod solo (dlc.rpf) : ouvrir avec OpenIV ou CodeWalker et extraire le contenu, puis relancer') }
         else { [void]$r.issues.Add('rien d''utilisable pour FiveM trouvé') }
     }
@@ -308,22 +383,44 @@ if ($canInstall) {
 # dans un bloc balisé réécrit à chaque import (le reste du fichier n'est pas touché).
 $Prices = @{ fenomeno = 3200000; evcs500c = 185000; snpurosangue23 = 460000; panamera25 = 265000; '6gt24dd' = 215000; gxetron = 165000
     '392slimshakersc' = 95000; ghoulcharger22 = 115000; glasshuracansc = 320000; stospydersc = 345000; gle21 = 150000; gls600 = 255000; golf8beast = 48000 }
+# Noms propres pour la concession (sinon : nom du fichier téléchargé). @(nom, marque, catégorie ou $null)
+$Labels = @{ fenomeno = @('Lamborghini Fenomeno', 'Lamborghini', 'super'); evcs500c = @('Mercedes S500 Cabriolet', 'Mercedes', $null)
+    snpurosangue23 = @('Ferrari Purosangue', 'Ferrari', $null); panamera25 = @('Porsche Panamera Turbo E-Hybrid', 'Porsche', $null)
+    '6gt24dd' = @('Audi RS6 Avant GT', 'Audi', $null); gxetron = @('Audi e-tron GT', 'Audi', $null); '392slimshakersc' = @('Dodge Charger 392 Shaker', 'Dodge', 'muscle')
+    ghoulcharger22 = @('Dodge Charger Ghoul', 'Dodge', 'muscle'); glasshuracansc = @('Lamborghini Huracán (toit verre)', 'Lamborghini', $null)
+    stospydersc = @('Lamborghini Huracán STO Spyder', 'Lamborghini', $null); gle21 = @('Mercedes-AMG GLE 63 S', 'Mercedes', 'suvs')
+    gls600 = @('Mercedes-Maybach GLS 600', 'Mercedes', 'suvs'); golf8beast = @('Volkswagen Golf 8', 'Volkswagen', $null) }
 $ClassMap = @{ VC_SUPER = @('super', 1500000); VC_SPORT = @('sports', 250000); VC_SPORT_CLASSIC = @('sportsclassics', 200000); VC_SUV = @('suvs', 120000)
     VC_SEDAN = @('sedans', 60000); VC_COMPACT = @('compacts', 30000); VC_MUSCLE = @('muscle', 85000); VC_COUPE = @('coupes', 90000)
     VC_OFF_ROAD = @('offroad', 70000); VC_MOTORCYCLE = @('motorcycles', 40000); VC_VAN = @('vans', 45000); VC_EMERGENCY = @('emergency', 0) }
 $Brands = 'lamborghini', 'mercedes', 'ferrari', 'porsche', 'audi', 'dodge', 'volkswagen', 'bmw', 'nissan', 'toyota', 'ford', 'chevrolet', 'bugatti', 'mclaren'
 $vehEntries = @()
-foreach ($r in $results | Where-Object { $_.type -eq 'vehicule' -and $_.install }) {
+# Catalogue construit depuis TOUS les mods installés et actifs (pas seulement ceux de cet import : sinon un import de
+# vêtements seuls viderait la concession).
+$sources = @()
+if ($canInstall) {
+    $active = @(Get-Content -LiteralPath (Join-Path $Data 'cfg\addons.cfg') | Where-Object { $_ -match '^\s*ensure\s+gsa_' } | ForEach-Object { ($_ -replace '^\s*ensure\s+', '').Trim() })
+    foreach ($dir in @(Get-ChildItem -LiteralPath $Addons -Directory -Filter 'gsa_*' | Where-Object { $active -contains $_.Name })) {
+        $sources += [pscustomobject]@{ name = $dir.Name.Substring(4); root = $dir.FullName }
+    }
+}
+$seen = @{}
+foreach ($r in $sources) {
     foreach ($m in @(Get-ChildItem -LiteralPath $r.root -Recurse -File -Force | Where-Object { $_.Name -ieq 'vehicles.meta' })) {
-        $xml = Get-Content -LiteralPath $m.FullName -Raw
-        foreach ($item in [regex]::Matches($xml, '(?s)<Item>\s*<modelName>\s*([^<\s]+)\s*</modelName>.*?(?:<vehicleClass>\s*([A-Z_]+)\s*</vehicleClass>|</Item>)')) {
-            $model = $item.Groups[1].Value.ToLower()
-            $cls = $ClassMap[$item.Groups[2].Value]; if (-not $cls) { $cls = @('sports', 150000) }
+        try { [xml]$doc = Get-Content -LiteralPath $m.FullName -Raw } catch { continue }
+        foreach ($item in @($doc.SelectNodes('//InitDatas/Item'))) {
+            $model = "$($item.modelName)".Trim().ToLower(); $vc = "$($item.vehicleClass)".Trim()
+            if (-not $model -or $seen[$model]) { continue }; $seen[$model] = $true
+            if ($vc -eq 'VC_EMERGENCY') { continue }   # véhicules de service : garages des métiers, pas la concession
+            $cls = $ClassMap[$vc]; if (-not $cls) { $cls = @('sports', 150000) }
             $brand = ($Brands | Where-Object { $r.name -match $_ } | Select-Object -First 1)
             $label = (($r.name -replace '_', ' ') -replace '\b(v\d.*|by .*)$', '').Trim()
             $label = (Get-Culture).TextInfo.ToTitleCase($label)
             $price = if ($Prices.ContainsKey($model)) { $Prices[$model] } else { $cls[1] }
-            $vehEntries += "    ['$model'] = { name = '$($label -replace "'", '')', brand = '$(if ($brand) { (Get-Culture).TextInfo.ToTitleCase($brand) })', model = '$model', price = $price, category = '$($cls[0])', type = 'automobile', hash = ``$model`` },"
+            $brand = if ($brand) { (Get-Culture).TextInfo.ToTitleCase($brand) } else { '' }
+            $cat = $cls[0]
+            if ($Labels.ContainsKey($model)) { $label = $Labels[$model][0]; $brand = $Labels[$model][1]; if ($Labels[$model][2]) { $cat = $Labels[$model][2] } }
+            $vehEntries += "    ['$model'] = { name = '$($label -replace "'", '')', brand = '$brand', model = '$model', price = $price, category = '$cat', type = 'automobile', hash = ``$model`` },"
         }
     }
 }
@@ -355,6 +452,7 @@ foreach ($grp in ($results | Group-Object type | Sort-Object Name)) {
 }
 $lines += 'Envoie-moi ce fichier (copier-coller) : je branche les véhicules (concession, garages), les maps (coords, blips) et je relis les scripts.'
 [IO.File]::WriteAllLines($Report, $lines, (New-Object Text.UTF8Encoding $false))
+if ($canInstall) { [IO.File]::WriteAllText($Stamp, $signature, (New-Object Text.UTF8Encoding $false)) }
 Say "`nTerminé : $($results.Count) mods analysés, $($installed.Count) installés." 'Green'
 Say "Rapport : $Report" 'Green'
 if (-not $canInstall) { Say "Serveur non installé ($Data) : rien d'installé, tout est rangé dans $Out." 'Yellow' }

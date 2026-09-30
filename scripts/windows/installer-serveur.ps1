@@ -202,6 +202,9 @@ Get-ChildItem -LiteralPath (Join-Path $Repo 'server\cfg') -File | Where-Object {
     ForEach-Object { Copy-Item -LiteralPath $_.FullName -Destination (Join-Path $Data 'cfg') -Force }
 if (Test-Path -LiteralPath (Join-Path $Data 'server.cfg')) { Move-Item -LiteralPath (Join-Path $Data 'server.cfg') -Destination (Join-Path $Data 'server.cfg.qbox') -Force }
 Copy-Item -LiteralPath (Join-Path $Repo 'server\server.cfg.example') -Destination (Join-Path $Data 'server.cfg') -Force
+# cfg\addons.cfg (mods importés) : créé vide s'il n'existe pas, pour que « exec cfg/addons.cfg » ne râle pas.
+$addonsCfg = Join-Path $Data 'cfg\addons.cfg'
+if (-not (Test-Path -LiteralPath $addonsCfg)) { [IO.File]::WriteAllText($addonsCfg, "## Mods importés par IMPORTER-MODS.bat`r`n", (New-Object Text.UTF8Encoding $false)) }
 
 # Doublons mis de côté (conflits avec nos ressources)
 $off = Join-Path $Data 'resources_desactivees'

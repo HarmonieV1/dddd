@@ -54,6 +54,9 @@ if (-not (Test-Path -LiteralPath (Join-Path $Res '[addons]'))) { Copy-Item -Lite
 Get-ChildItem -LiteralPath (Join-Path $Repo 'server\cfg') -File | Where-Object { $_.Name -ne 'secrets.cfg' } |
     ForEach-Object { Copy-Item -LiteralPath $_.FullName -Destination (Join-Path $Data 'cfg') -Force }
 Copy-Item -LiteralPath (Join-Path $Repo 'server\server.cfg.example') -Destination (Join-Path $Data 'server.cfg') -Force
+# cfg\addons.cfg (mods importés) : créé vide s'il n'existe pas, pour que « exec cfg/addons.cfg » ne râle pas.
+$addonsCfg = Join-Path $Data 'cfg\addons.cfg'
+if (-not (Test-Path -LiteralPath $addonsCfg)) { [IO.File]::WriteAllText($addonsCfg, "## Mods importés par IMPORTER-MODS.bat`r`n", (New-Object Text.UTF8Encoding $false)) }
 Say '  Ressources GTA SOON + config remplacées (secrets.cfg et base de données intacts)' 'Green'
 
 $r = Merge-GtaSoonItems $Res $Repo

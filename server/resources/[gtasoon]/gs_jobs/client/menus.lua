@@ -105,7 +105,7 @@ function GSJ.openGarageMenu(name, index)
           onSelect = function() GSJ.result(lib.callback.await('gs_jobs:garage:store', false, index)) end },
     }
     for i, v in ipairs(def.vehicles or {}) do
-        if GSJ.job.grade >= (v.minGrade or 0) then
+        if GSJ.job.grade >= (v.minGrade or 0) and (not v.addon or IsModelInCdimage(joaat(v.model))) then
             options[#options + 1] = { title = v.label, icon = 'car',
                 onSelect = function() GSJ.result(lib.callback.await('gs_jobs:garage:spawn', false, index, i)) end }
         end

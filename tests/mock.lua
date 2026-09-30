@@ -25,6 +25,7 @@ function GetCurrentResourceName() return 'gs_jobs' end
 function GetResourceState() return 'started' end
 function joaat(s) return #s end
 GetHashKey = joaat
+function IsModelInCdimage(h) return true end
 json = { encode = function() return '{}' end }
 print = function(...) W.logs[#W.logs + 1] = table.concat({ ... }, ' ') end
 
