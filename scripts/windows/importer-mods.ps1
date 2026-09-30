@@ -435,6 +435,9 @@ if ($qbxVeh -and (Test-Path -LiteralPath $qbxVeh)) {
     $text = [regex]::Replace($text, '(?s)\s*-- GTA SOON ADDONS DEBUT.*?-- GTA SOON ADDONS FIN\r?\n', "`n")
     if ($vehEntries.Count -gt 0) {
         $last = $text.LastIndexOf('}')
+        # La dernière voiture du fichier Qbox n'a pas de virgule (« } » puis « } » final) : on l'ajoute, sinon Lua casse
+        $before = $text.Substring(0, $last).TrimEnd()
+        if (-not ($before.EndsWith(',') -or $before.EndsWith('{'))) { $text = $before + ",`n" + $text.Substring($last); $last = $text.LastIndexOf('}') }
         $blockText = "`n    -- GTA SOON ADDONS DEBUT (IMPORTER-MODS.bat : réécrit à chaque import)`n" + ($vehEntries -join "`n") + "`n    -- GTA SOON ADDONS FIN`n"
         $text = $text.Substring(0, $last) + $blockText + $text.Substring($last)
     }
