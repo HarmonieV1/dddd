@@ -3,14 +3,16 @@ import os, re, glob, shutil, subprocess, sys
 EX = '/tmp/claude-0/realimp/mods-tri/_extraction/'
 OUT = '/tmp/claude-0/clothes_out/'
 COMPS = ['head', 'berd', 'hair', 'uppr', 'lowr', 'hand', 'feet', 'teef', 'accs', 'task', 'decl', 'jbib']
-JOBS = {
-    'mp_m_freemode_01': ('gsahomme', 'SCR_CHAR_MULTIPLAYER', ['mp_male_the_goat', 'brilliantovaja_cep_pervyjj_dollar', 'vine_cross_diamond_chain_mp_male']),
-    'mp_f_freemode_01': ('gsafemme', 'SCR_CHAR_MULTIPLAYER_F', ['basic', 'box_braids', 'dreads', 'edgar', 'leopard_print', 'locs']),
-}
+# (ped, dlc, eCharacter, packs, ressource) : une collection par ressource (< 30 Mo chacune pour l'envoi)
+JOBS = [
+    ('mp_m_freemode_01', 'gsahomme', 'SCR_CHAR_MULTIPLAYER', ['mp_male_the_goat', 'brilliantovaja_cep_pervyjj_dollar', 'vine_cross_diamond_chain_mp_male'], 'vetements_homme'),
+    ('mp_f_freemode_01', 'gsafemme', 'SCR_CHAR_MULTIPLAYER_F', ['basic', 'box_braids', 'dreads'], 'coiffures_femme_1'),
+    ('mp_f_freemode_01', 'gsafemmeb', 'SCR_CHAR_MULTIPLAYER_F', ['edgar', 'leopard_print', 'locs'], 'coiffures_femme_2'),
+]
 report = []
-for ped, (dlc, echar, packs) in JOBS.items():
+for ped, dlc, echar, packs, resname in JOBS:
     full = f'{ped}_{dlc}'
-    res = os.path.join(OUT, f'gsa_vetements_{"homme" if "_m_" in ped else "femme"}')
+    res = os.path.join(OUT, resname)
     shutil.rmtree(res, ignore_errors=True)
     os.makedirs(os.path.join(res, 'stream'))
     comps = {}  # comp index -> list of drawables [(pack, ydd, [ytd...])]
