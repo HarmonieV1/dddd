@@ -33,6 +33,13 @@ Contrôles : textures > 16 Mo (disparition de textures / crash), mod > 150 Mo, n
 À la fin : `RAPPORT-MODS.txt` s'ouvre → copie-colle-le moi : je branche les véhicules (concession, garages), les maps
 (coords, blips, portes) et je relis les scripts.
 
+## Outils liés
+- `VIDER-CACHE-FIVEM.bat` : après un changement de mods ou un crash « Streamer crashed » — ferme FiveM, vide cache,
+  server-cache, server-cache-priv (garde cache\game) et le cache du serveur s'il est arrêté.
+- Vêtements convertis (désactivés au départ dans cfg\addons.cfg) : en boutique, à la FIN des listes (numéros les plus
+  hauts) — homme : Vestes (hauts Gucci), Bas du Corps (pantalon + short), Écharpe et chaînes (2 chaînes) ;
+  femme : Cheveux (6 coiffures).
+
 ## Marques réelles (Gucci, Versace, Lamborghini…)
 Pour des tests entre amis, pas de souci. Avant d'ouvrir au public ou de vendre quoi que ce soit : pas de marques réelles
 en boutique (voir docs/BOUTIQUE_LEGAL.md), privilégier des versions « lore GTA » (Pegassi, Grotti, Übermacht…).
