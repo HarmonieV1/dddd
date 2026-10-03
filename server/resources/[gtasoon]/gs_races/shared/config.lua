@@ -1,5 +1,7 @@
--- [CONFIG] Courses de rue. Coords des points de passage à caler en jeu (F11 → Copier mes coordonnées) : chaque point est
--- validé à `checkpointRadius` m ; ajouter / retirer des points librement (le premier = ligne de départ, le dernier = arrivée).
+-- [CONFIG] Courses de rue (V7) : un organisateur PNJ propose les circuits, prête une voiture (ou prend la tienne) et place
+-- les pilotes sur la grille de départ. Les points de passage sont recollés sur la route la plus proche chez le joueur
+-- (SnapTolerance) : plus de point dans une supérette. Le premier point = ligne de départ, le dernier = arrivée.
+-- Tout se règle en jeu : F11 → Monde et lieux → Déplacer un point.
 Config = {}
 
 Config.StartRadius = 12.0         -- distance à la ligne de départ pour lancer / rejoindre
@@ -16,6 +18,12 @@ Config.PotKeep = 0.9
 Config.Shares = { [1] = { 1.0 }, [2] = { 0.7, 0.3 }, [3] = { 0.6, 0.3, 0.1 } } -- selon le nombre de partants (≥ 3 : la 3e ligne)
 Config.PoliceChance = 0.3         -- chance qu'une course à plusieurs soit signalée (crime « street_race »)
 Config.Blip = { sprite = 315, color = 5 }
+Config.SnapTolerance = 45.0       -- écart accepté entre le point de config et la route où il est recollé
+Config.Organizer = { coords = vec4(236.0, -790.0, 30.6, 160.0), model = 'a_m_y_stbla_02', label = 'Organisateur de courses' }
+-- Voitures prêtées (la même pour tous les pilotes d'une course : équitable), rendues à l'arrivée
+Config.Loaners = { { model = 'sultan', label = 'Karin Sultan' }, { model = 'futo', label = 'Karin Futo' },
+    { model = 'elegy2', label = 'Annis Elegy RH8' }, { model = 'banshee', label = 'Bravado Banshee' } }
+Config.LoanerKeep = 10            -- secondes avant de reprendre la voiture prêtée après l'arrivée
 
 Config.Circuits = {
     sprint = { label = 'Sprint centre-ville', points = {

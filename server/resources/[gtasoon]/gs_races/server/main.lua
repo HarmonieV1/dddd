@@ -3,7 +3,7 @@
 local Security = exports.gs_security
 local Bridge   = exports.gs_bridge
 
-Races = { lobbies = {}, runs = {}, solo = {}, nextId = 0, topCache = nil, topAt = 0 }
+Races = { lobbies = {}, runs = {}, solo = {}, nextId = 0, topCache = nil, topAt = 0, loaners = {} }
 
 --- Mise d'une course à plusieurs : gratuite pendant une « course improvisée » (tendance Vibe #course).
 Races.freeUntil = 0
@@ -21,8 +21,17 @@ local function display(src)
 end
 
 local function atStart(src, circuit)
-    return Security:InRange(src, circuit.points[1], Config.StartRadius + Config.Tolerance)
+    return Security:InRangeFlat(src, circuit.points[1], Config.StartRadius + Config.Tolerance + Config.SnapTolerance, 15.0)
 end
+
+--- Rend la voiture prêtée (supprimée après `delay` s).
+local function returnLoaner(src, delay)
+    local veh = Races.loaners[src]
+    Races.loaners[src] = nil
+    if not veh then return end
+    SetTimeout((delay or 0) * 1000, function() if DoesEntityExist(veh) then DeleteEntity(veh) end end)
+end
+Races.returnLoaner = returnLoaner
 
 local function driving(src)
     local ped = GetPlayerPed(src)
@@ -42,6 +51,7 @@ end
 local function leave(src, refund)
     local run = Races.runs[src]
     Races.runs[src] = nil
+    returnLoaner(src, Config.LoanerKeep)
     for id, l in pairs(Races.lobbies) do
         for i, p in ipairs(l.players) do
             if p == src then
@@ -57,6 +67,62 @@ local function leave(src, refund)
     end
     return run
 end
+
+--- Organisateur : place le pilote sur la grille du circuit. base = point de route proposé par le client près de la ligne
+--- (vec4 : cap de la route). loaner = index de Config.Loaners (nil = sa propre voiture, que le client déplace lui-même).
+--- Retourne true, { x, y, z, w } (place sur la grille) ou false, message.
+Races.tickets = {} -- [src] = { circuit, mode, loaner, til } : inscription prise auprès de l'organisateur
+
+--- Inscription auprès de l'organisateur (il faut être à côté de lui). Valable 60 s, le temps d'aller sur la ligne.
+function Races.ticket(src, circuitId, mode, loaner)
+    if not Config.Circuits[circuitId] or (mode ~= 'solo' and mode ~= 'group') then return false, 'Circuit inconnu.' end
+    if Races.runs[src] then return false, 'Tu es déjà dans une course.' end
+    if not Security:InRangeFlat(src, Config.Organizer.coords, 8.0, 6.0) then return false, 'Parle à l\'organisateur.' end
+    if loaner ~= nil and not Config.Loaners[tonumber(loaner) or 0] then return false, 'Voiture inconnue.' end
+    if loaner == nil and not driving(src) then return false, 'Avec ta voiture : sois au volant, à côté de l\'organisateur.' end
+    Races.tickets[src] = { circuit = circuitId, mode = mode, loaner = loaner, til = os.time() + 60 }
+    return true
+end
+
+lib.callback.register('gs_races:ticket', function(src, circuitId, mode, loaner)
+    if not Security:RateLimit(src, 'gs_races:ticket', 3, 10000) then return false, 'Doucement.' end
+    return Races.ticket(src, circuitId, mode, loaner)
+end)
+
+function Races.organize(src, base)
+    local t = Races.tickets[src]
+    Races.tickets[src] = nil
+    if not t or t.til < os.time() then return false, 'Repasse voir l\'organisateur.' end
+    local circuitId, mode, loaner = t.circuit, t.mode, t.loaner
+    local c = Config.Circuits[circuitId]
+    if type(base) ~= 'table' or not tonumber(base.x) or not tonumber(base.y) or not tonumber(base.z) then return false, 'Départ introuvable.' end
+    local b = vec3(base.x + 0.0, base.y + 0.0, base.z + 0.0)
+    local p1 = c.points[1]
+    if #(vec2(b.x, b.y) - vec2(p1.x, p1.y)) > Config.StartRadius + Config.SnapTolerance then return false, 'Départ introuvable.' end
+    -- place sur la grille : 2 colonnes, 8 m entre les rangs, derrière la ligne
+    local slot = 0
+    if mode == 'group' then
+        for _, l in pairs(Races.lobbies) do if l.circuit == circuitId and l.state == 'open' then slot = #l.players end end
+    end
+    local h = math.rad(tonumber(base.w) or 0.0)
+    local fx, fy = -math.sin(h), math.cos(h)
+    local row, side = slot // 2, (slot % 2 == 0) and -1 or 1
+    local pos = { x = b.x - fx * 8.0 * row + fy * 2.6 * side, y = b.y - fy * 8.0 * row - fx * 2.6 * side, z = b.z + 0.5, w = tonumber(base.w) or 0.0 }
+    if loaner then
+        local l = Config.Loaners[tonumber(loaner) or 0]
+        if not l then return false, 'Voiture inconnue.' end
+        returnLoaner(src, 0)
+        local veh = Bridge:SpawnVehicle(src, l.model, 'automobile', vec3(pos.x, pos.y, pos.z), pos.w, 'COURSE', true)
+        if not veh or veh == 0 then return false, 'La voiture n\'a pas pu être livrée, réessaie.' end
+        Races.loaners[src] = veh
+    end
+    return true, pos
+end
+
+lib.callback.register('gs_races:organize', function(src, base)
+    if not Security:RateLimit(src, 'gs_races:organize', 3, 10000) then return false, 'Doucement.' end
+    return Races.organize(src, base)
+end)
 
 --- Ouvre (ou rejoint) une course. mode = 'solo' | 'group'
 lib.callback.register('gs_races:start', function(src, circuitId, mode)
@@ -106,6 +172,7 @@ function Races.tick()
                 else
                     Bridge:AddMoney(src, 'cash', l.entry, 'mise de course remboursée')
                     Races.runs[src] = nil
+                    returnLoaner(src, 0)
                     l.pot = l.pot - l.entry
                     if Bridge:IsLoaded(src) then Bridge:Notify(src, 'Tu n\'étais pas sur la ligne : mise remboursée.', 'inform') end
                 end
@@ -116,6 +183,7 @@ function Races.tick()
                     Bridge:AddMoney(src, 'cash', l.entry, 'mise de course remboursée')
                     l.pot = l.pot - l.entry
                     Races.runs[src] = nil
+                    returnLoaner(src, 0)
                     Bridge:Notify(src, 'Pas assez de pilotes : mise remboursée.', 'inform')
                 end
                 Races.lobbies[id] = nil
@@ -126,6 +194,7 @@ function Races.tick()
         elseif l.state == 'running' and now >= l.endsAt then
             for _, src in ipairs(l.players) do
                 Races.runs[src] = nil
+                returnLoaner(src, Config.LoanerKeep)
                 TriggerClientEvent('gs_races:client:end', src, 'Course abandonnée (temps écoulé).')
             end
             Races.lobbies[id] = nil
@@ -143,7 +212,7 @@ lib.callback.register('gs_races:checkpoint', function(src)
     local target = pts[run.cp + 1]
     if not target then return false end
     if not driving(src) then return false, 'Il faut rester au volant.' end
-    if not Security:InRange(src, target, Config.CheckpointRadius + Config.Tolerance) then return false end
+    if not Security:InRangeFlat(src, target, Config.CheckpointRadius + Config.Tolerance + Config.SnapTolerance, 15.0) then return false end
     local elapsed = (GetGameTimer() - run.lastAt) / 1000
     if elapsed < #(target - run.lastPos) / Config.MaxSpeed then
         Security:LogStaff(('[Course] temps impossible : %s sur %s'):format(GetPlayerName(src) or src, lobby.circuit))
@@ -215,7 +284,7 @@ exports('GetTop', function(limit)
     return Races.topCache
 end)
 
-AddEventHandler('gs_bridge:server:playerUnloaded', function(src) leave(src, true) end)
+AddEventHandler('gs_bridge:server:playerUnloaded', function(src) leave(src, true) returnLoaner(src, 0) end)
 AddEventHandler('playerDropped', function() leave(source, true) end)
 
 CreateThread(function()

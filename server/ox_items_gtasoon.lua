@@ -51,3 +51,4 @@
 ['gs_whiskycola'] = { label = 'Whisky-cola', weight = 400, stack = true, close = true, client = { status = { thirst = 60000 }, anim = 'drinking', usetime = 3500, image = 'whiskycola.png', export = 'gs_economy.drink' } }, -- remplace
 ['gs_burger_deluxe'] = { label = 'Burger deluxe', weight = 350, stack = true, close = true, client = { status = { hunger = 350000 }, anim = 'eating', usetime = 3500, image = 'burger.png' } }, -- remplace
 ['gs_fries'] = { label = 'Frites maison', weight = 200, stack = true, close = true, client = { status = { hunger = 150000 }, anim = 'eating', usetime = 2500, image = 'fries.png' } }, -- remplace
+['gs_outfit'] = { label = 'Tenue', weight = 600, stack = false, close = true, description = 'Vêtements pliés. Double-clic : les enfiler (ta tenue actuelle est pliée à sa place).', client = { image = 'outfit.png', export = 'gs_details.wearOutfit' } }, -- remplace

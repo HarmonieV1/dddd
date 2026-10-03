@@ -25,3 +25,14 @@ function Store.setNeon(id, cid, rgb)
     return MySQL.update.await([[UPDATE player_vehicles SET mods = JSON_SET(COALESCE(NULLIF(mods, ''), '{}'),
         '$.neonEnabled', JSON_ARRAY(FALSE, FALSE, FALSE, FALSE)) WHERE id = ? AND citizenid = ?]], { id, cid }) > 0
 end
+
+--- Véhicule possédé (n'importe quel propriétaire) par plaque → id, plaque en base, ou nil.
+function Store.byPlate(plate)
+    local row = MySQL.single.await('SELECT id, plate FROM player_vehicles WHERE UPPER(TRIM(plate)) = UPPER(TRIM(?)) LIMIT 1', { plate })
+    return row and row.id, row and row.plate
+end
+
+--- Remplace les réglages du véhicule (format ox_lib getVehicleProperties, comme qbx_vehicles).
+function Store.setProps(id, json)
+    return MySQL.update.await('UPDATE player_vehicles SET mods = ? WHERE id = ?', { json, id }) > 0
+end

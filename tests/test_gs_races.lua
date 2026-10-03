@@ -148,5 +148,31 @@ check('classement Vibe : temps formatés', top[1].id and #top >= 1)
 local list = cb('gs_races:list', 1)
 check('menu : circuits avec meilleurs temps', list and #list.circuits == 3)
 
+-- Organisateur (V7) : inscription à côté de lui, voiture prêtée sur la grille, rendue à l'arrivée
+local O = Config.Organizer.coords
+join(20, 'CID20', 'Novice', vec3(0.0, 0.0, 0.0))
+local okT, msgT = cb('gs_races:ticket', 20, 'sprint', 'solo', 1); step()
+check('inscription loin de l\'organisateur : refusée', not okT and msgT:find('organisateur'))
+tp(20, vec3(O.x, O.y, O.z))
+check('voiture inconnue refusée', not cb('gs_races:ticket', 20, 'sprint', 'solo', 99)); step()
+check('sa voiture sans être au volant : refusée', not cb('gs_races:ticket', 20, 'sprint', 'solo', nil)); step()
+okT = cb('gs_races:ticket', 20, 'sprint', 'solo', 1); step()
+check('inscription (voiture prêtée)', okT and Races.tickets[20])
+tp(20, pts[1])
+local okO, pos = cb('gs_races:organize', 20, { x = 9999.0, y = 9999.0, z = 0.0, w = 0.0 }); step()
+check('départ trop loin de la ligne : refusé', not okO)
+cb('gs_races:ticket', 20, 'sprint', 'solo', 1) -- (refusé : plus à côté de l'organisateur)
+tp(20, vec3(O.x, O.y, O.z)); cb('gs_races:ticket', 20, 'sprint', 'solo', 1); step()
+tp(20, pts[1])
+okO, pos = cb('gs_races:organize', 20, { x = pts[1].x + 10.0, y = pts[1].y, z = pts[1].z, w = 90.0 }); step()
+local loan = Races.loaners[20]
+check('voiture prêtée livrée sur la grille, pilote au volant', okO and pos and loan and W.entities[loan].model == Config.Loaners[1].model and W.entities[loan].driver == 20)
+check('ticket consommé', Races.tickets[20] == nil and not cb('gs_races:organize', 20, { x = pts[1].x, y = pts[1].y, z = pts[1].z, w = 0.0 }))
+step()
+W.players[20].vehicle = loan
+check('départ possible depuis la grille', cb('gs_races:start', 20, 'sprint', 'solo')); step()
+cb('gs_races:cancel', 20); step()
+check('abandon : voiture prêtée reprise', Races.loaners[20] == nil)
+
 io.write(('\n%d réussis, %d échoués\n'):format(passed, failed))
 os.exit(failed == 0 and 0 or 1)
