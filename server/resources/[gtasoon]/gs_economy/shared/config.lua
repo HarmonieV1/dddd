@@ -53,6 +53,9 @@ Config.Items = {
     huntingknife = { label = 'Couteau de chasse', base = 140, min = 0.8, max = 1.5, volume = 15 },
     scrapmetal = { label = 'Ferraille', base = 12, min = 0.3, max = 1.5, volume = 200, buy = false },
     copper     = { label = 'Cuivre', base = 30, min = 0.3, max = 1.6, volume = 120, buy = false },
+    stone      = { label = 'Pierre', base = 8, min = 0.4, max = 1.5, volume = 200, buy = false },
+    iron_ore   = { label = 'Minerai de fer', base = 34, min = 0.4, max = 1.6, volume = 120, buy = false },
+    gold_ore   = { label = 'Pépite d\'or', base = 170, min = 0.5, max = 1.5, volume = 40, buy = false },
 }
 
 -- Multiplicateurs pendant un événement gs_weather
@@ -99,9 +102,10 @@ Config.Shops = {
     { label = 'Quincaillerie La Mesa', coords = vec3(342.99, -1298.26, 32.51), items = QUINCAILLERIE, blip = 'hardware' },
 }
 
+-- Un seul ferrailleur (V7), loin des casses où l'on récolte (Rogers Salvage, Sandy Shores) et de la carrière
 Config.Resellers = {
-    { label = 'Casse de Sandy Shores', coords = vec3(2340.0, 3052.0, 48.1), items = { 'scrapmetal', 'copper' }, blip = true },
-    { label = 'Ferrailleur La Mesa', coords = vec3(1016.0, -2524.0, 28.3), items = { 'scrapmetal', 'copper' }, blip = true },
+    { label = 'Ferrailleur de Cypress Flats (métaux)', coords = vec3(1016.0, -2524.0, 28.3),
+      items = { 'scrapmetal', 'copper', 'stone', 'iron_ore', 'gold_ore' }, blip = true },
 }
 
 Config.Blips = {

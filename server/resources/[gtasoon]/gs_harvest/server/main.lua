@@ -3,12 +3,33 @@
 local Security = exports.gs_security
 local Bridge   = exports.gs_bridge
 
-Harvest = { pending = {}, animals = {} } -- animals[entity] = model
+Harvest = { pending = {}, animals = {}, nodes = {} } -- nodes[src][id][i] = { n = récoltes, til = épuisé jusqu'à (os.time) }
 
-local function nearAny(src, spots, radius)
-    for i, c in ipairs(spots) do
-        if Security:InRange(src, c, radius + Config.Tolerance) then return i end
+--- Le joueur est-il au nœud `c` ? Distance à plat (la hauteur des points est approximative, le client la recale
+--- au sol) + écart vertical raisonnable.
+local function atNode(src, c, radius)
+    local ped = GetPlayerPed(src)
+    if not ped or ped == 0 then return false end
+    local p = GetEntityCoords(ped)
+    local dx, dy = p.x - c.x, p.y - c.y
+    return math.sqrt(dx * dx + dy * dy) <= radius + Config.Tolerance and math.abs(p.z - c.z) <= 12.0
+end
+
+local function nodeState(src, id, i)
+    Harvest.nodes[src] = Harvest.nodes[src] or {}
+    Harvest.nodes[src][id] = Harvest.nodes[src][id] or {}
+    local n = Harvest.nodes[src][id][i]
+    if not n or (n.til and os.time() >= n.til) then n = { n = 0 } Harvest.nodes[src][id][i] = n end
+    return n
+end
+
+--- Nœuds épuisés de ce joueur pour une activité : { [i] = secondes restantes }
+function Harvest.depleted(src, id)
+    local out = {}
+    for i, n in pairs((Harvest.nodes[src] or {})[id] or {}) do
+        if n.til and n.til > os.time() then out[i] = n.til - os.time() end
     end
+    return out
 end
 
 --- Tirage pondéré dans une table { { item, poids, { min, max } } } → item, quantité
@@ -29,16 +50,20 @@ local function maybeBreak(src, tool)
     return ''
 end
 
-lib.callback.register('gs_harvest:begin', function(src, id)
+local function label(item) return Config.ItemLabels[item] or item end
+
+lib.callback.register('gs_harvest:begin', function(src, id, node)
     if not Security:RateLimit(src, 'gs_harvest:begin', 6, 10000) then return false, 'Doucement.' end
     local a = Config.Activities[id]
     if not a then return false, 'Indisponible.' end
     if Harvest.pending[src] then return false, 'Déjà occupé.' end
-    local spot = nearAny(src, a.spots, Config.SpotRadius)
-    if not spot then return false, 'Trop loin.' end
-    if a.tool and Bridge:GetItemCount(src, a.tool) < 1 then return false, ('Il te faut : %s (quincaillerie).'):format(a.tool) end
+    node = tonumber(node)
+    local c = node and a.spots[node]
+    if not c or not atNode(src, c, Config.SpotRadius) then return false, 'Trop loin.' end
+    if nodeState(src, id, node).til then return false, 'Épuisé ici : va un peu plus loin.' end
+    if a.tool and Bridge:GetItemCount(src, a.tool) < 1 then return false, ('Il te faut %s (quincaillerie).'):format(a.toolLabel or a.tool) end
     local ms = math.random(a.duration[1], a.duration[2])
-    Harvest.pending[src] = { id = id, spot = spot, doneAt = GetGameTimer() + ms - 750 }
+    Harvest.pending[src] = { id = id, spot = node, doneAt = GetGameTimer() + ms - 750 }
     return true, ms
 end)
 
@@ -48,12 +73,18 @@ lib.callback.register('gs_harvest:finish', function(src)
     Harvest.pending[src] = nil
     if not p or GetGameTimer() < p.doneAt then return false, 'Interrompu.' end
     local a = Config.Activities[p.id]
-    if not Security:InRange(src, a.spots[p.spot], Config.SpotRadius + Config.Tolerance) then return false, 'Tu t\'es éloigné.' end
+    if not atNode(src, a.spots[p.spot], Config.SpotRadius) then return false, 'Tu t\'es éloigné.' end
     if a.tool and Bridge:GetItemCount(src, a.tool) < 1 then return false, 'Tu n\'as plus ton outil.' end
     local item, n = Harvest.roll(a.loot)
     if not Bridge:CanCarry(src, item, n) or not Bridge:AddItem(src, item, n) then return false, 'Tu ne peux plus rien porter.' end
     if GetResourceState('gs_quests') == 'started' then exports.gs_quests:Track(src, 'harvest') end
-    return true, ('+%d %s%s'):format(n, item, maybeBreak(src, a.tool))
+    local st = nodeState(src, p.id, p.spot)
+    st.n = st.n + 1
+    local depleted = st.n >= (a.perNode or 3)
+    if depleted then st.til = os.time() + Config.Regrow end
+    local msg = ('+%d %s%s%s'):format(n, label(item), maybeBreak(src, a.tool),
+        depleted and ' · épuisé ici, passe au suivant' or '')
+    return true, msg, { node = p.spot, depleted = depleted, sell = a.sell }
 end)
 
 RegisterNetEvent('gs_harvest:server:cancel', function()
@@ -126,7 +157,7 @@ end)
 lib.callback.register('gs_harvest:buyLicence', function(src)
     if not Security:RateLimit(src, 'gs_harvest:buyLicence', 2, 10000) then return false, 'Doucement.' end
     local H = Config.Hunting
-    if not Security:InRange(src, H.lodge, 4.0 + Config.Tolerance) then return false, 'Trop loin.' end
+    if not atNode(src, H.lodge, 4.0) then return false, 'Trop loin.' end
     if (Bridge:GetLicences(src) or {})[H.licence] then return false, 'Tu as déjà ton permis de chasse.' end
     if not Bridge:RemoveMoney(src, 'cash', H.licencePrice, 'permis de chasse')
         and not Bridge:RemoveMoney(src, 'bank', H.licencePrice, 'permis de chasse') then
@@ -142,11 +173,11 @@ lib.callback.register('gs_harvest:sell', function(src, index)
     if not Security:RateLimit(src, 'gs_harvest:sell', 2, 5000) then return false, 'Doucement.' end
     local b = Config.Buyers[tonumber(index) or 0]
     if not b then return false, 'Acheteur inconnu.' end
-    if not Security:InRange(src, b.coords, 3.0 + Config.Tolerance) then return false, 'Trop loin.' end
+    if not atNode(src, b.coords, 3.0) then return false, 'Trop loin.' end
     local total, sold = 0, 0
     for item, range in pairs(b.items) do
         local n = Bridge:GetItemCount(src, item)
-        if n > 0 and Bridge:RemoveItem(src, item, n) then
+        if n > 0 and Bridge:RemoveItem(src, item, n) then -- (prix par article)
             total = total + n * math.random(range[1], range[2])
             sold = sold + n
         end
@@ -157,7 +188,12 @@ lib.callback.register('gs_harvest:sell', function(src, index)
     return true, ('%d article(s) vendu(s) : %d $.'):format(sold, total)
 end)
 
-AddEventHandler('gs_bridge:server:playerUnloaded', function(src) Harvest.pending[src] = nil end)
+AddEventHandler('gs_bridge:server:playerUnloaded', function(src) Harvest.pending[src] = nil Harvest.nodes[src] = nil end)
+
+lib.callback.register('gs_harvest:depleted', function(src, id)
+    if not Security:RateLimit(src, 'gs_harvest:depleted', 10, 10000) or not Config.Activities[id] then return {} end
+    return Harvest.depleted(src, id)
+end)
 AddEventHandler('onResourceStop', function(res)
     if res ~= GetCurrentResourceName() then return end
     for ent in pairs(Harvest.animals) do if DoesEntityExist(ent) then DeleteEntity(ent) end end
