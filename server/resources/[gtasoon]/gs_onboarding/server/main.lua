@@ -82,4 +82,33 @@ RegisterCommand('whitelist', function(src, args)
     if src == 0 then print(msg) else Bridge:Notify(src, msg, ok and 'success' or 'error') end
 end, false)
 
+-- Retouche du personnage : visage, cheveux, maquillage, vêtements, UNE fois par personnage (création pas finie, bug…).
+-- Le droit n'est consommé qu'à l'enregistrement : annuler garde la retouche. Staff : /gsretouche <id> la rend.
+lib.callback.register('gs_onboarding:retouche:check', function(src)
+    if not Security:RateLimit(src, 'gs_onboarding:retouche', 4, 10000) then return false, 'Doucement.' end
+    local cid = Bridge:GetIdentifier(src)
+    if not cid then return false, 'Personnage introuvable.' end
+    if Store.retoucheUsed(cid) then return false, 'Retouche déjà utilisée pour ce personnage (le staff peut la rendre : /report).' end
+    return true
+end)
+
+lib.callback.register('gs_onboarding:retouche:done', function(src)
+    if not Security:RateLimit(src, 'gs_onboarding:retouche', 4, 10000) then return false end
+    local cid = Bridge:GetIdentifier(src)
+    if not cid or Store.retoucheUsed(cid) then return false end
+    Store.useRetouche(cid)
+    Security:LogStaff(('[Retouche] %s (%s) a retouché son personnage'):format(GetPlayerName(src) or src, cid))
+    return true
+end)
+
+RegisterCommand('gsretouche', function(src, args)
+    local target = tonumber(args[1])
+    local cid = target and Bridge:GetIdentifier(target)
+    local function reply(msg) if src == 0 then print(msg) else TriggerClientEvent('ox_lib:notify', src, { description = msg }) end end
+    if not cid then return reply('Usage : /gsretouche <id du joueur en ligne>') end
+    Store.resetRetouche(cid)
+    TriggerClientEvent('ox_lib:notify', target, { description = 'Le staff t\'a rendu une retouche de personnage : /retoucheperso', type = 'success' })
+    reply(('Retouche rendue à %s.'):format(GetPlayerName(target) or target))
+end, true) -- ACE command.gsretouche (group.admin a déjà « command »)
+
 CreateThread(function() Store.init() end)

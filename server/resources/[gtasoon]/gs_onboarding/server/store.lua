@@ -15,7 +15,17 @@ function Store.init()
         `added_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
         PRIMARY KEY (`license`)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4]])
+    MySQL.query.await([[CREATE TABLE IF NOT EXISTS `gs_retouche` (
+        `citizenid` VARCHAR(50) NOT NULL,
+        `used_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (`citizenid`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4]])
 end
+
+--- Retouche du personnage (une fois) : déjà utilisée ? / marquer utilisée / rendre (staff)
+function Store.retoucheUsed(cid) return MySQL.scalar.await('SELECT 1 FROM gs_retouche WHERE citizenid = ?', { cid }) ~= nil end
+function Store.useRetouche(cid) MySQL.query.await('INSERT IGNORE INTO gs_retouche (citizenid) VALUES (?)', { cid }) end
+function Store.resetRetouche(cid) MySQL.query.await('DELETE FROM gs_retouche WHERE citizenid = ?', { cid }) end
 
 function Store.rulesVersion(license) return MySQL.scalar.await('SELECT version FROM gs_rules_accept WHERE license = ?', { license }) or 0 end
 function Store.acceptRules(license, v) MySQL.query.await('REPLACE INTO gs_rules_accept (license, version) VALUES (?, ?)', { license, v }) end

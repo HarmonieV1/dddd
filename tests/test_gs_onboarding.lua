@@ -5,8 +5,12 @@ local R = 'server/resources/[gtasoon]/'
 loadResource('gs_security', { R .. 'gs_security/server/main.lua' })
 loadResource('gs_onboarding', { R .. 'gs_onboarding/shared/config.lua' })
 local accepted, wl = {}, {}
+local retouches = {}
 Store = {
     init = function() end,
+    retoucheUsed = function(cid) return retouches[cid] == true end,
+    useRetouche = function(cid) retouches[cid] = true end,
+    resetRetouche = function(cid) retouches[cid] = nil end,
     rulesVersion = function(l) return accepted[l] or 0 end,
     acceptRules = function(l, v) accepted[l] = v end,
     isWhitelisted = function(l) return wl[l] ~= nil end,
@@ -71,6 +75,21 @@ Onboarding.pendingRules = {}
 W.clientEvents = {}
 TriggerEvent('gs_bridge:server:playerLoaded', 2)
 check('ancien joueur (premier jour fini) : pas d\'accueil', lastClientEvent('gs_onboarding:client:welcome', 2) == nil)
+
+-- Retouche du personnage : une fois, consommée à l'enregistrement, rendue par le staff
+advance(20000)
+local rok = cb('gs_onboarding:retouche:check', 2)
+check('retouche disponible', rok == true)
+advance(20000)
+check('retouche enregistrée', cb('gs_onboarding:retouche:done', 2) == true)
+advance(20000)
+local r2, rmsg = cb('gs_onboarding:retouche:check', 2)
+check('retouche déjà utilisée', r2 == false and rmsg:find('déjà'))
+advance(20000)
+check('pas de 2e enregistrement', cb('gs_onboarding:retouche:done', 2) == false)
+W.commands.gsretouche(0, { '2' })
+advance(20000)
+check('staff : retouche rendue', cb('gs_onboarding:retouche:check', 2) == true)
 
 io.write(('\n%d réussis, %d échoués\n'):format(passed, failed))
 os.exit(failed == 0 and 0 or 1)

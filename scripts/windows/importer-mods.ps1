@@ -431,7 +431,7 @@ foreach ($r in $results) {
         # Le joueur peut le forcer en retirant le # dans addons.cfg (son choix est gardé).
         $heavy = @(Get-Oversized $sorted)
         if ($heavy.Count -gt 0) { $r.risk = "trop lourd même allégé : $($heavy[0]) — cherche une version 2K / FiveM ready" }
-        elseif ($r.name -like 'roadtrip_*') { $r.risk = 'vêtements convertis, à tester un par un' }
+        elseif ($r.name -like 'roadtrip_vetements_*') { $r.risk = 'vêtements convertis, à tester un par un' }   # coiffures : validées
         if ($r.risk) { [void]$r.issues.Add("désactivé par sécurité ($($r.risk)) : pour tester, retire le # de sa ligne dans cfg\addons.cfg") }
     }
     if ($r.install -and $canInstall) {
@@ -467,6 +467,8 @@ if ($canInstall) {
         if ($risks.ContainsKey($n)) {
             $cfg += "## $n : désactivé par sécurité ($($risks[$n])), retire le # de la ligne suivante pour l'activer"
             $cfg += $(if ($forcedOn) { "ensure $n" } else { "# ensure $n" })
+        } elseif ($notes -contains $n) {
+            $cfg += "ensure $n"   # était en pause « par sécurité », la raison a disparu (allégé, validé) : réactivé
         } else { $cfg += $(if ($wasOff) { "# ensure $n" } else { "ensure $n" }) }
     }
     [IO.File]::WriteAllLines($previous, $cfg, (New-Object Text.UTF8Encoding $false))

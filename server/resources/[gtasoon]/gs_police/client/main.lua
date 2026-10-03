@@ -208,7 +208,10 @@ function GSPolice.openMenu()
     lib.showContext('gs_police_menu')
 end
 
-RegisterCommand('intervention', function() GSPolice.openMenu() end, false)
+RegisterCommand('intervention', function()
+    if lib.getOpenContextMenu() then return lib.hideContext() end -- même touche = fermer
+    GSPolice.openMenu()
+end, false)
 RegisterKeyMapping('intervention', 'Menu intervention (police / EMS)', 'keyboard', Config.Key)
 
 -- Effets sur la cible ----------------------------------------------------------------------------------------------

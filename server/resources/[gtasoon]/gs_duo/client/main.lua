@@ -136,5 +136,8 @@ local function openMenu()
     lib.showContext('gs_duo')
 end
 
-RegisterCommand('duo', openMenu, false)
+RegisterCommand('duo', function()
+    if lib.getOpenContextMenu() then return lib.hideContext() end -- même touche = fermer
+    openMenu()
+end, false)
 RegisterKeyMapping('duo', 'Menu duo', 'keyboard', 'F7')

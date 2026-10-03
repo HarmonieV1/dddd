@@ -602,6 +602,21 @@ local function mainMenu()
         end })
         add(3, { title = 'Véhicules ajoutés (mods)', icon = 'car-side', arrow = true, description = 'Liste des voitures importées : nom, prix, spawn en un clic',
             onSelect = addonVehiclesMenu })
+        add(3, { title = 'Lieux publics (boutique, parking)', icon = 'shop', arrow = true, description = 'Poser une boutique de vêtements (ex. Gucci) ou un parking ici',
+            onSelect = function()
+                local function place(kind, prompt)
+                    local r = input(prompt, { { type = 'input', label = 'Nom affiché', required = true, max = 40 } })
+                    if r then notify(lib.callback.await('gs_places:create', false, kind, r[1])) end
+                end
+                lib.registerContext({ id = 'gs_staff_places', title = 'Lieux publics', menu = 'gs_staff_quick', options = {
+                    { title = 'Boutique de vêtements ici', icon = 'shirt', description = 'Point « Essayer des vêtements » + blip, à ta position',
+                      onSelect = function() place('clothing', 'Boutique de vêtements') end },
+                    { title = 'Parking public ici (au volant)', icon = 'square-parking', description = 'Les voitures sortiront à cet endroit',
+                      onSelect = function() place('parking', 'Parking public') end },
+                    { title = 'Retirer le lieu le plus proche', icon = 'trash', onSelect = function() notify(lib.callback.await('gs_places:delete', false)) end },
+                } })
+                lib.showContext('gs_staff_places')
+            end })
         add(2, { title = 'Supprimer le véhicule proche', icon = 'trash', onSelect = function()
             local veh = nearestVehicle()
             if veh == 0 or not NetworkGetEntityIsNetworked(veh) then return notify(false, 'Aucun véhicule proche.') end

@@ -2,11 +2,23 @@
 local function notify(ok, msg) if msg then lib.notify({ description = msg, type = ok and 'success' or 'error', duration = 7000 }) end end
 local exam  -- { cp }
 local blip
+local snapped = {}
+
+--- Point d'examen recollé à la route la plus proche (nœud de circulation GTA), pour qu'il ne tombe jamais sur un
+--- trottoir ou une pelouse. Calculé une fois par point.
+local function routePoint(i)
+    local p = Config.Practical.route[i]
+    if not p then return nil end
+    if snapped[i] then return snapped[i] end
+    local found, node = GetClosestVehicleNode(p.x, p.y, p.z, 0, 3.0, 0)
+    snapped[i] = (found and node and #(node - p) <= (Config.Practical.snapMax or 0)) and vec3(node.x, node.y, node.z) or p
+    return snapped[i]
+end
 
 local function nextPoint()
     if blip then RemoveBlip(blip) blip = nil end
     if not exam then return end
-    local p = Config.Practical.route[exam.cp + 1]
+    local p = routePoint(exam.cp + 1)
     if not p then return end
     blip = AddBlipForCoord(p.x, p.y, p.z)
     SetBlipSprite(blip, 1) SetBlipColour(blip, 5) SetBlipRoute(blip, true)
@@ -15,7 +27,7 @@ end
 local function runExam()
     CreateThread(function()
         while exam do
-            local p = Config.Practical.route[exam.cp + 1]
+            local p = routePoint(exam.cp + 1)
             if p then
                 DrawMarker(1, p.x, p.y, p.z - 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 6.0, 6.0, 2.0, 40, 224, 255, 110, false, false, 2, false, nil, nil, false)
                 if cache.vehicle and #(GetEntityCoords(cache.vehicle) - p) <= Config.Practical.checkpointRadius then

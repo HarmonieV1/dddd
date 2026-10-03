@@ -17,6 +17,7 @@ Config.Practical = {
     maxFaults = 3,
     damageFault = 60.0,         -- perte de carrosserie (sur 1000) comptée comme une faute
     checkpointRadius = 10.0,
+    snapMax = 20.0,             -- chaque point est recollé à la route la plus proche (en jeu), au plus à 20 m de sa position
     timeout = 600,
     route = {
         vec3(214.0, -1420.9, 29.3), vec3(76.6, -1535.5, 29.3), vec3(-100.2, -1370.4, 29.3),

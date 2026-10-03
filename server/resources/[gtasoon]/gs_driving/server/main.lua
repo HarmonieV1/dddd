@@ -17,6 +17,12 @@ end
 local function grant(src, cid)
     Store.set(cid, 2)
     Bridge:SetLicence(src, 'driver', true)
+    -- Carte « permis de conduire » (qbx_idcard) remise avec le permis : c'est le seul moyen de l'obtenir
+    if GetResourceState('qbx_idcard') == 'started' and GetResourceState('ox_inventory') == 'started' then
+        pcall(function()
+            exports.ox_inventory:AddItem(src, 'driver_license', 1, exports.qbx_idcard:GetMetaLicense(src, { 'driver_license' }))
+        end)
+    end
 end
 
 --- À la connexion : un nouveau personnage perd le permis donné par défaut ; un ancien avec un véhicule le garde.
@@ -143,7 +149,7 @@ lib.callback.register('gs_driving:checkpoint', function(src)
     if not e then return false end
     local target = P.route[e.cp + 1]
     if not target or not Security:EntityInRange(src, e.veh, 6.0) then return false end
-    if #(GetEntityCoords(e.veh) - target) > P.checkpointRadius + 4.0 then return false end
+    if #(GetEntityCoords(e.veh) - target) > P.checkpointRadius + (P.snapMax or 0) + 4.0 then return false end -- point recollé à la route côté client
     e.cp = e.cp + 1
     if e.cp >= #P.route then
         finish(src, true, ('Permis obtenu avec %d faute(s). Bonne route !'):format(e.faults))

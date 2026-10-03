@@ -74,7 +74,10 @@ function GSJ.openJobMenu()
     show('gs_jobs_menu', L('menu_title'), options)
 end
 
-RegisterCommand('job', function() GSJ.openJobMenu() end, false)
+RegisterCommand('job', function()
+    if lib.getOpenContextMenu() then return lib.hideContext() end -- même touche = fermer
+    GSJ.openJobMenu()
+end, false)
 RegisterKeyMapping('job', 'Menu emplois', 'keyboard', 'F6')
 RegisterCommand('factures', function() GSJ.openBills() end, false)
 

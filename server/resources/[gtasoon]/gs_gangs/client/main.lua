@@ -192,7 +192,10 @@ local function openMenu()
     lib.showContext('gs_gang')
 end
 
-RegisterCommand('gang', openMenu, false)
+RegisterCommand('gang', function()
+    if lib.getOpenContextMenu() then return lib.hideContext() end -- même touche = fermer
+    openMenu()
+end, false)
 RegisterKeyMapping('gang', 'Menu gang', 'keyboard', Config.Key)
 
 AddEventHandler('onResourceStop', function(res)

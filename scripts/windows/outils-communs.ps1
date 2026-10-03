@@ -13,6 +13,8 @@ $QboxPatches = @(
     @{ res = 'qbx_ambulancejob'; file = 'config\server.lua'; find = 'wipeInvOnRespawn\s*=\s*true'; repl = 'wipeInvOnRespawn = false'; why = 'inventaire gardé à la réapparition' },
     @{ res = 'illenium-appearance'; file = 'shared\config.lua'; find = '(Config\.NewCharacterSections\s*=\s*\{\s*Ped\s*=\s*)true'; repl = '${1}false'; why = 'création : perso classique seulement (pas de ped GTA)' },
     @{ res = 'illenium-appearance'; file = 'shared\config.lua'; find = 'Config\.UseTarget\s*=\s*false'; repl = 'Config.UseTarget = true'; why = 'vêtements / coiffeur / tatoueur / chirurgien : vendeur PNJ au comptoir (ox_target)' },
+    # Boutiques (vêtements, coiffeur, tatoueur, chirurgien) : zone = TOUT le magasin (polygone), pas un petit cube au comptoir
+    @{ res = 'illenium-appearance'; file = 'shared\config.lua'; find = 'usePoly = false'; repl = 'usePoly = true'; why = 'boutiques : interaction partout dans le magasin (Alt + viser)' }
     @{ res = 'illenium-appearance'; file = 'shared\config.lua'; find = 'Config\.EnablePedsForShops\s*=\s*true'; repl = 'Config.EnablePedsForShops = false'; why = 'magasins de vêtements : pas de ped GTA (boutique / staff seulement)' },
     @{ res = 'illenium-appearance'; file = 'shared\config.lua'; find = 'Config\.EnablePedsForClothingRooms\s*=\s*true'; repl = 'Config.EnablePedsForClothingRooms = false'; why = 'vestiaires : pas de ped GTA' },
     @{ res = 'illenium-appearance'; file = 'shared\config.lua'; find = 'Config\.EnablePedsForPlayerOutfitRooms\s*=\s*true'; repl = 'Config.EnablePedsForPlayerOutfitRooms = false'; why = 'garde-robes : pas de ped GTA' },
@@ -32,6 +34,19 @@ $QboxPatches = @(
     @{ res = 'qbx_cityhall'; file = 'config\shared.lua'; find = 'showBlip = true'; repl = 'showBlip = false'; why = 'carte : un seul logo Pôle Emploi / services' }
     @{ res = 'qbx_vehicleshop'; file = 'config\shared.lua'; find = "(label = 'Premium Deluxe Motorsport',\s*\n\s*coords = [^\n]*\n\s*show = )true"; repl = '${1}false'; why = 'carte : un seul logo concession PDM' }
     @{ res = 'qbx_ambulancejob'; file = 'client\main.lua'; find = 'for _, station in pairs\(sharedConfig\.locations\.stations\) do(\s*\n\s*local blip = AddBlipForCoord)'; repl = 'for _, station in pairs({}) do -- logo géré par gs_jobs${1}'; why = 'carte : un seul logo hôpital' }
+    # Anti-AFK (qbx_smallresources) : 20 min avant expulsion (la création de perso prend du temps), messages en français
+    @{ res = 'qbx_smallresources'; file = 'qbx_afk\config.json'; find = '"timeUntilAFKKick":\s*\d+'; repl = '"timeUntilAFKKick": 1200'; why = 'AFK : expulsion après 20 min' }
+    @{ res = 'qbx_smallresources'; file = 'qbx_afk\server.lua'; find = "'You are AFK and will be kicked in '"; repl = "'Inactif (AFK) : expulsion dans '"; why = 'AFK : message en français' }
+    @{ res = 'qbx_smallresources'; file = 'qbx_afk\server.lua'; find = "' seconds!'"; repl = "' secondes !'"; why = 'AFK : secondes en français' }
+    @{ res = 'qbx_smallresources'; file = 'qbx_afk\server.lua'; find = "'You have been kicked for being AFK'"; repl = "'Expulsé pour inactivité (20 minutes sans bouger)'"; why = 'AFK : motif en français' }
+    # Cartes : plus de carte d'identité ni de permis d'office à la création (doublons) ; carte d'identité à la mairie /
+    # Pôle Emploi (qbx_cityhall), permis de conduire uniquement en réussissant l'auto-école (gs_driving)
+    @{ res = 'qbx_core'; file = 'config\shared.lua'; why = 'création : plus de cartes en double (téléphone seul)'
+       find = "(?s)\s*\{ name = 'id_card', amount = 1, metadata = function\(source\).*?\n        \},\s*\{ name = 'driver_license', amount = 1, metadata = function\(source\).*?\n        \},"
+       repl = '' }
+    @{ res = 'qbx_cityhall'; file = 'config\shared.lua'; why = 'mairie : permis de conduire retiré (auto-école obligatoire)'
+       find = "(?s)\n\s*\['driver'\] = \{\s*item = 'driver_license',.*?\},"
+       repl = '' }
     # Carte d'identité montrée : se ferme seule après 6 s (sinon restait à l'écran), Échap ou Retour arrière la ferment aussi
     @{ res = 'qbx_idcard'; file = 'config\shared.lua'; find = 'status\s*=\s*false,[^\n]*\n\s*time\s*=\s*\d+'; repl = "status = true,`n            time = 6000"; why = 'carte d''identité : fermeture auto après 6 s' }
     @{ res = 'qbx_idcard'; file = 'web\js\config.js'; find = 'status:\s*false,[^\n]*\n\s*time:\s*\d+'; repl = "status: true,`n            time: 6000"; why = 'carte d''identité (page) : fermeture auto' }

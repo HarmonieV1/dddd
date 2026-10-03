@@ -45,7 +45,7 @@ foreach ($l in $lines) {
     if ($l -notmatch '^\s*(#\s*)?ensure\s+(gsa_\S+)') { $out += $l; continue }
     $name = $Matches[2]
     $disable = switch ($choice) {
-        '1' { ($name -like 'gsa_roadtrip_*') -or ((Get-Heaviest $name) -gt 48MB) }   # les mods légers sont (ré)activés
+        '1' { ($name -like 'gsa_roadtrip_vetements_*') -or ((Get-Heaviest $name) -gt 48MB) }   # les mods légers (et les coiffures) sont (ré)activés
         '2' { $true }
         '3' { $false }
         default { $l -match '^\s*#' }

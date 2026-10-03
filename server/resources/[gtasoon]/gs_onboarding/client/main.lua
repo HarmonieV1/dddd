@@ -37,3 +37,24 @@ RegisterNetEvent('gs_onboarding:client:welcome', function()
     lib.notify({ title = 'Bienvenue à Los Santos !', description = 'Rejoins Max devant la mairie (GPS posé) pour ton premier jour. F3 : progression · F1 : téléphone · I : toutes les touches · /regles : règlement.',
         type = 'inform', icon = 'hand', duration = 15000 })
 end)
+
+-- /retoucheperso : rouvre le créateur complet (visage, cheveux, maquillage, vêtements) une seule fois par personnage.
+RegisterCommand('retoucheperso', function()
+    local ok, msg = lib.callback.await('gs_onboarding:retouche:check', false)
+    if not ok then return lib.notify({ description = msg, type = 'error' }) end
+    if lib.alertDialog({ header = 'Retoucher mon personnage', centered = true, cancel = true,
+        content = 'Tu peux refaire ton personnage **une seule fois** : visage, cheveux, sourcils, maquillage, vêtements.\n\n'
+            .. 'Ta retouche n\'est utilisée qu\'en **enregistrant** : si tu quittes sans enregistrer, tu la gardes.' }) ~= 'confirm' then return end
+    if GetResourceState('illenium-appearance') ~= 'started' then return lib.notify({ description = 'Créateur indisponible.', type = 'error' }) end
+    local all = { masks = true, upperBody = true, lowerBody = true, bags = true, shoes = true, scarfAndChains = true, bodyArmor = true,
+        shirts = true, decals = true, jackets = true }
+    exports['illenium-appearance']:startPlayerCustomization(function(appearance)
+        if not appearance then return lib.notify({ description = 'Retouche annulée : tu la gardes pour plus tard.', type = 'inform' }) end
+        TriggerServerEvent('illenium-appearance:server:saveAppearance', appearance)
+        lib.callback.await('gs_onboarding:retouche:done', false)
+        lib.notify({ description = 'Personnage enregistré. Belle nouvelle tête !', type = 'success' })
+    end, { ped = false, headBlend = true, faceFeatures = true, headOverlays = true, components = true, componentConfig = all,
+        props = true, propConfig = { hats = true, glasses = true, ear = true, watches = true, bracelets = true },
+        tattoos = false, enableExit = true, hasTracker = false, automaticFade = false })
+end, false)
+
