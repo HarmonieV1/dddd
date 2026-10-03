@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ROADTRIP · Serveur RP FiveM</title>
+<meta name="description" content="ROADTRIP : serveur RP FiveM francophone, Free Access, zéro pay-to-win. Néons, sunset et une ville qui réagit à ce que tu fais.">
+<!-- MODÈLE DE SITE ROADTRIP. À personnaliser : liens Discord / connexion (cherche « À REMPLIR »), logo, captures. -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0f091c; --bg2: #170f2b; --card: #1d1435; --line: #33255a;
+    --text: #f3eefc; --muted: #b3a8cc; --pink: #ff2e88; --cyan: #28e0ff; --gold: #ffc400; --green: #5aff8c;
+    --sunset: linear-gradient(135deg, #ff2e88 0%, #ff8a3d 55%, #ffc400 100%);
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 16px/1.6 Inter, system-ui, sans-serif; }
+  a { color: var(--cyan); text-decoration: none; }
+  .wrap { max-width: 1120px; margin: 0 auto; padding: 0 20px; }
+  h1, h2, h3 { font-family: 'Bebas Neue', Impact, sans-serif; letter-spacing: .04em; font-weight: 400; margin: 0 0 .4em; }
+  h2 { font-size: clamp(2rem, 5vw, 3rem); }
+  h3 { font-size: 1.5rem; }
+  .muted { color: var(--muted); }
+
+  /* Barre du haut */
+  nav { position: sticky; top: 0; z-index: 10; background: rgba(15, 9, 28, .85); backdrop-filter: blur(10px); border-bottom: 1px solid var(--line); }
+  nav .wrap { display: flex; align-items: center; justify-content: space-between; height: 64px; gap: 16px; }
+  .logo { font-family: 'Bebas Neue', sans-serif; font-size: 1.8rem; letter-spacing: .08em; background: var(--sunset); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .menu { display: flex; gap: 22px; font-size: .95rem; }
+  .menu a { color: var(--muted); } .menu a:hover { color: var(--text); }
+  @media (max-width: 760px) { .menu { display: none; } }
+
+  .btn { display: inline-block; padding: 12px 22px; border-radius: 999px; font-weight: 700; border: 2px solid transparent; }
+  .btn-main { background: var(--sunset); color: #1a0d1f; }
+  .btn-ghost { border-color: var(--cyan); color: var(--cyan); }
+  .btn:hover { filter: brightness(1.1); }
+
+  /* Accueil */
+  header.hero { position: relative; overflow: hidden; padding: 110px 0 90px; text-align: center;
+    background: radial-gradient(ellipse at 50% 120%, rgba(255, 46, 136, .35), transparent 60%),
+                radial-gradient(ellipse at 80% -10%, rgba(40, 224, 255, .18), transparent 50%), var(--bg); }
+  .hero h1 { font-size: clamp(3.5rem, 12vw, 8rem); line-height: .9; background: var(--sunset); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .tagline { font-size: clamp(1.05rem, 2.6vw, 1.35rem); max-width: 720px; margin: 12px auto 28px; }
+  .badges { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-bottom: 32px; }
+  .badge { padding: 6px 14px; border: 1px solid var(--line); border-radius: 999px; font-size: .85rem; color: var(--muted); background: var(--bg2); }
+  .cta { display: flex; flex-wrap: wrap; gap: 14px; justify-content: center; }
+
+  section { padding: 80px 0; border-top: 1px solid var(--line); }
+  section:nth-of-type(even) { background: var(--bg2); }
+  .lead { max-width: 760px; margin-bottom: 36px; }
+
+  .grid { display: grid; gap: 18px; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 22px; }
+  .card .ic { font-size: 1.8rem; margin-bottom: 8px; }
+  .card p { margin: 0; color: var(--muted); font-size: .95rem; }
+  .sig { border-image: var(--sunset) 1; border-width: 0 0 0 4px; border-style: solid; border-radius: 0 18px 18px 0; }
+  .tag { display: inline-block; font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--pink); margin-bottom: 6px; }
+
+  .two { display: grid; gap: 24px; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
+  ul.check { list-style: none; padding: 0; margin: 0; }
+  ul.check li { padding: 8px 0 8px 30px; position: relative; border-bottom: 1px dashed var(--line); }
+  ul.check li::before { content: '✦'; position: absolute; left: 4px; color: var(--cyan); }
+
+  .steps { counter-reset: s; display: grid; gap: 14px; }
+  .step { counter-increment: s; display: flex; gap: 16px; align-items: flex-start; }
+  .step::before { content: counter(s); flex: 0 0 40px; height: 40px; border-radius: 50%; display: grid; place-items: center;
+    font-family: 'Bebas Neue', sans-serif; font-size: 1.4rem; background: var(--sunset); color: #1a0d1f; }
+  code { background: #0b0616; border: 1px solid var(--line); border-radius: 8px; padding: 2px 8px; color: var(--gold); }
+
+  details { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 16px 20px; margin-bottom: 12px; }
+  summary { cursor: pointer; font-weight: 700; }
+  details p { color: var(--muted); margin: 10px 0 0; }
+
+  .shots { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+  .shot { aspect-ratio: 16/9; border-radius: 14px; border: 1px dashed var(--line); display: grid; place-items: center; color: var(--muted);
+    background: linear-gradient(160deg, #24164a, #3a1240 60%, #5a2036); font-size: .9rem; }
+
+  footer { padding: 40px 0; border-top: 1px solid var(--line); color: var(--muted); font-size: .9rem; }
+  footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 16px; }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="wrap">
+    <a href="#" class="logo">ROADTRIP</a>
+    <div class="menu">
+      <a href="#ville">La ville</a><a href="#signatures">Signatures</a><a href="#vies">Les vies</a>
+      <a href="#rejoindre">Rejoindre</a><a href="#faq">FAQ</a>
+    </div>
+    <a class="btn btn-main" href="https://discord.gg/A_REMPLIR">Discord</a>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="wrap">
+    <h1>ROADTRIP</h1>
+    <p class="tagline">Le RP francophone <strong>new generation</strong> : néons, sunset, et une ville qui <strong>réagit à ce que tu fais</strong>.</p>
+    <div class="badges">
+      <span class="badge">🇫🇷 100 % français</span><span class="badge">🔓 Free Access</span>
+      <span class="badge">💎 Zéro pay-to-win</span><span class="badge">🎙️ Voix de proximité</span><span class="badge">🛡️ Staff transparent</span>
+    </div>
+    <div class="cta">
+      <a class="btn btn-main" href="#rejoindre">Rejoindre la ville</a>
+      <a class="btn btn-ghost" href="https://discord.gg/A_REMPLIR">Rejoindre le Discord</a>
+    </div>
+  </div>
+</header>
+
+<section id="ville">
+  <div class="wrap">
+    <h2>Une ville vivante, pas un décor</h2>
+    <p class="lead muted">Chaque système est relié aux autres : un braquage fait monter la tension du quartier, la presse en parle,
+      les prix bougent, la police arrive. Ici, ton histoire laisse une trace.</p>
+    <div class="shots">
+      <div class="shot">Capture : coucher de soleil sur Vespucci</div>
+      <div class="shot">Capture : course de nuit</div>
+      <div class="shot">Capture : soirée au Vanilla Unicorn</div>
+      <div class="shot">Capture : Cayo Perico</div>
+    </div>
+  </div>
+</section>
+
+<section id="signatures">
+  <div class="wrap">
+    <h2>Ce que tu ne trouveras nulle part ailleurs</h2>
+    <p class="lead muted">Nos signatures, pensées pour le RP, pas pour la vitrine.</p>
+    <div class="grid">
+      <div class="card sig"><span class="tag">Signature</span><h3>Los Santos réactif</h3>
+        <p>La tension de chaque quartier monte avec les crimes : moins de passants, plus de témoins, plus de police, des brèves dans la presse.</p></div>
+      <div class="card sig"><span class="tag">Signature</span><h3>Recherche intelligente</h3>
+        <p>Un crime n'existe que s'il est signalé : témoins, heure, météo et caméras décident de ce que la police sait de toi.</p></div>
+      <div class="card sig"><span class="tag">Signature</span><h3>Weazel News joué</h3>
+        <p>Les journalistes sont des joueurs : articles, flashs, reportages. Et la ville publie toute seule ses faits divers.</p></div>
+      <div class="card sig"><span class="tag">Signature</span><h3>Road trip du mois</h3>
+        <p>Un grand itinéraire panoramique chaque mois, en solo ou en convoi : spots photo, primes, classement des explorateurs.</p></div>
+      <div class="card sig"><span class="tag">Signature</span><h3>Braquage à la voix</h3>
+        <p>Pointe ton arme, élève la voix : la peur du PNJ monte. Plus tu cries, plus ça va vite… et plus on t'entend.</p></div>
+      <div class="card sig"><span class="tag">Signature</span><h3>Vibe</h3>
+        <p>Le réseau social de la ville dans ton téléphone : posts, photos, stories, tendances, influenceurs vérifiés.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="vies">
+  <div class="wrap">
+    <h2>Choisis ta vie</h2>
+    <div class="two">
+      <div class="card"><h3>💼 Vie légale</h3>
+        <ul class="check">
+          <li>LSPD, EMS, mécano (personnalisation complète), concession, immobilier, auto-école, avocats, juge, Weazel News</li>
+          <li>Bars tenus par des joueurs : Tequi-la-la, Vanilla Unicorn, Bahama Mamas</li>
+          <li>Routier, bus, taxi, livreur, éboueur : missions animées</li>
+          <li>Pêche, mine, bûcheron, ferme, ferraille, chasse</li>
+          <li>Banque, bourse de la ville, mariage, tribunal, permis</li>
+        </ul></div>
+      <div class="card"><h3>🔥 Vie illégale</h3>
+        <ul class="check">
+          <li>Braquages : passants, supérettes, bijouterie, banques, gros coups en duo</li>
+          <li>Gangs et organisations : territoires, tags, labos, flotte</li>
+          <li>Drogues, marché noir, contrats entre joueurs, blanchiment</li>
+          <li>Police joueurs ou patrouilles IA : jamais d'impunité</li>
+          <li>Preuves vidéo, casier, procès avec avocat</li>
+        </ul></div>
+      <div class="card"><h3>🌴 Loisirs</h3>
+        <ul class="check">
+          <li>Cayo Perico : vols animés, soirées plage</li>
+          <li>Casino : roue quotidienne, loto, tickets</li>
+          <li>Courses de rue avec organisateur et classements</li>
+          <li>Saisons et pass cosmétique, quêtes, défis du jour, titres</li>
+          <li>Événements staff en un clic</li>
+        </ul></div>
+    </div>
+  </div>
+</section>
+
+<section id="rejoindre">
+  <div class="wrap">
+    <h2>Rejoindre la ville</h2>
+    <div class="steps">
+      <div class="step"><div><strong>Installe FiveM</strong> depuis <a href="https://fivem.net">fivem.net</a> (GTA V sur PC requis).</div></div>
+      <div class="step"><div><strong>Rejoins le Discord</strong> et lis le règlement : <a href="https://discord.gg/A_REMPLIR">discord.gg/A_REMPLIR</a></div></div>
+      <div class="step"><div><strong>Connecte-toi</strong> : dans FiveM, touche <code>F8</code> puis <code>connect A_REMPLIR</code> (ou cherche « ROADTRIP » dans la liste).</div></div>
+      <div class="step"><div><strong>Crée ton perso</strong>, accepte le règlement et suis Max pour ton premier jour.</div></div>
+    </div>
+  </div>
+</section>
+
+<section id="regles">
+  <div class="wrap">
+    <h2>L'essentiel du règlement</h2>
+    <div class="grid">
+      <div class="card"><div class="ic">🎭</div><h3>RP avant tout</h3><p>On joue un personnage, on reste cohérent, on respecte les scènes des autres.</p></div>
+      <div class="card"><div class="ic">🚫</div><h3>Pas de freekill</h3><p>Pas de violence sans interaction RP. Une élimination se prépare et se joue.</p></div>
+      <div class="card"><div class="ic">⚖️</div><h3>Sanctions publiques</h3><p>Avertissements et bannissements publiés sur le Discord, staff anonyme.</p></div>
+      <div class="card"><div class="ic">💎</div><h3>Zéro pay-to-win</h3><p>La boutique ne vend que du cosmétique. Jamais d'argent, d'armes ou d'avantage.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="faq">
+  <div class="wrap">
+    <h2>Questions fréquentes</h2>
+    <details><summary>C'est gratuit ?</summary><p>Oui, Free Access : pas de liste blanche payante, pas de pay-to-win.</p></details>
+    <details><summary>Il faut un micro ?</summary><p>Oui, le RP se joue à la voix (proximité, radio, téléphone).</p></details>
+    <details><summary>Quelles sont les touches ?</summary><p>En jeu, appuie sur <code>I</code> : toutes les touches s'affichent (téléphone F1, inventaire F2, progression F3, métiers F6…).</p></details>
+    <details><summary>Je peux devenir policier, EMS ou ouvrir un commerce ?</summary><p>Oui : candidatures sur le Discord pour les métiers encadrés, et les patrons recrutent eux-mêmes en jeu.</p></details>
+    <details><summary>J'ai un problème en jeu</summary><p>Tape <code>/report</code> en jeu ou ouvre un ticket sur le Discord.</p></details>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <span><span class="logo" style="font-size:1.3rem">ROADTRIP</span> · new generation</span>
+    <span>Serveur non affilié à Rockstar Games ni à Take-Two. GTA V est une marque de Rockstar Games.</span>
+  </div>
+</footer>
+
+</body>
+</html>
