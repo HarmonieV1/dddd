@@ -62,7 +62,7 @@ KEYS = [
     ['F9', 'Gang', 'caisse, membres, territoires, atelier, flotte'],
     ['F10 · F11', 'Panel staff · menu staff rapide', 'staff uniquement'],
     ['I', 'Aide des touches', ''],
-    ['Z', 'Menu radial', 'Moi (tenue en objet, chapeau, lunettes, masque, animations, factures…), Radio, Véhicule'],
+    ['W (clavier français)', 'Menu radial', 'Moi (tenue en objet, chapeau, lunettes, masque, animations, factures…), Radio, Véhicule'],
     ['Alt gauche (maintenu)', 'Viser / interagir (ox_target)', ''],
     ['E', 'Interagir sur un point [E] · racketter un passant visé', 'caisse / guichet : le braquage démarre seul en visant'],
     ['N · ²', 'Parler · portée de la voix', 'crier (²) fait peur aux PNJ braqués'],
@@ -79,7 +79,7 @@ COMMANDS = [
     ['Commande', 'Pour quoi'],
     ['/touches · /regles · /report', 'aide des touches · règlement · ticket au staff'],
     ['/me · /do', 'actions RP affichées'],
-    ['/radio [fréquence|off]', 'radio (aussi Z → Radio)'],
+    ['/radio [fréquence|off]', 'radio (aussi W → Radio)'],
     ['/taxi · /depanneur', 'appeler un taxi / un mécano'],
     ['/factures · /reputation · /saison · /quartiers', 'factures · réputation · passe de saison · ambiance des quartiers'],
     ['/retoucheperso', 'retoucher son perso (une seule fois)'],
@@ -125,7 +125,7 @@ def guide(points):
         'Double des clés des véhicules de service pour tous les métiers.',
         '<b>Récolte</b> : pêche, mine (pioche), bûcheron (hache), ferme, ferraille, chasse (permis à l\'Ammu-Nation de Paleto). Plusieurs arbres / '
         'rochers / tas par zone qui s\'épuisent et repoussent, vestiaire (tenue de travail), revente loin de la récolte (logos sur la carte).',
-        '<b>Tenues en objets</b> : Z → Moi → Vêtements → Plier ma tenue ; double-clic sur l\'objet pour l\'enfiler (échangeable, rangeable).',
+        '<b>Tenues en objets</b> : W → Moi → Vêtements → Plier ma tenue ; double-clic sur l\'objet pour l\'enfiler (échangeable, rangeable).',
         '<b>Armes légales</b> : permis de port d\'arme au comptoir Ammu-Nation (5 000 $, permis de conduire, casier propre).',
         '<b>Permis de conduire</b> (auto-école : théorie + pratique), <b>justice</b> (tribunal, avocat, verdicts), '
         '<b>mairie</b> (mariage, divorce), <b>banque</b> (guichets, distributeurs, plafonds), <b>bourse de la ville</b>.',
@@ -193,7 +193,7 @@ TESTS = [
         'Dépôts bus / voirie / Post OP : « Prendre le poste ici » puis garage puis F6 → Mission',
         'Bars : Tequi-la-la, Vanilla Unicorn, Bahama Mamas (sans employé : barman PNJ, carte de base)',
         'Mécano en service : Alt sur la voiture d\'un ami → Personnaliser → Valider ; la voiture ressort du garage personnalisée',
-        'Tenue en objet : Z → Moi → Vêtements → Plier ma tenue ; double-clic sur l\'objet ; retour civil sans perso chauve',
+        'Tenue en objet : W → Moi → Vêtements → Plier ma tenue ; double-clic sur l\'objet ; retour civil sans perso chauve',
         'Marina : essai d\'un bateau → retour sur le ponton ; motel Pink Cage trouvé grâce au logo',
     ]),
     ('Vie illégale', [

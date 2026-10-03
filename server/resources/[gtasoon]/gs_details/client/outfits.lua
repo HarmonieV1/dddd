@@ -1,4 +1,4 @@
--- gs_details (client) : tenues en objets (item gs_outfit). « Plier ma tenue » (menu Z) crée un objet Tenue avec les
+-- gs_details (client) : tenues en objets (item gs_outfit). « Plier ma tenue » (menu radial, touche W sur clavier français) crée un objet Tenue avec les
 -- vêtements portés ; l'utiliser (double-clic) l'enfile, et la tenue d'avant devient à son tour un objet. Échangeable,
 -- rangeable dans un coffre, vendable entre joueurs. Coiffure, visage et tatouages ne bougent jamais.
 local COMPONENTS = { 1, 3, 4, 5, 6, 7, 8, 9, 10, 11 }   -- masque, bras, jambes, sac, chaussures, accessoires, t-shirt, gilet, logos, haut

@@ -12,7 +12,7 @@ local KEYS = [[
 | **F6** | Métiers (service, tenue, facture, patron) |
 | **F7** | Duo |
 | **F9** | Gang |
-| **Z** | Menu radial : Moi (tenue en objet, chapeau, lunettes, masque…), Radio, Véhicule |
+| **W** | Menu radial (W sur clavier français, Z en QWERTY) : Moi (tenue en objet, chapeau, lunettes, masque…), Radio, Véhicule |
 | **Alt gauche** (maintenu) | Viser / interagir (ox_target) |
 | **N** | Parler · **²** portée de la voix |
 | **Verr. Maj** (maintenu) | Parler à la radio (fréquence réglée) |

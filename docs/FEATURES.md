@@ -121,7 +121,7 @@ Un seul fil pour tous les cercles au sol et icônes (location, quêtes, entrées
 - **EMS** : réanimer (trousse), soigner (bandage), porter le patient, le mettre dans l'ambulance.
 
 ## gs_details — petits détails (V3)
-Radial véhicule (**Z** en véhicule : moteur, portes, places, vitres, ceinture), `/me` `/do` (texte au-dessus de la tête,
+Radial véhicule (**W** sur clavier français, Z en QWERTY, en véhicule : moteur, portes, places, vitres, ceinture), `/me` `/do` (texte au-dessus de la tête,
 visible à 20 m), **mains en l'air** (X), **ceinture** (B, éjection en cas de choc sans ceinture), kits utilisables par tous :
 réparation de fortune (moteur 75 %), réparation avancée (complète), nettoyage.
 
@@ -251,7 +251,7 @@ Traductions françaises manquantes des scripts Qbox ajoutées par METTRE-A-JOUR 
   visions nocturne et thermique.
 - **Décor** (super-admin et fondateur, `/builder`) : placer des objets (poubelles, bancs, lampadaires…) et **retirer
   ceux de la map d'origine** pour tout le monde, réversible.
-- **gs_radio** : Z → Radio ou `/radio` : canal de son métier, canal privé de son gang, fréquence libre. On règle une fois,
+- **gs_radio** : W → Radio ou `/radio` : canal de son métier, canal privé de son gang, fréquence libre. On règle une fois,
   on parle en maintenant Verr. Maj. Canaux réservés vérifiés par pma-voice côté serveur. Fréquence reprise à la connexion.
 - **Métiers** : salaires réglables par la direction (entreprises privées, 0,5× à 2× la base), **primes** depuis la
   caisse, mécano : pneus, remettre sur ses roues, réparation capot ouvert (animations plus naturelles), « Établi et
@@ -357,5 +357,5 @@ Traductions françaises manquantes des scripts Qbox ajoutées par METTRE-A-JOUR 
 - **Illégal** : braquage de caisse qui démarre seul, argent sale en sacs au sol ; patrouilles de police IA créées par le serveur ;
   téléphone → Inconnu (contact + contrats) ; gangs : Families, Ballas, Vagos, Lost MC + Cartel Madrazo, Triades.
 - **Monde** : roue du casino recollée, PNJ du casino ; Cayo : vol retour visible ; bandeau Weazel News ; secours IA envoyé par un EMS.
-- **Grandes nouveautés** : tenues en objets (gs_details), menu Z « Moi », courses avec organisateur PNJ et voitures prêtées (gs_races),
+- **Grandes nouveautés** : tenues en objets (gs_details), menu radial (W) « Moi », courses avec organisateur PNJ et voitures prêtées (gs_races),
   personnalisation complète par le mécano (gs_tuning/client/mechanic.lua).

@@ -1,4 +1,4 @@
--- [CONFIG] Radio (pma-voice). Parler : maintenir Verr. Maj (convar voice_defaultRadio). Menu : Z (radial) → Radio, ou /radio.
+-- [CONFIG] Radio (pma-voice). Parler : maintenir Verr. Maj (convar voice_defaultRadio). Menu : W (radial, Z en QWERTY) → Radio, ou /radio.
 Config = {}
 
 Config.Item = 'radio'            -- objet requis (sans lui : radio coupée)
