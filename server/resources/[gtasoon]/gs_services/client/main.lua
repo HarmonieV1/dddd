@@ -78,9 +78,20 @@ CreateThread(function()
                     Wait(0)
                 end
             else
-                while downed() do Wait(1000) end -- des EMS joueurs sont en service : on ne propose rien
+                -- des EMS joueurs sont en service : on ne propose rien (réapparition à l'hôpital ou EMS), mais on
+                -- revérifie toutes les 10 s (si les EMS quittent leur service, le secours IA redevient possible)
+                local recheck = GetGameTimer() + 10000
+                while downed() and not busy and GetGameTimer() < recheck do Wait(1000) end
             end
         end
         Wait(1000)
     end
+end)
+
+-- Un EMS joueur occupé peut envoyer un secouriste IA à un patient (F4 → Envoyer un secouriste)
+RegisterNetEvent('gs_services:client:medicSent', function(seconds)
+    if busy then return end
+    busy = true
+    lib.notify({ title = 'Secours', description = 'Un secouriste envoyé par les EMS arrive.', type = 'inform', icon = 'truck-medical' })
+    CreateThread(function() medicScene(seconds) busy = false end)
 end)

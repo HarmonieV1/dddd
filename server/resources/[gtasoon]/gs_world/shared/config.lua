@@ -60,6 +60,9 @@ Config.AmbientPeds = {
     { label = 'Guitariste (Tequi-la-la)', model = 'a_m_y_hipster_02', coords = vec4(-552.8, 284.9, 82.98, 175.0), scenario = 'WORLD_HUMAN_MUSICIAN' },
     { label = 'Bassiste (Tequi-la-la)', model = 'a_m_y_hipster_01', coords = vec4(-554.6, 285.4, 82.98, 175.0), scenario = 'WORLD_HUMAN_MUSICIAN' },
     { label = 'Chanteuse (Tequi-la-la)', model = 'a_f_y_hipster_02', coords = vec4(-553.7, 283.9, 82.98, 175.0), anim = { dict = 'anim@mp_player_intcelebrationfemale@uncle_disco', clip = 'uncle_disco' } },
+    -- Cayo Perico : pilote au comptoir du vol retour
+    { label = 'Pilote (vol retour)', model = 's_m_m_pilot_01', coords = vec4(4495.3, -4524.0, 4.41, 110.0), scenario = 'WORLD_HUMAN_CLIPBOARD' },
+    { label = 'Pilote (vol pour Cayo)', model = 's_m_m_pilot_01', coords = vec4(-1036.6, -2736.4, 20.17, 150.0), scenario = 'WORLD_HUMAN_CLIPBOARD' },
     -- Bahama Mamas : DJ
     { label = 'DJ (Bahama Mamas)', model = 'a_m_y_clubcust_01', coords = vec4(-1381.0, -616.0, 31.5, 120.0), anim = { dict = 'anim@amb@nightclub@djs@dixon@', clip = 'dixn_dance_cntr_open_dix' } },
 }

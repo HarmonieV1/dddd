@@ -91,7 +91,7 @@ lib.callback.register('gs_social:journal:publish', function(src, title, body)
             TriggerClientEvent('gs_social:client:new', -1, { id = pid, handle = handle, content = teaser, likes = 0, time = now, badge = 'press' })
         end
     end
-    TriggerClientEvent('ox_lib:notify', -1, { title = 'Weazel News · ' .. author, description = title .. '\n/journal pour lire', icon = 'newspaper', duration = 9000 })
+    TriggerClientEvent('gs_social:client:weazel', -1, 'NOUVEL ARTICLE', ('%s — par %s. À lire dans le téléphone (Weazel).'):format(title, author), 10000)
 
     -- Paie de la rédaction (société weazel) : plafond journalier partagé
     local day, paid = os.date('%Y-%m-%d'), nil

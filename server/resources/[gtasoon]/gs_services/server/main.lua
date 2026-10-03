@@ -41,4 +41,18 @@ lib.callback.register('gs_services:medicDone', function(src)
     return true, 'Le secouriste t\'a remis sur pied ' .. paid .. '.'
 end)
 
+--- Un EMS en service envoie un secouriste IA à un patient à terre (à moins de 300 m de lui). Pas de frais pour le patient
+--- au-delà du tarif habituel ; journal staff.
+lib.callback.register('gs_services:sendMedic', function(src, target)
+    if not Security:RateLimit(src, 'gs_services:send', 3, 10000) then return false, 'Doucement.' end
+    target = tonumber(target)
+    if not JobsApi:IsOnDutyAs(src, Config.EmsJob) then return false, 'Réservé aux EMS en service.' end
+    if not target or not GetPlayerName(target) or not Bridge:IsDowned(target) then return false, 'Ce patient n\'est pas à terre.' end
+    if #(GetEntityCoords(GetPlayerPed(src)) - GetEntityCoords(GetPlayerPed(target))) > 300.0 then return false, 'Patient trop loin.' end
+    if Services.pending[target] then return false, 'Un secouriste est déjà en route.' end
+    Services.pending[target] = GetGameTimer() + (Config.Medic.seconds - 2) * 1000
+    TriggerClientEvent('gs_services:client:medicSent', target, Config.Medic.seconds)
+    return true, 'Secouriste envoyé.'
+end)
+
 AddEventHandler('gs_bridge:server:playerUnloaded', function(src) Services.pending[src], Services.last[src] = nil, nil end)

@@ -195,6 +195,25 @@ local function emsOptions()
         { title = 'Porter / lâcher le patient', icon = 'person-walking-arrow-right', onSelect = simple('escort') },
         { title = 'Mettre dans l\'ambulance', icon = 'truck-medical', onSelect = vehicleAction('putin') },
         { title = 'Sortir du véhicule', icon = 'person-walking-arrow-loop-left', onSelect = simple('takeout') },
+        { title = 'Envoyer un secouriste IA', icon = 'truck-medical', description = 'Trop d\'appels ? Un PNJ s\'occupe d\'un patient à terre',
+          arrow = true, onSelect = function()
+            local me, options = GetEntityCoords(cache.ped), {}
+            for _, pid in ipairs(GetActivePlayers()) do
+                local sid = GetPlayerServerId(pid)
+                local st = Player(sid).state['qbx_medical:deathState'] -- [API] qbx_medical : 2 à terre, 3 mort
+                local d = #(GetEntityCoords(GetPlayerPed(pid)) - me)
+                if pid ~= PlayerId() and st and st >= 2 and d < 300.0 then
+                    options[#options + 1] = { title = ('[%d] %s'):format(sid, GetPlayerName(pid)), description = ('à %d m'):format(math.floor(d)),
+                        icon = 'user-injured', onSelect = function()
+                            local ok, msg = lib.callback.await('gs_services:sendMedic', false, sid)
+                            notify(ok, msg)
+                        end }
+                end
+            end
+            if #options == 0 then options[1] = { title = 'Aucun patient à terre à moins de 300 m', readOnly = true } end
+            lib.registerContext({ id = 'gs_police_sendmedic', title = 'Envoyer un secouriste', menu = 'gs_police_menu', options = options })
+            lib.showContext('gs_police_sendmedic')
+        end },
     }
 end
 

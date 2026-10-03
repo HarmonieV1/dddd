@@ -130,18 +130,25 @@ AddEventHandler('gs_world:client:fly', function(side)
     end
     DoScreenFadeIn(800)
     if msg then lib.notify({ description = msg, type = ok and 'success' or 'error' }) end
+    if ok then TriggerEvent('gs_world:client:landed', side) end
 end)
 
 CreateThread(function()
-    for side, s in pairs(I.flight) do
-        if type(s) == 'table' then
-            exports.gs_markers:Add('gs_world:fly:' .. side, { coords = s.counter, style = 'entry', label = s.label,
-                event = 'gs_world:client:fly', args = { side }, prompt = s.label, distance = 20.0 })
-        end
+    for _, side in ipairs({ 'mainland', 'island' }) do
+        local s = I.flight[side]
+        exports.gs_markers:Add('gs_world:fly:' .. side, { coords = s.counter, style = 'entry', label = s.label,
+            event = 'gs_world:client:fly', args = { side }, prompt = s.label, distance = 20.0, snap = true, reach = 2.2 })
+        local b = AddBlipForCoord(s.counter.x, s.counter.y, s.counter.z)
+        SetBlipSprite(b, 307) SetBlipColour(b, 5) SetBlipScale(b, 0.7) SetBlipAsShortRange(b, side == 'mainland')
+        BeginTextCommandSetBlipName('STRING') AddTextComponentSubstringPlayerName(side == 'mainland' and 'Vols pour Cayo Perico' or 'Vol retour pour Los Santos') EndTextCommandSetBlipName(b)
     end
-    local b = AddBlipForCoord(I.flight.mainland.counter.x, I.flight.mainland.counter.y, I.flight.mainland.counter.z)
-    SetBlipSprite(b, 307) SetBlipColour(b, 5) SetBlipScale(b, 0.7) SetBlipAsShortRange(b, true)
-    BeginTextCommandSetBlipName('STRING') AddTextComponentSubstringPlayerName('Vols pour Cayo Perico') EndTextCommandSetBlipName(b)
+end)
+
+-- Arrivée sur l'île : où reprendre l'avion
+AddEventHandler('gs_world:client:landed', function(side)
+    if side == 'mainland' then
+        lib.notify({ title = 'Cayo Perico', description = 'Vol retour : comptoir à côté de la piste (logo avion), quand tu veux.', type = 'inform', duration = 9000 })
+    end
 end)
 
 AddEventHandler('onResourceStop', function(res)

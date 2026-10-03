@@ -1,6 +1,6 @@
 -- gs_markers (client) : tous les marqueurs GTA SOON dessinés par UN seul fil, même style discret.
 -- Les autres ressources déclarent leurs points : exports.gs_markers:Add(id, { coords, style, label?, icon?, distance?, height?,
---   event?, args?, prompt?, reach? }) : avec `event`, la touche [E] à moins de `reach` m déclenche l'event local (en plus d'ox_target).
+--   event?, args?, prompt?, reach?, snap? }) : avec `event`, la touche [E] à moins de `reach` m déclenche l'event local (en plus d'ox_target).
 -- Coût : un tri par distance toutes les 500 ms ; dessin à chaque frame seulement s'il y a un point à < 40 m.
 
 -- V7 : style discret pour le RP. Plus de flèches ni d'icônes flottantes : un petit cercle au sol, peu opaque, visible
@@ -33,6 +33,7 @@ local function add(id, def)
         args = def.args or {},
         prompt = def.prompt or def.label,
         reach = def.reach or 1.8,
+        snap = def.snap == true, -- hauteur recalée sur le sol à l'approche (points dehors à la hauteur approximative)
     }
     return true
 end
@@ -64,6 +65,14 @@ CreateThread(function()
         local list = {}
         for _, p in pairs(points) do
             local d = #(me - p.coords)
+            if p.snap and not p.snapped and d < 40.0 then
+                local c = p.coords
+                for _, from in ipairs({ 1.0, 8.0 }) do
+                    local found, gz = GetGroundZFor_3dCoord(c.x, c.y, c.z + from, false)
+                    if found and math.abs(gz + 1.0 - c.z) < 8.0 then p.coords, p.snapped = vec3(c.x, c.y, gz + 1.0), true break end
+                end
+                d = #(me - p.coords)
+            end
             if d < p.drawDist then list[#list + 1] = { p = p, d = d } end
         end
         nearby = list

@@ -95,6 +95,7 @@ function Vibe2.newsroom(kind, text)
     table.insert(Neon.feed, 1, post)
     Neon.feed[Config.FeedSize + 1] = nil
     TriggerClientEvent('gs_social:client:new', -1, { id = id, handle = post.handle, content = content, likes = 0, time = now, badge = 'press' })
+    TriggerClientEvent('gs_social:client:weazel', -1, 'BRÈVE', content, 8000) -- bandeau Weazel (même anti-spam)
     return true
 end
 exports('Newsroom', Vibe2.newsroom)

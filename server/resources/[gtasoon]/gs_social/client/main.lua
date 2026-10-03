@@ -61,9 +61,19 @@ AddEventHandler('onResourceStop', function(res)
     if res == GetCurrentResourceName() and open then SetNuiFocus(false, false) end
 end)
 
-RegisterNetEvent('gs_social:client:flash', function(handle, content)
+-- Bandeau Weazel News aux couleurs de la chaîne (rouge Weazel, texte blanc, en haut de l'écran) : flash info, articles,
+-- brèves de faits divers. Toutes les annonces Weazel passent par là.
+local WEAZEL_STYLE = { backgroundColor = '#c8102e', color = '#ffffff', borderLeft = '6px solid #ffffff', fontWeight = 600,
+    ['.description'] = { color = '#ffffff', opacity = 0.95 } }
+local function weazel(kind, text, duration)
     PlaySoundFrontend(-1, 'Event_Message_Purple', 'GTAO_FM_Events_Soundset', false)
-    lib.notify({ title = '📰 FLASH INFO · Weazel News', description = ('@%s : %s'):format(handle, content:sub(1, 160)), type = 'warning', icon = 'newspaper', duration = 12000 })
+    lib.notify({ id = 'weazel', title = 'WEAZEL NEWS · ' .. kind, description = text, icon = 'tv', iconColor = '#ffffff',
+        position = 'top', style = WEAZEL_STYLE, duration = duration or 11000 })
+end
+RegisterNetEvent('gs_social:client:weazel', weazel)
+
+RegisterNetEvent('gs_social:client:flash', function(handle, content)
+    weazel('FLASH INFO', ('@%s : %s'):format(handle, content:sub(1, 160)), 12000)
 end)
 
 -- Tendances Vibe : annonce + rassemblement (blip, présence comptée automatiquement sur place)

@@ -117,6 +117,16 @@ local function InRange(src, coords, maxDist)
     return #(GetEntityCoords(ped) - toVec3(coords)) <= maxDist
 end
 
+--- Comme InRange, mais à plat (x, y) avec un écart de hauteur toléré : pour les points dehors dont la hauteur de config
+--- est approximative (le client recale le marqueur au sol).
+local function InRangeFlat(src, coords, maxDist, maxDz)
+    local ped = GetPlayerPed(src)
+    if not ped or ped == 0 or not coords then return false end
+    local p = GetEntityCoords(ped)
+    local dx, dy = p.x - coords.x, p.y - coords.y
+    return math.sqrt(dx * dx + dy * dy) <= maxDist and math.abs(p.z - coords.z) <= (maxDz or 8.0)
+end
+
 --- Deux joueurs sont à moins de `maxDist` l'un de l'autre.
 local function PlayersInRange(src, target, maxDist)
     local a, b = GetPlayerPed(src), GetPlayerPed(target)
@@ -149,6 +159,7 @@ GSSec = { RateLimit = RateLimit, LogStaff = LogStaff }
 
 exports('RateLimit', RateLimit)
 exports('InRange', InRange)
+exports('InRangeFlat', InRangeFlat)
 exports('PlayersInRange', PlayersInRange)
 exports('EntityInRange', EntityInRange)
 exports('Sanitize', Sanitize)
