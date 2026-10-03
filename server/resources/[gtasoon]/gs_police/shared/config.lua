@@ -43,3 +43,20 @@ Config.Radar = { range = 60.0, unit = 3.6 } -- 3.6 = km/h
 
 -- Base de données de la police (F4 → Dossiers) : recherche d'un citoyen par nom, mandats, rapports.
 Config.Dossiers = { warrantGrade = 1, closeGrade = 2, reportDeleteGrade = 3, maxWarrantsPerOfficer = 5, reasonMax = 200, bodyMax = 1500 }
+
+-- V8 · Prison vivante (Bolingbroke). Petits boulots = peine réduite + tickets de cantine ; la cantine et le trafiquant
+-- se paient en tickets (échangeables entre détenus) ; évasion seulement à plusieurs, la nuit, avec des outils de fortune.
+Config.Prison = {
+    ticket = 'gs_canteen', tools = 'gs_prison_tools',
+    jobs = {
+        { label = 'Nettoyer la cour', coords = vec3(1705.0, 2550.0, 45.56), seconds = 20, reduce = 60, tickets = 2, scenario = 'WORLD_HUMAN_JANITOR' },
+        { label = 'Laverie', coords = vec3(1678.0, 2575.0, 45.56), seconds = 25, reduce = 75, tickets = 3, scenario = 'PROP_HUMAN_BUM_BIN' },
+        { label = 'Cuisine', coords = vec3(1690.0, 2590.0, 45.56), seconds = 30, reduce = 90, tickets = 3, scenario = 'PROP_HUMAN_BBQ' },
+    },
+    jobCooldown = 60,           -- s entre deux tâches (par détenu)
+    minLeft = 60,               -- une peine ne descend jamais sous 1 min avec les boulots
+    canteen = { coords = vec3(1660.0, 2560.0, 45.56), items = { { item = 'sandwich', price = 2 }, { item = 'water', price = 1 }, { item = 'gs_cigarettes', price = 4 } } },
+    dealer = { coords = vec3(1645.0, 2585.0, 45.56), items = { { item = 'gs_prison_tools', price = 25, cigarettes = 2 }, { item = 'phone', price = 40, cigarettes = 3 } } },
+    escape = { coords = vec3(1650.0, 2540.0, 45.56), out = vec4(1580.0, 2470.0, 45.6, 225.0), radius = 15.0, min = 2,
+        seconds = 30, nightFrom = 21, nightTo = 6, cooldown = 1800 },
+}

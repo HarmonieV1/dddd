@@ -6,4 +6,5 @@ PlayerCommands = {
     quartiers = true, reputation = true, saison = true, retoucheperso = true, hud = true, factures = true,
     boutique = true, radio = true, e = true, emote = true, emotes = true, walk = true, walks = true, cancelemote = true,
     tribunal = true, taxi = true, depanneur = true, em = true, emotemenu = true,
+    permis = true, rencontres = true, mentor = true, rumeurs = true, carnet = true, histoire = true, -- V8
 }

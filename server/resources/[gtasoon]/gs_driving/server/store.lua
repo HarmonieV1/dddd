@@ -8,6 +8,18 @@ function Store.init()
         `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
         PRIMARY KEY (`citizenid`)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4]])
+    -- V8 : permis à points
+    MySQL.query.await('ALTER TABLE `gs_driving` ADD COLUMN IF NOT EXISTS `points` TINYINT UNSIGNED NOT NULL DEFAULT 12')
+    MySQL.query.await('ALTER TABLE `gs_driving` ADD COLUMN IF NOT EXISTS `last_offense` INT UNSIGNED NOT NULL DEFAULT 0')
+end
+
+function Store.points(cid)
+    local r = MySQL.single.await('SELECT points, last_offense FROM gs_driving WHERE citizenid = ?', { cid })
+    if not r then return nil end
+    return r.points, r.last_offense
+end
+function Store.setPoints(cid, points, last)
+    MySQL.query.await('UPDATE gs_driving SET points = ?, last_offense = ? WHERE citizenid = ?', { points, last, cid })
 end
 
 function Store.get(cid) return MySQL.scalar.await('SELECT status FROM gs_driving WHERE citizenid = ?', { cid }) end

@@ -106,5 +106,27 @@ rows.CID5 = 0 join(5, 'CID5', 'Sans code', Config.Desk)
 ok = cb('gs_driving:grant', 4, 5); step()
 check('moniteur : il faut le code', not ok)
 
+-- V8 · Permis à points --------------------------------------------------------------------------------------------
+do
+    local pts = {}
+    Store.points = function(cid) local r = pts[cid] if not r then return nil end return r[1], r[2] end
+    Store.setPoints = function(cid, p, last) pts[cid] = { p, last } end
+    local records = {}
+    provide('gs_police', { AddRecord = function(cid, charge) records[#records + 1] = charge return true end })
+    rows.OLD = 2 W.players[2].licences.driver = true
+    check('permis : 12 points au départ', Driving.points('OLD') == 12)
+    check('retrait de 3 points', Driving.removePoints(2, 3, 'Excès de vitesse') == 9)
+    check('retrait hors limites refusé', Driving.removePoints(2, 9, 'x') == nil and Driving.removePoints(2, 0, 'x') == nil)
+    join(9, 'CID9', 'Sans Permis', Config.Desk) rows.CID9 = 0
+    check('sans permis : pas de points', Driving.removePoints(9, 2, 'x') == nil)
+    advance(Config.Points.recoverDays * 86400 * 1000 + 1000)
+    check('récupération : +1 point après la période sans infraction', Driving.points('OLD') == 10)
+    Driving.removePoints(2, 6, 'Refus d\'obtempérer')
+    check('solde 4', Driving.points('OLD') == 4)
+    check('solde nul : permis annulé, retour à l\'auto-école', Driving.removePoints(2, 6, 'Délit de fuite') == 0
+        and rows.OLD == 0 and W.players[2].licences.driver == false and records[#records]:find('Permis annulé'))
+    check('plus de permis : plus de points', Driving.points('OLD') == nil)
+end
+
 io.write(('\n%d réussis, %d échoués\n'):format(passed, failed))
 os.exit(failed == 0 and 0 or 1)

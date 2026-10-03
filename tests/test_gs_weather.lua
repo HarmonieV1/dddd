@@ -2,7 +2,7 @@
 dofile('tests/mock.lua')
 local R = 'server/resources/[gtasoon]/'
 loadResource('gs_security', { R .. 'gs_security/server/main.lua' })
-loadResource('gs_weather', { R .. 'gs_weather/shared/config.lua', R .. 'gs_weather/shared/clock.lua', R .. 'gs_weather/server/main.lua' })
+loadResource('gs_weather', { R .. 'gs_weather/shared/config.lua', R .. 'gs_weather/shared/clock.lua', R .. 'gs_weather/server/main.lua', R .. 'gs_weather/server/storm.lua' })
 
 local passed, failed = 0, 0
 local function check(name, cond)
@@ -92,6 +92,31 @@ for _ = 1, 10000 do
     if not Config.Transitions[GlobalState.gsWeather.type] then okLong = false end
 end
 check('3 jours simulés sans météo invalide', okLong)
+
+-- V8 · Météo événementielle : routes fermées et interventions pendant la tempête -----------------------------------
+do
+    local mech = {}
+    provide('gs_jobs', { IsOnDutyAs = function(src, job) return mech[src] == job end })
+    Weather.startEvent('storm')
+    local st = GlobalState.gsStorm
+    local n = 0 for _ in pairs(st.incidents) do n = n + 1 end
+    check('tempête : routes fermées et interventions publiées', st and #st.roads == Config.Storm.closures and n == Config.Storm.incidents)
+    local id, idx = next(Storm.incidents)
+    local c = Config.Storm.spots[idx].coords
+    join(41, 'CID41', 'Mécano', vec3(c.x + 1.0, c.y, c.z))
+    join(42, 'CID42', 'Passant', vec3(c.x + 1.0, c.y, c.z))
+    check('intervention : sans kit ni métier refusée', not Storm.fix(42, id))
+    mech[41] = 'mechanic'
+    check('intervention : mécano en service payé', Storm.fix(41, id) == true and W.players[41].money.bank > 0)
+    check('intervention retirée de la carte', GlobalState.gsStorm.incidents[tostring(id)] == nil and not Storm.fix(41, id))
+    local id2, idx2 = next(Storm.incidents)
+    local c2 = Config.Storm.spots[idx2].coords
+    tp(42, vec3(c2.x, c2.y, c2.z))
+    W.players[42].items.repairkit = 1
+    check('intervention : civil avec kit (consommé)', Storm.fix(42, id2) == true and W.players[42].items.repairkit == 0)
+    Weather.endEvent(true)
+    check('fin de tempête : routes rouvertes', GlobalState.gsStorm == nil)
+end
 
 io.write(('\n%d réussis, %d échoués\n'):format(passed, failed))
 os.exit(failed == 0 and 0 or 1)

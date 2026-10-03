@@ -26,3 +26,9 @@ Règlement complet et sanctions : discord.gg/8y2sX7EvZN
 Config.WhitelistBypassAce = 'gs.admin.helper'
 Config.ManageAce = 'gs.admin.mod'
 Config.DiscordInvite = 'discord.gg/8y2sX7EvZN'   -- affiché aux joueurs non inscrits (convar gs_discord_invite prioritaire)
+
+-- V8 · Mentors : un joueur expérimenté (niveau ≥ minLevel) se déclare parrain ; un nouveau (niveau ≤ newbieMaxLevel) le
+-- choisit avec /mentor. Si le filleul est toujours là `days` jours plus tard (et a joué au moins `minDaysPlayed` jours
+-- différents), les deux sont récompensés. Le parrain peut retrouver son filleul en ville (GPS).
+Config.Mentor = { minLevel = 5, newbieMaxLevel = 3, maxMentees = 3, days = 7, minDaysPlayed = 3,
+    rewardMentor = 2500, rewardNewbie = 1000, requestSeconds = 120 }

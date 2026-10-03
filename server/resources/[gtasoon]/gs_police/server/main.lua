@@ -45,6 +45,9 @@ function Police.jail(target, minutes, reason)
     state(target):set('gsCuffed', nil, true)
     teleport(target, Config.Jail.cell)
     TriggerClientEvent('gs_police:client:jail', target, untilTs - os.time(), reason)
+    -- V8 : incarcéré = fiché (empreintes et ADN reconnus par le labo)
+    if GetResourceState('gs_evidence') == 'started' then pcall(function() exports.gs_evidence:File(target) end) end
+    TriggerEvent('gs_police:server:jailed', target, minutes)
 end
 
 function Police.release(target)
@@ -158,6 +161,26 @@ Actions.record = { job = 'police', target = true, run = function(src, target, da
     return 'Ajouté au casier'
 end }
 
+-- V8 : relevé d'empreintes et d'ADN (personne menottée) → le labo pourra la reconnaître
+Actions.fingerprint = { job = 'police', target = true, run = function(_, target)
+    need(cuffed(target), 'La personne doit être menottée.')
+    need(GetResourceState('gs_evidence') == 'started', 'Fichier indisponible.')
+    exports.gs_evidence:File(target)
+    return 'Empreintes et ADN enregistrés au fichier'
+end }
+
+-- V8 : permis à points (infraction routière)
+Actions.points = { job = 'police', target = true, run = function(src, target, data)
+    local n = math.floor(tonumber(data.n) or 0)
+    need(n >= 1 and n <= 6, 'De 1 à 6 points.')
+    local reason = need(Security:Sanitize(data.reason, 80), 'Motif obligatoire.')
+    need(GetResourceState('gs_driving') == 'started', 'Fichier des permis indisponible.')
+    local left = exports.gs_driving:RemovePoints(target, n, reason)
+    need(left ~= nil, 'Pas de permis valide.')
+    Store.addRecord(Bridge:GetIdentifier(target), ('%s (-%d pts)'):format(reason, n), 0, 0, label(src))
+    return left == 0 and 'Solde nul : permis annulé' or ('Solde restant : %d points'):format(left)
+end }
+
 Actions.records = { job = 'police', target = true, run = function(_, target)
     return Store.records(Bridge:GetIdentifier(target))
 end }
@@ -202,6 +225,7 @@ Actions.identity = { job = 'police', target = true, run = function(_, target)
         driver = lic.driver == true, weapon = lic.weapon == true, hunting = lic.hunting == true, records = #Store.records(Bridge:GetIdentifier(target)),
         spouse = GetResourceState('gs_civil') == 'started' and exports.gs_civil:GetSpouseName(Bridge:GetIdentifier(target)) or nil,
         wanted = heat > 0, warrant = Store.hasWarrant and Store.hasWarrant(Bridge:GetIdentifier(target)) or false,
+        points = GetResourceState('gs_driving') == 'started' and (select(2, pcall(function() return exports.gs_driving:GetPoints(target) end))) or nil,
     }
 end }
 

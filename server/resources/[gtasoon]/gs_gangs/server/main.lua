@@ -434,6 +434,7 @@ end)
 
 exports('GetGang', function(src) local m = Gangs.online[src] return m and m.gang, m and m.grade end)
 exports('GetTerritoryAt', function(coords) return territoryAt(coords) end)
+exports('FenceLocation', function() return Extras and Extras.fenceLocation and Extras.fenceLocation() or nil end) -- V8 : l'indic' le sait
 exports('GetTerritoryOwner', function(id) return Gangs.territories[id] and Gangs.territories[id].owner end)
 function Gangs.addInfluence(gang, id, n)
     local t = Gangs.territories[id]

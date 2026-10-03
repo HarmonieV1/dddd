@@ -24,6 +24,7 @@ Config.Crimes = {
     black_market = { label = 'Trafic d\'armes', heat = 15, chance = 0.10 },
     money_laundering = { label = 'Blanchiment d\'argent (contrôle fiscal)', heat = 20, chance = 1.0 },
     contract = { label = 'Contrat criminel', heat = 10, chance = 0.15 },
+    refusal = { label = 'Refus d\'obtempérer (contrôle routier)', heat = 12, chance = 0.95 },
 }
 
 Config.Witness = {
@@ -100,4 +101,37 @@ Config.Cameras = {
 Config.Dispatch = {
     blipSeconds = 90,
     history = 20,
+}
+
+-- V8 · La ville se souvient ---------------------------------------------------------------------------------------
+-- Les témoins décrivent ce qu'ils ont vu (description brute, jamais l'identité) ; plus la précision est haute, plus
+-- la description est complète. La ville garde en mémoire la tenue et le véhicule des suspects : recroisés avec la même
+-- tenue ou la même voiture (même plaque ET même couleur), ils sont reconnus plus vite. Changer de tenue, repeindre ou
+-- changer de véhicule brouille la piste.
+Config.Memory = {
+    hours = 2,              -- la ville oublie au bout de X heures réelles
+    keep = 5,               -- signalements mémorisés par suspect
+    linkChance = 0.25,      -- chance de signalement en plus quand le suspect est reconnu
+    linkPrecision = 0.2,    -- précision en plus (zone plus serrée, plaque plus lisible)
+    -- précision minimale pour que les témoins remarquent chaque détail
+    see = { gender = 0.15, vehicle = 0.25, mask = 0.3, hat = 0.45, bag = 0.55, armour = 0.5, armed = 0.35 },
+    outfit = { 1, 4, 6, 11 },   -- masque, bas, chaussures, haut (+ couvre-chef) : empreinte de la tenue
+}
+-- Visage connu : un témoin peut nommer un suspect célèbre (réputation média ou rue) s'il n'est pas masqué.
+Config.Fame = { at = 600, precision = 0.5, chance = 0.6 }
+
+Config.VehicleTypes = { automobile = 'Voiture', bike = 'Deux-roues', boat = 'Bateau', heli = 'Hélicoptère', plane = 'Avion', quadbike = 'Quad' }
+-- Couleurs GTA (index de peinture) → mot simple
+Config.Colors = {
+    { 'noir', { 0, 2 }, { 11, 12 }, { 15, 16 }, { 21, 22 }, { 147, 147 } },
+    { 'gris', { 3, 10 }, { 13, 14 }, { 17, 20 }, { 23, 26 }, { 117, 120 }, { 156, 156 } },
+    { 'rouge', { 27, 35 }, { 39, 40 }, { 43, 48 }, { 143, 143 }, { 150, 150 } },
+    { 'orange', { 36, 36 }, { 38, 38 }, { 41, 41 }, { 104, 104 }, { 123, 124 }, { 130, 130 }, { 138, 138 } },
+    { 'jaune', { 37, 37 }, { 42, 42 }, { 88, 89 }, { 91, 91 }, { 126, 126 }, { 158, 159 } },
+    { 'vert', { 49, 60 }, { 92, 92 }, { 125, 125 }, { 128, 128 }, { 133, 133 }, { 139, 139 }, { 144, 144 }, { 151, 152 }, { 155, 155 } },
+    { 'bleu', { 61, 87 }, { 127, 127 }, { 140, 141 }, { 146, 146 }, { 157, 157 } },
+    { 'marron', { 90, 90 }, { 93, 103 }, { 105, 110 }, { 113, 116 }, { 129, 129 }, { 153, 154 } },
+    { 'blanc', { 107, 107 }, { 111, 112 }, { 121, 122 }, { 131, 132 }, { 134, 134 } },
+    { 'rose', { 135, 137 } },
+    { 'violet', { 142, 142 }, { 145, 145 }, { 148, 149 } },
 }

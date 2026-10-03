@@ -233,6 +233,7 @@ lib.callback.register('gs_gangs:fenceSell', function(src, drugId)
     if not (Bridge:ItemExists('black_money') and Bridge:AddItem(src, 'black_money', total)) then Bridge:AddMoney(src, 'cash', total, 'receleur') end
     local zone = Gangs.territoryAt(GetEntityCoords(GetPlayerPed(src)))
     if zone then Gangs.addInfluence(m.gang, zone, 3) end
+    TriggerEvent('gs_gangs:server:activity', m.gang, 'fence', GetEntityCoords(GetPlayerPed(src)), qty) -- V8 : l'indic' en entend parler
     if started('gs_wanted') and math.random() < Config.Fence.reportChance then
         exports.gs_wanted:ReportCrime(src, 'drug_sale', GetEntityCoords(GetPlayerPed(src)))
     end
@@ -329,6 +330,7 @@ lib.callback.register('gs_gangs:craftFinish', function(src)
     end
     local d = craftedToday(p.gang)
     d.rounds = d.rounds + r.out
+    TriggerEvent('gs_gangs:server:activity', p.gang, 'craft', GetEntityCoords(GetPlayerPed(src)), r.out) -- V8 : l'indic' en entend parler
     return true, ('%s fabriquées (%d / %d aujourd\'hui pour le gang).'):format(r.label, d.rounds, Config.AmmoCraft.dailyCap)
 end)
 

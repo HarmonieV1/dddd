@@ -9,6 +9,10 @@ Config.Desk = vec3(239.5, -1381.0, 33.7)       -- accueil de l'auto-école (code
 Config.Range = 3.0
 Config.Job = 'drivingschool'                   -- moniteurs (gs_jobs) : peuvent délivrer le permis après un examen RP
 
+-- V8 · Permis à points : 12 points. Retirés par la police (F4 → Retirer des points) ou un refus d'obtempérer.
+-- À 0 : permis annulé, il faut repasser l'auto-école (code et conduite). +1 point tous les `recoverDays` jours sans infraction.
+Config.Points = { max = 12, recoverDays = 2, maxPerOffense = 6 }
+
 Config.Theory = { price = 500, questions = 10, toPass = 8, cooldown = 300 }
 Config.Practical = {
     price = 1000, model = 'blista', plate = 'AUTOECOL',

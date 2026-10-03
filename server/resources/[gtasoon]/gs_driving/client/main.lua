@@ -103,3 +103,11 @@ AddEventHandler('onResourceStop', function(res)
     if res ~= GetCurrentResourceName() then return end
     exports.gs_markers:RemovePrefix('gs_driving:')
 end)
+
+-- V8 · Permis à points : /permis
+RegisterCommand('permis', function()
+    local pts, max = lib.callback.await('gs_driving:points', false)
+    if not pts then return notify(false, 'Pas de permis de conduire valide. Direction l\'auto-école !') end
+    lib.notify({ title = 'Permis de conduire', description = ('Solde : %d / %d points'):format(pts, max), type = pts > 6 and 'success' or 'warning',
+        icon = 'id-card', duration = 7000 })
+end, false)

@@ -87,7 +87,15 @@ local function showIdentity(id)
     lib.registerContext({ id = 'gs_police_identity', title = 'Contrôle d\'identité', menu = 'gs_police_menu', options = {
         { title = d.name, icon = 'id-card', readOnly = true, description = ('Né(e) le %s · %s'):format(d.birthdate or '?', d.nationality or '?') },
         { title = d.spouse and ('Marié(e) à %s'):format(d.spouse) or 'Célibataire', icon = 'heart', readOnly = true },
-        { title = ('Permis de conduire : %s'):format(d.driver and 'valide' or 'aucun'), icon = 'car', iconColor = d.driver and '#5aff8c' or '#ff4d6d', readOnly = true },
+        { title = ('Permis de conduire : %s'):format(d.driver and (d.points and ('valide · %d / 12 points'):format(d.points) or 'valide') or 'aucun'),
+          icon = 'car', iconColor = d.driver and '#5aff8c' or '#ff4d6d', readOnly = true },
+        { title = 'Retirer des points (infraction routière)', icon = 'minus', arrow = true, onSelect = function()
+            local r = lib.inputDialog('Permis à points', {
+                { type = 'number', label = 'Points retirés', default = 2, min = 1, max = 6, required = true },
+                { type = 'input', label = 'Infraction', required = true, max = 80, placeholder = 'Excès de vitesse, feu rouge…' },
+            })
+            if r then notify(act('points', id, { n = r[1], reason = r[2] })) end
+        end },
         { title = ('Port d\'arme : %s'):format(d.weapon and 'oui' or 'non'), icon = 'gun', iconColor = d.weapon and '#5aff8c' or '#6b6380', readOnly = true },
         { title = ('Permis de chasse : %s'):format(d.hunting and 'oui' or 'non'), icon = 'crosshairs', iconColor = d.hunting and '#5aff8c' or '#6b6380', readOnly = true },
         { title = 'Délivrer / retirer un permis', icon = 'stamp', arrow = true, onSelect = function()
@@ -114,6 +122,7 @@ local function checkPlate()
     if not ok then return notify(false, d) end
     lib.notify({ title = 'Plaque ' .. d.plate, description = d.owner and ('Propriétaire : ' .. d.owner) or 'Non enregistrée (volée, location ou véhicule local)',
         type = d.owner and 'inform' or 'warning', icon = 'car', duration = 10000 })
+    if d.owner and GetResourceState('gs_carnet') == 'started' then TriggerEvent('gs_carnet:client:show', d.plate) end -- V8 : historique
 end
 
 local function policeOptions()
@@ -153,6 +162,8 @@ local function policeOptions()
             end)
         end },
         { title = 'Casier judiciaire', icon = 'folder-open', onSelect = function() withTarget(showRecords) end },
+        { title = 'Relever empreintes et ADN', icon = 'fingerprint', description = 'Personne menottée : le labo pourra la reconnaître',
+          onSelect = simple('fingerprint', { duration = 4000, label = 'Relevé d\'empreintes…', anim = { dict = 'mp_arresting', clip = 'a_uncuff' } }) },
         { title = 'Ajouter au casier / amende', icon = 'file-pen', onSelect = function()
             withTarget(function(id)
                 local r = lib.inputDialog('Casier', {

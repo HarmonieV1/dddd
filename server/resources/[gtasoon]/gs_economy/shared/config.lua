@@ -45,6 +45,8 @@ Config.Items = {
     spraycan  = { label = 'Bombe de peinture', base = 40, min = 0.8, max = 1.6, volume = 20 },
     advancedrepairkit = { label = 'Kit de réparation avancé', base = 900, min = 0.8, max = 1.5, volume = 10 },
     cleaningkit = { label = 'Kit de nettoyage', base = 25, min = 0.8, max = 1.5, volume = 30 },
+    gs_gloves = { label = 'Gants en cuir', base = 60, min = 0.8, max = 1.5, volume = 30 },
+    gs_bleach = { label = 'Javel', base = 45, min = 0.8, max = 1.6, volume = 30 },
     plant_pot  = { label = 'Pot de fleurs', base = 20, min = 0.8, max = 1.6, volume = 40 },
     fertilizer = { label = 'Engrais', base = 45, min = 0.8, max = 1.8, volume = 30 },
     fishingrod = { label = 'Canne à pêche', base = 120, min = 0.8, max = 1.5, volume = 15 },
@@ -72,7 +74,7 @@ local SUPERETTE = { 'water', 'sprunk', 'coffee', 'gs_energy', 'burger', 'sandwic
 local CAVISTE = { 'beer', 'wine', 'vodka', 'whiskey', 'water', 'sprunk', 'coffee', 'gs_energy', 'gs_chips', 'gs_donut',
     'sandwich', 'gs_cigarettes', 'lighter', 'scratch_ticket' }
 local PHARMACIE = { 'painkillers', 'bandage', 'water', 'gs_energy' }
-local QUINCAILLERIE = { 'repairkit', 'advancedrepairkit', 'cleaningkit', 'WEAPON_PETROLCAN', 'spraycan', 'plant_pot', 'fertilizer', 'fishingrod', 'pickaxe', 'axe', 'huntingknife', 'lockpick', 'radio', 'binoculars', 'phone' }
+local QUINCAILLERIE = { 'repairkit', 'advancedrepairkit', 'cleaningkit', 'gs_gloves', 'gs_bleach', 'WEAPON_PETROLCAN', 'spraycan', 'plant_pot', 'fertilizer', 'fishingrod', 'pickaxe', 'axe', 'huntingknife', 'lockpick', 'radio', 'binoculars', 'phone' }
 
 -- Commerces (achat). Coords = comptoirs des magasins du jeu (mêmes points qu'ox_inventory) ; blip = style de Config.Blips.
 -- clerk = vendeur PNJ derrière le comptoir (vec4, à caler en jeu : F11 → Copier mes coordonnées).

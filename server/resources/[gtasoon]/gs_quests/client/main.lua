@@ -327,6 +327,10 @@ local function openMenu()
         end
     end
     options[#options + 1] = { title = ('Paquets cachés : %d / %d'):format(state.packagesFound, state.packagesTotal), icon = 'box', readOnly = true }
+    if GetResourceState('gs_roadside') == 'started' then -- V8 : collection des rencontres de la route
+        options[#options + 1] = { title = 'Carnet de route : rencontres', icon = 'route', iconColor = '#4fd8ff', arrow = true,
+            onSelect = function() exports.gs_roadside:OpenCollection() end }
+    end
     lib.registerContext({ id = 'gs_progress', title = 'Progression', options = options })
     lib.showContext('gs_progress')
 end

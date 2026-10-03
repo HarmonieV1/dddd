@@ -52,3 +52,23 @@ Config.Events = {
 }
 
 Config.AnnouncePrefix = 'Radio Néon Météo'
+
+-- V8 · Météo événementielle : pendant la tempête, des routes sont fermées (barrières, détour) et des interventions
+-- apparaissent sur la carte (arbres tombés, véhicules en détresse). Les mécanos en service (ou n'importe qui avec un kit
+-- de réparation) sont payés pour les dégager. Points à caler en jeu (F11 → Points).
+Config.Storm = {
+    closures = 2, incidents = 4, pay = { 300, 650 }, mechanicJob = 'mechanic', repairItem = 'repairkit',
+    roads = {
+        { label = 'Route 68 (Harmony)', coords = vec4(1020.0, 2680.0, 39.5, 90.0) },
+        { label = 'Great Ocean Highway (Chumash)', coords = vec4(-2610.0, 2350.0, 32.0, 10.0) },
+        { label = 'Pont de l\'Alamo Sea', coords = vec4(2390.0, 2990.0, 47.5, 140.0) },
+        { label = 'Route de Paleto (Procopio)', coords = vec4(1580.0, 6440.0, 24.0, 60.0) },
+        { label = 'Senora Way (Grapeseed)', coords = vec4(2170.0, 4760.0, 40.0, 30.0) },
+    },
+    spots = {
+        { kind = 'tree', coords = vec4(-1840.0, 4730.0, 56.0, 0.0) }, { kind = 'stranded', coords = vec4(2560.0, 4220.0, 41.0, 330.0) },
+        { kind = 'tree', coords = vec4(-490.0, 5780.0, 35.0, 0.0) }, { kind = 'stranded', coords = vec4(1960.0, 2980.0, 45.5, 60.0) },
+        { kind = 'stranded', coords = vec4(-1520.0, 2160.0, 56.0, 120.0) }, { kind = 'tree', coords = vec4(240.0, 3100.0, 42.5, 0.0) },
+        { kind = 'stranded', coords = vec4(-60.0, 1900.0, 196.0, 270.0) }, { kind = 'tree', coords = vec4(2690.0, 5100.0, 44.0, 0.0) },
+    },
+}

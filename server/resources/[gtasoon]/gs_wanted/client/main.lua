@@ -78,7 +78,11 @@ local function describe(r)
         local name = GetLabelText(GetDisplayNameFromVehicleModel(r.model))
         parts[#parts + 1] = ('%s %s'):format(name, r.plate or '')
     end
-    return table.concat(parts, ' · ')
+    -- La ville se souvient : description brute des témoins
+    if r.desc and #r.desc > 0 then parts[#parts + 1] = 'Suspect : ' .. table.concat(r.desc, ', ') end
+    if r.named then parts[#parts + 1] = ('Un témoin pense reconnaître %s'):format(r.named) end
+    if r.linked then parts[#parts + 1] = ('Même %s que le signalement n°%d'):format(r.linkedBy or 'description', r.linked) end
+    return ('n°%d · '):format(r.id or 0) .. table.concat(parts, ' · ')
 end
 
 RegisterNetEvent('gs_wanted:client:dispatch', function(r)

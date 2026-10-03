@@ -320,3 +320,11 @@ function FreezeEntityPosition(ent, on) if W.entities[ent] then W.entities[ent].f
 if not GetPedInVehicleSeat then function GetPedInVehicleSeat(veh) return W.entities[veh] and W.entities[veh].driver and (1000 + W.entities[veh].driver) or 0 end end
 W.sbh = {}
 function AddStateBagChangeHandler(key, _, fn) W.sbh[key] = fn end
+
+-- Ajouts V8 (gs_wanted mémoire, gs_evidence) : tenue du joueur, couleurs / type de véhicule
+local function pl(ped) return W.players[ped - 1000] end
+function GetPedDrawableVariation(ped, comp) local p = pl(ped) local c = p and p.clothes and p.clothes[comp] return c and c[1] or 0 end
+function GetPedTextureVariation(ped, comp) local p = pl(ped) local c = p and p.clothes and p.clothes[comp] return c and c[2] or 0 end
+function GetPedPropIndex(ped, prop) local p = pl(ped) return p and p.props and p.props[prop] or -1 end
+function GetVehicleColours(veh) local e = W.entities[veh] return e and e.color or 0, e and e.color2 or 0 end
+function GetVehicleType(veh) return W.entities[veh] and W.entities[veh].vtype or 'automobile' end

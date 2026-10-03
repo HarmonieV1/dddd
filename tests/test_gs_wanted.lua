@@ -13,7 +13,7 @@ provide('gs_weather', {
     IsBlackout = function() return weather.blackout end,
 })
 loadResource('gs_security', { R .. 'gs_security/server/main.lua' })
-loadResource('gs_wanted', { R .. 'gs_wanted/shared/config.lua', R .. 'gs_wanted/server/main.lua' })
+loadResource('gs_wanted', { R .. 'gs_wanted/shared/config.lua', R .. 'gs_wanted/server/memory.lua', R .. 'gs_wanted/server/main.lua' })
 
 local passed, failed = 0, 0
 local function check(name, cond)
@@ -57,6 +57,7 @@ weather.hour, weather.type = 23, 'FOGGY'
 check('même scène de nuit dans le brouillard : pas signalé', Wanted.report(1, 'carjack', street) == nil)
 weather.hour, weather.type = 14, 'CLEAR'
 fixRandom(0.3)
+Memory.list = {} -- (même tenue que les crimes précédents = reconnu : on teste ici le silencieux seul)
 check('tir silencieux moins signalé', Wanted.report(1, 'gunshot', street, { silenced = true }) == nil)
 check('tir normal signalé', Wanted.report(1, 'gunshot', street) ~= nil)
 check('crime inconnu ignoré', Wanted.report(1, 'nimporte', street) == nil)
@@ -160,6 +161,70 @@ do
     Wanted.blindCameras(at, 60.0, 600)
     check('caméra aveuglée : de nouveau discret', Wanted.report(7, 'carjack', at) == nil)
     Wanted.blind = {}
+    fixRandom(nil)
+end
+
+-- V8 · La ville se souvient : description brute, mémoire des tenues et véhicules, visage connu ------------------------
+do
+    local spot = vec3(-500.0, -500.0, 30.0)
+    join(8, 'CID8', 'Masque Rouge', spot)
+    W.players[8].clothes = { [1] = { 12, 0 }, [11] = { 5, 1 }, [4] = { 3, 0 }, [6] = { 1, 0 }, [5] = { 40, 0 } }
+    W.players[8].props = { [0] = 4 }
+    W.players[8].weapon = joaat('WEAPON_PISTOL')
+    local car8 = CreateVehicleServerSetter(0, 'automobile', spot.x, spot.y, spot.z)
+    SetVehicleNumberPlateText(car8, '4XRL8801')
+    W.entities[car8].color = 64 -- bleu
+    clearPeds() spawnPeds(spot, 8)
+    fixRandom(0.0)
+    local r8 = Wanted.report(8, 'robbery', spot, { vehicle = car8 })
+    local d = r8 and table.concat(r8.desc, ', ') or ''
+    check('description brute : sexe, masque, arme, véhicule et couleur', d:find('Homme') and d:find('masqué') and d:find('armé') and d:find('Voiture %(bleu%)'))
+    check('jamais le nom d\'un inconnu', r8 and r8.named == nil and not d:find('Masque Rouge'))
+    check('mémoire enregistrée', Memory.list['CID8'] and #Memory.list['CID8'] == 1)
+    check('premier signalement : pas de lien', r8 and r8.linked == nil)
+
+    -- même tenue → reconnu (lien vers le signalement précédent), même sans véhicule
+    clearPeds()
+    fixRandom(0.3) -- sans témoin, agression (20 %) : normalement pas signalée
+    local r9 = Wanted.report(8, 'assault', spot)
+    check('même tenue : reconnu et signalé malgré l\'absence de témoin', r9 and r9.linked == r8.id and r9.linkedBy == 'tenue')
+
+    -- changement de tenue mais même voiture (plaque + couleur) → reconnu par le véhicule
+    W.players[8].clothes[11] = { 99, 0 }
+    local r10 = Wanted.report(8, 'assault', spot, { vehicle = car8 })
+    check('autre tenue, même voiture : reconnu par le véhicule', r10 and r10.linkedBy == 'véhicule')
+
+    -- autre tenue + voiture repeinte → la piste est brouillée
+    W.players[8].clothes[4] = { 50, 0 }
+    W.entities[car8].color = 27 -- rouge
+    check('tenue changée et voiture repeinte : piste brouillée', Wanted.report(8, 'assault', spot, { vehicle = car8 }) == nil)
+
+    -- la ville oublie
+    W.players[8].clothes[4] = { 3, 0 } W.players[8].clothes[11] = { 5, 1 }
+    advance(Config.Memory.hours * 3600 * 1000 + 1000)
+    Memory.forget()
+    check('la ville oublie après le délai', Memory.list['CID8'] == nil)
+
+    -- précision faible : peu de détails
+    fixRandom(0.0)
+    weather.hour, weather.type = 23, 'FOGGY'
+    local r11 = Wanted.report(8, 'bank', vec3(4000.0, 4000.0, 30.0), { alarm = true })
+    check('alarme de nuit : description présente', r11 and #r11.desc >= 1)
+    weather.hour, weather.type = 14, 'CLEAR'
+    Wanted.blind = {}
+
+    -- visage connu : célèbre et à visage découvert → nommé ; masqué → jamais
+    provide('gs_reputation', { Get = function() return { street = 0, legal = 0, media = 800 } end })
+    W.players[8].clothes[1] = { 0, 0 }
+    spawnPeds(spot, 8)
+    local r12 = Wanted.report(8, 'robbery', spot)
+    check('visage connu : un témoin le reconnaît', r12 and r12.named == 'Masque Rouge')
+    W.players[8].clothes[1] = { 12, 0 }
+    local r13 = Wanted.report(8, 'robbery', spot)
+    check('visage connu mais masqué : pas nommé', r13 and r13.named == nil)
+    provide('gs_reputation', { Get = function() return { street = 0, legal = 0, media = 0 } end })
+    check('couleurs GTA → mots', Memory.colorName(0) == 'noir' and Memory.colorName(64) == 'bleu' and Memory.colorName(111) == 'blanc' and Memory.colorName(999) == nil)
+    clearPeds()
     fixRandom(nil)
 end
 

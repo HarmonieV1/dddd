@@ -111,7 +111,7 @@ function GSPolice.dossiers()
             local options = {}
             for _, e in ipairs(list) do
                 options[#options + 1] = { title = ('%s · %s'):format(e.label, e.camera), icon = 'video', readOnly = true,
-                    description = ('%s%s%s'):format(e.date, e.plate and (' · plaque ' .. e.plate) or '', e.gender and (' · suspect : ' .. e.gender) or '') }
+                    description = ('%s%s%s'):format(e.date, e.plate and (' · plaque ' .. e.plate) or '', (e.desc and e.desc ~= '') and (' · suspect : ' .. e.desc) or (e.gender and (' · suspect : ' .. e.gender) or '')) }
             end
             if #options == 0 then options[1] = { title = 'Aucune image récente', icon = 'circle-check', readOnly = true } end
             lib.registerContext({ id = 'gs_police_evidence', title = 'Preuves vidéo', menu = 'gs_police_dossiers', options = options })

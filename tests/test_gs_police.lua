@@ -35,7 +35,7 @@ Store = {
     report = function(id) local r = reports[id] return r and { id = r.id, title = r.title, body = r.body, officer = r.officer, officer_cid = r.officer_cid } end,
     deleteReport = function(id) if reports[id] then reports[id] = nil return true end return false end,
 }
-loadResource('gs_police', { R .. 'gs_police/server/main.lua', R .. 'gs_police/server/dossiers.lua' })
+loadResource('gs_police', { R .. 'gs_police/server/main.lua', R .. 'gs_police/server/dossiers.lua', R .. 'gs_police/server/prison.lua' })
 
 local passed, failed = 0, 0
 local function check(name, cond)
@@ -239,6 +239,52 @@ ok2 = cb('gs_police:action', 5, 'report_delete', nil, { id = 1 }); step()
 check('rapport : un autre agent (grade bas) ne supprime pas', not ok2 and #Store.reports() == 1)
 ok2 = cb('gs_police:action', 1, 'report_delete', nil, { id = 1 }); step()
 check('rapport : l\'auteur supprime', ok2 and #Store.reports() == 0)
+
+-- V8 · Prison vivante ------------------------------------------------------------------------------------------------
+do
+    local PP = Config.Prison
+    join(31, 'CID31', 'Détenu Un', vec3(PP.jobs[1].coords.x, PP.jobs[1].coords.y, PP.jobs[1].coords.z))
+    join(32, 'CID32', 'Détenu Deux', vec3(PP.escape.coords.x, PP.escape.coords.y, PP.escape.coords.z))
+    check('boulot refusé hors prison', not Prison.work(31, 1))
+    Police.jail(31, 10, 'Test') Police.jail(32, 10, 'Test')
+    tp(31, PP.jobs[1].coords)
+    local before = Police.jailed[31].untilTs
+    check('boulot : peine réduite + tickets', Prison.work(31, 1) == true and Police.jailed[31].untilTs == before - PP.jobs[1].reduce
+        and W.players[31].items.gs_canteen == PP.jobs[1].tickets)
+    check('boulot : délai entre deux tâches', not Prison.work(31, 1))
+    check('boulot : loin du poste refusé', not Prison.work(31, 2))
+    for _ = 1, 20 do advance(PP.jobCooldown * 1000 + 1000) Prison.work(31, 1) end
+    check('peine jamais sous le minimum', Police.jailed[31].untilTs - os.time() >= PP.minLeft - 1)
+    tp(31, PP.canteen.coords)
+    local t = W.players[31].items.gs_canteen
+    check('cantine : achat en tickets', Prison.buy(31, 'canteen', 1) == true and W.players[31].items.gs_canteen == t - PP.canteen.items[1].price)
+    check('cantine : réservée aux détenus', not Prison.buy(1, 'canteen', 1))
+    tp(31, PP.dealer.coords)
+    W.players[31].items.gs_canteen = 100
+    check('trafiquant : il veut aussi des cigarettes', not Prison.buy(31, 'dealer', 1))
+    W.players[31].items.gs_cigarettes = 5
+    check('trafiquant : outils de fortune', Prison.buy(31, 'dealer', 1) == true and W.players[31].items.gs_prison_tools == 1)
+
+    -- Évasion
+    tp(31, PP.escape.coords)
+    check('évasion : pas en plein jour', not Prison.escape(31))
+    provide('gs_weather', { GetGameTime = function() return 23, 0, 0 end })
+    Police.jailed[32] = nil
+    local ok, msg = Prison.escape(31)
+    check('évasion : impossible seul', not ok and msg:find('seul'))
+    Police.jail(32, 10, 'Test') tp(32, PP.escape.coords) tp(31, PP.escape.coords)
+    W.players[32].items.gs_prison_tools = 0
+    check('évasion : outils requis', not Prison.escape(32))
+    ok = Prison.escape(31)
+    check('évasion à deux : libres, dehors', ok == true and not Police.jailed[31] and not Police.jailed[32] and not jail.CID31
+        and #(W.players[31].pos - vec3(PP.escape.out.x, PP.escape.out.y, PP.escape.out.z)) < 5.0)
+    check('évasion : outils consommés', W.players[31].items.gs_prison_tools == 0)
+    Police.jail(31, 10, 'Retour') Police.jail(32, 10, 'Retour')
+    tp(31, PP.escape.coords) tp(32, PP.escape.coords) W.players[31].items.gs_prison_tools = 1
+    check('évasion : surveillance renforcée ensuite', not Prison.escape(31))
+    Police.jailTick()
+    provide('gs_weather', { GetGameTime = function() return 12, 0, 0 end })
+end
 
 io.write(('\n%d réussis, %d échoués\n'):format(passed, failed))
 os.exit(failed == 0 and 0 or 1)

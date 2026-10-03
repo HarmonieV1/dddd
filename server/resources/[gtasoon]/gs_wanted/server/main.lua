@@ -124,6 +124,8 @@ function Wanted.report(src, crimeType, coords, opts)
     coords = toVec3(coords)
     opts = opts or {}
     if Wanted.inSafeZone(coords) then return nil end
+    -- V8 : chaque crime laisse des traces (gs_evidence), qu'il soit signalé ou non
+    TriggerEvent('gs_wanted:server:crime', src, crimeType, coords, opts.vehicle)
 
     local count, police = Wanted.witnesses(coords, src)
     local visibility = Wanted.visibility()
@@ -146,6 +148,13 @@ function Wanted.report(src, crimeType, coords, opts)
     end
     -- Alarme silencieuse (braquage) : signalement certain et précis, quels que soient les témoins.
     if opts.alarm then chance, precision = 1.0, math.max(precision, 0.85) end
+    -- La ville se souvient : même tenue ou même véhicule qu'un signalement récent → reconnu plus vite
+    local cid, ped, veh = Bridge:GetIdentifier(src), GetPlayerPed(src), opts.vehicle
+    local seen, seenBy = Memory.recall(cid, ped, veh)
+    if seen then
+        chance = clamp(chance + Config.Memory.linkChance, 0, math.max(chance, Config.Witness.maxChance))
+        precision = clamp(precision + Config.Memory.linkPrecision, 0, 1)
+    end
     if math.random() >= chance then return nil end
 
     -- Zone floutée : le centre est décalé aléatoirement dans le rayon d'incertitude.
@@ -163,15 +172,20 @@ function Wanted.report(src, crimeType, coords, opts)
         precision = precision,
         delay = police and 0 or math.floor(lerp(Config.Precision.delayMax, Config.Precision.delayMin, precision)),
     }
-    local veh = opts.vehicle
     if veh and veh ~= 0 and DoesEntityExist(veh) then
         report.model = GetEntityModel(veh)
         report.plate = maskPlate(GetVehicleNumberPlateText(veh), precision)
     end
+    local masked
+    report.desc, masked = Memory.describe(src, precision, veh)
+    report.named = Memory.famous(src, precision, masked)
+    if seen then report.linked, report.linkedBy = seen.id, seenBy end
+    Memory.remember(cid, report.id, ped, veh)
+    TriggerEvent('gs_wanted:server:report', report) -- V8 : rumeurs (jamais l'identité, sauf visage connu)
 
     if camera then -- preuve vidéo pour la police (description, jamais l'identité)
         table.insert(Wanted.evidence, 1, { label = crime.label, camera = camera, date = os.date('%d/%m %H:%M'), plate = report.plate,
-            gender = Bridge:GetGender(src) == 'female' and 'femme' or 'homme' })
+            gender = Bridge:GetGender(src) == 'female' and 'femme' or 'homme', desc = table.concat(report.desc, ', ') })
         Wanted.evidence[Config.Cameras.keep + 1] = nil
     end
     Wanted.addHeat(src, crime.heat)
@@ -357,3 +371,6 @@ exports('ReportCrime', function(src, crimeType, coords, opts) return Wanted.repo
 exports('GetHeat', function(src) return Wanted.heat[src] or 0 end)
 exports('AddHeat', Wanted.addHeat)
 exports('ClearHeat', Wanted.clearHeat)
+-- Derniers signalements (rumeurs, historique des véhicules…) : jamais l'identité, sauf visage connu
+exports('GetHistory', function() return Wanted.history end)
+exports('CrimeLabel', function(t) return Config.Crimes[t] and Config.Crimes[t].label or nil end)

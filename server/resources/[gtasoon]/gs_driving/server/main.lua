@@ -180,6 +180,54 @@ end)
 
 AddEventHandler('gs_bridge:server:playerUnloaded', function(src) finish(src, false) Driving.quiz[src] = nil end)
 
+-- V8 · Permis à points -----------------------------------------------------------------------------------------------
+
+--- Solde de points (avec la récupération : +1 point par période sans infraction). nil = pas de permis.
+function Driving.points(cid)
+    if status(cid) < 2 then return nil end
+    local pts, last = Store.points(cid)
+    pts, last = pts or Config.Points.max, last or 0
+    if pts < Config.Points.max and last > 0 then
+        local gained = math.floor((os.time() - last) / (Config.Points.recoverDays * 86400))
+        if gained > 0 then
+            pts = math.min(Config.Points.max, pts + gained)
+            Store.setPoints(cid, pts, pts >= Config.Points.max and 0 or (last + gained * Config.Points.recoverDays * 86400))
+        end
+    end
+    return pts
+end
+
+--- Retire des points. À 0 : permis annulé (retour à l'auto-école). Retourne le nouveau solde (nil = pas de permis).
+function Driving.removePoints(src, n, reason)
+    n = math.floor(tonumber(n) or 0)
+    local cid = Bridge:GetIdentifier(src)
+    if not cid or n < 1 or n > Config.Points.maxPerOffense then return nil end
+    local pts = Driving.points(cid)
+    if not pts then return nil end
+    pts = math.max(0, pts - n)
+    Store.setPoints(cid, pts, os.time())
+    if pts == 0 then
+        Store.set(cid, 0)
+        Bridge:SetLicence(src, 'driver', false)
+        Bridge:Notify(src, 'Solde de points nul : permis annulé. Il faut repasser l\'auto-école (code et conduite).', 'error')
+        if GetResourceState('gs_police') == 'started' then
+            pcall(function() exports.gs_police:AddRecord(cid, 'Permis annulé (solde de points nul)', 0, 0, 'Préfecture') end)
+        end
+    else
+        Bridge:Notify(src, ('Permis : -%d point(s) (%s). Solde : %d / %d.'):format(n, reason or 'infraction', pts, Config.Points.max), 'warning')
+    end
+    return pts
+end
+
+lib.callback.register('gs_driving:points', function(src)
+    if not Security:RateLimit(src, 'gs_driving:points', 3, 5000) then return nil end
+    local cid = Bridge:GetIdentifier(src)
+    return cid and Driving.points(cid) or nil, Config.Points.max
+end)
+
+exports('RemovePoints', function(src, n, reason) return Driving.removePoints(src, n, reason) end)
+exports('GetPoints', function(src) local cid = Bridge:GetIdentifier(src) return cid and Driving.points(cid) or nil end)
+
 CreateThread(function()
     Store.init()
     while true do
