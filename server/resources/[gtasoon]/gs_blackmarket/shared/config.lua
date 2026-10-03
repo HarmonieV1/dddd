@@ -49,6 +49,15 @@ Config.Catalog = {
 Config.Legal = { shopType = 'Ammunation', ammoPerDay = 120, weaponsPerDay = 1,
     free = { WEAPON_KNIFE = true, WEAPON_BAT = true, WEAPON_FLASHLIGHT = true } } -- armes blanches : pas de plafond
 
+-- Permis de port d'arme : demandé au comptoir de chaque Ammu-Nation (casier vierge exigé : pas recherché, pas de
+-- crime récent). Retirable par la police (F4 → Permis). Les armes à feu et munitions du comptoir l'exigent.
+Config.Permit = {
+    price = 5000, needDriver = true, maxHeat = 0,
+    desks = { vec3(-662.18, -934.96, 21.83), vec3(810.25, -2157.6, 29.62), vec3(1693.44, 3760.16, 34.71),
+              vec3(-330.24, 6083.88, 31.45), vec3(252.63, -50.0, 69.94), vec3(22.56, -1109.89, 29.8),
+              vec3(2567.69, 294.38, 108.73), vec3(-1117.58, 2698.61, 18.55), vec3(842.44, -1033.42, 28.19) },
+}
+
 -- Contrats entre joueurs (/contrats) : même accès que le marché noir. La récompense (argent sale) est bloquée à la
 -- publication et versée quand le commanditaire valide. Commission de 5 % (perdue) ; expiration 48 h (remboursé).
 -- Élimination : scène RP obligatoire (règlement : pas de RDM, préavis, pas de meurtre sans interaction).

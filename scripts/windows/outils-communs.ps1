@@ -29,6 +29,23 @@ $QboxPatches = @(
        repl = '<script>document.addEventListener("dblclick",function(e){if(e.target&&e.target.dispatchEvent){e.target.dispatchEvent(new MouseEvent("click",{bubbles:true,cancelable:true,altKey:true,view:window}))}},true)</script><!--gs-dblclick--></body>' },
     # Concession PDM : catégorie « Imports ROADTRIP » en tête, avec toutes les voitures importées (IMPORTER-MODS)
     @{ res = 'qbx_vehicleshop'; file = 'config\shared.lua'; find = "(categories = \{\s*\n(\s*))sportsclassics = 'Sports Classics',"; repl = "`${1}roadtrip = ' ★ Imports ROADTRIP',`n`${2}sportsclassics = 'Sports Classics',"; why = 'concession : catégorie Imports ROADTRIP' }
+    # Garages Qbox en français ; fourrière : logo fourrière (524) au lieu de la dépanneuse
+    @{ res = 'qbx_garages'; file = 'config\server.lua'; why = 'garages et fourrières en français'; map = [ordered]@{
+        "'Impound Lot'" = "'Fourrière'"
+        "'Air Depot'" = "'Fourrière aérienne'"; "'LSYMC Depot'" = "'Fourrière nautique'"
+        "'Motel Parking'" = "'Parking du motel'"; "'San Andreas Parking'" = "'Parking San Andreas'"; "'Spanish Ave Parking'" = "'Parking Spanish Avenue'"
+        "'Caears 24 Parking'" = "'Parking Caesars 24'"; "'Little Seoul Parking'" = "'Parking Little Seoul'"; "'Laguna Parking'" = "'Parking Laguna'"
+        "'Airport Parking'" = "'Parking de l''aéroport'"; "'Beach Parking'" = "'Parking de la plage'"; "'The Motor Hotel Parking'" = "'Parking du Motor Hotel'"
+        "'Liqour Parking'" = "'Parking Rob''s Liquor'"; "'Shore Parking'" = "'Parking du lac'"; "'Bell Farms Parking'" = "'Parking Bell Farms'"
+        "'Dumbo Private Parking'" = "'Parking privé Dumbo'"; "'Pillbox Garage Parking'" = "'Parking de Pillbox'"; "'Airport Hangar'" = "'Hangar de l''aéroport'"
+        "'Sandy Shores Hangar'" = "'Hangar de Sandy Shores'"; "'LSYMC Boathouse'" = "'Port de plaisance LSYMC'"; "'Paleto Boathouse'" = "'Port de Paleto'"
+        "'Millars Boathouse'" = "'Port de Millars'"
+    } }
+    @{ res = 'qbx_garages'; file = 'config\server.lua'; find = "(name = 'Fourrière',\s*sprite = )68,"; repl = '${1}524,'; why = 'fourrière : logo fourrière' }
+    # Création perso : pas de photos des parents dans illenium → noms clairs à la place de Père / Mère / Race
+    @{ res = 'illenium-appearance'; file = 'locales\fr.lua'; why = 'création perso : « Visage de base 1 / 2 », « Ressemblance », « Teint »'
+       find = '(?s)title = "Héritage",(\s*)shape = \{(\s*)title = "Visage",(\s*)firstOption = "Père",(\s*)secondOption = "Mère",(\s*)mix = "Mix"(\s*)\},(\s*)skin = \{(\s*)title = "Peau",(\s*)firstOption = "Père",(\s*)secondOption = "Mère",(\s*)mix = "Mix"(\s*)\},(\s*)race = \{(\s*)title = "Race",'
+       repl = 'title = "Traits de base",${1}shape = {${2}title = "Forme du visage",${3}firstOption = "Visage de base 1",${4}secondOption = "Visage de base 2",${5}mix = "Ressemblance (1 ↔ 2)"${6}},${7}skin = {${8}title = "Teint",${9}firstOption = "Teint de base 1",${10}secondOption = "Teint de base 2",${11}mix = "Mélange des teints"${12}},${13}race = {${14}title = "Origines",' }
     @{ res = 'illenium-appearance'; file = 'locales\fr.lua'; find = 'description = "tu resteras moche"'; repl = 'description = "Ton apparence sera enregistrée"'; why = 'création perso : texte d''enregistrement propre' }
     # Doubles logos sur la carte : nos icônes (en français) gardées, celles de Qbox au même endroit masquées
     @{ res = 'qbx_cityhall'; file = 'config\shared.lua'; find = 'showBlip = true'; repl = 'showBlip = false'; why = 'carte : un seul logo Pôle Emploi / services' }
@@ -128,6 +145,15 @@ function Set-QboxOverrides($Res, $Repo, [scriptblock]$Say) {
     }
     foreach ($p in $QboxPatches) {
         $target = Find-Resource $Res $p.res
+        if ($p.map) { # liste de remplacements simples (textes exacts) dans un fichier, un seul message
+            $file = if ($target) { Join-Path $target.FullName $p.file } else { $null }
+            if (-not $file -or -not (Test-Path -LiteralPath $file)) { & $Say "  $($p.res)\$($p.file) introuvable : $($p.why) non appliqué" 'Yellow'; continue }
+            $text = Get-Content -LiteralPath $file -Raw -Encoding UTF8
+            $n = 0
+            foreach ($k in $p.map.Keys) { if ($text.Contains($k)) { $text = $text.Replace($k, $p.map[$k]); $n++ } }
+            if ($n -gt 0) { Write-Utf8 $file $text; & $Say "  $($p.res) : $($p.why) ($n)" 'Green' }
+            continue
+        }
         if ($p.dir) { # correctif sur des fichiers compilés (nom variable) : tous les fichiers du dossier
             $folder = if ($target) { Join-Path $target.FullName $p.dir } else { $null }
             if (-not $folder -or -not (Test-Path -LiteralPath $folder)) { & $Say "  $($p.res) : dossier $($p.dir) introuvable ($($p.why) non appliqué)" 'Yellow'; continue }

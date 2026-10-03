@@ -17,9 +17,9 @@ const ACTIONS = [
   { name: 'jail', label: 'Isoler', level: 2, danger: true, fields: [{ key: 'minutes', label: 'Minutes', type: 'number' }, { key: 'reason', label: 'Motif (publié)' }] },
   { name: 'unjail', label: 'Libérer isolement', level: 2 },
   { name: 'kick', label: 'Expulser', level: 2, danger: true, fields: [{ key: 'reason', label: 'Motif (publié)' }] },
-  { name: 'givemoney', label: 'Donner argent', level: 3, fields: [{ key: 'account', label: 'Compte', type: 'select', options: ['cash', 'bank'] }, { key: 'amount', label: 'Montant', type: 'number' }, { key: 'reason', label: 'Motif (journal)' }] },
-  { name: 'removemoney', label: 'Retirer argent', level: 3, danger: true, fields: [{ key: 'account', label: 'Compte', type: 'select', options: ['cash', 'bank'] }, { key: 'amount', label: 'Montant', type: 'number' }, { key: 'reason', label: 'Motif (journal)' }] },
-  { name: 'giveitem', label: 'Donner item', level: 3, fields: [{ key: 'item', label: 'Nom de l’item' }, { key: 'amount', label: 'Quantité', type: 'number' }, { key: 'reason', label: 'Motif (journal)' }] },
+  { name: 'givemoney', label: 'Donner argent', level: 4, fields: [{ key: 'account', label: 'Compte', type: 'select', options: ['cash', 'bank'] }, { key: 'amount', label: 'Montant', type: 'number' }, { key: 'reason', label: 'Motif (journal)' }] },
+  { name: 'removemoney', label: 'Retirer argent', level: 4, danger: true, fields: [{ key: 'account', label: 'Compte', type: 'select', options: ['cash', 'bank'] }, { key: 'amount', label: 'Montant', type: 'number' }, { key: 'reason', label: 'Motif (journal)' }] },
+  { name: 'giveitem', label: 'Donner item', level: 4, fields: [{ key: 'item', label: 'Nom de l’item' }, { key: 'amount', label: 'Quantité', type: 'number' }, { key: 'reason', label: 'Motif (journal)' }] },
   { name: 'addjob', label: 'Ajouter contrat', level: 3, fields: [{ key: 'job', label: 'Job', type: 'select', options: ['police', 'ambulance', 'mechanic', 'taxi', 'delivery', 'garbage'] }, { key: 'grade', label: 'Grade', type: 'number' }] },
   { name: 'removejob', label: 'Retirer contrat', level: 3, danger: true, fields: [{ key: 'job', label: 'Job', type: 'select', options: ['police', 'ambulance', 'mechanic', 'taxi', 'delivery', 'garbage'] }] },
 ]

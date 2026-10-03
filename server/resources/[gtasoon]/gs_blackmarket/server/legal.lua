@@ -29,3 +29,27 @@ CreateThread(function()
         if not ok then Bridge:Notify(payload.source, msg, 'error') return false end
     end, {})
 end)
+
+--- Permis de port d'arme au comptoir. Retourne ok, message. Isolé pour les tests.
+function Legal.permit(src)
+    local P = Config.Permit
+    local near = false
+    for _, d in ipairs(P.desks) do if exports.gs_security:InRange(src, d, 4.0) then near = true break end end
+    if not near then return false, 'Va au comptoir d\'un Ammu-Nation.' end
+    local lic = Bridge:GetLicences(src) or {}
+    if lic.weapon then return false, 'Tu as déjà ton permis de port d\'arme.' end
+    if P.needDriver and not lic.driver then return false, 'Il faut d\'abord ton permis de conduire (pièce d\'identité exigée).' end
+    if GetResourceState('gs_wanted') == 'started' and (exports.gs_wanted:GetHeat(src) or 0) > P.maxHeat then
+        return false, 'Refusé : tu es signalé par la police. Reviens avec un casier propre.'
+    end
+    if not Bridge:RemoveMoney(src, 'bank', P.price, 'permis-arme') and not Bridge:RemoveMoney(src, 'cash', P.price, 'permis-arme') then
+        return false, ('Il faut %d $ (banque ou liquide).'):format(P.price)
+    end
+    Bridge:SetLicence(src, 'weapon', true)
+    return true, 'Permis de port d\'arme délivré. Les armes du comptoir te sont accessibles (1 arme et 120 munitions par jour).'
+end
+
+lib.callback.register('gs_blackmarket:permit', function(src)
+    if not exports.gs_security:RateLimit(src, 'gs_blackmarket:permit', 3, 10000) then return false, 'Doucement.' end
+    return Legal.permit(src)
+end)

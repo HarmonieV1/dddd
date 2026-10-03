@@ -107,6 +107,19 @@ exports('RestoreAppearance', function()
     CreateThread(function()
         local female = playerData.charinfo and tonumber(playerData.charinfo.gender) == 1
         local hash = GetHashKey(female and 'mp_f_freemode_01' or 'mp_m_freemode_01')
+        -- Déjà le bon corps (retour de tenue de service) : on remet seulement vêtements et accessoires, sans changer
+        -- de modèle (sinon le perso apparaît chauve et en sous-vêtements une fraction de seconde).
+        if app and GetEntityModel(PlayerPedId()) == hash then
+            local ok = pcall(function()
+                local ped = PlayerPedId()
+                exports['illenium-appearance']:setPedComponents(ped, app.components) -- [API]
+                exports['illenium-appearance']:setPedProps(ped, app.props) -- [API]
+            end)
+            if ok then return end
+        end
+        -- Changement de corps (animal, skin boutique) : écran noir le temps du changement
+        DoScreenFadeOut(150)
+        Wait(160)
         RequestModel(hash) -- natif : gs_bridge ne charge pas ox_lib (lib = nil ici, c'était le bug du retour humain)
         local deadline = GetGameTimer() + 5000
         while not HasModelLoaded(hash) and GetGameTimer() < deadline do Wait(0) end
@@ -114,8 +127,11 @@ exports('RestoreAppearance', function()
         SetPedDefaultComponentVariation(PlayerPedId())
         SetModelAsNoLongerNeeded(hash)
         Wait(250)
-        if app and pcall(function() exports['illenium-appearance']:setPlayerAppearance(app) end) then return end -- [API]
-        TriggerEvent('illenium-appearance:client:reloadSkin', true) -- [API] recharge le skin sauvegardé en BDD
+        if not (app and pcall(function() exports['illenium-appearance']:setPlayerAppearance(app) end)) then -- [API]
+            TriggerEvent('illenium-appearance:client:reloadSkin', true) -- [API] recharge le skin sauvegardé en BDD
+            Wait(500)
+        end
+        DoScreenFadeIn(250)
     end)
 end)
 

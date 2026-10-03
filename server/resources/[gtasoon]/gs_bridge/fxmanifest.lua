@@ -8,5 +8,6 @@ version '0.2.0'
 
 dependencies { 'oxmysql', 'qbx_core', 'ox_inventory' }
 
-server_scripts { '@oxmysql/lib/MySQL.lua', 'server/main.lua' }
-client_scripts { 'client/main.lua' }
+server_scripts { '@oxmysql/lib/MySQL.lua', 'server/main.lua', 'server/points.lua' }
+client_scripts { 'client/main.lua', 'client/points.lua' }
+files { 'shared/points.lua' } -- inclus par nos autres ressources (@gs_bridge/shared/points.lua)

@@ -90,3 +90,23 @@ local VOICE_MODES = { 'Chuchoter (très proche)', 'Normal', 'Crier (loin)' }
 AddEventHandler('pma-voice:setTalkingMode', function(mode)
     lib.notify({ description = 'Voix : ' .. (VOICE_MODES[mode] or ('mode ' .. tostring(mode))), type = 'inform', icon = 'microphone', duration = 1500 })
 end)
+
+-- Inventaire : le double-clic qui utilise / ferme l'inventaire ne doit pas finir en coup de poing dans le vide.
+-- Après fermeture de l'inventaire ou utilisation d'un objet, attaque et visée bloquées 0,7 s.
+local noAttackUntil = 0
+local function shield()
+    local first = noAttackUntil < GetGameTimer()
+    noAttackUntil = GetGameTimer() + 700
+    if not first then return end
+    CreateThread(function()
+        while GetGameTimer() < noAttackUntil do
+            DisablePlayerFiring(PlayerId(), true)
+            for _, c in ipairs({ 24, 25, 140, 141, 142, 257, 263, 264 }) do DisableControlAction(0, c, true) end
+            Wait(0)
+        end
+    end)
+end
+AddStateBagChangeHandler('invOpen', ('player:%s'):format(GetPlayerServerId(PlayerId())), function(_, _, value)
+    if value == false then shield() end
+end)
+AddEventHandler('ox_inventory:usedItem', shield)

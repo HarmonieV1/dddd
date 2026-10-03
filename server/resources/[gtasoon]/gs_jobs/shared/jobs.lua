@@ -146,7 +146,7 @@ Jobs = {
         },
         armory = {
             { item = 'radio', max = 1 }, { item = 'repairkit', max = 5 }, { item = 'cleaningkit', max = 5 },
-            { item = 'jerry_can', max = 2 }, { item = 'WEAPON_WRENCH', max = 1 },
+            { item = 'WEAPON_PETROLCAN', max = 2 }, { item = 'WEAPON_WRENCH', max = 1 },
             { item = 'advancedrepairkit', max = 2, minGrade = 1 },
         },
         -- Tâche d'employé : aller chercher des pièces au dépôt et les ramener (payé par l'État, comme les autres missions)

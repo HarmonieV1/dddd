@@ -40,7 +40,7 @@ Config.Items = {
     vodka     = { label = 'Vodka', base = 35, min = 0.7, max = 1.6, volume = 25 },
     whiskey   = { label = 'Whisky', base = 45, min = 0.7, max = 1.6, volume = 25 },
     -- Quincaillerie
-    jerry_can = { label = 'Jerrican', base = 60, min = 0.8, max = 1.6, volume = 20 },
+    WEAPON_PETROLCAN = { label = 'Jerrican d\'essence', base = 60, min = 0.8, max = 1.6, volume = 20 },
     binoculars = { label = 'Jumelles', base = 150, min = 0.8, max = 1.5, volume = 15 },
     spraycan  = { label = 'Bombe de peinture', base = 40, min = 0.8, max = 1.6, volume = 20 },
     advancedrepairkit = { label = 'Kit de réparation avancé', base = 900, min = 0.8, max = 1.5, volume = 10 },
@@ -65,9 +65,11 @@ Config.EventMultipliers = {
 -- Catalogues (ordre = ordre d'affichage)
 local SUPERETTE = { 'water', 'sprunk', 'coffee', 'gs_energy', 'burger', 'sandwich', 'gs_chips', 'gs_donut',
     'beer', 'wine', 'gs_cigarettes', 'lighter', 'bandage', 'phone', 'scratch_ticket' }
-local CAVISTE = { 'beer', 'wine', 'vodka', 'whiskey', 'gs_cigarettes', 'lighter', 'water', 'sprunk', 'gs_chips' }
+-- Rob's Liquor : dans le jeu ce sont de petites supérettes → même logo, rayon alcool en plus
+local CAVISTE = { 'beer', 'wine', 'vodka', 'whiskey', 'water', 'sprunk', 'coffee', 'gs_energy', 'gs_chips', 'gs_donut',
+    'sandwich', 'gs_cigarettes', 'lighter', 'scratch_ticket' }
 local PHARMACIE = { 'painkillers', 'bandage', 'water', 'gs_energy' }
-local QUINCAILLERIE = { 'repairkit', 'advancedrepairkit', 'cleaningkit', 'jerry_can', 'spraycan', 'plant_pot', 'fertilizer', 'fishingrod', 'pickaxe', 'axe', 'huntingknife', 'lockpick', 'radio', 'binoculars', 'phone' }
+local QUINCAILLERIE = { 'repairkit', 'advancedrepairkit', 'cleaningkit', 'WEAPON_PETROLCAN', 'spraycan', 'plant_pot', 'fertilizer', 'fishingrod', 'pickaxe', 'axe', 'huntingknife', 'lockpick', 'radio', 'binoculars', 'phone' }
 
 -- Commerces (achat). Coords = comptoirs des magasins du jeu (mêmes points qu'ox_inventory) ; blip = style de Config.Blips.
 -- clerk = vendeur PNJ derrière le comptoir (vec4, à caler en jeu : F11 → Copier mes coordonnées).
@@ -85,12 +87,12 @@ Config.Shops = {
     { label = 'Supérette Senora', coords = vec3(2678.29, 3279.94, 55.24), items = SUPERETTE, blip = 'shop', clerk = vec4(2677.47, 3279.76, 55.24, 335.08) },
     { label = 'Supérette Tataviam', coords = vec3(2557.19, 381.4, 108.62), items = SUPERETTE, blip = 'shop', clerk = vec4(2556.66, 380.84, 108.62, 356.67) },
     { label = 'Supérette Vinewood', coords = vec3(373.13, 326.29, 103.57), items = SUPERETTE, blip = 'shop', clerk = vec4(372.66, 326.98, 103.57, 253.73) },
-    { label = 'Caviste Mirror Park', coords = vec3(1134.9, -982.34, 46.41), items = CAVISTE, blip = 'liquor', clerk = vec4(1134.2, -983.26, 46.42, 277.24) },
-    { label = 'Caviste Vespucci', coords = vec3(-1222.33, -907.82, 12.43), items = CAVISTE, blip = 'liquor', clerk = vec4(-1221.58, -908.15, 12.33, 35.49) },
-    { label = 'Caviste Morningwood', coords = vec3(-1486.67, -378.46, 40.26), items = CAVISTE, blip = 'liquor', clerk = vec4(-1486.59, -377.68, 40.16, 139.51) },
-    { label = 'Caviste Chumash', coords = vec3(-2967.0, 390.9, 15.14), items = CAVISTE, blip = 'liquor', clerk = vec4(-2966.39, 391.42, 15.04, 87.48) },
-    { label = 'Caviste Route 68', coords = vec3(1165.95, 2710.2, 38.26), items = CAVISTE, blip = 'liquor', clerk = vec4(1165.28, 2710.8, 38.16, 179.43) },
-    { label = 'Caviste Sandy Shores', coords = vec3(1393.0, 3605.95, 35.11), items = CAVISTE, blip = 'liquor', clerk = vec4(1392.46, 3606.41, 34.98, 199.0) },
+    { label = "Rob's Liquor Mirror Park", coords = vec3(1134.9, -982.34, 46.41), items = CAVISTE, blip = 'shop', clerk = vec4(1134.2, -983.26, 46.42, 277.24) },
+    { label = "Rob's Liquor Vespucci", coords = vec3(-1222.33, -907.82, 12.43), items = CAVISTE, blip = 'shop', clerk = vec4(-1221.58, -908.15, 12.33, 35.49) },
+    { label = "Rob's Liquor Morningwood", coords = vec3(-1486.67, -378.46, 40.26), items = CAVISTE, blip = 'shop', clerk = vec4(-1486.59, -377.68, 40.16, 139.51) },
+    { label = "Rob's Liquor Chumash", coords = vec3(-2967.0, 390.9, 15.14), items = CAVISTE, blip = 'shop', clerk = vec4(-2966.39, 391.42, 15.04, 87.48) },
+    { label = "Rob's Liquor Route 68", coords = vec3(1165.95, 2710.2, 38.26), items = CAVISTE, blip = 'shop', clerk = vec4(1165.28, 2710.8, 38.16, 179.43) },
+    { label = "Rob's Liquor Sandy Shores", coords = vec3(1393.0, 3605.95, 35.11), items = CAVISTE, blip = 'shop', clerk = vec4(1392.46, 3606.41, 34.98, 199.0) },
     { label = 'Quincaillerie Senora', coords = vec3(2746.8, 3473.13, 55.67), items = QUINCAILLERIE, blip = 'hardware', clerk = vec4(2747.8, 3472.86, 55.67, 255.08) },
     { label = 'Pharmacie Dollar Pills', coords = vec3(69.3, -1570.1, 29.6), items = PHARMACIE, blip = 'pharmacy' }, -- [À CALER]
     { label = 'Pharmacie Pillbox', coords = vec3(318.4, -1076.8, 29.5), items = PHARMACIE, blip = 'pharmacy' },       -- [À CALER]

@@ -6,7 +6,7 @@ Config = {}
 Config.Aces = { 'gs.admin.helper', 'gs.admin.mod', 'gs.admin.admin', 'gs.admin.superadmin', 'gs.admin.founder' }
 Config.LevelNames = { 'Helper', 'Modérateur', 'Admin', 'Super-admin', 'Fondateur' }
 Config.Key = 'F10'          -- panel complet
-Config.QuickKey = 'DELETE'  -- menu staff rapide (F11) ; F11 reste à pma-voice (portée de la voix)
+Config.QuickKey = 'F11'     -- menu staff rapide (la portée de la voix de pma-voice est sur ²)
 
 -- Rangs donnés en jeu : SEUL le fondateur promeut / rétrograde (jusqu'à super-admin). Les fondateurs se déclarent
 -- dans secrets.cfg (group.god), jamais depuis le jeu. Groupe ACE de chaque rang :
@@ -53,6 +53,27 @@ Config.Animals = {
     { model = 'a_c_boar_02', label = 'Sanglier (brun)' }, { model = 'a_c_deer_02', label = 'Biche' }, { model = 'a_c_mtlion_02', label = 'Puma (clair)' },
 }
 -- Les animaux absents du build du jeu sont refusés proprement (« modèle absent »). Aquatiques : à utiliser dans l'eau.
+
+-- Persos GTA (peds) pour le staff : animation, événements, figurants. Même pouvoir que les animaux (niveau `animal`).
+Config.Peds = {
+    { model = 'player_zero', label = 'Michael De Santa' }, { model = 'player_one', label = 'Franklin Clinton' },
+    { model = 'player_two', label = 'Trevor Philips' }, { model = 'ig_lamardavis', label = 'Lamar Davis' },
+    { model = 'ig_lestercrest', label = 'Lester Crest' }, { model = 'ig_jimmydisanto', label = 'Jimmy De Santa' },
+    { model = 'ig_amandatownley', label = 'Amanda De Santa' }, { model = 'ig_tracydisanto', label = 'Tracey De Santa' },
+    { model = 'ig_wade', label = 'Wade' }, { model = 'ig_ron', label = 'Ron' }, { model = 'ig_davenorton', label = 'Dave Norton' },
+    { model = 'ig_stevehains', label = 'Steve Haines' }, { model = 'ig_tenniscoach', label = 'Prof de tennis' },
+    { model = 'ig_chef', label = 'Chef' }, { model = 'ig_stretch', label = 'Stretch' }, { model = 'ig_tanisha', label = 'Tanisha' },
+    { model = 'ig_lazlow', label = 'Lazlow' }, { model = 'ig_paper', label = 'Agent du FIB' }, { model = 'u_m_y_imporage', label = 'Clown' },
+    { model = 's_m_y_cop_01', label = 'Policier' }, { model = 's_m_y_sheriff_01', label = 'Shérif' }, { model = 's_m_y_swat_01', label = 'SWAT' },
+    { model = 's_m_m_paramedic_01', label = 'Ambulancier' }, { model = 's_m_y_fireman_01', label = 'Pompier' },
+    { model = 's_m_m_security_01', label = 'Agent de sécurité' }, { model = 's_m_y_construct_01', label = 'Ouvrier' },
+    { model = 's_m_m_postal_01', label = 'Facteur' }, { model = 's_m_y_clown_01', label = 'Clown de fête' },
+    { model = 'u_m_y_zombie_01', label = 'Zombie' }, { model = 's_m_m_movalien_01', label = 'Extraterrestre' },
+    { model = 'u_m_m_jesus_01', label = 'Jésus' }, { model = 'a_f_y_beach_01', label = 'Plagiste' },
+    { model = 'a_m_y_hipster_01', label = 'Hipster' }, { model = 'g_m_y_ballasout_01', label = 'Ballas' },
+    { model = 'g_m_y_famca_01', label = 'Families' }, { model = 'g_m_y_mexgoon_01', label = 'Vagos' },
+    { model = 'g_m_y_lost_01', label = 'Lost MC' },
+}
 
 -- Événements staff en un clic (admin+, mode staff) : centrés sur TA position, annonce + GPS pour tout le monde,
 -- effet appliqué aux joueurs dans le rayon pendant `minutes`. fx : fastrun, superjump, lowgravity, melee (boxe : armes rangées).

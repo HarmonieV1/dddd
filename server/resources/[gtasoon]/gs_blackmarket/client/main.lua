@@ -66,3 +66,18 @@ CreateThread(function()
 end)
 
 AddEventHandler('onResourceStop', function(res) if res == GetCurrentResourceName() then despawn() end end)
+
+-- Permis de port d'arme : point au comptoir de chaque Ammu-Nation
+CreateThread(function()
+    for i, d in ipairs(Config.Permit.desks) do
+        exports.ox_target:addSphereZone({ coords = d, radius = 1.6, options = { {
+            name = 'gs_permit_' .. i, icon = 'fa-solid fa-id-card', label = ('Permis de port d\'arme (%d $)'):format(Config.Permit.price),
+            onSelect = function()
+                local ok = lib.alertDialog({ header = 'Permis de port d\'arme', centered = true, cancel = true,
+                    content = ('Prix : **%d $**. Conditions : permis de conduire, ne pas être recherché par la police.\n\nLe permis peut être retiré par la police.'):format(Config.Permit.price),
+                    labels = { confirm = 'Demander', cancel = 'Annuler' } })
+                if ok == 'confirm' then notify(lib.callback.await('gs_blackmarket:permit', false)) end
+            end,
+        } } })
+    end
+end)

@@ -11,7 +11,7 @@ function Market.read()
     if started('gs_economy') then
         local e = exports.gs_economy
         v.prices = math.floor((e:GetPriceIndex() or 1) * 1000 + 0.5) / 10   -- 100 pts = prix d'équilibre
-        v.fuel = e:GetBuyPrice('jerry_can')
+        v.fuel = e:GetBuyPrice('WEAPON_PETROLCAN')
         v.metals = e:GetSellPrice('copper')
     end
     v.housing = Store.housing()

@@ -361,9 +361,25 @@ Actions.power = { level = 1, duty = true, run = function(src, _, data)
     if data.power == 'animal' and data.model then
         local ok = false
         for _, a in ipairs(Config.Animals) do if a.model == data.model then ok = true end end
-        need(ok, 'Animal inconnu.')
+        for _, a in ipairs(Config.Peds) do if a.model == data.model then ok = true end end
+        need(ok, 'Modèle inconnu.')
     end
     return ('%s %s'):format(data.power, data.model or (data.on == false and 'OFF' or 'ON'))
+end }
+
+-- Points déplaçables de toutes nos ressources (gs_bridge/shared/points.lua) : posé à la position du staff.
+Actions.movepoint = { level = 3, duty = true, run = function(src, _, data)
+    local ped = GetPlayerPed(src)
+    local c = GetEntityCoords(ped)
+    local ok, res = exports.gs_bridge:SetPoint(data.key, vector4(c.x, c.y, c.z, GetEntityHeading(ped)))
+    need(ok, res)
+    return ('Point déplacé (%s relancé)'):format(res)
+end }
+
+Actions.resetpoint = { level = 3, duty = true, run = function(_, _, data)
+    local ok, res = exports.gs_bridge:ResetPoint(data.key)
+    need(ok, res)
+    return ('Point remis à l\'origine (%s relancé)'):format(res)
 end }
 
 Actions.spectate = { level = 2, duty = true, target = true, run = function(src, target)

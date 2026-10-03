@@ -29,14 +29,17 @@ local function openMarket(kind, index, place)
                 local input = lib.inputDialog(q.label, {
                     { type = 'number', label = 'Quantité', min = 1, max = Config.MaxQuantity, default = 1, required = true },
                 })
-                if not input then return end
-                local ok, msg
-                if kind == 'sell' then
-                    ok, msg = lib.callback.await('gs_economy:sell', false, index, q.item, input[1])
-                else
-                    ok, msg = lib.callback.await('gs_economy:buy', false, index, q.item, input[1])
+                if input then
+                    local ok, msg
+                    if kind == 'sell' then
+                        ok, msg = lib.callback.await('gs_economy:sell', false, index, q.item, input[1])
+                    else
+                        ok, msg = lib.callback.await('gs_economy:buy', false, index, q.item, input[1])
+                    end
+                    lib.notify({ description = msg, type = ok and 'success' or 'error' })
                 end
-                lib.notify({ description = msg, type = ok and 'success' or 'error' })
+                -- le menu reste ouvert (prix à jour) : plusieurs achats d'affilée, Échap pour partir
+                openMarket(kind, index, place)
             end,
         }
     end

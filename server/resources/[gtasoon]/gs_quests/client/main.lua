@@ -331,13 +331,15 @@ local function openMenu()
     lib.showContext('gs_progress')
 end
 
--- Plus de commande « progression » : une ancienne touche F5 gardée par FiveM ouvrait ce menu en même temps que les emotes.
-RegisterCommand('progression', function()
+-- Nom de commande jamais utilisé avant : FiveM garde chez chaque joueur la touche d'un ancien nom (« progression » était
+-- sur F5 en V2, d'où F5 = emotes + progression et F3 sans effet). Un nom neuf = la touche F3 par défaut pour tous.
+-- « progression » n'existe plus du tout, pour que l'ancienne touche F5 ne déclenche plus rien.
+RegisterCommand('gs_progression_v7', function()
     -- même touche = fermer (Échap part au jeu : les menus laissent marcher)
     if lib.getOpenContextMenu() then return lib.hideContext() end
     openMenu()
-end, false) -- F3 (nom neuf en V5 : la nouvelle touche par défaut s'applique à tout le monde)
-RegisterKeyMapping('progression', 'Progression et quêtes', 'keyboard', Config.Key)
+end, false)
+RegisterKeyMapping('gs_progression_v7', 'Progression et quêtes', 'keyboard', Config.Key)
 
 -- Interaction avec les personnages : une zone ox_target fixe par personnage (marche même si le PNJ n'a pas
 -- encore chargé ou s'il est mal posé) ; la cabine de la Voix n'a pas de PNJ.

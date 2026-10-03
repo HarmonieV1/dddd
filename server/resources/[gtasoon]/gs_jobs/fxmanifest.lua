@@ -14,6 +14,7 @@ shared_scripts {
     'shared/config.lua',
     'shared/locations.lua',
     'shared/jobs.lua',
+    '@gs_bridge/shared/points.lua',
 }
 
 server_scripts {

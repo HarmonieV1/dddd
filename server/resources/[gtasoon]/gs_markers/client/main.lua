@@ -1,18 +1,20 @@
--- gs_markers (client) : tous les marqueurs GTA SOON dessinés par UN seul fil, avec le même style néon.
+-- gs_markers (client) : tous les marqueurs GTA SOON dessinés par UN seul fil, même style discret.
 -- Les autres ressources déclarent leurs points : exports.gs_markers:Add(id, { coords, style, label?, icon?, distance?, height?,
 --   event?, args?, prompt?, reach? }) : avec `event`, la touche [E] à moins de `reach` m déclenche l'event local (en plus d'ox_target).
 -- Coût : un tri par distance toutes les 500 ms ; dessin à chaque frame seulement s'il y a un point à < 40 m.
 
+-- V7 : style discret pour le RP. Plus de flèches ni d'icônes flottantes : un petit cercle au sol, peu opaque, visible
+-- seulement de près (15 m max), texte à moins de 4 m. Seuls les repères de quête gardent un symbole (losange, cône).
 local STYLES = {
-    -- cercle au sol + icône flottante
-    rental = { ring = { 255, 46, 136 }, icon = 38, iconColor = { 40, 224, 255 } },   -- vélo / voiture de location
-    quest  = { ring = { 90, 255, 140 }, plumbob = { 90, 255, 140 } },              -- losange vert au-dessus des PNJ de quête
-    entry  = { ring = { 40, 224, 255 }, icon = 20, iconColor = { 40, 224, 255 } },    -- entrée de bâtiment / interaction
-    shop   = { ring = { 255, 196, 0 }, icon = 29, iconColor = { 255, 196, 0 } },      -- commerce ($)
-    job    = { icon = 21, iconColor = { 235, 240, 255 } },                           -- point de métier : chevron blanc discret, sans cercle au sol (V5)
+    rental = { ring = { 255, 46, 136 } },          -- location
+    quest  = { plumbob = { 90, 255, 140 } },       -- losange vert au-dessus des PNJ de quête (sans cercle)
+    entry  = { ring = { 40, 224, 255 } },          -- entrée de bâtiment / interaction
+    shop   = { ring = { 255, 196, 0 } },           -- commerce
+    job    = { ring = { 235, 240, 255 } },         -- point de métier
     objective = { ring = { 255, 196, 0 }, icon = 0, iconColor = { 255, 196, 0 } },    -- objectif de quête (cône)
-    hidden = {},                                                                      -- rien de dessiné : juste [E]
+    hidden = {},                                   -- rien de dessiné : juste [E]
 }
+local RING_ALPHA, RING_SIZE, MAX_DIST, LABEL_DIST = 70, 0.85, 15.0, 4.0
 
 local points = {}      -- [id] = { coords, style, label, drawDist }
 local nearby = {}      -- liste des points proches (recalculée toutes les 500 ms)
@@ -23,10 +25,10 @@ local function add(id, def)
         coords = vec3(def.coords.x, def.coords.y, def.coords.z),
         style = STYLES[def.style] or STYLES.entry,
         label = def.label,
-        drawDist = def.distance or 35.0,
+        drawDist = def.style == 'objective' and (def.distance or 35.0) or math.min(def.distance or MAX_DIST, MAX_DIST),
         ring = def.ring ~= false,
         height = def.height or 1.0,
-        icon = def.icon,   -- remplace l'icône du style (ex : 36 voiture, 38 vélo)
+        icon = def.style == 'objective' and def.icon or nil, -- icônes flottantes : seulement les objectifs (V7)
         event = def.event, -- [E] à proximité : TriggerEvent(event, table.unpack(args)) (évent local de la ressource)
         args = def.args or {},
         prompt = def.prompt or def.label,
@@ -49,8 +51,8 @@ exports('RemovePrefix', removePrefix)
 local function text3d(c, label)
     local onScreen, x, y = GetScreenCoordFromWorldCoord(c.x, c.y, c.z)
     if not onScreen then return end
-    SetTextFont(4) SetTextScale(0.0, 0.36) SetTextCentre(true) SetTextOutline()
-    SetTextColour(255, 255, 255, 235)
+    SetTextFont(4) SetTextScale(0.0, 0.30) SetTextCentre(true) SetTextOutline()
+    SetTextColour(255, 255, 255, 190)
     BeginTextCommandDisplayText('STRING')
     AddTextComponentSubstringPlayerName(label)
     EndTextCommandDisplayText(x, y)
@@ -95,20 +97,22 @@ CreateThread(function()
             for _, n in ipairs(nearby) do
                 local p, c, s = n.p, n.p.coords, n.p.style
                 if p.ring and s.ring then
-                    DrawMarker(25, c.x, c.y, c.z - 0.97, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.3, 1.3, 1.0,
-                        s.ring[1], s.ring[2], s.ring[3], 110, false, false, 2, false, nil, nil, false)
+                    -- léger fondu avec la distance : presque invisible au loin, net à côté
+                    local a = math.floor(RING_ALPHA * math.max(0.25, 1.0 - n.d / p.drawDist))
+                    DrawMarker(25, c.x, c.y, c.z - 0.97, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, RING_SIZE, RING_SIZE, 1.0,
+                        s.ring[1], s.ring[2], s.ring[3], a, false, false, 2, false, nil, nil, false)
                 end
                 if s.plumbob then -- losange façon Sims : deux cônes pointe à pointe qui tournent
                     local z = c.z + p.height
                     DrawMarker(0, c.x, c.y, z + 0.18, 0.0, 0.0, 0.0, 0.0, 0.0, spin, 0.22, 0.22, 0.28,
-                        s.plumbob[1], s.plumbob[2], s.plumbob[3], 220, false, false, 2, false, nil, nil, false)
+                        s.plumbob[1], s.plumbob[2], s.plumbob[3], 170, false, false, 2, false, nil, nil, false)
                     DrawMarker(0, c.x, c.y, z + 0.46, 180.0, 0.0, 0.0, 0.0, 0.0, spin, 0.22, 0.22, 0.28,
-                        s.plumbob[1], s.plumbob[2], s.plumbob[3], 220, false, false, 2, false, nil, nil, false)
+                        s.plumbob[1], s.plumbob[2], s.plumbob[3], 170, false, false, 2, false, nil, nil, false)
                 elseif (p.icon or s.icon) and s.iconColor then
                     DrawMarker(p.icon or s.icon, c.x, c.y, c.z + 0.2, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.55, 0.55, 0.55,
                         s.iconColor[1], s.iconColor[2], s.iconColor[3], 210, true, true, 2, false, nil, nil, false)
                 end
-                if p.label and n.d < 8.0 and s ~= STYLES.hidden then text3d(vec3(c.x, c.y, c.z + (s.plumbob and p.height + 0.8 or 0.9)), p.label) end
+                if p.label and n.d < LABEL_DIST and s ~= STYLES.hidden then text3d(vec3(c.x, c.y, c.z + (s.plumbob and p.height + 0.8 or 0.9)), p.label) end
             end
             Wait(0)
         end

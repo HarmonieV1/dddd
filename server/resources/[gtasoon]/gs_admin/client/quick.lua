@@ -143,12 +143,24 @@ local function setAnimal(model)
     applyGodmode()
 end
 
-local function groundZ(x, y)
-    for z = 1000.0, 0.0, -25.0 do
-        RequestCollisionAtCoord(x, y, z)
-        Wait(0)
-        local found, gz = GetGroundZFor_3dCoord(x, y, z, false)
-        if found then return gz end
+--- Sol sous (x, y) : on attend que la collision du coin soit chargée (jusqu'à ~3 s), sinon nil.
+--- (Avant : un seul passage sans attendre → sol pas encore chargé → arrivée dans le ciel.)
+local function groundZ(ent, x, y)
+    local deadline = GetGameTimer() + 3000
+    while GetGameTimer() < deadline do
+        for h = 1000.0, -50.0, -50.0 do
+            RequestCollisionAtCoord(x, y, h)
+            local found, gz = GetGroundZFor_3dCoord(x, y, h, false)
+            if found then
+                SetEntityCoordsNoOffset(ent, x, y, gz + 2.0, false, false, false)
+                RequestCollisionAtCoord(x, y, gz)
+                local t = GetGameTimer() + 1000
+                while not HasCollisionLoadedAroundEntity(ent) and GetGameTimer() < t do Wait(0) end
+                local again, gz2 = GetGroundZFor_3dCoord(x, y, gz + 2.0, false)
+                return again and gz2 or gz
+            end
+        end
+        Wait(100)
     end
 end
 
@@ -163,12 +175,20 @@ local function teleportToMarker()
     DoScreenFadeOut(250)
     while not IsScreenFadedOut() do Wait(0) end
     FreezeEntityPosition(ent, true)
-    SetEntityCoordsNoOffset(ent, c.x, c.y, 500.0, false, false, false)
-    local z = groundZ(c.x, c.y)
-    SetEntityCoordsNoOffset(ent, c.x, c.y, (z or 100.0) + 1.0, false, false, false)
+    SetEntityCoordsNoOffset(ent, c.x, c.y, 800.0, false, false, false)
+    local z = groundZ(ent, c.x, c.y)
+    if z then
+        SetEntityCoordsNoOffset(ent, c.x, c.y, z + 0.5, false, false, false)
+    else
+        -- Sol introuvable : téléport du jeu, qui cherche lui-même la terre ferme
+        FreezeEntityPosition(ent, false)
+        StartPlayerTeleport(PlayerId(), c.x, c.y, 100.0, GetEntityHeading(ent), veh ~= 0, true, false)
+        local t = GetGameTimer() + 8000
+        while IsPlayerTeleportActive() and GetGameTimer() < t do Wait(0) end
+    end
     FreezeEntityPosition(ent, false)
     DoScreenFadeIn(250)
-    notify(true, z and 'Téléporté.' or 'Téléporté (sol introuvable, attention à la chute).')
+    notify(true, 'Téléporté.')
 end
 
 -- Spectate ----------------------------------------------------------------------------------------------------
@@ -406,6 +426,21 @@ local function itemsMenu(target)
     }, 'gs_staff_quick')
 end
 
+local function moneyMenu(target)
+    local function ask(give)
+        local r = input(give and 'Donner de l\'argent' or 'Retirer de l\'argent', {
+            { type = 'select', label = 'Compte', required = true, default = 'cash', options = { { value = 'cash', label = 'Liquide' }, { value = 'bank', label = 'Banque' } } },
+            { type = 'number', label = 'Montant', min = 1, max = Config.Give.maxMoney, required = true },
+            { type = 'input', label = 'Motif (journalisé)', required = true, max = 200 },
+        })
+        if r then notify(act(give and 'givemoney' or 'removemoney', target.id, { account = r[1], amount = r[2], reason = r[3] })) end
+    end
+    show('gs_staff_money', 'Argent · ' .. target.name, {
+        { title = 'Donner', icon = 'plus', onSelect = function() ask(true) end },
+        { title = 'Retirer', icon = 'minus', onSelect = function() ask(false) end },
+    }, 'gs_staff_player')
+end
+
 local function pointsMenu()
     local options = {}
     for _, j in ipairs(info.jobs) do
@@ -471,7 +506,17 @@ local function animalsMenu()
         options[#options + 1] = { title = a.label, icon = 'paw', iconColor = animal == a.model and ON or nil,
             onSelect = function() setAnimal(a.model) end }
     end
-    show('gs_staff_animals', 'Se transformer', options, 'gs_staff_quick')
+    show('gs_staff_animals', 'Animaux', options, 'gs_staff_me')
+end
+
+local function pedsMenu()
+    local options = {}
+    if animal then options[1] = { title = 'Reprendre mon perso', icon = 'person', iconColor = ON, onSelect = function() setAnimal(nil) end } end
+    for _, a in ipairs(Config.Peds) do
+        options[#options + 1] = { title = a.label, icon = 'user-secret', iconColor = animal == a.model and ON or nil,
+            onSelect = function() setAnimal(a.model) end }
+    end
+    show('gs_staff_peds', 'Persos GTA (peds)', options, 'gs_staff_me')
 end
 
 --- Rang staff d'un joueur (fondateur seulement ; le serveur revérifie).
@@ -504,7 +549,7 @@ local function funMenu()
         applyFun()
         funMenu()
     end }
-    show('gs_staff_fun', 'Fun (sur toi · events)', options, 'gs_staff_quick')
+    show('gs_staff_fun', 'Effets sur moi', options, 'gs_staff_events')
 end
 
 local function eventsMenu()
@@ -518,7 +563,17 @@ local function eventsMenu()
             end }
     end
     table.sort(options, function(a, b) return a.title < b.title end)
-    show('gs_staff_events', 'Événements en un clic', options, 'gs_staff_quick')
+    -- Bonus de serveur (gs_events) : même menu, plus de catégorie en double
+    for _, b in ipairs({ { 'double_xp', 'Soirée double XP (bonus serveur)', 'star' }, { 'lucky', 'Soirée chanceuse (bonus serveur)', 'clover' } }) do
+        options[#options + 1] = { title = b[2], icon = b[3], description = 'Pour tout le serveur, durée au choix', onSelect = function()
+            local r = input(b[2], { { type = 'number', label = 'Durée (minutes)', default = 60, min = 5, max = 240, required = true } })
+            if r then ExecuteCommand(('gsevent start %s %d'):format(b[1], r[1])) end
+        end }
+    end
+    options[#options + 1] = { title = 'Arrêter le bonus serveur en cours', icon = 'stop', onSelect = function() ExecuteCommand('gsevent stop') end }
+    options[#options + 1] = { title = 'Effets sur moi (animation d\'événement)', icon = 'wand-magic-sparkles', arrow = true,
+        description = 'Course rapide, super saut, gravité lunaire…', onSelect = funMenu }
+    show('gs_staff_events', 'Événements', options, 'gs_staff_quick')
 end
 
 local function playerMenu(p)
@@ -533,6 +588,7 @@ local function playerMenu(p)
     add(2, { title = 'Figer / libérer', icon = 'snowflake', onSelect = function() notify(act('freeze', p.id)) end })
     add(3, { title = 'Lui mettre un métier', icon = 'briefcase', arrow = true, onSelect = function() jobsMenu(p) end })
     add(3, { title = 'Le mettre dans un gang', icon = 'people-group', arrow = true, onSelect = function() gangsMenu(p) end })
+    add(4, { title = 'Argent', icon = 'money-bill', arrow = true, onSelect = function() moneyMenu(p) end })
     add(4, { title = 'Items', icon = 'box-open', arrow = true, onSelect = function() itemsMenu(p) end })
     if info.ranks and p.id ~= info.me then
         add(5, { title = 'Rang staff (fondateur)', icon = 'user-shield', arrow = true, onSelect = function() rankMenu(p) end })
@@ -551,48 +607,53 @@ end
 
 local function mainMenu()
     local lvl = info.level
-    local me = { id = info.me, name = 'moi' }
     local options = {}
     local function add(minLvl, opt) if lvl >= minLvl then options[#options + 1] = opt end end
     --- Interrupteur : état affiché dans le titre et la couleur, menu rouvert après le changement.
-    local function toggle(minLvl, label, icon, on, fn)
-        add(minLvl, { title = ('%s : %s'):format(label, on and 'ON' or 'OFF'), icon = icon, iconColor = on and ON or OFF,
-            onSelect = function() fn(not on) openQuick('main') end })
+    local function toggle(list, menuFn, minLvl, label, icon, on, fn)
+        if lvl < minLvl then return end
+        list[#list + 1] = { title = ('%s : %s'):format(label, on and 'ON' or 'OFF'), icon = icon, iconColor = on and ON or OFF,
+            onSelect = function() fn(not on) menuFn() end }
     end
 
-    toggle(1, 'Mode staff', 'shield-halved', info.onDuty, function()
-        local state = lib.callback.await('gs_admin:toggleDuty', false)
-        if state == nil then return end
-        notify(true, state and 'Mode staff : ON' or 'Mode staff : OFF')
-        if not state then powersOff() end
-    end)
-    if info.onDuty then
-        add(1, { title = 'Joueurs', icon = 'users', arrow = true, description = 'Aller à, amener, spectate, soigner, métier…', onSelect = playersMenu })
-        toggle(Config.Powers.names, 'Noms et ID des joueurs', 'id-badge', powers.names, function(on)
+    -- Moi : pouvoirs, déplacements, apparence
+    local function meMenu()
+        local o = {}
+        local function a(minLvl, opt) if lvl >= minLvl then o[#o + 1] = opt end end
+        toggle(o, meMenu, Config.Powers.names, 'Noms et ID des joueurs', 'id-badge', powers.names, function(on)
             if on and not grant('names') then return end
             powers.names = on
             if on then namesLoop() end
         end)
-        toggle(Config.Powers.noclip, 'Vol libre', 'feather', powers.noclip, function(on) setNoclip(on) end)
-        toggle(Config.Powers.invisible, 'Invisible', 'ghost', powers.invisible, function(on)
+        toggle(o, meMenu, Config.Powers.noclip, 'Vol libre', 'feather', powers.noclip, function(on) setNoclip(on) end)
+        toggle(o, meMenu, Config.Powers.invisible, 'Invisible', 'ghost', powers.invisible, function(on)
             if on and not grant('invisible') then return end
             if not on then act('power', nil, { power = 'invisible', on = false }) end
             powers.invisible = on
             applyVisibility()
         end)
-        toggle(Config.Powers.godmode, 'Invincible', 'shield', powers.godmode, function(on)
+        toggle(o, meMenu, Config.Powers.godmode, 'Invincible', 'shield', powers.godmode, function(on)
             if on and not grant('godmode') then return end
             if not on then act('power', nil, { power = 'godmode', on = false }) end
             powers.godmode = on
             applyGodmode()
         end)
-        add(Config.Powers.tpm, { title = 'Téléportation au marqueur', icon = 'map-pin', description = 'Pose d\'abord un point sur la carte (Échap → Carte)',
-            onSelect = teleportToMarker })
-        add(Config.Powers.animal, { title = animal and 'Animal : reprendre forme humaine / changer' or 'Se transformer en animal',
-            icon = 'paw', iconColor = animal and ON or nil, arrow = true, onSelect = animalsMenu })
-        add(2, { title = 'Me soigner et réanimer', icon = 'heart', onSelect = function() notify(act('revive', info.me)) end })
-        add(2, { title = 'Réparer mon véhicule', icon = 'wrench', onSelect = function() notify(act('fixveh', info.me)) end })
-        add(3, { title = 'Faire apparaître un véhicule', icon = 'car', onSelect = function()
+        a(Config.Powers.tpm, { title = 'Téléportation au marqueur', icon = 'map-pin', description = 'Pose d\'abord un point sur la carte (ou Ctrl + Y)', onSelect = teleportToMarker })
+        a(2, { title = 'Me soigner et réanimer', icon = 'heart', onSelect = function() notify(act('revive', info.me)) end })
+        a(Config.Powers.animal, { title = 'Persos GTA (peds)', icon = 'user-secret', arrow = true, onSelect = pedsMenu })
+        a(Config.Powers.animal, { title = 'Animaux', icon = 'paw', arrow = true, onSelect = animalsMenu })
+        if animal then a(1, { title = 'Reprendre mon perso', icon = 'person', iconColor = ON, onSelect = function() setAnimal(nil) meMenu() end }) end
+        a(3, { title = 'Me mettre un métier', icon = 'briefcase', arrow = true, onSelect = function() jobsMenu({ id = info.me, name = 'moi' }) end })
+        a(3, { title = 'Me mettre dans un gang', icon = 'people-group', arrow = true, onSelect = function() gangsMenu({ id = info.me, name = 'moi' }) end })
+        a(4, { title = 'Argent', icon = 'money-bill', arrow = true, onSelect = function() moneyMenu({ id = info.me, name = 'moi' }) end })
+        a(4, { title = 'Items', icon = 'box-open', arrow = true, onSelect = function() itemsMenu({ id = info.me, name = 'moi' }) end })
+        show('gs_staff_me', 'Moi', o, 'gs_staff_quick')
+    end
+
+    local function vehMenu()
+        local o = {}
+        local function a(minLvl, opt) if lvl >= minLvl then o[#o + 1] = opt end end
+        a(3, { title = 'Faire apparaître un véhicule', icon = 'car', onSelect = function()
             local r = input('Véhicule', { { type = 'input', label = 'Modèle (ex : sultan, faggio, buzzard)', required = true } })
             if not r then return end
             local model = r[1]:gsub('%s', ''):lower()
@@ -600,47 +661,90 @@ local function mainMenu()
             if not IsModelInCdimage(hash) or not IsModelAVehicle(hash) then return notify(false, 'Modèle inconnu : ' .. model) end
             notify(act('spawnveh', nil, { model = model, vtype = vehicleType(hash) }))
         end })
-        add(3, { title = 'Véhicules ajoutés (mods)', icon = 'car-side', arrow = true, description = 'Liste des voitures importées : nom, prix, spawn en un clic',
-            onSelect = addonVehiclesMenu })
-        add(3, { title = 'Lieux publics (boutique, parking)', icon = 'shop', arrow = true, description = 'Poser une boutique de vêtements ou un parking ici',
+        a(3, { title = 'Véhicules ajoutés (mods)', icon = 'car-side', arrow = true, description = 'Nom, prix, spawn en un clic', onSelect = addonVehiclesMenu })
+        a(2, { title = 'Réparer mon véhicule', icon = 'wrench', onSelect = function() notify(act('fixveh', info.me)) end })
+        a(2, { title = 'Supprimer le véhicule proche', icon = 'trash', onSelect = function()
+            local veh = nearestVehicle()
+            if veh == 0 or not NetworkGetEntityIsNetworked(veh) then return notify(false, 'Aucun véhicule proche.') end
+            notify(act('delveh', nil, { netId = VehToNet(veh) }))
+        end })
+        show('gs_staff_veh', 'Véhicules', o, 'gs_staff_quick')
+    end
+
+    local function worldMenu()
+        local o = {}
+        local function a(minLvl, opt) if lvl >= minLvl then o[#o + 1] = opt end end
+        a(3, { title = 'Lieux publics (boutique, parking)', icon = 'shop', arrow = true, description = 'Poser une boutique de vêtements ou un parking ici',
             onSelect = function()
                 local function place(kind, prompt)
                     local r = input(prompt, { { type = 'input', label = 'Nom affiché', required = true, max = 40 } })
                     if r then notify(lib.callback.await('gs_places:create', false, kind, r[1])) end
                 end
-                lib.registerContext({ id = 'gs_staff_places', title = 'Lieux publics', menu = 'gs_staff_quick', options = {
+                show('gs_staff_places', 'Lieux publics', {
                     { title = 'Boutique de vêtements ici', icon = 'shirt', description = 'Point « Essayer des vêtements » + blip, à ta position',
                       onSelect = function() place('clothing', 'Boutique de vêtements') end },
                     { title = 'Parking public ici (au volant)', icon = 'square-parking', description = 'Les voitures sortiront à cet endroit',
                       onSelect = function() place('parking', 'Parking public') end },
                     { title = 'Retirer le lieu le plus proche', icon = 'trash', onSelect = function() notify(lib.callback.await('gs_places:delete', false)) end },
-                } })
-                lib.showContext('gs_staff_places')
+                }, 'gs_staff_world')
             end })
-        add(2, { title = 'Supprimer le véhicule proche', icon = 'trash', onSelect = function()
-            local veh = nearestVehicle()
-            if veh == 0 or not NetworkGetEntityIsNetworked(veh) then return notify(false, 'Aucun véhicule proche.') end
-            notify(act('delveh', nil, { netId = VehToNet(veh) }))
-        end })
-        add(3, { title = 'Me mettre un métier', icon = 'briefcase', arrow = true, onSelect = function() jobsMenu(me) end })
-        add(3, { title = 'Me mettre dans un gang', icon = 'people-group', arrow = true, onSelect = function() gangsMenu(me) end })
-        add(3, { title = 'Gangs (création, QG, garage)', icon = 'people-group', arrow = true, onSelect = gangAdminMenu })
-        add(3, { title = 'Points de métier (placer ici)', icon = 'location-crosshairs', arrow = true,
-            description = 'Service, coffre, armurerie, direction, garage : déplacés à ta position', onSelect = pointsMenu })
-        add(4, { title = 'Items', icon = 'box-open', arrow = true, onSelect = function() itemsMenu(me) end })
-        add(3, { title = 'Événements en un clic', icon = 'champagne-glasses', arrow = true, description = 'Course super vitesse, chute lunaire, boxe, course de rue', onSelect = eventsMenu })
-        add(3, { title = 'Fun (events)', icon = 'wand-magic-sparkles', arrow = true, description = 'Course rapide, super saut, gravité lunaire…', onSelect = funMenu })
-        add(4, { title = 'Objets du décor (placer / retirer)', icon = 'cube', description = 'Bancs, poubelles, barrières… (/builder)', onSelect = function() ExecuteCommand('builder') end })
-        add(1, { title = 'Copier mes coordonnées', icon = 'crosshairs', description = 'vec4 dans le presse-papiers (calage des configs)', onSelect = function()
+        a(3, { title = 'Déplacer un point (métiers, récolte, magasins…)', icon = 'location-crosshairs', arrow = true,
+            description = 'Point mal placé ? Mets-toi au bon endroit et choisis-le', onSelect = function() TriggerEvent('gs_bridge:client:pointsMenu') end })
+        a(3, { title = 'Points de métier (placer ici)', icon = 'briefcase', arrow = true,
+            description = 'Service, coffre, armurerie, direction, garage', onSelect = pointsMenu })
+        a(3, { title = 'Gangs (création, QG, garage)', icon = 'people-group', arrow = true, onSelect = gangAdminMenu })
+        a(4, { title = 'Objets du décor (placer / retirer)', icon = 'cube', description = 'Bancs, poubelles, barrières… (/builder)', onSelect = function() ExecuteCommand('builder') end })
+        a(1, { title = 'Copier mes coordonnées', icon = 'crosshairs', description = 'vec4 dans le presse-papiers', onSelect = function()
             local ped = PlayerPedId()
             local c = GetEntityCoords(ped)
             lib.setClipboard(('vec4(%.2f, %.2f, %.2f, %.1f)'):format(c.x, c.y, c.z, GetEntityHeading(ped)))
             notify(true, 'Coordonnées copiées.')
         end })
+        show('gs_staff_world', 'Monde et lieux', o, 'gs_staff_quick')
+    end
+
+    toggle(options, mainMenu, 1, 'Mode staff', 'shield-halved', info.onDuty, function()
+        local state = lib.callback.await('gs_admin:toggleDuty', false)
+        if state == nil then return end
+        notify(true, state and 'Mode staff : ON' or 'Mode staff : OFF')
+        if not state then powersOff() end
+        info.onDuty = state
+    end)
+    if info.onDuty then
+        add(1, { title = 'Joueurs', icon = 'users', arrow = true, description = 'Aller à, amener, spectate, soigner, argent…', onSelect = playersMenu })
+        add(1, { title = 'Moi', icon = 'user-gear', arrow = true, description = 'Vol libre, invisible, TP, peds et animaux…', onSelect = meMenu })
+        add(2, { title = 'Véhicules', icon = 'car', arrow = true, description = 'Faire apparaître, mods, réparer, supprimer', onSelect = vehMenu })
+        add(1, { title = 'Monde et lieux', icon = 'map-location-dot', arrow = true, description = 'Lieux publics, points, gangs, décor', onSelect = worldMenu })
+        add(3, { title = 'Événements', icon = 'champagne-glasses', arrow = true, description = 'Événements en un clic, bonus serveur, effets', onSelect = eventsMenu })
     end
     add(1, { title = 'Panel complet (F10)', icon = 'table-columns', onSelect = function() ExecuteCommand('admin') end })
     show('gs_staff_quick', ('Staff · %s'):format(info.levelName or ''), options)
 end
+
+-- Déplacer un point (toutes ressources) : les 25 points les plus proches (200 m), du plus proche au plus loin.
+AddEventHandler('gs_bridge:client:pointsMenu', function()
+    local list = exports.gs_bridge:NearbyPoints(GetEntityCoords(PlayerPedId()), 200.0)
+    local options = {}
+    for i = 1, math.min(#list, 25) do
+        local p = list[i]
+        options[#options + 1] = { title = p.label, icon = p.moved and 'location-dot' or 'location-crosshairs', iconColor = p.moved and ON or nil,
+            description = ('%s · à %d m%s'):format(p.res, math.floor(p.dist), p.moved and ' · déjà déplacé' or ''), arrow = true,
+            onSelect = function()
+                show('gs_staff_point', p.label, {
+                    { title = 'Placer ce point ici (ma position)', icon = 'location-crosshairs', onSelect = function()
+                        if lib.alertDialog({ header = p.label, content = 'Le point est posé à tes pieds, orienté comme toi.\n\n' .. p.res
+                            .. ' est relancé quelques secondes (les joueurs en train de l\'utiliser devront recommencer).', centered = true, cancel = true }) == 'confirm' then
+                            notify(act('movepoint', nil, { key = p.key }))
+                        end
+                    end },
+                    { title = 'Remettre la position d\'origine', icon = 'rotate-left', disabled = not p.moved,
+                        onSelect = function() notify(act('resetpoint', nil, { key = p.key })) end },
+                }, 'gs_staff_points_all')
+            end }
+    end
+    if #options == 0 then options[1] = { title = 'Aucun point déplaçable à moins de 200 m', readOnly = true } end
+    show('gs_staff_points_all', 'Déplacer un point', options, 'gs_staff_world')
+end)
 
 --- Ouvre le menu principal (données rafraîchies depuis le serveur).
 function openQuick()
@@ -649,8 +753,9 @@ function openQuick()
     mainMenu()
 end
 
-RegisterCommand('staffmenu', function() openQuick('main') end, false)
-RegisterKeyMapping('staffmenu', 'Menu staff rapide', 'keyboard', Config.QuickKey)
+-- Nom neuf en V7 : la touche par défaut (F11) s'applique à tous, même à ceux qui avaient l'ancienne (Suppr)
+RegisterCommand('gs_staffmenu_v7', function() openQuick('main') end, false)
+RegisterKeyMapping('gs_staffmenu_v7', 'Menu staff rapide', 'keyboard', Config.QuickKey)
 
 -- Raccourcis du mode staff : Ctrl gauche maintenu + touche (le serveur vérifie niveau et mode staff).
 local function ctrlHeld() return IsControlPressed(0, 36) or IsDisabledControlPressed(0, 36) end
