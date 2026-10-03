@@ -20,6 +20,12 @@
 - **Transparence** : avertissements, isolements, expulsions **et bans/warns/kicks txAdmin** publiés sur un salon public (`gs_webhook_sanctions`), staff anonyme.
 - **Journal** : toutes les actions staff en BDD (`gs_admin_log`) + webhook staff + onglet Journal (modo+).
 
+## Menu staff rapide (F11) — V7
+
+V7 : 5 catégories — **Joueurs**, **Moi** (pouvoirs, persos GTA, animaux, métier / gang de test, argent et items super-admin),
+**Véhicules**, **Monde et lieux** (lieux publics, **Déplacer un point**, points de métier, gangs, décor, coordonnées),
+**Événements** (événements en un clic + bonus serveur double XP / soirée chanceuse + effets sur soi). Ancienne description :
+
 ## Menu staff rapide (F11) — V2
 
 Menu **cliquable à la souris** (chaque ligne porte sa propre action, sous-menus avec flèche, retour en haut à gauche). Les pouvoirs ne marchent **qu'en mode staff** (1re ligne),

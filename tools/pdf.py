@@ -8,7 +8,7 @@ from reportlab.lib.units import mm
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, PageBreak, KeepTogether
 from reportlab.graphics.shapes import Drawing, Rect, Circle, String, Line
 
-VERSION = 'V6'
+VERSION = 'V7'
 NEON = colors.HexColor('#28E0FF')
 DARK = colors.HexColor('#0F091C')
 PINK = colors.HexColor('#FF2E88')
@@ -51,26 +51,26 @@ def footer(canvas, doc):
 # ------------------------------------------------------------------------------------------------------------------
 KEYS = [
     ['Touche', 'Action', 'Remarque'],
-    ['F1', 'Téléphone', 'Vibe, banque, petits boulots, bourse…'],
+    ['F1', 'Téléphone', 'Vibe, banque, boulots, Carnet, Weazel, Commandes (pros), Inconnu (marché noir, contrats)'],
     ['F2 · TAB · 1 à 5', 'Inventaire · barre rapide · objets rapides', 'Double-clic ou Alt + clic = utiliser'],
     ['K', 'Inventaire proche', 'coffre, boîte à gants'],
-    ['F3', 'Progression, quêtes, niveau', ''],
-    ['F4', 'Intervention', 'police / EMS en service'],
+    ['F3', 'Progression, quêtes, niveau', 'même touche pour fermer'],
+    ['F4', 'Intervention', 'police / EMS en service (EMS : envoyer un secouriste IA)'],
     ['F5 · X · J · G', 'Emotes · annuler · pointer · effets', 'G = effets seulement pendant une emote à effets'],
     ['F6', 'Métiers', 'service, tenue, factures, direction, missions'],
     ['F7', 'Duo', ''],
     ['F9', 'Gang', 'caisse, membres, territoires, atelier, flotte'],
     ['F10 · F11', 'Panel staff · menu staff rapide', 'staff uniquement'],
-    ['I', 'Aide des touches', 'aussi /touches'],
-    ['Z', 'Menu radial', 'radio, etc.'],
+    ['I', 'Aide des touches', ''],
+    ['Z', 'Menu radial', 'Moi (tenue en objet, chapeau, lunettes, masque, animations, factures…), Radio, Véhicule'],
     ['Alt gauche (maintenu)', 'Viser / interagir (ox_target)', ''],
-    ['E', 'Interagir sur un point [E] · braquer un PNJ visé', ''],
+    ['E', 'Interagir sur un point [E] · racketter un passant visé', 'caisse / guichet : le braquage démarre seul en visant'],
     ['N · ²', 'Parler · portée de la voix', 'crier (²) fait peur aux PNJ braqués'],
     ['Verr. Maj (maintenu)', 'Parler à la radio', 'après avoir réglé une fréquence'],
     ['H', 'Mains en l\'air (à pied) · démarrer sans clé (en voiture)', ''],
     ['L · B', 'Verrouiller le véhicule · ceinture', ''],
     ['Ctrl gauche', 'S\'accroupir', ''],
-    ['G (près d\'un tag)', 'Effacer un tag adverse', 'gangs'],
+    ['G', 'Effacer un tag adverse (gangs) · appeler les secours à terre', ''],
     ['Ctrl+Y · Ctrl+U · Ctrl+O', 'TP marqueur · vol libre · noms et ID', 'staff en mode staff'],
     ['Espace / Retour', 'Passer le film du vol · annuler', ''],
 ]
@@ -78,17 +78,13 @@ KEYS = [
 COMMANDS = [
     ['Commande', 'Pour quoi'],
     ['/touches · /regles · /report', 'aide des touches · règlement · ticket au staff'],
-    ['/radio [fréquence|off]', 'radio (aussi Z → Radio)'],
-    ['/contact · /contrats', 'marché noir (gang ou réputation de rue) · contrats entre joueurs'],
-    ['/depanneur · /taxi · /commandes', 'appeler un mécano / un taxi · carnet des employés en service'],
-    ['/carnet · /saison · /reputation', 'carnet de route · passe de saison · réputation'],
-    ['/factures · /job · /duo · /gang', 'factures à payer · menus (aussi F6, F7, F9)'],
     ['/me · /do', 'actions RP affichées'],
+    ['/radio [fréquence|off]', 'radio (aussi Z → Radio)'],
+    ['/taxi · /depanneur', 'appeler un taxi / un mécano'],
+    ['/factures · /reputation · /saison · /quartiers', 'factures · réputation · passe de saison · ambiance des quartiers'],
+    ['/retoucheperso', 'retoucher son perso (une seule fois)'],
     ['/boutique', 'boutique cosmétique (réclamer ses achats)'],
-    ['/moniteur', 'auto-école (moniteur)'],
-    ['/economie', 'tableau de bord de l\'économie (admin)'],
-    ['/builder', 'décor : placer / retirer des objets (super-admin)'],
-    ['/whitelist · /gsjob · /gsgang · /gsevent · /meteo', 'outils staff'],
+    ['Staff', '/whitelist · /gsjob · /gsgang · /gsevent · /meteo · /builder · /economie (les joueurs ne les voient pas)'],
 ]
 
 
@@ -116,42 +112,51 @@ def guide(points):
     s += [PageBreak(), Paragraph('4. Vie légale', H2)]
     s += bullets([
         '<b>Arrivée</b> : pas d\'appartement gratuit, apparition devant la mairie, quête « Ton premier jour » avec Max. Règlement à accepter.',
-        '<b>Logement</b> : chambres de motel à la semaine (Pink Cage 450 $, Sandy 300 $, Paleto 320 $ ; coffre + garde-robe), '
+        '<b>Logement</b> : chambres de motel à la semaine (logo motel : Pink Cage 450 $, Sandy 300 $, Paleto 320 $ ; coffre + garde-robe), '
         'vrais logements chez l\'agent immobilier (Dynasty 8).',
         '<b>Métiers</b> (F6) : LSPD, EMS, mécano LS Customs, concession PDM, agence immobilière, auto-école, avocats, juge, Weazel News, '
-        'bar, restaurant, mairie, psy, routier, bus, taxi, livreur, éboueur. Contrats multiples (3), grades, tenues, garages, missions animées.',
+        'mairie, psy, routier, bus, taxi, livreur, éboueur. Dépôts (bus, voirie, Post OP, routier) : « Prendre le poste ici » en un clic.',
+        '<b>Bars</b> tenus par des joueurs : <b>Tequi-la-la</b>, <b>Vanilla Unicorn</b>, <b>Bahama Mamas</b> (préparation, caisse, prix du patron). '
+        'Sans employé : un barman PNJ sert la carte de base. PNJ sur scène (danseuses, groupe, DJ).',
         '<b>Direction</b> : recruter (avec accord), grades, licencier, caisse, <b>salaires réglables</b> (entreprises privées), '
         '<b>primes</b>, <b>blanchiment</b> (plafonné au chiffre d\'affaires légal du jour, contrôle fiscal possible).',
-        '<b>Mécano</b> : réparer (capot ouvert), pneus, remettre sur ses roues, nettoyer, livraisons de pièces, carnet /depanneur. '
+        '<b>Mécano</b> : réparer (capot ouvert), pneus, remettre sur ses roues, nettoyer, livraisons de pièces, '
+        '<b>personnalisation complète</b> du véhicule d\'un client (Alt → Personnaliser : performances, carrosserie, peinture, jantes, vitres, xénon). '
         'Double des clés des véhicules de service pour tous les métiers.',
-        '<b>Activités libres</b> : pêche, mine, bûcheron, ferme, <b>ferrailleur</b>, chasse (permis). Petits boulots au téléphone.',
+        '<b>Récolte</b> : pêche, mine (pioche), bûcheron (hache), ferme, ferraille, chasse (permis à l\'Ammu-Nation de Paleto). Plusieurs arbres / '
+        'rochers / tas par zone qui s\'épuisent et repoussent, vestiaire (tenue de travail), revente loin de la récolte (logos sur la carte).',
+        '<b>Tenues en objets</b> : Z → Moi → Vêtements → Plier ma tenue ; double-clic sur l\'objet pour l\'enfiler (échangeable, rangeable).',
+        '<b>Armes légales</b> : permis de port d\'arme au comptoir Ammu-Nation (5 000 $, permis de conduire, casier propre).',
         '<b>Permis de conduire</b> (auto-école : théorie + pratique), <b>justice</b> (tribunal, avocat, verdicts), '
         '<b>mairie</b> (mariage, divorce), <b>banque</b> (guichets, distributeurs, plafonds), <b>bourse de la ville</b>.',
         '<b>Location</b> : vélos, scooters, citadines ; <b>bateaux</b> à la marina de LS et à la jetée de Cayo.',
     ])
     s += [Paragraph('5. Vie illégale', H2)]
     s += bullets([
-        '<b>Braquage solo de PNJ</b> : vise un passant / caissier / guichetier Fleeca → [E]. La peur monte avec l\'arme et la voix '
-        '(crier = plus vite). Toujours signalé (police joueurs, sinon police IA). Plafonds anti-farm.',
+        '<b>Braquage solo</b> : vise un caissier / guichetier Fleeca : ça démarre seul ; un passant : [E]. La peur monte avec l\'arme et la voix '
+        '(crier = plus vite). L\'argent sale tombe en <b>sacs plastique à ramasser</b>. Police joueurs, sinon <b>patrouilles IA</b> qui te poursuivent.',
         '<b>Braquages</b> : supérettes, bijouterie Vangelico, Fleeca (police requise). <b>Gros coup en duo</b> : Fleeca Legion (pirate + conducteur).',
-        '<b>Marché noir</b> (/contact, la nuit, planque qui tourne) : munitions, armes non déclarées, silencieux, crochets, gilets ; prix selon la rareté.',
+        '<b>Marché noir</b> (téléphone → Inconnu → Appeler le contact : RDV GPS, la nuit) : munitions, armes non déclarées, silencieux, crochets, gilets.',
         '<b>Munitions</b> : artisanales (gang, ferraille + cuivre) &lt; Ammu-Nation (permis, 120 / jour) &lt; marché noir.',
-        '<b>Contrats</b> (/contrats) : vol, braquage, livraison, vente, élimination (scène RP) ; récompense bloquée puis versée.',
-        '<b>Gangs</b> (F9) : caisse, territoires et guerres, tags, receleur, labo, atelier de munitions, <b>flotte choisie par le chef + 1 véhicule perso</b>.',
+        '<b>Contrats</b> (téléphone → Inconnu → Contrats) : vol, braquage, livraison, vente, élimination (scène RP).',
+        '<b>Gangs</b> (F9) : Families, Ballas, Vagos, Lost MC + organisations Cartel Madrazo et Triades. Caisse, territoires, tags, receleur, '
+        'labo, atelier de munitions, flotte + garage (logo sur la carte pour les membres).',
         '<b>Drogues</b> : plantations, labos, vente. <b>Recherche intelligente</b> : témoins, caméras, précision, chaleur, police IA de relais.',
     ])
     s += [Paragraph('6. Social, loisirs, événements', H2)]
     s += bullets([
         '<b>Vibe</b> (réseau social) : posts, photos, stories, tendances, badges ; <b>Weazel News automatique</b> (braquages, courses, loto, événements).',
-        '<b>Courses de rue</b> classées, <b>casino</b> (roue, loto hebdo), <b>carnet de route</b> (itinéraires, spots photo), <b>saisons</b> (paliers, titres).',
-        '<b>Cayo Perico</b> en accès libre : vol gratuit animé depuis LSIA ([Espace] = rapide), bateaux, <b>soirée DJ sur la plage</b> (staff).',
+        '<b>Courses de rue</b> : organisateur PNJ (Legion Square) : chrono solo ou course à mise, voiture prêtée ou la tienne, grille de départ.',
+        '<b>Casino</b> (roue, loto, tickets ; barman, croupiers), <b>carnet de route</b> et <b>Weazel</b> (téléphone), <b>saisons</b> (paliers, titres).',
+        '<b>Cayo Perico</b> en accès libre : vol gratuit animé depuis LSIA, <b>vol retour</b> au comptoir de la piste (pilote, logo avion).',
         '<b>Événements staff en un clic</b> : course à super vitesse, chute lunaire, super saut, soirée boxe, course de rue gratuite, soirée plage Cayo.',
     ])
     s += [Paragraph('7. Staff', H2)]
     s += bullets([
         'Rangs : helper, modo, admin, super-admin, fondateur (seul le fondateur promeut, en jeu : F11 → Joueurs → Rang).',
-        'F10 panel (tickets, fiches, sanctions publiques, isolement, journal) · F11 menu rapide (mode staff, vol libre, invisible, spectate, animal, '
-        'métiers et gangs de test, véhicules, points de métier, Fun, événements, décor, items).',
+        'F10 panel (tickets, fiches, sanctions publiques, isolement, journal) · F11 menu rapide en 5 catégories : Joueurs, Moi (pouvoirs, '
+        'persos GTA, animaux, argent, items), Véhicules, Monde et lieux, Événements.',
+        '<b>Déplacer un point</b> (F11 → Monde et lieux) : n\'importe quel point mal placé (récolte, magasins, bars, PNJ, courses…) se pose à ta position.',
         'Raccourcis : Ctrl+Y TP marqueur, Ctrl+U vol libre, Ctrl+O noms et ID (150 m, PV, « parle »), auto en spectate.',
         'Argent / items : super-admin minimum, motif obligatoire, tout est journalisé.',
     ])
@@ -167,51 +172,50 @@ def guide(points):
 
 # ------------------------------------------------------------------------------------------------------------------
 TESTS = [
-    ('Démarrage', [
-        'Fenêtre « Serveur GTA SOON » sans ligne ROUGE (noter les ressources en jaune)',
-        'F8 → connect localhost ; création de perso → apparition mairie (pas de choix d\'appartement)',
-        'Règlement affiché puis accepté ; GPS vers Max ; quête « Ton premier jour »',
+    ('Avant de commencer', [
+        'NETTOYER-MARQUES.bat (une fois), puis METTRE-A-JOUR.bat : fenêtre du serveur sans ligne ROUGE',
+        'Si F3 / F5 font encore deux choses : Échap → Paramètres → Raccourcis → FiveM, vérifier F3 = Progression',
     ]),
-    ('Touches (aucun doublon)', [
-        'I / F1 / F2 / F3 / F5 / F6 / F7 / F9 : chaque touche ouvre UN seul menu',
-        'H à pied = mains en l\'air ; H en voiture PNJ = démarrer sans clé ; X annule une emote',
-        'Double-clic sur une bouteille d\'eau dans l\'inventaire = elle est bue',
-        'Radio : Z → Radio → fréquence 42 → parler avec Verr. Maj ; « Qui est sur le canal »',
+    ('Démarrage et confort', [
+        'Création de perso : « Visage de base 1 / 2 », « Ressemblance », « Teint », « Origines » ; pas de carte d\'identité au départ',
+        'F3 ouvre / ferme la progression ; F5 = emotes seulement ; F11 = menu staff',
+        'Double-clic eau / sandwich : consommé, pas de coup de poing dans le vide juste après',
+        'Inventaire : images des objets (tomate, pioche, hache, pochons, alcools, tenue…)',
+        'Supérette : acheter 3 articles d\'affilée (le menu reste ouvert) ; jerrican d\'essence en quincaillerie',
+        'Points [E] discrets (petit cercle, visible de près) ; commandes / : seulement les utiles en tant que joueur',
     ]),
     ('Vie légale', [
-        'Location vélo (mairie) puis bateau (marina) ; rendu du véhicule',
-        'Motel Pink Cage : louer 1 semaine, entrer, coffre, garde-robe, sortir',
-        'Métier mécano (F11 → Me mettre un métier) : service, pneus, remettre sur roues, mission pièces',
-        'Direction : salaires, prime, blanchiment (faire d\'abord une facture payée)',
-        'Carnet : /depanneur depuis un 2e perso ou un ami → /commandes côté mécano',
+        'Coiffeur, tatoueur, chirurgien (Pillbox), boutique de vêtements : vendeur PNJ + [E] qui ouvre le menu',
+        'Ammu-Nation : permis de port d\'arme au comptoir (5 000 $) puis acheter un pistolet',
+        'Récolte : bois (plusieurs arbres, hache en main), mine (pioche), ferme, ferraille ; un nœud s\'épuise et repousse',
+        'Vestiaire de récolte (tenue de travail / civile) ; revente au logo indiqué (pas à côté)',
+        'Chasse : permis au comptoir Ammu-Nation de Paleto ; viande et cuir à la boucherie de Paleto',
+        'Dépôts bus / voirie / Post OP : « Prendre le poste ici » puis garage puis F6 → Mission',
+        'Bars : Tequi-la-la, Vanilla Unicorn, Bahama Mamas (sans employé : barman PNJ, carte de base)',
+        'Mécano en service : Alt sur la voiture d\'un ami → Personnaliser → Valider ; la voiture ressort du garage personnalisée',
+        'Tenue en objet : Z → Moi → Vêtements → Plier ma tenue ; double-clic sur l\'objet ; retour civil sans perso chauve',
+        'Marina : essai d\'un bateau → retour sur le ponton ; motel Pink Cage trouvé grâce au logo',
     ]),
     ('Vie illégale', [
-        'Viser un passant avec une arme → [E] → crier (²) : la jauge monte plus vite ; baisser l\'arme = fuite',
-        'Braquer la caisse d\'une supérette (caissier) → argent sale ; la police IA arrive si aucun LSPD',
-        '/contact (se mettre dans un gang d\'abord) la nuit : acheter des munitions ; prix qui montent',
-        'F9 → Atelier : munitions artisanales (ferraille + cuivre du ferrailleur)',
-        '/contrats : publier, accepter avec un ami, valider',
-        'F9 (chef) → Flotte du gang + véhicule perso → garage du gang',
+        'Supérette : viser le caissier → le braquage démarre seul ; sacs d\'argent sale au sol à ramasser',
+        'Sans policier joueur : patrouilles IA avec agents (gyrophares, poursuite), plus de voitures vides',
+        'Téléphone → Inconnu → Appeler le contact (gang ou réputation de rue) ; → Contrats',
+        'Gangs : Families, Ballas, Vagos, Lost MC, Cartel Madrazo, Triades ; logo du garage du gang (membre)',
     ]),
-    ('Monde et événements', [
-        'Aéroport LSIA → vol pour Cayo : film, [Espace] pour passer, arrivée sur l\'île, retour',
-        'F11 → Événements → Soirée plage Cayo : sono, danseurs, musique ; brève Weazel dans Vibe',
-        'F11 → Événements → Chute lunaire / Course super vitesse : effet dans la zone, fin propre',
-        'Casino : roue ; loto (ticket)',
+    ('Monde, loisirs, secours', [
+        'Cayo : vol aller, comptoir retour (pilote + logo), vol retour',
+        'Casino : roue bien dans son cadre ; barman, caisse, croupiers ; Vanilla : danseuses ; Tequi-la-la : groupe sur scène',
+        'Courses : organisateur (Legion Square) → circuit → voiture prêtée → grille → points sur la route → voiture reprise',
+        'Bandeau Weazel News rouge (flash info, article, brève de braquage)',
+        'À terre sans EMS : [G] secours IA ; EMS en service : F4 → Envoyer un secouriste IA',
     ]),
     ('Staff', [
-        'F11 → mode staff → Ctrl+Y (TP marqueur), Ctrl+U (vol libre), Ctrl+O (noms, PV, « parle »)',
-        'Spectate d\'un joueur : noms et ID activés automatiquement',
-        '/builder : placer un banc, retirer une poubelle de la map, la remettre',
-        'Rang : promouvoir un ami modo puis le rétrograder',
-    ]),
-    ('Mods importés', [
-        'Vêtements : bikini, robe d\'été, coiffures femme (fin des listes en boutique)',
-        'Maps : aller à la pharmacie (104, -15, 72) et au garage clandestin (-60, -1211, 30)',
-        'Noter tout ce qui clignote, disparaît ou fait chuter les FPS (resmon 1 dans F8)',
+        'F11 : Joueurs, Moi (persos GTA, animaux, argent super-admin), Véhicules, Monde et lieux, Événements (fusionnés)',
+        'TP au marqueur : arrivée au sol (plus dans le ciel)',
+        'Monde et lieux → Déplacer un point : déplacer un acheteur ou un arbre mal placé, puis le remettre',
     ]),
     ('À noter pendant le test', [
-        'Points [E] impossibles à atteindre (ex. pharmacie près du poste de police du centre) : F11 → Copier mes coordonnées',
+        'Points encore mal placés : les déplacer en jeu (F11 → Déplacer un point) et me dire lesquels',
         'FPS en ville / à Cayo / dans une map importée ; erreurs F8 (captures)',
     ]),
 ]

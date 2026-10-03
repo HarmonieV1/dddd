@@ -46,6 +46,7 @@ check('butin rare (or), outil intact', ok and (W.players[1].items.gold_ore or 0)
 fixRandom(nil)
 
 -- Épuisement : le nœud 2 a déjà donné 2 fois ; la 3e l'épuise (perNode = 3), il revient après Config.Regrow
+W.players[1].items.pickaxe = 50 -- l'outil peut casser au hasard (3 %) : réserve pour que le test ne dépende pas du tirage
 cb('gs_harvest:begin', 1, 'mining', 2); advance(mine.duration[2])
 local okE, msgE, infoE = cb('gs_harvest:finish', 1); step()
 check('3e récolte : nœud épuisé', okE and infoE.depleted and infoE.node == 2 and msgE:find('épuisé'))

@@ -3,7 +3,7 @@
 local KEYS = [[
 | Touche | Action |
 |---|---|
-| **F1** | Téléphone |
+| **F1** | Téléphone (Carnet, Weazel, Commandes, Inconnu…) |
 | **F2** | Inventaire · **TAB** barre rapide · **1 à 5** objets rapides · **double-clic ou Alt + clic** : utiliser |
 | **K** | Inventaire proche (coffre, boîte à gants) |
 | **F3** | Progression, quêtes, niveau |
@@ -12,7 +12,7 @@ local KEYS = [[
 | **F6** | Métiers (service, tenue, facture, patron) |
 | **F7** | Duo |
 | **F9** | Gang |
-| **Z** | Menu radial |
+| **Z** | Menu radial : Moi (tenue en objet, chapeau, lunettes, masque…), Radio, Véhicule |
 | **Alt gauche** (maintenu) | Viser / interagir (ox_target) |
 | **N** | Parler · **²** portée de la voix |
 | **Verr. Maj** (maintenu) | Parler à la radio (fréquence réglée) |
@@ -22,8 +22,8 @@ local KEYS = [[
 | **Ctrl gauche** | S'accroupir |
 | **I** | Cette aide |
 
-**Commandes utiles** : **/journal** le journal Weazel News · **/quartiers** l'ambiance des quartiers · **/carnet** carnets de route
-et road trip du mois · **/report** appeler le staff
+**Téléphone (F1)** : **Weazel** le journal · **Carnet** carnets de route et road trip du mois · **Inconnu** le marché noir
+**Commandes utiles** : **/report** appeler le staff · **/quartiers** l'ambiance des quartiers · **/me** **/do** actions RP
 ]]
 
 local STAFF = [[

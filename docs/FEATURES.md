@@ -340,3 +340,22 @@ Traductions françaises manquantes des scripts Qbox ajoutées par METTRE-A-JOUR 
   classement du mois dans `/carnet`. Staff : F11 → Événements → « Départ du road trip du mois » (GPS pour tous, brève
   Weazel).
 
+
+## V7 — retours du beta test (fiche de test + retour général)
+- **Confort** : F3 progression (nom de commande neuf : l'ancien F5 ne double plus les emotes), F11 staff pour tous ;
+  images de tous nos objets (`tools/icons/make_icons.py`, posées dans ox_inventory) ; magasins qui restent ouverts ;
+  plus de coup de poing après un double-clic ; retour en civil sans perso chauve ; marqueurs discrets (petit cercle, 15 m) ;
+  création de perso : « Visage de base / Teint / Origines » ; commandes / masquées aux joueurs (liste dans `gs_onboarding/shared/commands.lua`).
+- **Points déplaçables en jeu** (`gs_bridge/shared/points.lua`) : toute position de `Config` de nos ressources se règle en jeu
+  (F11 → Monde et lieux → Déplacer un point), sauvegardée (KVP), ressource relancée. Remise à l'origine possible.
+- **Récolte** (gs_harvest) : nœuds (arbres, rochers, tas, légumes) qui s'épuisent et repoussent, outil en main, vestiaire,
+  revente loin de la récolte (test automatique), un seul ferrailleur (Cypress Flats), permis et fusil de chasse à l'Ammu-Nation de Paleto.
+- **Lieux** : coiffeurs / tatoueurs / chirurgien / boutiques avec vendeur et [E] ; permis de port d'arme (Ammu-Nation) ;
+  pharmacies accessibles ; Rob's Liquor en supérettes ; fourrière et garages en français ; plus de logo police en double ;
+  logos des motels ; dépôts des métiers libres (« Prendre le poste ici ») ; marina : retour sur le ponton.
+- **Bars** (gs_business) : Tequi-la-la, Vanilla Unicorn, Bahama Mamas ; barman PNJ en libre-service ; PNJ d'ambiance (gs_world).
+- **Illégal** : braquage de caisse qui démarre seul, argent sale en sacs au sol ; patrouilles de police IA créées par le serveur ;
+  téléphone → Inconnu (contact + contrats) ; gangs : Families, Ballas, Vagos, Lost MC + Cartel Madrazo, Triades.
+- **Monde** : roue du casino recollée, PNJ du casino ; Cayo : vol retour visible ; bandeau Weazel News ; secours IA envoyé par un EMS.
+- **Grandes nouveautés** : tenues en objets (gs_details), menu Z « Moi », courses avec organisateur PNJ et voitures prêtées (gs_races),
+  personnalisation complète par le mécano (gs_tuning/client/mechanic.lua).
