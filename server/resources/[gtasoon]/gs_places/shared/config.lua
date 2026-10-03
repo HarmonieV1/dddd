@@ -11,5 +11,5 @@ Config.Kinds = {
 }
 
 -- Lieux de base (vides : les parkings publics de qbx_garages suffisent). Ex. :
--- { kind = 'clothing', label = 'Boutique Gucci', coords = vec4(x, y, z, h) },
+-- { kind = 'clothing', label = 'Boutique Ponsonbys', coords = vec4(x, y, z, h) },
 Config.Defaults = {}

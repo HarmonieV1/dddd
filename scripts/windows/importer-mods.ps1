@@ -215,11 +215,9 @@ function Find-Resource($Res, $name) { Get-ChildItem -LiteralPath $Res -Directory
 function MB($bytes) { [math]::Round($bytes / 1MB, 1) }
 # Packs trop lourds : on ne garde que quelques modèles choisis (le reste des fichiers et des entrées .meta est retiré).
 # Vêtements solo déjà convertis par nos soins (zips ROADTRIP-*.zip) : signalés comme tels au lieu de « à convertir ».
-$Converted = @{ mp_male_the_goat = 'ROADTRIP-vetements_homme.zip'; brilliantovaja_cep_pervyjj_dollar = 'ROADTRIP-vetements_homme.zip'
-    vine_cross_diamond_chain_mp_male = 'ROADTRIP-vetements_homme.zip'; basic = 'ROADTRIP-coiffures_femme_1.zip'; box_braids = 'ROADTRIP-coiffures_femme_1.zip'
-    dreads = 'ROADTRIP-coiffures_femme_1.zip'; edgar = 'ROADTRIP-coiffures_femme_2.zip'; leopard_print = 'ROADTRIP-coiffures_femme_2.zip'
-    locs = 'ROADTRIP-coiffures_femme_2.zip' }
-$PackPick = @{ dallas_police = @('dpd23char', 'dpd20fpiu', 'dpd21hoe', 'dpdunchar') }
+$Converted = @{ basic = 'ROADTRIP-coiffures_femme_1.zip'; box_braids = 'ROADTRIP-coiffures_femme_1.zip'; dreads = 'ROADTRIP-coiffures_femme_1.zip'
+    edgar = 'ROADTRIP-coiffures_femme_2.zip'; leopard_print = 'ROADTRIP-coiffures_femme_2.zip'; locs = 'ROADTRIP-coiffures_femme_2.zip' }
+$PackPick = @{} # ex. : @{ nom_du_pack = @('modele1', 'modele2') }
 function Save-Xml($x, $path) {
     $s = New-Object Xml.XmlWriterSettings; $s.Encoding = New-Object Text.UTF8Encoding $false; $s.Indent = $true
     $w = [Xml.XmlWriter]::Create($path, $s); $x.Save($w); $w.Close()
@@ -269,6 +267,13 @@ function Slim-Tuning($root) {
     }
     return $removed
 }
+# Marques réelles (voitures sous licence, mode, police réelle) : refusées, risque de retrait du serveur par Cfx.re /
+# Rockstar. On garde le contenu « lore GTA » (marques inventées du jeu) ou sans marque.
+$BrandBlock = 'lamborghini|ferrari|porsche|mercedes|maybach|amg|audi|etron|bmw|dodge|chrysler|jeep|ford|mustang|chevrolet|chevy|corvette|cadillac|volkswagen|golf|toyota|lexus|nissan|honda|mazda|subaru|mitsubishi|bugatti|mclaren|tesla|bentley|rolls|aston|jaguar|land.?rover|range.?rover|maserati|alfa|fiat|peugeot|renault|citroen|koenigsegg|pagani|rimac|gucci|versace|nike|adidas|jordan|supreme|balenciaga|louis.?vuitton|dior|chanel|prada|rolex|north.?face|dallas|nypd|lapd|lspd_real|rhgs|roadtrip_vetements_homme'
+# Fichiers à l'intérieur d'un pack : marques sans ambiguïté seulement (un « golf_course.ytd » de map n'est pas une Golf)
+$BrandStrong = 'lamborghini|ferrari|porsche|mercedes|maybach|bugatti|mclaren|koenigsegg|gucci|versace|balenciaga|louis.?vuitton|rolex|dallas'
+function Test-Brand($name, [switch]$File) { return ($name.ToLower() -match $(if ($File) { $BrandStrong } else { $BrandBlock })) }
+
 function Analyze($pkg) {
     $pre = New-Object System.Collections.ArrayList
     $pick = $PackPick[(Clean-Name $pkg.Name)]
@@ -276,6 +281,7 @@ function Analyze($pkg) {
     $slim = @(Slim-Tuning $pkg.FullName)
     if ($slim.Count -gt 0) { [void]$pre.Add("$($slim.Count) pièces de tuning trop lourdes retirées (kit $($slim[0])…) : la voiture reste complète") }
     $all = @(Get-ChildItem -LiteralPath $pkg.FullName -Recurse -File -Force)
+    $brandHit = (Test-Brand $pkg.Name) -or @($all | Where-Object { Test-Brand $_.Name -File } | Select-Object -First 1).Count -gt 0
     $r = [ordered]@{ name = (Clean-Name $pkg.Name); source = $pkg.Name; type = 'rejete'; sizeMB = MB (($all | Measure-Object Length -Sum).Sum)
         issues = New-Object System.Collections.ArrayList; notes = $pre; root = $pkg.FullName; models = @(); install = $false; risk = $null }
     $ext = { param($e) @($all | Where-Object { $_.Extension -ieq $e }) }
@@ -328,6 +334,7 @@ function Analyze($pkg) {
         else { [void]$r.issues.Add('rien d''utilisable pour FiveM trouvé') }
     }
     if ($r.issues | Where-Object { $_ -match 'escrow|ESX|obfusqué' }) { $r.install = $false; $r.type = 'rejete' }
+    if ($brandHit) { $r.install = $false; $r.type = 'rejete'; [void]$r.issues.Add('marque réelle (voiture, mode, police) : refusé, risque de retrait du serveur par Cfx.re / Rockstar. Cherche une version « lore GTA »') }
     if ($r.sizeMB -gt 300 -and $r.install) { $r.install = $false; [void]$r.issues.Add('trop lourd pour être installé tel quel (> 300 Mo) : on choisira 2 ou 3 éléments du pack') }
     if ($big.Count -gt 0 -and $r.install) { $r.install = $false; [void]$r.issues.Add('pas installé : à optimiser d''abord (fichier > 16 Mo). Je peux l''alléger si tu me l''envoies') }
     return [pscustomobject]$r
@@ -476,19 +483,14 @@ if ($canInstall) {
 
 # Catalogue Qbox : les véhicules installés sont ajoutés à qbx_core\shared\vehicles.lua (concession, garages, prix),
 # dans un bloc balisé réécrit à chaque import (le reste du fichier n'est pas touché).
-$Prices = @{ fenomeno = 3200000; evcs500c = 185000; snpurosangue23 = 460000; panamera25 = 265000; '6gt24dd' = 215000; gxetron = 165000
-    '392slimshakersc' = 95000; ghoulcharger22 = 115000; glasshuracansc = 320000; stospydersc = 345000; gle21 = 150000; gls600 = 255000; golf8beast = 48000 }
-# Noms propres pour la concession (sinon : nom du fichier téléchargé). @(nom, marque, catégorie ou $null)
-$Labels = @{ fenomeno = @('Lamborghini Fenomeno', 'Lamborghini', 'super'); evcs500c = @('Mercedes S500 Cabriolet', 'Mercedes', $null)
-    snpurosangue23 = @('Ferrari Purosangue', 'Ferrari', $null); panamera25 = @('Porsche Panamera Turbo E-Hybrid', 'Porsche', $null)
-    '6gt24dd' = @('Audi RS6 Avant GT', 'Audi', $null); gxetron = @('Audi e-tron GT', 'Audi', $null); '392slimshakersc' = @('Dodge Charger 392 Shaker', 'Dodge', 'muscle')
-    ghoulcharger22 = @('Dodge Charger Ghoul', 'Dodge', 'muscle'); glasshuracansc = @('Lamborghini Huracán (toit verre)', 'Lamborghini', $null)
-    stospydersc = @('Lamborghini Huracán STO Spyder', 'Lamborghini', $null); gle21 = @('Mercedes-AMG GLE 63 S', 'Mercedes', 'suvs')
-    gls600 = @('Mercedes-Maybach GLS 600', 'Mercedes', 'suvs'); golf8beast = @('Volkswagen Golf 8', 'Volkswagen', $null) }
+# Prix et noms affichés à la concession, par nom de spawn (sinon : prix de la catégorie, nom du fichier). Marques
+# réelles interdites (voir $BrandBlock) : noms « lore GTA » uniquement (Pegassi, Grotti, Übermacht…).
+$Prices = @{}
+$Labels = @{} # ex. : @{ monmodele = @('Pegassi Zentorno R', 'Pegassi', 'super') }
 $ClassMap = @{ VC_SUPER = @('super', 1500000); VC_SPORT = @('sports', 250000); VC_SPORT_CLASSIC = @('sportsclassics', 200000); VC_SUV = @('suvs', 120000)
     VC_SEDAN = @('sedans', 60000); VC_COMPACT = @('compacts', 30000); VC_MUSCLE = @('muscle', 85000); VC_COUPE = @('coupes', 90000)
     VC_OFF_ROAD = @('offroad', 70000); VC_MOTORCYCLE = @('motorcycles', 40000); VC_VAN = @('vans', 45000); VC_EMERGENCY = @('emergency', 0) }
-$Brands = 'lamborghini', 'mercedes', 'ferrari', 'porsche', 'audi', 'dodge', 'volkswagen', 'bmw', 'nissan', 'toyota', 'ford', 'chevrolet', 'bugatti', 'mclaren'
+$Brands = 'pegassi', 'grotti', 'truffade', 'ubermacht', 'benefactor', 'obey', 'pfister', 'bravado', 'vapid', 'declasse', 'albany', 'dewbauchee', 'enus', 'karin', 'dinka', 'annis', 'ocelot', 'progen', 'coil'
 $vehEntries = @()
 # Catalogue construit depuis TOUS les mods installés et actifs (pas seulement ceux de cet import : sinon un import de
 # vêtements seuls viderait la concession).

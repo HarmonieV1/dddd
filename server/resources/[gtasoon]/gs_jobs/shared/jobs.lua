@@ -48,11 +48,7 @@ Jobs = {
             { model = 'police3', label = 'Interceptor', minGrade = 2 },
             { model = 'policeb', label = 'Moto', minGrade = 2, type = 'bike' },
             { model = 'fbi', label = 'Banalisée', minGrade = 3 },
-            -- Véhicules ajoutés (IMPORTER-MODS) : affichés seulement si le mod est installé sur le serveur.
-            { model = 'dpd23char', label = 'Charger 2023', minGrade = 1, addon = true },
-            { model = 'dpd20fpiu', label = 'Explorer', minGrade = 1, addon = true },
-            { model = 'dpd21hoe', label = 'Tahoe', minGrade = 2, addon = true },
-            { model = 'dpdunchar', label = 'Charger banalisée', minGrade = 3, addon = true },
+            -- Véhicules ajoutés par mod : { model = 'monmodele', label = '…', minGrade = 1, addon = true } (affiché si le mod est installé)
         },
         outfits = {
             { label = 'Cadet', minGrade = 0,

@@ -602,7 +602,7 @@ local function mainMenu()
         end })
         add(3, { title = 'Véhicules ajoutés (mods)', icon = 'car-side', arrow = true, description = 'Liste des voitures importées : nom, prix, spawn en un clic',
             onSelect = addonVehiclesMenu })
-        add(3, { title = 'Lieux publics (boutique, parking)', icon = 'shop', arrow = true, description = 'Poser une boutique de vêtements (ex. Gucci) ou un parking ici',
+        add(3, { title = 'Lieux publics (boutique, parking)', icon = 'shop', arrow = true, description = 'Poser une boutique de vêtements ou un parking ici',
             onSelect = function()
                 local function place(kind, prompt)
                     local r = input(prompt, { { type = 'input', label = 'Nom affiché', required = true, max = 40 } })

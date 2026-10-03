@@ -157,10 +157,9 @@ def guide(points):
     ])
     s += [Paragraph('8. Mods importés (Drive)', H2)]
     s += bullets([
-        'Voitures (concession) : Lamborghini Fenomeno, Huracán (2), Ferrari Purosangue, Audi RS6 et e-tron GT, Mercedes S500, GLE 63, Maybach GLS 600, '
-        'Dodge Charger (2), Golf 8. Panamera : à optimiser (fichier &gt; 16 Mo). Pack police Dallas : à sélectionner (355 Mo).',
-        'Maps : pharmacie du centre, garage clandestin, supermarché Willie\'s, club Bahamas Mamas, bureau d\'entreprise, village abandonné, boutique Gucci.',
-        'Vêtements : bikini (haut + bas), robe d\'été. Les packs Versace / Gucci / coiffures sont à convertir.',
+        'Marques réelles (voitures, mode, police) refusées par l\'importeur : risque de retrait du serveur par Cfx.re / Rockstar. Préférer des versions « lore GTA ».',
+        'Maps : pharmacie du centre, garage clandestin, supermarché Willie\'s, club Bahamas Mamas, bureau d\'entreprise, village abandonné.',
+        'Vêtements : bikini (haut + bas), robe d\'été, 6 coiffures femme.',
     ])
     s += [Spacer(1, 6), Paragraph(f'{len(points)} points de carte configurés : voir « ROADTRIP_Carte_points.pdf ».', SMALL)]
     doc.build(s, onFirstPage=footer, onLaterPages=footer)
@@ -207,7 +206,7 @@ TESTS = [
         'Rang : promouvoir un ami modo puis le rétrograder',
     ]),
     ('Mods importés', [
-        'Concession / spawn staff : fenomeno, snpurosangue23, 6gt24dd, gls600, golf8beast (textures OK, pas de disparition)',
+        'Vêtements : bikini, robe d\'été, coiffures femme (fin des listes en boutique)',
         'Maps : aller à la pharmacie (104, -15, 72) et au garage clandestin (-60, -1211, 30)',
         'Noter tout ce qui clignote, disparaît ou fait chuter les FPS (resmon 1 dans F8)',
     ]),
@@ -245,7 +244,6 @@ MLO = [
     ['Garage clandestin + casse', '-59.97, -1211.09, 30.0', 'fichier « lisez-moi » du mod'],
     ['Bureau d\'entreprise', '~ -643, -490, 34', 'estimé depuis les fichiers de la map'],
     ['Club Bahamas Mamas', '~ -1388, -586, 30', 'emplacement du club du jeu'],
-    ['Boutique Gucci (remplace une boutique du jeu)', 'Rockford Hills', 'à relever en jeu'],
     ['Supermarché Willie\'s', 'à relever en jeu', 'F11 → Copier mes coordonnées'],
     ['Village abandonné', 'à relever en jeu', 'F11 → Copier mes coordonnées'],
 ]
