@@ -13,11 +13,11 @@ endpoint_add_udp "0.0.0.0:30120"
 set sv_enforceGameBuild 3570
 
 ## ---- Identité (liste des serveurs) ----
-sv_hostname "^5RoadLine ^7RP ^7new generation ^7| ^6FR ^7| Free Access | Zéro P2W"
-sets sv_projectName "RoadLine RP"
-sets sv_projectDesc "RP francophone premium : néons, sunset et bonne humeur"
+sv_hostname "^5RoadLine ^7RP ^7| ^6FR ^7| La ville se souvient ^7| Free Access · Zéro P2W · Ville vivante"
+sets sv_projectName "RoadLine RP · La ville se souvient"
+sets sv_projectDesc "GTA RP 100 % FR new generation : témoins et preuves, rencontres de la route, rumeurs, prison vivante. Free Access, zéro pay-to-win."
 sets locale "fr-FR"
-sets tags "roleplay, rp, fr, francais, freeaccess, qbox"
+sets tags "roleplay, rp, fr, francais, french, freeaccess, serious rp, new generation, police, gangs, enquetes, qbox"
 sets Discord "https://discord.gg/8y2sX7EvZN"
 # load_server_icon logo.png   # PNG 96x96
 

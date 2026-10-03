@@ -1,5 +1,5 @@
-# Génère docs/pdf/ROADLINE_Bilan_V7.pdf (tout ce qui existe, historique, état, ce qu'il reste, idées signature)
-# et docs/pdf/ROADLINE_Reste_a_tester.pdf (retours du beta test → statut V7 → à vérifier en jeu).
+# Génère docs/pdf/ROADLINE_Bilan_V8.pdf (tout ce qui existe, historique, état, ce qu'il reste, idées signature)
+# et docs/pdf/ROADLINE_Reste_a_tester.pdf (retours du beta test et nouveautés V8 → à vérifier en jeu).
 # Lancer depuis la racine : python3 tools/bilan.py
 import os
 import sys
@@ -32,9 +32,20 @@ HISTORY = [
     ['V7', 'Retours du beta test : confort (touches, images, magasins, marqueurs discrets), staff F11 en 5 catégories, points déplaçables en jeu, '
            'récolte refaite, 3 bars, PNJ d\'ambiance, police IA réelle, braquage avec sacs, téléphone (Inconnu, Carnet, Weazel), 4 gangs + 2 organisations, '
            'tenues en objets, courses avec organisateur, personnalisation mécano, outil de mise en ligne'],
+    ['V8', 'Nom RoadLine RP, site, signatures « mémoire » : la ville se souvient (description des témoins, mémoire des tenues et véhicules, '
+           'visage connu), enquêtes avec preuves (scellés, labo, fichier), rencontres de la route, rumeurs et indic\', carnet des véhicules ; '
+           'prison vivante, météo événementielle, mentors, permis à points, correctifs console (garages, police IA, SharpDX, marques)'],
 ]
 
 FEATURES = [
+    ('★ Signatures RoadLine (V8) : la ville a une mémoire', [
+        'La ville se souvient : description brute du suspect par les témoins, mémoire des tenues et véhicules (2 h), visage connu nommé.',
+        'Enquêtes avec preuves : douilles, sang, empreintes, pneus, peinture ; scellés, labo, fichier ADN / empreintes, profils inconnus reliés ; gants, javel, pluie.',
+        'Rencontres de la route : 7 scènes rares et facultatives hors de la ville, variantes dangereuses, PNJ qui se souviennent, collection.',
+        'La ville parle : rumeurs tirées des vrais événements (barmans, pompiste) ; l\'indic\' vend les activités des gangs et balance.',
+        'Chaque voiture a une histoire : kilomètres, accidents, propriétaires, peintures ; crimes visibles par la police.',
+        'Prison vivante, météo événementielle (routes fermées, interventions), mentors, permis à points.',
+    ]),
     ('Arrivée et confort', [
         'Écran de chargement néon / sunset, règlement à accepter, liste blanche optionnelle (candidature Discord).',
         'Création de perso en français (visage, teint, origines), retouche unique (/retoucheperso), apparition à la mairie, quête « Ton premier jour ».',
@@ -82,24 +93,24 @@ FEATURES = [
         'Déplacer n\'importe quel point en jeu (sauvegardé), décor (/builder), lieux publics (boutiques, parkings), gangs et garages, journal de toutes les actions.',
         'Outils Windows en un double-clic : INSTALLER, METTRE-A-JOUR, IMPORTER-MODS (marques refusées), NETTOYER-MARQUES, REPARER-*, VIDER-CACHE, '
         'SAUVEGARDER-BDD, INVITER-AMIS, PREPARER-HEBERGEUR.',
-        'Qualité : 49 ressources maison, ~1 900 vérifications automatiques à chaque envoi (GitHub), linters de config, de liaisons et de performance.',
+        'Qualité : 53 ressources maison, plus de 2 000 vérifications automatiques à chaque envoi (GitHub), linters de config, de liaisons et de performance.',
     ]),
 ]
 
 STATE = [
     ['Domaine', 'État', 'Ce qu\'il reste'],
-    ['Code et contenu', 'V7 complète, tests verts', 'Ton test en jeu de la V7, recalage des points estimés (outil Déplacer un point)'],
+    ['Code et contenu', 'V8 complète, tests verts', 'Ton test en jeu de la V7 + V8, recalage des points estimés (outil Déplacer un point)'],
     ['Hébergement', 'Bloqué : offre sans base SQL', 'Base MySQL (support Sentrohost, offre avec base, ou VPS Linux + installateur), puis PREPARER-HEBERGEUR'],
     ['Beta test', 'Toi seul en local', 'Ouvrir aux beta-testeurs une fois hébergé (8 places en profil dev)'],
     ['Communauté', 'Discord fait', 'Quelques catégories / salons (règlement, candidatures, sanctions, annonces, tickets), webhooks à brancher'],
-    ['Image', 'Logos et site en cours', 'Logo 96x96 du serveur, écran de chargement final, site (modèle fourni)'],
+    ['Image', 'Site fait (Discord branché)', 'Logo officiel (96x96 + site + écran de chargement), photos en jeu, bande-annonce'],
     ['Lancement public', 'À préparer', 'Profil prod (48 places), sauvegardes automatiques, staff recruté et formé, règlement final, Tebex (optionnel)'],
 ]
 
 TO_OPEN = [
     '<b>Hébergeur avec base de données</b> : demander au support Sentrohost d\'ajouter une base MySQL / MariaDB, ou passer sur une offre qui en a une, '
     'ou louer un VPS Linux (on écrira l\'installateur Linux). Sans base, Qbox ne démarre pas.',
-    '<b>Valider la V7 en jeu</b> avec la fiche « Reste à tester » ; me renvoyer les points encore mal placés et les erreurs F8.',
+    '<b>Valider la V7 et la V8 en jeu</b> avec la fiche « Reste à tester » ; me renvoyer les points encore mal placés et les erreurs F8.',
     '<b>Clé de licence</b> Cfx (keymaster) pour l\'hébergeur, sv_hostname / projet / tags, logo 96x96 (load_server_icon).',
     '<b>Discord</b> : webhooks (staff, sanctions publiques, annonces, social) dans secrets.cfg ; rôles staff = rangs en jeu ; salon candidatures si liste blanche.',
     '<b>Staff</b> : nommer 2-3 modos, leur donner le rang en jeu (F11 → Joueurs → Rang), leur faire lire docs/ADMIN.md.',
@@ -109,33 +120,35 @@ TO_OPEN = [
 ]
 
 IDEAS = [
-    ('La ville se souvient (témoins à mémoire)', 'Les PNJ témoins décrivent vraiment le suspect : tenue, couleur de voiture, plaque partielle. '
-     'Changer de tenue (tenues en objets !) ou repeindre sa voiture chez le mécano brouille la piste. La police IA et les joueurs policiers reçoivent '
-     'ces descriptions. Le RP criminel devient une vraie partie d\'échecs, et c\'est relié à 3 systèmes qu\'on a déjà.'),
-    ('Chaîne d\'approvisionnement réelle', 'Les rayons des supérettes, bars et pharmacies se remplissent grâce aux livraisons des joueurs '
-     '(fermiers, pêcheurs, routiers). Si personne ne livre : ruptures, prix qui montent, brèves Weazel « pénurie de tomates ». '
-     'Chaque métier libre devient utile à toute la ville.'),
-    ('Élections municipales', 'Tous les mois, les joueurs votent pour un maire (campagne, débats sur Weazel). Le maire fixe 2-3 « lois » '
-     'réglables (taxe sur l\'alcool, prime aux métiers de service, horaires des bars, limite de vitesse en ville) qui changent vraiment le jeu.'),
-    ('Rencontres de la route (road movie)', 'Pendant un road trip ou un trajet hors de la ville : rencontres aléatoires scénarisées (auto-stoppeur, '
-     'panne d\'un PNJ, contrôle routier, animal sur la route, vendeur ambulant, tempête). C\'est le cœur de l\'identité RoadLine.'),
-    ('Ambition de personnage', 'À la création, chaque perso choisit une ambition (ouvrir un commerce, devenir chef de gang, entrer au LSPD, '
-     'faire le tour de l\'île…). Un carnet de vie suit les étapes, le staff voit les ambitions pour scénariser, récompenses cosmétiques à la clé.'),
-    ('Enquêtes avec preuves physiques', 'Douilles, traces de sang, empreintes sur une caisse, traces de pneus : la police les ramasse, '
-     'un labo (EMS / police) les analyse en temps réel et les relie à un suspect. Les criminels prudents nettoient (gants, nettoyage).'),
-    ('Radio RoadLine', 'Une vraie station de radio dans toutes les voitures, animée par des joueurs DJ (voix pma-voice), avec flashs Weazel '
-     'automatiques (trafic, braquages, météo). Une ville qui parle d\'elle-même.'),
-    ('Agenda vivant de la ville', 'Les événements naissent de l\'état du serveur : grève des éboueurs si personne ne ramasse, festival quand '
-     'l\'économie va bien, couvre-feu si la tension explose, marché du dimanche. Le staff n\'a plus à tout animer à la main.'),
-    ('Héritage et dynasties', 'Testament chez l\'avocat, biens et réputation transmis à un autre perso (enfant, associé), mort RP '
-     'acceptée et valorisée. Des familles et des empires qui durent dans le temps.'),
-    ('Mode réalisateur Weazel', 'Les journalistes filment (caméra, cadrage, interviews de rue) et publient des reportages illustrés '
-     'dans Vibe ; classement des meilleurs reportages, prime de la rédaction. Les joueurs racontent eux-mêmes l\'histoire du serveur.'),
+    ('Fausses plaques (illégal)', 'Plaques volées ou contrefaites chez un faussaire : la voiture n\'est plus reliée à ses signalements (La ville se souvient). '
+     'Mais le carnet du véhicule ne colle plus : un policier attentif repère la fraude. Le jeu du chat et de la souris continue.'),
+    ('Tatouages et signes distinctifs', 'Les témoins décrivent aussi les tatouages visibles, les cheveux colorés, une démarche : les criminels prudents '
+     'se couvrent (manches longues, capuche). Prolonge directement la signature « mémoire ».'),
+    ('Mode cinéma RoadLine', '/cinema : interface masquée, bandes noires, caméra lente, filtres néon. Pensé pour les clips TikTok des joueurs : '
+     'notre premier levier de croissance, gratuit.'),
+    ('Halloween sur la route (31 octobre)', 'Pendant une semaine, rencontres de la route spéciales (auto-stoppeur fantôme, voiture abandonnée, '
+     'brouillard), décor citrouilles, chasse aux masques. Tombe juste après l\'ouverture : parfait pour la rétention.'),
+    ('Usuriers et dettes', 'Emprunter à un usurier PNJ (ou à un gang) ; retards = visites de recouvreurs (PNJ ou joueurs). Crée des histoires et des liens '
+     'entre légal et illégal.'),
+    ('Garde à vue et interrogatoire', 'Salle d\'interrogatoire, temps de garde à vue, avocat présent ou non, aveux qui réduisent la peine. '
+     'Donne de la profondeur aux enquêtes avec preuves.'),
+    ('Marché de l\'occasion', 'Un parking où les joueurs exposent leurs voitures avec un prix ; le carnet du véhicule est consultable : '
+     'kilomètres, accidents, peintures. Les arnaques deviennent du RP.'),
+    ('Entretien des véhicules', 'Usure selon les kilomètres du carnet : vidange, pneus, freins. Les mécanos ont du travail régulier, sans grind.'),
+    ('Contrebande maritime', 'Livraisons nocturnes par bateau (Paleto, Cayo), garde-côtes (police en bateau), échanges en mer.'),
+    ('Shérif du comté', 'Métier distinct du LSPD pour le nord (Sandy, Paleto, routes) : contrôles routiers joués par des joueurs, en écho aux rencontres.'),
+    ('Ragots sur Vibe', 'Comptes anonymes #Ragots où l\'on peut publier des rumeurs… vraies ou fausses. Désinformation, enquêtes de journalistes.'),
+    ('Citoyen modèle', 'Rendre des portefeuilles, aider sur la route, témoigner : la réputation légale baisse le prix de l\'assurance, '
+     'adoucit les amendes, ouvre des métiers encadrés plus vite.'),
+    ('Rallye RoadLine', 'Épreuves de rallye sur chemins de terre (Grapeseed, Chiliad), étapes chronométrées, copilote qui lit le carnet de route.'),
+    ('Chien de la police (K9)', 'Un chien qui renifle les véhicules et les sacs (drogue, argent sale). Classique, très apprécié des policiers RP.'),
+    ('Le fil de la ville sur le site', 'Une page du site alimentée par les rumeurs anonymes de la semaine (« Ce qui s\'est passé à Los Santos »). '
+     'Donne envie aux visiteurs d\'entrer dans l\'histoire.'),
 ]
 
 
 def bilan():
-    d = doc('docs/pdf/ROADLINE_Bilan_V7.pdf', 'RoadLine RP · Bilan complet V7')
+    d = doc('docs/pdf/ROADLINE_Bilan_V8.pdf', 'RoadLine RP · Bilan complet V8')
     s = [Paragraph('RoadLine RP · Bilan complet', H1),
          Paragraph(f'De la création de la base à la {VERSION} : tout ce qui existe en jeu, où on en est, ce qu\'il reste pour ouvrir, '
                    'et 10 idées signature pour la suite. Serveur FiveM RP français, Free Access, zéro pay-to-win (Qbox, ox_lib, ox_inventory, pma-voice).', P),
@@ -145,7 +158,7 @@ def bilan():
         s += [KeepTogether([Paragraph(title, H3)] + bullets(items))]
     s += [PageBreak(), Paragraph('3. Où on en est', H2), table(STATE, [32 * mm, 45 * mm, 103 * mm]),
           Paragraph('4. Ce qu\'il reste pour ouvrir le serveur', H2)] + bullets(TO_OPEN)
-    s += [PageBreak(), Paragraph('5. Dix idées signature pour la suite', H2),
+    s += [PageBreak(), Paragraph('5. Idées pour la suite (V9 et après)', H2),
           Paragraph('Dans l\'esprit de « Los Santos réactif » : des systèmes qui se branchent sur ce qui existe déjà et que peu de serveurs proposent.', P)]
     for i, (t, txt) in enumerate(IDEAS, 1):
         s += [KeepTogether([Paragraph(f'{i}. {t}', H3), Paragraph(txt, P)])]
@@ -202,6 +215,17 @@ RETEST = [
         ('Contrats à mettre dans le téléphone', 'Téléphone → Inconnu → Contrats', 'Publier / accepter'),
         ('100 gangs, planque Ballas buggée', '4 gangs + 2 organisations ; garage visible', 'F9, planque et garage de chaque gang'),
     ]),
+    ('V8 · Nouveautés à vérifier', [
+        ('La ville se souvient', 'Description des témoins, mémoire tenue / voiture', 'Braquer masqué en voiture, recommencer, puis changer de tenue + repeindre'),
+        ('Enquêtes avec preuves', 'Douilles, sang, empreintes, pneus, peinture ; labo', 'Lampe torche (police), scellé, labo, F4 → Relever empreintes'),
+        ('Rencontres de la route', '7 scènes rares hors ville, parfois dangereuses', 'Rouler 20 min dans le comté ; F3 → Carnet de route'),
+        ('Rumeurs et indic\'', 'Barmans / pompiste ; indic\' du pont de Davis', 'Après un crime : « Ce que tu sais vraiment » ; indic\' en gang'),
+        ('Carnet du véhicule', 'Km, accidents, propriétaires, peintures', '/histoire au volant ; police : Vérifier une plaque'),
+        ('Prison vivante', 'Boulots, cantine, trafiquant, évasion à plusieurs', 'Incarcération, boulots, évasion de nuit à deux'),
+        ('Météo événementielle', 'Routes fermées, interventions payées', '/meteoevent storm (staff)'),
+        ('Mentors / permis à points', '/mentor ; 12 points, retour auto-école à 0', 'Deux persos (niveau 5+ et nouveau) ; F4 → retirer des points'),
+        ('Console : SVNetwork « hung »', 'Clic dans la fenêtre = pause : désactivé', 'Cliquer dans la console : le serveur continue'),
+    ]),
     ('Monde, secours, staff', [
         ('Cayo : pas de retour', 'Comptoir retour (pilote, logo)', 'Aller-retour'),
         ('Roue du casino qui dépasse', 'Roue recollée au socle', 'Regarder la roue'),
@@ -221,7 +245,7 @@ RETEST = [
 def reste():
     d = doc('docs/pdf/ROADLINE_Reste_a_tester.pdf', 'RoadLine RP · Reste à tester')
     s = [Paragraph('RoadLine RP · Reste à tester', H1),
-         Paragraph(f'Chaque retour de ton beta test, ce qui a été fait en {VERSION}, et comment le vérifier. Coche ce qui est bon ; '
+         Paragraph(f'Chaque retour de ton beta test et chaque nouveauté, ce qui a été fait (jusqu\'en {VERSION}), et comment le vérifier. Coche ce qui est bon ; '
                    'pour le reste : capture + coordonnées (F11 → Monde et lieux → Copier mes coordonnées), ou déplace le point en jeu.', P)]
     for title, rows in RETEST:
         data = [['OK', 'Ton retour', f'Fait en {VERSION}', 'À vérifier en jeu']] + [['[  ]', a, b, c] for a, b, c in rows]
@@ -237,4 +261,4 @@ def reste():
 if __name__ == '__main__':
     bilan()
     reste()
-    print('PDF générés : docs/pdf/ROADLINE_Bilan_V7.pdf, docs/pdf/ROADLINE_Reste_a_tester.pdf')
+    print('PDF générés : docs/pdf/ROADLINE_Bilan_V8.pdf, docs/pdf/ROADLINE_Reste_a_tester.pdf')

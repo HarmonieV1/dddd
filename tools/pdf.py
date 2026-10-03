@@ -8,7 +8,7 @@ from reportlab.lib.units import mm
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, PageBreak, KeepTogether
 from reportlab.graphics.shapes import Drawing, Rect, Circle, String, Line
 
-VERSION = 'V7'
+VERSION = 'V8'
 NEON = colors.HexColor('#28E0FF')
 DARK = colors.HexColor('#0F091C')
 PINK = colors.HexColor('#FF2E88')
@@ -84,6 +84,8 @@ COMMANDS = [
     ['/factures · /reputation · /saison · /quartiers', 'factures · réputation · passe de saison · ambiance des quartiers'],
     ['/retoucheperso', 'retoucher son perso (une seule fois)'],
     ['/boutique', 'boutique cosmétique (réclamer ses achats)'],
+    ['/permis · /histoire', 'solde de points du permis · carnet du véhicule où tu es assis'],
+    ['/mentor · /rencontres · /rumeurs', 'parrainage · collection des rencontres de la route · où entendre les rumeurs'],
     ['Staff', '/whitelist · /gsjob · /gsgang · /gsevent · /meteo · /builder · /economie (les joueurs ne les voient pas)'],
 ]
 
@@ -109,6 +111,28 @@ def guide(points):
     s += [Paragraph('2. Touches', H2), table(KEYS, [38 * mm, 78 * mm, 64 * mm])]
     s += [Paragraph('3. Commandes utiles', H2), table(COMMANDS, [60 * mm, 120 * mm])]
 
+    s += [PageBreak(), Paragraph('★ Signatures RoadLine (V8)', H2)]
+    s += bullets([
+        '<b>La ville se souvient</b> : les témoins décrivent le suspect à la police, en texte brut (homme / femme, masqué, couvre-chef, sac, '
+        'gilet, armé, type et couleur du véhicule, plaque partielle). Recroisé avec la même tenue ou la même voiture (plaque + couleur), '
+        'il est reconnu plus vite. Changer de tenue, repeindre ou changer de véhicule brouille la piste. Un visage connu (réputation) peut être nommé.',
+        '<b>Enquêtes avec preuves</b> : douilles (arme, n° de série), sang, empreintes (sans gants), traces de pneus, éclats de peinture. '
+        'Police : lampe torche en visant → [E] mettre sous scellé → labo du commissariat (3 min). Nom seulement si la personne est fichée '
+        '(F4 → Relever empreintes et ADN, ou incarcération) ; sinon un profil inconnu P-XXXXX qui relie les scènes. Gants et javel en quincaillerie, '
+        'la pluie lave le sang et les pneus.',
+        '<b>Rencontres de la route</b> : hors de la ville, rarement, une scène au bord de la route (auto-stoppeur, panne, accident, animal blessé, '
+        'portefeuille, vendeur ambulant, contrôle du shérif). Rien n\'est signalé : on s\'arrête ou pas. Parfois dangereux (auto-stoppeur braqueur, '
+        'fausse panne). L\'auto-stoppeur aidé peut revenir. Collection dans F3 → Carnet de route.',
+        '<b>La ville parle</b> : barmans, pompiste, patronne du Hen House racontent les vrais événements (gratuit : vague ; payant : détails des témoins). '
+        '<b>L\'indic\'</b> (pont de Davis, docks) vend les activités d\'un autre gang (livraisons au receleur, atelier, coups, position du receleur)… '
+        'et peut balancer l\'acheteur.',
+        '<b>Chaque voiture a une histoire</b> : kilomètres, accidents, propriétaires, peintures (/histoire au volant) ; la police voit aussi les crimes.',
+        '<b>Prison vivante</b> (Bolingbroke) : petits boulots (peine réduite + tickets de cantine), cantine, trafiquant (outils contre tickets et cigarettes), '
+        'évasion seulement à plusieurs, la nuit, avec des outils de fortune.',
+        '<b>Météo événementielle</b> : pendant la tempête, routes fermées (barrières, logo) et interventions payées (arbres, véhicules en détresse).',
+        '<b>Mentors</b> (/mentor) : un ancien (niveau 5+) parraine un nouveau ; s\'il reste 7 jours, primes pour les deux.',
+        '<b>Permis à points</b> : 12 points, retirés par la police (F4 → Contrôle d\'identité) ou un refus d\'obtempérer ; à 0, retour à l\'auto-école.',
+    ])
     s += [PageBreak(), Paragraph('4. Vie légale', H2)]
     s += bullets([
         '<b>Arrivée</b> : pas d\'appartement gratuit, apparition devant la mairie, quête « Ton premier jour » avec Max. Règlement à accepter.',
@@ -141,7 +165,8 @@ def guide(points):
         '<b>Contrats</b> (téléphone → Inconnu → Contrats) : vol, braquage, livraison, vente, élimination (scène RP).',
         '<b>Gangs</b> (F9) : Families, Ballas, Vagos, Lost MC + organisations Cartel Madrazo et Triades. Caisse, territoires, tags, receleur, '
         'labo, atelier de munitions, flotte + garage (logo sur la carte pour les membres).',
-        '<b>Drogues</b> : plantations, labos, vente. <b>Recherche intelligente</b> : témoins, caméras, précision, chaleur, police IA de relais.',
+        '<b>Drogues</b> : plantations, labos, vente. <b>Recherche intelligente</b> : témoins, caméras, précision, chaleur, police IA de relais, '
+        'description du suspect et mémoire de la ville (V8).',
     ])
     s += [Paragraph('6. Social, loisirs, événements', H2)]
     s += bullets([
@@ -175,6 +200,20 @@ TESTS = [
     ('Avant de commencer', [
         'NETTOYER-MARQUES.bat (une fois), puis METTRE-A-JOUR.bat : fenêtre du serveur sans ligne ROUGE',
         'Si F3 / F5 font encore deux choses : Échap → Paramètres → Raccourcis → FiveM, vérifier F3 = Progression',
+    ]),
+    ('V8 · Signatures (nouveau)', [
+        'Braquer avec un masque et une voiture bleue : la police reçoit « Homme, masqué, armé, Voiture (bleu), plaque 4X…»',
+        'Recommencer avec la même tenue : « Même tenue que le signalement n°X » ; changer de tenue + repeindre : plus de lien',
+        'Tirer, se blesser, braquer sans gants : douilles, sang, empreintes visibles à la lampe torche (policier en service, en visant)',
+        'Mettre sous scellé ([E]) → labo du commissariat → résultat après 3 min (profil inconnu, puis nom une fois fiché par F4)',
+        'Gants (quincaillerie) : plus d\'empreintes ; javel : traces effacées autour',
+        'Rouler 10-20 min hors de la ville : une rencontre au bord de la route (s\'arrêter, ou passer son chemin)',
+        'Prendre un auto-stoppeur et le déposer à sa ville (GPS) ; F3 → Carnet de route : rencontre cochée',
+        'Barman du Yellow Jack : « Quoi de neuf ? » puis « Ce que tu sais vraiment » ; l\'indic\' du pont de Davis (gang)',
+        '/histoire au volant de sa voiture : kilomètres, accidents, repeintes ; police : Vérifier une plaque → historique',
+        'Prison : se faire incarcérer → boulots (peine réduite, tickets), cantine, trafiquant ; évasion à deux la nuit avec outils',
+        '/meteoevent storm (staff) : routes fermées, interventions payées (mécano ou kit de réparation)',
+        '/mentor avec un perso niveau 5+ (disponible) et un nouveau (demande / accepter) ; /permis ; F4 → retirer des points',
     ]),
     ('Démarrage et confort', [
         'Création de perso : « Visage de base 1 / 2 », « Ressemblance », « Teint », « Origines » ; pas de carte d\'identité au départ',
@@ -241,6 +280,9 @@ CATS = {
     'gs_blackmarket': ('Illégal', colors.HexColor('#E53935')), 'gs_races': ('Courses', colors.HexColor('#FF9800')),
     'gs_rental': ('Location', colors.HexColor('#00BFA5')), 'gs_world': ('Cayo / monde', colors.HexColor('#2196F3')),
     'gs_hideouts': ('Motels', colors.HexColor('#795548')),
+    'gs_evidence': ('Police scientifique', colors.HexColor('#4FD8FF')), 'gs_rumors': ('Rumeurs / indic\'', colors.HexColor('#A24BFF')),
+    'gs_police': ('Prison', colors.HexColor('#FF2340')), 'gs_weather': ('Tempête', colors.HexColor('#607D8B')),
+    'gs_roadside': ('Route', colors.HexColor('#FFD23F')),
 }
 MLO = [
     ['Map importée', 'Coordonnées', 'Source'],
