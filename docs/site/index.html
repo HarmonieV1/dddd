@@ -15,6 +15,7 @@
   - logo : remplace le texte .logo par <img src="logo.png" alt="RoadLine RP">
   - captures / vidéo : remplace les blocs .shot (style="background-image:url(...)") et .trailer
   - bandeau Weazel News : modifie les titres dans .ticker
+  - police « mission réussie » de GTA V : place pricedown.woff2 (ou .ttf) dans un dossier fonts/ (sinon Anton est utilisée)
 -->
 <script>document.documentElement.classList.add('js')</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -327,7 +328,7 @@
   /* HUD de l'accueil : heure de Los Santos (1 minute en jeu = 2 secondes) */
   .hud { position: absolute; z-index: 3; top: 92px; right: max(20px, calc((100vw - 1160px) / 2 + 20px)); text-align: right; font-family: Anton, sans-serif; text-transform: uppercase; line-height: 1.1;
     text-shadow: 0 2px 10px rgba(0, 0, 0, .7); pointer-events: none; }
-  .hud b { display: block; font-weight: 400; font-size: 2rem; letter-spacing: .04em; color: #fff; }
+  .hud b { display: block; font-family: 'GTA Mission', Anton, sans-serif; font-weight: 400; font-size: 2.2rem; letter-spacing: .04em; color: #fff; }
   .hud b i { font-style: normal; animation: caret 1s steps(1) infinite; }
   .hud span { font-size: .8rem; letter-spacing: .2em; color: #c79bff; }
   .hud small { display: block; margin-top: 4px; font-family: Inter, sans-serif; font-weight: 700; font-size: .78rem; color: #8cff9e; letter-spacing: .06em; }
@@ -384,8 +385,11 @@
   .gta-banner { position: fixed; left: 0; right: 0; top: 38%; z-index: 60; text-align: center; pointer-events: none; padding: 24px 16px;
     background: linear-gradient(90deg, transparent, rgba(7, 4, 13, .9) 18%, rgba(7, 4, 13, .9) 82%, transparent); opacity: 0; transform: scaleY(0); transition: opacity .3s, transform .45s var(--ease); }
   .gta-banner.show { opacity: 1; transform: none; }
-  .gta-banner b { display: block; font-family: Anton, sans-serif; font-weight: 400; text-transform: uppercase; font-size: clamp(2rem, 7vw, 4.4rem); line-height: 1.05; letter-spacing: .03em;
-    background: var(--neon); -webkit-background-clip: text; background-clip: text; color: transparent; filter: drop-shadow(0 4px 20px rgba(176, 72, 255, .5)); }
+  /* Police des écrans de mission de GTA V (Pricedown) : dépose fonts/pricedown.woff2 ou .ttf à côté de index.html */
+  @font-face { font-family: 'GTA Mission'; src: local('Pricedown'), local('Pricedown Bl'), local('PricedownBl-Regular'), url('fonts/pricedown.woff2') format('woff2'), url('fonts/pricedown.ttf') format('truetype'); font-display: swap; }
+  .gta-banner b { display: block; font-family: 'GTA Mission', Anton, sans-serif; font-weight: 400; text-transform: lowercase; font-size: clamp(2.6rem, 8vw, 5.2rem); line-height: 1.05; letter-spacing: .02em; color: #f2c230;
+    text-shadow: 2px 2px 0 #000, -2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000, 0 3px 0 #000, 0 8px 30px rgba(0, 0, 0, .7); }
+  .gta-banner.red b { color: #d0122f; }
   .gta-banner.show b { animation: bannerIn .7s var(--ease); }
   .gta-banner span { color: #fff; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; font-size: .9rem; }
   @keyframes bannerIn { from { letter-spacing: .35em; opacity: 0; filter: blur(8px); } }
@@ -785,7 +789,7 @@
       if (n !== last) {
         stars.forEach((s, i) => s.classList.toggle('on', i < n));
         wanted.classList.toggle('max', n === 5);
-        if (n === 5 && last === 4) toast('★★★★★ Recherché ! Rejoins la ville avant que la LSPD te trouve.');
+        if (n === 5 && last === 4) banner('recherché', 'Rejoins la ville avant que la LSPD te trouve', true);
         last = n;
       }
     };
@@ -890,8 +894,9 @@
 
   // Bandeau central façon « mission »
   let bannerT;
-  function banner(title, sub) {
+  function banner(title, sub, red) {
     const b = $('.gta-banner');
+    b.classList.toggle('red', !!red);
     $('b', b).textContent = title; $('span', b).textContent = sub || '';
     b.classList.remove('show'); void b.offsetWidth; b.classList.add('show');
     clearTimeout(bannerT); bannerT = setTimeout(() => b.classList.remove('show'), 3200);
