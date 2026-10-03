@@ -282,8 +282,13 @@ function Move-FxServerOutOfOneDrive($FxExe, [scriptblock]$Say) {
 #--- Écrit DEMARRER.bat (encodage de la console Windows : les chemins avec accents restent valides) avec un contrôle
 #    clair si FXServer.exe disparaît un jour (déplacé, antivirus…).
 function Write-Launcher($Data, $FxExe) {
+    # Coupe la « sélection rapide » de cette fenêtre : un clic dans la console mettait le serveur en pause
+    # (« Loop svNetwork seems hung », « hitch warning » de ~100 s) jusqu'à un appui sur Entrée.
+    $noQuickEdit = 'try { $k = Add-Type -PassThru -Name C -Namespace Q -MemberDefinition ''[DllImport("kernel32.dll")] public static extern System.IntPtr GetStdHandle(int h); [DllImport("kernel32.dll")] public static extern bool GetConsoleMode(System.IntPtr h, out uint m); [DllImport("kernel32.dll")] public static extern bool SetConsoleMode(System.IntPtr h, uint m);''; $h = $k::GetStdHandle(-10); $m = 0; if ($k::GetConsoleMode($h, [ref]$m)) { [void]$k::SetConsoleMode($h, (($m -band (-bnot 0x40)) -bor 0x80)) } } catch {}'
+    $enc = [Convert]::ToBase64String([Text.Encoding]::Unicode.GetBytes($noQuickEdit))
     $lines = @(
         '@echo off', 'title Serveur GTA SOON', 'cd /d "%~dp0"',
+        "powershell -NoProfile -ExecutionPolicy Bypass -EncodedCommand $enc >nul 2>&1",
         "if not exist `"$FxExe`" (",
         '  echo.',
         "  echo ERREUR : FXServer.exe introuvable : $($FxExe -replace '([()&<>^|])', '^$1')",
