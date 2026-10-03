@@ -10,4 +10,4 @@ dependencies { 'ox_lib', 'gs_security', 'gs_bridge', 'gs_markers' }
 
 shared_scripts { '@ox_lib/init.lua', 'shared/config.lua', '@gs_bridge/shared/points.lua' }
 server_scripts { 'server/main.lua' }
-client_scripts { 'client/density.lua', 'client/island.lua' }
+client_scripts { 'client/density.lua', 'client/island.lua', 'client/ambient.lua' }

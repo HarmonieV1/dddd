@@ -29,17 +29,18 @@ join(1, 'CID1', 'Client', B.register) W.players[1].money.cash = 500
 join(2, 'CID2', 'Barman', B.craft, { name = 'bar', grade = 1, onduty = true })
 join(3, 'CID3', 'Patron', B.register, { name = 'bar', grade = 2, onduty = true })
 
--- Libre-service (personne en service)
+-- Libre-service (personne en service) : barman PNJ, carte de base, stock illimité, prix majorés, 30 % pour la maison
 local m = cb('gs_business:menu', 1, 'bar'); step()
 local beer
 for _, it in ipairs(m.items) do if it.item == 'beer' then beer = it end end
-check('libre-service : prix majoré', not m.staffed and beer.price == math.ceil(15 * Config.SelfServiceMarkup) and beer.stock == 5)
+check('libre-service : prix majoré, toujours servi', not m.staffed and beer.price == math.ceil(B.npc.beer * Config.SelfServiceMarkup) and beer.stock > 0)
 local ok = cb('gs_business:buy', 1, 'bar', 'beer', 2); step()
-check('achat libre-service : payé, stock -2, caisse du bar', ok and W.stashes[B.stash].beer == 3 and W.players[1].items.beer == 2 and society.bar == 2 * beer.price)
-ok = cb('gs_business:buy', 1, 'bar', 'beer', 9); step()
-check('rupture de stock', not ok)
+check('achat libre-service : payé, réserve intacte, part de la maison', ok and W.stashes[B.stash].beer == 5 and W.players[1].items.beer == 2
+    and society.bar == math.floor(2 * beer.price * Config.NpcShare))
+ok = cb('gs_business:buy', 1, 'bar', 'beer', Config.MaxQty + 1); step()
+check('quantité plafonnée', not ok)
 ok = cb('gs_business:buy', 1, 'bar', 'gs_cocktail', 1); step()
-check('cocktail pas encore préparé : rupture', not ok)
+check('cocktail : seulement quand un barman joueur est en service', not ok)
 
 -- Préparation
 ok = cb('gs_business:craftBegin', 1, 'bar', 'gs_cocktail'); step()

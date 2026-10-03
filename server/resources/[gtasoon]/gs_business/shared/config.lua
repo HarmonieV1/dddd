@@ -8,23 +8,40 @@ Config.SelfServiceMarkup = 1.2     -- sans employé en service : libre-service, 
 Config.MaxQty = 10
 Config.MinPrice, Config.MaxPrice = 1, 1000
 
+-- Libre-service (aucun employé en service) : un barman PNJ sert la carte de base (`npc`), stock illimité, prix majorés ;
+-- la maison touche Config.NpcShare de la recette (le reste = coût du barman). Employés en service : leur carte à eux,
+-- préparée avec les ingrédients de la réserve.
+Config.NpcShare = 0.3
+
 Config.Businesses = {
     bar = {
-        label = 'Bar Le Néon', stash = 'gs_bar_1',
+        label = 'Tequi-la-la', stash = 'gs_bar_1',
         register = vec3(-560.4, 287.3, 82.2), craft = vec3(-562.9, 289.9, 82.2),
         products = {
             gs_cocktail = { label = 'Cocktail Vice', price = 45, needs = { vodka = 1, sprunk = 1 }, time = 5000 },
             gs_whiskycola = { label = 'Whisky-cola', price = 40, needs = { whiskey = 1, sprunk = 1 }, time = 4000 },
             beer = { label = 'Bière pression', price = 15, resale = true },   -- revendue telle quelle (achetée en gros)
         },
+        npc = { beer = 15, sprunk = 8, water = 6 },
     },
-    restaurant = {
-        label = 'Horny\'s Burgers', stash = 'gs_restaurant_1',
-        register = vec3(1242.9, -367.5, 69.1), craft = vec3(1245.9, -363.1, 69.1),
+    vanilla = {
+        label = 'Vanilla Unicorn', stash = 'gs_vanilla_1',
+        register = vec3(127.9, -1285.0, 29.28), craft = vec3(130.0, -1281.5, 29.27),
         products = {
-            gs_burger_deluxe = { label = 'Burger deluxe', price = 35, needs = { meat = 1, tomato = 1 }, time = 6000 },
-            gs_fries = { label = 'Frites maison', price = 15, needs = { potato = 2 }, time = 4000 },
-            sprunk = { label = 'Sprunk', price = 8, resale = true },
+            gs_cocktail = { label = 'Cocktail Vice', price = 60, needs = { vodka = 1, sprunk = 1 }, time = 5000 },
+            gs_whiskycola = { label = 'Whisky-cola', price = 50, needs = { whiskey = 1, sprunk = 1 }, time = 4000 },
+            beer = { label = 'Bière', price = 18, resale = true },
         },
+        npc = { beer = 18, sprunk = 10, water = 8 },
+    },
+    bahama = {
+        label = 'Bahama Mamas', stash = 'gs_bahama_1',
+        register = vec3(-1388.4, -607.2, 30.32), craft = vec3(-1385.8, -609.4, 30.32),
+        products = {
+            gs_cocktail = { label = 'Cocktail Vice', price = 55, needs = { vodka = 1, sprunk = 1 }, time = 5000 },
+            gs_whiskycola = { label = 'Whisky-cola', price = 45, needs = { whiskey = 1, sprunk = 1 }, time = 4000 },
+            beer = { label = 'Bière', price = 16, resale = true },
+        },
+        npc = { beer = 16, sprunk = 9, water = 7 },
     },
 }

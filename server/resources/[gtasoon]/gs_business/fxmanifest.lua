@@ -3,7 +3,7 @@ game 'gta5'
 lua54 'yes'
 
 name 'gs_business'
-description 'Commerces tenus par des joueurs (bar, restaurant) : préparation à partir du stock (réserve du job), caisse (prix fixés par le patron), vente en libre-service majorée sans employé, comptabilité.'
+description 'Bars tenus par des joueurs (Tequi-la-la, Vanilla Unicorn, Bahama Mamas) : préparation à partir du stock (réserve du job), caisse (prix fixés par le patron), barman PNJ en libre-service sans employé, comptabilité.'
 version '0.1.0'
 
 dependencies { 'oxmysql', 'ox_lib', 'gs_security', 'gs_bridge', 'gs_jobs', 'gs_markers' }

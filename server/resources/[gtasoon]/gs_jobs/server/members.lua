@@ -186,6 +186,35 @@ RegisterNetEvent('gs_jobs:server:joinPublic', function(job)
     DB.audit('join', job, cid, cid, nil, nil)
 end)
 
+-- Dépôt d'un métier libre (bus, voirie, Post OP, routier…) : « Prendre le poste ici » = embauche si besoin,
+-- métier actif et service en un clic, sans passer par Pôle Emploi.
+RegisterNetEvent('gs_jobs:server:depotStart', function(job)
+    local src = source
+    if not GSJ.guard(src, 'depot', 2, 10000) then return end
+    local def = Jobs[job]
+    local cid = GSJ.cid(src)
+    if not cid or not def or def.whitelisted then return end
+    local near = false
+    for _, g in ipairs(def.points.garage or {}) do
+        if Security:InRange(src, g.coords, 6.0 + Config.ServerTolerance) then near = true break end
+    end
+    if not near then return GSJ.notify(src, L('too_far'), 'error') end
+    local m = Members[src]
+    if not m then return end
+    if m.jobs[job] == nil then
+        local ok, err = GSJ.addMembership(cid, job, 0, Bridge:GetName(src))
+        if not ok then return GSJ.notify(src, L(err), 'error') end
+        DB.audit('join', job, cid, cid, nil, nil)
+    end
+    local current = Bridge:GetJob(src)
+    if not current or current.name ~= job then
+        GSJ.endService(src)
+        Bridge:SetJob(src, job, m.jobs[job] or 0)
+    end
+    Bridge:SetDuty(src, true)
+    GSJ.notify(src, ('%s : en service. Sors ton véhicule au garage du dépôt, puis F6 → Mission.'):format(def.label), 'success')
+end)
+
 lib.callback.register('gs_jobs:getMemberships', function(src)
     if not GSJ.guard(src, 'memberships', 3, 10000) then return {} end
     return Members[src] and Members[src].jobs or {}

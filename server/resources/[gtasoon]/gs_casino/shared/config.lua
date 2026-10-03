@@ -5,7 +5,7 @@ Config = {}
 -- Roue : 1 tour gratuit par personnage et par jour (remise à zéro à minuit, heure du serveur).
 -- Props du jeu (DLC casino) posés en local ; coords de la roue d'origine du casino (à caler en jeu si besoin).
 Config.Wheel = {
-    coords = vec3(1111.05, 229.85, -49.13),   -- centre de la roue
+    coords = vec3(1111.05, 229.85, -50.38),   -- roue : 26 cm au-dessus du socle (avant : 1,25 m trop haut, elle dépassait du cadre)
     base = vec3(1111.05, 229.85, -50.64),     -- socle
     heading = 0.0,
     stand = vec3(1109.6, 228.6, -49.64),      -- où le joueur se tient ([E])

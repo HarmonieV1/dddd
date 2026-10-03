@@ -40,3 +40,26 @@ Config.Island = {
                      'SE_DLC_Hei4_Island_Beach_Party_Music_New_03_Reverb', 'SE_DLC_Hei4_Island_Beach_Party_Music_New_04_Reverb' },
     },
 }
+
+-- PNJ d'ambiance (V7) : créés chez chaque joueur à l'approche (60 m), invincibles, figés dans leur animation.
+-- scenario = scénario du jeu ; anim = { dict, clip } en boucle. Coordonnées approximatives : la hauteur est recalée au sol,
+-- et tout se règle en jeu (F11 → Monde et lieux → Déplacer un point).
+Config.AmbientPeds = {
+    -- Casino Diamond
+    { label = 'Barman du casino', model = 's_m_y_barman_01', coords = vec4(1110.3, 208.9, -49.44, 30.0), scenario = 'WORLD_HUMAN_STAND_IMPATIENT' },
+    { label = 'Caissière du casino', model = 'u_f_m_casinocash_01', coords = vec4(1117.6, 219.9, -49.44, 90.0), scenario = 'WORLD_HUMAN_STAND_IMPATIENT' },
+    { label = 'Sécurité du casino', model = 's_m_m_highsec_01', coords = vec4(1089.9, 208.6, -49.0, 310.0), scenario = 'WORLD_HUMAN_GUARD_STAND' },
+    { label = 'Croupier', model = 's_m_y_casino_01', coords = vec4(1149.4, 269.0, -51.84, 45.0), scenario = 'WORLD_HUMAN_STAND_IMPATIENT' },
+    { label = 'Croupière', model = 's_f_y_casino_01', coords = vec4(1143.8, 263.6, -51.84, 315.0), scenario = 'WORLD_HUMAN_STAND_IMPATIENT' },
+    -- Vanilla Unicorn : danseuses sur la scène, barman
+    { label = 'Danseuse 1 (Vanilla Unicorn)', model = 's_f_y_stripper_01', coords = vec4(112.6, -1287.0, 28.46, 300.0), anim = { dict = 'mini@strip_club@pole_dance@pole_dance1', clip = 'pd_dance_01' } },
+    { label = 'Danseuse 2 (Vanilla Unicorn)', model = 's_f_y_stripper_02', coords = vec4(104.2, -1293.9, 29.26, 30.0), anim = { dict = 'mini@strip_club@pole_dance@pole_dance2', clip = 'pd_dance_02' } },
+    { label = 'Danseuse 3 (Vanilla Unicorn)', model = 'csb_stripper_01', coords = vec4(102.3, -1290.0, 29.26, 210.0), anim = { dict = 'mini@strip_club@private_dance@part1', clip = 'priv_dance_p1' } },
+    { label = 'Videur (Vanilla Unicorn)', model = 's_m_y_doorman_01', coords = vec4(127.5, -1296.5, 29.27, 210.0), scenario = 'WORLD_HUMAN_GUARD_STAND' },
+    -- Tequi-la-la : groupe sur scène
+    { label = 'Guitariste (Tequi-la-la)', model = 'a_m_y_hipster_02', coords = vec4(-552.8, 284.9, 82.98, 175.0), scenario = 'WORLD_HUMAN_MUSICIAN' },
+    { label = 'Bassiste (Tequi-la-la)', model = 'a_m_y_hipster_01', coords = vec4(-554.6, 285.4, 82.98, 175.0), scenario = 'WORLD_HUMAN_MUSICIAN' },
+    { label = 'Chanteuse (Tequi-la-la)', model = 'a_f_y_hipster_02', coords = vec4(-553.7, 283.9, 82.98, 175.0), anim = { dict = 'anim@mp_player_intcelebrationfemale@uncle_disco', clip = 'uncle_disco' } },
+    -- Bahama Mamas : DJ
+    { label = 'DJ (Bahama Mamas)', model = 'a_m_y_clubcust_01', coords = vec4(-1381.0, -616.0, 31.5, 120.0), anim = { dict = 'anim@amb@nightclub@djs@dixon@', clip = 'dixn_dance_cntr_open_dix' } },
+}

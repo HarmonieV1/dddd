@@ -125,7 +125,7 @@ Jobs = {
         },
         points = {
             duty = { vec3(736.0, -1080.0, 22.2) },
-            boss = { vec3(740.0, -1076.0, 22.2) },
+            boss = { vec3(735.2, -1083.6, 22.2) }, -- V7 : l'ancien point était dans le mur (entre service et atelier)
             stash = {
                 { label = 'Atelier', coords = vec3(738.5, -1085.0, 22.2), slots = 60, weight = 200000, minGrade = 0 },
             },
@@ -254,22 +254,35 @@ Jobs = {
         vehicles = { { model = 'rumpo', label = 'Van de reportage', minGrade = 0 } },
     },
 
+    -- Bars tenus par des joueurs (V7) : Tequi-la-la, Vanilla Unicorn, Bahama Mamas. Comptoir, préparation et libre-service
+    -- (quand personne n'est en service) : gs_business. Points réglables en jeu (F11 → Points de métier).
     bar = {
-        label = 'Bar Le Néon', type = 'business', whitelisted = true, society = true, salaryFrom = 'society',
-        blip = { sprite = 93, color = 48, label = 'Bar Le Néon' },
+        label = 'Tequi-la-la', type = 'business', whitelisted = true, society = true, salaryFrom = 'society',
+        blip = { sprite = 93, color = 48, label = 'Tequi-la-la (bar rock)' },
         billing = { label = 'Consommations', max = 10000 },
         grades = { [0] = { label = 'Serveur', salary = 150 }, [1] = { label = 'Barman', salary = 220 }, [2] = { label = 'Gérant', salary = 350, boss = true } },
         points = { duty = { vec3(-561.8, 286.9, 82.2) }, boss = { vec3(-563.9, 289.0, 82.2) },
                    stash = { { label = 'Réserve', coords = vec3(-565.2, 285.7, 82.2), slots = 50, weight = 150000, minGrade = 0 } } },
     },
 
-    restaurant = {
-        label = 'Horny\'s Burgers', type = 'business', whitelisted = true, society = true, salaryFrom = 'society',
-        blip = { sprite = 106, color = 5, label = 'Horny\'s Burgers' },
-        billing = { label = 'Commande', max = 10000 },
-        grades = { [0] = { label = 'Équipier', salary = 150 }, [1] = { label = 'Cuisinier', salary = 220 }, [2] = { label = 'Gérant', salary = 350, boss = true } },
-        points = { duty = { vec3(1241.4, -366.1, 69.1) }, boss = { vec3(1243.5, -363.9, 69.1) },
-                   stash = { { label = 'Chambre froide', coords = vec3(1245.1, -365.2, 69.1), slots = 50, weight = 150000, minGrade = 0 } } },
+    vanilla = {
+        label = 'Vanilla Unicorn', type = 'business', whitelisted = true, society = true, salaryFrom = 'society',
+        blip = { sprite = 121, color = 27, label = 'Vanilla Unicorn (club)' },
+        billing = { label = 'Consommations', max = 15000 },
+        grades = { [0] = { label = 'Serveur', salary = 150 }, [1] = { label = 'Barman', salary = 220 }, [2] = { label = 'Danseuse / Danseur', salary = 260 },
+                   [3] = { label = 'Gérant', salary = 400, boss = true } },
+        points = { duty = { vec3(106.1, -1299.1, 28.77) }, boss = { vec3(95.9, -1293.0, 29.27) },
+                   stash = { { label = 'Réserve', coords = vec3(132.5, -1286.5, 29.27), slots = 50, weight = 150000, minGrade = 0 } } },
+    },
+
+    bahama = {
+        label = 'Bahama Mamas', type = 'business', whitelisted = true, society = true, salaryFrom = 'society',
+        blip = { sprite = 93, color = 3, label = 'Bahama Mamas (club)' },
+        billing = { label = 'Consommations', max = 15000 },
+        grades = { [0] = { label = 'Serveur', salary = 150 }, [1] = { label = 'Barman', salary = 220 }, [2] = { label = 'DJ', salary = 260 },
+                   [3] = { label = 'Gérant', salary = 400, boss = true } },
+        points = { duty = { vec3(-1376.0, -628.0, 30.82) }, boss = { vec3(-1370.6, -625.8, 30.82) },
+                   stash = { { label = 'Réserve', coords = vec3(-1384.5, -605.0, 30.32), slots = 50, weight = 150000, minGrade = 0 } } },
     },
 
     cityhall = {

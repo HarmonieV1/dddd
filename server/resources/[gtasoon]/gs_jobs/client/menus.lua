@@ -264,3 +264,17 @@ RegisterNetEvent('gs_jobs:client:offer', function(offer)
     })
     TriggerServerEvent('gs_jobs:server:answerOffer', answer == 'confirm')
 end)
+
+-- Dépôts des métiers libres : point visible par tous (« Prendre le poste ici »), même sans avoir le métier
+AddEventHandler('gs_jobs:client:depot', function(job) TriggerServerEvent('gs_jobs:server:depotStart', job) end)
+CreateThread(function()
+    for name, def in pairs(Jobs) do
+        if not def.whitelisted and def.points and def.points.garage then
+            for i, g in ipairs(def.points.garage) do
+                exports.gs_markers:Add(('gs_jobs:depot:%s:%d'):format(name, i), { coords = g.coords + vec3(2.0, 0.0, 0.0), style = 'entry',
+                    label = def.blip and def.blip.label or def.label, event = 'gs_jobs:client:depot', args = { name },
+                    prompt = ('Prendre le poste ici · %s'):format(def.label) })
+            end
+        end
+    end
+end)

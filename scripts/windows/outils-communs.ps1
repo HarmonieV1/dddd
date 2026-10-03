@@ -50,6 +50,10 @@ $QboxPatches = @(
     # Doubles logos sur la carte : nos icônes (en français) gardées, celles de Qbox au même endroit masquées
     @{ res = 'qbx_cityhall'; file = 'config\shared.lua'; find = 'showBlip = true'; repl = 'showBlip = false'; why = 'carte : un seul logo Pôle Emploi / services' }
     @{ res = 'qbx_vehicleshop'; file = 'config\shared.lua'; find = "(label = 'Premium Deluxe Motorsport',\s*\n\s*coords = [^\n]*\n\s*show = )true"; repl = '${1}false'; why = 'carte : un seul logo concession PDM' }
+    @{ res = 'qbx_police'; file = 'client\main.lua'; find = 'for i = 1, #config\.locations\.stations do(\s*\n\s*local station = config\.locations\.stations\[i\])'; repl = 'for i = 1, 0 do -- logos gérés par gs_jobs (un seul commissariat sur la carte)${1}'; why = 'carte : plus de logos police en double' }
+    # Marina : après l'essai d'un bateau, retour sur le ponton (avant : dans l'eau, à côté)
+    @{ res = 'qbx_vehicleshop'; file = 'config\shared.lua'; find = 'returnLocation = vec3\(-714\.34, -1343\.31, 0\.0\)'; repl = 'returnLocation = vec3(-738.25, -1334.38, 1.6)'; why = 'marina : retour sur le ponton après l''essai' }
+    @{ res = 'qbx_vehicleshop'; file = 'config\shared.lua'; find = "label = 'Marina Shop'"; repl = "label = 'Marina (bateaux)'"; why = 'marina : nom en français' }
     @{ res = 'qbx_ambulancejob'; file = 'client\main.lua'; find = 'for _, station in pairs\(sharedConfig\.locations\.stations\) do(\s*\n\s*local blip = AddBlipForCoord)'; repl = 'for _, station in pairs({}) do -- logo géré par gs_jobs${1}'; why = 'carte : un seul logo hôpital' }
     # Anti-AFK (qbx_smallresources) : 20 min avant expulsion (la création de perso prend du temps), messages en français
     @{ res = 'qbx_smallresources'; file = 'qbx_afk\config.json'; find = '"timeUntilAFKKick":\s*\d+'; repl = '"timeUntilAFKKick": 1200'; why = 'AFK : expulsion après 20 min' }

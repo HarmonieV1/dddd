@@ -97,8 +97,10 @@ Config.Shops = {
     { label = "Rob's Liquor Route 68", coords = vec3(1165.95, 2710.2, 38.26), items = CAVISTE, blip = 'shop', clerk = vec4(1165.28, 2710.8, 38.16, 179.43) },
     { label = "Rob's Liquor Sandy Shores", coords = vec3(1393.0, 3605.95, 35.11), items = CAVISTE, blip = 'shop', clerk = vec4(1392.46, 3606.41, 34.98, 199.0) },
     { label = 'Quincaillerie Senora', coords = vec3(2746.8, 3473.13, 55.67), items = QUINCAILLERIE, blip = 'hardware', clerk = vec4(2747.8, 3472.86, 55.67, 255.08) },
-    { label = 'Pharmacie Dollar Pills', coords = vec3(69.3, -1570.1, 29.6), items = PHARMACIE, blip = 'pharmacy' }, -- [À CALER]
-    { label = 'Pharmacie Pillbox', coords = vec3(318.4, -1076.8, 29.5), items = PHARMACIE, blip = 'pharmacy' },       -- [À CALER]
+    -- V7 : les anciennes pharmacies étaient dans des bâtiments fermés. Pops Pills = la pharmacie importée (mod, Alta) ;
+    -- Pillbox = comptoir dans le hall de l'hôpital.
+    { label = 'Pharmacie Pops Pills', coords = vec3(104.41, -15.07, 72.35), items = PHARMACIE, blip = 'pharmacy' },
+    { label = 'Pharmacie de l\'hôpital Pillbox', coords = vec3(306.7, -597.6, 43.29), items = PHARMACIE, blip = 'pharmacy' },
     { label = 'Quincaillerie La Mesa', coords = vec3(342.99, -1298.26, 32.51), items = QUINCAILLERIE, blip = 'hardware' },
 }
 

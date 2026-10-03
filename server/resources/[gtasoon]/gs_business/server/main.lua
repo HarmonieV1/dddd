@@ -22,16 +22,22 @@ function Business.price(id, item)
     return p or def(id).products[item].price
 end
 
---- Carte pour le client : produits en stock, prix (majoré en libre-service).
+local NPC_LABELS = { beer = 'Bière', sprunk = 'Sprunk', water = 'Eau' }
+
+--- Carte pour le client. Employé en service : produits préparés (stock réel de la réserve). Sinon : libre-service,
+--- un barman PNJ sert la carte de base (stock illimité, prix majorés).
 function Business.menu(id)
     local b = def(id)
     local staffed = staffOnDuty(id)
     local out = {}
-    for item, p in pairs(b.products) do
-        local stock = Bridge:StashCount(b.stash, item)
-        local price = Business.price(id, item)
-        if not staffed then price = math.ceil(price * Config.SelfServiceMarkup) end
-        out[#out + 1] = { item = item, label = p.label, stock = stock, price = price }
+    if staffed then
+        for item, p in pairs(b.products) do
+            out[#out + 1] = { item = item, label = p.label, stock = Bridge:StashCount(b.stash, item), price = Business.price(id, item) }
+        end
+    else
+        for item, price in pairs(b.npc or {}) do
+            out[#out + 1] = { item = item, label = NPC_LABELS[item] or item, stock = 99, price = math.ceil(price * Config.SelfServiceMarkup) }
+        end
     end
     table.sort(out, function(a, c) return a.label < c.label end)
     return out, staffed
@@ -48,26 +54,34 @@ end)
 lib.callback.register('gs_business:buy', function(src, id, item, qty)
     if not Security:RateLimit(src, 'gs_business:buy', 4, 10000) then return false, 'Doucement.' end
     local b = def(id)
-    if not b or not b.products[item] then return false, 'Produit inconnu.' end
+    if not b then return false, 'Produit inconnu.' end
     if not Security:InRange(src, b.register, Config.Range + 2.0) then return false, 'Trop loin du comptoir.' end
     qty = math.floor(tonumber(qty) or 0)
     if qty < 1 or qty > Config.MaxQty then return false, ('Quantité : 1 à %d.'):format(Config.MaxQty) end
-    local unit = Business.price(id, item)
-    if not staffOnDuty(id) then unit = math.ceil(unit * Config.SelfServiceMarkup) end
+    local staffed = staffOnDuty(id)
+    local unit, label
+    if staffed then
+        if not b.products[item] then return false, 'Produit inconnu.' end
+        unit, label = Business.price(id, item), b.products[item].label
+        if Bridge:StashCount(b.stash, item) < qty then return false, 'Rupture de stock.' end
+    else
+        if not (b.npc or {})[item] then return false, 'Pas servi en libre-service.' end
+        unit, label = math.ceil(b.npc[item] * Config.SelfServiceMarkup), NPC_LABELS[item] or item
+    end
     local total = unit * qty
-    if Bridge:StashCount(b.stash, item) < qty then return false, 'Rupture de stock.' end
     if not Bridge:CanCarry(src, item, qty) then return false, 'Tu ne peux pas tout porter.' end
     if not Bridge:RemoveMoney(src, 'cash', total, 'achat ' .. b.label) and not Bridge:RemoveMoney(src, 'bank', total, 'achat ' .. b.label) then
         return false, ('Total : %d $.'):format(total)
     end
-    if not Bridge:StashRemove(b.stash, item, qty) then
+    if staffed and not Bridge:StashRemove(b.stash, item, qty) then
         Bridge:AddMoney(src, 'bank', total, 'remboursement ' .. b.label)
         return false, 'Rupture de stock.'
     end
     Bridge:AddItem(src, item, qty)
-    JobsApi:AddSocietyMoney(id, total, true)
-    Store.log(id, 'sale', item, qty, total, name(src))
-    return true, ('%d × %s : %d $. Merci !'):format(qty, b.products[item].label, total)
+    local income = staffed and total or math.floor(total * Config.NpcShare)
+    if income > 0 then JobsApi:AddSocietyMoney(id, income, true) end
+    Store.log(id, 'sale', item, qty, income, staffed and name(src) or (name(src) .. ' (libre-service)'))
+    return true, ('%d × %s : %d $. Merci !'):format(qty, label, total)
 end)
 
 --- Préparation (employé en service) : 2 temps, ingrédients pris dans la réserve au moment de finir.

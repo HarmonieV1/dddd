@@ -29,8 +29,14 @@ AddEventHandler('gs_hideouts:client:inside', function(kind)
     TriggerEvent('illenium-appearance:client:openOutfitMenu') -- [API] illenium-appearance : tenues enregistrées
 end)
 
+local blips = {}
 CreateThread(function()
     for id, site in pairs(Config.Sites) do
+        -- logo motel sur la carte (avant : aucun → « motel introuvable »)
+        local b = AddBlipForCoord(site.entrance.x, site.entrance.y, site.entrance.z)
+        SetBlipSprite(b, 475) SetBlipColour(b, 8) SetBlipScale(b, 0.7) SetBlipAsShortRange(b, true)
+        BeginTextCommandSetBlipName('STRING') AddTextComponentSubstringPlayerName(site.label) EndTextCommandSetBlipName(b)
+        blips[#blips + 1] = b
         exports.gs_markers:Add('gs_hideouts:' .. id, { coords = site.entrance.xyz, style = 'entry', label = site.label, event = 'gs_hideouts:client:desk',
             args = { id }, prompt = 'Réception : planque à la semaine', distance = 25.0 })
     end
@@ -40,4 +46,8 @@ CreateThread(function()
     exports.gs_markers:Add('gs_hideouts:wardrobe', { coords = Config.WardrobePoint, style = 'hidden', event = 'gs_hideouts:client:inside', args = { 'wardrobe' }, prompt = 'Garde-robe' })
 end)
 
-AddEventHandler('onResourceStop', function(res) if res == GetCurrentResourceName() then exports.gs_markers:RemovePrefix('gs_hideouts:') end end)
+AddEventHandler('onResourceStop', function(res)
+    if res ~= GetCurrentResourceName() then return end
+    exports.gs_markers:RemovePrefix('gs_hideouts:')
+    for _, b in ipairs(blips) do RemoveBlip(b) end
+end)
