@@ -18,11 +18,11 @@ Config.Rules = [[
 
 **7. Boutique.** Uniquement du cosmétique : aucun avantage de jeu ne s'achète.
 
-Règlement complet et sanctions : Discord.
+Règlement complet et sanctions : discord.gg/8y2sX7EvZN
 ]]
 
 -- Liste blanche : active seulement si la convar `gs_whitelist` vaut "true" (cfg/prod.cfg). Candidature sur Discord,
 -- puis un staff ajoute le joueur avec /whitelist add <id serveur | license:...>. Les ACE `WhitelistBypassAce` passent toujours.
 Config.WhitelistBypassAce = 'gs.admin.helper'
 Config.ManageAce = 'gs.admin.mod'
-Config.DiscordInvite = 'discord.gg/ton-serveur'   -- affiché aux joueurs non inscrits (convar gs_discord_invite prioritaire)
+Config.DiscordInvite = 'discord.gg/8y2sX7EvZN'   -- affiché aux joueurs non inscrits (convar gs_discord_invite prioritaire)

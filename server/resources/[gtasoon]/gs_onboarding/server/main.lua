@@ -8,7 +8,12 @@ local function license(src)
     return GetPlayerIdentifierByType(src, 'license2') or GetPlayerIdentifierByType(src, 'license')
 end
 
-local function discord() return GetConvar('gs_discord_invite', Config.DiscordInvite) end
+--- Lien Discord : convar (cfg/secrets.cfg) sauf si elle contient encore le lien d'exemple
+local function discord()
+    local v = GetConvar('gs_discord_invite', '')
+    if v == '' or v:find('ton%-serveur') then return Config.DiscordInvite end
+    return v
+end
 
 function Onboarding.whitelistOn() return GetConvar('gs_whitelist', 'false') == 'true' end
 
