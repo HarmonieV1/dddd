@@ -8,6 +8,8 @@
 $QboxPatches = @(
     @{ res = 'qbx_medical'; file = 'config\client.lua'; find = 'laststandReviveInterval\s*=\s*\d+'; repl = 'laststandReviveInterval = 90'; why = 'à terre : 90 s' },
     @{ res = 'qbx_medical'; file = 'config\client.lua'; find = 'deathTime\s*=\s*\d+'; repl = 'deathTime = 70'; why = 'réapparition possible après 70 s' },
+    # Réapparition (mort) : maintenir [E] 2 s au lieu de ~5 (la touche n'est lue qu'une fois par seconde : 5 s paraissait bloqué)
+    @{ res = 'qbx_medical'; file = 'client\dead.lua'; find = 'RespawnHoldTime = 5'; repl = 'RespawnHoldTime = 2'; why = 'réapparition : [E] maintenu 2 s' }
     @{ res = 'qbx_ambulancejob'; file = 'config\shared.lua'; find = 'checkInCost\s*=\s*\d+'; repl = 'checkInCost = 500'; why = 'hôpital : 500 $' },
     @{ res = 'qbx_ambulancejob'; file = 'config\shared.lua'; find = 'minForCheckIn\s*=\s*\d+'; repl = 'minForCheckIn = 1'; why = 'accueil IA si aucun EMS' },
     @{ res = 'qbx_ambulancejob'; file = 'config\server.lua'; find = 'wipeInvOnRespawn\s*=\s*true'; repl = 'wipeInvOnRespawn = false'; why = 'inventaire gardé à la réapparition' },
