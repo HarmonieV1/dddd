@@ -3,7 +3,7 @@ game 'gta5'
 lua54 'yes'
 
 name 'gs_loadscreen'
-description 'Écran de chargement Roadtrip : DA néon / sunset, astuces, touches, progression réelle'
+description 'Écran de chargement RoadLine : DA néon / sunset, astuces, touches, progression réelle'
 version '0.1.0'
 
 loadscreen 'html/index.html'

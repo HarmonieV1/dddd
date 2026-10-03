@@ -13,6 +13,6 @@ if (Test-Path -LiteralPath $report) { Get-Content -LiteralPath $report | Where-O
 Say '[2/2] Réactivation des voitures devenues assez légères' 'Cyan'
 $env:GTASOON_CHOICE = '1'
 & (Join-Path $PSScriptRoot 'mods-securite.ps1')
-Say "`nTerminé. Lance le serveur (DEMARRER.bat) puis connecte-toi. Voitures : concession, catégorie « Imports ROADTRIP »." 'Green'
+Say "`nTerminé. Lance le serveur (DEMARRER.bat) puis connecte-toi. Voitures : concession, catégorie « Imports RoadLine »." 'Green'
 Say 'Crash ? MODS-SECURITE.bat choix 1 = retour à l''état stable, et envoie-moi la capture.' 'Yellow'
 Read-Host 'Entrée pour fermer'

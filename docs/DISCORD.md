@@ -1,4 +1,4 @@
-# Discord de Roadtrip : structure conseillée
+# Discord de RoadLine : structure conseillée
 
 Un modèle Discord ne contient que des salons, rôles et permissions. Le plus fiable : créer la structure ci-dessous une
 fois, puis **Paramètres du serveur → Modèle de serveur → Générer un lien** pour la dupliquer. (Des modèles communautaires

@@ -55,6 +55,6 @@ for ped, dlc, echar, packs, resname in JOBS:
         f'    <eCharacter>{echar}</eCharacter>\n    <creatureMetaData>mp_creaturemetadata_{g}_{dlc}</creatureMetaData>\n    <pedOutfits>\n    </pedOutfits>\n'
         f'    <pedComponents>\n    </pedComponents>\n    <pedProps>\n    </pedProps>\n</ShopPedApparel>\n')
     open(os.path.join(res, 'fxmanifest.lua'), 'w').write(
-        f"-- Vêtements convertis (ajouts, ne remplacent rien) · ROADTRIP\nfx_version 'cerulean'\ngame 'gta5'\n\nfiles {{ '{full}.meta' }}\n"
+        f"-- Vêtements convertis (ajouts, ne remplacent rien) · RoadLine RP\nfx_version 'cerulean'\ngame 'gta5'\n\nfiles {{ '{full}.meta' }}\n"
         f"data_file 'SHOP_PED_APPAREL_META_FILE' '{full}.meta'\n")
 print('\n'.join(report))

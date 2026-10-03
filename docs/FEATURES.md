@@ -150,8 +150,8 @@ réparation de fortune (moteur 75 %), réparation avancée (complète), nettoyag
 - **Vibe** (ex-Néon) : le réseau social est une **app du téléphone** (F1), en temps réel. `/vibe` garde la version grand écran.
 - **Correctifs** : retour humain après un animal (menu staff), F5 n'ouvre plus la progression (ancienne commande supprimée).
 
-## V3.4 — Roadtrip, permis, Cayo Perico, densité
-- **Nom** : ROADTRIP, sous-titre « new generation » (écran de chargement, liste des serveurs).
+## V3.4 — RoadLine, permis, Cayo Perico, densité
+- **Nom** : RoadLine RP, sous-titre « new generation » (écran de chargement, liste des serveurs).
 - **Permis** : port d'arme obligatoire pour les armes de poing d'Ammu-Nation (déjà en place) ; **permis de chasse** (750 $ au pavillon
   de chasse de Paleto) obligatoire pour le fusil ; dépecer sans permis = **braconnage** signalé. La police (grade ≥ 2) délivre / retire
   les deux permis depuis le contrôle d'identité (F4).
@@ -205,7 +205,7 @@ réparation de fortune (moteur 75 %), réparation avancée (complète), nettoyag
   **plaque personnalisée** (2 500 $, 2–8 caractères A-Z 0-9 / espaces, préfixes réservés et mots interdits refusés, unique).
   Uniquement sur ses propres véhicules, au volant, dans un salon. Cosmétique : aucun effet sur les performances.
 
-## V4 — ouverture, vie de la ville, signatures Roadtrip
+## V4 — ouverture, vie de la ville, signatures RoadLine
 **Arrivée des joueurs** : règlement à accepter à la 1re connexion (versionné, relu après chaque changement, `/regles`),
 liste blanche (`gs_whitelist "true"`, `/whitelist add <id | license>` par les modos, lien Discord aux refusés),
 quête guidée **« Ton premier jour »** (mairie, banque, Pôle Emploi, auto-école, location) proposée automatiquement.
@@ -324,7 +324,7 @@ Traductions françaises manquantes des scripts Qbox ajoutées par METTRE-A-JOUR 
 - Risques : coords et noms d'items à caler en jeu ; équilibrage des prix/chances à ajuster après la bêta.
 - Rollback : retirer l'`ensure` concerné (gs_duo dépend de gs_wanted : les retirer dans l'ordre inverse).
 
-## V6.20 — les 3 signatures ROADTRIP
+## V6.20 — les 3 signatures RoadLine RP
 
 - **Los Santos réactif** (`gs_city`) : chaque crime signalé (gs_wanted) fait monter la tension du quartier où il a lieu
   (9 quartiers : centre, South LS, East LS, Vespucci, Rockford, Vinewood, port, Sandy, Paleto). Elle retombe seule

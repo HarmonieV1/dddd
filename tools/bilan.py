@@ -1,5 +1,5 @@
-# Génère docs/pdf/ROADTRIP_Bilan_V7.pdf (tout ce qui existe, historique, état, ce qu'il reste, idées signature)
-# et docs/pdf/ROADTRIP_Reste_a_tester.pdf (retours du beta test → statut V7 → à vérifier en jeu).
+# Génère docs/pdf/ROADLINE_Bilan_V7.pdf (tout ce qui existe, historique, état, ce qu'il reste, idées signature)
+# et docs/pdf/ROADLINE_Reste_a_tester.pdf (retours du beta test → statut V7 → à vérifier en jeu).
 # Lancer depuis la racine : python3 tools/bilan.py
 import os
 import sys
@@ -12,7 +12,7 @@ from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, PageBreak, 
 
 def doc(path, title):
     return SimpleDocTemplate(path, pagesize=A4, leftMargin=15 * mm, rightMargin=15 * mm, topMargin=14 * mm,
-                             bottomMargin=16 * mm, title=title, author='ROADTRIP')
+                             bottomMargin=16 * mm, title=title, author='RoadLine RP')
 
 
 HISTORY = [
@@ -118,12 +118,12 @@ IDEAS = [
     ('Élections municipales', 'Tous les mois, les joueurs votent pour un maire (campagne, débats sur Weazel). Le maire fixe 2-3 « lois » '
      'réglables (taxe sur l\'alcool, prime aux métiers de service, horaires des bars, limite de vitesse en ville) qui changent vraiment le jeu.'),
     ('Rencontres de la route (road movie)', 'Pendant un road trip ou un trajet hors de la ville : rencontres aléatoires scénarisées (auto-stoppeur, '
-     'panne d\'un PNJ, contrôle routier, animal sur la route, vendeur ambulant, tempête). C\'est le cœur de l\'identité ROADTRIP.'),
+     'panne d\'un PNJ, contrôle routier, animal sur la route, vendeur ambulant, tempête). C\'est le cœur de l\'identité RoadLine.'),
     ('Ambition de personnage', 'À la création, chaque perso choisit une ambition (ouvrir un commerce, devenir chef de gang, entrer au LSPD, '
      'faire le tour de l\'île…). Un carnet de vie suit les étapes, le staff voit les ambitions pour scénariser, récompenses cosmétiques à la clé.'),
     ('Enquêtes avec preuves physiques', 'Douilles, traces de sang, empreintes sur une caisse, traces de pneus : la police les ramasse, '
      'un labo (EMS / police) les analyse en temps réel et les relie à un suspect. Les criminels prudents nettoient (gants, nettoyage).'),
-    ('Radio Roadtrip', 'Une vraie station de radio dans toutes les voitures, animée par des joueurs DJ (voix pma-voice), avec flashs Weazel '
+    ('Radio RoadLine', 'Une vraie station de radio dans toutes les voitures, animée par des joueurs DJ (voix pma-voice), avec flashs Weazel '
      'automatiques (trafic, braquages, météo). Une ville qui parle d\'elle-même.'),
     ('Agenda vivant de la ville', 'Les événements naissent de l\'état du serveur : grève des éboueurs si personne ne ramasse, festival quand '
      'l\'économie va bien, couvre-feu si la tension explose, marché du dimanche. Le staff n\'a plus à tout animer à la main.'),
@@ -135,8 +135,8 @@ IDEAS = [
 
 
 def bilan():
-    d = doc('docs/pdf/ROADTRIP_Bilan_V7.pdf', 'ROADTRIP · Bilan complet V7')
-    s = [Paragraph('ROADTRIP · Bilan complet', H1),
+    d = doc('docs/pdf/ROADLINE_Bilan_V7.pdf', 'RoadLine RP · Bilan complet V7')
+    s = [Paragraph('RoadLine RP · Bilan complet', H1),
          Paragraph(f'De la création de la base à la {VERSION} : tout ce qui existe en jeu, où on en est, ce qu\'il reste pour ouvrir, '
                    'et 10 idées signature pour la suite. Serveur FiveM RP français, Free Access, zéro pay-to-win (Qbox, ox_lib, ox_inventory, pma-voice).', P),
          Paragraph('1. Historique', H2), table(HISTORY, [24 * mm, 156 * mm])]
@@ -219,8 +219,8 @@ RETEST = [
 
 
 def reste():
-    d = doc('docs/pdf/ROADTRIP_Reste_a_tester.pdf', 'ROADTRIP · Reste à tester')
-    s = [Paragraph('ROADTRIP · Reste à tester', H1),
+    d = doc('docs/pdf/ROADLINE_Reste_a_tester.pdf', 'RoadLine RP · Reste à tester')
+    s = [Paragraph('RoadLine RP · Reste à tester', H1),
          Paragraph(f'Chaque retour de ton beta test, ce qui a été fait en {VERSION}, et comment le vérifier. Coche ce qui est bon ; '
                    'pour le reste : capture + coordonnées (F11 → Monde et lieux → Copier mes coordonnées), ou déplace le point en jeu.', P)]
     for title, rows in RETEST:
@@ -237,4 +237,4 @@ def reste():
 if __name__ == '__main__':
     bilan()
     reste()
-    print('PDF générés : docs/pdf/ROADTRIP_Bilan_V7.pdf, docs/pdf/ROADTRIP_Reste_a_tester.pdf')
+    print('PDF générés : docs/pdf/ROADLINE_Bilan_V7.pdf, docs/pdf/ROADLINE_Reste_a_tester.pdf')

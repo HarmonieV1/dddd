@@ -12,7 +12,7 @@ end
 
 local function showRules(mandatory)
     local answer = lib.alertDialog({
-        header = 'Règlement de Roadtrip', content = Config.Rules, centered = true, size = 'lg',
+        header = 'Règlement de RoadLine', content = Config.Rules, centered = true, size = 'lg',
         cancel = mandatory, labels = mandatory and { confirm = 'J\'accepte', cancel = 'Je refuse' } or { confirm = 'Fermer' },
     })
     if mandatory then lib.callback.await('gs_onboarding:accept', false, answer == 'confirm') end

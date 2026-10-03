@@ -13,6 +13,16 @@ for v in BrandBlock BrandStrong; do
     [ -n "$a" ] && [ "$a" = "$b" ] || { echo "ERREUR : \$$v différent entre importer-mods.ps1 et NETTOYER-MARQUES.bat"; exit 1; }
 done
 echo "Marques OK"
+# Correctifs Qbox (outils-communs.ps1) : jamais d'apostrophe doublée dans une chaîne Lua écrite par un correctif
+# (dans une chaîne PowerShell entre "…", '' reste '' et casse le fichier Lua — bug qbx_garages de la V7)
+python3 - <<'PYEOF'
+import re, sys
+s = open('scripts/windows/outils-communs.ps1', encoding='utf-8-sig').read()
+bad = [m.group(1) for m in re.finditer(r'=\s*"(\'[^"]*\')"', s) if "''" in m.group(1)]
+if bad:
+    print('ERREUR : correctif Qbox avec apostrophe doublée :', bad); sys.exit(1)
+print('Correctifs Qbox OK')
+PYEOF
 for t in tests/test_*.lua; do
     echo "== $t"
     lua5.4 "$t"

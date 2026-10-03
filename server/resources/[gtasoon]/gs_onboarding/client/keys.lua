@@ -33,7 +33,7 @@ local STAFF = [[
 
 RegisterCommand('touches', function()
     local staff = LocalPlayer.state.gsStaff == true
-    lib.alertDialog({ header = 'Touches de Roadtrip', content = KEYS .. (staff and STAFF or '') ..
+    lib.alertDialog({ header = 'Touches de RoadLine', content = KEYS .. (staff and STAFF or '') ..
         '\n*Réassigner : Échap → Paramètres → Raccourcis clavier → FiveM.*', centered = true, size = 'lg', labels = { confirm = 'Fermer' } })
 end, false)
 RegisterKeyMapping('touches', 'Aide : toutes les touches', 'keyboard', 'I')

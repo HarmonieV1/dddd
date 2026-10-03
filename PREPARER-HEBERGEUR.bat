@@ -1,7 +1,7 @@
 @echo off
-REM ROADTRIP : prepare le serveur pour un hebergeur (panel Pterodactyl, ex. Sentrohost).
+REM RoadLine RP : prepare le serveur pour un hebergeur (panel Pterodactyl, ex. Sentrohost).
 REM Double-clic : 1) sauvegarde ta base de donnees  2) copie le serveur (sans cache)  3) regle le port et la base
-REM de l'hebergeur  4) envoie ta base chez l'hebergeur (si possible)  5) cree ROADTRIP-serveur.zip a envoyer.
+REM de l'hebergeur  4) envoie ta base chez l'hebergeur (si possible)  5) cree ROADLINE-serveur.zip a envoyer.
 REM Rien n'est modifie sur ton PC : tout est prepare dans C:\GTASOON\hebergeur.
 powershell -NoProfile -ExecutionPolicy Bypass -Command "$t = Get-Content -LiteralPath '%~f0' -Raw; iex ($t.Substring($t.LastIndexOf('#DEBUT' + 'PS#') + 9))"
 pause
@@ -86,20 +86,20 @@ if ((Test-Path -LiteralPath $sql) -and $client) {
 }
 
 # 5. Archive à envoyer ---------------------------------------------------------------------------------------------
-Say '[5/5] Creation de ROADTRIP-serveur.zip' 'Cyan'
-$zip = Join-Path $Out 'ROADTRIP-serveur.zip'
+Say '[5/5] Creation de ROADLINE-serveur.zip' 'Cyan'
+$zip = Join-Path $Out 'ROADLINE-serveur.zip'
 if (Test-Path -LiteralPath $zip) { Remove-Item -LiteralPath $zip -Force }
 $7z = @('C:\Program Files\7-Zip\7z.exe', 'C:\Program Files (x86)\7-Zip\7z.exe') | Where-Object { Test-Path $_ } | Select-Object -First 1
 if ($7z) { & $7z a -tzip -mx=5 $zip "$Stage\*" | Out-Null } else { Compress-Archive -Path "$Stage\*" -DestinationPath $zip -CompressionLevel Optimal }
 Say ("  {0} ({1} Mo)" -f $zip, [math]::Round((Get-Item $zip).Length / 1MB)) 'Green'
 
 $readme = @"
-ROADTRIP - mise en ligne sur l'hebergeur (panel Pterodactyl)
+RoadLine RP - mise en ligne sur l'hebergeur (panel Pterodactyl)
 
 1. Panel -> Console : arrete le serveur (Stop).
 2. Panel -> Files : supprime les dossiers « resources » et le fichier « server.cfg » d'origine s'ils existent
    (garde le dossier alpine / les fichiers du programme FiveM).
-3. Upload : si ROADTRIP-serveur.zip fait moins de la limite du panel, Files -> Upload ; sinon par SFTP (FileZilla) avec
+3. Upload : si ROADLINE-serveur.zip fait moins de la limite du panel, Files -> Upload ; sinon par SFTP (FileZilla) avec
    les infos de l'onglet Settings (adresse sftp://..., port, utilisateur ; mot de passe = celui du panel).
    Puis clic droit sur le zip -> Unarchive. server.cfg, cfg/ et resources/ doivent etre a la racine.
 4. Base de donnees : $(if ($imported) { 'deja envoyee par l''outil.' } else { 'Databases -> phpMyAdmin -> Importer -> base.sql (C:\GTASOON\hebergeur).' })
@@ -108,5 +108,5 @@ ROADTRIP - mise en ligne sur l'hebergeur (panel Pterodactyl)
 6. Console -> Start. Pas de ligne rouge = c'est bon. Connexion : F8 -> connect ADRESSE:$port
 "@
 [IO.File]::WriteAllText((Join-Path $Out 'LISEZMOI.txt'), $readme, (New-Object Text.UTF8Encoding $true))
-Say "`nTermine. Le dossier s'ouvre : envoie ROADTRIP-serveur.zip sur le panel (voir LISEZMOI.txt)." 'Green'
+Say "`nTermine. Le dossier s'ouvre : envoie ROADLINE-serveur.zip sur le panel (voir LISEZMOI.txt)." 'Green'
 Start-Process explorer.exe $Out

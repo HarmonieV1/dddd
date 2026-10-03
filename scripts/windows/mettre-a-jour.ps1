@@ -24,6 +24,16 @@ Say "Nouvelle version : $Repo" 'Green'
 # 1. Arrêt du serveur
 Say "`n[1/4] Arrêt du serveur" 'Cyan'
 Get-Process -Name FXServer -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
+# Marques réelles (risque Cfx.re) : les mods de marques encore installés sont retirés à chaque mise à jour (NETTOYER-MARQUES.bat)
+$purge = Join-Path $Repo 'NETTOYER-MARQUES.bat'
+if (Test-Path -LiteralPath $purge) {
+    try {
+        $t = Get-Content -LiteralPath $purge -Raw
+        $env:GTASOON_MARQUES_AUTO = '1'
+        & ([scriptblock]::Create($t.Substring($t.LastIndexOf('#DEBUT' + 'PS#') + 9)))
+    } catch { Say "  Nettoyage des marques : $($_.Exception.Message)" 'Yellow' }
+    finally { Remove-Item Env:GTASOON_MARQUES_AUTO -ErrorAction SilentlyContinue }
+}
 Start-Sleep -Seconds 2
 
 # 2. Sauvegarde de la version actuelle (ressources maison + config, sans les secrets)

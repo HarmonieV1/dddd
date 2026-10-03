@@ -95,7 +95,7 @@ RegisterCommand('carnet', function()
                 watch()
             end }
     end
-    lib.registerContext({ id = 'gs_roadbook', title = 'Carnets de route Roadtrip', options = options })
+    lib.registerContext({ id = 'gs_roadbook', title = 'Carnets de route RoadLine', options = options })
     lib.showContext('gs_roadbook')
 end, false)
 

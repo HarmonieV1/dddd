@@ -3,194 +3,244 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>ROADTRIP · Serveur RP FiveM</title>
-<meta name="description" content="ROADTRIP : serveur RP FiveM francophone, Free Access, zéro pay-to-win. Néons, sunset et une ville qui réagit à ce que tu fais.">
-<!-- MODÈLE DE SITE ROADTRIP. À personnaliser : liens Discord / connexion (cherche « À REMPLIR »), logo, captures. -->
+<title>RoadLine RP · Serveur GTA RP FiveM français</title>
+<meta name="description" content="RoadLine RP : serveur GTA RP FiveM francophone new generation. Free Access, zéro pay-to-win, une ville qui réagit à ce que tu fais.">
+<meta property="og:title" content="RoadLine RP · new generation">
+<meta property="og:description" content="Serveur GTA RP français : Free Access, zéro pay-to-win, ville vivante.">
+<!--
+  SITE ROADLINE RP — à personnaliser (cherche « A_REMPLIR ») :
+  - CONFIG plus bas (lien Discord, code cfx.re du serveur, TikTok / Twitch / YouTube)
+  - logo : remplace le texte .logo par <img src="logo.png" alt="RoadLine RP">
+  - captures / vidéo : remplace les blocs .shot et .trailer
+-->
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;700;800&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #0f091c; --bg2: #170f2b; --card: #1d1435; --line: #33255a;
-    --text: #f3eefc; --muted: #b3a8cc; --pink: #ff2e88; --cyan: #28e0ff; --gold: #ffc400; --green: #5aff8c;
-    --sunset: linear-gradient(135deg, #ff2e88 0%, #ff8a3d 55%, #ffc400 100%);
+    --black: #07040d; --bg: #0c0716; --bg2: #120a22; --card: #180e2c; --line: #2c1d4d;
+    --text: #f7f3ff; --muted: #b7a9d6;
+    --pink: #ff2e9a; --violet: #a24bff; --red: #ff2340; --cyan: #4fd8ff; --white: #ffffff;
+    --neon: linear-gradient(120deg, #ff2340 0%, #ff2e9a 35%, #a24bff 70%, #4fd8ff 100%);
+    --glow-pink: 0 0 24px rgba(255, 46, 154, .55);
+    --glow-cyan: 0 0 24px rgba(79, 216, 255, .45);
   }
   * { box-sizing: border-box; }
   html { scroll-behavior: smooth; }
-  body { margin: 0; background: var(--bg); color: var(--text); font: 16px/1.6 Inter, system-ui, sans-serif; }
+  body { margin: 0; background: var(--black); color: var(--text); font: 16px/1.6 Inter, system-ui, sans-serif; }
   a { color: var(--cyan); text-decoration: none; }
-  .wrap { max-width: 1120px; margin: 0 auto; padding: 0 20px; }
-  h1, h2, h3 { font-family: 'Bebas Neue', Impact, sans-serif; letter-spacing: .04em; font-weight: 400; margin: 0 0 .4em; }
-  h2 { font-size: clamp(2rem, 5vw, 3rem); }
-  h3 { font-size: 1.5rem; }
+  img { max-width: 100%; }
+  .wrap { max-width: 1160px; margin: 0 auto; padding: 0 20px; }
+  h1, h2, h3 { font-family: Anton, Impact, sans-serif; font-weight: 400; letter-spacing: .02em; text-transform: uppercase; margin: 0 0 .4em; line-height: 1.02; }
+  h2 { font-size: clamp(2.1rem, 5.5vw, 3.6rem); }
+  h3 { font-size: 1.45rem; }
   .muted { color: var(--muted); }
+  .grad { background: var(--neon); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .kicker { display: inline-block; font-weight: 800; font-size: .78rem; letter-spacing: .22em; text-transform: uppercase; color: var(--pink); margin-bottom: 10px; }
 
   /* Barre du haut */
-  nav { position: sticky; top: 0; z-index: 10; background: rgba(15, 9, 28, .85); backdrop-filter: blur(10px); border-bottom: 1px solid var(--line); }
-  nav .wrap { display: flex; align-items: center; justify-content: space-between; height: 64px; gap: 16px; }
-  .logo { font-family: 'Bebas Neue', sans-serif; font-size: 1.8rem; letter-spacing: .08em; background: var(--sunset); -webkit-background-clip: text; background-clip: text; color: transparent; }
-  .menu { display: flex; gap: 22px; font-size: .95rem; }
-  .menu a { color: var(--muted); } .menu a:hover { color: var(--text); }
-  @media (max-width: 760px) { .menu { display: none; } }
+  nav { position: sticky; top: 0; z-index: 20; background: rgba(7, 4, 13, .82); backdrop-filter: blur(12px); border-bottom: 1px solid var(--line); }
+  nav .wrap { display: flex; align-items: center; justify-content: space-between; height: 66px; gap: 16px; }
+  .logo { font-family: Anton, sans-serif; font-size: 1.7rem; letter-spacing: .04em; text-transform: uppercase; }
+  .logo b { background: var(--neon); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .menu { display: flex; gap: 24px; font-size: .92rem; font-weight: 500; }
+  .menu a { color: var(--muted); } .menu a:hover { color: var(--white); }
+  @media (max-width: 880px) { .menu { display: none; } }
 
-  .btn { display: inline-block; padding: 12px 22px; border-radius: 999px; font-weight: 700; border: 2px solid transparent; }
-  .btn-main { background: var(--sunset); color: #1a0d1f; }
+  .btn { display: inline-flex; align-items: center; gap: 8px; padding: 13px 24px; border-radius: 12px; font-weight: 800; letter-spacing: .02em; border: 2px solid transparent; transition: transform .15s, box-shadow .15s; }
+  .btn:hover { transform: translateY(-2px); }
+  .btn-main { background: linear-gradient(120deg, var(--red), var(--pink) 55%, var(--violet)); color: var(--white); box-shadow: var(--glow-pink); }
   .btn-ghost { border-color: var(--cyan); color: var(--cyan); }
-  .btn:hover { filter: brightness(1.1); }
+  .btn-ghost:hover { box-shadow: var(--glow-cyan); }
 
   /* Accueil */
-  header.hero { position: relative; overflow: hidden; padding: 110px 0 90px; text-align: center;
-    background: radial-gradient(ellipse at 50% 120%, rgba(255, 46, 136, .35), transparent 60%),
-                radial-gradient(ellipse at 80% -10%, rgba(40, 224, 255, .18), transparent 50%), var(--bg); }
-  .hero h1 { font-size: clamp(3.5rem, 12vw, 8rem); line-height: .9; background: var(--sunset); -webkit-background-clip: text; background-clip: text; color: transparent; }
-  .tagline { font-size: clamp(1.05rem, 2.6vw, 1.35rem); max-width: 720px; margin: 12px auto 28px; }
-  .badges { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-bottom: 32px; }
-  .badge { padding: 6px 14px; border: 1px solid var(--line); border-radius: 999px; font-size: .85rem; color: var(--muted); background: var(--bg2); }
-  .cta { display: flex; flex-wrap: wrap; gap: 14px; justify-content: center; }
+  header.hero { position: relative; overflow: hidden; padding: 120px 0 100px; min-height: 86vh; display: flex; align-items: center;
+    background:
+      radial-gradient(ellipse 70% 55% at 85% 110%, rgba(255, 35, 64, .45), transparent 60%),
+      radial-gradient(ellipse 60% 60% at 15% 100%, rgba(162, 75, 255, .45), transparent 60%),
+      radial-gradient(ellipse 50% 40% at 70% 0%, rgba(79, 216, 255, .22), transparent 60%),
+      linear-gradient(180deg, #0c0716 0%, #1b0b2b 60%, #2a0c25 100%); }
+  .hero::after { content: ''; position: absolute; inset: auto 0 0 0; height: 160px; background: linear-gradient(transparent, var(--black)); }
+  .hero .wrap { position: relative; z-index: 1; }
+  .hero h1 { font-size: clamp(3.4rem, 13vw, 9.5rem); margin-bottom: 6px; }
+  .hero h1 .rp { color: var(--white); text-shadow: var(--glow-cyan); }
+  .tagline { font-size: clamp(1.05rem, 2.6vw, 1.4rem); max-width: 640px; margin: 10px 0 26px; color: #e9e1ff; }
+  .badges { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 30px; }
+  .badge { padding: 7px 14px; border: 1px solid var(--line); border-radius: 999px; font-size: .84rem; color: var(--text); background: rgba(24, 14, 44, .75); }
+  .cta { display: flex; flex-wrap: wrap; gap: 14px; align-items: center; }
+  .status { margin-top: 34px; display: inline-flex; gap: 22px; padding: 14px 20px; border: 1px solid var(--line); border-radius: 14px; background: rgba(12, 7, 22, .7); }
+  .status .dot { width: 10px; height: 10px; border-radius: 50%; background: #ffb020; box-shadow: 0 0 12px #ffb020; display: inline-block; margin-right: 8px; }
+  .status .dot.on { background: #3dff8c; box-shadow: 0 0 12px #3dff8c; }
+  .status strong { font-size: 1.2rem; }
 
-  section { padding: 80px 0; border-top: 1px solid var(--line); }
-  section:nth-of-type(even) { background: var(--bg2); }
-  .lead { max-width: 760px; margin-bottom: 36px; }
+  section { padding: 90px 0; }
+  .alt { background: var(--bg); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+  .lead { max-width: 760px; margin-bottom: 38px; }
 
-  .grid { display: grid; gap: 18px; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
-  .card { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 22px; }
-  .card .ic { font-size: 1.8rem; margin-bottom: 8px; }
+  .grid { display: grid; gap: 18px; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); }
+  .card { position: relative; background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 24px; overflow: hidden; }
   .card p { margin: 0; color: var(--muted); font-size: .95rem; }
-  .sig { border-image: var(--sunset) 1; border-width: 0 0 0 4px; border-style: solid; border-radius: 0 18px 18px 0; }
-  .tag { display: inline-block; font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--pink); margin-bottom: 6px; }
+  .card .ic { font-size: 1.7rem; margin-bottom: 10px; }
+  .sig::before { content: ''; position: absolute; inset: 0 auto 0 0; width: 4px; background: var(--neon); }
+  .sig:hover { box-shadow: var(--glow-pink); }
+  .tag { display: inline-block; font-size: .7rem; font-weight: 800; text-transform: uppercase; letter-spacing: .14em; color: var(--cyan); margin-bottom: 6px; }
 
-  .two { display: grid; gap: 24px; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
-  ul.check { list-style: none; padding: 0; margin: 0; }
-  ul.check li { padding: 8px 0 8px 30px; position: relative; border-bottom: 1px dashed var(--line); }
-  ul.check li::before { content: '✦'; position: absolute; left: 4px; color: var(--cyan); }
+  .trailer { aspect-ratio: 16/9; border-radius: 20px; border: 1px solid var(--line); display: grid; place-items: center; text-align: center; color: var(--muted);
+    background: radial-gradient(circle at 30% 30%, rgba(255, 46, 154, .35), transparent 50%), radial-gradient(circle at 75% 70%, rgba(79, 216, 255, .25), transparent 50%), #140b26; }
+  .trailer .play { width: 84px; height: 84px; border-radius: 50%; display: grid; place-items: center; margin: 0 auto 12px; background: linear-gradient(120deg, var(--red), var(--pink)); box-shadow: var(--glow-pink); font-size: 2rem; color: #fff; }
+  .shots { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); margin-top: 18px; }
+  .shot { aspect-ratio: 16/10; border-radius: 14px; border: 1px solid var(--line); display: grid; place-items: end start; padding: 12px; color: var(--white); font-weight: 700; font-size: .9rem;
+    background: linear-gradient(200deg, rgba(79, 216, 255, .15), transparent 40%), linear-gradient(160deg, #26124a, #4a1240 60%, #6a1830); }
 
-  .steps { counter-reset: s; display: grid; gap: 14px; }
-  .step { counter-increment: s; display: flex; gap: 16px; align-items: flex-start; }
-  .step::before { content: counter(s); flex: 0 0 40px; height: 40px; border-radius: 50%; display: grid; place-items: center;
-    font-family: 'Bebas Neue', sans-serif; font-size: 1.4rem; background: var(--sunset); color: #1a0d1f; }
-  code { background: #0b0616; border: 1px solid var(--line); border-radius: 8px; padding: 2px 8px; color: var(--gold); }
+  .three { display: grid; gap: 20px; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
+  ul.check { list-style: none; padding: 0; margin: 12px 0 0; }
+  ul.check li { padding: 9px 0 9px 28px; position: relative; border-bottom: 1px solid rgba(44, 29, 77, .6); font-size: .95rem; }
+  ul.check li::before { content: '▸'; position: absolute; left: 6px; color: var(--pink); }
+
+  .news { display: grid; gap: 14px; }
+  .news article { display: flex; gap: 18px; align-items: baseline; padding: 18px 20px; background: var(--card); border: 1px solid var(--line); border-radius: 14px; }
+  .news time { font-family: Anton, sans-serif; color: var(--pink); min-width: 70px; }
+  .news p { margin: 4px 0 0; color: var(--muted); font-size: .95rem; }
+
+  .steps { counter-reset: s; display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); }
+  .step { counter-increment: s; background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 22px; }
+  .step::before { content: '0' counter(s); display: block; font-family: Anton, sans-serif; font-size: 2.4rem; line-height: 1; margin-bottom: 8px; background: var(--neon); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  code { background: #05030a; border: 1px solid var(--line); border-radius: 8px; padding: 2px 8px; color: var(--cyan); }
 
   details { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 16px 20px; margin-bottom: 12px; }
   summary { cursor: pointer; font-weight: 700; }
   details p { color: var(--muted); margin: 10px 0 0; }
 
-  .shots { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
-  .shot { aspect-ratio: 16/9; border-radius: 14px; border: 1px dashed var(--line); display: grid; place-items: center; color: var(--muted);
-    background: linear-gradient(160deg, #24164a, #3a1240 60%, #5a2036); font-size: .9rem; }
-
-  footer { padding: 40px 0; border-top: 1px solid var(--line); color: var(--muted); font-size: .9rem; }
+  .band { text-align: center; padding: 70px 20px; background: linear-gradient(120deg, rgba(255, 35, 64, .25), rgba(162, 75, 255, .25)), var(--bg2); border-top: 1px solid var(--line); }
+  footer { padding: 40px 0; border-top: 1px solid var(--line); color: var(--muted); font-size: .88rem; }
   footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 16px; }
+  footer .links { display: flex; gap: 18px; }
 </style>
 </head>
 <body>
 
 <nav>
   <div class="wrap">
-    <a href="#" class="logo">ROADTRIP</a>
+    <a href="#" class="logo"><b>RoadLine</b> RP</a>
     <div class="menu">
       <a href="#ville">La ville</a><a href="#signatures">Signatures</a><a href="#vies">Les vies</a>
-      <a href="#rejoindre">Rejoindre</a><a href="#faq">FAQ</a>
+      <a href="#nouveautes">Nouveautés</a><a href="#rejoindre">Rejoindre</a><a href="#faq">FAQ</a>
     </div>
-    <a class="btn btn-main" href="https://discord.gg/A_REMPLIR">Discord</a>
+    <a class="btn btn-main js-discord" href="#">Discord</a>
   </div>
 </nav>
 
 <header class="hero">
   <div class="wrap">
-    <h1>ROADTRIP</h1>
-    <p class="tagline">Le RP francophone <strong>new generation</strong> : néons, sunset, et une ville qui <strong>réagit à ce que tu fais</strong>.</p>
+    <span class="kicker">GTA RP · FiveM · 100 % français</span>
+    <h1><span class="grad">RoadLine</span> <span class="rp">RP</span></h1>
+    <p class="tagline">New generation. Une ville vivante qui <strong>se souvient de toi</strong>, où chaque choix laisse une trace. Free Access, zéro pay-to-win.</p>
     <div class="badges">
-      <span class="badge">🇫🇷 100 % français</span><span class="badge">🔓 Free Access</span>
-      <span class="badge">💎 Zéro pay-to-win</span><span class="badge">🎙️ Voix de proximité</span><span class="badge">🛡️ Staff transparent</span>
+      <span class="badge">🔓 Free Access</span><span class="badge">💎 Zéro pay-to-win</span>
+      <span class="badge">🎙️ Voix de proximité</span><span class="badge">🌆 Ville réactive</span><span class="badge">🛡️ Sanctions publiques</span>
     </div>
     <div class="cta">
-      <a class="btn btn-main" href="#rejoindre">Rejoindre la ville</a>
-      <a class="btn btn-ghost" href="https://discord.gg/A_REMPLIR">Rejoindre le Discord</a>
+      <a class="btn btn-main js-connect" href="#rejoindre">▶ Rejoindre la ville</a>
+      <a class="btn btn-ghost js-discord" href="#">Rejoindre le Discord</a>
+    </div>
+    <div class="status">
+      <span><span class="dot js-dot"></span><span class="js-state">Ouverture bientôt</span></span>
+      <span><strong class="js-players">—</strong> <span class="muted">joueurs en ville</span></span>
     </div>
   </div>
 </header>
 
 <section id="ville">
   <div class="wrap">
-    <h2>Une ville vivante, pas un décor</h2>
-    <p class="lead muted">Chaque système est relié aux autres : un braquage fait monter la tension du quartier, la presse en parle,
-      les prix bougent, la police arrive. Ici, ton histoire laisse une trace.</p>
+    <span class="kicker">La ville</span>
+    <h2>Un Los Santos <span class="grad">vivant</span>, pas un décor</h2>
+    <p class="lead muted">Chaque système est relié aux autres : un braquage fait monter la tension du quartier, la presse en parle, la police arrive,
+      les prix bougent. Ton histoire laisse une trace.</p>
+    <div class="trailer"><div><div class="play">▶</div>Bande-annonce RoadLine RP<br><small>(vidéo YouTube à intégrer ici)</small></div></div>
     <div class="shots">
-      <div class="shot">Capture : coucher de soleil sur Vespucci</div>
-      <div class="shot">Capture : course de nuit</div>
-      <div class="shot">Capture : soirée au Vanilla Unicorn</div>
-      <div class="shot">Capture : Cayo Perico</div>
+      <div class="shot">Coucher de soleil à Vespucci</div><div class="shot">Course de nuit</div>
+      <div class="shot">Soirée au Vanilla Unicorn</div><div class="shot">Cayo Perico</div>
     </div>
   </div>
 </section>
 
-<section id="signatures">
+<section id="signatures" class="alt">
   <div class="wrap">
-    <h2>Ce que tu ne trouveras nulle part ailleurs</h2>
-    <p class="lead muted">Nos signatures, pensées pour le RP, pas pour la vitrine.</p>
+    <span class="kicker">Exclusif</span>
+    <h2>Ce que tu ne trouveras <span class="grad">nulle part ailleurs</span></h2>
+    <p class="lead muted">Des systèmes pensés pour le RP, pas pour la vitrine.</p>
     <div class="grid">
-      <div class="card sig"><span class="tag">Signature</span><h3>Los Santos réactif</h3>
-        <p>La tension de chaque quartier monte avec les crimes : moins de passants, plus de témoins, plus de police, des brèves dans la presse.</p></div>
-      <div class="card sig"><span class="tag">Signature</span><h3>Recherche intelligente</h3>
-        <p>Un crime n'existe que s'il est signalé : témoins, heure, météo et caméras décident de ce que la police sait de toi.</p></div>
-      <div class="card sig"><span class="tag">Signature</span><h3>Weazel News joué</h3>
-        <p>Les journalistes sont des joueurs : articles, flashs, reportages. Et la ville publie toute seule ses faits divers.</p></div>
-      <div class="card sig"><span class="tag">Signature</span><h3>Road trip du mois</h3>
-        <p>Un grand itinéraire panoramique chaque mois, en solo ou en convoi : spots photo, primes, classement des explorateurs.</p></div>
-      <div class="card sig"><span class="tag">Signature</span><h3>Braquage à la voix</h3>
-        <p>Pointe ton arme, élève la voix : la peur du PNJ monte. Plus tu cries, plus ça va vite… et plus on t'entend.</p></div>
-      <div class="card sig"><span class="tag">Signature</span><h3>Vibe</h3>
-        <p>Le réseau social de la ville dans ton téléphone : posts, photos, stories, tendances, influenceurs vérifiés.</p></div>
+      <div class="card sig"><span class="tag">Signature</span><h3>Los Santos réactif</h3><p>La tension de chaque quartier monte avec les crimes : moins de passants, plus de témoins, plus de police, des brèves dans la presse.</p></div>
+      <div class="card sig"><span class="tag">Signature</span><h3>Recherche intelligente</h3><p>Un crime n'existe que s'il est signalé : témoins, heure, météo et caméras décident de ce que la police sait de toi.</p></div>
+      <div class="card sig"><span class="tag">Signature</span><h3>Braquage à la voix</h3><p>Pointe ton arme, élève la voix : la peur du PNJ monte. Plus tu cries, plus ça va vite… et plus on t'entend.</p></div>
+      <div class="card sig"><span class="tag">Signature</span><h3>Weazel News joué</h3><p>Les journalistes sont des joueurs. Articles, flashs, reportages : la ville raconte sa propre histoire.</p></div>
+      <div class="card sig"><span class="tag">Signature</span><h3>Road trip du mois</h3><p>Un grand itinéraire panoramique chaque mois, en solo ou en convoi : spots photo, primes, classement des explorateurs.</p></div>
+      <div class="card sig"><span class="tag">Signature</span><h3>Vibe</h3><p>Le réseau social de la ville dans ton téléphone : posts, photos, stories, tendances, comptes vérifiés.</p></div>
     </div>
   </div>
 </section>
 
 <section id="vies">
   <div class="wrap">
-    <h2>Choisis ta vie</h2>
-    <div class="two">
-      <div class="card"><h3>💼 Vie légale</h3>
+    <span class="kicker">Ton histoire</span>
+    <h2>Choisis <span class="grad">ta vie</span></h2>
+    <div class="three">
+      <div class="card"><h3>💼 Légal</h3>
         <ul class="check">
-          <li>LSPD, EMS, mécano (personnalisation complète), concession, immobilier, auto-école, avocats, juge, Weazel News</li>
+          <li>LSPD, EMS, mécano (personnalisation complète), concession, immobilier</li>
           <li>Bars tenus par des joueurs : Tequi-la-la, Vanilla Unicorn, Bahama Mamas</li>
-          <li>Routier, bus, taxi, livreur, éboueur : missions animées</li>
+          <li>Avocats, juge, mairie, Weazel News, auto-école</li>
+          <li>Routier, bus, taxi, livreur, éboueur, missions animées</li>
           <li>Pêche, mine, bûcheron, ferme, ferraille, chasse</li>
-          <li>Banque, bourse de la ville, mariage, tribunal, permis</li>
         </ul></div>
-      <div class="card"><h3>🔥 Vie illégale</h3>
+      <div class="card"><h3>🔥 Illégal</h3>
         <ul class="check">
-          <li>Braquages : passants, supérettes, bijouterie, banques, gros coups en duo</li>
-          <li>Gangs et organisations : territoires, tags, labos, flotte</li>
+          <li>Braquages : passants, supérettes, bijouterie, banques, coups en duo</li>
+          <li>4 gangs et 2 organisations : territoires, tags, labos, flotte</li>
           <li>Drogues, marché noir, contrats entre joueurs, blanchiment</li>
           <li>Police joueurs ou patrouilles IA : jamais d'impunité</li>
           <li>Preuves vidéo, casier, procès avec avocat</li>
         </ul></div>
-      <div class="card"><h3>🌴 Loisirs</h3>
+      <div class="card"><h3>🌴 Libre</h3>
         <ul class="check">
           <li>Cayo Perico : vols animés, soirées plage</li>
-          <li>Casino : roue quotidienne, loto, tickets</li>
+          <li>Casino : roue quotidienne, loto, tickets à gratter</li>
           <li>Courses de rue avec organisateur et classements</li>
           <li>Saisons et pass cosmétique, quêtes, défis du jour, titres</li>
-          <li>Événements staff en un clic</li>
+          <li>Tenues à échanger, motels, location, carnets de route</li>
         </ul></div>
+    </div>
+  </div>
+</section>
+
+<section id="nouveautes" class="alt">
+  <div class="wrap">
+    <span class="kicker">Journal des mises à jour</span>
+    <h2>Nouveautés</h2>
+    <div class="news">
+      <article><time>V7</time><div><strong>Retours de la bêta</strong><p>Récolte refaite, 3 bars, police IA réelle, tenues en objets, courses avec organisateur, personnalisation chez le mécano.</p></div></article>
+      <article><time>V6</time><div><strong>Les 3 signatures</strong><p>Los Santos réactif, Weazel News joué par les joueurs, road trip du mois.</p></div></article>
+      <article><time>V5</time><div><strong>La rue</strong><p>Braquage à la voix, marché noir, Cayo Perico en duo, motels, blanchiment, contrats.</p></div></article>
     </div>
   </div>
 </section>
 
 <section id="rejoindre">
   <div class="wrap">
-    <h2>Rejoindre la ville</h2>
+    <span class="kicker">En 4 étapes</span>
+    <h2>Rejoindre <span class="grad">la ville</span></h2>
     <div class="steps">
-      <div class="step"><div><strong>Installe FiveM</strong> depuis <a href="https://fivem.net">fivem.net</a> (GTA V sur PC requis).</div></div>
-      <div class="step"><div><strong>Rejoins le Discord</strong> et lis le règlement : <a href="https://discord.gg/A_REMPLIR">discord.gg/A_REMPLIR</a></div></div>
-      <div class="step"><div><strong>Connecte-toi</strong> : dans FiveM, touche <code>F8</code> puis <code>connect A_REMPLIR</code> (ou cherche « ROADTRIP » dans la liste).</div></div>
-      <div class="step"><div><strong>Crée ton perso</strong>, accepte le règlement et suis Max pour ton premier jour.</div></div>
+      <div class="step"><strong>Installe FiveM</strong><p class="muted">Sur <a href="https://fivem.net">fivem.net</a> (GTA V PC requis, micro conseillé).</p></div>
+      <div class="step"><strong>Rejoins le Discord</strong><p class="muted">Lis le règlement et récupère ton rôle. <a class="js-discord" href="#">Ouvrir le Discord</a></p></div>
+      <div class="step"><strong>Connecte-toi</strong><p class="muted">Bouton « Rejoindre la ville », ou dans FiveM : <code>F8</code> puis <code class="js-connect-cmd">connect (adresse bientôt)</code></p></div>
+      <div class="step"><strong>Crée ton perso</strong><p class="muted">Accepte le règlement, et laisse Max te guider pour ton premier jour.</p></div>
     </div>
   </div>
 </section>
 
-<section id="regles">
+<section id="regles" class="alt">
   <div class="wrap">
-    <h2>L'essentiel du règlement</h2>
+    <span class="kicker">Règlement</span>
+    <h2>L'essentiel</h2>
     <div class="grid">
       <div class="card"><div class="ic">🎭</div><h3>RP avant tout</h3><p>On joue un personnage, on reste cohérent, on respecte les scènes des autres.</p></div>
       <div class="card"><div class="ic">🚫</div><h3>Pas de freekill</h3><p>Pas de violence sans interaction RP. Une élimination se prépare et se joue.</p></div>
@@ -202,21 +252,52 @@
 
 <section id="faq">
   <div class="wrap">
+    <span class="kicker">FAQ</span>
     <h2>Questions fréquentes</h2>
     <details><summary>C'est gratuit ?</summary><p>Oui, Free Access : pas de liste blanche payante, pas de pay-to-win.</p></details>
     <details><summary>Il faut un micro ?</summary><p>Oui, le RP se joue à la voix (proximité, radio, téléphone).</p></details>
-    <details><summary>Quelles sont les touches ?</summary><p>En jeu, appuie sur <code>I</code> : toutes les touches s'affichent (téléphone F1, inventaire F2, progression F3, métiers F6…).</p></details>
+    <details><summary>Quelles sont les touches ?</summary><p>En jeu, appuie sur <code>I</code> : téléphone F1, inventaire F2, progression F3, métiers F6, menu rapide W…</p></details>
     <details><summary>Je peux devenir policier, EMS ou ouvrir un commerce ?</summary><p>Oui : candidatures sur le Discord pour les métiers encadrés, et les patrons recrutent eux-mêmes en jeu.</p></details>
+    <details><summary>Je suis streamer / créateur</summary><p>Contacte-nous sur le Discord : programme créateurs (rôle, mise en avant, événements dédiés).</p></details>
     <details><summary>J'ai un problème en jeu</summary><p>Tape <code>/report</code> en jeu ou ouvre un ticket sur le Discord.</p></details>
   </div>
 </section>
 
+<div class="band">
+  <h2>La route t'attend.</h2>
+  <div class="cta" style="justify-content:center"><a class="btn btn-main js-connect" href="#rejoindre">▶ Rejoindre la ville</a><a class="btn btn-ghost js-discord" href="#">Discord</a></div>
+</div>
+
 <footer>
   <div class="wrap">
-    <span><span class="logo" style="font-size:1.3rem">ROADTRIP</span> · new generation</span>
-    <span>Serveur non affilié à Rockstar Games ni à Take-Two. GTA V est une marque de Rockstar Games.</span>
+    <span class="logo" style="font-size:1.2rem"><b>RoadLine</b> RP · new generation</span>
+    <span class="links"><a class="js-tiktok" href="#">TikTok</a><a class="js-twitch" href="#">Twitch</a><a class="js-youtube" href="#">YouTube</a></span>
+    <span>Serveur non affilié à Rockstar Games ni à Take-Two.</span>
   </div>
 </footer>
 
+<script>
+  // ---- CONFIG : à remplir ----
+  const CONFIG = {
+    discord: 'https://discord.gg/A_REMPLIR',
+    cfxCode: '',            // code cfx.re du serveur (ex. 'abc123') : bouton « Rejoindre » + compteur de joueurs
+    tiktok: '', twitch: '', youtube: '',
+  };
+  document.querySelectorAll('.js-discord').forEach(a => a.href = CONFIG.discord);
+  for (const k of ['tiktok', 'twitch', 'youtube']) document.querySelectorAll('.js-' + k).forEach(a => { if (CONFIG[k]) a.href = CONFIG[k]; else a.style.display = 'none'; });
+  if (CONFIG.cfxCode) {
+    document.querySelectorAll('.js-connect').forEach(a => a.href = 'https://cfx.re/join/' + CONFIG.cfxCode);
+    document.querySelector('.js-connect-cmd').textContent = 'connect cfx.re/join/' + CONFIG.cfxCode;
+    // Compteur de joueurs (API publique FiveM) ; si elle ne répond pas, on laisse « — »
+    fetch('https://servers-frontend.fivem.net/api/servers/single/' + CONFIG.cfxCode)
+      .then(r => r.json())
+      .then(d => {
+        const s = d.Data || {};
+        document.querySelector('.js-players').textContent = (s.clients ?? 0) + ' / ' + (s.sv_maxclients ?? '?');
+        document.querySelector('.js-state').textContent = 'Serveur en ligne';
+        document.querySelector('.js-dot').classList.add('on');
+      }).catch(() => {});
+  }
+</script>
 </body>
 </html>

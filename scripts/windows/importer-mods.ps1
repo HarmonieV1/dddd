@@ -376,6 +376,8 @@ $TexKit = Join-Path $PSScriptRoot '..\..\tools\textures'
 $TexReady = $false
 # Actif par défaut (ne touche que les fichiers au-dessus de la limite FiveM). Pour le couper : GTASOON_TEXOPT=0.
 if ($env:GTASOON_TEXOPT -ne '0') { try {
+    # Fichiers venus d'Internet (zip) : Windows les bloque (« opération non prise en charge ») → débloqués d'abord
+    Get-ChildItem -LiteralPath $TexKit -File -ErrorAction SilentlyContinue | Unblock-File -ErrorAction SilentlyContinue
     foreach ($d in 'SharpDX.dll', 'SharpDX.Mathematics.dll', 'CodeWalker.Core.dll', 'GtaSoonTex.dll') { Add-Type -Path (Join-Path $TexKit $d) }
     $TexReady = $true
 } catch { Say "  Optimiseur de textures indisponible ($($_.Exception.Message)) : mods installés sans optimisation" 'Yellow' } }

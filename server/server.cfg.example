@@ -1,5 +1,5 @@
 ## =====================================================================
-##  ROADTRIP (ex-GTA SOON) — server.cfg (V1)
+##  RoadLine RP (ex-GTA SOON) — server.cfg (V1)
 ##  Copier en server.cfg (ignoré par git). Secrets : cfg/secrets.cfg (ignoré aussi).
 ##  Ordre : réseau → identité → sécurité → secrets → convars → ressources → permissions → profil
 ##  Vérif avant chaque déploiement : ./tests/run.sh (linter de config inclus)
@@ -13,8 +13,8 @@ endpoint_add_udp "0.0.0.0:30120"
 set sv_enforceGameBuild 3570
 
 ## ---- Identité (liste des serveurs) ----
-sv_hostname "^5ROADTRIP ^7new generation ^7| ^6FR ^7| Free Access | Zéro P2W"
-sets sv_projectName "Roadtrip"
+sv_hostname "^5RoadLine ^7RP ^7new generation ^7| ^6FR ^7| Free Access | Zéro P2W"
+sets sv_projectName "RoadLine RP"
 sets sv_projectDesc "RP francophone premium : néons, sunset et bonne humeur"
 sets locale "fr-FR"
 sets tags "roleplay, rp, fr, francais, freeaccess, qbox"

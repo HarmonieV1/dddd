@@ -34,12 +34,12 @@ $sorted = @()
 $out = Join-Path $Root 'mods-tri'
 if (Test-Path -LiteralPath $out) { $sorted = @(Get-ChildItem -LiteralPath $out -Directory | ForEach-Object { Get-ChildItem -LiteralPath $_.FullName -Directory } | Where-Object { Is-Brand $_.Name }) }
 
-if (($dirs.Count + $archives.Count + $sorted.Count) -eq 0) { Say '  Aucun mod de marque trouve : tout est deja propre.' 'Green' }
+if (($dirs.Count + $archives.Count + $sorted.Count) -eq 0) { Say '  Aucun mod de marque trouve : tout est deja propre.' 'Green'; if ($env:GTASOON_MARQUES_AUTO) { return } }
 else {
     foreach ($d in $dirs) { Say "  mod installe : $($d.Name)" 'Yellow' }
     foreach ($a in $archives) { Say "  archive     : $($a.Name)" 'Yellow' }
     foreach ($s in $sorted) { Say "  mods-tri    : $($s.Parent.Name)\$($s.Name)" 'Yellow' }
-    if (-not $env:GTASOON_TEST) {
+    if (-not $env:GTASOON_TEST -and -not $env:GTASOON_MARQUES_AUTO) {
         $ok = Read-Host "`nSupprimer tout ca ? (O = oui)"
         if ($ok -notmatch '^[oOyY]') { Say 'Annule : rien n''a ete supprime.' 'Yellow'; return }
     }

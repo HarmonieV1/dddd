@@ -43,7 +43,7 @@ def footer(canvas, doc):
     canvas.saveState()
     canvas.setFont('Helvetica', 7.5)
     canvas.setFillColor(GREY)
-    canvas.drawString(15 * mm, 10 * mm, f'ROADTRIP · new generation · {VERSION}')
+    canvas.drawString(15 * mm, 10 * mm, f'RoadLine RP · new generation · {VERSION}')
     canvas.drawRightString(doc.pagesize[0] - 15 * mm, 10 * mm, f'page {doc.page}')
     canvas.restoreState()
 
@@ -89,15 +89,15 @@ COMMANDS = [
 
 
 def guide(points):
-    doc = SimpleDocTemplate('docs/pdf/ROADTRIP_Guide.pdf', pagesize=A4, leftMargin=15 * mm, rightMargin=15 * mm, topMargin=14 * mm, bottomMargin=16 * mm,
-                            title='ROADTRIP · Guide complet', author='ROADTRIP')
-    s = [Paragraph('ROADTRIP · Guide complet', H1),
+    doc = SimpleDocTemplate('docs/pdf/ROADLINE_Guide.pdf', pagesize=A4, leftMargin=15 * mm, rightMargin=15 * mm, topMargin=14 * mm, bottomMargin=16 * mm,
+                            title='RoadLine RP · Guide complet', author='RoadLine RP')
+    s = [Paragraph('RoadLine RP · Guide complet', H1),
          Paragraph(f'Tout ce qui est disponible sur le serveur ({VERSION}), comment y accéder, et les outils. '
                    'Serveur FiveM RP français (Qbox, ox_lib, ox_inventory, pma-voice).', P), Spacer(1, 4)]
 
     s += [Paragraph('1. Installer, mettre à jour, importer', H2)]
     s += bullets([
-        '<b>Toujours</b> : clic droit sur le zip ROADTRIP → Extraire tout, puis ouvrir le dossier <b>gtasoon</b>.',
+        '<b>Toujours</b> : clic droit sur le zip RoadLine → Extraire tout, puis ouvrir le dossier <b>gtasoon</b>.',
         '<b>INSTALLER.bat</b> : première installation. <b>METTRE-A-JOUR.bat</b> : nouvelle version (sauvegarde auto, relance le serveur). '
         'Il importe aussi automatiquement les mods posés dans C:\\GTASOON\\mods-a-trier.',
         '<b>IMPORTER-MODS.bat</b> : véhicules, vêtements, maps (zip / rar / dlc.rpf) → tri, contrôle, installation, concession. '
@@ -166,7 +166,7 @@ def guide(points):
         'Maps : pharmacie du centre, garage clandestin, supermarché Willie\'s, club Bahamas Mamas, bureau d\'entreprise, village abandonné.',
         'Vêtements : bikini (haut + bas), robe d\'été, 6 coiffures femme.',
     ])
-    s += [Spacer(1, 6), Paragraph(f'{len(points)} points de carte configurés : voir « ROADTRIP_Carte_points.pdf ».', SMALL)]
+    s += [Spacer(1, 6), Paragraph(f'{len(points)} points de carte configurés : voir « ROADLINE_Carte_points.pdf ».', SMALL)]
     doc.build(s, onFirstPage=footer, onLaterPages=footer)
 
 
@@ -222,9 +222,9 @@ TESTS = [
 
 
 def fiche():
-    doc = SimpleDocTemplate('docs/pdf/ROADTRIP_Fiche_tests.pdf', pagesize=A4, leftMargin=15 * mm, rightMargin=15 * mm, topMargin=14 * mm, bottomMargin=16 * mm,
-                            title='ROADTRIP · Fiche de tests', author='ROADTRIP')
-    s = [Paragraph('ROADTRIP · Fiche de tests', H1),
+    doc = SimpleDocTemplate('docs/pdf/ROADLINE_Fiche_tests.pdf', pagesize=A4, leftMargin=15 * mm, rightMargin=15 * mm, topMargin=14 * mm, bottomMargin=16 * mm,
+                            title='RoadLine RP · Fiche de tests', author='RoadLine RP')
+    s = [Paragraph('RoadLine RP · Fiche de tests', H1),
          Paragraph(f'Coche au fur et à mesure ({VERSION}). Pour chaque problème : capture + coordonnées (F11 → Copier mes coordonnées).', P)]
     for title, items in TESTS:
         rows = [['OK', 'À tester', 'Remarque']] + [['[  ]', i, ''] for i in items]
@@ -254,8 +254,8 @@ MLO = [
 
 
 def carte(points):
-    doc = SimpleDocTemplate('docs/pdf/ROADTRIP_Carte_points.pdf', pagesize=landscape(A4), leftMargin=12 * mm, rightMargin=12 * mm,
-                            topMargin=12 * mm, bottomMargin=14 * mm, title='ROADTRIP · Carte des points', author='ROADTRIP')
+    doc = SimpleDocTemplate('docs/pdf/ROADLINE_Carte_points.pdf', pagesize=landscape(A4), leftMargin=12 * mm, rightMargin=12 * mm,
+                            topMargin=12 * mm, bottomMargin=14 * mm, title='RoadLine RP · Carte des points', author='RoadLine RP')
     W, H = 250 * mm, 160 * mm
     x0, x1, y0, y1 = -4200.0, 6000.0, -6000.0, 8200.0
     d = Drawing(W, H)
@@ -275,7 +275,7 @@ def carte(points):
         d.add(Circle(W - 70 * mm, yy + 3, 3, fillColor=col, strokeColor=None))
         d.add(String(W - 66 * mm, yy, label, fontSize=8, fillColor=colors.white))
         yy -= 11
-    s = [Paragraph('ROADTRIP · Carte des points', H1), Paragraph(f'{len(points)} points configurés (positions des fichiers de config, à caler en jeu si besoin).', P), d,
+    s = [Paragraph('RoadLine RP · Carte des points', H1), Paragraph(f'{len(points)} points configurés (positions des fichiers de config, à caler en jeu si besoin).', P), d,
          PageBreak(), Paragraph('Maps importées', H2), table(MLO, [90 * mm, 70 * mm, 90 * mm])]
     rows = [['Ressource', 'Point', 'x', 'y', 'z']]
     for e in points:
@@ -289,4 +289,4 @@ if __name__ == '__main__':
     guide(pts)
     fiche()
     carte(pts)
-    print('PDF générés : docs/pdf/ROADTRIP_Guide.pdf, ROADTRIP_Fiche_tests.pdf, ROADTRIP_Carte_points.pdf')
+    print('PDF générés : docs/pdf/ROADLINE_Guide.pdf, ROADLINE_Fiche_tests.pdf, ROADLINE_Carte_points.pdf')
