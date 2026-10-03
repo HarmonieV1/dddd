@@ -259,8 +259,9 @@ local function ListItems()
 end
 
 --- Dépôt au sol ramassable par tous. items = { { name, count }, ... }. [API] ox_inventory CustomDrop
-local function CreateDrop(items, coords)
-    local ok, err = pcall(function() OX:CustomDrop('Dépôt', items, coords) end)
+--- Objets posés au sol (sac / colis ramassable par tout le monde). label = nom du dépôt, model = objet affiché. [API]
+local function CreateDrop(items, coords, label, model)
+    local ok, err = pcall(function() OX:CustomDrop(label or 'Dépôt', items, coords, nil, nil, nil, model) end)
     if not ok then print(('[gs_bridge] CreateDrop a échoué : %s'):format(err)) end
     return ok
 end

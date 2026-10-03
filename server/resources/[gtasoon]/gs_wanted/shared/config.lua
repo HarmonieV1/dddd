@@ -72,6 +72,11 @@ Config.NpcPolice = {
     minCops = 1,
     search = { seconds = 120, radius = 180.0 },   -- après avoir semé la police IA : elle fouille la dernière zone connue
     stars = { { heat = 10, stars = 1 }, { heat = 30, stars = 2 }, { heat = 45, stars = 3 }, { heat = 999, stars = 4 } },
+    -- V7 : patrouilles créées par le serveur (le « dispatch » du jeu donnait des voitures vides avec la protection
+    -- anti-triche des entités). 1 voiture par étoile (max `maxUnits`), 2 agents armés, gyrophares, poursuite.
+    units = { maxUnits = 3, maxServer = 9, spawnDistance = 170.0, lifetime = 300, cooldown = 20,
+        vehicles = { city = 'police', county = 'sheriff' }, peds = { city = 's_m_y_cop_01', county = 's_m_y_sheriff_01' },
+        weapons = { [1] = 'WEAPON_STUNGUN', [2] = 'WEAPON_PISTOL', [3] = 'WEAPON_PUMPSHOTGUN' }, armour = 50 },
 }
 
 -- Caméras de surveillance : un crime à moins de `radius` m d'une caméra est presque toujours signalé, avec une zone précise

@@ -27,23 +27,27 @@ Config.Territory = {
 }
 
 -- Gangs créés automatiquement au 1er démarrage (si absents), avec leur QG / planque dans leur quartier du jeu.
--- Le staff peut ensuite déplacer une planque (/builder → « Placer une planque de gang ici ») ou en créer d'autres.
--- color = couleur de blip GTA. Coords à caler en jeu.
+-- V7 : 4 gangs de rue + 2 organisations criminelles (noms de l'univers GTA). Le staff déplace une planque ou un garage en
+-- jeu (F11 → Monde et lieux → Gangs) ou en crée d'autres. color = couleur de blip GTA.
 Config.DefaultGangs = {
     { name = 'families', label = 'Families', color = 25, stash = vec3(107.8, -1942.9, 20.8) },    -- Grove Street
     { name = 'ballas', label = 'Ballas', color = 27, stash = vec3(4.9, -1819.3, 29.2) },          -- Davis
     { name = 'vagos', label = 'Vagos', color = 46, stash = vec3(336.3, -2040.2, 21.4) },          -- Rancho / Jamestown
-    { name = 'marabunta', label = 'Marabunta Grande', color = 3, stash = vec3(1437.0, -1492.0, 63.6) }, -- El Burro Heights
     { name = 'lostmc', label = 'Lost MC', color = 40, stash = vec3(986.6, -95.1, 74.8) },         -- club-house, East Vinewood
+    { name = 'madrazo', label = 'Cartel Madrazo (organisation)', color = 1, stash = vec3(1395.0, 1141.8, 114.3) }, -- ranch Madrazo
+    { name = 'triads', label = 'Triades (organisation)', color = 3, stash = vec3(-649.6, -1232.2, 11.4) },        -- [À CALER] Little Seoul
 }
+-- Gangs par défaut des versions précédentes, retirés (seulement s'ils n'ont plus aucun membre)
+Config.RemovedGangs = { 'marabunta' }
 
 -- Garage des gangs par défaut (un véhicule par membre, aux couleurs du gang). garage = sortie ; paint = couleur GTA.
 Config.GangGarages = {
     families = { garage = vec4(113.7, -1948.6, 20.7, 50.0), paint = 53, vehicles = { 'chino', 'buccaneer2', 'manchez' } },
-    ballas = { garage = vec4(11.6, -1823.6, 25.3, 140.0), paint = 145, vehicles = { 'faction2', 'buccaneer2', 'manchez' } },
+    ballas = { garage = vec4(11.6, -1823.6, 29.2, 140.0), paint = 145, vehicles = { 'faction2', 'buccaneer2', 'manchez' } },
     vagos = { garage = vec4(331.5, -2033.4, 20.9, 50.0), paint = 88, vehicles = { 'chino2', 'moonbeam2', 'manchez' } },
-    marabunta = { garage = vec4(1429.9, -1497.1, 62.0, 170.0), paint = 70, vehicles = { 'voodoo', 'tornado', 'manchez' } },
     lostmc = { garage = vec4(972.7, -114.6, 74.4, 225.0), paint = 0, vehicles = { 'daemon', 'hexer', 'gburrito' } },
+    madrazo = { garage = vec4(1406.5, 1118.5, 114.8, 90.0), paint = 0, vehicles = { 'baller', 'cavalcade', 'patriot' } },
+    triads = { garage = vec4(-656.0, -1227.0, 11.0, 120.0), paint = 27, vehicles = { 'fugitive', 'sultan', 'bati' } },
 }
 
 -- Tags : bombe de peinture (item spraycan). Limite par gang, distance mini entre deux tags, influence de quartier.

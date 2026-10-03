@@ -114,13 +114,19 @@ local function refreshFence()
     exports.gs_markers:Add('gs_gangs:fence', { coords = c, style = 'shop', label = 'Receleur', event = 'gs_gangs:client:fence', prompt = 'Parler au receleur' })
 end
 
+local garageBlip
 local function applyMembership(m)
     member = m
     exports.gs_markers:Remove('gs_gangs:garage')
+    if garageBlip then RemoveBlip(garageBlip) garageBlip = nil end
     local g = m and (GlobalState.gsGangGarages or {})[m.gang]
     if g then
         exports.gs_markers:Add('gs_gangs:garage', { coords = vec3(g.x, g.y, g.z), style = 'entry', label = 'Garage du gang',
-            icon = 36, event = 'gs_gangs:client:garage', prompt = 'Garage du gang' })
+            event = 'gs_gangs:client:garage', prompt = 'Garage du gang' })
+        -- logo sur la carte (membres seulement) : on trouve les véhicules du gang sans chercher
+        garageBlip = AddBlipForCoord(g.x, g.y, g.z)
+        SetBlipSprite(garageBlip, 357) SetBlipColour(garageBlip, 40) SetBlipScale(garageBlip, 0.7) SetBlipAsShortRange(garageBlip, true)
+        BeginTextCommandSetBlipName('STRING') AddTextComponentSubstringPlayerName('Garage du gang') EndTextCommandSetBlipName(garageBlip)
     end
     refreshFence()
 end

@@ -106,10 +106,22 @@ RegisterNUICallback('payBill', function(b, cb)
 end)
 
 RegisterNUICallback('duty', function(_, cb) TriggerServerEvent('gs_jobs:server:toggleDuty') cb(true) end)
+-- Applis qui ouvrent un menu d'une autre ressource (le téléphone se range) : plus RP qu'une commande tapée
+local EXTERNAL = { jobs = 'job', carnet = 'carnet', journal = 'journal', orders = 'commandes' }
 RegisterNUICallback('openApp', function(b, cb)
     cb(true)
     close()
-    if b.app == 'jobs' then ExecuteCommand('job') end
+    if EXTERNAL[b.app] then return ExecuteCommand(EXTERNAL[b.app]) end
+    if b.app == 'unknown' then
+        -- Numéro « Inconnu » : le contact du marché noir et le tableau des contrats (accès vérifié par gs_blackmarket)
+        lib.registerContext({ id = 'gs_phone_unknown', title = 'Inconnu', options = {
+            { title = 'Appeler le contact', description = 'Il te donne le lieu du rendez-vous (GPS)', icon = 'user-secret',
+              onSelect = function() ExecuteCommand('contact') end },
+            { title = 'Contrats', description = 'Petits boulots entre gens discrets', icon = 'file-signature',
+              onSelect = function() ExecuteCommand('contrats') end },
+        } })
+        lib.showContext('gs_phone_unknown')
+    end
 end)
 
 -- App Vibe : relais vers gs_social (mêmes callbacks serveur, mêmes règles que l'ancienne app Néon)

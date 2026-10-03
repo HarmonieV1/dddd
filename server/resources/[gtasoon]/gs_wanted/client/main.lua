@@ -117,30 +117,84 @@ RegisterCommand('dispatch', function()
     lib.showContext('gs_dispatch')
 end, false)
 
--- Police IA (aucun policier joueur en service) : étoiles du jeu, puis retour au calme --------------------------
+-- Police IA (aucun policier joueur en service) : étoiles du jeu + patrouilles créées par le serveur ---------------
+-- (le « dispatch » du jeu reste coupé : avec la protection des entités du serveur il créait des voitures vides)
 local npcActive = false
+local COP = GetHashKey('COP')
 
-local function setDispatch(on)
-    for i = 1, 15 do EnableDispatchService(i, on) end
+local function setStars(on)
+    for i = 1, 15 do EnableDispatchService(i, false) end
     SetMaxWantedLevel(on and 5 or 0)
+end
+
+--- Positions de route à ~170 m autour du joueur (le serveur crée les voitures là, hors de vue)
+local function roadPositions(n)
+    local me = GetEntityCoords(cache.ped)
+    local out = {}
+    local base = math.random() * math.pi * 2
+    for i = 1, n + 2 do
+        local a = base + (i / (n + 2)) * math.pi * 2
+        local p = me + vec3(math.cos(a), math.sin(a), 0.0) * Config.NpcPolice.units.spawnDistance
+        local ok, node, heading = GetClosestVehicleNodeWithHeading(p.x, p.y, p.z, 1, 3.0, 0)
+        if ok then out[#out + 1] = { x = node.x, y = node.y, z = node.z + 0.5, w = heading } end
+    end
+    return out
+end
+
+local function control(ent)
+    local t = GetGameTimer() + 1500
+    while not NetworkHasControlOfEntity(ent) and GetGameTimer() < t do NetworkRequestControlOfEntity(ent) Wait(50) end
+    return NetworkHasControlOfEntity(ent)
+end
+
+--- Donne leurs ordres aux agents : sirène, poursuite au volant, combat à pied
+local function command(units)
+    for _, u in ipairs(units) do
+        CreateThread(function()
+            local t = GetGameTimer() + 5000
+            while not NetworkDoesEntityExistWithNetworkId(u.veh) and GetGameTimer() < t do Wait(100) end
+            if not NetworkDoesEntityExistWithNetworkId(u.veh) then return end
+            local veh = NetToVeh(u.veh)
+            if control(veh) then SetVehicleSiren(veh, true) SetVehicleHasMutedSirens(veh, false) end
+            for i, nid in ipairs(u.peds) do
+                local t2 = GetGameTimer() + 3000
+                while not NetworkDoesEntityExistWithNetworkId(nid) and GetGameTimer() < t2 do Wait(100) end
+                local ped = NetworkDoesEntityExistWithNetworkId(nid) and NetToPed(nid)
+                if ped and control(ped) then
+                    SetPedRelationshipGroupHash(ped, COP)
+                    SetPedAsCop(ped, true)
+                    SetPedCombatAttributes(ped, 46, true) -- se bat jusqu'au bout
+                    SetPedKeepTask(ped, true)
+                    if i == 1 then
+                        TaskVehicleChase(ped, cache.ped)
+                        SetTaskVehicleChaseIdealPursuitDistance(ped, 0.0)
+                    else
+                        TaskCombatPed(ped, cache.ped, 0, 16)
+                    end
+                end
+            end
+        end)
+    end
 end
 
 RegisterNetEvent('gs_wanted:client:npcPolice', function(stars)
     stars = math.max(1, math.min(5, tonumber(stars) or 1))
     local pid = PlayerId()
-    setDispatch(true)
+    setStars(true)
     if GetPlayerWantedLevel(pid) < stars then
         SetPlayerWantedLevel(pid, stars, false)
         SetPlayerWantedLevelNow(pid, false)
     end
     lib.notify({ title = 'Police de Los Santos', description = ('Tu es recherché (%d ★). Sème-les !'):format(stars), type = 'error', icon = 'handcuffs' })
+    command(lib.callback.await('gs_wanted:npcUnits', false, stars, roadPositions(math.min(stars, Config.NpcPolice.units.maxUnits))) or {})
     if npcActive then return end
     npcActive = true
     CreateThread(function()
         Wait(5000)
         while GetPlayerWantedLevel(PlayerId()) > 0 do Wait(2000) end
-        setDispatch(false)
+        setStars(false)
         npcActive = false
+        TriggerServerEvent('gs_wanted:server:npcClear')
         lib.notify({ description = 'La police a perdu ta trace.', type = 'success' })
     end)
 end)

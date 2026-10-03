@@ -339,6 +339,13 @@ function Gangs.init()
     Store.init()
     local existing = {}
     for _, row in ipairs(Store.gangs()) do existing[row.name] = true end
+    for _, name in ipairs(Config.RemovedGangs or {}) do
+        if existing[name] and Store.countMembers(name) == 0 then
+            Store.deleteGang(name)
+            existing[name] = nil
+            print(('[gs_gangs] ancien gang par défaut retiré : %s'):format(name))
+        end
+    end
     for _, g in ipairs(Config.DefaultGangs or {}) do
         if not existing[g.name] and Store.createGang(g.name, g.label, g.color) then
             Store.setStash(g.name, g.stash)

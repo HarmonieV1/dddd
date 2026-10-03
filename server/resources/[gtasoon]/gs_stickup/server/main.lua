@@ -86,7 +86,19 @@ lib.callback.register('gs_stickup:finish', function(src)
     Stickup.playerCd[src][p.kind] = now + kind.playerCooldown
     if p.zone then Stickup.zoneCd[p.zone] = now + kind.zoneCooldown end
     local msg
-    if kind.dirty and Bridge:ItemExists(Config.DirtyItem) and Bridge:AddItem(src, Config.DirtyItem, amount) then
+    if kind.dirty and p.zone and Bridge:ItemExists(Config.DirtyItem) then
+        -- Caisse / guichet : l'argent tombe en sacs plastique au comptoir, à ramasser (Alt ou inventaire au sol)
+        local bags = math.random(Config.Bags.min, Config.Bags.max)
+        local left, c = amount, p.coords
+        for i = 1, bags do
+            local part = i == bags and left or math.floor(amount / bags)
+            left = left - part
+            local a = (i / bags) * math.pi * 2
+            Bridge:CreateDrop({ { Config.DirtyItem, part } }, vec3(c.x + math.cos(a) * 0.7, c.y + math.sin(a) * 0.7, c.z - 0.95),
+                Config.Bags.label, Config.Bags.model)
+        end
+        msg = ('%d $ en argent sale, dans %d sac(s) au sol : ramasse-les'):format(amount, bags)
+    elseif kind.dirty and Bridge:ItemExists(Config.DirtyItem) and Bridge:AddItem(src, Config.DirtyItem, amount) then
         msg = ('%d $ en argent sale'):format(amount)
     else
         Bridge:AddMoney(src, 'cash', amount, 'racket')
@@ -102,7 +114,7 @@ lib.callback.register('gs_stickup:finish', function(src)
         local z = Stickup.zones()[p.zone]
         exports.gs_social:Newsroom('stickup', ('FAITS DIVERS · %s braqué(e) à main armée : %s sous le choc, l\'auteur court toujours.'):format(z and z.label or 'Un commerce', p.kind == 'teller' and 'le guichetier' or 'le caissier'))
     end
-    return true, ('Butin : %s. File avant l\'arrivée de la police !'):format(msg)
+    return true, ('Butin : %s. Vite, la police arrive !'):format(msg)
 end)
 
 --- Abandon : la victime s'enfuit. Le crime a déjà été signalé au début ; petit cooldown quand même.

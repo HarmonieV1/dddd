@@ -7,6 +7,9 @@ Config.PoliceJob = 'police'
 Config.DirtyItem = 'black_money'
 Config.AimRange = 8.0          -- m entre toi et la victime
 Config.LostAimTime = 2500      -- ms sans viser avant que la victime s'enfuie
+Config.AutoStartMs = 900       -- caisse / guichet : le braquage démarre seul après avoir visé le caissier ce temps-là
+-- Caisse / guichet : l'argent sale tombe en petits sacs plastique à ramasser sur le comptoir (pas directement en poche)
+Config.Bags = { model = 'prop_poly_bag_01', min = 1, max = 3, label = 'Sac de billets' }
 
 -- Peur gagnée par seconde : arme pointée + voix (index de portée pma-voice : 1 chuchoter, 2 normal, 3 crier)
 Config.Fear = { aim = 6, voice = { [1] = 3, [2] = 8, [3] = 18 }, decay = 12 }

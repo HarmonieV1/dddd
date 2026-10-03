@@ -49,7 +49,10 @@ ok = cb('gs_stickup:begin', 1, 'register', 'shop1'); step()
 check('caisse lancée', ok and reports[#reports].crime == 'store_robbery')
 advance(9000)
 ok, msg = cb('gs_stickup:finish', 1); step()
-check('caisse : argent sale', ok and (W.players[1].items.black_money or 0) >= 280)
+local bagged = 0
+for _, d in ipairs(W.drops or {}) do for _, it in ipairs(d.items) do if it[1] == 'black_money' then bagged = bagged + it[2] end end end
+check('caisse : argent sale en sacs au sol, pas en poche', ok and bagged >= 280 and (W.players[1].items.black_money or 0) == 0
+    and #W.drops >= Config.Bags.min and #W.drops <= Config.Bags.max and msg:find('sac'))
 Stickup.playerCd[1] = nil
 ok, msg = cb('gs_stickup:begin', 1, 'register', 'shop1'); step()
 check('caisse vidée : cooldown de zone', not ok and msg:find('vidée'))

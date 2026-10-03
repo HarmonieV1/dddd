@@ -1,4 +1,4 @@
--- gs_stickup (client) : vise un PNJ avec une arme, [E] pour le braquer. La peur monte avec l'arme pointée et la voix
+-- gs_stickup (client) : vise un caissier / guichetier avec une arme : le braquage démarre seul ; un passant : [E]. La peur monte avec l'arme pointée et la voix
 -- (chuchoter < parler < CRIER, portée pma-voice sur ²). À 100 %, il te tend l'argent. Arme baissée : il s'enfuit.
 local UNARMED = GetHashKey('WEAPON_UNARMED')
 local zones = {}        -- [id] = { kind, label, coords }
@@ -120,14 +120,18 @@ CreateThread(function()
         Wait(250)
         if not active and not cache.vehicle and GetSelectedPedWeapon(cache.ped) ~= UNARMED and IsPlayerFreeAiming(PlayerId()) then
             local hit, ped = GetEntityPlayerIsFreeAimingAt(PlayerId())
-            -- par frame : seulement tant qu'on vise un PNJ braquable (affiche [E])
+            local since = GetGameTimer()
+            -- par frame : seulement tant qu'on vise un PNJ braquable. Caisse / guichet : démarre seul après un court
+            -- instant (V7) ; passant : [E] (pour ne pas racketter quelqu'un juste en visant).
             while hit and eligible(ped) and IsPlayerFreeAimingAtEntity(PlayerId(), ped) and not active do
-                local kindName = classify(ped)
-                text(('[E] %s'):format(kindName == 'street' and 'Racketter' or kindName == 'register' and 'Braquer la caisse' or 'Braquer le guichet'), 0.86)
-                if IsControlJustReleased(0, 38) then
-                    local k, zid = classify(ped)
-                    robbery(ped, k, zid)
-                    break
+                local kindName, zid = classify(ped)
+                if kindName == 'street' then
+                    text('[E] Racketter', 0.86)
+                    if IsControlJustReleased(0, 38) then robbery(ped, kindName, zid) break end
+                else
+                    local left = Config.AutoStartMs - (GetGameTimer() - since)
+                    text(kindName == 'register' and 'Braquage de la caisse…' or 'Braquage du guichet…', 0.86)
+                    if left <= 0 then robbery(ped, kindName, zid) break end
                 end
                 Wait(0)
             end

@@ -190,6 +190,103 @@ function Wanted.report(src, crimeType, coords, opts)
     return report
 end
 
+-- Police IA : patrouilles créées par le serveur ----------------------------------------------------------------
+Wanted.units = {}      -- [src] = { { veh, peds = {}, born } }
+Wanted.unitAsk = {}    -- [src] = os.time() de la dernière demande
+
+local function unitCount()
+    local n = 0
+    for _, list in pairs(Wanted.units) do n = n + #list end
+    return n
+end
+
+--- Supprime les patrouilles d'un joueur (fin de poursuite, départ).
+function Wanted.clearUnits(src)
+    for _, u in ipairs(Wanted.units[src] or {}) do
+        for _, p in ipairs(u.peds) do if DoesEntityExist(p) then DeleteEntity(p) end end
+        if DoesEntityExist(u.veh) then DeleteEntity(u.veh) end
+    end
+    Wanted.units[src] = nil
+end
+
+--- Crée des patrouilles aux positions de route proposées par le client (le serveur limite le nombre et la distance).
+--- Retourne la liste { { veh = netId, peds = { netId… } } }.
+function Wanted.spawnUnits(src, stars, positions)
+    local U = Config.NpcPolice.units
+    local now = os.time()
+    if (Wanted.unitAsk[src] or 0) + U.cooldown > now then return {} end
+    Wanted.unitAsk[src] = now
+    local ped = GetPlayerPed(src)
+    if not ped or ped == 0 or type(positions) ~= 'table' then return {} end
+    local me = GetEntityCoords(ped)
+    local mine = Wanted.units[src] or {}
+    Wanted.units[src] = mine
+    local want = math.min(U.maxUnits, math.max(1, tonumber(stars) or 1)) - #mine
+    local county = me.y > 1200.0 -- au nord de Vinewood : shérif
+    local out = {}
+    for _, pos in ipairs(positions) do
+        if want <= 0 or unitCount() >= U.maxServer then break end
+        if type(pos) == 'table' and tonumber(pos.x) and tonumber(pos.y) and tonumber(pos.z) then
+            local c = vector3(pos.x + 0.0, pos.y + 0.0, pos.z + 0.0)
+            local d = #(c - me)
+            if d > 60.0 and d < 400.0 then
+                local veh = CreateVehicle(GetHashKey(county and U.vehicles.county or U.vehicles.city), c.x, c.y, c.z, tonumber(pos.w) or 0.0, true, true)
+                local deadline = GetGameTimer() + 2000
+                while not DoesEntityExist(veh) and GetGameTimer() < deadline do Wait(0) end
+                if DoesEntityExist(veh) then
+                    local u = { veh = veh, peds = {}, born = now }
+                    for seat = -1, 0 do
+                        local p = CreatePedInsideVehicle(veh, 6, GetHashKey(county and U.peds.county or U.peds.city), seat, true, true)
+                        if p and p ~= 0 then
+                            GiveWeaponToPed(p, GetHashKey(U.weapons[math.min(3, math.max(1, tonumber(stars) or 1))]), 120, false, true)
+                            SetPedArmour(p, U.armour)
+                            u.peds[#u.peds + 1] = p
+                        end
+                    end
+                    mine[#mine + 1] = u
+                    local nets = {}
+                    for _, p in ipairs(u.peds) do nets[#nets + 1] = NetworkGetNetworkIdFromEntity(p) end
+                    out[#out + 1] = { veh = NetworkGetNetworkIdFromEntity(veh), peds = nets }
+                    want = want - 1
+                end
+            end
+        end
+    end
+    return out
+end
+
+lib.callback.register('gs_wanted:npcUnits', function(src, stars, positions)
+    if not Security:RateLimit(src, 'gs_wanted:npcUnits', 2, 15000) then return {} end
+    return Wanted.spawnUnits(src, stars, positions)
+end)
+
+RegisterNetEvent('gs_wanted:server:npcClear', function()
+    local src = source
+    if not Security:RateLimit(src, 'gs_wanted:npcClear', 3, 10000) then return end
+    SetTimeout(15000, function() Wanted.clearUnits(src) end) -- le temps qu'ils repartent
+end)
+
+-- Ménage : patrouilles trop vieilles ou joueur parti
+CreateThread(function()
+    while true do
+        Wait(30000)
+        local now = os.time()
+        for src, list in pairs(Wanted.units) do
+            if not GetPlayerName(src) then Wanted.clearUnits(src)
+            else
+                for i = #list, 1, -1 do
+                    if now - list[i].born > Config.NpcPolice.units.lifetime then
+                        for _, p in ipairs(list[i].peds) do if DoesEntityExist(p) then DeleteEntity(p) end end
+                        if DoesEntityExist(list[i].veh) then DeleteEntity(list[i].veh) end
+                        table.remove(list, i)
+                    end
+                end
+            end
+        end
+    end
+end)
+AddEventHandler('playerDropped', function() Wanted.clearUnits(source) end)
+
 -- Détections envoyées par le client (le client ne choisit que le type, le serveur vérifie) ------
 
 local UNARMED = GetHashKey('WEAPON_UNARMED')

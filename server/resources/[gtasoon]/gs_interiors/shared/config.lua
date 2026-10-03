@@ -18,6 +18,6 @@ Config.Doors = {
       outside = vec4(-2.1, -1815.7, 29.15, 50.0), inside = vec4(1088.7, -3187.5, -38.99, 180.0) },
     { id = 'lab_vagos', label = 'Labo (Vagos)', access = { gang = 'vagos' }, lab = 'coke',
       outside = vec4(342.9, -2045.1, 21.6, 230.0), inside = vec4(997.0, -3200.7, -36.39, 270.0) },
-    { id = 'lab_marabunta', label = 'Atelier clandestin (Marabunta)', access = { gang = 'marabunta' }, lab = 'weed',
-      outside = vec4(1441.6, -1487.4, 63.6, 340.0), inside = vec4(1138.1, -3198.2, -39.67, 0.0) },
+    { id = 'lab_madrazo', label = 'Entrepôt du cartel (Madrazo)', access = { gang = 'madrazo' }, lab = 'weed',
+      outside = vec4(1399.5, 1137.6, 114.33, 90.0), inside = vec4(1138.1, -3198.2, -39.67, 0.0) },
 }

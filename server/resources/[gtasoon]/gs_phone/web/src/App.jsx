@@ -12,6 +12,10 @@ const APPS = [
   { id: 'bills', label: 'Factures', icon: '🧾', color: '#ff8a3d' },
   { id: 'job', label: 'Emploi', icon: '💼', color: '#5ab0ff' },
   { id: 'gigs', label: 'Boulots', icon: '🛵', color: '#39ff9a' },
+  { id: 'carnet', label: 'Carnet', icon: '🗺️', color: '#ffb347', external: true },
+  { id: 'journal', label: 'Weazel', icon: '📰', color: '#e63946', external: true },
+  { id: 'orders', label: 'Commandes', icon: '🔧', color: '#8ecae6', external: true },
+  { id: 'unknown', label: 'Inconnu', icon: '🕶️', color: '#4a4458', external: true },
   { id: 'emergency', label: 'Urgences', icon: '🚨', color: '#ff4d6d' },
   { id: 'settings', label: 'Réglages', icon: '⚙️', color: '#9b8bb8' },
 ]
@@ -83,7 +87,7 @@ export default function App() {
   if (!visible || !data) return null
 
   const openApp = async (id) => {
-    if (id === 'jobs') return nui('openApp', { app: id })
+    if (id === 'jobs' || APPS.find((a) => a.id === id)?.external) return nui('openApp', { app: id })
     if (id === 'bills') setBills(await nui('bills'))
     setForm({})
     setScreen(id)
