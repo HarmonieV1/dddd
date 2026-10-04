@@ -37,3 +37,9 @@ Config.Trends = {
 -- Sans ces convars, l'appareil photo est simplement masqué. Nécessite la ressource screenshot-basic.
 -- gs_photo_auth : en-tête Authorization (clé d'API), gs_photo_url_field : champ de la réponse JSON contenant l'adresse (défaut url).
 Config.Photos = { storyHours = 24, storyCooldown = 120, goldenHours = { 18, 20 }, goldenXp = 100, maxBytes = 1500000, uploadCooldown = 20 }
+
+-- V10.1 · Direct Weazel : une grosse poursuite (chaleur ≥ minHeat) passe en direct. Bandeau pour toute la ville,
+-- hélicoptère de la chaîne au-dessus du suspect (local à chaque joueur proche : aucun coût réseau), journalistes en
+-- service sur place payés à la minute, brève de fin (interpellé, semé, disparu) et Radio Los Santos.
+Config.Live = { minHeat = 45, cooldown = 1200, maxMinutes = 12, range = 500.0, pressRange = 200.0, pressPerMinute = 150,
+    pressMax = 1500, heli = 'frogger', pilot = 's_m_m_pilot_01', altitude = 60.0 }
