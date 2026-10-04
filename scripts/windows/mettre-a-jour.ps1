@@ -57,6 +57,12 @@ Say "  Sauvegarde : $zip" 'Green'
 
 # 3. Nouvelle version
 Say "[3/4] Installation de la nouvelle version" 'Cyan'
+# Version : l'ancienne (server.cfg en place) et celle du zip, pour être sûr d'avoir lancé le bon dossier
+$verOf = { param($f) if (Test-Path -LiteralPath $f) { $m = [regex]::Match((Get-Content -LiteralPath $f -Raw), 'setr gs_version "([^"]+)"'); if ($m.Success) { $m.Groups[1].Value } else { 'avant V8.1' } } else { 'aucune' } }
+$oldVer = & $verOf (Join-Path $Data 'server.cfg')
+$newVer = & $verOf (Join-Path $Repo 'server\server.cfg.example')
+Say "  Version installée : $oldVer  →  nouvelle : $newVer" 'Green'
+if ($oldVer -eq $newVer) { Say "  (même version : si tu attendais du nouveau, vérifie que tu as extrait le DERNIER zip)" 'Yellow' }
 if (Test-Path -LiteralPath $Ours) { [IO.Directory]::Delete($Ours, $true) } # retire aussi les fichiers supprimés
 Copy-Item -LiteralPath (Join-Path $Repo 'server\resources\[gtasoon]') -Destination $Res -Recurse -Force
 # [addons] (tes véhicules / mods) : copié seulement s'il n'existe pas encore, jamais écrasé

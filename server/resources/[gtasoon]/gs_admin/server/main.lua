@@ -685,3 +685,6 @@ end)
 
 exports('GetStaffLevel', Admin.level)
 exports('IsJailed', function(src) return Admin.jailed[src] ~= nil end)
+
+-- Version RoadLine affichée au démarrage (console) : savoir d'un coup d'œil quelle version tourne
+CreateThread(function() print(('^5[RoadLine RP]^7 version %s'):format(GetConvar('gs_version', 'inconnue'))) end)

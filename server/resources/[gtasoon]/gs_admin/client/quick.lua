@@ -741,7 +741,7 @@ local function mainMenu()
         add(3, { title = 'Événements', icon = 'champagne-glasses', arrow = true, description = 'Événements en un clic, bonus serveur, effets', onSelect = eventsMenu })
     end
     add(1, { title = 'Panel complet (F10)', icon = 'table-columns', onSelect = function() ExecuteCommand('admin') end })
-    show('gs_staff_quick', ('Staff · %s'):format(info.levelName or ''), options)
+    show('gs_staff_quick', ('Staff · %s · RoadLine %s'):format(info.levelName or '', GetConvar('gs_version', '?')), options)
 end
 
 -- Déplacer un point (toutes ressources) : les 25 points les plus proches (200 m), du plus proche au plus loin.
