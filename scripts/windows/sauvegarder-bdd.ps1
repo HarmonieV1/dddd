@@ -49,7 +49,7 @@ if ($Auto) { exit 0 }
 # Programmation (tâche Windows toutes les 6 h à partir de 5 h, pour ton compte)
 $task = 'RoadLine - sauvegarde BDD'
 $exists = $false
-try { schtasks /Query /TN $task 2>$null | Out-Null; $exists = ($LASTEXITCODE -eq 0) } catch { }
+cmd /c "schtasks /Query /TN `"$task`" >nul 2>&1"; $exists = ($LASTEXITCODE -eq 0)
 if ($exists) {
     Say "La sauvegarde automatique est déjà programmée (toutes les 6 h : 5 h, 11 h, 17 h, 23 h)." 'Green'
 } else {
@@ -62,9 +62,9 @@ if ($exists) {
         Copy-Item -LiteralPath $PSCommandPath -Destination $stable -Force
         $cmd = "powershell -NoProfile -ExecutionPolicy Bypass -File `"$stable`" -Auto"
         Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'restaurer-bdd.ps1') -Destination (Join-Path $tools 'restaurer-bdd.ps1') -Force -ErrorAction SilentlyContinue
-        schtasks /Create /TN $task /SC HOURLY /MO 6 /ST 05:00 /TR $cmd /F | Out-Null
+        try { schtasks /Create /TN $task /SC HOURLY /MO 6 /ST 05:00 /TR $cmd /F 2>&1 | Out-Null } catch { }
         if ($LASTEXITCODE -eq 0) {
-            try { schtasks /Delete /TN 'GTA SOON - sauvegarde BDD' /F 2>$null | Out-Null } catch { } # ancienne tâche (1 fois par nuit) remplacée
+            cmd /c "schtasks /Delete /TN `"GTA SOON - sauvegarde BDD`" /F >nul 2>&1" # ancienne tâche (1 fois par nuit) remplacée
             Say 'Programmé : toutes les 6 h (le PC doit être allumé).' 'Green'
         }
         else { Say 'Programmation refusée par Windows : relance ce fichier en clic droit → Exécuter en tant qu''administrateur.' 'Yellow' }

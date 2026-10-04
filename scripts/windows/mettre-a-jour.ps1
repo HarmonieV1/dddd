@@ -73,12 +73,12 @@ if (Test-Path -LiteralPath $dbTool) {
     # schtasks écrit sur stderr quand la tâche n'existe pas : avec « Stop », PowerShell 5.1 arrêterait toute la mise à jour
     $ErrorActionPreference = 'Continue'
     $task = 'RoadLine - sauvegarde BDD'
-    schtasks /Query /TN $task 2>$null | Out-Null
+    cmd /c "schtasks /Query /TN `"$task`" >nul 2>&1"
     if ($LASTEXITCODE -ne 0) {
         $cmd = "powershell -NoProfile -ExecutionPolicy Bypass -File `"$tools\sauvegarder-bdd.ps1`" -Auto"
-        schtasks /Create /TN $task /SC HOURLY /MO 6 /ST 05:00 /TR $cmd /F 2>$null | Out-Null
+        try { schtasks /Create /TN $task /SC HOURLY /MO 6 /ST 05:00 /TR $cmd /F 2>&1 | Out-Null } catch { }
         if ($LASTEXITCODE -eq 0) {
-            schtasks /Delete /TN 'GTA SOON - sauvegarde BDD' /F 2>$null | Out-Null
+            cmd /c "schtasks /Delete /TN `"GTA SOON - sauvegarde BDD`" /F >nul 2>&1"
             Say '  Sauvegardes automatiques programmées : toutes les 6 h (5 h, 11 h, 17 h, 23 h).' 'Green'
         } else { Say '  Programmation refusée par Windows : lance une fois SAUVEGARDER-BDD.bat (clic droit → administrateur).' 'Yellow' }
     }
