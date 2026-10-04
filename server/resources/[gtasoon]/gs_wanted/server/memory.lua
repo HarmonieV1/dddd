@@ -145,6 +145,7 @@ CreateThread(function()
     while true do Wait(300000) Memory.forget() end
 end)
 exports('ColorName', Memory.colorName)
+exports('VehicleType', function(veh) return Config.VehicleTypes[GetVehicleType(veh)] or 'Véhicule' end) -- V10.1 : caméras
 -- Description complète d'un joueur (photo, avis de recherche) : jamais le nom
 exports('Describe', function(src)
     local ped = GetPlayerPed(src)

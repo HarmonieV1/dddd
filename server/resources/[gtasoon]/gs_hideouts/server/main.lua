@@ -50,6 +50,9 @@ lib.callback.register('gs_hideouts:enter', function(src, siteId)
     if not r or r.site ~= siteId then return false, 'Ce n\'est pas ta chambre.' end
     if r.expires <= os.time() then return false, 'Location terminée : reloue à la réception (ton coffre t\'attend).' end
     Hideouts.inside[src] = siteId
+    local cid = Bridge:GetIdentifier(src)
+    TriggerEvent('gs_justice:server:visit', 'hideout:' .. cid, ('Chambre au %s'):format(site.label), vec3(e.x, e.y, e.z),
+        { id = 'gs_hideout', owner = cid }, { cid = cid }) -- V10.1 : les voisins remarquent les allées et venues
     SetPlayerRoutingBucket(src, bucketOf(src))
     local i = Config.Interior
     SetEntityCoords(GetPlayerPed(src), i.x, i.y, i.z, false, false, false, false)

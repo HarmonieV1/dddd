@@ -266,3 +266,17 @@ end)
 exports('Touch', Evidence.touch)
 exports('File', function(src) return Evidence.file(Bridge:GetIdentifier(src), Bridge:GetName(src)) end)
 exports('IsFiled', function(cid) return Store.filed(cid) ~= nil end)
+
+-- V10.1 · Preuves recevables : texte d'une pièce pour le tribunal (scellé analysé ou photo développée)
+exports('CourtPiece', function(kind, ref)
+    if kind == 'seal' then
+        local s = Evidence.seals[tonumber(ref) or -1]
+        if s and s.status == 'analyzing' and now() >= (s.readyAt or 0) then s.status, s.result = 'done', Evidence.analyze(s) end
+        if not s or s.status ~= 'done' then return nil end
+        return ('Scellé n°%d · %s (%s) : %s'):format(s.id, Config.Kinds[s.kind].label, s.date, s.result)
+    elseif kind == 'photo' then
+        local r = Photo and Photo.get(ref)
+        if not r then return nil end
+        return ('%s · %s'):format(r.label or 'Photo', r.text or '')
+    end
+end)

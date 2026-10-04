@@ -152,7 +152,7 @@ function createBot(env) {
   return bot;
 }
 
-module.exports = { encodeFrame, decodeFrames, createBot, wsConnect, COMMANDS };
+if (typeof module !== 'undefined' && module.exports) module.exports = { encodeFrame, decodeFrames, createBot, wsConnect, COMMANDS }; // tests Node seulement (absent dans FiveM)
 
 // --- Branchement FiveM -----------------------------------------------------------------------------------------
 if (typeof GetConvar === 'function') {

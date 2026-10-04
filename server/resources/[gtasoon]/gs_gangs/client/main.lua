@@ -33,7 +33,7 @@ CreateThread(function() drawTerritories(GlobalState.gsTerritories) end)
 local qgBlip
 
 AddEventHandler('gs_gangs:client:openStash', function()
-    if membership then Bridge:OpenStash('gs_gang_' .. membership.gang) end
+    if membership then TriggerServerEvent('gs_gangs:server:stashVisit') Bridge:OpenStash('gs_gang_' .. membership.gang) end
 end)
 
 RegisterNetEvent('gs_gangs:client:membership', function(m)
@@ -56,7 +56,7 @@ RegisterNetEvent('gs_gangs:client:membership', function(m)
             coords = m.stash, radius = 1.5,
             options = { {
                 name = 'gs_gang_stash', icon = 'fa-solid fa-box', label = 'Planque ' .. m.label,
-                onSelect = function() Bridge:OpenStash('gs_gang_' .. m.gang) end,
+                onSelect = function() TriggerServerEvent('gs_gangs:server:stashVisit') Bridge:OpenStash('gs_gang_' .. m.gang) end,
             } },
         })
     end

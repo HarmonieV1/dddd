@@ -6,7 +6,7 @@ local Bridge   = exports.gs_bridge
 FightClub = { match = nil, near = {}, lastRumor = 0 }
 -- match = { a, b, stake, phase = 'waiting'|'betting'|'fight', at, bets = { [src] = { side, amount } } }
 
-local UNARMED = joaat('WEAPON_UNARMED')
+local UNARMED = GetHashKey('WEAPON_UNARMED')
 local function now() return os.time() end
 local function notify(src, msg, t) Bridge:Notify(src, msg, t or 'inform') end
 

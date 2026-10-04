@@ -446,3 +446,13 @@ function Gangs.addInfluence(gang, id, n)
     return true
 end
 exports('AddInfluence', Gangs.addInfluence)
+
+-- V10.1 · Mandat de perquisition : chaque ouverture de la planque compte (membre du gang, sur place)
+RegisterNetEvent('gs_gangs:server:stashVisit', function()
+    local src = source
+    if not Security:RateLimit(src, 'gs_gangs:stashVisit', 2, 30000) then return end
+    local m = Gangs.online[src]
+    local g = m and m.gang and Gangs.list[m.gang]
+    if not g or not g.stash or not Security:InRange(src, g.stash, 6.0) then return end
+    TriggerEvent('gs_justice:server:visit', 'gang:' .. g.name, 'Planque des ' .. g.label, g.stash, stashId(g.name), { gang = g.name })
+end)

@@ -51,9 +51,11 @@ function Justice.verdict(src, id, kind, fine, jail)
     if jail > 0 and (not t or not inCourt(t)) then return false, 'Pour une peine de prison, le condamné doit être présent au tribunal.' end
     if fine > 0 then JobsApi:CreateBill(case.defendant, Config.JudgeJob, fine, ('Amende du tribunal (affaire #%d)'):format(case.id), Bridge:GetIdentifier(src), name(src)) end
     if jail > 0 then PoliceApi:Jail(t, jail, ('Tribunal, affaire #%d : %s'):format(case.id, case.charge)) end
-    PoliceApi:AddRecord(case.defendant, ('Condamnation : %s'):format(case.charge), fine, jail, 'Tribunal · ' .. name(src))
+    local retained = Pieces and Pieces.retained(case.id) or 0 -- V10.1 : preuves recevables
+    local proof = retained > 0 and (' (%d pièce(s) retenue(s))'):format(retained) or ''
+    PoliceApi:AddRecord(case.defendant, ('Condamnation : %s%s'):format(case.charge, proof), fine, jail, 'Tribunal · ' .. name(src))
     PoliceApi:CloseWarrants(case.defendant)
-    local text = ('Coupable : %s%s%s'):format(fine > 0 and (fine .. ' $') or '', fine > 0 and jail > 0 and ' + ' or '', jail > 0 and (jail .. ' min de prison') or '')
+    local text = ('Coupable : %s%s%s%s'):format(fine > 0 and (fine .. ' $') or '', fine > 0 and jail > 0 and ' + ' or '', jail > 0 and (jail .. ' min de prison') or '', proof)
     Store.close(case.id, 'guilty', text)
     if t then Bridge:Notify(t, 'Verdict : ' .. text, 'error') end
     Security:LogStaff(('[Tribunal] affaire #%d : %s (%s)'):format(case.id, text, case.defendant_name), 'jobs')
