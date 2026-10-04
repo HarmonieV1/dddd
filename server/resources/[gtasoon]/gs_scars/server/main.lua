@@ -80,6 +80,7 @@ function Scars.repair(src, id)
     local pay = math.random(Config.Glass.pay[1], Config.Glass.pay[2])
     Bridge:AddMoney(src, 'bank', pay)
     if GetResourceState('gs_reputation') == 'started' then pcall(function() exports.gs_reputation:Add(src, 'legal', 2) end) end
+    TriggerEvent('gs_scars:server:repaired', vec3(s.x, s.y, s.z)) -- V10 : le quartier évolue
     return true, ('Vitrine réparée : +%d $ (mairie)'):format(pay)
 end
 

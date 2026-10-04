@@ -18,3 +18,16 @@ exports('NearbyPoints', function(from, radius)
     table.sort(out, function(a, b) return a.dist < b.dist end)
     return out
 end)
+
+--- V10 : position actuelle d'un point (clé exacte, ou premier point dont la clé commence par `prefix`), déplacements
+--- du staff compris. Sert au GPS de « Que faire ? ». [API]
+exports('FindPoint', function(prefix)
+    local best, bestKey
+    for _, list in pairs(registry) do
+        for _, p in ipairs(list) do
+            if p.key == prefix then return p.coords end
+            if p.key:sub(1, #prefix) == prefix and (not bestKey or p.key < bestKey) then best, bestKey = p.coords, p.key end
+        end
+    end
+    return best
+end)

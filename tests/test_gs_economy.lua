@@ -6,7 +6,7 @@ loadResource('gs_security', { R .. 'gs_security/server/main.lua' })
 loadResource('gs_economy', { R .. 'gs_economy/shared/config.lua', R .. 'gs_economy/shared/pricing.lua' })
 local saved
 Store = { load = function() return { water = 0.5, inconnu = 3 } end, save = function(m) saved = m end }
-loadResource('gs_economy', { R .. 'gs_economy/server/main.lua' })
+loadResource('gs_economy', { R .. 'gs_economy/server/regulars.lua', R .. 'gs_economy/server/main.lua' })
 Config.Items.introuvable = { label = 'X', base = 1, min = 1, max = 1, volume = 1 }
 table.insert(Config.Shops[1].items, 'introuvable')
 Market.init()

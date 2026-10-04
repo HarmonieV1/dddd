@@ -83,10 +83,15 @@ lib.callback.register('gs_economy:quote', function(src, kind, index)
     if not Security:RateLimit(src, 'gs_economy:quote', 10, 10000) then return nil end
     local place = (kind == 'sell' and Config.Resellers or Config.Shops)[index]
     if not place or not near(src, place) then return nil end
+    if kind ~= 'sell' then -- V10 : le vendeur se souvient d'un braqueur à visage découvert
+        local refused = Regulars.banned(src, index)
+        if refused then return { refused = refused } end
+    end
     local list = Market.quote(place.items, kind == 'sell')
-    local d = kind ~= 'sell' and discount(src) or 0
+    local d = kind ~= 'sell' and Regulars.discount(src, index, discount(src)) or 0
     if d > 0 then for _, q in ipairs(list) do q.price = discounted(q.price, d) end end
-    if kind ~= 'sell' and GetResourceState('gs_reputation') == 'started' and exports.gs_reputation:ShouldGreet(src) then
+    local regular = kind ~= 'sell' and Regulars.isRegular(src, index)
+    if kind ~= 'sell' and (regular or (GetResourceState('gs_reputation') == 'started' and exports.gs_reputation:ShouldGreet(src))) then
         list.greet = (Bridge:GetCharInfo(src) or {}).firstname -- le vendeur te reconnaît
         list.discount = d
     end
@@ -100,9 +105,11 @@ lib.callback.register('gs_economy:buy', function(src, index, item, qty)
     if not shop or not listHas(shop.items, item) or not validQty(qty) then return false, 'Achat invalide.' end
     if Config.Items[item].buy == false then return false, 'Achat invalide.' end
     if not near(src, shop) then return false, 'Tu es trop loin.' end
+    local refused = Regulars.banned(src, index)
+    if refused then return false, refused end
     if not Bridge:CanCarry(src, item, qty) then return false, 'Tu ne peux pas porter ça.' end
 
-    local total = discounted(Market.buyPrice(item), discount(src)) * qty
+    local total = discounted(Market.buyPrice(item), Regulars.discount(src, index, discount(src))) * qty
     local paid = Bridge:RemoveMoney(src, 'cash', total, 'achat ' .. item) and 'cash'
         or (Bridge:RemoveMoney(src, 'bank', total, 'achat ' .. item) and 'bank')
     if not paid then return false, ('Il te faut %d $.'):format(total) end
@@ -111,6 +118,8 @@ lib.callback.register('gs_economy:buy', function(src, index, item, qty)
         return false, 'Erreur inventaire, remboursé.'
     end
     Market.push(item, qty)
+    local n = Regulars.visit(src, index)
+    if n == Config.Regulars.visits then Bridge:Notify(src, ('Le vendeur te connaît maintenant : remise d\'habitué de %d %%.'):format(math.floor(Config.Regulars.discount * 100)), 'success') end
     if GetResourceState('gs_quests') == 'started' then exports.gs_quests:Track(src, 'shop_buy') end
     return true, ('%d × %s pour %d $.'):format(qty, Config.Items[item].label, total)
 end)

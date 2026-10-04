@@ -75,6 +75,12 @@ end)
 exports('ReportFactor', function(coords) return levelAt(coords).report or 1.0 end)
 exports('NpcBonus', function(coords) return levelAt(coords).npcStars or 0 end)
 exports('AddHeat', City.add)
+--- V10 : quartiers « chauds » (libellés), pour « Que faire ? »
+exports('HotDistricts', function()
+    local out = {}
+    for _, d in ipairs(Config.Districts) do if City.level(City.heat[d.id]) >= 3 then out[#out + 1] = d.label end end
+    return out
+end)
 
 -- Crimes signalés (gs_wanted) : coords du crime si fournies, sinon position du suspect.
 AddEventHandler('gs_wanted:server:reported', function(src, _, heat, coords)
@@ -93,7 +99,9 @@ lib.callback.register('gs_city:status', function(src)
     for _, d in ipairs(Config.Districts) do
         local h = City.heat[d.id] or 0
         local lvl = City.level(h)
-        out[#out + 1] = { label = d.label, level = lvl, name = Config.Levels[lvl].label, pct = math.floor(h * 100 / Config.MaxHeat) }
+        local st = Standing and Standing.level(Standing.value[d.id]) or 3
+        out[#out + 1] = { label = d.label, level = lvl, name = Config.Levels[lvl].label, pct = math.floor(h * 100 / Config.MaxHeat),
+            standing = Config.Standing.levels[st].label, standingLevel = st } -- V10 : le quartier évolue
     end
     table.sort(out, function(a, b) return a.pct > b.pct or (a.pct == b.pct and a.label < b.label) end)
     return out

@@ -68,6 +68,6 @@ RegisterNetEvent('gs_social:server:upload', function(token, dataUri)
             if ok and type(data) == 'table' then link = data[field] or (type(data.data) == 'table' and data.data[field]) end
         end
         link = link and Security:ValidImageUrl(link)
-        TriggerClientEvent('gs_social:client:uploaded', src, token, link, link and nil or 'L\'hébergeur a refusé la photo.')
+        TriggerClientEvent('gs_social:client:uploaded', src, token, link, (not link) and 'L\'hébergeur a refusé la photo.' or nil)
     end, 'POST', body, headers)
 end)

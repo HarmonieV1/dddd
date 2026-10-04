@@ -223,6 +223,7 @@ lib.callback.register('gs_fightclub:bet', function(src, side, amount)
 end)
 
 AddEventHandler('playerDropped', function() FightClub.near[source] = nil end)
+exports('IsOpen', function() return FightClub.isOpen() end) -- V10 : « Que faire ? » (jamais l'adresse)
 
 CreateThread(function()
     while true do

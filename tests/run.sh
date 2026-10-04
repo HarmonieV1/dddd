@@ -23,6 +23,9 @@ if bad:
     print('ERREUR : correctif Qbox avec apostrophe doublée :', bad); sys.exit(1)
 print('Correctifs Qbox OK')
 PYEOF
+# Piège Lua : « cond and nil or x » renvoie toujours x (bug trouvé 3 fois à l'audit V10)
+if grep -rn --include=*.lua "and nil or" server/resources/\[gtasoon\] ; then echo "ERREUR : « and nil or » ne marche pas en Lua (utiliser un if)"; exit 1; fi
+echo "Pièges Lua OK"
 for t in tests/test_*.lua; do
     echo "== $t"
     lua5.4 "$t"

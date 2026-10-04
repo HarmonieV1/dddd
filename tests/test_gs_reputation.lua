@@ -43,7 +43,7 @@ check('menu : jauges + effets', r and r.legal.tier == 'Légende' and r.discount 
 provide('gs_reputation', { GetDiscount = function() return 0.10 end, ShouldGreet = function() return true end, GetStreetBonus = function() return 0 end })
 loadResource('gs_economy', { R .. 'gs_economy/shared/config.lua', R .. 'gs_economy/shared/pricing.lua' })
 Store = { init = function() end, load = function() return {} end, save = function() end }
-loadResource('gs_economy', { R .. 'gs_economy/server/main.lua' })
+loadResource('gs_economy', { R .. 'gs_economy/server/regulars.lua', R .. 'gs_economy/server/main.lua' })
 local shop = Config.Shops[1]
 join(2, 'CID2', 'Client Fidèle', shop.coords)
 W.players[2].money.cash = 1000

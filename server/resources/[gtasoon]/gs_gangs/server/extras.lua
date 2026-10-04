@@ -94,6 +94,7 @@ lib.callback.register('gs_gangs:tag', function(src, coords, heading)
     publishTags()
     local zone = Gangs.territoryAt(c)
     if zone then Gangs.addInfluence(m.gang, zone, Config.Tags.influence) end
+    TriggerEvent('gs_gangs:server:tagged', m.gang, c, true) -- V10 : le quartier se dégrade
     return true, 'Tag posé.'
 end)
 
@@ -103,6 +104,7 @@ lib.callback.register('gs_gangs:eraseTag', function(src, id)
     if not t then return false, 'Tag introuvable.' end
     if not Security:InRange(src, vec3(t.x, t.y, t.z), Config.Tags.range + 1.0) then return false, 'Trop loin.' end
     Extras.tags[t.id] = nil
+    TriggerEvent('gs_gangs:server:tagged', t.gang, vec3(t.x, t.y, t.z), false) -- V10 : tag effacé, le quartier respire
     TagsStore.delete(t.id)
     publishTags()
     local m = member(src)

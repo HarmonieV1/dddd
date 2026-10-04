@@ -71,7 +71,7 @@ AddEventHandler('gs_drugs:client:plant', function(id)
           icon = 'droplet', readOnly = true, description = info.water == 0 and not ready and ('Sans eau, il dépérit (santé %d %%).'):format(info.health) or nil },
     }
     if ready then
-        options[#options + 1] = { title = 'Récolter', icon = 'hand', description = info.mine and nil or 'Ce n\'est pas ton plant… ça se remarque.',
+        options[#options + 1] = { title = 'Récolter', icon = 'hand', description = (not info.mine) and 'Ce n\'est pas ton plant… ça se remarque.' or nil,
             onSelect = function() doAction(id, 'harvest', 'Récolte…', 'WORLD_HUMAN_GARDENER_PLANT', 6000) end }
     else
         options[#options + 1] = { title = 'Arroser (bouteille d\'eau)', icon = 'droplet',

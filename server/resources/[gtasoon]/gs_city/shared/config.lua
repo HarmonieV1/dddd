@@ -34,3 +34,32 @@ Config.News = {
     [3] = '%s sous tension : braquages et coups de feu, les habitants restent chez eux. Renforts de police attendus.',
     calm = 'Retour au calme à %s après plusieurs heures de tension.',
 }
+
+-- V10 · Le quartier évolue : standing de -100 (à l'abandon) à +100 (huppé). Les commerces qui vendent, les vitrines
+-- réparées et les déchets ramassés le font monter ; crimes, tags, trafics et racket le font baisser. Il revient
+-- doucement vers 0. Effets : déchets dans la rue (à ramasser, payé par la mairie), recette des commerces, brèves Weazel.
+Config.Standing = {
+    revenue = 0.02,      -- +1 point par 50 $ de vraies ventes dans le quartier
+    crime = 0.15,        -- -0.15 point par point de « heat » d'un crime (braquage 30 → -4.5)
+    tag = 3, untag = 2,  -- tag posé / effacé
+    gang = 1.5,          -- livraison au receleur, atelier de munitions…
+    repair = 2,          -- vitrine réparée
+    clean = 0.5,         -- un tas de déchets ramassé
+    drift = 1,           -- points par heure vers 0
+    max = 100,
+    levels = {           -- du plus bas au plus haut
+        { max = -50, label = 'à l\'abandon', trash = 6, sales = 0.85 },
+        { max = -15, label = 'en déclin', trash = 3, sales = 0.95 },
+        { max = 15, label = 'ordinaire', trash = 0, sales = 1.0 },
+        { max = 50, label = 'en plein essor', trash = 0, sales = 1.05 },
+        { max = 101, label = 'huppé', trash = 0, sales = 1.10 },
+    },
+    news = {
+        [1] = '%s à l\'abandon : déchets, tags et vitrines brisées, les commerçants ferment boutique.',
+        [2] = '%s en déclin : les riverains se plaignent de la saleté et des trafics.',
+        [4] = '%s en plein essor : les commerces tournent, le quartier attire du monde.',
+        [5] = '%s devient le quartier chic de Los Santos.',
+    },
+    cleanPay = { 25, 45 }, cleanPerHour = 30,
+    trashProps = { 'prop_rub_binbag_01', 'prop_rub_binbag_03', 'prop_rub_litter_03', 'prop_rub_cardpile_04', 'prop_rub_tyre_01', 'prop_bin_05a' },
+}

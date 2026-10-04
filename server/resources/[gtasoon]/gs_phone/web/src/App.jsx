@@ -1,9 +1,12 @@
-import { useEffect, useRef, useState } from 'react'
+import { lazy, Suspense, useEffect, useRef, useState } from 'react'
 import { nui, isBrowser, DEMO } from './nui.js'
-import Vibe from './Vibe.jsx'
-import Gigs from './Gigs.jsx'
+import { QueFaire, Plans, City, Notes } from './Apps.jsx'
+// Vibe et Boulots chargés seulement à l'ouverture (téléphone plus léger à l'ouverture)
+const Vibe = lazy(() => import('./Vibe.jsx'))
+const Gigs = lazy(() => import('./Gigs.jsx'))
 
 const APPS = [
+  { id: 'guide', label: 'Que faire', icon: '🧭', color: '#b048ff' },
   { id: 'messages', label: 'Messages', icon: '💬', color: '#28e0ff' },
   { id: 'contacts', label: 'Contacts', icon: '👥', color: '#9b6bff' },
   { id: 'dialer', label: 'Appel', icon: '📞', color: '#39ff9a' },
@@ -16,10 +19,16 @@ const APPS = [
   { id: 'journal', label: 'Weazel', icon: '📰', color: '#e63946', external: true },
   { id: 'orders', label: 'Commandes', icon: '🔧', color: '#8ecae6', external: true },
   { id: 'unknown', label: 'Inconnu', icon: '🕶️', color: '#4a4458', external: true },
+  { id: 'plans', label: 'Plans', icon: '📍', color: '#39ff9a' },
+  { id: 'city', label: 'Ville', icon: '🌆', color: '#ff8a3d' },
+  { id: 'notes', label: 'Notes', icon: '📝', color: '#ffd23f' },
   { id: 'emergency', label: 'Urgences', icon: '🚨', color: '#ff4d6d' },
   { id: 'settings', label: 'Réglages', icon: '⚙️', color: '#9b8bb8' },
 ]
 
+const WALLPAPERS = ['Sunset', 'Néon', 'Océan', 'Nuit', 'Désert', 'Violet']
+const KIND = { in: '↙️ Reçu', out: '↗️ Émis', missed: '📵 Manqué' }
+const LOC = /📍 Position : .*\((-?\d+), (-?\d+)\)/
 const fmtMoney = (n) => `${Number(n || 0).toLocaleString('fr-FR')} $`
 function timeAgo(t) {
   const s = Math.max(0, Math.floor(Date.now() / 1000 - t))
@@ -76,12 +85,22 @@ export default function App() {
       }
       else if (msg.action === 'incoming') setCall({ id: msg.call.id, number: msg.call.number, state: 'incoming' })
       else if (msg.action === 'callStarted') setCall((c) => c && { ...c, state: 'active' })
-      else if (msg.action === 'callEnded') { setCall(null); if (msg.reason) say(msg.reason, false) }
+      else if (msg.action === 'callEnded') { setCall(null); if (msg.recents) setData((d) => d && { ...d, recents: msg.recents }); if (msg.reason) say(msg.reason, false) }
+      else if (msg.action === 'notifs') setData((d) => d && { ...d, notifs: msg.notifs })
     }
     const onKey = (e) => { if (e.key === 'Escape') nui('close') }
+    // Mode marche : quand on écrit, le perso ne doit pas bouger
+    const isField = (t) => t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA')
+    const onFocus = (e) => { if (isField(e.target)) nui('typing', { on: true }) }
+    const onBlur = (e) => { if (isField(e.target)) nui('typing', { on: false }) }
     window.addEventListener('message', onMessage)
     window.addEventListener('keydown', onKey)
-    return () => { window.removeEventListener('message', onMessage); window.removeEventListener('keydown', onKey) }
+    document.addEventListener('focusin', onFocus)
+    document.addEventListener('focusout', onBlur)
+    return () => {
+      window.removeEventListener('message', onMessage); window.removeEventListener('keydown', onKey)
+      document.removeEventListener('focusin', onFocus); document.removeEventListener('focusout', onBlur)
+    }
   }, [])
 
   if (!visible || !data) return null
@@ -109,6 +128,15 @@ export default function App() {
     setDraft('')
     setData({ ...data, conversations: [{ peer, last: res.message.content, time: res.message.time, mine: true, unread: 0 },
       ...data.conversations.filter((c) => c.peer !== peer)] })
+  }
+
+  // Envoi d'un SMS depuis une autre appli (partage de position)
+  const sendTo = async (number, text) => {
+    const res = await nui('send', { peer: number, text })
+    if (!res.ok) { say(res.message, false); return false }
+    setData((d) => ({ ...d, conversations: [{ peer: number, last: text, time: res.message.time, mine: true, unread: 0 },
+      ...d.conversations.filter((c) => c.peer !== number)] }))
+    return true
   }
 
   const startCall = async (number) => {
@@ -146,6 +174,14 @@ export default function App() {
       <div className="home">
         <div className="home-clock">{data.clock}</div>
         <div className="home-sub">Los Santos · {data.number}</div>
+        {data.notifs?.length > 0 && (
+          <div className="notifs">
+            {data.notifs.slice(0, 3).map((n, i) => (
+              <div key={i} className="notif"><span>{n.icon}</span><div><b>{n.title}</b><small>{n.text}</small></div><small className="muted">{timeAgo(n.time)}</small></div>
+            ))}
+            <button className="link small" onClick={() => { nui('clearNotifs'); setData({ ...data, notifs: [] }) }}>Tout effacer</button>
+          </div>
+        )}
         <div className="grid">
           {APPS.map((a) => (
             <button key={a.id} className="app" onClick={() => openApp(a.id)}>
@@ -158,9 +194,17 @@ export default function App() {
       </div>
     )
   } else if (screen === 'gigs') {
-    content = <Gigs onBack={home} say={say} />
+    content = <Suspense fallback={<div className="empty">…</div>}><Gigs onBack={home} say={say} /></Suspense>
   } else if (screen === 'vibe') {
-    content = <Vibe onBack={home} />
+    content = <Suspense fallback={<div className="empty">…</div>}><Vibe onBack={home} /></Suspense>
+  } else if (screen === 'guide') {
+    content = <QueFaire onBack={home} say={say} />
+  } else if (screen === 'plans') {
+    content = <Plans onBack={home} say={say} contacts={data.contacts} sendTo={sendTo} />
+  } else if (screen === 'city') {
+    content = <City onBack={home} />
+  } else if (screen === 'notes') {
+    content = <Notes onBack={home} say={say} />
   } else if (screen === 'messages') {
     content = (
       <>
@@ -193,7 +237,15 @@ export default function App() {
       <>
         <Header title={nameOf(peer)} onBack={() => setScreen('messages')} right={<button className="link" onClick={() => startCall(peer)}>📞</button>} />
         <div className="thread" ref={threadRef}>
-          {thread.map((m) => <div key={m.id} className={m.mine ? 'bubble mine' : 'bubble'}>{m.content}<span>{timeAgo(m.time)}</span></div>)}
+          {thread.map((m) => {
+            const loc = LOC.exec(m.content || '')
+            return (
+              <div key={m.id} className={m.mine ? 'bubble mine' : 'bubble'}>{m.content}
+                {loc && <button className="loc" onClick={() => nui('placeGo', { x: loc[1], y: loc[2] }).then(() => say('GPS réglé.'))}>🧭 Itinéraire</button>}
+                <span>{timeAgo(m.time)}</span>
+              </div>
+            )
+          })}
         </div>
         <form className="composer" onSubmit={send}>
           <input autoFocus maxLength={data.maxLength} placeholder="Message" value={draft} onChange={(e) => setDraft(e.target.value)} />
@@ -230,7 +282,19 @@ export default function App() {
     const press = (d) => { const raw = (digits.replace('-', '') + d).slice(0, 7); setForm({ number: raw.length > 3 ? `${raw.slice(0, 3)}-${raw.slice(3)}` : raw }) }
     content = (
       <>
-        <Header title="Appel" onBack={home} />
+        <Header title="Appel" onBack={home} right={<button className="link" onClick={() => setForm({ recents: !form.recents })}>{form.recents ? 'Clavier' : 'Récents'}</button>} />
+        {form.recents ? (
+          <div className="list">
+            {(data.recents || []).length === 0 && <div className="empty">Aucun appel récent.</div>}
+            {(data.recents || []).map((r, i) => (
+              <button key={i} className="row" onClick={() => startCall(r.number)}>
+                <div className="row-main"><b className={r.kind === 'missed' ? 'missed' : ''}>{nameOf(r.number)}</b><span className="muted">{KIND[r.kind]}</span></div>
+                <span className="muted small">{timeAgo(r.time)}</span>
+              </button>
+            ))}
+            {(data.recents || []).length > 0 && <button className="link small" onClick={() => { nui('clearRecents'); setData({ ...data, recents: [] }) }}>Effacer l’historique</button>}
+          </div>
+        ) : (<>
         <div className="dial-display">{digits || ' '}</div>
         <div className="keypad">
           {['1', '2', '3', '4', '5', '6', '7', '8', '9', '', '0', '⌫'].map((k, i) => (
@@ -238,6 +302,7 @@ export default function App() {
           ))}
         </div>
         <button className="round green center" disabled={!/^\d{3}-\d{4}$/.test(digits)} onClick={() => startCall(digits)}>📞</button>
+        </>)}
       </>
     )
   } else if (screen === 'bank') {
@@ -306,6 +371,17 @@ export default function App() {
             <input type="checkbox" checked={!!data.vice} onChange={(e) => { nui('viceFilter', { on: e.target.checked }); setData({ ...data, vice: e.target.checked }) }} />
           </label>
           <label className="setting">
+            <span>Marcher téléphone ouvert</span>
+            <input type="checkbox" checked={!!data.walk} onChange={(e) => { submit('walk', { on: e.target.checked }); setData({ ...data, walk: e.target.checked }) }} />
+          </label>
+          <div className="setting col"><span>Fond d’écran</span>
+            <div className="chips">
+              {WALLPAPERS.map((w, i) => (
+                <button key={w} className={(data.wallpaper || 0) === i ? 'chip on' : 'chip'} onClick={() => { nui('wallpaper', { id: i }); setData({ ...data, wallpaper: i }) }}>{w}</button>
+              ))}
+            </div>
+          </div>
+          <label className="setting">
             <span>Mode silencieux</span>
             <input type="checkbox" checked={data.silent} onChange={(e) => { nui('silent', { silent: e.target.checked }); setData({ ...data, silent: e.target.checked }) }} />
           </label>
@@ -318,7 +394,7 @@ export default function App() {
     <div className="phone" style={hidden ? { visibility: 'hidden' } : undefined}>
       <div className="notch" />
       <div className="status"><span>{data.clock}</span><span>5G ▮▮▮</span></div>
-      <div className="screen">{content}</div>
+      <div className={`screen wp${data.wallpaper || 0}`}>{content}</div>
       {toast && <div className={toast.ok ? 'toast ok' : 'toast ko'}>{toast.text}</div>}
       <button className="home-bar" onClick={home} aria-label="Accueil" />
     </div>

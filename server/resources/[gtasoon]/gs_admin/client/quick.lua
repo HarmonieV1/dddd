@@ -591,6 +591,16 @@ local function eventsMenu()
                     { title = 'Automatique (selon la date)', icon = 'calendar', onSelect = function() ExecuteCommand('halloween auto') end },
                 }, 'gs_staff_events')
             end }
+        options[#options + 1] = { title = 'Fait divers PNJ (police)', icon = 'magnifying-glass', arrow = true, -- V10
+            description = 'Cambriolage, corps retrouvé, délit de fuite, vandalisme : la police en service est prévenue', onSelect = function()
+                show('gs_staff_fd', 'Fait divers PNJ', {
+                    { title = 'Au hasard', icon = 'dice', onSelect = function() ExecuteCommand('faitdivers') end },
+                    { title = 'Cambriolage', icon = 'house-crack', onSelect = function() ExecuteCommand('faitdivers burglary') end },
+                    { title = 'Corps retrouvé', icon = 'skull', onSelect = function() ExecuteCommand('faitdivers body') end },
+                    { title = 'Délit de fuite', icon = 'car-burst', onSelect = function() ExecuteCommand('faitdivers hitrun') end },
+                    { title = 'Vandalisme', icon = 'spray-can', onSelect = function() ExecuteCommand('faitdivers vandalism') end },
+                }, 'gs_staff_events')
+            end }
     end
     options[#options + 1] = { title = 'Effets sur moi (animation d\'événement)', icon = 'wand-magic-sparkles', arrow = true,
         description = 'Course rapide, super saut, gravité lunaire…', onSelect = funMenu }

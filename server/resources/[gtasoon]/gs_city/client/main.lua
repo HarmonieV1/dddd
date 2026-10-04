@@ -41,7 +41,7 @@ RegisterCommand('quartiers', function()
     local options = {}
     for _, q in ipairs(list) do
         options[#options + 1] = { title = q.label, icon = ICONS[q.level], iconColor = COLORS[q.level], readOnly = true,
-            description = ('Ambiance : %s'):format(q.name), progress = q.pct, colorScheme = q.level >= 3 and 'red' or (q.level == 2 and 'orange' or 'green') }
+            description = ('Ambiance : %s · Quartier %s'):format(q.name, q.standing or 'ordinaire'), progress = q.pct, colorScheme = q.level >= 3 and 'red' or (q.level == 2 and 'orange' or 'green') }
     end
     lib.registerContext({ id = 'gs_city_status', title = 'Los Santos : ambiance des quartiers', options = options })
     lib.showContext('gs_city_status')

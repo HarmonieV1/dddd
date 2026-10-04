@@ -31,7 +31,12 @@ exports('GetSocietyMoney', Society.balance)
 --- isRevenue = true : vraie vente (compte dans le chiffre d'affaires du jour).
 exports('AddSocietyMoney', function(job, amount, isRevenue)
     local ok = Society.add(job, amount)
-    if ok and isRevenue then Society.recordRevenue(job, amount) end
+    if ok and isRevenue then
+        Society.recordRevenue(job, amount)
+        -- V10 : le quartier évolue (gs_city) — une vraie vente fait monter le quartier du commerce
+        local p = Jobs[job] and Jobs[job].points and Jobs[job].points.duty and Jobs[job].points.duty[1]
+        if p then TriggerEvent('gs_jobs:server:revenue', job, amount, vec3(p.x, p.y, p.z)) end
+    end
     return ok
 end)
 exports('RemoveSocietyMoney', Society.remove)

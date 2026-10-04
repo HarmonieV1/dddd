@@ -86,6 +86,10 @@ lib.callback.register('gs_business:buy', function(src, id, item, qty)
     Bridge:AddItem(src, item, qty)
     local share = (Double and Double.active(id)) and Config.Double.share or Config.NpcShare -- V9 : la doublure du patron
     local income = staffed and total or math.floor(total * share)
+    if GetResourceState('gs_city') == 'started' then -- V10 : le quartier évolue (clientèle aisée ou fuyante)
+        local ok, f = pcall(function() return exports.gs_city:SalesFactor(b.register) end)
+        if ok and tonumber(f) then income = math.floor(income * f) end
+    end
     if income > 0 then JobsApi:AddSocietyMoney(id, income, true) end
     Store.log(id, 'sale', item, qty, income, staffed and name(src) or (name(src) .. ' (libre-service)'))
     return true, ('%d × %s : %d $. Merci !'):format(qty, label, total)

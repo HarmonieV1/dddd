@@ -100,7 +100,7 @@ button:disabled { opacity: .4; cursor: default; }
 .call-screen h2 { margin: 10px 0 0; }
 .call-actions { display: flex; gap: 40px; margin-top: 60px; }
 
-.toast { position: absolute; left: 24px; right: 24px; top: 70px; padding: 10px 14px; border-radius: 14px; font-size: 13px; text-align: center; z-index: 5; backdrop-filter: blur(8px); }
+.toast { position: absolute; left: 24px; right: 24px; top: 70px; padding: 10px 14px; border-radius: 14px; font-size: 13px; text-align: center; z-index: 5; } /* pas de flou : coûteux dans le navigateur de FiveM */
 .toast.ok { background: rgba(57, 255, 154, .15); color: var(--green); border: 1px solid rgba(57, 255, 154, .4); }
 .toast.ko { background: rgba(255, 77, 109, .18); color: var(--red); border: 1px solid rgba(255, 77, 109, .4); }
 
@@ -182,3 +182,38 @@ button:disabled { opacity: .4; cursor: default; }
 .vibe-change { font-size: 11px; font-weight: 700; min-width: 52px; text-align: right; }
 .vibe-change.up { color: var(--green); } .vibe-change.down { color: var(--red); }
 .vibe-index-main b { font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* V10 · fonds d'écran, notifications, nouvelles applis */
+.screen.wp1 { background: radial-gradient(120% 70% at 50% 110%, rgba(40, 224, 255, .35), transparent 60%), radial-gradient(90% 60% at 50% 0%, rgba(255, 46, 136, .3), transparent 70%), var(--bg); }
+.screen.wp2 { background: linear-gradient(180deg, #06223a, #0b0714 70%); }
+.screen.wp3 { background: radial-gradient(80% 50% at 50% 0%, rgba(155, 107, 255, .18), transparent 70%), #05030a; }
+.screen.wp4 { background: linear-gradient(180deg, #3a1a08, #7a3f12 45%, #0b0714 100%); }
+.screen.wp5 { background: radial-gradient(120% 70% at 50% 110%, rgba(176, 72, 255, .45), transparent 60%), #0b0714; }
+.notifs { margin: -14px 4px 14px; display: flex; flex-direction: column; gap: 6px; }
+.notif { display: flex; gap: 8px; align-items: center; padding: 8px 10px; border-radius: 14px; background: rgba(20, 12, 36, .85); border: 1px solid var(--line); }
+.notif div { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.notif small { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 11px; }
+.notifs .link { align-self: flex-end; }
+.loc { display: block; margin-top: 6px; padding: 4px 8px; border-radius: 8px; background: rgba(0, 0, 0, .25); font-size: 12px; font-weight: 700; }
+.missed { color: var(--red); }
+.setting.col { flex-direction: column; align-items: flex-start; gap: 8px; }
+.qf-title { margin: 10px 4px 6px; font-size: 12px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+.qf-live { width: 100%; display: flex; flex-direction: column; text-align: left; gap: 2px; padding: 9px 11px; margin-bottom: 6px; border-radius: 12px;
+  background: rgba(255, 255, 255, .03); border-left: 3px solid; }
+.qf-live span { font-size: 12px; }
+.qf-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.qf-cat { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; padding: 12px; border-radius: 16px; text-align: left; min-height: 86px; }
+.qf-cat span { font-size: 22px; } .qf-cat small { opacity: .75; font-size: 11px; }
+.qf-tag { font-size: 10px; font-weight: 800; padding: 3px 7px; border-radius: 8px; background: var(--panel2); color: var(--cyan); }
+.meter { width: 60px; height: 6px; border-radius: 3px; background: var(--panel2); overflow: hidden; }
+.meter i { display: block; height: 100%; }
+.row-main { background: none; border: none; text-align: left; }
+/* V10 : 18 applis → 4 colonnes, accueil défilable */
+.home { flex: 1; overflow-y: auto; padding-bottom: 40px; }
+.home::-webkit-scrollbar { width: 0; }
+.home-clock { font-size: 50px; }
+.home-sub { margin-bottom: 20px; }
+.grid { grid-template-columns: repeat(4, 1fr); gap: 14px 4px; }
+.icon { width: 50px; height: 50px; border-radius: 15px; font-size: 23px; }
+.label { font-size: 10px; text-align: center; line-height: 1.1; }
+.badge { right: 6px; }

@@ -3,6 +3,31 @@
 local open = false
 local prop
 local silent = GetResourceKvpInt('gs_phone_silent') == 1
+-- V10 : réglages, notifications, appels récents (mémoire du PC du joueur, rien côté serveur)
+local walk = GetResourceKvpInt('gs_phone_walk') == 1          -- marcher le téléphone ouvert
+local wallpaper = GetResourceKvpInt('gs_phone_wallpaper')
+local notifs = {}                                               -- { { icon, title, text, time } } (session)
+local typing = false
+
+local function loadJson(key, default)
+    local ok, v = pcall(json.decode, GetResourceKvpString(key) or '')
+    return ok and type(v) == 'table' and v or default
+end
+local function saveJson(key, v) SetResourceKvp(key, json.encode(v)) end
+local function now() return GetCloudTimeAsInt() end
+
+local function pushNotif(icon, title, text)
+    table.insert(notifs, 1, { icon = icon, title = title, text = (text or ''):sub(1, 120), time = now() })
+    notifs[21] = nil
+    SendNUIMessage({ action = 'notifs', notifs = notifs })
+end
+
+local recents = loadJson('gs_phone_recents', {})
+local function addRecent(number, kind)
+    table.insert(recents, 1, { number = number, kind = kind, time = now() })
+    recents[26] = nil
+    saveJson('gs_phone_recents', recents)
+end
 
 local function phoneInHand(on)
     local ped = PlayerPedId()
@@ -30,6 +55,7 @@ end
 local function close()
     if not open then return end
     open = false
+    SetNuiFocusKeepInput(false)
     SetNuiFocus(false, false)
     SendNUIMessage({ action = 'close' })
     phoneInHand(false)
@@ -42,8 +68,11 @@ local function openPhone()
     if not data then return end
     data.clock, data.silent = clock(), silent
     data.vice = GetResourceState('gs_world') == 'started' and exports.gs_world:GetViceFilter() or false
+    data.walk, data.wallpaper, data.notifs, data.recents = walk, wallpaper, notifs, recents
     open = true
+    typing = false
     SetNuiFocus(true, true)
+    SetNuiFocusKeepInput(walk) -- V10 : on peut marcher le téléphone ouvert (option)
     SendNUIMessage({ action = 'open', data = data })
     phoneInHand(true)
     CreateThread(function()
@@ -52,6 +81,16 @@ local function openPhone()
             if open then SendNUIMessage({ action = 'clock', clock = clock() }) end
         end
     end)
+    if walk then -- seulement téléphone ouvert ET option active : caméra, tir et menu pause bloqués, le reste libre
+        CreateThread(function()
+            while open do
+                DisableControlAction(0, 1, true) DisableControlAction(0, 2, true)
+                DisableControlAction(0, 24, true) DisableControlAction(0, 25, true) DisableControlAction(0, 257, true)
+                DisableControlAction(0, 199, true) DisableControlAction(0, 200, true) DisablePlayerFiring(PlayerId(), true)
+                Wait(0)
+            end
+        end)
+    end
 end
 
 RegisterCommand('telephone', openPhone, false)
@@ -79,6 +118,7 @@ end)
 
 RegisterNUICallback('call', function(b, cb)
     local ok, res = lib.callback.await('gs_phone:call', false, b.number)
+    if ok then addRecent(b.number, 'out') end
     cb({ ok = ok == true, message = res })
 end)
 
@@ -208,13 +248,15 @@ end)
 
 -- Serveur → joueur --------------------------------------------------------------------------------
 RegisterNetEvent('gs_phone:client:message', function(msg)
-    if open then SendNUIMessage({ action = 'message', message = msg }) end
+    if open then SendNUIMessage({ action = 'message', message = msg }) else pushNotif('💬', msg.from, msg.content) end
     if silent then return end
     PlaySoundFrontend(-1, 'Text_Arrive_Tone', 'Phone_SoundSet_Default', false)
     if not open then lib.notify({ title = 'SMS · ' .. msg.from, description = msg.content:sub(1, 90), icon = 'comment', duration = 6000 }) end
 end)
 
+local ringing -- appel entrant pas encore décroché (pour « appel manqué »)
 RegisterNetEvent('gs_phone:client:incoming', function(call)
+    ringing = call.number
     SendNUIMessage({ action = 'incoming', call = call })
     if not silent then PlaySoundFrontend(-1, 'Remote_Ring', 'Phone_SoundSet_Michael', false) end
     if not open then
@@ -222,16 +264,21 @@ RegisterNetEvent('gs_phone:client:incoming', function(call)
     end
 end)
 
-RegisterNetEvent('gs_phone:client:callStarted', function(call) SendNUIMessage({ action = 'callStarted', call = call }) end)
+RegisterNetEvent('gs_phone:client:callStarted', function(call)
+    if ringing then addRecent(ringing, 'in') ringing = nil end
+    SendNUIMessage({ action = 'callStarted', call = call })
+end)
 
 RegisterNetEvent('gs_phone:client:callEnded', function(reason)
-    SendNUIMessage({ action = 'callEnded', reason = reason })
+    if ringing then addRecent(ringing, 'missed') pushNotif('📵', 'Appel manqué', ringing) ringing = nil end
+    SendNUIMessage({ action = 'callEnded', reason = reason, recents = recents })
     if not open and reason then lib.notify({ description = reason, icon = 'phone-slash' }) end
 end)
 
 RegisterNetEvent('gs_phone:client:emergency', function(a)
     PlaySoundFrontend(-1, 'Lose_1st', 'GTAO_FM_Events_Soundset', false)
     lib.notify({ title = 'Appel ' .. a.service .. ' · ' .. a.number, description = a.text, type = 'warning', icon = 'truck-medical', duration = 12000 })
+    pushNotif('🚨', 'Appel ' .. a.service, a.text)
     local blip = AddBlipForCoord(a.coords.x, a.coords.y, a.coords.z)
     SetBlipSprite(blip, 817)
     SetBlipColour(blip, 1)
@@ -247,4 +294,99 @@ AddEventHandler('onResourceStop', function(res)
         if open then SetNuiFocus(false, false) end
         phoneInHand(false)
     end
+end)
+
+-- V10 · Nouvelles applis -------------------------------------------------------------------------------------
+-- Que faire ? (gs_onboarding) : ce qui se passe maintenant + toutes les activités en boutons
+RegisterNUICallback('guide', function(_, cb)
+    local ok, d = pcall(function() return exports.gs_onboarding:GuideData() end)
+    cb(ok and d or false)
+end)
+RegisterNUICallback('guideAction', function(b, cb)
+    local ok, leave = pcall(function() return exports.gs_onboarding:GuideAction(b.ref) end)
+    cb(true)
+    if ok and leave then close() end
+end)
+
+-- Plans : mes lieux favoris, partager ma position, itinéraire depuis un SMS
+local function street(c)
+    local a, b = GetStreetNameAtCoord(c.x, c.y, c.z)
+    local name = GetStreetNameFromHashKey(a)
+    if b ~= 0 then name = name .. ' / ' .. GetStreetNameFromHashKey(b) end
+    return ('%s, %s'):format(name, GetLabelText(GetNameOfZone(c.x, c.y, c.z)))
+end
+RegisterNUICallback('places', function(_, cb) cb(loadJson('gs_phone_places', {})) end)
+RegisterNUICallback('placeSave', function(b, cb)
+    local list = loadJson('gs_phone_places', {})
+    if #list >= 20 then return cb({ ok = false, message = '20 lieux au maximum.' }) end
+    local c = GetEntityCoords(PlayerPedId())
+    local name = tostring(b.name or ''):sub(1, 30)
+    list[#list + 1] = { id = now(), name = name ~= '' and name or street(c), x = math.floor(c.x), y = math.floor(c.y), z = math.floor(c.z) }
+    saveJson('gs_phone_places', list)
+    cb({ ok = true, message = list })
+end)
+RegisterNUICallback('placeDelete', function(b, cb)
+    local list, out = loadJson('gs_phone_places', {}), {}
+    for _, p in ipairs(list) do if p.id ~= b.id then out[#out + 1] = p end end
+    saveJson('gs_phone_places', out)
+    cb({ ok = true, message = out })
+end)
+RegisterNUICallback('placeGo', function(b, cb)
+    local x, y = tonumber(b.x), tonumber(b.y)
+    if x and y then SetNewWaypoint(x + 0.0, y + 0.0) end
+    cb({ ok = x ~= nil, message = 'GPS réglé.' })
+end)
+RegisterNUICallback('myPosition', function(_, cb)
+    local c = GetEntityCoords(PlayerPedId())
+    cb({ street = street(c), x = math.floor(c.x), y = math.floor(c.y) })
+end)
+
+-- Notes (sur le PC du joueur)
+RegisterNUICallback('notes', function(_, cb) cb(loadJson('gs_phone_notes', {})) end)
+RegisterNUICallback('noteSave', function(b, cb)
+    local list = loadJson('gs_phone_notes', {})
+    local text = tostring(b.text or ''):sub(1, 600)
+    local found = false
+    for _, n in ipairs(list) do if n.id == b.id then n.text, n.time, found = text, now(), true end end
+    if not found then
+        if #list >= 30 then return cb({ ok = false, message = '30 notes au maximum.' }) end
+        table.insert(list, 1, { id = now() * 100 + math.random(0, 99), text = text, time = now() })
+    end
+    saveJson('gs_phone_notes', list)
+    cb({ ok = true, message = list })
+end)
+RegisterNUICallback('noteDelete', function(b, cb)
+    local list, out = loadJson('gs_phone_notes', {}), {}
+    for _, n in ipairs(list) do if n.id ~= b.id then out[#out + 1] = n end end
+    saveJson('gs_phone_notes', out)
+    cb({ ok = true, message = out })
+end)
+
+-- Ville : ambiance et standing des quartiers, météo
+local WEATHER = { CLEAR = 'Ensoleillé', EXTRASUNNY = 'Grand soleil', CLOUDS = 'Nuageux', OVERCAST = 'Couvert', RAIN = 'Pluie',
+    CLEARING = 'Éclaircies', THUNDER = 'Orage', SMOG = 'Brume', FOGGY = 'Brouillard', XMAS = 'Neige', SNOW = 'Neige', BLIZZARD = 'Blizzard' }
+RegisterNUICallback('city', function(_, cb)
+    local w = GlobalState.gsWeather or {}
+    cb({ districts = lib.callback.await('gs_city:status', false) or {}, weather = WEATHER[w.type or ''] or w.type or '?',
+        storm = GlobalState.gsStorm ~= nil and GlobalState.gsStorm ~= false, clock = clock() })
+end)
+
+-- Réglages et notifications
+RegisterNUICallback('walk', function(b, cb)
+    walk = b.on == true
+    SetResourceKvpInt('gs_phone_walk', walk and 1 or 0)
+    cb({ ok = true, message = walk and 'Tu peux marcher téléphone ouvert (rouvre-le).' or 'Téléphone en plein écran (rouvre-le).' })
+end)
+RegisterNUICallback('wallpaper', function(b, cb)
+    wallpaper = math.max(0, math.min(5, math.floor(tonumber(b.id) or 0)))
+    SetResourceKvpInt('gs_phone_wallpaper', wallpaper)
+    cb(true)
+end)
+RegisterNUICallback('clearNotifs', function(_, cb) notifs = {} cb(true) end)
+RegisterNUICallback('clearRecents', function(_, cb) recents = {} saveJson('gs_phone_recents', recents) cb(true) end)
+-- Saisie de texte : le perso ne doit pas bouger quand on tape (mode marche)
+RegisterNUICallback('typing', function(b, cb)
+    typing = b.on == true
+    if open and walk then SetNuiFocusKeepInput(not typing) end
+    cb(true)
 end)

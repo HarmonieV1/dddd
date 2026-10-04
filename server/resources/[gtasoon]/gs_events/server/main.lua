@@ -56,7 +56,7 @@ end
 exports('Active', function() return Events.active() end)
 exports('Weekly', function() -- V9.1 : programme de la semaine (bot Discord)
     local out = {}
-    for _, w in ipairs(Config.Weekly or {}) do out[#out + 1] = { dayName = Config.Days[w.day], from = w.from, to = w.to, label = w.label, desc = w.desc } end
+    for _, w in ipairs(Config.Weekly or {}) do out[#out + 1] = { day = w.day, dayName = Config.Days[w.day], from = w.from, to = w.to, label = w.label, desc = w.desc } end
     return out
 end)
 exports('GetXpMultiplier', function() local e = Events.active() return e and e.xp or 1.0 end)
@@ -103,6 +103,7 @@ function Events.remind(t)
         local key = w and ('%s:%d:%d'):format(w.id, t.yday or 0, ahead)
         if w and not reminded[key] then
             reminded[key] = true
+            TriggerEvent('gs_events:server:remind', w.label, w.desc, ahead) -- V10 : Radio Los Santos
             local msg = ahead > 0 and ('Rendez-vous dans %d min : %s. %s'):format(ahead, w.label, w.desc) or ('C\'est parti : %s ! %s'):format(w.label, w.desc)
             for _, s in ipairs(Bridge:GetPlayers()) do Bridge:Notify(s, msg, 'success') end
             if GetResourceState('gs_discord') == 'started' then

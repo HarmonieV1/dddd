@@ -35,6 +35,7 @@ function Fugitive.start(src)
         desc = desc, bounty = bounty, played = 0, lastTick = now(), since = now() }
     publish()
     TriggerClientEvent('gs_wanted:client:fugitive', -1, Fugitive.list[src].title, bounty)
+    TriggerEvent('gs_wanted:server:fugitive', Fugitive.list[src].title, bounty) -- V10 : Radio Los Santos
     if GetResourceState('gs_social') == 'started' then
         pcall(function() exports.gs_social:Newsroom('flash', ('AVIS DE RECHERCHE : %s. Prime : %d $.'):format(Fugitive.list[src].title, bounty)) end)
     end
