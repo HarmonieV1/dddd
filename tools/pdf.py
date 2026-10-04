@@ -8,7 +8,7 @@ from reportlab.lib.units import mm
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, PageBreak, KeepTogether
 from reportlab.graphics.shapes import Drawing, Rect, Circle, String, Line
 
-VERSION = 'V8'
+VERSION = 'V9'
 NEON = colors.HexColor('#28E0FF')
 DARK = colors.HexColor('#0F091C')
 PINK = colors.HexColor('#FF2E88')
@@ -87,6 +87,9 @@ COMMANDS = [
     ['/permis · /histoire', 'solde de points du permis · carnet du véhicule où tu es assis'],
     ['/mentor · /rencontres · /rumeurs', 'parrainage · collection des rencontres de la route · où entendre les rumeurs'],
     ['/droits · /cinema · /ralenti', 'garde à vue (avocat, silence, aveux) · mode cinéma pour les clips · ralenti pendant le tournage'],
+    ['/cavale · /livrer · /legendes', 'fugitifs recherchés (primes) · livrer un fugitif · panthéon des cavales'],
+    ['/contrat · /recap · /rdv', 'contrats signés (prêt, salaire, location, union) · ton récap du mois · rendez-vous de la semaine'],
+    ['/racket', "gang : réclamer une protection à la caisse d'un commerce · patron : voir / arrêter de payer"],
     ['Staff', '/whitelist · /gsjob · /gsgang · /gsevent · /meteo · /builder · /economie (les joueurs ne les voient pas)'],
 ]
 
@@ -107,11 +110,42 @@ def guide(points):
         'Lit aussi « Mon Drive\\GTA » si Google Drive pour ordinateur est installé.',
         '<b>REPARER-LANCEUR.bat</b> : « le chemin d\'accès spécifié est introuvable » au démarrage. '
         '<b>DEVENIR-ADMIN.bat</b> : te met fondateur. <b>SAUVEGARDER-BDD.bat</b>, <b>REPARER-MARIADB.bat</b>.',
+        "<b>SAUVEGARDER-BDD.bat</b> (V9) : sauvegarde maintenant et toutes les 6 h (5 h, 11 h, 17 h, 23 h), 30 gardées. "
+        "<b>RESTAURER-BDD.bat</b> : retour en arrière de TOUTE la base, ou d'UN SEUL joueur (perso + véhicules) après une triche ou un bug ; "
+        "l'état actuel est sauvegardé avant (on peut annuler). Hébergeur Linux : scripts/linux/roadline-bdd.sh.",
+        "<b>CONFIGURER-DISCORD.bat</b> (V9) : salon #statut mis à jour chaque minute, annonces (ouverture, redémarrages, rendez-vous), "
+        "bot RoadLine (présence « 12/48 citoyens », /statut, /rejoindre) et rôles de métier. <b>LANCER-BOT-DISCORD.bat</b> démarre le bot.",
     ])
 
     s += [Paragraph('2. Touches', H2), table(KEYS, [38 * mm, 78 * mm, 64 * mm])]
     s += [Paragraph('3. Commandes utiles', H2), table(COMMANDS, [60 * mm, 120 * mm])]
 
+    s += [PageBreak(), Paragraph('★ Nouveautés V9 · La ville porte ses cicatrices', H2)]
+    s += bullets([
+        "<b>Cicatrices de la ville</b> : bougies et ruban là où quelqu'un est tombé (quelques heures), vitrine brisée après un braquage "
+        "(réparée par un joueur, payé comme ouvrier de la ville, jamais par l'auteur), fresque du gang qui gagne une guerre de quartier.",
+        "<b>La cavale</b> : très recherché, tu deviens fugitif (affiches, prime qui grimpe). /cavale pour la liste, /livrer pour remettre un fugitif "
+        "menotté à la police (prime au policier qui l'incarcère). Tenir assez longtemps = /legendes.",
+        "<b>Appareil photo argentique</b> (quincaillerie) : la photo devient un objet (qui, quelles plaques, quel quartier) ; à accrocher au mur "
+        "du commissariat ou à faire analyser au labo.",
+        "<b>Cabines téléphoniques</b> : les missions « voix au téléphone » se passent maintenant à une vraie cabine ou un téléphone mural.",
+        "<b>Fraude à l'assurance</b> : déclarer sa voiture volée (assurée depuis 24 h) ; l'expert recoupe avec le carnet : revu au volant ou "
+        "voiture revendue = fraude (remboursement +50 %, casier, police prévenue). La police voit « déclaré volé » sur la plaque.",
+        "<b>Combats clandestins</b> : un ring caché qui change d'adresse chaque jour (rumeurs), ouvert la nuit ; mise des deux combattants, "
+        "paris des spectateurs, arbitrage serveur (K.-O., arme sortie = disqualifié, sortie du ring), la maison prend 10 %.",
+        "<b>Racket</b> (/racket) : un gang propose une protection au patron d'un bar ; accepté = prélèvement chaque semaine ; refusé ou impayé = "
+        "30 min pour casser la vitrine (dégâts sur la caisse, témoins).",
+        "<b>La doublure</b> (bars uniquement) : au comptoir, le patron laisse un PNJ à son apparence qui sert quand personne n'est en service "
+        "(50 % de la recette au lieu de 30 %). On peut la braquer arme en main (une fois toutes les 2 h).",
+        "<b>Contrats signés</b> (/contrat) : prêt avec intérêts, salaire privé, location, union. Signature face à face, prélèvements automatiques, "
+        "argent mis de côté si le bénéficiaire est absent, retard = +10 %, 2 retards = litige transmis aux juges et avocats en service.",
+        "<b>Récap du mois</b> (/recap) : heures en ville, km, argent gagné, crimes, arrestations, combats, rencontres, photos, ton titre et ton classement ; "
+        "le 1er du mois, « ton récap est prêt ».",
+        "<b>Rendez-vous fixes</b> (/rdv) : mercredi des métiers, vendredi des courses, nuit des combats (samedi), road trip du dimanche ; rappel 30 min avant "
+        "en jeu et sur Discord.",
+        "<b>Staff</b> : anti-triche serveur (alertes seulement, staff exempté : vol libre et TP intacts) dans F11 → Anti-triche ; "
+        "F11 → Statistiques de rétention (nouveaux, retour J+1 / 7 jours, abandon à la 1re session, durée des sessions, pic).",
+    ])
     s += [PageBreak(), Paragraph('★ Signatures RoadLine (V8)', H2)]
     s += bullets([
         '<b>La ville se souvient</b> : les témoins décrivent le suspect à la police, en texte brut (homme / femme, masqué, couvre-chef, sac, '
@@ -213,7 +247,23 @@ TESTS = [
         'NETTOYER-MARQUES.bat (une fois), puis METTRE-A-JOUR.bat : fenêtre du serveur sans ligne ROUGE',
         'Si F3 / F5 font encore deux choses : Échap → Paramètres → Raccourcis → FiveM, vérifier F3 = Progression',
     ]),
-    ('V8 · Signatures (nouveau)', [
+    ('V9 · Nouveautés', [
+        "Mourir (ou se faire tuer) : bougies au sol ; braquer une supérette : vitrine brisée, la réparer avec un autre perso (payé)",
+        "Gagner une guerre de gang : fresque dans le quartier",
+        "Monter très haut en recherche : affiche de fugitif, /cavale ; se faire livrer menotté (/livrer) puis incarcérer : prime au policier",
+        "Appareil photo (quincaillerie) : photo d'un joueur et d'une voiture → objet photo (description) ; l'accrocher au commissariat, l'analyser",
+        "Mission « voix au téléphone » : le point est sur une vraie cabine / un téléphone mural",
+        "Assurer sa voiture, attendre 24 h, déclarer le vol ; la conduire ensuite → fraude détectée ; police : plaque « déclarée volée »",
+        "La nuit : trouver le ring (rumeurs), s'inscrire à deux, parier avec un 3e joueur, combattre à mains nues (sortir une arme = disqualifié)",
+        "/racket à la caisse d'un bar (membre de gang) : le patron reçoit l'offre ; refuser → « Faire passer le message » casse la vitrine",
+        "Patron du bar au comptoir : « Laisser ma doublure » → PNJ à son apparence ; acheter (libre-service) ; la braquer avec un autre perso",
+        "/contrat : prêt entre deux joueurs face à face → copie papier dans le sac, argent versé ; Mes contrats : échéances et prochain prélèvement",
+        "/recap : ce mois-ci, mois dernier, biographie ; /rdv : programme de la semaine",
+        "F11 → Anti-triche (alertes) et Statistiques de rétention ; vol libre / TP staff : aucune alerte",
+        "SAUVEGARDER-BDD.bat (programmer toutes les 6 h), puis RESTAURER-BDD.bat → un seul joueur (sur un perso de test)",
+        "CONFIGURER-DISCORD.bat : salon #statut mis à jour, message « La ville est ouverte » au démarrage ; LANCER-BOT-DISCORD.bat → /statut",
+    ]),
+    ('V8 · Signatures', [
         'Braquer avec un masque et une voiture bleue : la police reçoit « Homme, masqué, armé, Voiture (bleu), plaque 4X…»',
         'Recommencer avec la même tenue : « Même tenue que le signalement n°X » ; changer de tenue + repeindre : plus de lien',
         'Tirer, se blesser, braquer sans gants : douilles, sang, empreintes visibles à la lampe torche (policier en service, en visant)',

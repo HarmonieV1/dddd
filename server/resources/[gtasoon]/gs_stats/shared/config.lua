@@ -1,4 +1,4 @@
--- [CONFIG] gs_stats · Wrapped / biographie et rétention.
+-- [CONFIG] gs_stats · Récap / biographie et rétention.
 Config = {}
 
 Config.Flush = 60                 -- secondes entre deux écritures groupées en base

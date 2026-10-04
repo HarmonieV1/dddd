@@ -1,4 +1,4 @@
--- gs_stats (serveur) · V9 « RoadLine Wrapped / biographie ». Les autres ressources signalent ce qui arrive (événements
+-- gs_stats (serveur) · V9 « Récap RoadLine / biographie ». Les autres ressources signalent ce qui arrive (événements
 -- serveur, jamais le client) ; les compteurs sont groupés en mémoire puis écrits en une requête toutes les minutes.
 local Security = exports.gs_security
 local Bridge   = exports.gs_bridge
@@ -40,7 +40,7 @@ local function fmt(kind, v)
     return tostring(math.floor(v))
 end
 
---- Vue Wrapped d'une période ('YYYY-MM' ou 'all') : lignes, titre, classements
+--- Vue récap d'une période ('YYYY-MM' ou 'all') : lignes, titre, classements
 function Bio.view(cid, period)
     local data = Store.get(cid, period)
     for stat, n in pairs(Bio.buf[cid] or {}) do data[stat] = (data[stat] or 0) + n end -- pas encore écrit
@@ -70,7 +70,7 @@ function Bio.view(cid, period)
     return { period = period, label = label, lines = lines, title = best or 'Nouveau visage', ranks = ranks }
 end
 
---- Le mois dernier (pour l'annonce « ton Wrapped est prêt »)
+--- Le mois dernier (pour l'annonce « ton récap est prêt »)
 function Bio.lastMonth(ts)
     local t = os.date('*t', ts or now())
     local y, m = t.year, t.month - 1
@@ -105,13 +105,13 @@ AddEventHandler('gs_bridge:server:playerLoaded', function(src)
     local data = Store.get(cid, last)
     if next(data) then
         SetTimeout(20000, function()
-            Bridge:Notify(src, ('Ton RoadLine Wrapped de %s est prêt : /wrapped'):format(Config.Months[tonumber(last:sub(6, 7))]), 'success')
+            Bridge:Notify(src, ('Ton récap RoadLine de %s est prêt : /recap'):format(Config.Months[tonumber(last:sub(6, 7))]), 'success')
         end)
     end
 end)
 
-lib.callback.register('gs_stats:wrapped', function(src, which)
-    if not Security:RateLimit(src, 'gs_stats:wrapped', 4, 10000) then return nil end
+lib.callback.register('gs_stats:recap', function(src, which)
+    if not Security:RateLimit(src, 'gs_stats:recap', 4, 10000) then return nil end
     local cid = Bridge:GetIdentifier(src)
     if not cid then return nil end
     local period = which == 'all' and 'all' or (which == 'last' and Bio.lastMonth() or Bio.month())

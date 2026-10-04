@@ -27,13 +27,17 @@ local function now() return os.time() end
 local function name(src) return ('%s [%s]'):format(GetPlayerName(src) or '?', src) end
 
 --- Exempté : staff (tous niveaux, en service ou non) ou ACE « command » (console / fondateur)
+Watch.staff = {} -- [src] = { exempt, at } : niveau staff relu toutes les 30 s (pas un export par relevé)
 function Watch.exempt(src)
-    if IsPlayerAceAllowed(tostring(src), 'command') then return true end
-    if GetResourceState('gs_admin') == 'started' then
+    local c = Watch.staff[src]
+    if c and now() - c.at < 30 then return c.exempt end
+    local exempt = IsPlayerAceAllowed(tostring(src), 'command')
+    if not exempt and GetResourceState('gs_admin') == 'started' then
         local ok, lvl = pcall(function() return exports.gs_admin:GetStaffLevel(src) end)
-        if ok and (tonumber(lvl) or 0) >= 1 then return true end
+        exempt = ok and (tonumber(lvl) or 0) >= 1
     end
-    return false
+    Watch.staff[src] = { exempt = exempt, at = now() }
+    return exempt
 end
 
 --- Une ressource qui téléporte un joueur peut le signaler (prison, hôpital, intérieurs…) : pas de faux positif
@@ -127,7 +131,7 @@ if AC.enabled then
     end)
     AddEventHandler('playerDropped', function()
         local src = source
-        Watch.last[src], Watch.flags[src], Watch.money[src], Watch.grace[src] = nil, nil, nil, nil
+        Watch.last[src], Watch.flags[src], Watch.money[src], Watch.grace[src], Watch.staff[src] = nil, nil, nil, nil, nil
     end)
     CreateThread(function()
         while true do

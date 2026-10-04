@@ -1,5 +1,5 @@
-# Génère docs/pdf/ROADLINE_Bilan_V8.pdf (tout ce qui existe, historique, état, ce qu'il reste, idées signature)
-# et docs/pdf/ROADLINE_Reste_a_tester.pdf (retours du beta test et nouveautés V8 → à vérifier en jeu).
+# Génère docs/pdf/ROADLINE_Bilan_V9.pdf (tout ce qui existe, historique, état, ce qu'il reste, idées signature)
+# et docs/pdf/ROADLINE_Reste_a_tester.pdf (retours du beta test et nouveautés V8 / V9 → à vérifier en jeu).
 # Lancer depuis la racine : python3 tools/bilan.py
 import os
 import sys
@@ -36,9 +36,22 @@ HISTORY = [
            'visage connu), enquêtes avec preuves (scellés, labo, fichier), rencontres de la route, rumeurs et indic\', carnet des véhicules ; '
            'prison vivante, météo événementielle, mentors, permis à points, signes distinctifs, fausses plaques, shérif du comté, garde à vue '
            'et interrogatoire, chien K9, contrebande maritime, mode cinéma, Halloween sur la route, correctifs console'],
+    ['V9', "La ville porte ses cicatrices : mémoriaux, vitrines brisées et fresques ; la cavale (primes, légendes) ; appareil photo argentique ; "
+           "cabines téléphoniques cohérentes ; fraude à l'assurance ; combats clandestins ; racket des commerces ; la doublure du patron ; "
+           "contrats signés ; récap du mois et biographie ; rendez-vous fixes ; anti-triche serveur ; Discord (statut, annonces, bot, rôles) ; "
+           "sauvegardes toutes les 6 h et retour en arrière (base ou joueur) ; statistiques de rétention"],
 ]
 
 FEATURES = [
+    ('★ V9 : la ville porte ses cicatrices', [
+        "Cicatrices de la ville : bougies là où quelqu'un est tombé, vitrine brisée après un braquage (réparée par un ouvrier payé), fresque du gang vainqueur.",
+        "La cavale : fugitifs affichés, prime qui grimpe, /livrer, prime au policier, panthéon des légendes (/legendes).",
+        "Appareil photo argentique (photo = objet avec qui / quelles plaques / où), mur du commissariat, analyse au labo ; cabines téléphoniques réelles pour les missions.",
+        "Fraude à l'assurance recoupée avec le carnet du véhicule ; combats clandestins (ring qui change chaque jour, paris) ; racket hebdomadaire des bars.",
+        "La doublure du patron (bars) ; contrats signés appliqués par le serveur (prêt, salaire, location, union, litiges) ; récap du mois (/recap) ; rendez-vous fixes (/rdv).",
+        "Staff : anti-triche serveur (alertes, staff exempté), statistiques de rétention dans F11 ; Discord : statut en direct, annonces, bot, rôles de métier ; "
+        "sauvegarde toutes les 6 h + RESTAURER-BDD (base entière ou un seul joueur).",
+    ]),
     ('★ Signatures RoadLine (V8) : la ville a une mémoire', [
         'La ville se souvient : description brute du suspect par les témoins, mémoire des tenues et véhicules (2 h), visage connu nommé.',
         'Enquêtes avec preuves : douilles, sang, empreintes, pneus, peinture ; scellés, labo, fichier ADN / empreintes, profils inconnus reliés ; gants, javel, pluie.',
@@ -95,29 +108,29 @@ FEATURES = [
         'Panel F10 (tickets, fiches, sanctions publiques, isolement, journal) ; F11 en 5 catégories ; raccourcis Ctrl+Y / U / O ; persos GTA et animaux.',
         'Déplacer n\'importe quel point en jeu (sauvegardé), décor (/builder), lieux publics (boutiques, parkings), gangs et garages, journal de toutes les actions.',
         'Outils Windows en un double-clic : INSTALLER, METTRE-A-JOUR, IMPORTER-MODS (marques refusées), NETTOYER-MARQUES, REPARER-*, VIDER-CACHE, '
-        'SAUVEGARDER-BDD, INVITER-AMIS, PREPARER-HEBERGEUR.',
-        'Qualité : 54 ressources maison, près de 2 100 vérifications automatiques à chaque envoi (GitHub), linters de config, de liaisons et de performance.',
+        'SAUVEGARDER-BDD, RESTAURER-BDD, CONFIGURER-DISCORD, LANCER-BOT-DISCORD, INVITER-AMIS, PREPARER-HEBERGEUR.',
+        'Qualité : 59 ressources maison, près de 2 300 vérifications automatiques à chaque envoi (GitHub), linters de config, de liaisons et de performance.',
     ]),
 ]
 
 STATE = [
     ['Domaine', 'État', 'Ce qu\'il reste'],
-    ['Code et contenu', 'V8 complète, tests verts', 'Ton test en jeu de la V7 + V8, recalage des points estimés (outil Déplacer un point)'],
+    ['Code et contenu', 'V9 complète, tests verts', 'Ton test en jeu des V8 + V9, recalage des points estimés (outil Déplacer un point), lieux du ring à vérifier'],
     ['Hébergement', 'Bloqué : offre sans base SQL', 'Base MySQL (support Sentrohost, offre avec base, ou VPS Linux + installateur), puis PREPARER-HEBERGEUR'],
     ['Beta test', 'Toi seul en local', 'Ouvrir aux beta-testeurs une fois hébergé (8 places en profil dev)'],
-    ['Communauté', 'Discord fait', 'Quelques catégories / salons (règlement, candidatures, sanctions, annonces, tickets), webhooks à brancher'],
+    ['Communauté', 'Discord fait, bot prêt', 'Salons #statut / #annonces + CONFIGURER-DISCORD.bat (webhooks, bot, rôles de métier)'],
     ['Image', 'Site fait (Discord branché)', 'Logo officiel (96x96 + site + écran de chargement), photos en jeu, bande-annonce'],
-    ['Lancement public', 'À préparer', 'Profil prod (48 places), sauvegardes automatiques, staff recruté et formé, règlement final, Tebex (optionnel)'],
+    ['Lancement public', 'À préparer', 'Profil prod (48 places), staff recruté et formé, règlement final, Tebex (optionnel) ; sauvegardes et anti-triche : faits'],
 ]
 
 TO_OPEN = [
     '<b>Hébergeur avec base de données</b> : demander au support Sentrohost d\'ajouter une base MySQL / MariaDB, ou passer sur une offre qui en a une, '
     'ou louer un VPS Linux (on écrira l\'installateur Linux). Sans base, Qbox ne démarre pas.',
-    '<b>Valider la V7 et la V8 en jeu</b> avec la fiche « Reste à tester » ; me renvoyer les points encore mal placés et les erreurs F8.',
+    '<b>Valider la V8 et la V9 en jeu</b> avec la fiche « Reste à tester » ; me renvoyer les points encore mal placés et les erreurs F8.',
     '<b>Clé de licence</b> Cfx (keymaster) pour l\'hébergeur, sv_hostname / projet / tags, logo 96x96 (load_server_icon).',
     '<b>Discord</b> : webhooks (staff, sanctions publiques, annonces, social) dans secrets.cfg ; rôles staff = rangs en jeu ; salon candidatures si liste blanche.',
     '<b>Staff</b> : nommer 2-3 modos, leur donner le rang en jeu (F11 → Joueurs → Rang), leur faire lire docs/ADMIN.md.',
-    '<b>Sauvegardes</b> automatiques de la base chez l\'hébergeur (tâche planifiée ou sauvegarde du panel).',
+    '<b>Sauvegardes</b> : SAUVEGARDER-BDD.bat → programmer toutes les 6 h (PC) ; chez un hébergeur Linux : scripts/linux/roadline-bdd.sh programmer.',
     '<b>Test de charge</b> à 6-8 joueurs (FPS, resmon, ping) avant de monter en places ; puis profil prod.',
     '<b>Règlement final</b> (RP, sanctions, boutique zéro P2W) publié sur le Discord et le site.',
 ]
@@ -138,7 +151,7 @@ IDEAS = [
 
 
 def bilan():
-    d = doc('docs/pdf/ROADLINE_Bilan_V8.pdf', 'RoadLine RP · Bilan complet V8')
+    d = doc('docs/pdf/ROADLINE_Bilan_V9.pdf', 'RoadLine RP · Bilan complet V9')
     s = [Paragraph('RoadLine RP · Bilan complet', H1),
          Paragraph(f'De la création de la base à la {VERSION} : tout ce qui existe en jeu, où on en est, ce qu\'il reste pour ouvrir, '
                    'et 10 idées signature pour la suite. Serveur FiveM RP français, Free Access, zéro pay-to-win (Qbox, ox_lib, ox_inventory, pma-voice).', P),
@@ -148,7 +161,7 @@ def bilan():
         s += [KeepTogether([Paragraph(title, H3)] + bullets(items))]
     s += [PageBreak(), Paragraph('3. Où on en est', H2), table(STATE, [32 * mm, 45 * mm, 103 * mm]),
           Paragraph('4. Ce qu\'il reste pour ouvrir le serveur', H2)] + bullets(TO_OPEN)
-    s += [PageBreak(), Paragraph('5. Idées pour la suite (V9 et après)', H2),
+    s += [PageBreak(), Paragraph('5. Idées pour la suite (V10 et après)', H2),
           Paragraph('Dans l\'esprit de « Los Santos réactif » : des systèmes qui se branchent sur ce qui existe déjà et que peu de serveurs proposent.', P)]
     for i, (t, txt) in enumerate(IDEAS, 1):
         s += [KeepTogether([Paragraph(f'{i}. {t}', H3), Paragraph(txt, P)])]
@@ -205,6 +218,16 @@ RETEST = [
         ('Contrats à mettre dans le téléphone', 'Téléphone → Inconnu → Contrats', 'Publier / accepter'),
         ('100 gangs, planque Ballas buggée', '4 gangs + 2 organisations ; garage visible', 'F9, planque et garage de chaque gang'),
     ]),
+    ('V9 · Nouveautés à vérifier', [
+        ('Cicatrices de la ville', 'Bougies, vitrine brisée, fresque', 'Mourir ; braquer une supérette puis réparer avec un autre perso ; gagner une guerre'),
+        ('La cavale', 'Affiches, prime, légendes', 'Monter très haut en recherche ; /cavale ; /livrer menotté ; /legendes'),
+        ('Appareil photo / cabines', 'Photo = objet ; vraies cabines', 'Photo d\'un joueur + voiture ; mission « voix » à une cabine'),
+        ('Fraude à l\'assurance', 'Déclaration de vol recoupée', 'Assurer, attendre 24 h, déclarer, puis conduire la voiture'),
+        ('Combats clandestins', 'Ring de nuit, paris', 'Trouver le ring (rumeurs), combat à 2 + 1 parieur'),
+        ('Racket / doublure', 'Protection hebdo ; PNJ du patron', '/racket à un bar ; « Laisser ma doublure » puis la braquer'),
+        ('Contrats / récap / rdv', 'Prêt, salaire, location, union', '/contrat face à face ; /recap ; /rdv'),
+        ('Staff et outils', 'Anti-triche, rétention, Discord, sauvegardes', 'F11 → Anti-triche / Statistiques ; CONFIGURER-DISCORD ; RESTAURER-BDD (un joueur)'),
+    ]),
     ('V8 · Nouveautés à vérifier', [
         ('La ville se souvient', 'Description des témoins, mémoire tenue / voiture', 'Braquer masqué en voiture, recommencer, puis changer de tenue + repeindre'),
         ('Enquêtes avec preuves', 'Douilles, sang, empreintes, pneus, peinture ; labo', 'Lampe torche (police), scellé, labo, F4 → Relever empreintes'),
@@ -256,4 +279,4 @@ def reste():
 if __name__ == '__main__':
     bilan()
     reste()
-    print('PDF générés : docs/pdf/ROADLINE_Bilan_V8.pdf, docs/pdf/ROADLINE_Reste_a_tester.pdf')
+    print('PDF générés : docs/pdf/ROADLINE_Bilan_V9.pdf, docs/pdf/ROADLINE_Reste_a_tester.pdf')

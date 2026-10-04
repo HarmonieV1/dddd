@@ -1,4 +1,4 @@
--- Tests gs_stats (V9) : compteurs de biographie (événements serveur, écriture groupée mois + toujours), vue Wrapped
+-- Tests gs_stats (V9) : compteurs de biographie (événements serveur, écriture groupée mois + toujours), vue récap
 -- (titre, classement), rétention (J+1, 7 jours, abandon à la 1re session, durée moyenne, nouveaux).
 dofile('tests/mock.lua')
 local R = 'server/resources/[gtasoon]/'
@@ -39,8 +39,8 @@ check('monnaie hors cash / banque ignorée', Bio.buf.CID1.earned == 5000)
 local n = Bio.flush()
 check('écriture groupée : une requête, mois + toujours', writes == 1 and n >= 14 and db.CID1[Bio.month()].meters == 12500 and db.CID1.all.meters == 12500 and next(Bio.buf) == nil)
 local v = Bio.view('CID1', Bio.month())
-check('vue Wrapped : lignes formatées', #v.lines >= 6 and v.lines[1].label == 'Au volant' and v.lines[1].value == '12 km')
-check('vue Wrapped : un titre', v.title == 'Poids lourd du ring' or v.title == 'Ennemi public' or v.title ~= nil)
+check('vue récap : lignes formatées', #v.lines >= 6 and v.lines[1].label == 'Au volant' and v.lines[1].value == '12 km')
+check('vue récap : un titre', v.title == 'Poids lourd du ring' or v.title == 'Ennemi public' or v.title ~= nil)
 Bio.addCid('CID2', 'minutes', 30)
 local v2 = Bio.view('CID2', Bio.month())
 check('les compteurs pas encore écrits comptent', v2.lines[1].value == '0 h 30')
