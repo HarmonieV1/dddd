@@ -25,6 +25,7 @@ $errs = Join-Path $logs 'erreurs.txt'
 Say 'Démarrage du serveur pendant 2 minutes (ne ferme pas cette fenêtre)…' 'Cyan'
 $p = Start-Process -FilePath $fx -ArgumentList '+set onesync on +exec server.cfg' -WorkingDirectory $Data -NoNewWindow -PassThru `
     -RedirectStandardOutput $full -RedirectStandardError (Join-Path $logs 'console-erreurs-brutes.txt')
+$null = $p.Handle # garde le code de sortie lisible
 for ($i = 120; $i -gt 0; $i -= 10) { Say "  … encore $i s" 'DarkGray'; Start-Sleep -Seconds 10; if ($p.HasExited) { break } }
 if (-not $p.HasExited) { Stop-Process -Id $p.Id -Force }
 Start-Sleep -Seconds 2
@@ -41,7 +42,23 @@ for ($i = 0; $i -lt $all.Count; $i++) {
         $out.Add('')
     }
 }
-if ($out.Count -eq 0) { $out.Add('Aucune erreur trouvée pendant les 2 premières minutes. Console complète : ' + $full) }
+# Toujours : comment le serveur s'est terminé, les 80 dernières lignes de la console et les rapports de plantage récents
+$head = New-Object System.Collections.Generic.List[string]
+if ($p.HasExited -and $p.ExitCode -ne $null -and $p.ExitCode -ne 0 -and $p.ExitCode -ne -1) { $head.Add(('LE SERVEUR S''EST FERMÉ TOUT SEUL (code {0}).' -f $p.ExitCode)) }
+elseif ($all.Count -lt 5) { $head.Add('La console est presque vide : le serveur s''est arrêté avant d''écrire quoi que ce soit.') }
+$head.Add("Lignes de console : $($all.Count)")
+$fxDir = Split-Path -Parent $fx
+foreach ($d in @((Join-Path $fxDir 'crashes'), (Join-Path $Data 'crashes'))) {
+    if (Test-Path -LiteralPath $d) {
+        Get-ChildItem -LiteralPath $d -File | Where-Object { $_.LastWriteTime -gt (Get-Date).AddMinutes(-5) } |
+            ForEach-Object { $head.Add('Rapport de plantage : ' + $_.FullName) }
+    }
+}
+$head.Add('')
+if ($out.Count -eq 0) { $head.Add('Aucune ligne « erreur » trouvée.') }
+$out.InsertRange(0, $head)
+$out.Add('===== 80 DERNIÈRES LIGNES DE LA CONSOLE =====')
+foreach ($l in ($all | Select-Object -Last 80)) { $out.Add(($l -replace '\x1b\[[0-9;]*m', '')) }
 [IO.File]::WriteAllLines($errs, $out, (New-Object Text.UTF8Encoding $false))
 Say "Fait. Erreurs : $errs" 'Green'
 Say "Console complète : $full" 'Green'
