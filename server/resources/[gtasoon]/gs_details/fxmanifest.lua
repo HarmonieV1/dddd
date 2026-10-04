@@ -10,4 +10,4 @@ dependencies { 'ox_lib', 'gs_security', 'gs_bridge' }
 
 shared_scripts { '@ox_lib/init.lua', 'shared/config.lua', '@gs_bridge/shared/points.lua' }
 server_scripts { 'server/main.lua' }
-client_scripts { 'client/main.lua', 'client/vehicle.lua', 'client/health.lua', 'client/outfits.lua', 'client/radial.lua' }
+client_scripts { 'client/main.lua', 'client/vehicle.lua', 'client/health.lua', 'client/outfits.lua', 'client/radial.lua', 'client/cinema.lua' }

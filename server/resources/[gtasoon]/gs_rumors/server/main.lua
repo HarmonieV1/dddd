@@ -74,6 +74,7 @@ local KIND = {
     fence = function(n) return ('livraison au receleur (%d doses)'):format(n or 0) end,
     craft = function(n) return ('l\'atelier a tourné (%d munitions)'):format(n or 0) end,
     crime = function(label) return 'un coup : ' .. (label or 'crime'):lower() end,
+    smuggling = function() return 'une cargaison débarquée en douce sur une plage' end,
 }
 
 function Rumors.gangActivity(gang, kind, coords, info)

@@ -228,5 +228,26 @@ do
     fixRandom(nil)
 end
 
+-- V8 · Signes distinctifs (tatouages visibles selon la tenue)
+do
+    json.decode = function() return { tattoos = { ZONE_HEAD = { { 'x' } }, ZONE_LEFT_ARM = { { 'y' } }, ZONE_TORSO = {} } } end
+    local m = Memory.parseTattoos('{}')
+    check('tatouages lus : visage et bras (torse vide ignoré)', m.head and m.arms and not m.torso)
+    Memory.marks[8] = m
+    local spot = vec3(-700.0, -700.0, 30.0)
+    W.players[8].pos = spot
+    W.players[8].clothes = { [1] = { 0, 0 }, [3] = { 0, 0 }, [11] = { 5, 1 } }
+    W.players[8].props = {}
+    clearPeds() spawnPeds(spot, 8) fixRandom(0.0) Memory.list = {}
+    local r = Wanted.report(8, 'robbery', spot)
+    local d = r and table.concat(r.desc, ', ') or ''
+    check('bras nus et visage découvert : tatouages décrits', d:find('tatouage au visage') and d:find('bras tatoués'))
+    W.players[8].clothes[1] = { 12, 0 } W.players[8].clothes[3] = { 4, 0 }
+    r = Wanted.report(8, 'robbery', spot)
+    d = r and table.concat(r.desc, ', ') or ''
+    check('masque et manches longues : tatouages cachés', not d:find('tatou'))
+    clearPeds() fixRandom(nil)
+end
+
 io.write(('\n%d réussis, %d échoués\n'):format(passed, failed))
 os.exit(failed == 0 and 0 or 1)

@@ -18,7 +18,7 @@ Config.Rules = [[
 
 **7. Boutique.** Uniquement du cosmétique : aucun avantage de jeu ne s'achète.
 
-Règlement complet et sanctions : discord.gg/8y2sX7EvZN
+Règlement complet et sanctions : discord.gg/8y2sX7EvZN · roadlinerp.netlify.app
 ]]
 
 -- Liste blanche : active seulement si la convar `gs_whitelist` vaut "true" (cfg/prod.cfg). Candidature sur Discord,

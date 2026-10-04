@@ -24,6 +24,48 @@ function Memory.outfitOf(ped)
     return table.concat(parts, '|')
 end
 
+-- V8 · Signes distinctifs : zones tatouées du personnage (apparence enregistrée en base, illenium-appearance)
+Memory.marks = {} -- [src] = { head = true, arms = true, torso = true }
+local ZONES = { ZONE_HEAD = 'head', ZONE_LEFT_ARM = 'arms', ZONE_RIGHT_ARM = 'arms', ZONE_TORSO = 'torso' }
+
+function Memory.parseTattoos(skin)
+    local ok, t = pcall(function() return type(skin) == 'string' and json.decode(skin) or skin end)
+    local out = {}
+    if not ok or type(t) ~= 'table' or type(t.tattoos) ~= 'table' then return out end
+    for zone, list in pairs(t.tattoos) do
+        if ZONES[zone] and type(list) == 'table' and next(list) then out[ZONES[zone]] = true end
+    end
+    return out
+end
+
+function Memory.loadMarks(src)
+    local cid = Bridge:GetIdentifier(src)
+    if not cid or not MySQL or GetResourceState('oxmysql') ~= 'started' then return end
+    MySQL.scalar('SELECT skin FROM playerskins WHERE citizenid = ? AND active = 1 LIMIT 1', { cid }, function(skin)
+        Memory.marks[src] = Memory.parseTattoos(skin)
+    end)
+end
+AddEventHandler('gs_bridge:server:playerLoaded', function(src) Memory.loadMarks(src) end)
+AddEventHandler('gs_bridge:server:playerUnloaded', function(src) Memory.marks[src] = nil end)
+-- Passage chez le tatoueur / le magasin de vêtements : apparence ré-enregistrée → on relit
+local Security = exports.gs_security
+RegisterNetEvent('illenium-appearance:server:saveAppearance', function()
+    local src = source
+    if not Security:RateLimit(src, 'gs_wanted:marks', 2, 10000) then return end
+    SetTimeout(3000, function() Memory.loadMarks(src) end)
+end)
+
+--- Tatouages qu'un témoin peut voir avec cette tenue
+function Memory.visibleMarks(src, ped, masked)
+    local m, out = Memory.marks[src], {}
+    if not m then return out end
+    local g = Bridge:GetGender(src) == 'female' and 'female' or 'male'
+    if m.head and not masked then out[#out + 1] = 'tatouage au visage' end
+    if m.arms and Config.Memory.bareArms[g][GetPedDrawableVariation(ped, 3)] then out[#out + 1] = 'bras tatoués' end
+    if m.torso and Config.Memory.bareTorso[g][GetPedDrawableVariation(ped, 11)] then out[#out + 1] = 'torse tatoué' end
+    return out
+end
+
 --- Ce que les témoins ont pu voir, selon la précision. Retourne une liste de détails (texte brut pour la police).
 function Memory.describe(src, precision, veh)
     local see, out = Config.Memory.see, {}
@@ -36,6 +78,9 @@ function Memory.describe(src, precision, veh)
     if GetPedDrawableVariation(ped, 5) > 0 and precision >= see.bag then out[#out + 1] = 'sac' end
     if GetPedDrawableVariation(ped, 9) > 0 and precision >= see.armour then out[#out + 1] = 'gilet pare-balles' end
     if GetSelectedPedWeapon(ped) ~= UNARMED and precision >= see.armed then out[#out + 1] = 'armé' end
+    if precision >= Config.Memory.tattooSee then
+        for _, mark in ipairs(Memory.visibleMarks(src, ped, masked)) do out[#out + 1] = mark end
+    end
     if veh and veh ~= 0 and DoesEntityExist(veh) and precision >= see.vehicle then
         local kind = Config.VehicleTypes[GetVehicleType(veh)] or 'Véhicule'
         local primary = GetVehicleColours(veh)

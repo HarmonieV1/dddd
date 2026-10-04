@@ -19,6 +19,7 @@ sets sv_projectDesc "GTA RP 100 % FR new generation : témoins et preuves, renco
 sets locale "fr-FR"
 sets tags "roleplay, rp, fr, francais, french, freeaccess, serious rp, new generation, police, gangs, enquetes, qbox"
 sets Discord "https://discord.gg/8y2sX7EvZN"
+sets Site "https://roadlinerp.netlify.app"
 # load_server_icon logo.png   # PNG 96x96
 
 ## ---- Sécurité de base (sans effet de bord) ----

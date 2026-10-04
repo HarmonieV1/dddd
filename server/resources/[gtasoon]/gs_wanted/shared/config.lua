@@ -116,6 +116,11 @@ Config.Memory = {
     -- précision minimale pour que les témoins remarquent chaque détail
     see = { gender = 0.15, vehicle = 0.25, mask = 0.3, hat = 0.45, bag = 0.55, armour = 0.5, armed = 0.35 },
     outfit = { 1, 4, 6, 11 },   -- masque, bas, chaussures, haut (+ couvre-chef) : empreinte de la tenue
+    -- V8 · Signes distinctifs : tatouages visibles (lus dans l'apparence enregistrée, pas envoyés par le client).
+    -- Visage : sauf masque. Bras : seulement avec des bras nus (bras de la tenue dans la liste). Torse : torse nu.
+    tattooSee = 0.4,
+    bareArms = { male = { [0] = true, [15] = true }, female = { [0] = true, [15] = true } },
+    bareTorso = { male = { [15] = true }, female = { [15] = true } },
 }
 -- Visage connu : un témoin peut nommer un suspect célèbre (réputation média ou rue) s'il n'est pas masqué.
 Config.Fame = { at = 600, precision = 0.5, chance = 0.6 }

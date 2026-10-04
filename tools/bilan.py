@@ -34,7 +34,8 @@ HISTORY = [
            'tenues en objets, courses avec organisateur, personnalisation mécano, outil de mise en ligne'],
     ['V8', 'Nom RoadLine RP, site, signatures « mémoire » : la ville se souvient (description des témoins, mémoire des tenues et véhicules, '
            'visage connu), enquêtes avec preuves (scellés, labo, fichier), rencontres de la route, rumeurs et indic\', carnet des véhicules ; '
-           'prison vivante, météo événementielle, mentors, permis à points, correctifs console (garages, police IA, SharpDX, marques)'],
+           'prison vivante, météo événementielle, mentors, permis à points, signes distinctifs, fausses plaques, shérif du comté, garde à vue '
+           'et interrogatoire, chien K9, contrebande maritime, mode cinéma, Halloween sur la route, correctifs console'],
 ]
 
 FEATURES = [
@@ -45,6 +46,8 @@ FEATURES = [
         'La ville parle : rumeurs tirées des vrais événements (barmans, pompiste) ; l\'indic\' vend les activités des gangs et balance.',
         'Chaque voiture a une histoire : kilomètres, accidents, propriétaires, peintures ; crimes visibles par la police.',
         'Prison vivante, météo événementielle (routes fermées, interventions), mentors, permis à points.',
+        'Signes distinctifs (tatouages visibles), fausses plaques (châssis qui trahit), shérif du comté, garde à vue et interrogatoire, chien K9.',
+        'Contrebande maritime (radar côtier, garde-côtes), mode cinéma pour les clips, Halloween sur la route (fantôme, 13 citrouilles).',
     ]),
     ('Arrivée et confort', [
         'Écran de chargement néon / sunset, règlement à accepter, liste blanche optionnelle (candidature Discord).',
@@ -93,7 +96,7 @@ FEATURES = [
         'Déplacer n\'importe quel point en jeu (sauvegardé), décor (/builder), lieux publics (boutiques, parkings), gangs et garages, journal de toutes les actions.',
         'Outils Windows en un double-clic : INSTALLER, METTRE-A-JOUR, IMPORTER-MODS (marques refusées), NETTOYER-MARQUES, REPARER-*, VIDER-CACHE, '
         'SAUVEGARDER-BDD, INVITER-AMIS, PREPARER-HEBERGEUR.',
-        'Qualité : 53 ressources maison, plus de 2 000 vérifications automatiques à chaque envoi (GitHub), linters de config, de liaisons et de performance.',
+        'Qualité : 54 ressources maison, plus de 2 100 vérifications automatiques à chaque envoi (GitHub), linters de config, de liaisons et de performance.',
     ]),
 ]
 
@@ -120,28 +123,15 @@ TO_OPEN = [
 ]
 
 IDEAS = [
-    ('Fausses plaques (illégal)', 'Plaques volées ou contrefaites chez un faussaire : la voiture n\'est plus reliée à ses signalements (La ville se souvient). '
-     'Mais le carnet du véhicule ne colle plus : un policier attentif repère la fraude. Le jeu du chat et de la souris continue.'),
-    ('Tatouages et signes distinctifs', 'Les témoins décrivent aussi les tatouages visibles, les cheveux colorés, une démarche : les criminels prudents '
-     'se couvrent (manches longues, capuche). Prolonge directement la signature « mémoire ».'),
-    ('Mode cinéma RoadLine', '/cinema : interface masquée, bandes noires, caméra lente, filtres néon. Pensé pour les clips TikTok des joueurs : '
-     'notre premier levier de croissance, gratuit.'),
-    ('Halloween sur la route (31 octobre)', 'Pendant une semaine, rencontres de la route spéciales (auto-stoppeur fantôme, voiture abandonnée, '
-     'brouillard), décor citrouilles, chasse aux masques. Tombe juste après l\'ouverture : parfait pour la rétention.'),
     ('Usuriers et dettes', 'Emprunter à un usurier PNJ (ou à un gang) ; retards = visites de recouvreurs (PNJ ou joueurs). Crée des histoires et des liens '
      'entre légal et illégal.'),
-    ('Garde à vue et interrogatoire', 'Salle d\'interrogatoire, temps de garde à vue, avocat présent ou non, aveux qui réduisent la peine. '
-     'Donne de la profondeur aux enquêtes avec preuves.'),
     ('Marché de l\'occasion', 'Un parking où les joueurs exposent leurs voitures avec un prix ; le carnet du véhicule est consultable : '
      'kilomètres, accidents, peintures. Les arnaques deviennent du RP.'),
     ('Entretien des véhicules', 'Usure selon les kilomètres du carnet : vidange, pneus, freins. Les mécanos ont du travail régulier, sans grind.'),
-    ('Contrebande maritime', 'Livraisons nocturnes par bateau (Paleto, Cayo), garde-côtes (police en bateau), échanges en mer.'),
-    ('Shérif du comté', 'Métier distinct du LSPD pour le nord (Sandy, Paleto, routes) : contrôles routiers joués par des joueurs, en écho aux rencontres.'),
     ('Ragots sur Vibe', 'Comptes anonymes #Ragots où l\'on peut publier des rumeurs… vraies ou fausses. Désinformation, enquêtes de journalistes.'),
     ('Citoyen modèle', 'Rendre des portefeuilles, aider sur la route, témoigner : la réputation légale baisse le prix de l\'assurance, '
      'adoucit les amendes, ouvre des métiers encadrés plus vite.'),
     ('Rallye RoadLine', 'Épreuves de rallye sur chemins de terre (Grapeseed, Chiliad), étapes chronométrées, copilote qui lit le carnet de route.'),
-    ('Chien de la police (K9)', 'Un chien qui renifle les véhicules et les sacs (drogue, argent sale). Classique, très apprécié des policiers RP.'),
     ('Le fil de la ville sur le site', 'Une page du site alimentée par les rumeurs anonymes de la semaine (« Ce qui s\'est passé à Los Santos »). '
      'Donne envie aux visiteurs d\'entrer dans l\'histoire.'),
 ]
@@ -225,6 +215,10 @@ RETEST = [
         ('Météo événementielle', 'Routes fermées, interventions payées', '/meteoevent storm (staff)'),
         ('Mentors / permis à points', '/mentor ; 12 points, retour auto-école à 0', 'Deux persos (niveau 5+ et nouveau) ; F4 → retirer des points'),
         ('Console : SVNetwork « hung »', 'Clic dans la fenêtre = pause : désactivé', 'Cliquer dans la console : le serveur continue'),
+        ('Fausses plaques / tatouages', 'Plus de lien ; châssis révélé ; tatouages décrits', 'Marché noir, braquer, Vérifier une plaque ; bras nus vs manches'),
+        ('Shérif, garde à vue, K9', 'Métier BCSO ; cellule, droits, aveux ; flair', 'Service à Sandy ; F4 → Garde à vue, /droits, Chien K9'),
+        ('Contrebande maritime', 'Mer → plage, radar, garde-côtes', 'Docker de Paleto la nuit, en bateau'),
+        ('Cinéma / Halloween', '/cinema, /ralenti ; fantôme, citrouilles', '/halloween on (staff)'),
     ]),
     ('Monde, secours, staff', [
         ('Cayo : pas de retour', 'Comptoir retour (pilote, logo)', 'Aller-retour'),

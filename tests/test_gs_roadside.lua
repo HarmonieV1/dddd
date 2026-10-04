@@ -11,7 +11,7 @@ local seen = {}
 Store = { init = function() end, add = function(cid, k) seen[cid .. k] = (seen[cid .. k] or 0) + 1 end,
     list = function(cid) local o = {} for k, v in pairs(seen) do if k:sub(1, #cid) == cid then o[k:sub(#cid + 1)] = v end end return o end }
 loadResource('gs_security', { R .. 'gs_security/server/main.lua' })
-loadResource('gs_roadside', { R .. 'gs_roadside/shared/config.lua', R .. 'gs_roadside/server/main.lua' })
+loadResource('gs_roadside', { R .. 'gs_roadside/shared/config.lua', R .. 'gs_roadside/server/main.lua', R .. 'gs_roadside/server/halloween.lua' })
 
 local passed, failed = 0, 0
 local function check(name, cond)
@@ -139,6 +139,34 @@ heat = 0
 d = force('accident')
 check('ignorer : aucune conséquence', Roadside.finish(1, d.token, 'ignored') == true and Roadside.active[1] == nil)
 check('collection consultable', cb('gs_roadside:collection', 1).hitchhiker == 1)
+
+-- V8 · Halloween
+do
+    check('fenêtre d\'Halloween : 31 octobre oui, 15 juillet non', Halloween.inWindow({ month = 10, day = 31 })
+        and not Halloween.inWindow({ month = 7, day = 15 }) and Halloween.inWindow({ month = 11, day = 1 }))
+    Halloween.forced = true Halloween.refresh()
+    check('activé par le staff', GlobalState.gsHalloween == true)
+    reset(1) tp(1, route)
+    fixRandom(0.0)
+    local g = Roadside.roll(1)
+    fixRandom()
+    check('Halloween : auto-stoppeur fantôme', g and g.kind == 'ghost')
+    check('fantôme : trop tôt refusé', not Roadside.finish(1, g.token, 'vanished'))
+    advance(30000)
+    local cash = W.players[1].money.cash
+    check('fantôme : disparu, billets laissés', Roadside.finish(1, g.token, 'vanished') == true and W.players[1].money.cash > cash and seen['CID1ghost'] == 1)
+    local H = Config.Halloween
+    check('citrouille : trop loin', not Halloween.pumpkin(1, 1))
+    for i = 1, #H.pumpkins - 1 do tp(1, H.pumpkins[i]) Halloween.pumpkin(1, i) end
+    tp(1, H.pumpkins[1])
+    check('citrouille déjà ramassée', not Halloween.pumpkin(1, 1))
+    local bank = W.players[1].money.bank
+    tp(1, H.pumpkins[#H.pumpkins])
+    local ok, msg = Halloween.pumpkin(1, #H.pumpkins)
+    check('13 citrouilles : récompense', ok and msg:find('Récompense') and W.players[1].money.bank == bank + H.reward)
+    Halloween.forced = false Halloween.refresh()
+    check('désactivé : plus de citrouilles', GlobalState.gsHalloween == false and not Halloween.pumpkin(1, 2))
+end
 
 io.write(('\n%d réussis, %d échoués\n'):format(passed, failed))
 os.exit(failed == 0 and 0 or 1)

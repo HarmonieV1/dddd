@@ -24,6 +24,9 @@ local function setVisible(v)
     SendNUIMessage({ action = 'visible', visible = v and loaded })
 end
 
+-- V8 · Mode cinéma (gs_details) : HUD masqué le temps du tournage, sans toucher au réglage du joueur
+AddEventHandler('gs_hud:client:cinema', function(on) SendNUIMessage({ action = 'visible', visible = (not on) and visible and loaded }) end)
+
 RegisterCommand('hud', function()
     setVisible(not visible)
     SetResourceKvpInt('gs_hud_hidden', visible and 0 or 1)

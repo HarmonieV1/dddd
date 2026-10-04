@@ -351,6 +351,30 @@ Scenes.sheriff = function(d)
     end
 end
 
+-- V8 · Halloween : l'auto-stoppeur fantôme (il disparaît en route)
+Scenes.ghost = function(d)
+    local ped = spawnPed(d.model, scene.pos, scene.heading + 90.0)
+    if not ped then return ignore() end
+    SetPedConfigFlag(ped, 208, true)
+    playLoop(ped, 'random@hitch_lift', 'idle_f')
+    if not waitInteract(ped, 12.0, 'Le prendre en stop', true) then return ignore() end
+    local veh = cache.vehicle
+    if not veh or not IsVehicleSeatFree(veh, 0) then return ignore() end
+    ClearPedTasks(ped)
+    TaskEnterVehicle(ped, veh, 15000, 0, 1.0, 1, 0)
+    local t = GetGameTimer() + 15000
+    while not IsPedInVehicle(ped, veh, false) and GetGameTimer() < t do Wait(250) end
+    if not IsPedInVehicle(ped, veh, false) then return ignore() end
+    say('« … Roule. Je te dirai quand t\'arrêter. »')
+    Wait(math.random(25000, 45000))
+    AnimpostfxPlay('DeathFailOut', 1500, false)
+    PlaySoundFrontend(-1, 'Bed', 'WastedSounds', true)
+    if DoesEntityExist(ped) then DeleteEntity(ped) end
+    say('Le siège passager est vide. Il ne reste qu\'une odeur de terre mouillée… et quelques billets.')
+    finish('vanished')
+    cleanup()
+end
+
 local function start(d)
     local pos, heading = findSpot()
     if not pos then return lib.callback.await('gs_roadside:finish', false, d.token, 'ignored') end

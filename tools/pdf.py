@@ -86,6 +86,7 @@ COMMANDS = [
     ['/boutique', 'boutique cosmétique (réclamer ses achats)'],
     ['/permis · /histoire', 'solde de points du permis · carnet du véhicule où tu es assis'],
     ['/mentor · /rencontres · /rumeurs', 'parrainage · collection des rencontres de la route · où entendre les rumeurs'],
+    ['/droits · /cinema · /ralenti', 'garde à vue (avocat, silence, aveux) · mode cinéma pour les clips · ralenti pendant le tournage'],
     ['Staff', '/whitelist · /gsjob · /gsgang · /gsevent · /meteo · /builder · /economie (les joueurs ne les voient pas)'],
 ]
 
@@ -132,6 +133,17 @@ def guide(points):
         '<b>Météo événementielle</b> : pendant la tempête, routes fermées (barrières, logo) et interventions payées (arbres, véhicules en détresse).',
         '<b>Mentors</b> (/mentor) : un ancien (niveau 5+) parraine un nouveau ; s\'il reste 7 jours, primes pour les deux.',
         '<b>Permis à points</b> : 12 points, retirés par la police (F4 → Contrôle d\'identité) ou un refus d\'obtempérer ; à 0, retour à l\'auto-école.',
+        '<b>Signes distinctifs</b> : les témoins décrivent aussi les tatouages visibles (visage sans masque, bras nus, torse nu).',
+        '<b>Fausses plaques</b> (marché noir) : la voiture n\'est plus reliée à ses signalements ni à son carnet pendant 45 min ; '
+        'mais « Vérifier une plaque » révèle que le châssis ne correspond pas. Remettre la vraie plaque avant de garer.',
+        '<b>Shérif du comté</b> (Sandy Shores, Paleto) : métier distinct du LSPD, mêmes outils (F4, dispatch, preuves, prison).',
+        '<b>Garde à vue et interrogatoire</b> (F4) : cellule du commissariat, salle d\'interrogatoire ; le suspect a ses droits (/droits) : '
+        'avocat, silence, aveux (peine réduite de 30 %). Interrogatoire sans l\'avocat demandé = vice de procédure noté au rapport.',
+        '<b>Chien K9</b> (F4 → Chien K9, grade 1+) : renifle un véhicule (coffre, boîte à gants, passagers) ou une personne : drogue, argent sale.',
+        '<b>Contrebande maritime</b> : le docker du port de Paleto (la nuit, gang ou réputation de rue) confie une cargaison à repêcher en mer en bateau '
+        'puis à décharger sur une plage ; radar côtier, garde-côtes IA s\'il n\'y a pas de police.',
+        '<b>Mode cinéma</b> (/cinema) : interface masquée, bandes noires, filtres (cinéma, néon, noir et blanc), /ralenti : pour les clips.',
+        '<b>Halloween sur la route</b> (du 24 octobre au 1er novembre) : rencontres plus fréquentes, auto-stoppeur fantôme, 13 citrouilles cachées (récompense).',
     ])
     s += [PageBreak(), Paragraph('4. Vie légale', H2)]
     s += bullets([
@@ -214,6 +226,13 @@ TESTS = [
         'Prison : se faire incarcérer → boulots (peine réduite, tickets), cantine, trafiquant ; évasion à deux la nuit avec outils',
         '/meteoevent storm (staff) : routes fermées, interventions payées (mécano ou kit de réparation)',
         '/mentor avec un perso niveau 5+ (disponible) et un nouveau (demande / accepter) ; /permis ; F4 → retirer des points',
+        'Tatouages visibles (bras nus, visage) dans la description ; cachés avec masque / manches longues',
+        'Fausse plaque (marché noir) : poser, braquer (pas de lien), Vérifier une plaque (police) → châssis différent ; la retirer',
+        'Shérif : prendre le service à Sandy Shores / Paleto, F4 identique à la police',
+        'F4 → Garde à vue → /droits côté suspect (avocat, aveux) → Interrogatoire → Incarcérer (peine réduite si aveux)',
+        'F4 → Chien K9 : sortir, renifler un véhicule avec de la drogue dans le coffre, puis une personne',
+        'Contrebande : docker du port de Paleto la nuit → bateau → caisses en mer → plage → argent sale',
+        '/cinema (3 styles) et /ralenti ; /halloween on (staff) : citrouilles et auto-stoppeur fantôme',
     ]),
     ('Démarrage et confort', [
         'Création de perso : « Visage de base 1 / 2 », « Ressemblance », « Teint », « Origines » ; pas de carte d\'identité au départ',

@@ -46,10 +46,16 @@ function Roadside.roll(src)
     local c = GetEntityCoords(ped)
     if not Config.IsRural(c.x, c.y) then return nil end
     if Roadside.last[cid] and now() - Roadside.last[cid] < Config.Cooldown * 60 then return nil end
-    if math.random() >= Config.Chance then return nil end
+    local halloween = GlobalState.gsHalloween == true
+    if math.random() >= (halloween and Config.Halloween.chance or Config.Chance) then return nil end
     Roadside.last[cid] = now()
 
     local kind = Roadside.pick()
+    if halloween and math.random() < Config.Halloween.ghost then -- V8 · Halloween : l'auto-stoppeur fantôme
+        local scene = { kind = 'ghost', token = math.random(100000, 999999), at = now(), start = { x = c.x, y = c.y, z = c.z } }
+        Roadside.active[src] = scene
+        return { kind = 'ghost', token = scene.token, model = Config.Halloween.ghostModel }
+    end
     local def = Config.Types[kind]
     local scene = { kind = kind, token = math.random(100000, 999999), at = now(), start = { x = c.x, y = c.y, z = c.z } }
     local danger = isNight() and def.nightDanger or def.danger
@@ -157,6 +163,10 @@ function Roadside.finish(src, token, outcome)
         reportCrime(src, 'refusal')
         removePoints(src, def.points, 'Refus d\'obtempérer')
         return done('sheriff_fled')
+    elseif s.kind == 'ghost' and outcome == 'vanished' then
+        if elapsed < 20 then return false end
+        pay(src, rnd(Config.Halloween.ghostPay), 'Sur le siège passager, il a laissé')
+        return done('ghost')
     elseif s.kind == 'friend' and outcome == 'met' then
         pay(src, rnd(Config.Friend.gift), 'Un vieil ami de la route')
         return done('friend')

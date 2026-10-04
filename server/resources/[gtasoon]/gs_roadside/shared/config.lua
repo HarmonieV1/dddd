@@ -65,3 +65,17 @@ Config.Collection = {
     { 'wallet_returned', 'Portefeuille rendu' }, { 'wallet_kept', 'Portefeuille gardé' }, { 'vendor', 'Vendeur ambulant' },
     { 'sheriff', 'Contrôle du shérif' }, { 'sheriff_fled', 'Refus d\'obtempérer' },
 }
+
+-- V8 · Halloween (événement unique) : actif automatiquement du 24 octobre au 1er novembre (ou /halloween on|off, staff).
+-- Rencontres plus fréquentes la nuit, auto-stoppeur fantôme, 13 citrouilles cachées dans l'État (récompense à 13).
+Config.Halloween = {
+    from = { 10, 24 }, to = { 11, 1 }, chance = 0.6, ghost = 0.45, ghostPay = { 300, 666 }, reward = 6666,
+    ghostModel = 'u_m_y_zombie_01', pumpkinModel = 'prop_veg_crop_03_pump',
+    pumpkins = {
+        vec3(190.0, -940.0, 30.7), vec3(-1630.0, -1010.0, 13.0), vec3(105.0, -1930.0, 20.8), vec3(1100.0, -640.0, 56.8),
+        vec3(-430.0, 1100.0, 327.7), vec3(1960.0, 3750.0, 32.3), vec3(1700.0, 4810.0, 42.0), vec3(-140.0, 6350.0, 31.5),
+        vec3(501.0, 5600.0, 797.9), vec3(-1700.0, -280.0, 51.8), vec3(-3150.0, 1100.0, 20.8), vec3(1180.0, 2650.0, 37.8),
+        vec3(700.0, 600.0, 128.9),
+    },
+}
+table.insert(Config.Collection, { 'ghost', 'Auto-stoppeur fantôme (Halloween)' })
