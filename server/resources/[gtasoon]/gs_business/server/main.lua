@@ -13,11 +13,11 @@ end
 local function isEmployee(src, id) return JobsApi:IsOnDutyAs(src, id) == true end
 local function isBoss(src, id)
     local j = Bridge:GetJob(src)
-    return j and j.name == id and j.onduty and (j.isboss or j.grade >= 2)
+    return j and j.name == id and j.onduty and j.isboss == true
 end
 local function isOwner(src, id) -- patron, en service ou non
     local j = Bridge:GetJob(src)
-    return j ~= nil and j.name == id and (j.isboss == true or (tonumber(j.grade) or 0) >= 2)
+    return j ~= nil and j.name == id and j.isboss == true
 end
 local function name(src) return Bridge:GetName(src) or GetPlayerName(src) or '?' end
 

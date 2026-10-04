@@ -101,9 +101,14 @@ function Watch.check(src)
 end
 
 --- Gains d'argent : cumul glissant sur 5 min (les dons du staff ne comptent pas)
+-- Mouvements internes (retrait, dépôt, remboursement, caisse) : ce n'est pas de l'argent gagné
+local function internal(reason)
+    if type(reason) ~= 'string' then return false end
+    return reason:find('^retrait') ~= nil or reason:find('^dépôt') ~= nil or reason:find('rembours') ~= nil or reason:find('caisse') ~= nil
+end
 function Watch.onMoney(src, amount, action, reason)
     if action ~= 'add' or (tonumber(amount) or 0) <= 0 or Watch.exempt(src) then return end
-    if type(reason) == 'string' and reason:find('staff') then return end
+    if (type(reason) == 'string' and reason:find('staff')) or internal(reason) then return end
     local l, t, total, out = Watch.money[src] or {}, now(), 0, {}
     for _, e in ipairs(l) do if t - e.at < AC.moneyWindow then out[#out + 1] = e total = total + e.n end end
     out[#out + 1] = { at = t, n = amount }

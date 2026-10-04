@@ -169,7 +169,10 @@ local VIBE = { setHandle = { 'gs_social:setHandle', 'handle' }, post = { 'gs_soc
     delete = { 'gs_social:delete', 'id' }, report = { 'gs_social:report', 'id' },
     follow = { 'gs_social:follow', 'handle' }, verify = { 'gs_social:verify', 'handle' }, flash = { 'gs_social:flash', 'content' } }
 RegisterNUICallback('vibe', function(b, cb)
-    if GetResourceState('gs_social') ~= 'started' then return cb(b.op == 'open' and false or { ok = false, message = 'Vibe est hors ligne.' }) end
+    if GetResourceState('gs_social') ~= 'started' then
+        if b.op == 'open' then return cb(false) end
+        return cb({ ok = false, message = 'Vibe est hors ligne.' })
+    end
     if b.op == 'open' then return cb(lib.callback.await('gs_social:open', false) or false) end
     if b.op == 'profile' then return cb(lib.callback.await('gs_social:profile', false, b.handle) or false) end
     if b.op == 'top' then return cb(lib.callback.await('gs_social:top', false) or false) end

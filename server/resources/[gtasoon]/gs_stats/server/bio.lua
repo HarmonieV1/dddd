@@ -79,8 +79,13 @@ function Bio.lastMonth(ts)
 end
 
 -- Sources ------------------------------------------------------------------------------------------------------
-AddEventHandler('QBCore:Server:OnMoneyChange', function(src, moneyType, amount, action) -- [API] qbx_core
-    if moneyType ~= 'cash' and moneyType ~= 'bank' then return end
+-- Mouvements internes (retrait, dépôt, remboursement, caisse) : ce n'est pas de l'argent gagné
+local function internal(reason)
+    if type(reason) ~= 'string' then return false end
+    return reason:find('^retrait') ~= nil or reason:find('^dépôt') ~= nil or reason:find('rembours') ~= nil or reason:find('caisse') ~= nil
+end
+AddEventHandler('QBCore:Server:OnMoneyChange', function(src, moneyType, amount, action, reason) -- [API] qbx_core
+    if (moneyType ~= 'cash' and moneyType ~= 'bank') or internal(reason) then return end
     if action == 'add' then Bio.add(src, 'earned', tonumber(amount) or 0) end
 end)
 AddEventHandler('gs_wanted:server:crime', function(src) Bio.add(src, 'crimes') end)

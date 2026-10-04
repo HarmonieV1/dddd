@@ -29,7 +29,7 @@ local function step() advance(6000) end
 local B = Config.Businesses.bar
 join(1, 'CID1', 'Client', B.register) W.players[1].money.cash = 5000
 join(2, 'CID2', 'Barman', B.register, { name = 'bar', grade = 1, onduty = false })
-join(3, 'CID3', 'Patronne', B.register, { name = 'bar', grade = 2, onduty = false })
+join(3, 'CID3', 'Patronne', B.register, { name = 'bar', grade = 2, onduty = false, isboss = true })
 
 local ok = cb('gs_business:double', 2, 'set', 'bar'); step()
 check('un simple employé ne pose pas de doublure', not ok)

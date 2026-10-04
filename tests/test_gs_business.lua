@@ -27,7 +27,7 @@ W.stashes = { [B.stash] = { vodka = 2, sprunk = 1, beer = 5 } }
 
 join(1, 'CID1', 'Client', B.register) W.players[1].money.cash = 500
 join(2, 'CID2', 'Barman', B.craft, { name = 'bar', grade = 1, onduty = true })
-join(3, 'CID3', 'Patron', B.register, { name = 'bar', grade = 2, onduty = true })
+join(3, 'CID3', 'Patron', B.register, { name = 'bar', grade = 2, onduty = true, isboss = true })
 
 -- Libre-service (personne en service) : barman PNJ, carte de base, stock illimité, prix majorés, 30 % pour la maison
 local m = cb('gs_business:menu', 1, 'bar'); step()

@@ -101,8 +101,8 @@ function Fugitive.claim(src, target)
     for _, s in ipairs(F.stations) do if #(here - s) <= F.stationRange then ok = true end end
     if not ok then return false, 'Amène-le devant un commissariat ou un bureau du shérif.' end
     Bridge:Revive(target)
+    Fugitive.finish(target, 'caught', src) -- d'abord la prime : Jail déclenche « jailed » qui clôturerait sans payer
     pcall(function() exports.gs_police:Jail(target, F.jailMinutes, 'Capturé en cavale (chasseur de primes)') end)
-    Fugitive.finish(target, 'caught', src)
     return true, 'Fugitif livré.'
 end
 

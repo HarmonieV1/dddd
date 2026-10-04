@@ -129,7 +129,7 @@ provide('gs_bridge', {
     GetName = function(src) return W.players[src] and W.players[src].name end,
     GetJob = function(src)
         local p = W.players[src]
-        return p and { name = p.job.name, label = p.job.name, grade = p.job.grade, onduty = p.job.onduty } or nil
+        return p and { name = p.job.name, label = p.job.name, grade = p.job.grade, onduty = p.job.onduty, isboss = p.job.isboss == true } or nil
     end,
     SetJob = function(src, name, grade) W.players[src].job = { name = name, grade = grade, onduty = false } return true end,
     SetDuty = function(src, on) W.players[src].job.onduty = on return true end,

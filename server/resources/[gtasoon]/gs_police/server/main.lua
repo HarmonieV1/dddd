@@ -356,6 +356,7 @@ AddEventHandler('gs_bridge:server:playerUnloaded', function(src)
     local escorted = Police.escorting[src]
     if escorted and online(escorted) then stopEscort(escorted) end
     Police.escorting[src] = nil
+    for by, t in pairs(Police.escorting) do if t == src then Police.escorting[by] = nil end end -- l'escorté est parti
     Police.jailed[src] = nil
     Police.authority[src] = nil
 end)

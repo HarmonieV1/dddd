@@ -102,12 +102,12 @@ end
 
 -- Jobs ---------------------------------------------------------------------------
 
----@return { name: string, label: string, grade: number, onduty: boolean }|nil
+---@return { name: string, label: string, grade: number, onduty: boolean, isboss: boolean }|nil
 local function GetJob(src)
     local p = GetPlayer(src)
     if not p then return nil end
     local job = p.PlayerData.job
-    return { name = job.name, label = job.label, grade = job.grade.level, onduty = job.onduty == true }
+    return { name = job.name, label = job.label, grade = job.grade.level, onduty = job.onduty == true, isboss = job.isboss == true }
 end
 
 local function IsOnDuty(src)

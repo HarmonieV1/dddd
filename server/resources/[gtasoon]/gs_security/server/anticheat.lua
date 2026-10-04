@@ -20,6 +20,7 @@ end)
 
 -- Explosions : une rafale (menus « tout faire exploser ») est bloquée ; un accident isolé passe.
 AddEventHandler('explosionEvent', function(sender, ev)
+    sender = tonumber(sender) -- FiveM le transmet en chaîne
     if not GSSec.RateLimit(sender, 'native:explosion', 4, 10000) then
         CancelEvent()
         return
@@ -32,5 +33,6 @@ end)
 
 -- Effets de particules spammés (lag volontaire des autres joueurs)
 AddEventHandler('ptFxEvent', function(sender)
+    sender = tonumber(sender)
     if not GSSec.RateLimit(sender, 'native:ptfx', 30, 10000) then CancelEvent() end
 end)

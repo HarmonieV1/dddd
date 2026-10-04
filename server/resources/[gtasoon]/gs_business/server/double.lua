@@ -12,7 +12,7 @@ local function allowed(id) return Config.Double.businesses[id] == true and Confi
 local function staffed(id) return #JobsApi:GetOnDutyPlayers(id) > 0 end
 local function boss(src, id)
     local j = Bridge:GetJob(src)
-    return j ~= nil and j.name == id and (j.isboss == true or (tonumber(j.grade) or 0) >= 2)
+    return j ~= nil and j.name == id and j.isboss == true
 end
 
 local function save(id) SetResourceKvp('double:' .. id, Double.list[id] and json.encode(Double.list[id]) or '') end

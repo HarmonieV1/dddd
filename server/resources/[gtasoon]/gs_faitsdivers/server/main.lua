@@ -115,7 +115,10 @@ function FD.list(src)
     return out
 end
 
-AddEventHandler('gs_wanted:server:crime', function() FD.crimes[#FD.crimes + 1] = now() end)
+AddEventHandler('gs_wanted:server:crime', function()
+    FD.crimes[#FD.crimes + 1] = now()
+    if #FD.crimes > 50 then FD.quiet() end -- élague même quand la police est absente
+end)
 
 lib.callback.register('gs_faitsdivers:handle', function(src, id)
     if not Security:RateLimit(src, 'gs_faitsdivers:handle', 2, 5000) then return false, 'Doucement.' end

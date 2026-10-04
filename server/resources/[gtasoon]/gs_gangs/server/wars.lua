@@ -126,6 +126,7 @@ end)
 
 -- Détection côté serveur : coup porté (weaponDamageEvent) puis chute de la victime (état qbx_medical)
 AddEventHandler('weaponDamageEvent', function(sender, data)
+    sender = tonumber(sender) -- FiveM le transmet en chaîne
     if type(data) ~= 'table' or not data.hitGlobalId then return end
     local ent = NetworkGetEntityFromNetworkId(data.hitGlobalId)
     if not ent or ent == 0 or not DoesEntityExist(ent) or not IsPedAPlayer(ent) then return end
