@@ -17,7 +17,8 @@ AddEventHandler('gs_business:client:counter', function(id)
     local d = lib.callback.await('gs_business:menu', false, id)
     if not d then return end
     local options = {}
-    if not d.staffed then options[1] = { title = 'Libre-service : le barman sert la carte de base', description = 'Aucun employé en service · prix majorés', icon = 'martini-glass', readOnly = true } end
+    if not d.staffed then options[1] = { title = d.double and ('La doublure de %s vous sert'):format(d.double) or 'Libre-service : le barman sert la carte de base',
+        description = 'Aucun employé en service · prix majorés', icon = d.double and 'user-tie' or 'martini-glass', readOnly = true } end
     for _, it in ipairs(d.items) do
         options[#options + 1] = { title = ('%s · %d $'):format(it.label, it.price),
             description = not d.staffed and 'Servi par le barman' or (it.stock > 0 and ('En stock : %d'):format(it.stock) or 'Rupture'),
@@ -33,6 +34,12 @@ AddEventHandler('gs_business:client:counter', function(id)
         end
     end
     if d.employee then options[#options + 1] = { title = 'Comptabilité', icon = 'book', onSelect = function() books(id) end } end
+    if d.canDouble then -- V9 : la doublure
+        options[#options + 1] = d.hasDouble
+            and { title = 'Reprendre ma place (retirer ma doublure)', icon = 'user-xmark', onSelect = function() notify(lib.callback.await('gs_business:double', false, 'clear', id)) end }
+            or { title = 'Laisser ma doublure au comptoir', icon = 'user-tie', description = 'Un PNJ à ton apparence sert quand personne n\'est en service (meilleure part de la recette). Il peut être braqué.',
+                onSelect = function() notify(lib.callback.await('gs_business:double', false, 'set', id)) end }
+    end
     lib.registerContext({ id = 'gs_business_counter', title = d.label, options = options })
     lib.showContext('gs_business_counter')
 end)

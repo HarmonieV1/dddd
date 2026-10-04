@@ -10,11 +10,35 @@ local function inRange(md, from, to)
     return md >= from or md <= to -- à cheval sur le nouvel an
 end
 
---- Événement actif : { id, label, xp, wheel, desc, manual } ou nil
+local function minutes(hhmm) local h, m = hhmm:match('^(%d+):(%d+)$') return tonumber(h) * 60 + tonumber(m) end
+
+--- V9 · Rendez-vous fixe en cours pour t = { wday, hour, min } (os.date('*t'))
+function Events.weekly(t)
+    local now = t.hour * 60 + t.min
+    for _, w in ipairs(Config.Weekly or {}) do
+        if w.day == t.wday and now >= minutes(w.from) and now < minutes(w.to) then
+            return { id = w.id, label = w.label, xp = w.xp or 1.0, wheel = w.wheel or 0, desc = w.desc, weekly = true }
+        end
+    end
+end
+
+--- V9 · Rendez-vous qui commence dans `ahead` minutes exactement (rappel)
+function Events.upcoming(t, ahead)
+    local now = t.hour * 60 + t.min
+    for _, w in ipairs(Config.Weekly or {}) do
+        if w.day == t.wday and minutes(w.from) - now == ahead then return w end
+    end
+end
+
+--- Événement actif : { id, label, xp, wheel, desc, manual } ou nil. Priorité : staff > rendez-vous fixe > calendrier.
 function Events.active(mmdd)
     if Events.manual then
         if os.time() < Events.manual.endsAt then return Events.manual end
         Events.manual = nil
+    end
+    if not mmdd then
+        local w = Events.weekly(os.date('*t'))
+        if w then return w end
     end
     mmdd = mmdd or os.date('%m-%d')
     for _, e in ipairs(Config.Calendar) do
@@ -65,9 +89,33 @@ RegisterCommand('gsevent', function(src, args)
     if src == 0 then print(msg) else Bridge:Notify(src, msg, ok and 'success' or 'error') end
 end, false)
 
+local reminded = {}
+function Events.remind(t)
+    for _, ahead in ipairs({ Config.Remind, 0 }) do
+        local w = Events.upcoming(t, ahead)
+        local key = w and ('%s:%d:%d'):format(w.id, t.yday or 0, ahead)
+        if w and not reminded[key] then
+            reminded[key] = true
+            local msg = ahead > 0 and ('Rendez-vous dans %d min : %s. %s'):format(ahead, w.label, w.desc) or ('C\'est parti : %s ! %s'):format(w.label, w.desc)
+            for _, s in ipairs(Bridge:GetPlayers()) do Bridge:Notify(s, msg, 'success') end
+            if GetResourceState('gs_discord') == 'started' then
+                pcall(function() exports.gs_discord:Announce(ahead > 0 and ('⏰ %s à %s'):format(w.label, w.from) or ('🎉 %s'):format(w.label), w.desc) end)
+            end
+            return w, ahead
+        end
+    end
+end
+
+lib.callback.register('gs_events:weekly', function(src)
+    if not Security:RateLimit(src, 'gs_events:weekly', 3, 5000) then return nil end
+    local e = Events.active()
+    return { active = e and e.label or nil }
+end)
+
 CreateThread(function()
     while true do
         publish()
+        Events.remind(os.date('*t'))
         Wait(60000)
     end
 end)

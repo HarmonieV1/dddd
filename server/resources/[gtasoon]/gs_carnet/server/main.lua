@@ -31,9 +31,10 @@ function Carnet.sample(veh, driver)
     if not r then return end
     local pos, body, color = GetEntityCoords(veh), GetVehicleBodyHealth(veh), GetVehicleColours(veh)
     local prev = Carnet.last[plate]
+    local dkm = 0.0
     if prev then
         local d = #(pos - prev.pos)
-        if d <= Config.MaxSpeed * Config.Sample then r.km = r.km + d / 1000.0 end
+        if d <= Config.MaxSpeed * Config.Sample then dkm = d / 1000.0 r.km = r.km + dkm end
         if prev.body - body >= Config.Accident then
             Store.event(plate, 'accident', ('Accident (carrosserie %d %%)'):format(math.floor(body / 10)), false)
         end
@@ -45,7 +46,7 @@ function Carnet.sample(veh, driver)
         Store.event(plate, 'owner', ('Changement de propriétaire (%de main)'):format(r.owners), false)
         TriggerEvent('gs_carnet:server:ownerChanged', plate) -- V9 : l'assurance recoupe
     end
-    if driver then TriggerEvent('gs_carnet:server:driven', plate, driver) end
+    if driver then TriggerEvent('gs_carnet:server:driven', plate, driver, dkm) end -- V9 : assurance, biographie
     if r.color ~= color then
         if r.color >= 0 then
             Store.event(plate, 'paint', ('Repeinte : %s → %s'):format(colorName(r.color) or '?', colorName(color) or '?'), false)

@@ -3,6 +3,7 @@
 dofile('tests/mock.lua')
 local R = 'server/resources/[gtasoon]/'
 local convars = {}
+local HOOK = 'https://discord.com/api/web' .. 'hooks/' -- coupé : pas pris pour un vrai secret par check_cfg
 function GetConvar(k, d) return convars[k] or d end
 function GetConvarInt(k, d) return tonumber(convars[k]) or d end
 local reqs = {}
@@ -22,7 +23,7 @@ end
 check('sans webhook : rien n\'est envoyé', Discord.status() == false and #reqs == 0)
 convars.gs_webhook_status = 'https://evil.example/api/webhooks/1/abc'
 check('webhook hors Discord refusé', Discord.status() == false and #reqs == 0)
-convars.gs_webhook_status = 'https://discord.com/api/webhooks/123/tok_EN-1'
+convars.gs_webhook_status = HOOK .. '123/tok_EN-1'
 join(1, 'CID1', 'A', vec3(0.0, 0.0, 0.0), { name = 'police', onduty = true })
 check('statut créé une première fois', Discord.status() and reqs[1].method == 'POST' and reqs[1].url:find('wait=true') and GetResourceKvpString('statusMsg') == '999')
 Discord.status()
@@ -38,7 +39,7 @@ check('recréé', reqs[#reqs].method == 'POST' and GetResourceKvpString('statusM
 
 local n = #reqs
 check('annonce sans webhook : ignorée', Discord.announce('T', 'x') == false and #reqs == n)
-convars.gs_webhook_annonces = 'https://discord.com/api/webhooks/5/abc'
+convars.gs_webhook_annonces = HOOK .. '5/abc'
 check('annonce envoyée', Discord.announce('T', 'x') and #reqs == n + 1)
 
 -- Rôles

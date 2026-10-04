@@ -45,3 +45,13 @@ Config.Businesses = {
         npc = { beer = 16, sprunk = 9, water = 7 },
     },
 }
+
+-- V9 · La doublure : quand aucun employé n'est en service, le patron peut laisser sa « doublure » (un PNJ à son
+-- apparence) tenir le comptoir. Elle sert la carte de base pour une meilleure part de la recette… et peut être braquée.
+-- Seuls les commerces listés ici l'ont (pas général). La doublure se tient au plan de travail, face au comptoir.
+Config.Double = {
+    businesses = { bar = true, vanilla = true, bahama = true },
+    share = 0.5,        -- part de la recette gardée (au lieu de Config.NpcShare)
+    hours = 72,         -- durée maximale sans repasser au comptoir
+    rob = { cooldown = 7200, pct = 0.10, min = 300, max = 3000, time = 8000, range = 5.0 },
+}

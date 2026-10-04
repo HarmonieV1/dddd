@@ -751,6 +751,22 @@ local function mainMenu()
             if #o == 0 then o[1] = { title = 'Aucune alerte', icon = 'circle-check', readOnly = true } end
             show('gs_staff_ac', 'Anti-triche', o, 'gs_staff_quick')
         end })
+        add(3, { title = 'Statistiques de rétention', icon = 'chart-line', arrow = true, description = 'Nouveaux joueurs, retours J+1 / 7 jours, abandon, sessions', onSelect = function()
+            local r = GetResourceState('gs_stats') == 'started' and lib.callback.await('gs_stats:retention', false)
+            if not r then return notify(false, 'Statistiques indisponibles.') end
+            local function p(v) return v and (v .. ' %') or '—' end
+            local o = {
+                { title = ('Nouveaux joueurs (7 j) : %d'):format(r.new7), icon = 'user-plus', readOnly = true },
+                { title = ('Reviennent le lendemain : %s'):format(p(r.d1.pct)), description = ('%d sur %d'):format(r.d1.back, r.d1.of), icon = 'rotate-left', readOnly = true },
+                { title = ('Reviennent dans la semaine : %s'):format(p(r.d7.pct)), description = ('%d sur %d'):format(r.d7.back, r.d7.of), icon = 'calendar-week', readOnly = true },
+                { title = ('Abandon à la 1re session (< 15 min) : %s'):format(p(r.drop.pct)), description = 'À faire baisser : accueil, première heure', icon = 'door-open', readOnly = true },
+                { title = ('Session moyenne : %d min'):format(r.avg), icon = 'clock', readOnly = true },
+            }
+            for _, d in ipairs(r.daily) do
+                o[#o + 1] = { title = ('%s · %d joueurs'):format(d.label, d.players), description = ('%d nouveaux · pic %d en même temps'):format(d.new, d.peak), icon = 'calendar', readOnly = true }
+            end
+            show('gs_staff_stats', 'Rétention', o, 'gs_staff_quick')
+        end })
     end
     add(1, { title = 'Panel complet (F10)', icon = 'table-columns', onSelect = function() ExecuteCommand('admin') end })
     show('gs_staff_quick', ('Staff · %s · RoadLine %s'):format(info.levelName or '', GetConvar('gs_version', '?')), options)

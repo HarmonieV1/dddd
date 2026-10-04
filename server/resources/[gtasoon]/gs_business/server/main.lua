@@ -15,6 +15,10 @@ local function isBoss(src, id)
     local j = Bridge:GetJob(src)
     return j and j.name == id and j.onduty and (j.isboss or j.grade >= 2)
 end
+local function isOwner(src, id) -- patron, en service ou non
+    local j = Bridge:GetJob(src)
+    return j ~= nil and j.name == id and (j.isboss == true or (tonumber(j.grade) or 0) >= 2)
+end
 local function name(src) return Bridge:GetName(src) or GetPlayerName(src) or '?' end
 
 function Business.price(id, item)
@@ -48,7 +52,9 @@ lib.callback.register('gs_business:menu', function(src, id)
     local b = def(id)
     if not b or not Security:InRange(src, b.register, Config.Range + 2.0) then return nil end
     local items, staffed = Business.menu(id)
-    return { label = b.label, items = items, staffed = staffed, employee = isEmployee(src, id), boss = isBoss(src, id) }
+    local dbl = Double and Double.list[id]
+    return { label = b.label, items = items, staffed = staffed, employee = isEmployee(src, id), boss = isBoss(src, id),
+        canDouble = Config.Double.businesses[id] == true and isOwner(src, id), double = dbl and Double.active(id) and dbl.name or nil, hasDouble = dbl ~= nil }
 end)
 
 lib.callback.register('gs_business:buy', function(src, id, item, qty)
@@ -78,7 +84,8 @@ lib.callback.register('gs_business:buy', function(src, id, item, qty)
         return false, 'Rupture de stock.'
     end
     Bridge:AddItem(src, item, qty)
-    local income = staffed and total or math.floor(total * Config.NpcShare)
+    local share = (Double and Double.active(id)) and Config.Double.share or Config.NpcShare -- V9 : la doublure du patron
+    local income = staffed and total or math.floor(total * share)
     if income > 0 then JobsApi:AddSocietyMoney(id, income, true) end
     Store.log(id, 'sale', item, qty, income, staffed and name(src) or (name(src) .. ' (libre-service)'))
     return true, ('%d × %s : %d $. Merci !'):format(qty, label, total)
@@ -149,10 +156,7 @@ exports('GetBusinesses', function()
     for id, b in pairs(Config.Businesses) do out[id] = { label = b.label, register = b.register } end
     return out
 end)
-exports('IsOwner', function(src, id)
-    local j = Bridge:GetJob(src)
-    return j ~= nil and j.name == id and (j.isboss == true or (tonumber(j.grade) or 0) >= 2)
-end)
+exports('IsOwner', isOwner)
 
 AddEventHandler('gs_bridge:server:playerUnloaded', function(src) Business.pending[src] = nil end)
 

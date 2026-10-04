@@ -51,6 +51,7 @@ function Photo.take(src, url)
     local md = { photo = id, label = 'Photo · ' .. place, description = ('%s · On y voit : %s%s'):format(date, what,
         #plates > 0 and (' · Plaques : ' .. table.concat(plates, ', ')) or ''), image = type(url) == 'string' and url:match('^https://') and url or nil }
     if not Bridge:AddItem(src, C.photo, 1, md) then return false, 'Plus de place pour la photo.' end
+    TriggerEvent('gs_evidence:server:photo', src) -- V9 : biographie
     return true, 'Photo développée.'
 end
 

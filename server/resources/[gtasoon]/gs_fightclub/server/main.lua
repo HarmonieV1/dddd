@@ -24,6 +24,10 @@ function FightClub.ring()
 end
 
 function FightClub.isOpen()
+    if GetResourceState('gs_events') == 'started' then -- V9 : « Nuit des combats » (rendez-vous fixe) = ouvert toute la soirée
+        local ok, e = pcall(function() return exports.gs_events:Active() end)
+        if ok and e and e.id == 'sat_fight' then return true end
+    end
     if GetResourceState('gs_weather') ~= 'started' then return true end
     local ok, h = pcall(function() return exports.gs_weather:GetGameTime() end)
     if not ok or not h then return true end
@@ -112,6 +116,7 @@ function FightClub.resolve(side, why)
     local purse = math.floor(m.stake * 2 * (1 - Config.Cut))
     Bridge:AddMoney(winner, 'cash', purse, 'combat gagné')
     notify(winner, ('Victoire ! +%d $.'):format(purse), 'success')
+    TriggerEvent('gs_fightclub:server:won', winner) -- V9 : biographie
     TriggerClientEvent('gs_fightclub:client:ko', loser)
     -- paris mutuels : les gagnants se partagent la cagnotte (moins la part de la maison)
     local pool, onWinner = 0, 0

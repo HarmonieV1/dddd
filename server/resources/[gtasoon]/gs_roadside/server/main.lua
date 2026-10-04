@@ -80,7 +80,7 @@ end
 
 local function collect(src, key)
     local cid = Bridge:GetIdentifier(src)
-    if cid then Store.add(cid, key) end
+    if cid then Store.add(cid, key) TriggerEvent('gs_roadside:server:met', src, key) end -- V9 : biographie
 end
 
 local function pay(src, amount, why)

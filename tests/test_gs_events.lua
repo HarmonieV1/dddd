@@ -16,7 +16,8 @@ check('Halloween : bornes incluses', Events.active('10-24').id == 'halloween' an
 check('fêtes : à cheval sur le nouvel an', Events.active('12-31').id == 'xmas' and Events.active('01-01').id == 'xmas' and Events.active('01-03') == nil)
 
 local realDate = os.date
-os.date = function(fmt, t) if fmt == '%m-%d' then return '04-15' end return realDate(fmt, t) end
+local fakeT = { wday = 3, hour = 12, min = 0, yday = 100 } -- mardi midi : aucun rendez-vous fixe
+os.date = function(fmt, t) if fmt == '%m-%d' then return '04-15' end if fmt == '*t' and not t then return fakeT end return realDate(fmt, t) end
 check('hors événement : XP ×1', getExport('gs_events', 'GetXpMultiplier')() == 1.0 and getExport('gs_events', 'GetBonus')('wheel') == 0)
 
 join(1, 'CID1', 'Staff', vec3(0.0, 0.0, 0.0)) join(2, 'CID2', 'Joueur', vec3(0.0, 0.0, 0.0))
@@ -39,7 +40,22 @@ check('événement staff expiré', Events.active('04-15') == nil)
 W.commands.gsevent(1, { 'start', 'lucky', '30' })
 W.commands.gsevent(1, { 'stop' })
 check('arrêt manuel', Events.manual == nil)
-os.date = realDate
+-- V9 · Rendez-vous fixes
+check('mardi midi : pas de rendez-vous', Events.weekly({ wday = 3, hour = 12, min = 0 }) == nil)
+check('vendredi 21 h 30 : courses', Events.weekly({ wday = 6, hour = 21, min = 30 }).id == 'fri_races')
+check('vendredi 23 h 30 : fini (borne exclue)', Events.weekly({ wday = 6, hour = 23, min = 30 }) == nil)
+check('samedi 22 h : nuit des combats', Events.weekly({ wday = 7, hour = 22, min = 0 }).id == 'sat_fight')
+Events.manual = nil
+fakeT = { wday = 4, hour = 21, min = 10, yday = 101 }
+check('rendez-vous en cours = événement actif (XP)', Events.active().id == 'wed_jobs' and getExport('gs_events', 'GetXpMultiplier')() == 1.25)
+local w, ahead = Events.remind({ wday = 6, hour = 20, min = 30, yday = 102 })
+check('rappel 30 min avant', w and w.id == 'fri_races' and ahead == 30)
+check('un seul rappel', Events.remind({ wday = 6, hour = 20, min = 30, yday = 102 }) == nil)
+w, ahead = Events.remind({ wday = 6, hour = 21, min = 0, yday = 102 })
+check('annonce au début', w and ahead == 0)
+fakeT = { wday = 3, hour = 12, min = 0, yday = 100 }
+
+os.date = function(fmt, t) if fmt == '*t' and not t then return fakeT end return realDate(fmt, t) end -- mardi midi : pas de rendez-vous fixe pendant la suite
 
 -- Effets sur gs_casino (roue) : 1 + bonus
 loadResource('gs_casino', { R .. 'gs_casino/shared/config.lua' })
@@ -53,6 +69,7 @@ loadResource('gs_casino', { R .. 'gs_casino/server/main.lua' })
 check('sans événement : 1 tour', Casino.wheelAllowed() == 1)
 bonus = 1
 check('avec événement : 2 tours', Casino.wheelAllowed() == 2)
+
 
 io.write(('\n%d réussis, %d échoués\n'):format(passed, failed))
 os.exit(failed == 0 and 0 or 1)
