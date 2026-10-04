@@ -96,7 +96,7 @@ FEATURES = [
         'Déplacer n\'importe quel point en jeu (sauvegardé), décor (/builder), lieux publics (boutiques, parkings), gangs et garages, journal de toutes les actions.',
         'Outils Windows en un double-clic : INSTALLER, METTRE-A-JOUR, IMPORTER-MODS (marques refusées), NETTOYER-MARQUES, REPARER-*, VIDER-CACHE, '
         'SAUVEGARDER-BDD, INVITER-AMIS, PREPARER-HEBERGEUR.',
-        'Qualité : 54 ressources maison, plus de 2 100 vérifications automatiques à chaque envoi (GitHub), linters de config, de liaisons et de performance.',
+        'Qualité : 54 ressources maison, près de 2 100 vérifications automatiques à chaque envoi (GitHub), linters de config, de liaisons et de performance.',
     ]),
 ]
 
