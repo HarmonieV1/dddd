@@ -33,6 +33,44 @@ local function verdict(c)
     if r then notify(lib.callback.await('gs_justice:verdict', false, c.id, r[1], r[2], r[3])) end
 end
 
+-- V10.1 · Pièces du dossier : verser une photo / un scellé (police, avocat), le juge retient ou écarte
+local STATUS = { pending = { 'En attente', '#ffd23f' }, retained = { 'Retenue', '#5aff8c' }, rejected = { 'Écartée', '#ff5470' } }
+local function photos()
+    local list = {}
+    local ok, items = pcall(function() return exports.ox_inventory:Search('slots', Config.Pieces.photoItem) end) -- [API] ox_inventory
+    for _, it in ipairs(ok and items or {}) do
+        if it.metadata and it.metadata.photo then list[#list + 1] = { value = it.metadata.photo, label = it.metadata.label or 'Photo' } end
+    end
+    return list
+end
+
+local function caseMenu(c, d)
+    local ok, list = lib.callback.await('gs_justice:pieces', false, 'list', c.id)
+    local options = {}
+    if d.judge then options[#options + 1] = { title = 'Rendre le verdict', icon = 'gavel', onSelect = function() verdict(c) end } end
+    options[#options + 1] = { title = 'Verser une photo', icon = 'image', description = 'La photo reste sous la garde du tribunal', onSelect = function()
+        local l = photos()
+        if #l == 0 then return notify(false, 'Aucune photo sur toi.') end
+        local r = lib.inputDialog('Verser une photo', { { type = 'select', label = 'Photo', options = l, required = true } })
+        if r then notify(lib.callback.await('gs_justice:pieces', false, 'deposit', c.id, 'photo', r[1])) end
+    end }
+    options[#options + 1] = { title = 'Verser un scellé analysé', icon = 'box-archive', description = 'Numéro du scellé (labo de la police)', onSelect = function()
+        local r = lib.inputDialog('Verser un scellé', { { type = 'number', label = 'N° du scellé', required = true, min = 1 } })
+        if r then notify(lib.callback.await('gs_justice:pieces', false, 'deposit', c.id, 'seal', r[1])) end
+    end }
+    for _, p in ipairs(ok and list or {}) do
+        local st = STATUS[p.status] or STATUS.pending
+        options[#options + 1] = { title = ('Pièce n°%d · %s'):format(p.id, st[1]), icon = p.kind == 'photo' and 'image' or 'box-archive', iconColor = st[2],
+            description = ('%s (versée par %s)'):format(p.text, p.by), readOnly = not d.judge, onSelect = d.judge and function()
+                local a = lib.alertDialog({ header = ('Pièce n°%d'):format(p.id), content = p.text, centered = true, cancel = true,
+                    labels = { confirm = 'Retenir', cancel = 'Écarter' } })
+                notify(lib.callback.await('gs_justice:pieces', false, 'decide', c.id, p.id, a == 'confirm'))
+            end or nil }
+    end
+    lib.registerContext({ id = 'gs_justice_case', title = ('Affaire #%d · %s'):format(c.id, c.defendant_name), menu = 'gs_justice', options = options })
+    lib.showContext('gs_justice_case')
+end
+
 RegisterCommand(Config.Command, function()
     local d = lib.callback.await('gs_justice:cases', false)
     if not d then return notify(false, 'Réservé aux juges, avocats et policiers en service.') end
@@ -49,7 +87,7 @@ RegisterCommand(Config.Command, function()
         options[#options + 1] = { title = ('#%d · %s'):format(c.id, c.defendant_name), icon = open and 'scale-unbalanced' or 'scale-balanced',
             iconColor = open and '#ffd23f' or '#6b6380',
             description = ('%s · juge %s%s · %s%s'):format(c.charge, c.judge, c.lawyer ~= '' and (' · avocat ' .. c.lawyer) or '', c.date, open and '' or (' · ' .. c.verdict)),
-            onSelect = open and d.judge and function() verdict(c) end or nil, readOnly = not (open and d.judge) }
+            arrow = open, onSelect = open and function() caseMenu(c, d) end or nil, readOnly = not open }
     end
     lib.registerContext({ id = 'gs_justice', title = 'Tribunal de Los Santos', options = options })
     lib.showContext('gs_justice')

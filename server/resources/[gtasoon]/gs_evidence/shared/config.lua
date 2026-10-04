@@ -32,3 +32,5 @@ Config.Lab = { coords = vec3(483.6, -988.7, 30.69), radius = 4.0, seconds = 180,
 -- V9 · Appareil photo argentique : chaque photo devient un objet (lieu, date, personnes et plaques visibles ;
 -- image réelle si l'hébergement des photos est configuré). Donner, garder, accrocher au mur, verser au labo, faire chanter.
 Config.Camera = { item = 'gs_camera', photo = 'gs_photo', range = 30.0, front = 0.3, maxPlates = 3, maxWall = 200, perPlayerWall = 12 }
+-- V10.1 · Chantage avec une photo (face à face, la cible doit être sur le cliché)
+Config.Blackmail = { min = 100, max = 50000, range = 4.0, answerSeconds = 60 }
