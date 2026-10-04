@@ -35,7 +35,7 @@ local COLORS = { casing = { 255, 196, 0 }, blood = { 200, 20, 30 }, print = { 79
 
 local function onDutyPolice()
     local j = Bridge:GetJob()
-    return j and j.onduty and j.name == Config.PoliceJob
+    return j and j.onduty and (j.name == Config.PoliceJob or j.name == 'sheriff')
 end
 
 local function text3d(x, y, z, s)

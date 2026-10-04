@@ -70,6 +70,55 @@ Jobs = {
         },
     },
 
+    -- V8 · Shérif du comté (BCSO) : métier distinct du LSPD pour le nord (Sandy Shores, Paleto). countsAs = 'police' :
+    -- dispatch, preuves, F4, prison, permis à points… fonctionnent comme pour la police. Points à caler en jeu.
+    sheriff = {
+        label = 'Shérif du comté', type = 'leo', countsAs = 'police', whitelisted = true, society = true, salaryFrom = 'state', armoryLabel = 'Armurerie',
+        platePrefix = 'BCSO',
+        blip = { sprite = 60, color = 47, label = 'Bureau du shérif (Sandy Shores)' },
+        billing = { label = 'Amende', max = 25000 },
+        grades = {
+            [0] = { label = 'Adjoint stagiaire', salary = 350 },
+            [1] = { label = 'Adjoint', salary = 450 },
+            [2] = { label = 'Sergent', salary = 550 },
+            [3] = { label = 'Lieutenant', salary = 650 },
+            [4] = { label = 'Shérif', salary = 800, boss = true },
+        },
+        points = {
+            duty = { vec3(1853.2, 3689.6, 34.27), vec3(-448.4, 6012.6, 31.72) },
+            boss = { vec3(1861.6, 3689.3, 34.27) },
+            stash = {
+                { label = 'Coffre du bureau', coords = vec3(1849.5, 3694.8, 34.27), slots = 80, weight = 300000, minGrade = 1 },
+            },
+            armory = { vec3(1851.3, 3691.9, 34.27) },
+            cloakroom = { vec3(1857.0, 3693.8, 34.27), vec3(-450.3, 6016.2, 31.72) },
+            garage = {
+                { coords = vec3(1866.7, 3697.4, 33.6), spawn = vec4(1869.6, 3693.2, 33.6, 210.0) },
+                { coords = vec3(-457.6, 6024.6, 31.34), spawn = vec4(-462.3, 6029.9, 31.34, 225.0) },
+            },
+        },
+        vehicles = {
+            { model = 'sheriff', label = 'Cruiser du shérif', minGrade = 0 },
+            { model = 'sheriff2', label = 'SUV du shérif', minGrade = 1 },
+            { model = 'policeb', label = 'Moto', minGrade = 2, type = 'bike' },
+        },
+        outfits = {
+            { label = 'Uniforme d\'adjoint', minGrade = 0,
+              male = { [3] = { 30, 0 }, [4] = { 35, 0 }, [6] = { 25, 0 }, [8] = { 58, 0 }, [11] = { 55, 0 } },
+              female = { [3] = { 44, 0 }, [4] = { 34, 0 }, [6] = { 25, 0 }, [8] = { 35, 0 }, [11] = { 48, 0 } } },
+            { label = 'Patrouille (chapeau)', minGrade = 1,
+              male = { [3] = { 30, 0 }, [4] = { 35, 0 }, [6] = { 25, 0 }, [8] = { 58, 0 }, [11] = { 55, 0 }, p0 = { 13, 0 } },
+              female = { [3] = { 44, 0 }, [4] = { 34, 0 }, [6] = { 25, 0 }, [8] = { 35, 0 }, [11] = { 48, 0 }, p0 = { 13, 0 } } },
+        },
+        armory = {
+            { item = 'radio', max = 1 }, { item = 'handcuffs', max = 2 }, { item = 'WEAPON_FLASHLIGHT', max = 1 },
+            { item = 'WEAPON_NIGHTSTICK', max = 1 }, { item = 'WEAPON_STUNGUN', max = 1 }, { item = 'armour', max = 1 },
+            { item = 'bandage', max = 5 }, { item = 'binoculars', max = 1 },
+            { item = 'WEAPON_PISTOL', max = 1, minGrade = 1 }, { item = 'ammo-9', max = 60, minGrade = 1 },
+            { item = 'WEAPON_PUMPSHOTGUN', max = 1, minGrade = 2 }, { item = 'ammo-shotgun', max = 30, minGrade = 2 },
+        },
+    },
+
     ambulance = {
         label = 'EMS', type = 'ems', whitelisted = true, society = true, salaryFrom = 'state', armoryLabel = 'Matériel médical',
         platePrefix = 'EMS',

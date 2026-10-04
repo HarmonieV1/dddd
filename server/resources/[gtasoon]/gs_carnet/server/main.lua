@@ -92,6 +92,49 @@ lib.callback.register('gs_carnet:view', function(src, plate)
     return Carnet.view(trim(tostring(plate or '')), police)
 end)
 
+-- V8 · Fausses plaques ---------------------------------------------------------------------------------------------
+local function fakeText()
+    local L, out = 'ABCDEFGHJKLMNPRSTUVWXYZ', ''
+    for i = 1, 8 do
+        if i <= 2 or i >= 6 then local k = math.random(1, #L) out = out .. L:sub(k, k) else out = out .. math.random(0, 9) end
+    end
+    return out
+end
+
+function Carnet.restorePlate(veh)
+    if not DoesEntityExist(veh) then return false end
+    local real = Entity(veh).state.gsRealPlate
+    if not real then return false end
+    SetVehicleNumberPlateText(veh, real)
+    Entity(veh).state:set('gsRealPlate', nil, true)
+    return true
+end
+
+function Carnet.fakePlate(src, netId)
+    local F = Config.FakePlate
+    local veh = NetworkGetEntityFromNetworkId(tonumber(netId) or 0)
+    if not veh or veh == 0 or not DoesEntityExist(veh) or GetEntityType(veh) ~= 2 then return false, 'Aucun véhicule.' end
+    if #(GetEntityCoords(veh) - GetEntityCoords(GetPlayerPed(src))) > F.range then return false, 'Approche-toi de la plaque.' end
+    if Entity(veh).state.gsRealPlate then
+        Carnet.restorePlate(veh)
+        Bridge:AddItem(src, F.item, 1)
+        Bridge:GiveVehicleKeys(src, veh)
+        return true, 'Vraie plaque remise.'
+    end
+    if not Bridge:RemoveItem(src, F.item, 1) then return false, 'Il te faut une fausse plaque.' end
+    local real, fake = trim(GetVehicleNumberPlateText(veh)), fakeText()
+    Entity(veh).state:set('gsRealPlate', real, true)
+    SetVehicleNumberPlateText(veh, fake)
+    Bridge:GiveVehicleKeys(src, veh)
+    SetTimeout(F.minutes * 60000, function() if DoesEntityExist(veh) and Entity(veh).state.gsRealPlate == real then Carnet.restorePlate(veh) end end)
+    return true, ('Fausse plaque posée : %s (%d min). Remets la vraie avant de garer.'):format(fake, F.minutes)
+end
+
+lib.callback.register('gs_carnet:fakeplate', function(src, netId)
+    if not Security:RateLimit(src, 'gs_carnet:fakeplate', 2, 10000) then return false, 'Doucement.' end
+    return Carnet.fakePlate(src, netId)
+end)
+
 CreateThread(function()
     Store.init()
     while true do Wait(Config.Sample * 1000) Carnet.tick() end

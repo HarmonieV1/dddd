@@ -4,6 +4,7 @@ Config = {}
 
 Config.Key = 'F4'
 Config.PoliceJob = 'police'
+Config.PoliceJobs = { police = true, sheriff = true } -- V8 : le shérif du comté a le même menu F4
 Config.EmsJob = 'ambulance'
 Config.Range = 3.0              -- distance max agent ↔ cible
 Config.Tolerance = 2.0
@@ -59,4 +60,21 @@ Config.Prison = {
     dealer = { coords = vec3(1645.0, 2585.0, 45.56), items = { { item = 'gs_prison_tools', price = 25, cigarettes = 2 }, { item = 'phone', price = 40, cigarettes = 3 } } },
     escape = { coords = vec3(1650.0, 2540.0, 45.56), out = vec4(1580.0, 2470.0, 45.6, 225.0), radius = 15.0, min = 2,
         seconds = 30, nightFrom = 21, nightTo = 6, cooldown = 1800 },
+}
+
+-- V8 · Garde à vue et interrogatoire (Mission Row, sous-sol). Le suspect a des droits (/droits) : demander un avocat,
+-- garder le silence, passer aux aveux (peine réduite si incarcéré ensuite). Interrogatoire sans avocat malgré la demande
+-- = vice de procédure noté au rapport. Points à caler en jeu (F11 → Points).
+Config.Custody = {
+    maxMinutes = 30, radius = 30.0, confessDiscount = 0.3, lawyerJob = 'lawyer', lawyerRange = 8.0,
+    cell = vec4(459.9, -994.3, 24.91, 270.0),
+    room = vec4(472.3, -994.9, 24.91, 90.0),
+    release = vec4(434.1, -981.9, 30.71, 90.0),
+    station = vec3(441.0, -981.9, 30.69), stationRange = 80.0,
+}
+
+-- V8 · Chien de la police (K9) : grade minimum, ce qu'il flaire (drogue, argent sale) dans un véhicule ou sur une personne
+Config.K9 = {
+    minGrade = 1, model = 'a_c_shepherd', range = 6.0,
+    items = { 'weed_bag', 'coke_bag', 'meth_bag', 'weed_leaf', 'coca_leaf', 'black_money', 'gs_prison_tools' },
 }

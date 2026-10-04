@@ -237,9 +237,14 @@ exports('HasJob', function(src, job, minGrade)
     return grade ~= nil and grade >= (minGrade or 0)
 end)
 
+--- V8 : un métier peut compter comme un autre (shérif du comté = police pour le dispatch, les preuves, F4…)
+local function sameJob(name, wanted)
+    return name == wanted or (Jobs[name] ~= nil and Jobs[name].countsAs == wanted)
+end
+
 exports('IsOnDutyAs', function(src, job)
     local j = Bridge:GetJob(src)
-    return j ~= nil and j.name == job and j.onduty
+    return j ~= nil and sameJob(j.name, job) and j.onduty
 end)
 
 exports('GetMemberships', function(src)
@@ -251,7 +256,7 @@ exports('GetOnDutyPlayers', function(job)
     local list = {}
     for src in pairs(Members) do
         local j = Bridge:GetJob(src)
-        if j and j.name == job and j.onduty then list[#list + 1] = src end
+        if j and sameJob(j.name, job) and j.onduty then list[#list + 1] = src end
     end
     return list
 end)

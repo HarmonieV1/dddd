@@ -8,7 +8,7 @@ local function act(name, target, data) return lib.callback.await('gs_police:acti
 local function myJob()
     local j = Bridge:GetJob()
     if not j or not j.onduty then return nil end
-    if j.name == Config.PoliceJob then return 'police' end
+    if Config.PoliceJobs[j.name] then return 'police' end
     if j.name == Config.EmsJob then return 'ems' end
 end
 
@@ -122,6 +122,9 @@ local function checkPlate()
     if not ok then return notify(false, d) end
     lib.notify({ title = 'Plaque ' .. d.plate, description = d.owner and ('Propriétaire : ' .. d.owner) or 'Non enregistrée (volée, location ou véhicule local)',
         type = d.owner and 'inform' or 'warning', icon = 'car', duration = 10000 })
+    if d.fake then
+        lib.notify({ title = 'Numéro de châssis', description = 'Le châssis ne correspond pas à cette plaque : plaque probablement fausse.', type = 'error', icon = 'triangle-exclamation', duration = 12000 })
+    end
     if d.owner and GetResourceState('gs_carnet') == 'started' then TriggerEvent('gs_carnet:client:show', d.plate) end -- V8 : historique
 end
 
@@ -173,6 +176,29 @@ local function policeOptions()
                 if r then notify(act('record', id, { charge = r[1], fine = r[2] })) end
             end)
         end },
+        { title = 'Garde à vue (cellule du commissariat)', icon = 'door-closed', onSelect = function()
+            withTarget(function(id)
+                local r = lib.inputDialog('Garde à vue', { { type = 'number', label = 'Minutes', default = 20, min = 1, max = Config.Custody.maxMinutes, required = true } })
+                if r then notify(act('custody', id, { minutes = r[1] })) end
+            end)
+        end },
+        { title = 'Interrogatoire (salle ↔ cellule)', icon = 'comments', onSelect = function()
+            local list = {}
+            for _, pid in ipairs(GetActivePlayers()) do
+                if pid ~= PlayerId() and #(GetEntityCoords(GetPlayerPed(pid)) - GetEntityCoords(PlayerPedId())) < 12.0 then list[#list + 1] = GetPlayerServerId(pid) end
+            end
+            if #list == 0 then return notify(false, 'Personne à portée.') end
+            notify(act('interrogate', list[1]))
+        end },
+        { title = 'Fin de garde à vue (libérer)', icon = 'door-open', onSelect = function()
+            local list = {}
+            for _, pid in ipairs(GetActivePlayers()) do
+                if pid ~= PlayerId() and #(GetEntityCoords(GetPlayerPed(pid)) - GetEntityCoords(PlayerPedId())) < 12.0 then list[#list + 1] = GetPlayerServerId(pid) end
+            end
+            if #list == 0 then return notify(false, 'Personne à portée.') end
+            notify(act('custodyend', list[1]))
+        end },
+        { title = 'Chien K9', icon = 'dog', arrow = true, onSelect = function() GSPolice_K9Menu() end },
         { title = 'Incarcérer', icon = 'building-shield', onSelect = function()
             withTarget(function(id)
                 local r = lib.inputDialog('Prison', {

@@ -57,5 +57,27 @@ duty[1] = 'police' W.players[1].vehicle = nil
 advance(6000)
 check('police : n\'importe quelle plaque, crimes compris', #cb('gs_carnet:view', 1, 'RLCARNET').events == 4)
 
+-- V8 · Fausses plaques
+do
+    duty[1] = nil
+    W.players[1].pos = vec3(9000.0, 0.0, 0.0)
+    W.entities[car].pos = vec3(9001.0, 0.0, 0.0)
+    advance(11000)
+    check('fausse plaque : objet requis', not Carnet.fakePlate(1, car))
+    W.players[1].items.gs_fakeplate = 1
+    local st = SetTimeout SetTimeout = function() end -- (le retour auto de la vraie plaque est différé en jeu)
+    local ok = Carnet.fakePlate(1, car)
+    SetTimeout = st
+    local fake = GetVehicleNumberPlateText(car)
+    check('fausse plaque posée (vraie plaque gardée en mémoire)', ok and fake ~= 'RLCARNET' and #fake == 8 and Entity(car).state.gsRealPlate == 'RLCARNET')
+    check('fausse plaque : plus de carnet', Carnet.view(fake, true) == nil)
+    advance(11000)
+    check('retirée : vraie plaque et objet rendus', Carnet.fakePlate(1, car) == true and GetVehicleNumberPlateText(car) == 'RLCARNET'
+        and W.players[1].items.gs_fakeplate == 1 and Entity(car).state.gsRealPlate == nil)
+    W.players[1].pos = vec3(0.0, 0.0, 0.0)
+    advance(11000)
+    check('trop loin du véhicule', not Carnet.fakePlate(1, car))
+end
+
 io.write(('\n%d réussis, %d échoués\n'):format(passed, failed))
 os.exit(failed == 0 and 0 or 1)

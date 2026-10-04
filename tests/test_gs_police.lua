@@ -35,7 +35,7 @@ Store = {
     report = function(id) local r = reports[id] return r and { id = r.id, title = r.title, body = r.body, officer = r.officer, officer_cid = r.officer_cid } end,
     deleteReport = function(id) if reports[id] then reports[id] = nil return true end return false end,
 }
-loadResource('gs_police', { R .. 'gs_police/server/main.lua', R .. 'gs_police/server/dossiers.lua', R .. 'gs_police/server/prison.lua' })
+loadResource('gs_police', { R .. 'gs_police/server/main.lua', R .. 'gs_police/server/dossiers.lua', R .. 'gs_police/server/prison.lua', R .. 'gs_police/server/custody.lua' })
 
 local passed, failed = 0, 0
 local function check(name, cond)
@@ -284,6 +284,61 @@ do
     check('évasion : surveillance renforcée ensuite', not Prison.escape(31))
     Police.jailTick()
     provide('gs_weather', { GetGameTime = function() return 12, 0, 0 end })
+end
+
+-- V8 · Garde à vue, interrogatoire, aveux, K9 ------------------------------------------------------------------------
+do
+    local C = Config.Custody
+    local inv = {}
+    provide('ox_inventory', { Search = function(id, _, item) return (inv[id] or {})[item] or 0 end })
+    join(51, 'CID51', 'Agent GAV', vec3(C.station.x, C.station.y, C.station.z), { name = 'police', grade = 2, onduty = true })
+    join(52, 'CID52', 'Suspect GAV', vec3(C.station.x + 1.0, C.station.y, C.station.z))
+    join(53, 'CID53', 'Maître Avocat', vec3(0.0, 0.0, 0.0))
+    duty[51] = 'police'
+    W.players[51].items.handcuffs = 1
+    local ok = cb('gs_police:action', 51, 'custody', 52, { minutes = 10 }) advance(3000)
+    check('garde à vue : personne menottée requise', not ok)
+    Player(52).state:set('gsCuffed', true)
+    ok = cb('gs_police:action', 51, 'custody', 52, { minutes = 10 }) advance(3000)
+    check('garde à vue : en cellule, démenotté', ok and Custody.list[52] and Player(52).state.gsCuffed == nil
+        and #(W.players[52].pos - vec3(C.cell.x, C.cell.y, C.cell.z)) < 1.0)
+    check('droits : avocat demandé', Custody.right(52, 'lawyer') == true and Custody.list[52].lawyer)
+    check('droits : réservés à la garde à vue', not Custody.right(53, 'lawyer'))
+    tp(51, vec3(C.cell.x + 2.0, C.cell.y, C.cell.z))
+    local ok2, msg = cb('gs_police:action', 51, 'interrogate', 52) advance(3000)
+    check('interrogatoire sans l\'avocat demandé : vice de procédure', ok2 and msg:find('vice de procédure'))
+    cb('gs_police:action', 51, 'interrogate', 52) advance(3000)
+    check('retour en cellule', not Custody.list[52].room)
+    Custody.right(52, 'confess')
+    tp(51, vec3(C.cell.x + 2.0, C.cell.y, C.cell.z)) tp(52, vec3(C.cell.x + 1.0, C.cell.y, C.cell.z))
+    ok = cb('gs_police:action', 51, 'jail', 52, { minutes = 10, reason = 'Vol' }) advance(3000)
+    check('aveux : peine réduite à l\'incarcération, fin de garde à vue', ok and Police.jailed[52]
+        and Police.jailed[52].untilTs - os.time() <= 7 * 60 and Custody.list[52] == nil)
+    Police.release(52)
+
+    -- fin de garde à vue à l'échéance
+    tp(51, vec3(C.station.x, C.station.y, C.station.z)) tp(52, vec3(C.station.x + 1.0, C.station.y, C.station.z))
+    Player(52).state:set('gsCuffed', true)
+    cb('gs_police:action', 51, 'custody', 52, { minutes = 1 }) advance(3000)
+    advance(61000) Custody.tick()
+    check('fin de garde à vue : libéré', Custody.list[52] == nil)
+
+    -- K9
+    tp(52, vec3(C.station.x + 1.0, C.station.y, C.station.z))
+    W.players[51].job.grade = 0
+    ok = cb('gs_police:action', 51, 'k9', nil, { target = 52 }) advance(3000)
+    check('K9 : grade requis', not ok)
+    W.players[51].job.grade = 2
+    local ok3, r = cb('gs_police:action', 51, 'k9', nil, { target = 52 }) advance(3000)
+    check('K9 : ne marque pas sans drogue', ok3 and r:find('ne marque pas'))
+    inv[52] = { coke_bag = 2 }
+    ok3, r = cb('gs_police:action', 51, 'k9', nil, { target = 52 }) advance(3000)
+    check('K9 : marque la personne', ok3 and r:find('marque') and not r:find('ne marque'))
+    local car = CreateVehicleServerSetter(0, 'automobile', C.station.x + 2.0, C.station.y, C.station.z)
+    SetVehicleNumberPlateText(car, 'K9TEST01')
+    inv['trunkK9TEST01'] = { weed_bag = 5 }
+    ok3, r = cb('gs_police:action', 51, 'k9', nil, { netId = car }) advance(3000)
+    check('K9 : marque le coffre du véhicule', ok3 and r:find('marque le véhicule'))
 end
 
 io.write(('\n%d réussis, %d échoués\n'):format(passed, failed))

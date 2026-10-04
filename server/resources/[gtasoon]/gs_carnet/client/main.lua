@@ -22,3 +22,18 @@ RegisterCommand('histoire', function()
     show(nil)
 end, false)
 AddEventHandler('gs_carnet:client:show', show)
+
+-- V8 · Fausse plaque (objet) : poser / retirer sur le véhicule le plus proche
+exports('fakeplate', function()
+    local me, best, bestD = GetEntityCoords(cache.ped), 0, Config.FakePlate.range
+    for _, v in ipairs(GetGamePool('CVehicle')) do
+        local d = #(GetEntityCoords(v) - me)
+        if d < bestD then best, bestD = v, d end
+    end
+    if best == 0 then return lib.notify({ description = 'Approche-toi d\'un véhicule.', type = 'error' }) end
+    if not lib.progressBar({ duration = 6000, label = 'Changement de plaque…', canCancel = true, anim = { dict = 'mini@repair', clip = 'fixing_a_ped' },
+        disable = { move = true, car = true, combat = true } }) then return ClearPedTasks(cache.ped) end
+    ClearPedTasks(cache.ped)
+    local ok, msg = lib.callback.await('gs_carnet:fakeplate', false, VehToNet(best))
+    lib.notify({ description = msg, type = ok and 'success' or 'error', duration = 8000 })
+end)

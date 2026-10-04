@@ -43,6 +43,7 @@ Config.Catalog = {
     { item = 'lockpick', label = 'Crochet', price = 150, stock = 40 },
     { item = 'advancedlockpick', label = 'Crochet avancé', price = 900, stock = 10 },
     { item = 'armour', label = 'Gilet pare-balles', price = 2500, stock = 10 },
+    { item = 'gs_fakeplate', label = 'Fausse plaque', price = 3500, stock = 5 }, -- V8 : la ville ne relie plus la voiture
 }
 
 -- Armureries légales (ox_inventory, boutique « Ammunation ») : plafond par personnage et par jour.
