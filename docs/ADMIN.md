@@ -71,3 +71,7 @@ Placer n'importe quel objet du jeu, le déplacer, le tourner, le dupliquer, le s
 - Perf : chaque joueur ne crée localement que les objets à moins de 150 m (aucune entité réseau), 3000 objets max.
 - Sécurité : tout est revalidé serveur (permission, nom de modèle, position, distance < 60 m), chaque action loggée.
 - Noms des objets : bibliothèque en ligne « GTA V prop list » (ex. gta-objects.xyz) ou favoris dans `gs_builder/shared/config.lua`.
+
+## V8 · Ajouts au menu F11
+- Événements → **Météo événementielle** (tempête, canicule, brouillard, arrêt) et **Halloween sur la route** (activer, désactiver, automatique).
+- Joueurs → [joueur] → **Effacer sa recherche (étoiles)**.

@@ -571,6 +571,27 @@ local function eventsMenu()
         end }
     end
     options[#options + 1] = { title = 'Arrêter le bonus serveur en cours', icon = 'stop', onSelect = function() ExecuteCommand('gsevent stop') end }
+    -- V8 : météo événementielle et Halloween (admin et plus ; le serveur revérifie le rang)
+    if info.level >= 3 then
+        options[#options + 1] = { title = 'Météo événementielle', icon = 'cloud-bolt', arrow = true,
+            description = 'Tempête (routes fermées, interventions payées), canicule, brouillard', onSelect = function()
+                show('gs_staff_weather', 'Météo événementielle', {
+                    { title = 'Tempête tropicale', icon = 'cloud-bolt', description = 'Routes du comté fermées, arbres et véhicules à dégager',
+                      onSelect = function() ExecuteCommand('meteoevent storm') end },
+                    { title = 'Canicule', icon = 'temperature-high', onSelect = function() ExecuteCommand('meteoevent heatwave') end },
+                    { title = 'Brouillard épais', icon = 'smog', onSelect = function() ExecuteCommand('meteoevent fog') end },
+                    { title = 'Arrêter l\'événement météo', icon = 'sun', onSelect = function() ExecuteCommand('meteoevent stop') end },
+                }, 'gs_staff_events')
+            end }
+        options[#options + 1] = { title = 'Halloween sur la route', icon = 'ghost', arrow = true,
+            description = 'Citrouilles, auto-stoppeur fantôme (auto du 24 oct. au 1er nov.)', onSelect = function()
+                show('gs_staff_halloween', 'Halloween sur la route', {
+                    { title = 'Activer maintenant', icon = 'ghost', onSelect = function() ExecuteCommand('halloween on') end },
+                    { title = 'Désactiver', icon = 'ban', onSelect = function() ExecuteCommand('halloween off') end },
+                    { title = 'Automatique (selon la date)', icon = 'calendar', onSelect = function() ExecuteCommand('halloween auto') end },
+                }, 'gs_staff_events')
+            end }
+    end
     options[#options + 1] = { title = 'Effets sur moi (animation d\'événement)', icon = 'wand-magic-sparkles', arrow = true,
         description = 'Course rapide, super saut, gravité lunaire…', onSelect = funMenu }
     show('gs_staff_events', 'Événements', options, 'gs_staff_quick')
@@ -586,6 +607,8 @@ local function playerMenu(p)
     add(2, { title = 'Soigner', icon = 'heart', onSelect = function() notify(act('heal', p.id)) end })
     add(2, { title = 'Réanimer', icon = 'heart-pulse', onSelect = function() notify(act('revive', p.id)) end })
     add(2, { title = 'Figer / libérer', icon = 'snowflake', onSelect = function() notify(act('freeze', p.id)) end })
+    add(3, { title = 'Effacer sa recherche (étoiles)', icon = 'star', description = 'Chaleur remise à zéro (gs_wanted)',
+        onSelect = function() ExecuteCommand('effacerrecherche ' .. p.id) notify(true, 'Recherche effacée.') end })
     add(3, { title = 'Lui mettre un métier', icon = 'briefcase', arrow = true, onSelect = function() jobsMenu(p) end })
     add(3, { title = 'Le mettre dans un gang', icon = 'people-group', arrow = true, onSelect = function() gangsMenu(p) end })
     add(4, { title = 'Argent', icon = 'money-bill', arrow = true, onSelect = function() moneyMenu(p) end })
