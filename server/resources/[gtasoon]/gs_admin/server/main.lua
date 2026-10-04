@@ -53,7 +53,10 @@ end
 
 local function teleport(src, c)
     local ped = GetPlayerPed(src)
-    if ped ~= 0 then SetEntityCoords(ped, c.x, c.y, c.z, false, false, false, false) end
+    if ped ~= 0 then
+        pcall(function() Security:AllowTeleport(src, 10) end) -- V9 : pas d'alerte anti-triche pour un TP du staff
+        SetEntityCoords(ped, c.x, c.y, c.z, false, false, false, false)
+    end
 end
 
 function Admin.jail(src, minutes, reason, staffName)
@@ -558,6 +561,13 @@ local function staffGuard(src, key, max, window)
     return Security:RateLimit(src, 'gs_admin:' .. key, max, window) and Admin.level(src) > 0
 end
 
+-- V9 : dernières alertes anti-triche (gs_security) pour le menu F11
+lib.callback.register('gs_admin:acAlerts', function(src)
+    if not staffGuard(src, 'acAlerts', 4, 5000) then return nil end
+    local ok, list = pcall(function() return Security:GetAlerts() end)
+    return ok and list or {}
+end)
+
 lib.callback.register('gs_admin:open', function(src)
     if not staffGuard(src, 'open', 10, 10000) then return nil end
     local lvl = Admin.level(src)
@@ -684,6 +694,8 @@ CreateThread(function()
 end)
 
 exports('GetStaffLevel', Admin.level)
+--- V9 : alerte aux membres du staff en service (anti-triche…)
+exports('NotifyStaff', function(msg) for s in pairs(Admin.onDuty) do notify(s, msg, 'warning') end return true end)
 exports('IsJailed', function(src) return Admin.jailed[src] ~= nil end)
 
 -- Version RoadLine affichée au démarrage (console) : savoir d'un coup d'œil quelle version tourne

@@ -1,10 +1,10 @@
 ﻿<#
   GTA SOON - SAUVEGARDE DE LA BASE DE DONNÉES (persos, argent, inventaires, gangs, progression…).
-  Double-clic sur SAUVEGARDER-BDD.bat : sauvegarde maintenant, et propose de la programmer chaque nuit à 5 h.
-  Fichiers : C:\GTASOON\sauvegardes\bdd\ (les 14 plus récentes sont gardées).
-  Restauration : voir la fin de ce fichier (RESTAURER).
+  Double-clic sur SAUVEGARDER-BDD.bat : sauvegarde maintenant, et propose de la programmer toutes les 6 h (dont 5 h du matin).
+  Fichiers : C:\GTASOON\sauvegardes\bdd\ (les 30 plus récentes sont gardées, soit ~1 semaine).
+  Restauration / retour en arrière : RESTAURER-BDD.bat (toute la base, ou un seul joueur).
 #>
-param([switch]$Auto)
+param([switch]$Auto, [string]$Label = '')
 $ErrorActionPreference = 'Stop'
 function Say($m, $c = 'Gray') { if (-not $Auto) { Write-Host $m -ForegroundColor $c } }
 function Fail($m) { Say "ERREUR : $m" 'Red'; if (-not $Auto) { Read-Host 'Entrée pour quitter' }; exit 1 }
@@ -26,7 +26,8 @@ if (-not $Dump) { Fail "Outil de sauvegarde introuvable dans $bin." }
 
 $dir = 'C:\GTASOON\sauvegardes\bdd'
 [void][IO.Directory]::CreateDirectory($dir)
-$file = Join-Path $dir ("$db-" + (Get-Date -Format 'yyyyMMdd_HHmm') + '.sql')
+$suffix = if ($Label -match '^[a-z0-9-]{1,24}$') { "-$Label" } else { '' }
+$file = Join-Path $dir ("$db-" + (Get-Date -Format 'yyyyMMdd_HHmm') + $suffix + '.sql')
 Say "Sauvegarde de la base '$db'…" 'Cyan'
 $env:MYSQL_PWD = $pass
 $ErrorActionPreference = 'Continue'
@@ -40,19 +41,19 @@ if ($code -ne 0 -or -not (Test-Path -LiteralPath $file) -or (Get-Item -LiteralPa
 $size = [math]::Round((Get-Item -LiteralPath $file).Length / 1MB, 2)
 Say "OK : $file ($size Mo)" 'Green'
 
-# Garder les 14 plus récentes
-Get-ChildItem -LiteralPath $dir -Filter '*.sql' | Sort-Object LastWriteTime -Descending | Select-Object -Skip 14 | Remove-Item -Force
+# Garder les 30 plus récentes
+Get-ChildItem -LiteralPath $dir -Filter '*.sql' | Sort-Object LastWriteTime -Descending | Select-Object -Skip 30 | Remove-Item -Force
 
 if ($Auto) { exit 0 }
 
-# Programmation quotidienne (tâche Windows à 5 h, pour ton compte)
-$task = 'GTA SOON - sauvegarde BDD'
+# Programmation (tâche Windows toutes les 6 h à partir de 5 h, pour ton compte)
+$task = 'RoadLine - sauvegarde BDD'
 $exists = $false
 try { schtasks /Query /TN $task 2>$null | Out-Null; $exists = ($LASTEXITCODE -eq 0) } catch { }
 if ($exists) {
-    Say "La sauvegarde automatique est déjà programmée chaque nuit à 5 h." 'Green'
+    Say "La sauvegarde automatique est déjà programmée (toutes les 6 h : 5 h, 11 h, 17 h, 23 h)." 'Green'
 } else {
-    $a = Read-Host 'Programmer cette sauvegarde automatiquement chaque nuit à 5 h ? (O/N)'
+    $a = Read-Host 'Programmer cette sauvegarde automatiquement toutes les 6 h (5 h, 11 h, 17 h, 23 h) ? (O/N)'
     if ($a -match '^[oOyY]') {
         # Copie stable du script (le dossier du zip peut être supprimé plus tard)
         $tools = 'C:\GTASOON\outils'
@@ -60,17 +61,20 @@ if ($exists) {
         $stable = Join-Path $tools 'sauvegarder-bdd.ps1'
         Copy-Item -LiteralPath $PSCommandPath -Destination $stable -Force
         $cmd = "powershell -NoProfile -ExecutionPolicy Bypass -File `"$stable`" -Auto"
-        schtasks /Create /TN $task /SC DAILY /ST 05:00 /TR $cmd /F | Out-Null
-        if ($LASTEXITCODE -eq 0) { Say 'Programmé : tous les jours à 5 h (le PC doit être allumé).' 'Green' }
+        Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'restaurer-bdd.ps1') -Destination (Join-Path $tools 'restaurer-bdd.ps1') -Force -ErrorAction SilentlyContinue
+        schtasks /Create /TN $task /SC HOURLY /MO 6 /ST 05:00 /TR $cmd /F | Out-Null
+        if ($LASTEXITCODE -eq 0) {
+            schtasks /Delete /TN 'GTA SOON - sauvegarde BDD' /F 2>$null | Out-Null # ancienne tâche (1 fois par nuit) remplacée
+            Say 'Programmé : toutes les 6 h (le PC doit être allumé).' 'Green'
+        }
         else { Say 'Programmation refusée par Windows : relance ce fichier en clic droit → Exécuter en tant qu''administrateur.' 'Yellow' }
     }
 }
 Say @"
 
-RESTAURER une sauvegarde (en cas de problème) :
- 1. Arrête le serveur.
- 2. Ouvre HeidiSQL (installé avec MariaDB), connecte-toi, sélectionne la base '$db'.
- 3. Fichier → Exécuter un fichier SQL → choisis la sauvegarde dans $dir.
- 4. Relance le serveur.
+RETOUR EN ARRIÈRE (gros bug, crash, triche) : double-clic sur RESTAURER-BDD.bat
+ - toute la base revient à l'heure choisie, ou
+ - un seul joueur (perso + véhicules) revient à l'heure choisie, le reste du serveur ne bouge pas.
+ L'état actuel est toujours sauvegardé avant, on peut donc annuler.
 "@ 'Cyan'
 Read-Host 'Entrée pour fermer'

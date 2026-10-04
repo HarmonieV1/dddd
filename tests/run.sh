@@ -27,3 +27,8 @@ for t in tests/test_*.lua; do
     echo "== $t"
     lua5.4 "$t"
 done
+# Bot Discord (Node.js 22, sans dépendance) : syntaxe + lecture d'un faux serveur FiveM
+if command -v node >/dev/null; then
+    node --check tools/discord-bot/bot.mjs && node tools/discord-bot/test.mjs
+fi
+bash -n scripts/linux/roadline-bdd.sh && echo "Script Linux BDD OK"

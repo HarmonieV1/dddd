@@ -739,6 +739,18 @@ local function mainMenu()
         add(2, { title = 'Véhicules', icon = 'car', arrow = true, description = 'Faire apparaître, mods, réparer, supprimer', onSelect = vehMenu })
         add(1, { title = 'Monde et lieux', icon = 'map-location-dot', arrow = true, description = 'Lieux publics, points, gangs, décor', onSelect = worldMenu })
         add(3, { title = 'Événements', icon = 'champagne-glasses', arrow = true, description = 'Événements en un clic, bonus serveur, effets', onSelect = eventsMenu })
+        add(1, { title = 'Anti-triche', icon = 'user-shield', arrow = true, description = 'Dernières alertes (aucune sanction automatique)', onSelect = function()
+            local list = lib.callback.await('gs_admin:acAlerts', false) or {}
+            local o = {}
+            for i = 1, math.min(#list, 30) do
+                local a = list[i]
+                o[#o + 1] = { title = ('%s [%d] · %s'):format(a.name, a.src, a.kind), icon = 'triangle-exclamation', iconColor = '#ff8a3d',
+                    description = ('%s · il y a %d min'):format(a.detail or '', math.max(0, GetCloudTimeAsInt() - a.at) // 60),
+                    onSelect = function() notify(act('goto', a.src)) end }
+            end
+            if #o == 0 then o[1] = { title = 'Aucune alerte', icon = 'circle-check', readOnly = true } end
+            show('gs_staff_ac', 'Anti-triche', o, 'gs_staff_quick')
+        end })
     end
     add(1, { title = 'Panel complet (F10)', icon = 'table-columns', onSelect = function() ExecuteCommand('admin') end })
     show('gs_staff_quick', ('Staff · %s · RoadLine %s'):format(info.levelName or '', GetConvar('gs_version', '?')), options)
