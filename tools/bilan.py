@@ -1,5 +1,5 @@
-# Génère docs/pdf/ROADLINE_Bilan_V9.pdf (tout ce qui existe, historique, état, ce qu'il reste, idées signature)
-# et docs/pdf/ROADLINE_Reste_a_tester.pdf (retours du beta test et nouveautés V8 / V9 → à vérifier en jeu).
+# Génère docs/pdf/ROADLINE_Bilan_V10.pdf (tout ce qui existe, historique, état, ce qu'il reste, idées signature)
+# et docs/pdf/ROADLINE_Reste_a_tester.pdf (retours du beta test et nouveautés V9 / V10 → à vérifier en jeu).
 # Lancer depuis la racine : python3 tools/bilan.py
 import os
 import sys
@@ -40,9 +40,18 @@ HISTORY = [
            "cabines téléphoniques cohérentes ; fraude à l'assurance ; combats clandestins ; racket des commerces ; la doublure du patron ; "
            "contrats signés ; récap du mois et biographie ; rendez-vous fixes ; anti-triche serveur ; Discord (statut, annonces, bot, rôles) ; "
            "sauvegardes toutes les 6 h et retour en arrière (base ou joueur) ; statistiques de rétention"],
+    ['V10', "Une ville qui vit sans toi : Que faire ? (point d'entrée unique), téléphone refait (Plans, Ville, Notes, notifications, "
+            "récents, fonds, marcher téléphone ouvert), le quartier évolue (standing, déchets à ramasser, recette des commerces), "
+            "faits divers PNJ pour la police, Radio Los Santos, les commerçants se souviennent, bot Discord intégré au serveur"],
 ]
 
 FEATURES = [
+    ('★ V10 : une ville qui vit sans toi', [
+        "Que faire ? (téléphone ou /quefaire) : ce qui se passe maintenant + toutes les activités en boutons (GPS ou action).",
+        "Téléphone : Plans (favoris, partage de position), Ville (quartiers, météo), Notes, notifications, appels récents, fonds, mode marche.",
+        "Le quartier évolue : standing nourri par les ventes et réparations (+) et par crimes, tags, trafics (-) ; déchets à ramasser, recette des commerces.",
+        "Faits divers PNJ quand la ville est calme (police, EMS, presse) ; Radio Los Santos en voiture ; les commerçants se souviennent (habitués, braqueurs reconnus).",
+    ]),
     ('★ V9 : la ville porte ses cicatrices', [
         "Cicatrices de la ville : bougies là où quelqu'un est tombé, vitrine brisée après un braquage (réparée par un ouvrier payé), fresque du gang vainqueur.",
         "La cavale : fugitifs affichés, prime qui grimpe, /livrer, prime au policier, panthéon des légendes (/legendes).",
@@ -109,13 +118,13 @@ FEATURES = [
         'Déplacer n\'importe quel point en jeu (sauvegardé), décor (/builder), lieux publics (boutiques, parkings), gangs et garages, journal de toutes les actions.',
         'Outils Windows en un double-clic : INSTALLER, METTRE-A-JOUR, IMPORTER-MODS (marques refusées), NETTOYER-MARQUES, REPARER-*, VIDER-CACHE, '
         'SAUVEGARDER-BDD, RESTAURER-BDD, CONFIGURER-DISCORD, INVITER-AMIS, PREPARER-HEBERGEUR.',
-        'Qualité : 59 ressources maison, près de 2 300 vérifications automatiques à chaque envoi (GitHub), linters de config, de liaisons et de performance.',
+        'Qualité : 61 ressources maison, plus de 2 300 vérifications automatiques à chaque envoi (GitHub), linters de config, de liaisons et de performance.',
     ]),
 ]
 
 STATE = [
     ['Domaine', 'État', 'Ce qu\'il reste'],
-    ['Code et contenu', 'V9 complète, tests verts', 'Ton test en jeu des V8 + V9, recalage des points estimés (outil Déplacer un point), lieux du ring à vérifier'],
+    ['Code et contenu', 'V10 complète, tests verts', 'Ton test en jeu des V9 + V10, recalage des points estimés (outil Déplacer un point), lieux du ring à vérifier'],
     ['Hébergement', 'Bloqué : offre sans base SQL', 'Base MySQL (support Sentrohost, offre avec base, ou VPS Linux + installateur), puis PREPARER-HEBERGEUR'],
     ['Beta test', 'Toi seul en local', 'Ouvrir aux beta-testeurs une fois hébergé (8 places en profil dev)'],
     ['Communauté', 'Discord fait, bot prêt', 'Salons #statut / #annonces + CONFIGURER-DISCORD.bat (webhooks, bot, rôles de métier)'],
@@ -126,7 +135,7 @@ STATE = [
 TO_OPEN = [
     '<b>Hébergeur avec base de données</b> : demander au support Sentrohost d\'ajouter une base MySQL / MariaDB, ou passer sur une offre qui en a une, '
     'ou louer un VPS Linux (on écrira l\'installateur Linux). Sans base, Qbox ne démarre pas.',
-    '<b>Valider la V8 et la V9 en jeu</b> avec la fiche « Reste à tester » ; me renvoyer les points encore mal placés et les erreurs F8.',
+    '<b>Valider la V9 et la V10 en jeu</b> avec la fiche « Reste à tester » ; me renvoyer les points encore mal placés et les erreurs F8.',
     '<b>Clé de licence</b> Cfx (keymaster) pour l\'hébergeur, sv_hostname / projet / tags, logo 96x96 (load_server_icon).',
     '<b>Discord</b> : webhooks (staff, sanctions publiques, annonces, social) dans secrets.cfg ; rôles staff = rangs en jeu ; salon candidatures si liste blanche.',
     '<b>Staff</b> : nommer 2-3 modos, leur donner le rang en jeu (F11 → Joueurs → Rang), leur faire lire docs/ADMIN.md.',
@@ -151,7 +160,7 @@ IDEAS = [
 
 
 def bilan():
-    d = doc('docs/pdf/ROADLINE_Bilan_V9.pdf', 'RoadLine RP · Bilan complet V9')
+    d = doc('docs/pdf/ROADLINE_Bilan_V10.pdf', 'RoadLine RP · Bilan complet V10')
     s = [Paragraph('RoadLine RP · Bilan complet', H1),
          Paragraph(f'De la création de la base à la {VERSION} : tout ce qui existe en jeu, où on en est, ce qu\'il reste pour ouvrir, '
                    'et 10 idées signature pour la suite. Serveur FiveM RP français, Free Access, zéro pay-to-win (Qbox, ox_lib, ox_inventory, pma-voice).', P),
@@ -161,7 +170,7 @@ def bilan():
         s += [KeepTogether([Paragraph(title, H3)] + bullets(items))]
     s += [PageBreak(), Paragraph('3. Où on en est', H2), table(STATE, [32 * mm, 45 * mm, 103 * mm]),
           Paragraph('4. Ce qu\'il reste pour ouvrir le serveur', H2)] + bullets(TO_OPEN)
-    s += [PageBreak(), Paragraph('5. Idées pour la suite (V10 et après)', H2),
+    s += [PageBreak(), Paragraph('5. Idées pour la suite (V11 et après)', H2),
           Paragraph('Dans l\'esprit de « Los Santos réactif » : des systèmes qui se branchent sur ce qui existe déjà et que peu de serveurs proposent.', P)]
     for i, (t, txt) in enumerate(IDEAS, 1):
         s += [KeepTogether([Paragraph(f'{i}. {t}', H3), Paragraph(txt, P)])]
@@ -217,6 +226,13 @@ RETEST = [
         ('/contact pas sûr', 'Téléphone → Inconnu → Appeler le contact', 'Dans un gang, la nuit'),
         ('Contrats à mettre dans le téléphone', 'Téléphone → Inconnu → Contrats', 'Publier / accepter'),
         ('100 gangs, planque Ballas buggée', '4 gangs + 2 organisations ; garage visible', 'F9, planque et garage de chaque gang'),
+    ]),
+    ('V10 · Nouveautés à vérifier', [
+        ('Que faire ? / téléphone', 'Point d\'entrée unique, nouvelles applis', 'Téléphone → Que faire, Plans, Ville, Notes, Réglages'),
+        ('Le quartier évolue', 'Standing, déchets, recette', 'Braquer au sud (déclin, déchets à ramasser) ; vendre au bar (essor)'),
+        ('Faits divers PNJ', 'Police / EMS / presse', 'Policier en service, ville calme ou F11 → Fait divers'),
+        ('Radio LS / commerçants', 'Sous-titres en voiture ; habitués', '/radiols ; 5 jours d\'achats ; braquer sans masque puis revenir'),
+        ('Bot Discord', 'Intégré au serveur', 'CONFIGURER-DISCORD.bat puis relance : /statut'),
     ]),
     ('V9 · Nouveautés à vérifier', [
         ('Cicatrices de la ville', 'Bougies, vitrine brisée, fresque', 'Mourir ; braquer une supérette puis réparer avec un autre perso ; gagner une guerre'),
@@ -279,4 +295,4 @@ def reste():
 if __name__ == '__main__':
     bilan()
     reste()
-    print('PDF générés : docs/pdf/ROADLINE_Bilan_V9.pdf, docs/pdf/ROADLINE_Reste_a_tester.pdf')
+    print('PDF générés : docs/pdf/ROADLINE_Bilan_V10.pdf, docs/pdf/ROADLINE_Reste_a_tester.pdf')

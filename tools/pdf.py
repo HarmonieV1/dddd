@@ -8,7 +8,7 @@ from reportlab.lib.units import mm
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, PageBreak, KeepTogether
 from reportlab.graphics.shapes import Drawing, Rect, Circle, String, Line
 
-VERSION = 'V9.1'
+VERSION = 'V10'
 NEON = colors.HexColor('#28E0FF')
 DARK = colors.HexColor('#0F091C')
 PINK = colors.HexColor('#FF2E88')
@@ -90,6 +90,7 @@ COMMANDS = [
     ['/cavale · /livrer · /legendes', 'fugitifs recherchés (primes) · livrer un fugitif · panthéon des cavales'],
     ['/contrat · /recap · /rdv', 'contrats signés (prêt, salaire, location) · ton récap du mois · rendez-vous de la semaine'],
     ['/racket', "gang : réclamer une protection à la caisse d'un commerce · patron : voir / arrêter de payer"],
+    ['/quefaire · /radiols', "tout ce qu'on peut faire maintenant (aussi dans le téléphone : Que faire) · couper / rallumer Radio Los Santos"],
     ['Staff', '/whitelist · /gsjob · /gsgang · /gsevent · /meteo · /builder · /economie (les joueurs ne les voient pas)'],
 ]
 
@@ -121,6 +122,27 @@ def guide(points):
     s += [Paragraph('2. Touches', H2), table(KEYS, [38 * mm, 78 * mm, 64 * mm])]
     s += [Paragraph('3. Commandes utiles', H2), table(COMMANDS, [60 * mm, 120 * mm])]
 
+    s += [PageBreak(), Paragraph('★ Nouveautés V10 · Une ville qui vit sans toi', H2)]
+    s += bullets([
+        "<b>Que faire ?</b> (téléphone, ou /quefaire) : un seul point d'entrée. « En ce moment » (rendez-vous, ring ouvert, fugitifs, "
+        "quartiers chauds, services en service, faits divers pour la police) puis Gagner ma vie / Côté obscur / Me détendre / Ma vie / Aide : "
+        "chaque ligne est un bouton (GPS ou action), plus besoin de retenir 30 commandes.",
+        "<b>Téléphone</b> : nouvelles applis Que faire, Plans (lieux favoris, partager sa position par SMS, bouton Itinéraire dans les "
+        "messages), Ville (ambiance et standing des quartiers, météo), Notes ; notifications sur l'accueil (SMS, appels manqués, urgences), "
+        "appels récents, 6 fonds d'écran, option « marcher téléphone ouvert » (le perso ne bouge pas quand on écrit). Plus léger : "
+        "Vibe et Boulots chargés seulement à l'ouverture, aucun flou coûteux, zéro boucle téléphone rangé.",
+        "<b>Le quartier évolue</b> : chaque quartier a un standing (à l'abandon → huppé). Les ventes des commerces et les vitrines réparées "
+        "le font monter ; crimes, tags et trafics le font baisser. En déclin : déchets dans la rue, à ramasser (payé par la mairie). "
+        "La recette des commerces suit (-15 % à +10 %). Brèves Weazel quand un quartier change.",
+        "<b>La ville a ses propres criminels</b> : quand les joueurs ne commettent pas de crimes et qu'un policier est en service, "
+        "des faits divers PNJ (cambriolage, corps retrouvé, délit de fuite, vandalisme) arrivent au central : GPS, scène, constatations "
+        "payées (police, EMS si besoin), brève Weazel. Staff : F11 → Événements → Fait divers.",
+        "<b>Radio Los Santos</b> (signature) : en voiture radio allumée, l'animateur raconte la ville en sous-titres (rendez-vous, fugitifs, "
+        "faits divers, tempêtes, ring de la nuit sans adresse, météo, astuces). /radiols pour couper.",
+        "<b>Les commerçants se souviennent</b> (signature) : 5 jours d'achats dans la même supérette = habitué (salué par son prénom, "
+        "-5 %). Braquer à visage découvert = reconnu et refusé au comptoir 48 h ; masqué, personne ne te reconnaît.",
+        "<b>Bot Discord</b> : intégré au serveur, rien à installer (voir docs/DISCORD.md : 5 étapes, une seule fois).",
+    ])
     s += [PageBreak(), Paragraph('★ Nouveautés V9 · La ville porte ses cicatrices', H2)]
     s += bullets([
         "<b>Cicatrices de la ville</b> : bougies et ruban là où quelqu'un est tombé (quelques heures), vitrine brisée après un braquage "
@@ -247,6 +269,17 @@ TESTS = [
     ('Avant de commencer', [
         'NETTOYER-MARQUES.bat (une fois), puis METTRE-A-JOUR.bat : fenêtre du serveur sans ligne ROUGE',
         'Si F3 / F5 font encore deux choses : Échap → Paramètres → Raccourcis → FiveM, vérifier F3 = Progression',
+    ]),
+    ('V10 · Nouveautés', [
+        "Téléphone → Que faire : « En ce moment » cohérent ; chaque section ; un bouton GPS pose bien le point, un bouton action ouvre le bon menu",
+        "Téléphone : Plans (enregistrer ici, GPS, partager ma position à un contact → bouton Itinéraire chez lui), Ville, Notes",
+        "Téléphone : appel manqué → notification sur l'accueil + Récents ; Réglages → fond d'écran, marcher téléphone ouvert (écrire : le perso ne bouge pas)",
+        "Braquer plusieurs fois à South LS : /quartiers → « en déclin » ; des déchets apparaissent, les ramasser (payé)",
+        "Ventes au bar : le quartier monte (/quartiers), recette du commerce en hausse",
+        "Policier en service, ville calme : un fait divers arrive (ou F11 → Événements → Fait divers) ; GPS, scène, [E] constatations",
+        "En voiture radio allumée : sous-titres Radio Los Santos (rappel de rendez-vous, fugitif, fait divers) ; /radiols",
+        "Acheter 5 jours différents dans la même supérette : « habitué » ; la braquer sans masque puis revenir : refusé",
+        "CONFIGURER-DISCORD.bat puis relance : bot en ligne, /statut, /rdv sur Discord",
     ]),
     ('V9 · Nouveautés', [
         "Mourir (ou se faire tuer) : bougies au sol ; braquer une supérette : vitrine brisée, la réparer avec un autre perso (payé)",
