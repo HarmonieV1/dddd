@@ -36,7 +36,7 @@ RegisterCommand('racket', function()
 end, false)
 
 RegisterNetEvent('gs_gangs:client:racketOffer', function(o)
-    lib.registerContext({ id = 'gs_racket_offer', title = ('Les %s veulent « protéger » le %s'):format(o.gang, o.label), canClose = false, options = {
+    lib.registerContext({ id = 'gs_racket_offer', title = ('Les %s veulent « protéger » le %s'):format(o.gang, o.label), options = { -- Échap = pas de réponse (l'offre expire)
         { title = ('Payer %d $ tous les %d jours'):format(o.amount, o.every), icon = 'sack-dollar', description = 'Prélevé sur la caisse du commerce.',
             onSelect = function() notify(act('answer', o.biz, 'accept')) end },
         { title = 'Refuser', icon = 'xmark', description = 'Ils risquent de revenir casser la vitrine.', onSelect = function() notify(act('answer', o.biz, 'refuse')) end },

@@ -8,7 +8,6 @@ Config.MaxActive = 5             -- contrats en cours par personnage
 Config.Grace = 72                -- heures de délai après une échéance (payeur absent ou sans le sou)
 Config.Penalty = 0.10            -- retard : +10 % sur l'échéance suivante
 Config.Dispute = 2               -- retards avant litige (juges et avocats prévenus)
-Config.DivorceFee = 1000         -- rompre une union seul
 Config.Item = 'gs_contrat'       -- copie papier remise aux deux parties
 
 Config.Types = {
@@ -18,8 +17,6 @@ Config.Types = {
         help = 'A paie B à intervalles fixes (garde du corps, chauffeur, assistant…).' },
     rent = { label = 'Location', icon = 'key', payer = 'b', money = true,
         help = 'B paie un loyer à A (logement, véhicule, local…).' },
-    union = { label = 'Union', icon = 'ring', money = false,
-        help = 'A et B s\'unissent officiellement. Rompre seul coûte des frais.' },
 }
 Config.Limits = { amount = { 50, 100000 }, count = { 1, 52 }, every = { 1, 30 } } -- montant, nombre d'échéances, jours
 Config.JudgeJob, Config.LawyerJob = 'judge', 'lawyer'

@@ -55,6 +55,33 @@ $zip = Join-Path $Backups "avant-maj-$stamp.zip"
 [IO.Directory]::Delete($stage, $true)
 Say "  Sauvegarde : $zip" 'Green'
 
+# 2b. V9.1 : sauvegarde de la BASE avant la mise à jour + sauvegardes automatiques toutes les 6 h (sans rien demander)
+$dbTool = Join-Path $PSScriptRoot 'sauvegarder-bdd.ps1'
+if (Test-Path -LiteralPath $dbTool) {
+    $tools = 'C:\GTASOON\outils'
+    [void][IO.Directory]::CreateDirectory($tools)
+    foreach ($t in 'sauvegarder-bdd.ps1', 'restaurer-bdd.ps1') {
+        $src = Join-Path $PSScriptRoot $t
+        if (Test-Path -LiteralPath $src) { Copy-Item -LiteralPath $src -Destination (Join-Path $tools $t) -Force }
+    }
+    $ps = (Get-Process -Id $PID).Path
+    try {
+        & $ps -NoProfile -ExecutionPolicy Bypass -File (Join-Path $tools 'sauvegarder-bdd.ps1') -Auto -Label 'avant-maj'
+        if ($LASTEXITCODE -eq 0) { Say '  Base de données sauvegardée (RESTAURER-BDD.bat pour revenir en arrière).' 'Green' }
+        else { Say '  Base non sauvegardée (MariaDB arrêté ?) : la mise à jour continue, la base n''est pas modifiée.' 'Yellow' }
+    } catch { Say "  Sauvegarde de la base : $($_.Exception.Message)" 'Yellow' }
+    $task = 'RoadLine - sauvegarde BDD'
+    schtasks /Query /TN $task 2>$null | Out-Null
+    if ($LASTEXITCODE -ne 0) {
+        $cmd = "powershell -NoProfile -ExecutionPolicy Bypass -File `"$tools\sauvegarder-bdd.ps1`" -Auto"
+        schtasks /Create /TN $task /SC HOURLY /MO 6 /ST 05:00 /TR $cmd /F 2>$null | Out-Null
+        if ($LASTEXITCODE -eq 0) {
+            schtasks /Delete /TN 'GTA SOON - sauvegarde BDD' /F 2>$null | Out-Null
+            Say '  Sauvegardes automatiques programmées : toutes les 6 h (5 h, 11 h, 17 h, 23 h).' 'Green'
+        } else { Say '  Programmation refusée par Windows : lance une fois SAUVEGARDER-BDD.bat (clic droit → administrateur).' 'Yellow' }
+    }
+}
+
 # 3. Nouvelle version
 Say "[3/4] Installation de la nouvelle version" 'Cyan'
 # Version : l'ancienne (server.cfg en place) et celle du zip, pour être sûr d'avoir lancé le bon dossier
@@ -98,6 +125,12 @@ if (Test-Path -LiteralPath $importer) {
     $ps = (Get-Process -Id $PID).Path
     try { & $ps -NoProfile -ExecutionPolicy Bypass -File $importer } catch { Say "  Import des mods : $($_.Exception.Message) (relance IMPORTER-MODS.bat seul)" 'Yellow' }
     Remove-Item Env:\GTASOON_CHAIN -ErrorAction SilentlyContinue
+}
+
+# 3c. V9.1 : Discord pas encore configuré ? (une seule fois, ensuite plus rien à faire)
+$sec = Get-Content -LiteralPath (Join-Path $Data 'cfg\secrets.cfg') -Raw -Encoding UTF8
+if ($sec -notmatch '(?m)^\s*set\s+gs_webhook_status\s+"https') {
+    Say "`n  Discord (statut en direct, annonces, bot RoadLine) pas encore branché : lance CONFIGURER-DISCORD.bat une fois." 'Yellow'
 }
 
 # 4. Relance

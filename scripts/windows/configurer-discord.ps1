@@ -1,6 +1,6 @@
 ﻿<#
   ROADLINE - CONFIGURER DISCORD (statut en direct, annonces, bot avec présence et /statut, rôles de métier).
-  Tout est demandé une fois ; les adresses et le jeton vont dans secrets.cfg et dans C:\GTASOON\discord-bot\config.json.
+  Tout est demandé une fois ; les adresses et le jeton vont dans secrets.cfg. Le bot tourne dans le serveur (rien à installer).
   Rien n'est affiché en clair (le jeton est saisi masqué). Entrée vide = on garde la valeur actuelle.
 #>
 $ErrorActionPreference = 'Stop'
@@ -63,30 +63,21 @@ Say ''
 Say '  secrets.cfg mis à jour (effet au prochain démarrage du serveur).' 'Green'
 
 if ($token) {
-    $botDir = 'C:\GTASOON\discord-bot'
-    [void][IO.Directory]::CreateDirectory($botDir)
-    $src = Join-Path (Split-Path (Split-Path $PSScriptRoot)) 'tools\discord-bot\bot.mjs'
-    if (-not (Test-Path -LiteralPath $src)) { Fail "bot.mjs introuvable ($src)." }
-    Copy-Item -LiteralPath $src -Destination (Join-Path $botDir 'bot.mjs') -Force
-    $cfg = [ordered]@{ token = $token; fivem = 'http://127.0.0.1:30120'; connect = $connect; site = 'https://roadlinerp.netlify.app'
-        discord = 'https://discord.gg/8y2sX7EvZN'; name = 'RoadLine RP' }
-    [IO.File]::WriteAllText((Join-Path $botDir 'config.json'), ($cfg | ConvertTo-Json), (New-Object Text.UTF8Encoding $false))
+    # Le bot tourne DANS le serveur FiveM (gs_discord) : rien à installer, il démarre avec le serveur, en local comme chez l'hébergeur.
+    # Lien d'invitation : l'identifiant du bot est la 1re partie du jeton (pas secrète).
+    $first = $token.Split('.')[0]
     $token = $null
-    Say "  Bot installé dans $botDir." 'Green'
-
-    $node = Get-Command node -ErrorAction SilentlyContinue
-    $major = 0
-    if ($node) { [int]::TryParse(((& node --version) -replace '^v(\d+).*', '$1'), [ref]$major) | Out-Null }
-    if ($major -lt 22) {
-        Say '  Node.js 22 ou plus est nécessaire pour le bot. Installation…' 'Yellow'
-        try { winget install -e --id OpenJS.NodeJS.LTS --accept-source-agreements --accept-package-agreements | Out-Null; Say '  Node.js installé (ferme et rouvre cette fenêtre si le bot ne démarre pas).' 'Green' }
-        catch { Say '  Installe Node.js LTS depuis nodejs.org puis lance LANCER-BOT-DISCORD.bat.' 'Yellow' }
-    }
-    if ((Read-Host '  Démarrer le bot automatiquement à l''ouverture de session Windows ? (O/N)') -match '^[oOyY]') {
-        $cmd = "cmd /c start ""RoadLine bot"" /min node ""$botDir\bot.mjs"""
-        schtasks /Create /TN 'RoadLine - bot Discord' /SC ONLOGON /TR $cmd /F | Out-Null
-        if ($LASTEXITCODE -eq 0) { Say '  Programmé.' 'Green' } else { Say '  Refusé par Windows : relance en administrateur.' 'Yellow' }
-    }
-    Say '  Lancer le bot maintenant : LANCER-BOT-DISCORD.bat' 'Cyan'
+    try {
+        $pad = $first + ('=' * ((4 - $first.Length % 4) % 4))
+        $botId = [Text.Encoding]::ASCII.GetString([Convert]::FromBase64String($pad))
+        if ($botId -match '^\d{15,22}$') {
+            $invite = "https://discord.com/oauth2/authorize?client_id=$botId&scope=bot%20applications.commands&permissions=268435456"
+            Say ''
+            Say '  Ajoute le bot à ton Discord (une fois) : la page s''ouvre, choisis ton serveur → Autoriser.' 'Cyan'
+            Say "  $invite" 'DarkGray'
+            Start-Process $invite
+        }
+    } catch { }
+    Say '  Le bot démarre tout seul avec le serveur (présence « 12/48 citoyens », /statut, /rejoindre, /rdv, /site).' 'Green'
 }
 Read-Host 'Entrée pour fermer'

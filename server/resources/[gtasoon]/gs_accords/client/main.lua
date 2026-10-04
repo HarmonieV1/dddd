@@ -60,7 +60,7 @@ end
 
 RegisterCommand('contrat', function()
     local o = { { title = 'Mes contrats', icon = 'folder-open', arrow = true, onSelect = mine } }
-    for _, k in ipairs({ 'loan', 'salary', 'rent', 'union' }) do
+    for _, k in ipairs({ 'loan', 'salary', 'rent' }) do -- le mariage, c'est à la mairie (gs_civil)
         local T = Config.Types[k]
         o[#o + 1] = { title = 'Rédiger : ' .. T.label, icon = T.icon, description = T.help, onSelect = function() draft(k) end }
     end

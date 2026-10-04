@@ -22,11 +22,13 @@ function Events.weekly(t)
     end
 end
 
---- V9 · Rendez-vous qui commence dans `ahead` minutes exactement (rappel)
+--- V9 · Rendez-vous qui commence dans `ahead` minutes (fenêtre de 2 min : la boucle d'une minute ne peut pas la rater ;
+--- le rappel n'est envoyé qu'une fois grâce à `reminded`)
 function Events.upcoming(t, ahead)
     local now = t.hour * 60 + t.min
     for _, w in ipairs(Config.Weekly or {}) do
-        if w.day == t.wday and minutes(w.from) - now == ahead then return w end
+        local d = minutes(w.from) - now
+        if w.day == t.wday and d <= ahead and d >= ahead - 1 then return w end
     end
 end
 
@@ -52,6 +54,11 @@ local function publish()
 end
 
 exports('Active', function() return Events.active() end)
+exports('Weekly', function() -- V9.1 : programme de la semaine (bot Discord)
+    local out = {}
+    for _, w in ipairs(Config.Weekly or {}) do out[#out + 1] = { dayName = Config.Days[w.day], from = w.from, to = w.to, label = w.label, desc = w.desc } end
+    return out
+end)
 exports('GetXpMultiplier', function() local e = Events.active() return e and e.xp or 1.0 end)
 exports('GetBonus', function(name) local e = Events.active() return e and e[name] or 0 end)
 

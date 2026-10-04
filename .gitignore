@@ -19,4 +19,3 @@ backups/
 !server/resources/*/*/web/dist/
 livraison/
 
-tools/discord-bot/config.json

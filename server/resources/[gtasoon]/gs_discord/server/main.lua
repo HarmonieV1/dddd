@@ -133,6 +133,14 @@ AddEventHandler('txAdmin:events:serverShuttingDown', function()
 end)
 
 exports('Announce', Discord.announce)
+exports('StatusEmbed', function() return Discord.statusEmbed() end) -- pour le bot (server/bot.js)
+exports('WeeklyText', function()
+    if not started('gs_events') then return 'Aucun rendez-vous programmé.' end
+    local ok, list = pcall(function() return exports.gs_events:Weekly() end)
+    local lines = {}
+    for _, w in ipairs(ok and list or {}) do lines[#lines + 1] = ('**%s %s–%s** · %s\n%s'):format(w.dayName, w.from, w.to, w.label, w.desc) end
+    return #lines > 0 and table.concat(lines, '\n\n') or 'Aucun rendez-vous programmé.'
+end)
 
 CreateThread(function()
     Wait(15000)

@@ -1,5 +1,5 @@
 -- Tests gs_accords (V9) : proposition face à face, signature, prêt versé, échéances prélevées, dépôt si absent,
--- retards majorés puis litige (juges prévenus), fin du contrat (bénéficiaire / demande du payeur), union.
+-- retards majorés puis litige (juges prévenus), fin du contrat (bénéficiaire / demande du payeur).
 dofile('tests/mock.lua')
 local R = 'server/resources/[gtasoon]/'
 local judgeMsgs = {}
@@ -80,15 +80,24 @@ local s = Accords.list[2]
 s.next_at = os.time()
 Accords.tick()
 check('salaire versé par le proposant, contrat honoré', ok and s.status == 'done' and W.players[2].money.bank == 10000 - 3630 + 500) -- échéance en retard payée majorée (3 000 × 1,1 × 1,1)
--- union
-ok = cb('gs_accords:propose', 1, 2, { kind = 'union' }); step()
+-- tout payé mais argent en dépôt (bénéficiaire absent) : plus jamais d'échéance en plus
+ok = cb('gs_accords:propose', 1, 2, { kind = 'salary', amount = 300, count = 1, every = 7 }); step()
 ok = ok and cb('gs_accords:sign', 2, true); step()
-check('union signée', ok and Accords.list[3].status == 'active')
+local d = Accords.list[3]
+local saveP2 = W.players[2]
+W.players[2] = nil
+d.next_at = os.time()
+Accords.tick()
+local bank1 = W.players[1].money.bank
+d.next_at = os.time()
+Accords.tick()
+check('tout payé, dépôt en attente : pas de 2e prélèvement', ok and d.paid == 1 and d.held == 300 and W.players[1].money.bank == bank1)
+W.players[2] = saveP2
+Accords.tick()
+check('dépôt versé au retour, contrat honoré', d.held == 0 and d.status == 'done')
+-- pas d'union ici : le mariage reste à la mairie (gs_civil)
 ok = cb('gs_accords:propose', 1, 2, { kind = 'union' }); step()
-check('pas deux unions', not ok)
-local bank = W.players[1].money.bank
-ok = cb('gs_accords:terminate', 1, 3); step()
-check('rompre seul : frais', ok and W.players[1].money.bank == bank - Config.DivorceFee and Accords.list[3].status == 'ended')
+check('union refusée (doublon du mariage de la mairie)', not ok)
 -- refus
 cb('gs_accords:propose', 1, 2, { kind = 'rent', amount = 800, count = 4, every = 7 }); step()
 ok = cb('gs_accords:sign', 2, false); step()

@@ -8,7 +8,7 @@ from reportlab.lib.units import mm
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, PageBreak, KeepTogether
 from reportlab.graphics.shapes import Drawing, Rect, Circle, String, Line
 
-VERSION = 'V9'
+VERSION = 'V9.1'
 NEON = colors.HexColor('#28E0FF')
 DARK = colors.HexColor('#0F091C')
 PINK = colors.HexColor('#FF2E88')
@@ -88,7 +88,7 @@ COMMANDS = [
     ['/mentor · /rencontres · /rumeurs', 'parrainage · collection des rencontres de la route · où entendre les rumeurs'],
     ['/droits · /cinema · /ralenti', 'garde à vue (avocat, silence, aveux) · mode cinéma pour les clips · ralenti pendant le tournage'],
     ['/cavale · /livrer · /legendes', 'fugitifs recherchés (primes) · livrer un fugitif · panthéon des cavales'],
-    ['/contrat · /recap · /rdv', 'contrats signés (prêt, salaire, location, union) · ton récap du mois · rendez-vous de la semaine'],
+    ['/contrat · /recap · /rdv', 'contrats signés (prêt, salaire, location) · ton récap du mois · rendez-vous de la semaine'],
     ['/racket', "gang : réclamer une protection à la caisse d'un commerce · patron : voir / arrêter de payer"],
     ['Staff', '/whitelist · /gsjob · /gsgang · /gsevent · /meteo · /builder · /economie (les joueurs ne les voient pas)'],
 ]
@@ -114,7 +114,8 @@ def guide(points):
         "<b>RESTAURER-BDD.bat</b> : retour en arrière de TOUTE la base, ou d'UN SEUL joueur (perso + véhicules) après une triche ou un bug ; "
         "l'état actuel est sauvegardé avant (on peut annuler). Hébergeur Linux : scripts/linux/roadline-bdd.sh.",
         "<b>CONFIGURER-DISCORD.bat</b> (V9) : salon #statut mis à jour chaque minute, annonces (ouverture, redémarrages, rendez-vous), "
-        "bot RoadLine (présence « 12/48 citoyens », /statut, /rejoindre) et rôles de métier. <b>LANCER-BOT-DISCORD.bat</b> démarre le bot.",
+        "bot RoadLine intégré au serveur (présence « 12/48 citoyens », /statut, /rejoindre, /rdv, /site : rien à installer, il démarre avec le serveur) "
+        "et rôles de métier. <b>METTRE-A-JOUR.bat</b> sauvegarde aussi la base avant chaque mise à jour et programme les sauvegardes.",
     ])
 
     s += [Paragraph('2. Touches', H2), table(KEYS, [38 * mm, 78 * mm, 64 * mm])]
@@ -137,7 +138,7 @@ def guide(points):
         "30 min pour casser la vitrine (dégâts sur la caisse, témoins).",
         "<b>La doublure</b> (bars uniquement) : au comptoir, le patron laisse un PNJ à son apparence qui sert quand personne n'est en service "
         "(50 % de la recette au lieu de 30 %). On peut la braquer arme en main (une fois toutes les 2 h).",
-        "<b>Contrats signés</b> (/contrat) : prêt avec intérêts, salaire privé, location, union. Signature face à face, prélèvements automatiques, "
+        "<b>Contrats signés</b> (/contrat) : prêt avec intérêts, salaire privé, location (le mariage reste à la mairie). Signature face à face, prélèvements automatiques, "
         "argent mis de côté si le bénéficiaire est absent, retard = +10 %, 2 retards = litige transmis aux juges et avocats en service.",
         "<b>Récap du mois</b> (/recap) : heures en ville, km, argent gagné, crimes, arrestations, combats, rencontres, photos, ton titre et ton classement ; "
         "le 1er du mois, « ton récap est prêt ».",
@@ -261,7 +262,7 @@ TESTS = [
         "/recap : ce mois-ci, mois dernier, biographie ; /rdv : programme de la semaine",
         "F11 → Anti-triche (alertes) et Statistiques de rétention ; vol libre / TP staff : aucune alerte",
         "SAUVEGARDER-BDD.bat (programmer toutes les 6 h), puis RESTAURER-BDD.bat → un seul joueur (sur un perso de test)",
-        "CONFIGURER-DISCORD.bat : salon #statut mis à jour, message « La ville est ouverte » au démarrage ; LANCER-BOT-DISCORD.bat → /statut",
+        "CONFIGURER-DISCORD.bat : salon #statut mis à jour, message « La ville est ouverte » au démarrage ; le bot passe en ligne avec le serveur → /statut, /rdv",
     ]),
     ('V8 · Signatures', [
         'Braquer avec un masque et une voiture bleue : la police reçoit « Homme, masqué, armé, Voiture (bleu), plaque 4X…»',

@@ -169,7 +169,8 @@ do
     check('labo : nommé une fois fiché', ok2 and out[1]:find('Sujet Fiché'))
     check('labo : réservé à la police', not Photo.analyze(70, id))
     -- accrocher / décrocher
-    check('accrochée au mur', Photo.hang(70, { photo = id, label = 'Photo · Vespucci' }) == true and #GlobalState.gsWallPhotos == 1 and W.players[70].items.gs_photo == 0)
+    check('accrochée au mur (texte et image relus côté serveur, pas ceux du client)', Photo.hang(70, { photo = id, label = 'FAUX', description = 'truqué', image = 'https://evil/x.png' }) == true
+        and #GlobalState.gsWallPhotos == 1 and W.players[70].items.gs_photo == 0 and GlobalState.gsWallPhotos[1].label ~= 'FAUX' and GlobalState.gsWallPhotos[1].image == nil)
     check('décrocher : seulement l\'auteur', not Photo.unhang(71, 1))
     check('décrochée : rendue', Photo.unhang(70, 1) == true and W.players[70].items.gs_photo == 1 and #GlobalState.gsWallPhotos == 0)
 end

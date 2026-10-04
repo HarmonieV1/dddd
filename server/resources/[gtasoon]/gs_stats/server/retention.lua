@@ -111,5 +111,7 @@ RegisterCommand('gsstats', function(src)
     for _, d in ipairs(r.daily) do print(('  %s : %d joueurs, %d nouveaux, pic %d'):format(d.label, d.players, d.new, d.peak)) end
 end, true)
 
-AddEventHandler('gs_bridge:server:playerLoaded', function(src) Retention.start(src) end)
+-- Dès la connexion (avant la création de perso) : ceux qui partent pendant la création sont justement les abandons
+AddEventHandler('playerJoining', function() Retention.start(source) end)
+AddEventHandler('gs_bridge:server:playerLoaded', function(src) Retention.start(src) end) -- filet (ressource relancée en cours de partie)
 AddEventHandler('playerDropped', function() Retention.stop(source) end)

@@ -48,7 +48,7 @@ FEATURES = [
         "La cavale : fugitifs affichés, prime qui grimpe, /livrer, prime au policier, panthéon des légendes (/legendes).",
         "Appareil photo argentique (photo = objet avec qui / quelles plaques / où), mur du commissariat, analyse au labo ; cabines téléphoniques réelles pour les missions.",
         "Fraude à l'assurance recoupée avec le carnet du véhicule ; combats clandestins (ring qui change chaque jour, paris) ; racket hebdomadaire des bars.",
-        "La doublure du patron (bars) ; contrats signés appliqués par le serveur (prêt, salaire, location, union, litiges) ; récap du mois (/recap) ; rendez-vous fixes (/rdv).",
+        "La doublure du patron (bars) ; contrats signés appliqués par le serveur (prêt, salaire, location, litiges) ; récap du mois (/recap) ; rendez-vous fixes (/rdv).",
         "Staff : anti-triche serveur (alertes, staff exempté), statistiques de rétention dans F11 ; Discord : statut en direct, annonces, bot, rôles de métier ; "
         "sauvegarde toutes les 6 h + RESTAURER-BDD (base entière ou un seul joueur).",
     ]),
@@ -108,7 +108,7 @@ FEATURES = [
         'Panel F10 (tickets, fiches, sanctions publiques, isolement, journal) ; F11 en 5 catégories ; raccourcis Ctrl+Y / U / O ; persos GTA et animaux.',
         'Déplacer n\'importe quel point en jeu (sauvegardé), décor (/builder), lieux publics (boutiques, parkings), gangs et garages, journal de toutes les actions.',
         'Outils Windows en un double-clic : INSTALLER, METTRE-A-JOUR, IMPORTER-MODS (marques refusées), NETTOYER-MARQUES, REPARER-*, VIDER-CACHE, '
-        'SAUVEGARDER-BDD, RESTAURER-BDD, CONFIGURER-DISCORD, LANCER-BOT-DISCORD, INVITER-AMIS, PREPARER-HEBERGEUR.',
+        'SAUVEGARDER-BDD, RESTAURER-BDD, CONFIGURER-DISCORD, INVITER-AMIS, PREPARER-HEBERGEUR.',
         'Qualité : 59 ressources maison, près de 2 300 vérifications automatiques à chaque envoi (GitHub), linters de config, de liaisons et de performance.',
     ]),
 ]
@@ -225,7 +225,7 @@ RETEST = [
         ('Fraude à l\'assurance', 'Déclaration de vol recoupée', 'Assurer, attendre 24 h, déclarer, puis conduire la voiture'),
         ('Combats clandestins', 'Ring de nuit, paris', 'Trouver le ring (rumeurs), combat à 2 + 1 parieur'),
         ('Racket / doublure', 'Protection hebdo ; PNJ du patron', '/racket à un bar ; « Laisser ma doublure » puis la braquer'),
-        ('Contrats / récap / rdv', 'Prêt, salaire, location, union', '/contrat face à face ; /recap ; /rdv'),
+        ('Contrats / récap / rdv', 'Prêt, salaire, location', '/contrat face à face ; /recap ; /rdv'),
         ('Staff et outils', 'Anti-triche, rétention, Discord, sauvegardes', 'F11 → Anti-triche / Statistiques ; CONFIGURER-DISCORD ; RESTAURER-BDD (un joueur)'),
     ]),
     ('V8 · Nouveautés à vérifier', [

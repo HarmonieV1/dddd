@@ -51,6 +51,9 @@ check('rendez-vous en cours = événement actif (XP)', Events.active().id == 'we
 local w, ahead = Events.remind({ wday = 6, hour = 20, min = 30, yday = 102 })
 check('rappel 30 min avant', w and w.id == 'fri_races' and ahead == 30)
 check('un seul rappel', Events.remind({ wday = 6, hour = 20, min = 30, yday = 102 }) == nil)
+check('minute suivante (boucle en retard) : toujours un seul rappel', Events.remind({ wday = 6, hour = 20, min = 31, yday = 102 }) == nil)
+local w2, a2 = Events.remind({ wday = 6, hour = 20, min = 31, yday = 109 })
+check('minute 30 ratée : rappel envoyé à la 31e', w2 and a2 == 30)
 w, ahead = Events.remind({ wday = 6, hour = 21, min = 0, yday = 102 })
 check('annonce au début', w and ahead == 0)
 fakeT = { wday = 3, hour = 12, min = 0, yday = 100 }

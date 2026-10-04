@@ -27,7 +27,7 @@ function Accords.describe(c)
     local T = Config.Types[c.kind]
     if not T.money then return ('%s entre %s et %s.%s'):format(T.label, c.a_name, c.b_name, c.terms ~= '' and (' ' .. c.terms) or '') end
     local payer, payee = nameOf(c, payerOf(c)), nameOf(c, payeeOf(c))
-    local head = c.kind == 'loan' and ('%s prête %d $ à %s. '):format(c.a_name, c.loan or 0, c.b_name) or ''
+    local head = c.kind == 'loan' and c.loan and ('%s prête %d $ à %s. '):format(c.a_name, c.loan or 0, c.b_name) or ''
     return ('%s%s verse %d $ à %s tous les %d j, %d fois.%s'):format(head, payer, c.principal, payee, c.every_days, c.total,
         c.terms ~= '' and (' Clause : ' .. c.terms) or '')
 end
@@ -56,12 +56,6 @@ function Accords.propose(src, target, data)
             c.principal = math.ceil(amount * (1 + rate) / count)
         else
             c.principal = amount
-        end
-    else
-        for _, o in pairs(Accords.list) do
-            if o.kind == 'union' and o.status == 'active' and (o.a_cid == acid or o.b_cid == acid or o.a_cid == bcid or o.b_cid == bcid) then
-                return false, 'L\'un de vous est déjà uni à quelqu\'un.'
-            end
         end
     end
     c.amount = c.principal
@@ -121,7 +115,7 @@ function Accords.tick()
                 notify(payee, ('Contrat n°%d : %d $ versés (en dépôt pendant ton absence).'):format(c.id, c.held), 'success')
                 c.held, changed = 0, true
             end
-            if now() >= c.next_at then
+            if c.paid < c.total and now() >= c.next_at then -- jamais d'échéance en plus une fois tout payé
                 local payer = online(payerOf(c))
                 if payer and Bridge:RemoveMoney(payer, 'bank', c.amount, ('contrat n°%d'):format(c.id)) then
                     if payee and Bridge:AddMoney(payee, 'bank', c.amount, ('contrat n°%d'):format(c.id)) then
@@ -159,17 +153,12 @@ function Accords.tick()
 end
 
 --- Fin du contrat. Bénéficiaire : peut toujours y mettre fin (il renonce au reste). Payeur : demande, que le bénéficiaire accepte.
---- Union : chacun peut la rompre (frais si l'autre n'a pas demandé aussi).
 function Accords.terminate(src, id)
     local c = Accords.list[int(id)]
     local cid = Bridge:GetIdentifier(src)
     if not c or (c.a_cid ~= cid and c.b_cid ~= cid) or c.status == 'done' or c.status == 'ended' then return false, 'Contrat introuvable.' end
     local other = cid == c.a_cid and c.b_cid or c.a_cid
-    if c.kind == 'union' then
-        if Accords.endAsk[c.id] ~= other then
-            if not Bridge:RemoveMoney(src, 'bank', Config.DivorceFee, 'rupture d\'union') then return false, ('Frais de rupture : %d $.'):format(Config.DivorceFee) end
-        end
-    elseif cid ~= payeeOf(c) and Accords.endAsk[c.id] ~= other then
+    if cid ~= payeeOf(c) and Accords.endAsk[c.id] ~= other then
         Accords.endAsk[c.id] = cid
         notify(online(other), ('%s demande à mettre fin au contrat n°%d (/contrat pour accepter).'):format(nameOf(c, cid), c.id), 'warning')
         return true, 'Demande envoyée : l\'autre partie doit accepter.'
@@ -224,6 +213,6 @@ AddEventHandler('playerDropped', function() Accords.pending[source] = nil end)
 
 CreateThread(function()
     Store.init()
-    for _, c in ipairs(Store.active()) do Accords.list[c.id] = c end
+    for _, c in ipairs(Store.active()) do if Config.Types[c.kind] then Accords.list[c.id] = c end end -- type inconnu : ignoré
     while true do Wait(300000) Accords.tick() end
 end)

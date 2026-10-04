@@ -46,10 +46,12 @@ function Photo.take(src, url)
     end
     local id = ('%d%03d'):format(os.time(), math.random(0, 999))
     local place, date = zoneOf(me), os.date('%d/%m %H:%M')
-    store(id, { subjects = subjects, plates = plates, place = place, date = date, by = Bridge:GetIdentifier(src) })
     local what = #seen > 0 and table.concat(seen, ' ; ') or 'personne'
     local md = { photo = id, label = 'Photo · ' .. place, description = ('%s · On y voit : %s%s'):format(date, what,
-        #plates > 0 and (' · Plaques : ' .. table.concat(plates, ', ')) or ''), image = type(url) == 'string' and url:match('^https://') and url or nil }
+        #plates > 0 and (' · Plaques : ' .. table.concat(plates, ', ')) or ''),
+        image = type(url) == 'string' and Security:ValidImageUrl(url) and url or nil } -- hébergeur d'images autorisé seulement
+    store(id, { subjects = subjects, plates = plates, place = place, date = date, by = Bridge:GetIdentifier(src),
+        label = md.label, text = md.description, image = md.image })
     if not Bridge:AddItem(src, C.photo, 1, md) then return false, 'Plus de place pour la photo.' end
     TriggerEvent('gs_evidence:server:photo', src) -- V9 : biographie
     return true, 'Photo développée.'
@@ -69,9 +71,13 @@ function Photo.hang(src, md)
     local mine = 0
     for _, w in ipairs(Photo.wall) do if w.owner == cid then mine = mine + 1 end end
     if mine >= C.perPlayerWall or #Photo.wall >= C.maxWall then return false, 'Trop de photos accrochées.' end
+    local rec = Photo.get(md.photo)
+    if not rec then return false, 'Photo voilée.' end
     if not Bridge:RemoveItem(src, C.photo, 1, { photo = md.photo }) then return false, 'Photo introuvable.' end
     local c = GetEntityCoords(GetPlayerPed(src))
-    Photo.wall[#Photo.wall + 1] = { x = c.x, y = c.y, z = c.z + 0.6, owner = cid, photo = md.photo, label = md.label, text = md.description, image = md.image }
+    -- texte et image relus côté serveur : le client ne peut pas afficher autre chose sur le mur
+    Photo.wall[#Photo.wall + 1] = { x = c.x, y = c.y, z = c.z + 0.6, owner = cid, photo = md.photo, label = rec.label or 'Photo',
+        text = rec.text or '', image = rec.image }
     saveWall() publishWall()
     return true, 'Photo accrochée.'
 end
