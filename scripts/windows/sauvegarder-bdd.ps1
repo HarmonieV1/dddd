@@ -64,7 +64,7 @@ if ($exists) {
         Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'restaurer-bdd.ps1') -Destination (Join-Path $tools 'restaurer-bdd.ps1') -Force -ErrorAction SilentlyContinue
         schtasks /Create /TN $task /SC HOURLY /MO 6 /ST 05:00 /TR $cmd /F | Out-Null
         if ($LASTEXITCODE -eq 0) {
-            schtasks /Delete /TN 'GTA SOON - sauvegarde BDD' /F 2>$null | Out-Null # ancienne tâche (1 fois par nuit) remplacée
+            try { schtasks /Delete /TN 'GTA SOON - sauvegarde BDD' /F 2>$null | Out-Null } catch { } # ancienne tâche (1 fois par nuit) remplacée
             Say 'Programmé : toutes les 6 h (le PC doit être allumé).' 'Green'
         }
         else { Say 'Programmation refusée par Windows : relance ce fichier en clic droit → Exécuter en tant qu''administrateur.' 'Yellow' }

@@ -12,3 +12,5 @@ if not defined SRC (
   exit /b 1
 )
 powershell -NoProfile -ExecutionPolicy Bypass -File "%SRC%"
+
+if errorlevel 1 pause

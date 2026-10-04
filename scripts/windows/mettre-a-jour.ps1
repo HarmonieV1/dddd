@@ -70,6 +70,8 @@ if (Test-Path -LiteralPath $dbTool) {
         if ($LASTEXITCODE -eq 0) { Say '  Base de données sauvegardée (RESTAURER-BDD.bat pour revenir en arrière).' 'Green' }
         else { Say '  Base non sauvegardée (MariaDB arrêté ?) : la mise à jour continue, la base n''est pas modifiée.' 'Yellow' }
     } catch { Say "  Sauvegarde de la base : $($_.Exception.Message)" 'Yellow' }
+    # schtasks écrit sur stderr quand la tâche n'existe pas : avec « Stop », PowerShell 5.1 arrêterait toute la mise à jour
+    $ErrorActionPreference = 'Continue'
     $task = 'RoadLine - sauvegarde BDD'
     schtasks /Query /TN $task 2>$null | Out-Null
     if ($LASTEXITCODE -ne 0) {
@@ -80,6 +82,7 @@ if (Test-Path -LiteralPath $dbTool) {
             Say '  Sauvegardes automatiques programmées : toutes les 6 h (5 h, 11 h, 17 h, 23 h).' 'Green'
         } else { Say '  Programmation refusée par Windows : lance une fois SAUVEGARDER-BDD.bat (clic droit → administrateur).' 'Yellow' }
     }
+    $ErrorActionPreference = 'Stop'
 }
 
 # 3. Nouvelle version

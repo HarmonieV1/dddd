@@ -7,9 +7,9 @@ from pdf import H1, H2, P, SMALL, VERSION, footer, A4, mm, colors, SimpleDocTemp
 # (test, qui, priorité)
 SESSIONS = [
     ('0 · Avant de commencer (5 min)', [
-        ('METTRE-A-JOUR.bat : version V10 affichée, « Base de données sauvegardée », « Sauvegardes programmées »', 'Seul', 3),
+        ('METTRE-A-JOUR.bat : version V10.1 affichée, « Base de données sauvegardée », « Sauvegardes programmées »', 'Seul', 3),
         ('Fenêtre du serveur : aucune ligne ROUGE au démarrage ; F8 en jeu : aucune erreur rouge', 'Seul', 3),
-        ('VIDER-CACHE-FIVEM.bat si tu vois encore un ancien menu (F11 doit afficher « RoadLine V10 »)', 'Seul', 2),
+        ('VIDER-CACHE-FIVEM.bat si tu vois encore un ancien menu (F11 doit afficher « RoadLine V10.1 »)', 'Seul', 2),
     ]),
     ('1 · Premier pas d\'un nouveau joueur (20 min) — le plus important pour la rétention', [
         ('Écran de chargement, règlement, création du perso (visages, teint, origines), pas de t-shirt blanc collé sous les vestes', 'Seul', 3),
