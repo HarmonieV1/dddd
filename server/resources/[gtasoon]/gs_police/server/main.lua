@@ -191,7 +191,10 @@ Actions.impound = { job = 'police', run = function(src, _, data)
     need(#(GetEntityCoords(veh) - GetEntityCoords(GetPlayerPed(src))) <= Config.Impound.range + Config.Tolerance, 'Trop loin.')
     need(GetPedInVehicleSeat(veh, -1) == 0, 'Quelqu\'un est au volant.')
     local plate = GetVehicleNumberPlateText(veh)
+    local model = GetEntityModel(veh)
     DeleteEntity(veh)
+    -- V10.1 : véhicule sans propriétaire → mis aux enchères de la fourrière (gs_auction)
+    if plate and not Bridge:GetVehicleOwner(plate) then TriggerEvent('gs_police:server:impounded', model, plate) end
     return ('Véhicule %s envoyé à la fourrière'):format(plate or '?')
 end }
 

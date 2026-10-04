@@ -36,6 +36,7 @@ Guide = {
         id = 'fun', label = 'Me détendre', icon = 'umbrella-beach', color = '#a24bff',
         items = {
             { label = 'Casino', desc = 'Roue du jour, loto, tickets', icon = 'dice', point = 'gs_interiors:Config.Doors.1.outside' },
+            { label = 'Enchères de la fourrière', desc = 'Le samedi à 21 h : saisies de la police et voitures abandonnées', icon = 'gavel', point = 'gs_auction:Config.Point' },
             { label = 'Courses de rue', desc = 'L\'organisateur prête les voitures', icon = 'flag-checkered', point = 'gs_races:Config.Organizer.coords' },
             { label = 'Road trip du mois', desc = 'Itinéraires panoramiques, spots photo, primes', icon = 'route', cmd = 'carnet' },
             { label = 'Louer un véhicule', desc = 'Vélo, scooter, citadine, bateau', icon = 'bicycle', point = 'gs_rental:Config.Points.1.coords' },
