@@ -86,6 +86,8 @@ function Wars.finish(id, w)
     local msg = ('FIN DE GUERRE pour %s : %s %d – %d %s. %s tient le quartier.'):format(Config.Territories[id].label, label(w.attacker), a, d,
         label(w.defender), label(attackerWins and w.attacker or w.defender))
     notifyGangs(w.attacker, w.defender, msg, attackerWins and 'inform' or 'inform')
+    local winner = attackerWins and w.attacker or w.defender -- V9 : fresque du vainqueur (gs_scars)
+    TriggerEvent('gs_gangs:server:warWon', id, winner, label(winner), Config.Territories[id].center, Gangs.list[winner] and Gangs.list[winner].color)
     Security:LogStaff('[Gang] ' .. msg, 'jobs')
     publishWars()
 end

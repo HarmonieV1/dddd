@@ -145,3 +145,9 @@ CreateThread(function()
     while true do Wait(300000) Memory.forget() end
 end)
 exports('ColorName', Memory.colorName)
+-- Description complète d'un joueur (photo, avis de recherche) : jamais le nom
+exports('Describe', function(src)
+    local ped = GetPlayerPed(src)
+    local d = Memory.describe(src, 1.0, ped ~= 0 and GetVehiclePedIsIn(ped, false) or 0)
+    return #d > 0 and table.concat(d, ', ') or 'silhouette floue'
+end)

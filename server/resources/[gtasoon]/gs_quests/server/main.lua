@@ -13,6 +13,8 @@ local function notify(src, msg, t) Bridge:Notify(src, msg, t or 'inform') end
 local function guard(src, key, max, window) return Security:RateLimit(src, 'gs_quests:' .. key, max, window) end
 local function near(src, coords, radius) return Security:InRange(src, coords, radius + Config.Tolerance) end
 local function charCoords(id) local c = Characters[id].coords return vec3(c.x, c.y, c.z) end
+-- V9 : personnage « téléphone » (cabine) : l'interaction est recollée côté client sur la vraie cabine la plus proche
+local function talkRadius(id) return Characters[id].phone and (Config.PhoneSnap or 60.0) or Config.TalkRadius end
 
 -- Niveaux --------------------------------------------------------------------------------------------------
 
@@ -247,7 +249,7 @@ lib.callback.register('gs_quests:start', function(src, questId)
     local ok, why = available(src, q)
     if not ok then return false, why end
     if q.night and not isNight() then return false, 'Reviens ce soir (entre 20 h et 5 h).' end
-    if not near(src, charCoords(q.giver), Config.TalkRadius) then return false, 'Trop loin.' end
+    if not near(src, charCoords(q.giver), talkRadius(q.giver)) then return false, 'Trop loin.' end
     for _, it in ipairs(q.give or {}) do
         if not Bridge:CanCarry(src, it[1], it[2]) then return false, 'Libère de la place dans ton inventaire.' end
     end
@@ -272,7 +274,7 @@ lib.callback.register('gs_quests:advance', function(src, point)
     if a.deadline and os.time() > a.deadline then return fail(src, 'Trop lent !') end
 
     if step.type == 'talk' then
-        if not near(src, charCoords(step.character), Config.TalkRadius) then return false, 'Trop loin.' end
+        if not near(src, charCoords(step.character), talkRadius(step.character)) then return false, 'Trop loin.' end
     elseif step.type == 'goto' then
         if not near(src, step.coords, step.radius) then return false, 'Pas encore arrivé.' end
     elseif step.type == 'drive' then
@@ -280,7 +282,7 @@ lib.callback.register('gs_quests:advance', function(src, point)
         if GetVehiclePedIsIn(GetPlayerPed(src), false) == 0 then return false, 'Il faut arriver en véhicule.' end
     elseif step.type == 'deliver' then
         local at = step.character and charCoords(step.character) or step.coords
-        if not near(src, at, step.character and Config.TalkRadius or (step.radius or 4.0)) then return false, 'Trop loin.' end
+        if not near(src, at, step.character and talkRadius(step.character) or (step.radius or 4.0)) then return false, 'Trop loin.' end
         if not Bridge:RemoveItem(src, step.item, step.count) then return false, ('Il te faut %d × %s.'):format(step.count, step.item) end
     elseif step.type == 'collect' then
         point = tonumber(point)

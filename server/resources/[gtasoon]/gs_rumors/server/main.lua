@@ -158,3 +158,4 @@ lib.callback.register('gs_rumors:indic', function(src, gang)
 end)
 
 exports('Add', Rumors.add)
+exports('Zone', Rumors.zone)

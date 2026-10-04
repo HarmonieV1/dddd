@@ -1,5 +1,8 @@
 -- Tests gs_wanted : témoins, heure, météo, précision, chaleur, anti-abus.
 dofile('tests/mock.lua')
+local kvp = {}
+function SetResourceKvp(k, v) kvp[k] = v end
+function GetResourceKvpString(k) return kvp[k] end
 local R = 'server/resources/[gtasoon]/'
 local duty = {}          -- [src] = true si policier en service
 local weather = { type = 'CLEAR', hour = 14, blackout = false }
@@ -13,7 +16,7 @@ provide('gs_weather', {
     IsBlackout = function() return weather.blackout end,
 })
 loadResource('gs_security', { R .. 'gs_security/server/main.lua' })
-loadResource('gs_wanted', { R .. 'gs_wanted/shared/config.lua', R .. 'gs_wanted/server/memory.lua', R .. 'gs_wanted/server/main.lua' })
+loadResource('gs_wanted', { R .. 'gs_wanted/shared/config.lua', R .. 'gs_wanted/server/memory.lua', R .. 'gs_wanted/server/main.lua', R .. 'gs_wanted/server/fugitive.lua' })
 
 local passed, failed = 0, 0
 local function check(name, cond)
@@ -247,6 +250,39 @@ do
     d = r and table.concat(r.desc, ', ') or ''
     check('masque et manches longues : tatouages cachés', not d:find('tatou'))
     clearPeds() fixRandom(nil)
+end
+
+-- V9 · La cavale
+do
+    local F = Config.Fugitive
+    json.encode = function(t) _G.__lastLegends = t return 'x' end
+    json.decode = function() return _G.__lastLegends or {} end
+    join(60, 'CID60', 'Le Renard', vec3(500.0, 500.0, 30.0))
+    check('cavale : il faut 5 étoiles', not Fugitive.start(60))
+    Wanted.heat[60] = 90
+    local ok = Fugitive.start(60)
+    check('cavale lancée : avis de recherche publié avec prime', ok and #GlobalState.gsFugitives == 1 and GlobalState.gsFugitives[1].bounty == F.bountyBase + 90 * F.bountyPerHeat)
+    check('non fiché : pas de nom sur l\'avis', GlobalState.gsFugitives[1].title == 'Individu non identifié')
+    -- chasseur de primes
+    join(61, 'CID61', 'Chasseur', vec3(500.0, 502.0, 30.0))
+    check('livrer : il faut qu\'il soit à terre', not Fugitive.claim(61, 60))
+    W.players[60].downed = true
+    check('livrer : devant un commissariat seulement', not Fugitive.claim(61, 60))
+    local st = F.stations[1]
+    tp(60, st) tp(61, vec3(st.x + 1.0, st.y, st.z))
+    local bank = W.players[61].money.bank
+    check('livré : prime au chasseur, fin de cavale', Fugitive.claim(61, 60) == true and W.players[61].money.bank == bank + F.bountyBase + 90 * F.bountyPerHeat and not Fugitive.list[60])
+    -- légende
+    W.players[60].downed = nil
+    Wanted.heat[60] = 95
+    Fugitive.start(60)
+    for _ = 1, F.hours * 60 + 2 do advance(60000) Fugitive.tick() end
+    check('cavale tenue : légende, chaleur effacée', not Fugitive.list[60] and (Wanted.heat[60] or 0) == 0 and _G.__lastLegends and _G.__lastLegends[1].name == 'Le Renard')
+    -- policier qui incarcère : prime
+    Wanted.heat[60] = 95 Fugitive.start(60)
+    bank = W.players[61].money.bank
+    TriggerEvent('gs_police:server:jailed', 60, 30, 61)
+    check('incarcéré par un policier : prime au policier', not Fugitive.list[60] and W.players[61].money.bank > bank)
 end
 
 io.write(('\n%d réussis, %d échoués\n'):format(passed, failed))

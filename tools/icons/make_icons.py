@@ -21,7 +21,7 @@ ICONS = {
     'cashbag.png': ('💰',), 'gs_parcel.png': ('📦',), 'meat_raw.png': ('🍖',), 'milk.png': ('🥛',),
     'apple.png': ('🍎',), 'corn.png': ('🌽',), 'wheat.png': ('🌾',), 'egg.png': ('🥚',), 'lettuce.png': ('🥬',),
     'phone_card.png': ('📇',), 'jerrycan.png': ('⛽',), 'racing_flag.png': ('🏁',),
-    'evidence_bag.png': ('BAG', None, '🔎'), 'gloves.png': ('🧤',), 'bleach.png': ('🧴',), 'canteen.png': ('🎫',), 'prison_tools.png': ('🔧',), 'fakeplate.png': ('🪪',),
+    'evidence_bag.png': ('BAG', None, '🔎'), 'gloves.png': ('🧤',), 'bleach.png': ('🧴',), 'canteen.png': ('🎫',), 'prison_tools.png': ('🔧',), 'fakeplate.png': ('🪪',), 'camera.png': ('📷',), 'photo.png': ('🖼️',),
 }
 
 font = ImageFont.truetype(FONT, 109)

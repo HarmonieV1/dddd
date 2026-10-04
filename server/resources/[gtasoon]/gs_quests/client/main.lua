@@ -347,8 +347,46 @@ RegisterKeyMapping('gs_progression_v7', 'Progression et quêtes', 'keyboard', Co
 
 -- Interaction avec les personnages : une zone ox_target fixe par personnage (marche même si le PNJ n'a pas
 -- encore chargé ou s'il est mal posé) ; la cabine de la Voix n'a pas de PNJ.
+-- V9 : cabines téléphoniques cohérentes : l'interaction se pose sur la vraie cabine / le téléphone mural le plus proche
+local PHONES = { 'prop_phonebox_01a', 'prop_phonebox_01b', 'prop_phonebox_01c', 'prop_phonebox_02', 'prop_phonebox_03', 'prop_phonebox_04',
+    'p_phonebox_01b_s', 'p_phonebox_02_s', 'prop_phone_ing', 'prop_phone_ing_02', 'prop_phone_ing_03' }
+local function nearestPhone(c, radius)
+    local best, bestD
+    for _, m in ipairs(PHONES) do
+        local obj = GetClosestObjectOfType(c.x, c.y, c.z, radius, GetHashKey(m), false, false, false)
+        if obj ~= 0 then
+            local d = #(GetEntityCoords(obj) - c)
+            if not bestD or d < bestD then best, bestD = obj, d end
+        end
+    end
+    return best
+end
+
+local function phoneZone(id, ch)
+    local placed, zone
+    while true do
+        local c = vec3(ch.coords.x, ch.coords.y, ch.coords.z)
+        if not placed and #(GetEntityCoords(cache.ped) - c) < 120.0 then
+            local obj = nearestPhone(c, (Config.PhoneSnap or 60.0) - 5.0)
+            local at = obj and GetOffsetFromEntityInWorldCoords(obj, 0.0, -0.6, 0.0) or c
+            Markers:Add('gs_quests:talk:' .. id, { coords = at, style = 'hidden', ring = false, distance = 6.0, reach = 2.0,
+                event = 'gs_quests:client:talk', args = { id }, prompt = 'Décrocher le téléphone' })
+            zone = exports.ox_target:addSphereZone({ coords = at + vec3(0.0, 0.0, 0.6), radius = 1.2, options = { {
+                name = 'gs_quest_' .. id, icon = 'fa-solid fa-phone', label = 'Décrocher', distance = 2.5, onSelect = function() talk(id) end } } })
+            placed = true
+        end
+        Wait(placed and 60000 or 3000)
+        if placed and #(GetEntityCoords(cache.ped) - c) > 300.0 then -- recalcul au prochain passage (props rechargés)
+            Markers:Remove('gs_quests:talk:' .. id)
+            if zone then exports.ox_target:removeZone(zone) zone = nil end
+            placed = false
+        end
+    end
+end
+
 CreateThread(function()
     for id, ch in pairs(Characters) do
+        if ch.phone then CreateThread(function() phoneZone(id, ch) end) goto continue end
         Markers:Add('gs_quests:talk:' .. id, { coords = vec3(ch.coords.x, ch.coords.y, ch.coords.z), style = 'hidden', ring = false,
             distance = 6.0, reach = 2.5, event = 'gs_quests:client:talk', args = { id },
             prompt = ch.model and ('Parler à ' .. ch.name) or 'Décrocher le téléphone' })
@@ -357,6 +395,7 @@ CreateThread(function()
             label = ch.model and ('Parler à ' .. ch.name) or 'Décrocher', distance = 3.0,
             onSelect = function() talk(id) end,
         } } })
+        ::continue::
     end
     if LocalPlayer.state.isLoggedIn then refresh() end -- [API] Qbox : redémarrage de la ressource en jeu
 end)

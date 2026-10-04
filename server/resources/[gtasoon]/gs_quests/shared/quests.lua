@@ -18,7 +18,8 @@ Characters = {
     rosa  = { name = 'Mama Rosa Valdez', model = 'a_f_m_bevhills_01', coords = vec4(-712.3, -155.1, 37.4, 120.0) },
     kiki  = { name = 'Kiki Starlight', model = 'a_f_y_vinewood_02', coords = vec4(298.4, 180.2, 104.3, 160.0) },
     nova  = { name = 'DJ Nova', model = 'a_m_y_vinewood_01', coords = vec4(-1640.2, -1081.3, 13.1, 50.0) },
-    voice = { name = 'La Voix (cabine téléphonique)', model = nil, coords = vec4(196.6, -937.1, 30.7, 0.0) },
+    -- phone = true : l'interaction se pose sur la VRAIE cabine / le téléphone mural le plus proche (dans PhoneSnap m)
+    voice = { name = 'La Voix (cabine téléphonique)', model = nil, phone = true, coords = vec4(196.6, -937.1, 30.7, 0.0) },
 }
 
 Quests = {

@@ -36,7 +36,7 @@ local function teleport(src, c)
     if ped ~= 0 then SetEntityCoords(ped, c.x, c.y, c.z, false, false, false, false) if c.w then SetEntityHeading(ped, c.w) end end
 end
 
-function Police.jail(target, minutes, reason)
+function Police.jail(target, minutes, reason, by)
     local cid = Bridge:GetIdentifier(target)
     local untilTs = os.time() + minutes * 60
     Police.jailed[target] = { cid = cid, untilTs = untilTs }
@@ -47,7 +47,7 @@ function Police.jail(target, minutes, reason)
     TriggerClientEvent('gs_police:client:jail', target, untilTs - os.time(), reason)
     -- V8 : incarcéré = fiché (empreintes et ADN reconnus par le labo)
     if GetResourceState('gs_evidence') == 'started' then pcall(function() exports.gs_evidence:File(target) end) end
-    TriggerEvent('gs_police:server:jailed', target, minutes)
+    TriggerEvent('gs_police:server:jailed', target, minutes, by)
 end
 
 function Police.release(target)
@@ -148,7 +148,7 @@ Actions.jail = { job = 'police', target = true, run = function(src, target, data
     need(minutes and minutes == math.floor(minutes) and minutes >= 1 and minutes <= Config.Jail.maxMinutes,
         ('Peine : 1 à %d min.'):format(Config.Jail.maxMinutes))
     local reason = need(Security:Sanitize(data.reason, 120), 'Motif obligatoire.')
-    Police.jail(target, minutes, reason)
+    Police.jail(target, minutes, reason, src)
     Store.addRecord(Bridge:GetIdentifier(target), reason, 0, minutes, label(src))
     return ('Incarcéré %d min'):format(minutes)
 end }

@@ -1,18 +1,24 @@
 -- Tests gs_evidence (V8) : douilles, sang, empreintes (gants), pneus / peinture, fusion, vieillissement (pluie),
 -- javel, lampe torche réservée à la police, scellé, labo (fiché / profil inconnu / liens), anti-abus.
 dofile('tests/mock.lua')
+local kvp, jstore = {}, {}
+function SetResourceKvp(k, v) kvp[k] = v end
+function GetResourceKvpString(k) return kvp[k] end
+json.encode = function(t) local k = 'J' .. (#jstore + 1) jstore[#jstore + 1] = t return k end
+json.decode = function(s) if s == 'null' or s == '[]' then return s == '[]' and {} or nil end return jstore[tonumber(s:sub(2))] end
 local R = 'server/resources/[gtasoon]/'
 local duty, weather = {}, 'CLEAR'
 provide('gs_jobs', { IsOnDutyAs = function(src, job) return job == 'police' and duty[src] == true end, GetOnDutyPlayers = function() return {} end })
 provide('gs_weather', { GetWeather = function() return weather end })
-provide('gs_wanted', { ColorName = function(i) return i == 64 and 'bleu' or nil end })
+provide('gs_wanted', { ColorName = function(i) return i == 64 and 'bleu' or nil end, Describe = function(src) return 'Homme, masqué' end })
+provide('gs_rumors', { Zone = function() return 'Vespucci' end })
 local weapon = { label = 'Pistolet', name = 'WEAPON_PISTOL', metadata = { serial = 'AB123', registered = 'Jean Tireur' } }
 provide('ox_inventory', { GetCurrentWeapon = function() return weapon end })
 function GetVehicleBodyHealth(veh) return W.entities[veh].body or 1000 end
 local filed = {}
 Store = { init = function() end, filed = function(cid) return filed[cid] end, file = function(cid, name) filed[cid] = name end }
 loadResource('gs_security', { R .. 'gs_security/server/main.lua' })
-loadResource('gs_evidence', { R .. 'gs_evidence/shared/config.lua', R .. 'gs_evidence/server/main.lua' })
+loadResource('gs_evidence', { R .. 'gs_evidence/shared/config.lua', R .. 'gs_evidence/server/main.lua', R .. 'gs_evidence/server/photo.lua' })
 
 local passed, failed = 0, 0
 local function check(name, cond)
@@ -140,6 +146,33 @@ check('sous la pluie : le sang est lavé, les empreintes restent', count('blood'
 weather = 'CLEAR'
 advance(61 * 60000) Evidence.decay()
 check('empreintes effacées avec le temps', count() == 0)
+
+-- V9 · Appareil photo argentique
+do
+    join(70, 'CID70', 'Photographe', vec3(0.0, 0.0, 0.0))
+    join(71, 'CID71', 'Sujet', vec3(-10.0, 0.0, 0.0))   -- devant l'objectif (cap 90° : vers -x)
+    join(72, 'CID72', 'Derrière', vec3(10.0, 0.0, 0.0))
+    check('photo : appareil requis', not Photo.take(70))
+    W.players[70].items.gs_camera = 1
+    local ok = Photo.take(70, 'https://img.example/p.jpg')
+    check('photo développée (objet)', ok and W.players[70].items.gs_photo == 1)
+    local id
+    for k, v in pairs(kvp) do if k:match('^gs_photo:') then id = k:sub(10) end end
+    local r = Photo.get(id)
+    check('seul le joueur devant l\'objectif est sur la photo', r and #r.subjects == 1 and r.subjects[1].cid == 'CID71' and r.place == 'Vespucci')
+    -- labo : profil inconnu puis nom une fois fiché
+    tp(2, Config.Lab.coords)
+    local ok2, out = Photo.analyze(2, id)
+    check('labo : description + profil (non fiché)', ok2 and out[1]:find('profil P%-'))
+    Evidence.file('CID71', 'Sujet Fiché')
+    ok2, out = Photo.analyze(2, id)
+    check('labo : nommé une fois fiché', ok2 and out[1]:find('Sujet Fiché'))
+    check('labo : réservé à la police', not Photo.analyze(70, id))
+    -- accrocher / décrocher
+    check('accrochée au mur', Photo.hang(70, { photo = id, label = 'Photo · Vespucci' }) == true and #GlobalState.gsWallPhotos == 1 and W.players[70].items.gs_photo == 0)
+    check('décrocher : seulement l\'auteur', not Photo.unhang(71, 1))
+    check('décrochée : rendue', Photo.unhang(70, 1) == true and W.players[70].items.gs_photo == 1 and #GlobalState.gsWallPhotos == 0)
+end
 
 io.write(('\n%d réussis, %d échoués\n'):format(passed, failed))
 os.exit(failed == 0 and 0 or 1)

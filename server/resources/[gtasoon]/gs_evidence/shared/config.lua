@@ -28,3 +28,7 @@ Config.Clean = { radius = 6.0, duration = 12000 }
 
 -- Labo du commissariat (Mission Row) : analyse en quelques minutes
 Config.Lab = { coords = vec3(483.6, -988.7, 30.69), radius = 4.0, seconds = 180, history = 30 }
+
+-- V9 · Appareil photo argentique : chaque photo devient un objet (lieu, date, personnes et plaques visibles ;
+-- image réelle si l'hébergement des photos est configuré). Donner, garder, accrocher au mur, verser au labo, faire chanter.
+Config.Camera = { item = 'gs_camera', photo = 'gs_photo', range = 30.0, front = 0.3, maxPlates = 3, maxWall = 200, perPlayerWall = 12 }

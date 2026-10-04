@@ -125,6 +125,18 @@ Config.Memory = {
 -- Visage connu : un témoin peut nommer un suspect célèbre (réputation média ou rue) s'il n'est pas masqué.
 Config.Fame = { at = 600, precision = 0.5, chance = 0.6 }
 
+-- V9 · La cavale : à 5 étoiles (chaleur > minHeat), le suspect peut entrer en cavale (/cavale). Avis de recherche
+-- placardés en ville, prime pour la capture (policier qui l'incarcère, ou citoyen qui le livre à terre devant un
+-- commissariat). S'il tient `hours` heures de jeu sans se faire prendre : il devient une légende de Los Santos.
+Config.Fugitive = {
+    minHeat = 80, hours = 2, bountyBase = 5000, bountyPerHeat = 50, jailMinutes = 30, offlineGrace = 600,
+    stations = { vec3(441.0, -981.9, 30.69), vec3(1853.2, 3689.6, 34.27), vec3(-448.4, 6012.6, 31.72) }, stationRange = 40.0,
+    posters = {
+        vec3(195.0, -935.0, 30.7), vec3(-1185.0, -1505.0, 4.4), vec3(98.0, -1925.0, 20.8), vec3(1155.0, -470.0, 66.6),
+        vec3(1965.0, 3740.0, 32.3), vec3(-150.0, 6340.0, 31.5), vec3(-1340.0, -275.0, 39.6), vec3(1700.0, 4810.0, 42.0),
+    },
+}
+
 Config.VehicleTypes = { automobile = 'Voiture', bike = 'Deux-roues', boat = 'Bateau', heli = 'Hélicoptère', plane = 'Avion', quadbike = 'Quad' }
 -- Couleurs GTA (index de peinture) → mot simple
 Config.Colors = {

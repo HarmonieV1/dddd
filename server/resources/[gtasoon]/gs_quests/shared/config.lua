@@ -70,3 +70,5 @@ Config.Packages = {
         vec3(-275.4, 6228.8, 31.5), vec3(501.4, 5604.1, 797.9), vec3(-1575.6, 5163.0, 19.6), vec3(3070.3, 2205.4, 3.0),
     },
 }
+
+Config.PhoneSnap = 60.0   -- V9 : rayon où chercher la vraie cabine / le téléphone mural autour d'un personnage « téléphone »
