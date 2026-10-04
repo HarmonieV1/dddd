@@ -122,6 +122,9 @@ local function checkPlate()
     if not ok then return notify(false, d) end
     lib.notify({ title = 'Plaque ' .. d.plate, description = d.owner and ('Propriétaire : ' .. d.owner) or 'Non enregistrée (volée, location ou véhicule local)',
         type = d.owner and 'inform' or 'warning', icon = 'car', duration = 10000 })
+    if d.stolen then
+        lib.notify({ title = 'Fichier des vols', description = 'Véhicule déclaré volé auprès de Mors Mutual. Qui est au volant ?', type = 'error', icon = 'user-secret', duration = 12000 })
+    end
     if d.fake then
         lib.notify({ title = 'Numéro de châssis', description = 'Le châssis ne correspond pas à cette plaque : plaque probablement fausse.', type = 'error', icon = 'triangle-exclamation', duration = 12000 })
     end

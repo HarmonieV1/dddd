@@ -24,7 +24,7 @@ function Carnet.row(plate)
 end
 
 --- Un relevé pour un véhicule conduit
-function Carnet.sample(veh)
+function Carnet.sample(veh, driver)
     if not veh or veh == 0 or not DoesEntityExist(veh) then return end
     local plate = trim(GetVehicleNumberPlateText(veh))
     local r = Carnet.row(plate)
@@ -43,7 +43,9 @@ function Carnet.sample(veh)
     if owner and owner ~= r.owner then
         r.owner, r.owners = owner, r.owners + 1
         Store.event(plate, 'owner', ('Changement de propriétaire (%de main)'):format(r.owners), false)
+        TriggerEvent('gs_carnet:server:ownerChanged', plate) -- V9 : l'assurance recoupe
     end
+    if driver then TriggerEvent('gs_carnet:server:driven', plate, driver) end
     if r.color ~= color then
         if r.color >= 0 then
             Store.event(plate, 'paint', ('Repeinte : %s → %s'):format(colorName(r.color) or '?', colorName(color) or '?'), false)
@@ -60,7 +62,7 @@ function Carnet.tick()
         local veh = ped ~= 0 and GetVehiclePedIsIn(ped, false) or 0
         if veh ~= 0 and GetPedInVehicleSeat(veh, -1) == ped and not seen[veh] then
             seen[veh] = true
-            Carnet.sample(veh)
+            Carnet.sample(veh, tonumber(id))
         end
     end
 end

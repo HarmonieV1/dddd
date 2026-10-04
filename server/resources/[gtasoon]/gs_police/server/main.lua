@@ -245,7 +245,8 @@ Actions.plate = { job = 'police', run = function(src, _, data)
     need(veh and veh ~= 0 and DoesEntityExist(veh) and GetEntityType(veh) == 2, 'Aucun véhicule.')
     need(#(GetEntityCoords(veh) - GetEntityCoords(GetPlayerPed(src))) <= 25.0, 'Véhicule trop loin.')
     local plate = GetVehicleNumberPlateText(veh) or '?'
-    return { plate = plate, owner = Bridge:GetVehicleOwner(plate), fake = Entity(veh).state.gsRealPlate ~= nil } -- V8 : châssis ≠ plaque
+    return { plate = plate, owner = Bridge:GetVehicleOwner(plate), fake = Entity(veh).state.gsRealPlate ~= nil, -- V8 : châssis ≠ plaque
+        stolen = GetResourceState('gs_insurance') == 'started' and select(2, pcall(function() return exports.gs_insurance:IsDeclaredStolen(plate) end)) == true or nil } -- V9
 end }
 
 Actions.breathalyzer = { job = 'police', target = true, run = function(_, target)

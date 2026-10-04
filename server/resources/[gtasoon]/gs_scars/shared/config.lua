@@ -7,6 +7,6 @@ Config = {}
 Config.Max = 40                        -- cicatrices visibles en même temps (les plus vieilles partent)
 Config.Memorial = { hours = 4, merge = 20.0, perPlayer = 900,
     props = { 'prop_mem_candle_04', 'prop_mem_candle_05', 'prop_mem_teddy_01', 'prop_mem_reef_01' } }
-Config.Glass = { crimes = { store_robbery = true, jewelry = true, teller_robbery = true, bank = true, robbery = true },
+Config.Glass = { crimes = { store_robbery = true, jewelry = true, teller_robbery = true, bank = true, robbery = true, racket = true },
     merge = 25.0, pay = { 250, 450 }, duration = 15000, props = { 'prop_barrier_work05', 'prop_mp_cone_01', 'prop_mp_cone_01' } }
 Config.Mural = { drawDistance = 60.0 }

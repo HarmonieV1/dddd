@@ -11,7 +11,15 @@ Store = {
     vehicles = function(cid) return owned[cid] or {} end,
     owns = function(cid, id) for _, v in ipairs(owned[cid] or {}) do if v.id == id then return true end end return false end,
 }
-loadResource('gs_insurance', { R .. 'gs_insurance/server/main.lua' })
+local claimsSaved, owners = {}, { BBB222 = 'CID1', AAA111 = 'CID1' }
+Store.claims = function() return {} end
+Store.saveClaim = function(c) claimsSaved[c.id] = c.status end
+Store.ownerOf = function(plate) return owners[plate] end
+local records = {}
+provide('gs_police', { AddRecord = function(cid, charge, fine) records[#records + 1] = { cid = cid, charge = charge, fine = fine } return true end })
+provide('gs_jobs', { GetOnDutyPlayers = function() return {} end })
+provide('gs_rumors', { Add = function() end })
+loadResource('gs_insurance', { R .. 'gs_insurance/server/main.lua', R .. 'gs_insurance/server/claims.lua' })
 
 local passed, failed = 0, 0
 local function check(name, cond)
@@ -49,6 +57,52 @@ Insurance.expires[10] = os.time() - 5
 check('contrat expiré : plein tarif', getFactor(10) == 1.0)
 ok = cb('gs_insurance:buy', 1, 'x'); step()
 check('identifiant invalide', not ok)
+
+-- V9 · Déclaration de vol et fraude ------------------------------------------------------------------------------
+Insurance.expires[10] = os.time() + 86400 * 3
+W_KVP['since:10'] = os.time()
+W.players[1].money.bank = 100000
+ok = cb('gs_insurance:claim', 1, 10); step()
+check('vol déclaré juste après l\'assurance : refusé', not ok)
+W_KVP['since:10'] = os.time() - 3 * 86400
+ok = cb('gs_insurance:claim', 1, 20); step()
+check('véhicule d\'un autre : pas de déclaration', not ok)
+Claims.driven('AAA111', 1)
+ok = cb('gs_insurance:claim', 1, 10); step()
+check('vu au volant il y a peu : l\'expert refuse', not ok and not Claims.list[10])
+Claims.seen.AAA111.at = os.time() - 3600
+ok = cb('gs_insurance:claim', 1, 10); step()
+check('déclaration ouverte (60 % du prix)', ok and Claims.list[10].status == 'pending' and Claims.list[10].amount == 24000 and claimsSaved[10] == 'pending')
+ok = cb('gs_insurance:claim', 1, 10); step()
+check('dossier déjà ouvert', not ok)
+check('plaque déclarée volée (police)', getExport('gs_insurance', 'IsDeclaredStolen')('AAA111 ') == true)
+Claims.tick()
+check('pas versé avant l\'enquête', Claims.list[10].status == 'pending')
+Claims.list[10].at = os.time() - Config.Claim.review * 60
+local bank = W.players[1].money.bank
+Claims.tick()
+check('indemnité versée après l\'enquête, contrat clos', Claims.list[10].status == 'paid' and W.players[1].money.bank == bank + 24000 and getFactor(10) == 1.0)
+join(2, 'CID2', 'Voleur', vec3(0.0, 0.0, 0.0))
+Claims.driven('AAA111', 2)
+check('un autre conducteur (voleur) : pas de fraude', Claims.list[10].status == 'paid')
+bank = W.players[1].money.bank
+Claims.driven('AAA111', 1)
+check('propriétaire revu au volant : fraude, remboursement majoré, casier', Claims.list[10].status == 'fraud'
+    and W.players[1].money.bank == bank - 36000 and records[1] and records[1].cid == 'CID1')
+check('fraude : plus déclarée volée', getExport('gs_insurance', 'IsDeclaredStolen')('AAA111') == false)
+-- revente pendant l'enquête
+W_KVP['claimcd:CID1'] = nil
+Insurance.expires[11] = os.time() + 86400
+W_KVP['since:11'] = os.time() - 3 * 86400
+ok = cb('gs_insurance:claim', 1, 11); step()
+check('deuxième dossier', ok and Claims.list[11].status == 'pending')
+owners.BBB222 = 'CID2'
+Claims.ownerChanged('BBB222')
+check('voiture « volée » revendue : fraude sans versement', Claims.list[11].status == 'fraud' and records[2] and records[2].fine == 0)
+W_KVP['claimcd:CID1'] = os.time()
+Insurance.expires[10] = os.time() + 86400 Claims.list[10] = nil
+ok = cb('gs_insurance:claim', 1, 10); step()
+check('une déclaration toutes les 2 semaines', not ok)
 
 io.write(('\n%d réussis, %d échoués\n'):format(passed, failed))
 os.exit(failed == 0 and 0 or 1)

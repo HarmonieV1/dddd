@@ -98,6 +98,17 @@ Config.Territories = {
 
 -- Guerres de territoire déclarées : un chef (grade avec gestion) déclare la guerre au gang qui tient un quartier.
 -- Préavis, durée, coût (caisse du gang), points par joueur adverse mis à terre dans le quartier. Le vainqueur prend le quartier.
+-- V9 · Racket des commerces de joueurs : « protection » hebdomadaire prélevée sur la caisse du commerce.
+Config.Racket = {
+    min = 500, max = 5000,       -- montant hebdomadaire demandé
+    every = 7,                   -- jours entre deux prélèvements
+    range = 8.0,                 -- à portée de la caisse du commerce
+    minGrade = 1,                -- les recrues ne rackettent pas
+    cooldown = 3600,             -- une demande par commerce et par heure
+    answer = 120,                -- secondes pour que le patron réponde
+    grudge = 1800,               -- après un refus / un impayé : 30 min pour « faire passer le message »
+    damage = 1000,               -- vitrine cassée : dégâts pris sur la caisse du commerce
+}
 Config.Wars = {
     cost = 5000,                 -- prélevé dans la caisse du gang attaquant
     notice = 600,                -- secondes avant le début (les défenseurs sont prévenus)

@@ -25,7 +25,8 @@ lib.callback.register('gs_insurance:list', function(src)
     local out = {}
     for i, v in ipairs(Store.vehicles(cid)) do
         local left = (Insurance.expires[v.id] or 0) - os.time()
-        out[i] = { id = v.id, model = v.model, plate = v.plate, premium = Insurance.premium(v.model), daysLeft = left > 0 and math.ceil(left / 86400) or 0 }
+        out[i] = { id = v.id, model = v.model, plate = v.plate, premium = Insurance.premium(v.model), daysLeft = left > 0 and math.ceil(left / 86400) or 0,
+            claim = Claims and Claims.list[v.id] and Claims.list[v.id].status or nil }
     end
     return { vehicles = out, days = Config.Days, factor = Config.ImpoundFactor }
 end)
@@ -44,6 +45,7 @@ lib.callback.register('gs_insurance:buy', function(src, id)
     if not Bridge:RemoveMoney(src, 'bank', price, 'assurance auto') and not Bridge:RemoveMoney(src, 'cash', price, 'assurance auto') then
         return false, ('Prime : %d $ (banque ou liquide).'):format(price)
     end
+    if not Insurance.isInsured(id) then SetResourceKvpInt('since:' .. id, os.time()) end -- V9 : début de couverture (déclaration de vol)
     Insurance.expires[id] = base + Config.Days * 86400
     Store.set(id, Insurance.expires[id])
     return true, ('Véhicule assuré %d jours de plus (%d $).'):format(Config.Days, price)

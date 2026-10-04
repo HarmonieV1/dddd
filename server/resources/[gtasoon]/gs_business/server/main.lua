@@ -143,6 +143,17 @@ lib.callback.register('gs_business:books', function(src, id)
     return { balance = JobsApi:GetSocietyMoney(id) or 0, today = Store.todaySales(id), ledger = Store.ledger(id, 25) }
 end)
 
+-- V9 · pour le racket (gs_gangs) : commerces et patron (en service ou non)
+exports('GetBusinesses', function()
+    local out = {}
+    for id, b in pairs(Config.Businesses) do out[id] = { label = b.label, register = b.register } end
+    return out
+end)
+exports('IsOwner', function(src, id)
+    local j = Bridge:GetJob(src)
+    return j ~= nil and j.name == id and (j.isboss == true or (tonumber(j.grade) or 0) >= 2)
+end)
+
 AddEventHandler('gs_bridge:server:playerUnloaded', function(src) Business.pending[src] = nil end)
 
 CreateThread(function()

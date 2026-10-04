@@ -25,6 +25,7 @@ Config.Crimes = {
     money_laundering = { label = 'Blanchiment d\'argent (contrôle fiscal)', heat = 20, chance = 1.0 },
     contract = { label = 'Contrat criminel', heat = 10, chance = 0.15 },
     refusal = { label = 'Refus d\'obtempérer (contrôle routier)', heat = 12, chance = 0.95 },
+    racket = { label = 'Racket et dégradation de commerce', heat = 15, chance = 0.6 }, -- V9
 }
 
 Config.Witness = {

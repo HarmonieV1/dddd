@@ -21,6 +21,13 @@ os.time = function() return math.floor(W.now / 1000) end
 function Wait() end
 function CreateThread() end -- les boucles infinies (paie, flush) ne tournent pas en test
 function GetConvar(_, default) return default end
+-- KVP en mémoire (les tests qui en ont besoin peuvent les redéfinir)
+W_KVP = {}
+function SetResourceKvp(k, v) W_KVP[k] = v end
+function SetResourceKvpInt(k, v) W_KVP[k] = math.floor(v) end
+function GetResourceKvpString(k) return W_KVP[k] end
+function GetResourceKvpInt(k) return tonumber(W_KVP[k]) or 0 end
+function DeleteResourceKvp(k) W_KVP[k] = nil end
 function PerformHttpRequest() end
 function GetCurrentResourceName() return 'gs_jobs' end
 function GetResourceState() return 'started' end

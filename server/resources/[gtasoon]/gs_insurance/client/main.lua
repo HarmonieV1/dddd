@@ -14,6 +14,18 @@ AddEventHandler('gs_insurance:client:open', function()
                 notify(lib.callback.await('gs_insurance:buy', false, v.id))
                 TriggerEvent('gs_insurance:client:open')
             end }
+        if v.claim then -- V9 : dossier de vol en cours
+            options[#options + 1] = { title = ('   ↳ Dossier de vol : %s'):format(({ pending = 'enquête de l\'expert', paid = 'indemnisé', fraud = 'fraude constatée' })[v.claim] or v.claim),
+                icon = 'file-shield', readOnly = true }
+        elseif v.daysLeft > 0 then
+            options[#options + 1] = { title = '   ↳ Déclarer ce véhicule volé', icon = 'user-secret', iconColor = '#ff5470',
+                description = 'L\'expert recoupe avec le carnet du véhicule. Fausse déclaration = casier + remboursement majoré.',
+                onSelect = function()
+                    local yes = lib.alertDialog({ header = 'Déclaration de vol', content = ('Déclarer %s (%s) volé ?'):format(v.model, v.plate), centered = true, cancel = true })
+                    if yes ~= 'confirm' then return end
+                    notify(lib.callback.await('gs_insurance:claim', false, v.id))
+                end }
+        end
     end
     if #options == 0 then options[1] = { title = 'Aucun véhicule à ton nom', icon = 'car', readOnly = true } end
     lib.registerContext({ id = 'gs_insurance_menu', title = 'Assurance auto', options = options })
