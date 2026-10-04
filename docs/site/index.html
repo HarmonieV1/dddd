@@ -4,14 +4,14 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>RoadLine RP · Serveur GTA RP FiveM français</title>
-<meta name="description" content="RoadLine RP : serveur GTA RP FiveM francophone new generation. Free Access, zéro pay-to-win, une ville qui réagit à ce que tu fais.">
+<meta name="description" content="RoadLine RP : serveur GTA RP FiveM francophone new generation. Free Access, zéro pay-to-win, une ville qui se souvient, qui évolue et qui vit même sans toi.">
 <meta name="theme-color" content="#07040d">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%23ff2340'/%3E%3Cstop offset='.5' stop-color='%23a24bff'/%3E%3Cstop offset='1' stop-color='%234fd8ff'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='64' height='64' rx='14' fill='%2307040d'/%3E%3Ctext x='32' y='47' font-family='Impact,Anton,sans-serif' font-size='42' text-anchor='middle' fill='url(%23g)'%3ER%3C/text%3E%3C/svg%3E">
 <link rel="canonical" href="https://roadlinerp.netlify.app/">
 <meta property="og:url" content="https://roadlinerp.netlify.app/">
 <meta property="og:type" content="website">
 <meta property="og:title" content="RoadLine RP · new generation">
-<meta property="og:description" content="Serveur GTA RP français : Free Access, zéro pay-to-win, ville vivante.">
+<meta property="og:description" content="Serveur GTA RP français : Free Access, zéro pay-to-win, 12 signatures exclusives, une ville qui vit même sans toi.">
 <!--
   SITE ROADLINE RP — à personnaliser (cherche « A_REMPLIR ») :
   - CONFIG plus bas (lien Discord, code cfx.re du serveur, TikTok / Twitch / YouTube)
@@ -420,6 +420,27 @@
     html.js .rv, html.js h2.sweep, html.js .hero .h-in { opacity: 1 !important; transform: none !important; filter: none !important; clip-path: none !important; }
     .intro { display: none; }
   }
+  /* V10 : vitrine du téléphone */
+  .phone-sec { display: grid; grid-template-columns: 1.1fr .9fr; gap: 48px; align-items: center; }
+  .phone-feats { list-style: none; padding: 0; margin: 18px 0 0; display: grid; gap: 12px; }
+  .phone-feats li { display: grid; grid-template-columns: 42px 1fr; gap: 12px; align-items: start; padding: 12px 14px; border-radius: 14px; background: var(--card); border: 1px solid var(--line); }
+  .phone-feats li span { font-size: 1.5rem; line-height: 1; }
+  .phone-feats b { display: block; }
+  .phone-feats small { color: var(--muted); }
+  .mock { justify-self: center; width: 280px; height: 560px; border-radius: 42px; padding: 12px; background: #05030a; border: 2px solid var(--line);
+    box-shadow: 0 0 0 6px #120a20, 0 30px 70px rgba(0, 0, 0, .6), var(--glow-pink); position: relative; transform: rotate(-3deg); transition: transform .6s var(--ease); }
+  .mock:hover { transform: rotate(0) translateY(-6px); }
+  .mock-screen { height: 100%; border-radius: 32px; overflow: hidden; padding: 34px 14px 0;
+    background: radial-gradient(120% 70% at 50% 110%, rgba(255, 138, 61, .35), transparent 60%), radial-gradient(90% 60% at 50% 0%, rgba(162, 75, 255, .3), transparent 70%), #0b0714; }
+  .mock-notch { position: absolute; top: 18px; left: 50%; transform: translateX(-50%); width: 80px; height: 22px; border-radius: 12px; background: #000; }
+  .mock-clock { text-align: center; font: 300 46px/1 Inter, system-ui, sans-serif; letter-spacing: 2px; }
+  .mock-sub { text-align: center; color: var(--muted); font-size: 12px; margin: 4px 0 12px; }
+  .mock-notif { display: flex; gap: 8px; align-items: center; padding: 8px 10px; border-radius: 12px; background: rgba(24, 14, 44, .9); border: 1px solid var(--line); font-size: 12px; margin-bottom: 12px; }
+  .mock-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px 4px; }
+  .mock-app { display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 9.5px; color: var(--text); text-align: center; }
+  .mock-app i { width: 44px; height: 44px; border-radius: 13px; display: grid; place-items: center; font-style: normal; font-size: 20px;
+    background: linear-gradient(135deg, var(--c), #1a0f2e); box-shadow: 0 6px 14px rgba(0, 0, 0, .4); }
+  @media (max-width: 860px) { .phone-sec { grid-template-columns: 1fr; } .mock { transform: none; } }
 </style>
 </head>
 <body>
@@ -548,6 +569,39 @@
       <div class="card sig rv" style="--d:1"><span class="num">10</span><span class="tag">Signature · V10</span><h3>Le quartier évolue</h3><p>Les commerces qui tournent font monter le quartier ; les gangs, les tags et les braquages le font couler. Rues sales ou quartier chic : c'est vous qui décidez.</p></div>
       <div class="card sig rv" style="--d:2"><span class="num">11</span><span class="tag">Signature · V10</span><h3>Radio Los Santos</h3><p>En voiture, l'animateur raconte la ville en direct : rendez-vous du soir, fugitifs, faits divers, tempête qui arrive… et la rumeur d'un ring cette nuit.</p></div>
       <div class="card sig rv" style="--d:3"><span class="num">12</span><span class="tag">Signature · V10</span><h3>Les commerçants se souviennent</h3><p>Habitué de ta supérette ? On te salue par ton prénom, avec une remise. Tu l'as braquée à visage découvert ? On te reconnaît… et on te met dehors.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="telephone">
+  <div class="wrap phone-sec">
+    <div>
+      <span class="kicker">Nouveau · V10</span>
+      <h2 class="sweep">Ton <span class="grad">téléphone</span>, ton guide</h2>
+      <p class="lead muted rv">Fait maison, pensé pour la ville : léger, rapide, et il te dit toujours quoi faire ensuite.</p>
+      <ul class="phone-feats rv">
+        <li><span>🧭</span><div><b>Que faire ?</b><small>Ce qui se passe maintenant en ville (rendez-vous, ring, fugitifs, quartiers chauds) et toutes les activités en un clic, GPS compris.</small></div></li>
+        <li><span>📍</span><div><b>Plans</b><small>Tes lieux favoris, ta position partagée par SMS, et l'itinéraire en un geste.</small></div></li>
+        <li><span>🌆</span><div><b>Ville</b><small>L'ambiance et le standing de chaque quartier, la météo, la tempête qui arrive.</small></div></li>
+        <li><span>✦</span><div><b>Vibe, Weazel, Banque, Boulots…</b><small>Le réseau social de Los Santos, les brèves, tes comptes, les petits boulots et les urgences.</small></div></li>
+        <li><span>🚶</span><div><b>Marche en écrivant</b><small>Garde le contrôle de ton perso téléphone en main, notifications et appels manqués sur l'écran d'accueil.</small></div></li>
+      </ul>
+    </div>
+    <div class="mock rv" aria-hidden="true">
+      <div class="mock-notch"></div>
+      <div class="mock-screen">
+        <div class="mock-clock">21:04</div>
+        <div class="mock-sub">Los Santos · 555-0142</div>
+        <div class="mock-notif">🧭 <span><b>Vendredi des courses</b> · c'est parti !</span></div>
+        <div class="mock-grid">
+          <div class="mock-app"><i style="--c:#a24bff">🧭</i>Que faire</div><div class="mock-app"><i style="--c:#4fd8ff">💬</i>Messages</div>
+          <div class="mock-app"><i style="--c:#7b5cff">👥</i>Contacts</div><div class="mock-app"><i style="--c:#39d98a">📞</i>Appel</div>
+          <div class="mock-app"><i style="--c:#e43bd1">✦</i>Vibe</div><div class="mock-app"><i style="--c:#f2c230">💳</i>Banque</div>
+          <div class="mock-app"><i style="--c:#39d98a">📍</i>Plans</div><div class="mock-app"><i style="--c:#ff8a3d">🌆</i>Ville</div>
+          <div class="mock-app"><i style="--c:#ff2340">📰</i>Weazel</div><div class="mock-app"><i style="--c:#5ab0ff">💼</i>Emploi</div>
+          <div class="mock-app"><i style="--c:#f2c230">📝</i>Notes</div><div class="mock-app"><i style="--c:#ff4d6d">🚨</i>Urgences</div>
+        </div>
+      </div>
     </div>
   </div>
 </section>
