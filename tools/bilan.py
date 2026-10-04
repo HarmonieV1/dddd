@@ -218,6 +218,7 @@ RETEST = [
         ('Fausses plaques / tatouages', 'Plus de lien ; châssis révélé ; tatouages décrits', 'Marché noir, braquer, Vérifier une plaque ; bras nus vs manches'),
         ('Shérif, garde à vue, K9', 'Métier BCSO ; cellule, droits, aveux ; flair', 'Service à Sandy ; F4 → Garde à vue, /droits, Chien K9'),
         ('Contrebande maritime', 'Mer → plage, radar, garde-côtes', 'Docker de Paleto la nuit, en bateau'),
+        ('T-shirt blanc collé à la peau', 'Sous-vêtement par défaut retiré (création, boutique, tenues)', 'Boutique : essayer veste / sweat / robe ; création de perso ; tenue en objet'),
         ('Cinéma / Halloween', '/cinema, /ralenti ; fantôme, citrouilles', '/halloween on (staff)'),
     ]),
     ('Monde, secours, staff', [

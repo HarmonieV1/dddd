@@ -67,6 +67,10 @@ $QboxPatches = @(
     # V8 : preuves gérées par gs_evidence (contrôlées par le serveur). Celles de qbx_police acceptaient des preuves
     # fabriquées par le client (sang au nom d'un autre joueur…) : leur création est coupée.
     @{ res = 'qbx_police'; file = 'server\main.lua'; find = "(RegisterNetEvent\('evidence:server:(?:CreateBloodDrop|CreateFingerDrop|CreateCasing)', function\([^)]*\))(?! do return end)"; repl = '${1} do return end -- preuves : gs_evidence (V8)'; why = 'preuves : système RoadLine (anti-triche)' }
+    # T-shirt blanc « collé à la peau » : le sous-vêtement de départ (n° 0) est un t-shirt blanc qui ressort sous tous les
+    # hauts. Nouveaux persos : aucun sous-vêtement (15 homme, 14 femme). Les persos existants sont corrigés en jeu (gs_details).
+    @{ res = 'illenium-appearance'; file = 'shared\config.lua'; find = '(?s)(Model = "mp_m_freemode_01",(?:(?!Model =).)*?component_id = 8, -- Shirt\s*\n\s*drawable = )0\b'; repl = '${1}15'; why = 'création : pas de t-shirt blanc sous le haut (homme)' }
+    @{ res = 'illenium-appearance'; file = 'shared\config.lua'; find = '(?s)(Model = "mp_f_freemode_01",(?:(?!Model =).)*?component_id = 8, -- Shirt\s*\n\s*drawable = )0\b'; repl = '${1}14'; why = 'création : pas de t-shirt blanc sous le haut (femme)' }
     # Marina : après l'essai d'un bateau, retour sur le ponton (avant : dans l'eau, à côté)
     @{ res = 'qbx_vehicleshop'; file = 'config\shared.lua'; find = 'returnLocation = vec3\(-714\.34, -1343\.31, 0\.0\)'; repl = 'returnLocation = vec3(-738.25, -1334.38, 1.6)'; why = 'marina : retour sur le ponton après l''essai' }
     @{ res = 'qbx_vehicleshop'; file = 'config\shared.lua'; find = "label = 'Marina Shop'"; repl = "label = 'Marina (bateaux)'"; why = 'marina : nom en français' }

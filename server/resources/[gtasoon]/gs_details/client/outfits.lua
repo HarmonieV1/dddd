@@ -7,6 +7,7 @@ local PROPS = { 0, 1, 2, 6, 7 }                          -- chapeau, lunettes, o
 --- Vêtements portés → { c = { [id] = { d, t } }, p = { [id] = { d, t } }, m = modèle }
 local function current()
     local ped = cache.ped
+    if GSFixUndershirt then GSFixUndershirt(ped) end
     local o = { c = {}, p = {}, m = GetEntityModel(ped) == GetHashKey('mp_f_freemode_01') and 'f' or 'm' }
     for _, id in ipairs(COMPONENTS) do o.c[tostring(id)] = { GetPedDrawableVariation(ped, id), GetPedTextureVariation(ped, id) } end
     for _, id in ipairs(PROPS) do o.p[tostring(id)] = { GetPedPropIndex(ped, id), GetPedPropTextureIndex(ped, id) } end
@@ -16,6 +17,7 @@ end
 local function apply(o)
     local ped = cache.ped
     for id, v in pairs(o.c or {}) do SetPedComponentVariation(ped, tonumber(id), v[1], v[2], 0) end
+    if GSFixUndershirt then GSFixUndershirt(ped) end -- jamais de t-shirt blanc sous le haut (tenues pliées avant le correctif)
     for id, v in pairs(o.p or {}) do
         if v[1] == -1 then ClearPedProp(ped, tonumber(id)) else SetPedPropIndex(ped, tonumber(id), v[1], v[2], true) end
     end

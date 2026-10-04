@@ -233,6 +233,7 @@ TESTS = [
         'F4 → Chien K9 : sortir, renifler un véhicule avec de la drogue dans le coffre, puis une personne',
         'Contrebande : docker du port de Paleto la nuit → bateau → caisses en mer → plage → argent sale',
         '/cinema (3 styles) et /ralenti ; /halloween on (staff) : citrouilles et auto-stoppeur fantôme',
+        'Boutique de vêtements et création de perso : plus de t-shirt blanc sous les vestes / sweats / robes ; idem en enfilant une tenue en objet',
     ]),
     ('Démarrage et confort', [
         'Création de perso : « Visage de base 1 / 2 », « Ressemblance », « Teint », « Origines » ; pas de carte d\'identité au départ',
