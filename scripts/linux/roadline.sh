@@ -103,9 +103,12 @@ terminer() { # fin d'installation : service, commande roadline, sauvegardes auto
 }
 
 diagnostic() { # pourquoi le serveur ne répond pas, en clair
-  local log; log=$(journalctl -u roadline -n 400 --no-pager 2>/dev/null || true)
+  # seulement depuis le dernier démarrage (sinon d'anciens plantages déjà réglés seraient encore signalés)
+  local since log; since=$(systemctl show -p ExecMainStartTimestamp --value roadline 2>/dev/null || true)
+  if [ -n "$since" ] && [ "$since" != "n/a" ]; then log=$(journalctl -u roadline --since "$since" --no-pager 2>/dev/null || true)
+  else log=$(journalctl -u roadline -n 400 --no-pager 2>/dev/null || true); fi
   echo "== Service =="
-  if systemctl is-active --quiet roadline; then echo "  en marche (mode $(cat "$BASE/.mode" 2>/dev/null || echo ?), redémarrages : $(systemctl show -p NRestarts --value roadline))"
+  if systemctl is-active --quiet roadline; then echo "  en marche (mode $(cat "$BASE/.mode" 2>/dev/null || echo ?), plantages depuis le dernier démarrage du VPS : $(systemctl show -p NRestarts --value roadline))"
   else echo "  ARRÊTÉ ($(systemctl show -p Result --value roadline))"; fi
   echo "== Port du jeu 30120 =="
   if ss -lntu 2>/dev/null | grep -q ':30120 '; then echo "  ouvert : le serveur écoute"; else echo "  FERMÉ : le serveur n'écoute pas (arrêté, en plantage, ou encore en démarrage)"; fi
