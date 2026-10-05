@@ -917,6 +917,8 @@
       const svg = document.querySelector('.map-box svg'), snaps = tl.snaps, evs = (tl.events || []).slice().sort((a, b) => a.t - b.t);
       const t0 = snaps[0].t, t1 = Math.max(snaps[snaps.length - 1].t, evs.length ? evs[evs.length - 1].t : 0), DUR = RMQ ? 6000 : 30000, start = performance.now();
       let si = 0, ei = 0; btn.disabled = true; bar.hidden = false;
+      const calm = !evs.length && !snaps.some((s) => Object.keys(s.lv || {}).length);
+      if (calm) feed.textContent = 'Journée calme : aucun incident ces dernières 24 h… pour l\'instant.';
       const base = current.districts.map((x) => ({ ...x }));
       function frame(now) {
         const p = Math.min(1, (now - start) / DUR), t = t0 + (t1 - t0) * p;
@@ -931,7 +933,7 @@
         clock.textContent = new Date(t * 1000).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
         bar.value = p;
         if (p < 1) requestAnimationFrame(frame);
-        else { playing = false; btn.disabled = false; btn.textContent = '↻ Rejouer'; bar.hidden = true; feed.textContent = 'Et maintenant : la carte en direct.'; render(current, current !== DEMO); }
+        else { playing = false; btn.disabled = false; btn.textContent = '↻ Rejouer'; bar.hidden = true; feed.textContent = calm ? 'Journée calme à Los Santos. Viens écrire la suite !' : 'Et maintenant : la carte en direct.'; render(current, current !== DEMO); }
       }
       requestAnimationFrame(frame);
     }
