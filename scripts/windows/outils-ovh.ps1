@@ -138,6 +138,73 @@ function Initialize-SshKey($vps) {
     Write-Host '  Connecté au VPS avec la clé : plus jamais de mot de passe.' -ForegroundColor Green
     $script:SshKey = $key
     $script:KeyReady = $true
+    if (Test-PasswordExpired $key $vps) { Reset-ExpiredPassword $key $vps }
+}
+
+#--- OVH impose de changer le mot de passe du compte à la 1re connexion : tant que ce n'est pas fait, le VPS refuse
+#    les envois et les commandes (« You are required to change your password immediately »), même avec la clé.
+function Test-PasswordExpired($key, $vps) {
+    $out = (cmd /c "ssh -i `"$key`" -o BatchMode=yes -o ConnectTimeout=15 $($vps.user)@$($vps.ip) echo roadline-ok 2>&1") -join "`n"
+    return ($out -notmatch 'roadline-ok' -and $out -match 'change your password|password has expired|expired')
+}
+function Reset-ExpiredPassword($key, $vps) {
+    Write-Host ''
+    Write-Host '  ============ OVH DEMANDE DE CHANGER LE MOT DE PASSE (une seule fois) ============' -ForegroundColor Cyan
+    Write-Host '  1. Ouvre le mail d''OVH reçu après la réinstallation (identifiants du VPS) et COPIE le mot de passe' -ForegroundColor White
+    Write-Host '     (s''il y a un lien « récupérer vos identifiants », ouvre-le et copie le mot de passe affiché).' -ForegroundColor White
+    Write-Host '  2. Ici : CLIC DROIT pour coller (des étoiles s''affichent), puis Entrée.' -ForegroundColor White
+    Write-Host '  L''outil choisit tout seul un nouveau mot de passe solide (gardé chiffré sur ce PC, jamais affiché) :' -ForegroundColor DarkGray
+    Write-Host '  tu n''en auras plus besoin, tout passe par la clé.' -ForegroundColor DarkGray
+    for ($essai = 1; $essai -le 3; $essai++) {
+        $sec = Read-Host '  Mot de passe du mail OVH' -AsSecureString
+        $old = [Runtime.InteropServices.Marshal]::PtrToStringAuto([Runtime.InteropServices.Marshal]::SecureStringToBSTR($sec))
+        $old = $old.Trim()
+        $chars = 'abcdefghijkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789'.ToCharArray()
+        $rng = [Security.Cryptography.RandomNumberGenerator]::Create(); $bytes = New-Object byte[] 24; $rng.GetBytes($bytes)
+        $new = 'Rl-' + (-join ($bytes | ForEach-Object { $chars[$_ % $chars.Length] }))
+        $psi = New-Object Diagnostics.ProcessStartInfo 'ssh'
+        $psi.Arguments = "-tt -i `"$key`" -o BatchMode=yes -o ConnectTimeout=15 $($vps.user)@$($vps.ip) echo roadline-ok"
+        $psi.UseShellExecute = $false; $psi.RedirectStandardInput = $true; $psi.RedirectStandardOutput = $true; $psi.RedirectStandardError = $true
+        $proc = [Diagnostics.Process]::Start($psi)
+        $err = $proc.StandardError.ReadToEndAsync()
+        $buf = New-Object char[] 1024; $seen = New-Object Text.StringBuilder; $task = $null; $step = 0
+        $answers = @(@('current|actuel', $old), @('new password|nouveau', $new), @('retype|again|nouveau', $new))
+        $limit = (Get-Date).AddSeconds(60)
+        while (-not $proc.HasExited -and (Get-Date) -lt $limit) {
+            if (-not $task) { $task = $proc.StandardOutput.ReadAsync($buf, 0, $buf.Length) }
+            if ($task.Wait(500)) {
+                $n = $task.Result; $task = $null
+                if ($n -le 0) { break }
+                [void]$seen.Append($buf, 0, $n)
+                $tail = $seen.ToString(); $tail = $tail.Substring([math]::Max(0, $tail.Length - 120)).ToLower()
+                if ($step -lt 3 -and $tail -match $answers[$step][0] -and $tail.TrimEnd() -match ':$') {
+                    Start-Sleep -Milliseconds 400
+                    $proc.StandardInput.Write($answers[$step][1] + "`n"); $proc.StandardInput.Flush()
+                    [void]$seen.Clear(); $step++
+                }
+            }
+        }
+        if (-not $proc.HasExited) { try { $proc.Kill() } catch { } }
+        $old = $null
+        $all = ($seen.ToString() + $err.Result).ToLower()
+        if (-not (Test-PasswordExpired $key $vps)) {
+            try {
+                ConvertTo-SecureString $new -AsPlainText -Force | ConvertFrom-SecureString |
+                    Set-Content -LiteralPath (Join-Path (Split-Path $VpsFile) 'vps-motdepasse.chiffre') # chiffré pour ce compte Windows
+            } catch { }
+            $new = $null
+            Write-Host '  Mot de passe changé. Le VPS accepte maintenant les envois.' -ForegroundColor Green
+            return
+        }
+        $new = $null
+        if ($all -match 'authentication token manipulation|incorrect|failure') {
+            Write-Host '  Mot de passe du mail refusé par le VPS. Recopie-le bien depuis le mail (sans espace) et réessaie.' -ForegroundColor Yellow
+        } else {
+            Write-Host '  Le changement n''a pas abouti. Réessaie (recopie le mot de passe du mail OVH).' -ForegroundColor Yellow
+        }
+    }
+    throw ('Impossible de changer le mot de passe imposé par OVH. Si tu n''as pas de mot de passe dans le mail : espace client OVH ' +
+        '> ton VPS > Réinstaller mon VPS, Ubuntu 24.04, SANS clé SSH : OVH envoie alors un mail avec le mot de passe ; relance cet outil.')
 }
 function SshArgs { if ($script:SshKey) { @('-i', $script:SshKey) } else { @() } }
 
