@@ -11,6 +11,10 @@ local function validHook(url) return type(url) == 'string' and url:match('^https
 
 local function started(res) return GetResourceState(res) == 'started' end
 
+-- V10.1 : rôles de métier aussi lus dans secrets.cfg (jamais écrasé par une mise à jour) :
+--   set gs_discord_roles "police=123456789012345678,ambulance=234567890123456789"
+for job, role in GetConvar('gs_discord_roles', ''):gmatch('([%w_]+)%s*=%s*(%d+)') do Config.Roles[job] = role end
+
 local function onDuty(job)
     if not started('gs_jobs') then return 0 end
     local ok, l = pcall(function() return exports.gs_jobs:GetOnDutyPlayers(job) end)

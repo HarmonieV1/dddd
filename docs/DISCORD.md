@@ -38,8 +38,24 @@ comme chez l'hébergeur). Ensuite, plus rien à faire : les mises à jour passen
 5. **Relance le serveur** (ou METTRE-A-JOUR.bat). Dans la minute : le bot passe « en ligne » avec « 12/48 citoyens à
    Los Santos », le salon statut se met à jour, et `/statut`, `/rejoindre`, `/rdv`, `/site` marchent.
 
-**Chez un hébergeur** : PREPARER-HEBERGEUR.bat emporte `secrets.cfg`, donc le bot suit tout seul.
-**Rôles de métier** (facultatif) : mets les identifiants des rôles Discord dans `[gtasoon]/gs_discord/shared/config.lua`
-(`Config.Roles`) et place le rôle du bot au-dessus d'eux (Paramètres → Rôles).
+**Sur le VPS OVH** : PREPARER-OVH.bat emporte `secrets.cfg`, donc le bot suit tout seul (docs/OVH.md).
+**Rôles de métier** (facultatif) : dans `cfg/secrets.cfg`, `set gs_discord_roles "police=ID,ambulance=ID,mechanic=ID"`
+(gardé aux mises à jour), et place le rôle du bot au-dessus d'eux (Paramètres → Rôles).
+
+## Modérer depuis Discord (V10.1), même sur téléphone
+Commandes réservées aux **administrateurs du Discord** et au **rôle staff** indiqué dans `cfg/secrets.cfg` :
+`set gs_discord_staff_role "ID-DU-ROLE"` (clic droit sur le rôle → Copier l'identifiant). Les réponses ne sont visibles que par toi.
+
+| Commande | Effet en jeu |
+|---|---|
+| `/joueurs` | joueurs en ville : identifiant, nom, personnage, ping |
+| `/geler id` · `/degeler id` | le joueur ne peut plus bouger (tricheur repéré) / libéré |
+| `/avertir id texte` | avertissement (note au dossier, publié dans les sanctions) |
+| `/expulser id texte` | expulsion du serveur |
+| `/message id texte` | message privé du staff au joueur |
+| `/annonce texte` | annonce à toute la ville |
+
+Pour bannir : txAdmin (`http://IP:40120`), qui marche aussi sur téléphone. Autre possibilité : le panneau staff web
+`http://IP:30120/gs_admin/` (voir docs/OVH.md, § 5). Chaque action est journalisée « Discord · pseudo ».
 **Ça ne marche pas ?** Console du serveur : « Bot Discord connecté » = OK ; « Jeton refusé » = relance CONFIGURER-DISCORD
 avec un nouveau jeton.

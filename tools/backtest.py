@@ -58,12 +58,22 @@ SESSIONS = [
         ('Tempête (/meteoevent storm), Halloween (/halloween on), rendez-vous fixes (/rdv, rappel 30 min avant)', 'Staff', 1),
         ('/recap (ce mois, mois dernier, biographie), /quartiers, casino, courses, road trip (/carnet), location, Cayo', 'Seul', 1),
     ]),
+    ('5 bis · Justice et presse — V10.1 (30 min)', [
+        ('Caméras : terminal du commissariat (passages, recherche de plaque) ; bombe de peinture sur une caméra = hors service', '2', 2),
+        ('Mandat : visites répétées d\'une planque → signalement → /mandat → juge (ou juge de permanence) → perquisition, coffre ouvert', '3+', 2),
+        ('Tribunal : verser photo + scellé analysé, le juge retient / écarte, le verdict les mentionne', '3+', 2),
+        ('Chantage à la photo : payer (photo remise) ; refuser (brève Weazel + rumeur)', '2', 1),
+        ('Enchères de la fourrière : dépôt de saisie (police), voiture PNJ à la fourrière, vente ouverte par le staff, surenchère remboursée, lot livré', '3+', 2),
+        ('Direct Weazel : poursuite 5 étoiles → bandeau, hélicoptère, journaliste payé, brève de fin', '3+', 2),
+    ]),
     ('6 · Staff et outils (20 min)', [
         ('F11 : mode staff, joueurs (aller à, amener, soigner, argent), vol libre / invisible SANS alerte anti-triche', 'Staff', 3),
         ('F11 → Anti-triche (alertes) ; F11 → Statistiques de rétention ; F10 panel complet (tickets /report, sanctions)', 'Staff', 2),
         ('F11 → Déplacer un point : recaler ring, doublures, faits divers, lieux estimés (voir la carte des points)', 'Staff', 3),
         ('SAUVEGARDER-BDD.bat, puis RESTAURER-BDD.bat → un seul joueur (sur un perso de test)', 'Staff', 3),
         ('CONFIGURER-DISCORD.bat → relance : bot en ligne, salon statut mis à jour, /statut et /rdv sur Discord', 'Staff', 2),
+        ('Staff à distance : /joueurs et /geler sur Discord (rôle staff) ; panneau http://IP:30120/gs_admin/ sur téléphone (code)', 'Staff', 2),
+        ('OVH : PREPARER-OVH.bat → txAdmin (PIN, OneSync On) → connexion ; METTRE-A-JOUR-OVH.bat → version à jour, base intacte', 'Staff', 3),
     ]),
     ('7 · Test de charge (à faire avant d\'ouvrir)', [
         ('6 à 10 joueurs pendant 1 h : FPS, ping, resmon (aucune ressource gs_ au-dessus de 0,5 ms en continu)', '3+', 3),

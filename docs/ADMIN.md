@@ -91,3 +91,13 @@ Placer n'importe quel objet du jeu, le déplacer, le tourner, le dupliquer, le s
 - **Les commerçants se souviennent** (`gs_economy`, `Config.Regulars`) : habitué = 5 jours d'achats (-5 %), braqueur à visage découvert refusé 48 h dans ce magasin.
 - **Téléphone** : notes, lieux favoris, appels récents et réglages sont gardés sur le PC du joueur (rien en base) ; « Que faire ? » vient de `gs_onboarding/shared/guide.lua` (lignes faciles à ajouter : libellé, description, commande ou point GPS).
 - **Bot Discord** : installation pas à pas dans `docs/DISCORD.md` (5 étapes, une seule fois).
+
+## V10.1 · Justice, presse, staff à distance, OVH
+- **Caméras** (`gs_cctv`) : 20 caméras (déplaçables), 3 terminaux police ; passages gardés 60 min ; une bombe de peinture aveugle une caméra 30 min.
+- **Mandat** (`gs_justice`, `Config.Warrant`) : planques de gang et chambres de motel signalent leurs visites ; seuil → signalement police ; juge de permanence si aucun juge en service.
+- **Pièces au tribunal / chantage** (`gs_justice` + `gs_evidence`, `Config.Pieces`, `Config.Blackmail`) : 12 pièces max par affaire ; chantage 100 à 50 000 $, une photo ne sert qu'une fois.
+- **Enchères de la fourrière** (`gs_auction`) : samedi 21 h (30 min) ; staff : `/encheres` → ouvrir / clore une vente à tout moment ; gagnant hors ligne livré à sa connexion.
+- **Direct Weazel** (`gs_social`, `Config.Live`) : chaleur ≥ 45 ; un direct toutes les 20 min max ; journalistes payés 150 $/min (1 500 $ max).
+- **Staff à distance** : bot Discord (docs/DISCORD.md) et panneau web `/gs_admin/` (codes `gs_admin_web` dans secrets.cfg, docs/OVH.md § 5). Mêmes actions, journalisées.
+- **CAPTURER-ERREURS.bat** : lance le serveur 2 min et ouvre `C:\GTASOON\logs\erreurs.txt` (erreurs + 80 dernières lignes) — à m'envoyer en cas de souci au démarrage.
+- **Serveur officiel** : docs/OVH.md (PREPARER-OVH.bat, METTRE-A-JOUR-OVH.bat, commande `roadline`).

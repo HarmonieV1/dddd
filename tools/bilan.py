@@ -1,4 +1,4 @@
-# Génère docs/pdf/ROADLINE_Bilan_V10.pdf (tout ce qui existe, historique, état, ce qu'il reste, idées signature)
+# Génère docs/pdf/ROADLINE_Bilan_<VERSION>.pdf (tout ce qui existe, historique, état, ce qu'il reste, idées signature)
 # et docs/pdf/ROADLINE_Reste_a_tester.pdf (retours du beta test et nouveautés V9 / V10 → à vérifier en jeu).
 # Lancer depuis la racine : python3 tools/bilan.py
 import os
@@ -43,9 +43,23 @@ HISTORY = [
     ['V10', "Une ville qui vit sans toi : Que faire ? (point d'entrée unique), téléphone refait (Plans, Ville, Notes, notifications, "
             "récents, fonds, marcher téléphone ouvert), le quartier évolue (standing, déchets à ramasser, recette des commerces), "
             "faits divers PNJ pour la police, Radio Los Santos, les commerçants se souviennent, bot Discord intégré au serveur"],
+    ['V10.1', "Justice et presse : caméras de surveillance (plaques, aveuglées à la bombe), mandat de perquisition (voisins, juge, "
+              "perquisition), preuves recevables au tribunal (photo, scellé, le juge retient ou écarte), chantage à la photo, enchères "
+              "de la fourrière (samedi soir), Direct Weazel (hélico, bandeau, journalistes payés) ; modération à distance (bot Discord, "
+              "panneau staff mobile) ; mise en ligne OVH en un clic (PREPARER-OVH, METTRE-A-JOUR-OVH, commande roadline) ; "
+              "correctifs de l'audit (prime du chasseur, anti-triche, droits de patron, METTRE-A-JOUR)"],
 ]
 
 FEATURES = [
+    ('★ V10.1 : justice, presse et staff mobile', [
+        "Caméras de surveillance (20) : la police consulte les passages de véhicules ; les gangs les aveuglent à la bombe de peinture.",
+        "Mandat de perquisition (/mandat) : trop d'allées et venues dans une planque = signalement des voisins, le juge (ou le juge de permanence) signe, la police ouvre le coffre sur place.",
+        "Preuves au tribunal (/tribunal → affaire) : verser une photo ou un scellé analysé, le juge retient ou écarte, le verdict compte les pièces retenues.",
+        "Chantage à la photo : montrer la photo à la personne qu'on y voit ; payer = la photo lui est remise, refuser = fuite dans la presse.",
+        "Enchères de la fourrière (/encheres, samedi 21 h) : saisies de la police et voitures abandonnées, mises bloquées en banque, recette à la police.",
+        "Direct Weazel : grosse poursuite en direct, hélicoptère de la chaîne, journalistes payés, brève de fin, Radio Los Santos.",
+        "Staff mobile : commandes du bot Discord (/joueurs, /geler, /expulser…) et panneau web /gs_admin/ sur téléphone.",
+    ]),
     ('★ V10 : une ville qui vit sans toi', [
         "Que faire ? (téléphone ou /quefaire) : ce qui se passe maintenant + toutes les activités en boutons (GPS ou action).",
         "Téléphone : Plans (favoris, partage de position), Ville (quartiers, météo), Notes, notifications, appels récents, fonds, mode marche.",
@@ -160,7 +174,7 @@ IDEAS = [
 
 
 def bilan():
-    d = doc('docs/pdf/ROADLINE_Bilan_V10.pdf', 'RoadLine RP · Bilan complet V10')
+    d = doc(f'docs/pdf/ROADLINE_Bilan_{VERSION}.pdf', f'RoadLine RP · Bilan complet {VERSION}')
     s = [Paragraph('RoadLine RP · Bilan complet', H1),
          Paragraph(f'De la création de la base à la {VERSION} : tout ce qui existe en jeu, où on en est, ce qu\'il reste pour ouvrir, '
                    'et 10 idées signature pour la suite. Serveur FiveM RP français, Free Access, zéro pay-to-win (Qbox, ox_lib, ox_inventory, pma-voice).', P),
@@ -295,4 +309,4 @@ def reste():
 if __name__ == '__main__':
     bilan()
     reste()
-    print('PDF générés : docs/pdf/ROADLINE_Bilan_V10.pdf, docs/pdf/ROADLINE_Reste_a_tester.pdf')
+    print(f'PDF générés : docs/pdf/ROADLINE_Bilan_{VERSION}.pdf, docs/pdf/ROADLINE_Reste_a_tester.pdf')

@@ -122,6 +122,25 @@ def guide(points):
     s += [Paragraph('2. Touches', H2), table(KEYS, [38 * mm, 78 * mm, 64 * mm])]
     s += [Paragraph('3. Commandes utiles', H2), table(COMMANDS, [60 * mm, 120 * mm])]
 
+    s += [PageBreak(), Paragraph('★ Nouveautés V10.1 · Justice, presse et staff mobile', H2)]
+    s += bullets([
+        "<b>Caméras de surveillance</b> : 20 caméras en ville. La police consulte les passages (plaque, type de véhicule, heure) aux "
+        "terminaux du commissariat ; une bombe de peinture aveugle une caméra (les gangs adorent).",
+        "<b>Mandat de perquisition</b> (/mandat) : trop d'allées et venues dans une planque de gang ou une chambre de motel = les voisins "
+        "préviennent la police. Demande au juge (ou juge de permanence si aucun juge en service), puis perquisition sur place : le coffre s'ouvre.",
+        "<b>Preuves au tribunal</b> (/tribunal → l'affaire) : police et avocats versent une photo ou un scellé analysé, le juge retient ou "
+        "écarte chaque pièce ; le verdict mentionne les pièces retenues.",
+        "<b>Chantage à la photo</b> : une photo où l'on voit quelqu'un peut lui être montrée face à face contre de l'argent. Il paie : la "
+        "photo lui est remise. Il refuse (ou ne répond pas) : elle fuite dans Weazel et les rumeurs.",
+        "<b>Enchères de la fourrière</b> (/encheres, fourrière de Davis) : le samedi à 21 h, saisies de la police et voitures abandonnées "
+        "envoyées à la fourrière. Mise bloquée en banque, remboursée si on te dépasse ; recette à la caisse de la police.",
+        "<b>Direct Weazel</b> : une grosse poursuite passe en direct (bandeau pour toute la ville, hélicoptère de la chaîne au-dessus du "
+        "suspect, journalistes en service payés sur place, brève de fin, Radio Los Santos).",
+        "<b>Staff sur téléphone</b> : bot Discord (/joueurs, /geler, /degeler, /avertir, /expulser, /message, /annonce, rôle staff) et "
+        "panneau web <b>/gs_admin/</b> (codes dans secrets.cfg). Bannissements : txAdmin.",
+        "<b>Serveur officiel OVH</b> : PREPARER-OVH.bat (mise en ligne en un clic), METTRE-A-JOUR-OVH.bat (sans toucher la base), "
+        "commande « roadline » sur le VPS. Guide : docs/OVH.md. <b>CAPTURER-ERREURS.bat</b> : enregistre les erreurs du démarrage.",
+    ])
     s += [PageBreak(), Paragraph('★ Nouveautés V10 · Une ville qui vit sans toi', H2)]
     s += bullets([
         "<b>Que faire ?</b> (téléphone, ou /quefaire) : un seul point d'entrée. « En ce moment » (rendez-vous, ring ouvert, fugitifs, "
@@ -269,6 +288,15 @@ TESTS = [
     ('Avant de commencer', [
         'NETTOYER-MARQUES.bat (une fois), puis METTRE-A-JOUR.bat : fenêtre du serveur sans ligne ROUGE',
         'Si F3 / F5 font encore deux choses : Échap → Paramètres → Raccourcis → FiveM, vérifier F3 = Progression',
+    ]),
+    ('V10.1 · Nouveautés', [
+        "Police en service au terminal du commissariat : caméras, passages récents, recherche par plaque ; bombe de peinture sur une caméra → hors service",
+        "Visiter souvent une planque : signalement « voisins » à la police ; /mandat → demande → juge (ou attente du juge de permanence) → perquisition sur place",
+        "/tribunal → une affaire ouverte : verser une photo puis un scellé analysé ; le juge retient / écarte ; verdict : pièces retenues mentionnées",
+        "Photo d'un joueur → menu de la photo → Faire chanter : il paie (photo remise) ou refuse (brève Weazel + rumeur)",
+        "Policier : déposer une saisie à la fourrière ; mettre en fourrière une voiture PNJ ; staff : /encheres → ouvrir ; enchérir à 2, surenchère remboursée",
+        "Grosse poursuite (5 étoiles) : bandeau EN DIRECT, hélicoptère au-dessus du suspect ; journaliste en service sur place payé ; fin : brève",
+        "Discord : /joueurs puis /geler un joueur (rôle staff) ; téléphone : http://IP:30120/gs_admin/ avec un code",
     ]),
     ('V10 · Nouveautés', [
         "Téléphone → Que faire : « En ce moment » cohérent ; chaque section ; un bouton GPS pose bien le point, un bouton action ouvre le bon menu",

@@ -67,7 +67,7 @@ Soleil couchant rétro, titre néon, astuces tournantes (FR), touches utiles, vr
   -- ['black_money'] existe déjà dans ox_inventory (argent sale)
   ```
 
-## gs_quests — progression et quêtes de départ (V2, F3 / `/progression` depuis la V5)
+## gs_quests — progression et quêtes de départ (V2, touche F3)
 - **XP et niveaux** (1 → 50) : quêtes, missions de métier, braquages, ventes de drogue. Chaque niveau rapporte un bonus en banque.
   Les annonces plein écran (« NIVEAU 4 », « MISSION RÉUSSIE ») sont faites façon anciens GTA.
 - **Personnages récurrents** repérables au **losange vert** au-dessus de la tête (façon Sims) : Max le Guide (mairie),
@@ -359,3 +359,13 @@ Traductions françaises manquantes des scripts Qbox ajoutées par METTRE-A-JOUR 
 - **Monde** : roue du casino recollée, PNJ du casino ; Cayo : vol retour visible ; bandeau Weazel News ; secours IA envoyé par un EMS.
 - **Grandes nouveautés** : tenues en objets (gs_details), menu radial (W) « Moi », courses avec organisateur PNJ et voitures prêtées (gs_races),
   personnalisation complète par le mécano (gs_tuning/client/mechanic.lua).
+
+## V10.1 · Justice, presse et staff mobile
+- **gs_cctv** : caméras de surveillance (passages de véhicules, recherche de plaque au terminal police), aveuglées à la bombe de peinture.
+- **gs_justice** : mandat de perquisition (`/mandat`, signalement des voisins, juge de permanence, coffre ouvert sur place) ;
+  pièces au dossier (`/tribunal` → affaire : photo, scellé analysé, le juge retient / écarte).
+- **gs_evidence** : chantage avec une photo (payer = photo remise, refuser = fuite Weazel + rumeur).
+- **gs_auction** : enchères de la fourrière (`/encheres`, samedi 21 h) — saisies police, voitures abandonnées, mises bloquées, recette police.
+- **gs_social** : Direct Weazel (grosse poursuite : bandeau, hélicoptère local, journalistes payés, brève de fin).
+- **gs_admin / gs_discord** : modération à distance (commandes staff du bot, panneau web `/gs_admin/`).
+- **Outils** : CAPTURER-ERREURS.bat, PREPARER-OVH.bat, METTRE-A-JOUR-OVH.bat, commande `roadline` sur le VPS (docs/OVH.md).
