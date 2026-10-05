@@ -1,0 +1,3913 @@
+{
+ "source": "qbx_core shared/vehicles.lua + qbx_vehicleshop config (main, 05/10/2026)",
+ "shops": {
+  "pdm": {
+   "motorcycles": [
+    {
+     "model": "faggio2",
+     "name": "Faggio Sport",
+     "brand": "Pegassi",
+     "category": "motorcycles",
+     "type": "bike",
+     "price": 12263
+    },
+    {
+     "model": "faggio3",
+     "name": "Faggio Mod",
+     "brand": "Pegassi",
+     "category": "motorcycles",
+     "type": "bike",
+     "price": 14291
+    },
+    {
+     "model": "faggio",
+     "name": "Faggio Sport",
+     "brand": "Pegassi",
+     "category": "motorcycles",
+     "type": "bike",
+     "price": 14728
+    },
+    {
+     "model": "ratbike",
+     "name": "Rat Bike",
+     "brand": "Western",
+     "category": "motorcycles",
+     "type": "bike",
+     "price": 19441
+    },
+    {
+     "model": "wolfsbane",
+     "name": "Wolfsbane",
+     "brand": "Western",
+     "category": "motorcycles",
+     "type": "bike",
+     "price": 19441
+    },
+    {
+     "model": "bagger",
+     "name": "Bagger",
+     "brand": "Western",
+     "category": "motorcycles",
+     "type": "bike",
+     "price": 19934
+    },
+    {
+     "model": "sanchez",
+     "name": "Sanchez (livery)",
+     "brand": "Maibatsu",
+     "category": "motorcycles",
+     "type": "bike",
+     "price": 20686
+    },
+    {
+     "model": "sanchez2",
+     "name": "Sanchez",
+     "brand": "Maibatsu",
+     "category": "motorcycles",
+     "type": "bike",
+     "price": 20686
+    },
+    {
+     "model": "enduro",
+     "name": "Enduro",
+     "brand": "Dinka",
+     "category": "motorcycles",
+     "type": "bike",
+     "price": 20848
+    },
+    {
+     "model": "pcj",
+     "name": "PCJ-600",
+     "brand": "Shitzu",
+     "category": "motorcycles",
+     "type": "bike",
+     "price": 20997
+    },
+    {
+     "model": "manchez2",
+     "name": "Manchez Scout",
+     "brand": "Maibatsu",
+     "category": "motorcycles",
+     "type": "bike",
+     "price": 21545
+    },
+    {
+     "model": "manchez3",
+     "name": "Manchez Scout C",
+     "brand": "Maibatsu",
+     "category": "motorcycles",
+     "type": "bike",
+     "price": 21632
+    },
+    {
+     "model": "vader",
+     "name": "Vader",
+     "brand": "Shitzu",
+     "category": "motorcycles",
+     "type": "bike",
+     "price": 22163
+    },
+    {
+     "model": "daemon",
+     "name": "Daemon",
+     "brand": "Western",
+     "category": "motorcycles",
+     "type": "bike",
+     "price": 22321
+    },
+    {
+     "model": "chimera",
+     "name": "Chimera",
+     "brand": "Nagasaki",
+     "category": "motorcycles",
+     "type": "bike",
+     "price": 22412
+    },
+    {
+     "model": "daemon2",
+     "name": "Daemon Custom",
+     "brand": "Western",
+     "category": "motorcycles",
+     "type": "bike",
+     "price": 22423
+    },
+    {
+     "model": "hexer",
+     "name": "Hexer",
+     "brand": "LCC",
+     "category": "motorcycles",
+     "type": "bike",
+     "price": 22521
+    },
+    {
+     "model": "powersurge",
+     "name": "Powersurge",
+     "brand": "Western",
+     "category": "motorcycles",
+     "type": "bike",
+     "price": 23026
+    },
+    {
+     "model": "avarus",
+     "name": "Avarus",
+     "brand": "LCC",
+     "category": "motorcycles",
+     "type": "bike",
+     "price": 23028
+    },
+    {
+     "model": "sovereign",
+     "name": "Sovereign",
+     "brand": "Western",
+     "category": "motorcycles",
+     "type": "bike",
+     "price": 23078
+    },
+    {
+     "model": "bf400",
+     "name": "BF400",
+     "brand": "Nagasaki",
+     "category": "motorcycles",
+     "type": "bike",
+     "price": 23103
+    },
+    {
+     "model": "esskey",
+     "name": "Esskey",
+     "brand": "Pegassi",
+     "category": "motorcycles",
+     "type": "bike",
+     "price": 23138
+    },
+    {
+     "model": "manchez",
+     "name": "Manchez",
+     "brand": "Maibatsu",
+     "category": "motorcycles",
+     "type": "bike",
+     "price": 23138
+    },
+    {
+     "model": "zombiea",
+     "name": "Zombie Bobber",
+     "brand": "Western",
+     "category": "motorcycles",
+     "type": "bike",
+     "price": 23182
+    },
+    {
+     "model": "zombieb",
+     "name": "Zombie Chopper",
+     "brand": "Western",
+     "category": "motorcycles",
+     "type": "bike",
+     "price": 23182
+    },
+    {
+     "model": "innovation",
+     "name": "Innovation",
+     "brand": "LCC",
+     "category": "motorcycles",
+     "type": "bike",
+     "price": 23509
+    },
+    {
+     "model": "nemesis",
+     "name": "Nemesis",
+     "brand": "Principe",
+     "category": "motorcycles",
+     "type": "bike",
+     "price": 23612
+    },
+    {
+     "model": "fcr",
+     "name": "FCR 1000",
+     "brand": "Pegassi",
+     "category": "motorcycles",
+     "type": "bike",
+     "price": 24321
+    },
+    {
+     "model": "sanctus",
+     "name": "Sanctus",
+     "brand": "LCC",
+     "category": "motorcycles",
+     "type": "bike",
+     "price": 24351
+    },
+    {
+     "model": "ruffian",
+     "name": "Ruffian",
+     "brand": "Pegassi",
+     "category": "motorcycles",
+     "type": "bike",
+     "price": 24413
+    },
+    {
+     "model": "fcr2",
+     "name": "FCR 1000 Custom",
+     "brand": "Pegassi",
+     "category": "motorcycles",
+     "type": "bike",
+     "price": 24491
+    },
+    {
+     "model": "nightblade",
+     "name": "Nightblade",
+     "brand": "Western",
+     "category": "motorcycles",
+     "type": "bike",
+     "price": 24551
+    },
+    {
+     "model": "carbonrs",
+     "name": "Carbon RS",
+     "brand": "Nagasaki",
+     "category": "motorcycles",
+     "type": "bike",
+     "price": 24649
+    },
+    {
+     "model": "diablous",
+     "name": "Diablous",
+     "brand": "Principe",
+     "category": "motorcycles",
+     "type": "bike",
+     "price": 24745
+    },
+    {
+     "model": "diablous2",
+     "name": "Diablous Custom",
+     "brand": "Principe",
+     "category": "motorcycles",
+     "type": "bike",
+     "price": 24901
+    },
+    {
+     "model": "double",
+     "name": "Double-T",
+     "brand": "Dinka",
+     "category": "motorcycles",
+     "type": "bike",
+     "price": 25173
+    },
+    {
+     "model": "deathbike",
+     "name": "Apocalypse Deathbike",
+     "brand": "Western",
+     "category": "motorcycles",
+     "type": "bike",
+     "price": 25195
+    },
+    {
+     "model": "deathbike2",
+     "name": "Future Shock Deathbike",
+     "brand": "Western",
+     "category": "motorcycles",
+     "type": "bike",
+     "price": 25195
+    },
+    {
+     "model": "deathbike3",
+     "name": "Nightmare Deathbike",
+     "brand": "Western",
+     "category": "motorcycles",
+     "type": "bike",
+     "price": 25195
+    },
+    {
+     "model": "gargoyle",
+     "name": "Gargoyle",
+     "brand": "Western",
+     "category": "motorcycles",
+     "type": "bike",
+     "price": 25195
+    },
+    {
+     "model": "akuma",
+     "name": "Akuma",
+     "brand": "Dinka",
+     "category": "motorcycles",
+     "type": "bike",
+     "price": 25356
+    },
+    {
+     "model": "vortex",
+     "name": "Vortex",
+     "brand": "Pegassi",
+     "category": "motorcycles",
+     "type": "bike",
+     "price": 25612
+    },
+    {
+     "model": "defiler",
+     "name": "Defiler",
+     "brand": "Shitzu",
+     "category": "motorcycles",
+     "type": "bike",
+     "price": 25616
+    },
+    {
+     "model": "cliffhanger",
+     "name": "Cliffhanger",
+     "brand": "Western",
+     "category": "motorcycles",
+     "type": "bike",
+     "price": 25621
+    },
+    {
+     "model": "bati",
+     "name": "Bati 801",
+     "brand": "Pegassi",
+     "category": "motorcycles",
+     "type": "bike",
+     "price": 25838
+    },
+    {
+     "model": "bati2",
+     "name": "Bati 801RR",
+     "brand": "Pegassi",
+     "category": "motorcycles",
+     "type": "bike",
+     "price": 25838
+    },
+    {
+     "model": "thrust",
+     "name": "Thrust",
+     "brand": "Dinka",
+     "category": "motorcycles",
+     "type": "bike",
+     "price": 25865
+    },
+    {
+     "model": "hakuchou",
+     "name": "Hakuchou",
+     "brand": "Shitzu",
+     "category": "motorcycles",
+     "type": "bike",
+     "price": 25975
+    },
+    {
+     "model": "rrocket",
+     "name": "Rampant Rocket",
+     "brand": "Western",
+     "category": "motorcycles",
+     "type": "bike",
+     "price": 26257
+    },
+    {
+     "model": "reever",
+     "name": "Reever",
+     "brand": "Western",
+     "category": "motorcycles",
+     "type": "bike",
+     "price": 26269
+    },
+    {
+     "model": "stryder",
+     "name": "Stryder",
+     "brand": "Nagasaki",
+     "category": "motorcycles",
+     "type": "bike",
+     "price": 26711
+    },
+    {
+     "model": "shotaro",
+     "name": "Shotaro Concept",
+     "brand": "Nagasaki",
+     "category": "motorcycles",
+     "type": "bike",
+     "price": 26899
+    },
+    {
+     "model": "lectro",
+     "name": "Lectro",
+     "brand": "Principe",
+     "category": "motorcycles",
+     "type": "bike",
+     "price": 27225
+    },
+    {
+     "model": "shinobi",
+     "name": "Shinobi",
+     "brand": "Nagasaki",
+     "category": "motorcycles",
+     "type": "bike",
+     "price": 27244
+    },
+    {
+     "model": "hakuchou2",
+     "name": "Hakuchou Drag",
+     "brand": "Shitzu",
+     "category": "motorcycles",
+     "type": "bike",
+     "price": 27374
+    },
+    {
+     "model": "vindicator",
+     "name": "Vindicator",
+     "brand": "Dinka",
+     "category": "motorcycles",
+     "type": "bike",
+     "price": 31055
+    },
+    {
+     "model": "oppressor2",
+     "name": "Oppressor Mk II",
+     "brand": "Pegassi",
+     "category": "motorcycles",
+     "type": "bike",
+     "price": 74148
+    },
+    {
+     "model": "pizzaboy",
+     "name": "Pizza Boy",
+     "brand": "Pegassi",
+     "category": "motorcycles",
+     "type": "bike",
+     "price": 82282
+    }
+   ],
+   "suvs": [
+    {
+     "model": "vivanite",
+     "name": "Vivanite",
+     "brand": "Karin",
+     "category": "suvs",
+     "type": "automobile",
+     "price": 46334
+    },
+    {
+     "model": "iwagen",
+     "name": "I-Wagen",
+     "brand": "Obey",
+     "category": "suvs",
+     "type": "automobile",
+     "price": 55888
+    },
+    {
+     "model": "granger2",
+     "name": "Granger 3600LX",
+     "brand": "Declasse",
+     "category": "suvs",
+     "type": "automobile",
+     "price": 57057
+    },
+    {
+     "model": "mesa",
+     "name": "Mesa",
+     "brand": "Canis",
+     "category": "suvs",
+     "type": "automobile",
+     "price": 57125
+    },
+    {
+     "model": "mesa2",
+     "name": "Mesa (Snow)",
+     "brand": "Canis",
+     "category": "suvs",
+     "type": "automobile",
+     "price": 57125
+    },
+    {
+     "model": "patriot2",
+     "name": "Patriot Stretch",
+     "brand": "Mammoth",
+     "category": "suvs",
+     "type": "automobile",
+     "price": 59238
+    },
+    {
+     "model": "bjxl",
+     "name": "BeeJay XL",
+     "brand": "Karin",
+     "category": "suvs",
+     "type": "automobile",
+     "price": 60692
+    },
+    {
+     "model": "granger",
+     "name": "Granger",
+     "brand": "Declasse",
+     "category": "suvs",
+     "type": "automobile",
+     "price": 60692
+    },
+    {
+     "model": "landstalker",
+     "name": "Landstalker",
+     "brand": "Dundreary",
+     "category": "suvs",
+     "type": "automobile",
+     "price": 61393
+    },
+    {
+     "model": "seminole",
+     "name": "Seminole",
+     "brand": "Canis",
+     "category": "suvs",
+     "type": "automobile",
+     "price": 61393
+    },
+    {
+     "model": "dubsta",
+     "name": "Dubsta",
+     "brand": "Benefactor",
+     "category": "suvs",
+     "type": "automobile",
+     "price": 62617
+    },
+    {
+     "model": "dubsta2",
+     "name": "Dubsta",
+     "brand": "Benefactor",
+     "category": "suvs",
+     "type": "automobile",
+     "price": 62617
+    },
+    {
+     "model": "landstalker2",
+     "name": "Landstalker XL",
+     "brand": "Dundreary",
+     "category": "suvs",
+     "type": "automobile",
+     "price": 62744
+    },
+    {
+     "model": "squaddie",
+     "name": "Squaddie",
+     "brand": "Mammoth",
+     "category": "suvs",
+     "type": "automobile",
+     "price": 63238
+    },
+    {
+     "model": "patriot",
+     "name": "Patriot",
+     "brand": "Mammoth",
+     "category": "suvs",
+     "type": "automobile",
+     "price": 63246
+    },
+    {
+     "model": "cavalcade",
+     "name": "Cavalcade",
+     "brand": "Albany",
+     "category": "suvs",
+     "type": "automobile",
+     "price": 63694
+    },
+    {
+     "model": "cavalcade2",
+     "name": "Cavalcade",
+     "brand": "Albany",
+     "category": "suvs",
+     "type": "automobile",
+     "price": 63694
+    },
+    {
+     "model": "gresley",
+     "name": "Gresley",
+     "brand": "Bravado",
+     "category": "suvs",
+     "type": "automobile",
+     "price": 63694
+    },
+    {
+     "model": "seminole2",
+     "name": "Seminole Frontier",
+     "brand": "Canis",
+     "category": "suvs",
+     "type": "automobile",
+     "price": 64904
+    },
+    {
+     "model": "fq2",
+     "name": "FQ2",
+     "brand": "Fathom",
+     "category": "suvs",
+     "type": "automobile",
+     "price": 65442
+    },
+    {
+     "model": "habanero",
+     "name": "Habanero",
+     "brand": "Emperor",
+     "category": "suvs",
+     "type": "automobile",
+     "price": 65442
+    },
+    {
+     "model": "radi",
+     "name": "Radius",
+     "brand": "Vapid",
+     "category": "suvs",
+     "type": "automobile",
+     "price": 65522
+    },
+    {
+     "model": "baller",
+     "name": "Baller",
+     "brand": "Gallivanter",
+     "category": "suvs",
+     "type": "automobile",
+     "price": 65628
+    },
+    {
+     "model": "aleutian",
+     "name": "Aleutian",
+     "brand": "Vapid",
+     "category": "suvs",
+     "type": "automobile",
+     "price": 66169
+    },
+    {
+     "model": "serrano",
+     "name": "Serrano",
+     "brand": "Benefactor",
+     "category": "suvs",
+     "type": "automobile",
+     "price": 66517
+    },
+    {
+     "model": "rocoto",
+     "name": "Rocoto",
+     "brand": "Obey",
+     "category": "suvs",
+     "type": "automobile",
+     "price": 67755
+    },
+    {
+     "model": "cavalcade3",
+     "name": "Cavalcade XL",
+     "brand": "Albany",
+     "category": "suvs",
+     "type": "automobile",
+     "price": 67959
+    },
+    {
+     "model": "contender",
+     "name": "Contender",
+     "brand": "Vapid",
+     "category": "suvs",
+     "type": "automobile",
+     "price": 68578
+    },
+    {
+     "model": "dorado",
+     "name": "Dorado",
+     "brand": "Bravado",
+     "category": "suvs",
+     "type": "automobile",
+     "price": 69578
+    },
+    {
+     "model": "jubilee",
+     "name": "Jubilee",
+     "brand": "Enus",
+     "category": "suvs",
+     "type": "automobile",
+     "price": 71210
+    },
+    {
+     "model": "xls",
+     "name": "XLS",
+     "brand": "Benefactor",
+     "category": "suvs",
+     "type": "automobile",
+     "price": 72768
+    },
+    {
+     "model": "xls2",
+     "name": "XLS (Armored)",
+     "brand": "Benefactor",
+     "category": "suvs",
+     "type": "automobile",
+     "price": 72800
+    },
+    {
+     "model": "baller6",
+     "name": "Baller LE LWB (Armored)",
+     "brand": "Gallivanter",
+     "category": "suvs",
+     "type": "automobile",
+     "price": 74335
+    },
+    {
+     "model": "baller4",
+     "name": "Baller LE LWB",
+     "brand": "Gallivanter",
+     "category": "suvs",
+     "type": "automobile",
+     "price": 74384
+    },
+    {
+     "model": "baller5",
+     "name": " Baller LE (Armored)",
+     "brand": "Gallivanter",
+     "category": "suvs",
+     "type": "automobile",
+     "price": 74400
+    },
+    {
+     "model": "baller2",
+     "name": "Baller",
+     "brand": "Gallivanter",
+     "category": "suvs",
+     "type": "automobile",
+     "price": 74432
+    },
+    {
+     "model": "baller3",
+     "name": "Baller LE",
+     "brand": "Gallivanter",
+     "category": "suvs",
+     "type": "automobile",
+     "price": 74448
+    },
+    {
+     "model": "huntley",
+     "name": "Huntley S",
+     "brand": "Enus",
+     "category": "suvs",
+     "type": "automobile",
+     "price": 74869
+    },
+    {
+     "model": "baller7",
+     "name": "Baller ST",
+     "brand": "Gallivanter",
+     "category": "suvs",
+     "type": "automobile",
+     "price": 77229
+    },
+    {
+     "model": "rebla",
+     "name": "Rebla GTS",
+     "brand": "Übermacht",
+     "category": "suvs",
+     "type": "automobile",
+     "price": 77543
+    },
+    {
+     "model": "baller8",
+     "name": "Baller ST-D",
+     "brand": "Gallivanter",
+     "category": "suvs",
+     "type": "automobile",
+     "price": 77694
+    },
+    {
+     "model": "novak",
+     "name": "Novak",
+     "brand": "Lampadati",
+     "category": "suvs",
+     "type": "automobile",
+     "price": 78077
+    },
+    {
+     "model": "issi8",
+     "name": "Issi Rally",
+     "brand": "Weeny",
+     "category": "suvs",
+     "type": "automobile",
+     "price": 79711
+    },
+    {
+     "model": "everon3",
+     "name": "Everon RS",
+     "brand": "Karin",
+     "category": "suvs",
+     "type": "automobile",
+     "price": 79842
+    },
+    {
+     "model": "toros",
+     "name": "Toros",
+     "brand": "Pegassi",
+     "category": "suvs",
+     "type": "automobile",
+     "price": 81091
+    },
+    {
+     "model": "astron",
+     "name": "Astron",
+     "brand": "Pfister",
+     "category": "suvs",
+     "type": "automobile",
+     "price": 81719
+    },
+    {
+     "model": "castigator",
+     "name": "Castigator",
+     "brand": "Canis",
+     "category": "suvs",
+     "type": "automobile",
+     "price": 83125
+    }
+   ],
+   "sportsclassics": [
+    {
+     "model": "uranus",
+     "name": "Uranus LozSpeed",
+     "brand": "Vapid",
+     "category": "sportsclassics",
+     "type": "automobile",
+     "price": 50131
+    },
+    {
+     "model": "fagaloa",
+     "name": "Fagaloa",
+     "brand": "Vulcar",
+     "category": "sportsclassics",
+     "type": "automobile",
+     "price": 57546
+    },
+    {
+     "model": "dynasty",
+     "name": "Dynasty",
+     "brand": "Weeny",
+     "category": "sportsclassics",
+     "type": "automobile",
+     "price": 58840
+    },
+    {
+     "model": "manana",
+     "name": "Manana",
+     "brand": "Albany",
+     "category": "sportsclassics",
+     "type": "automobile",
+     "price": 60635
+    },
+    {
+     "model": "peyote",
+     "name": "Peyote",
+     "brand": "Vapid",
+     "category": "sportsclassics",
+     "type": "automobile",
+     "price": 60635
+    },
+    {
+     "model": "tornado",
+     "name": "Tornado",
+     "brand": "Declasse",
+     "category": "sportsclassics",
+     "type": "automobile",
+     "price": 60635
+    },
+    {
+     "model": "tornado2",
+     "name": "Tornado Gang",
+     "brand": "Declasse",
+     "category": "sportsclassics",
+     "type": "automobile",
+     "price": 60635
+    },
+    {
+     "model": "tornado3",
+     "name": "Tornado (Beater)",
+     "brand": "Declasse",
+     "category": "sportsclassics",
+     "type": "automobile",
+     "price": 60635
+    },
+    {
+     "model": "tornado4",
+     "name": "Tornado (Mariachi)",
+     "brand": "Declasse",
+     "category": "sportsclassics",
+     "type": "automobile",
+     "price": 60635
+    },
+    {
+     "model": "tornado5",
+     "name": "Tornado Custom",
+     "brand": "Declasse",
+     "category": "sportsclassics",
+     "type": "automobile",
+     "price": 60890
+    },
+    {
+     "model": "nebula",
+     "name": "Nebula Turbo",
+     "brand": "Vulcar",
+     "category": "sportsclassics",
+     "type": "automobile",
+     "price": 62877
+    },
+    {
+     "model": "tornado6",
+     "name": "Tornado Rat Rod",
+     "brand": "Declasse",
+     "category": "sportsclassics",
+     "type": "automobile",
+     "price": 66096
+    },
+    {
+     "model": "btype",
+     "name": "Roosevelt",
+     "brand": "Albany",
+     "category": "sportsclassics",
+     "type": "automobile",
+     "price": 69018
+    },
+    {
+     "model": "btype3",
+     "name": "Roosevelt Valor",
+     "brand": "Albany",
+     "category": "sportsclassics",
+     "type": "automobile",
+     "price": 69018
+    },
+    {
+     "model": "peyote3",
+     "name": "Peyote Custom",
+     "brand": "Vapid",
+     "category": "sportsclassics",
+     "type": "automobile",
+     "price": 70150
+    },
+    {
+     "model": "deluxo",
+     "name": "Deluxo",
+     "brand": "Imponte",
+     "category": "sportsclassics",
+     "type": "automobile",
+     "price": 70738
+    },
+    {
+     "model": "retinue",
+     "name": "Retinue",
+     "brand": "Vapid",
+     "category": "sportsclassics",
+     "type": "automobile",
+     "price": 70738
+    },
+    {
+     "model": "savestra",
+     "name": "Savestra",
+     "brand": "Annis",
+     "category": "sportsclassics",
+     "type": "automobile",
+     "price": 72617
+    },
+    {
+     "model": "z190",
+     "name": "190Z",
+     "brand": "Karin",
+     "category": "sportsclassics",
+     "type": "automobile",
+     "price": 73299
+    },
+    {
+     "model": "michelli",
+     "name": "Michelli GT",
+     "brand": "Lampadati",
+     "category": "sportsclassics",
+     "type": "automobile",
+     "price": 74020
+    },
+    {
+     "model": "cheburek",
+     "name": "Cheburek",
+     "brand": "RUNE",
+     "category": "sportsclassics",
+     "type": "automobile",
+     "price": 74166
+    },
+    {
+     "model": "zion3",
+     "name": "Zion Classic",
+     "brand": "Übermacht",
+     "category": "sportsclassics",
+     "type": "automobile",
+     "price": 74281
+    },
+    {
+     "model": "btype2",
+     "name": "Franken Stange",
+     "brand": "Albany",
+     "category": "sportsclassics",
+     "type": "automobile",
+     "price": 74624
+    },
+    {
+     "model": "stinger",
+     "name": "Stinger",
+     "brand": "Grotti",
+     "category": "sportsclassics",
+     "type": "automobile",
+     "price": 74712
+    },
+    {
+     "model": "stingergt",
+     "name": "Stinger GT",
+     "brand": "Grotti",
+     "category": "sportsclassics",
+     "type": "automobile",
+     "price": 74712
+    },
+    {
+     "model": "driftjester3",
+     "name": "Jester Classic (Drift)",
+     "brand": "Dinka",
+     "category": "sportsclassics",
+     "type": "automobile",
+     "price": 74933
+    },
+    {
+     "model": "driftnebula",
+     "name": "Nebula Turbo (Drift)",
+     "brand": "Vulcar",
+     "category": "sportsclassics",
+     "type": "automobile",
+     "price": 74933
+    },
+    {
+     "model": "retinue2",
+     "name": "Retinue MKII",
+     "brand": "Vapid",
+     "category": "sportsclassics",
+     "type": "automobile",
+     "price": 76099
+    },
+    {
+     "model": "gt500",
+     "name": "GT500",
+     "brand": "Grotti",
+     "category": "sportsclassics",
+     "type": "automobile",
+     "price": 76158
+    },
+    {
+     "model": "driftcheburek",
+     "name": "Cheburek (Drift)",
+     "brand": "RUNE",
+     "category": "sportsclassics",
+     "type": "automobile",
+     "price": 76163
+    },
+    {
+     "model": "feltzer3",
+     "name": "Stirling GT",
+     "brand": "Benefactor",
+     "category": "sportsclassics",
+     "type": "automobile",
+     "price": 76445
+    },
+    {
+     "model": "stromberg",
+     "name": "Stromberg",
+     "brand": "Ocelot",
+     "category": "sportsclassics",
+     "type": "automobile",
+     "price": 76526
+    },
+    {
+     "model": "rapidgt3",
+     "name": "Rapid GT Classic",
+     "brand": "Dewbauchee",
+     "category": "sportsclassics",
+     "type": "automobile",
+     "price": 77766
+    },
+    {
+     "model": "viseris",
+     "name": "Viseris",
+     "brand": "Lampadati",
+     "category": "sportsclassics",
+     "type": "automobile",
+     "price": 78246
+    },
+    {
+     "model": "torero",
+     "name": "Torero",
+     "brand": "Pegassi",
+     "category": "sportsclassics",
+     "type": "automobile",
+     "price": 78457
+    },
+    {
+     "model": "infernus2",
+     "name": "Infernus Classic",
+     "brand": "Pegassi",
+     "category": "sportsclassics",
+     "type": "automobile",
+     "price": 79349
+    },
+    {
+     "model": "ardent",
+     "name": "Ardent",
+     "brand": "Ocelot",
+     "category": "sportsclassics",
+     "type": "automobile",
+     "price": 79425
+    },
+    {
+     "model": "coquette5",
+     "name": "Coquette D1",
+     "brand": "Invetero",
+     "category": "sportsclassics",
+     "type": "automobile",
+     "price": 80771
+    },
+    {
+     "model": "swinger",
+     "name": "Swinger",
+     "brand": "Ocelot",
+     "category": "sportsclassics",
+     "type": "automobile",
+     "price": 81274
+    },
+    {
+     "model": "mamba",
+     "name": "Mamba",
+     "brand": "Declasse",
+     "category": "sportsclassics",
+     "type": "automobile",
+     "price": 81429
+    },
+    {
+     "model": "coquette2",
+     "name": "Coquette Classic",
+     "brand": "Invetero",
+     "category": "sportsclassics",
+     "type": "automobile",
+     "price": 81755
+    },
+    {
+     "model": "turismo2",
+     "name": "Turismo Classic",
+     "brand": "Grotti",
+     "category": "sportsclassics",
+     "type": "automobile",
+     "price": 81835
+    },
+    {
+     "model": "pigalle",
+     "name": "Pigalle",
+     "brand": "Lampadati",
+     "category": "sportsclassics",
+     "type": "automobile",
+     "price": 82282
+    },
+    {
+     "model": "jb700",
+     "name": "JB 700",
+     "brand": "Dewbauchee",
+     "category": "sportsclassics",
+     "type": "automobile",
+     "price": 82400
+    },
+    {
+     "model": "jb7002",
+     "name": "JB 700W",
+     "brand": "Dewbauchee",
+     "category": "sportsclassics",
+     "type": "automobile",
+     "price": 82400
+    },
+    {
+     "model": "monroe",
+     "name": "Monroe",
+     "brand": "Pegassi",
+     "category": "sportsclassics",
+     "type": "automobile",
+     "price": 82544
+    },
+    {
+     "model": "cheetah2",
+     "name": "Cheetah Classic",
+     "brand": "Grotti",
+     "category": "sportsclassics",
+     "type": "automobile",
+     "price": 82724
+    },
+    {
+     "model": "casco",
+     "name": "Casco",
+     "brand": "Lampadati",
+     "category": "sportsclassics",
+     "type": "automobile",
+     "price": 83125
+    },
+    {
+     "model": "ztype",
+     "name": "Z-Type",
+     "brand": "Truffade",
+     "category": "sportsclassics",
+     "type": "automobile",
+     "price": 84821
+    },
+    {
+     "model": "toreador",
+     "name": "Toreador",
+     "brand": "Pegassi",
+     "category": "sportsclassics",
+     "type": "automobile",
+     "price": 235089
+    },
+    {
+     "model": "cheetah3",
+     "name": "Cheetah 3",
+     "brand": "Grotti",
+     "category": "sportsclassics",
+     "type": "automobile",
+     "price": 459381
+    }
+   ],
+   "compacts": [
+    {
+     "model": "dilettante",
+     "name": "Dilettante",
+     "brand": "Karin",
+     "category": "compacts",
+     "type": "automobile",
+     "price": 40298
+    },
+    {
+     "model": "dilettante2",
+     "name": "Dilettante (Security)",
+     "brand": "Karin",
+     "category": "compacts",
+     "type": "automobile",
+     "price": 40298
+    },
+    {
+     "model": "weevil",
+     "name": "Weevil",
+     "brand": "BF",
+     "category": "compacts",
+     "type": "automobile",
+     "price": 53983
+    },
+    {
+     "model": "brioso2",
+     "name": "Brioso 300",
+     "brand": "Grotti",
+     "category": "compacts",
+     "type": "automobile",
+     "price": 54291
+    },
+    {
+     "model": "brioso3",
+     "name": "Brioso 300 Widebody",
+     "brand": "Grotti",
+     "category": "compacts",
+     "type": "automobile",
+     "price": 61333
+    },
+    {
+     "model": "asbo",
+     "name": "Asbo",
+     "brand": "Maxwell",
+     "category": "compacts",
+     "type": "automobile",
+     "price": 63020
+    },
+    {
+     "model": "issi3",
+     "name": "Issi Classic",
+     "brand": "Weeny",
+     "category": "compacts",
+     "type": "automobile",
+     "price": 65593
+    },
+    {
+     "model": "prairie",
+     "name": "Prairie",
+     "brand": "Bollokan",
+     "category": "compacts",
+     "type": "automobile",
+     "price": 67519
+    },
+    {
+     "model": "panto",
+     "name": "Panto",
+     "brand": "Benefactor",
+     "category": "compacts",
+     "type": "automobile",
+     "price": 67549
+    },
+    {
+     "model": "rhapsody",
+     "name": "Rhapsody",
+     "brand": "Declasse",
+     "category": "compacts",
+     "type": "automobile",
+     "price": 68425
+    },
+    {
+     "model": "brioso",
+     "name": "Brioso R/A",
+     "brand": "Grotti",
+     "category": "compacts",
+     "type": "automobile",
+     "price": 69113
+    },
+    {
+     "model": "club",
+     "name": "Club",
+     "brand": "BF",
+     "category": "compacts",
+     "type": "automobile",
+     "price": 69335
+    },
+    {
+     "model": "blista",
+     "name": "Blista",
+     "brand": "Dinka",
+     "category": "compacts",
+     "type": "automobile",
+     "price": 69371
+    },
+    {
+     "model": "issi2",
+     "name": "Issi",
+     "brand": "Weeny",
+     "category": "compacts",
+     "type": "automobile",
+     "price": 69371
+    },
+    {
+     "model": "kanjo",
+     "name": "Blista Kanjo",
+     "brand": "Dinka",
+     "category": "compacts",
+     "type": "automobile",
+     "price": 73478
+    },
+    {
+     "model": "issi4",
+     "name": "Apocalypse Issi",
+     "brand": "Weeny",
+     "category": "compacts",
+     "type": "automobile",
+     "price": 74235
+    },
+    {
+     "model": "issi5",
+     "name": "Future Shock Issi",
+     "brand": "Weeny",
+     "category": "compacts",
+     "type": "automobile",
+     "price": 74235
+    },
+    {
+     "model": "issi6",
+     "name": "Nightmare Issi",
+     "brand": "Weeny",
+     "category": "compacts",
+     "type": "automobile",
+     "price": 74235
+    }
+   ],
+   "sedans": [
+    {
+     "model": "drifthardy",
+     "name": "Drift Hardy",
+     "brand": "Annis",
+     "category": "sedans",
+     "type": "automobile",
+     "price": 22789
+    },
+    {
+     "model": "hardy",
+     "name": "Hardy",
+     "brand": "Annis",
+     "category": "sedans",
+     "type": "automobile",
+     "price": 22789
+    },
+    {
+     "model": "vorschlaghammer",
+     "name": "Vorschlaghammer",
+     "brand": "Benefactor",
+     "category": "sedans",
+     "type": "automobile",
+     "price": 25612
+    },
+    {
+     "model": "minimus",
+     "name": "Minimus",
+     "brand": "Annis",
+     "category": "sedans",
+     "type": "automobile",
+     "price": 38763
+    },
+    {
+     "model": "surge",
+     "name": "Surge",
+     "brand": "Cheval",
+     "category": "sedans",
+     "type": "automobile",
+     "price": 40605
+    },
+    {
+     "model": "regina",
+     "name": "Regina",
+     "brand": "Dundreary",
+     "category": "sedans",
+     "type": "automobile",
+     "price": 50997
+    },
+    {
+     "model": "romero",
+     "name": "Romero Hearse",
+     "brand": "Chariot",
+     "category": "sedans",
+     "type": "automobile",
+     "price": 53105
+    },
+    {
+     "model": "ingot",
+     "name": "Ingot",
+     "brand": "Vulcar",
+     "category": "sedans",
+     "type": "automobile",
+     "price": 53344
+    },
+    {
+     "model": "emperor",
+     "name": "Emperor",
+     "brand": "Albany",
+     "category": "sedans",
+     "type": "automobile",
+     "price": 56110
+    },
+    {
+     "model": "emperor2",
+     "name": "Emperor (Beater)",
+     "brand": "Albany",
+     "category": "sedans",
+     "type": "automobile",
+     "price": 56110
+    },
+    {
+     "model": "emperor3",
+     "name": "Emperor (Snow)",
+     "brand": "Albany",
+     "category": "sedans",
+     "type": "automobile",
+     "price": 56110
+    },
+    {
+     "model": "schafter6",
+     "name": "Schafter LWB (Armored)",
+     "brand": "Benefactor",
+     "category": "sedans",
+     "type": "automobile",
+     "price": 62476
+    },
+    {
+     "model": "stafford",
+     "name": "Stafford",
+     "brand": "Enus",
+     "category": "sedans",
+     "type": "automobile",
+     "price": 62882
+    },
+    {
+     "model": "asea",
+     "name": "Asea",
+     "brand": "Declasse",
+     "category": "sedans",
+     "type": "automobile",
+     "price": 63374
+    },
+    {
+     "model": "asea2",
+     "name": "Asea (Snow)",
+     "brand": "Declasse",
+     "category": "sedans",
+     "type": "automobile",
+     "price": 63374
+    },
+    {
+     "model": "premier",
+     "name": "Premier",
+     "brand": "Declasse",
+     "category": "sedans",
+     "type": "automobile",
+     "price": 63694
+    },
+    {
+     "model": "stretch",
+     "name": "Stretch",
+     "brand": "Dundreary",
+     "category": "sedans",
+     "type": "automobile",
+     "price": 63950
+    },
+    {
+     "model": "asterope",
+     "name": "Asterope",
+     "brand": "Karin",
+     "category": "sedans",
+     "type": "automobile",
+     "price": 64174
+    },
+    {
+     "model": "primo",
+     "name": "Primo",
+     "brand": "Albany",
+     "category": "sedans",
+     "type": "automobile",
+     "price": 64174
+    },
+    {
+     "model": "primo2",
+     "name": "Primo Custom",
+     "brand": "Albany",
+     "category": "sedans",
+     "type": "automobile",
+     "price": 64174
+    },
+    {
+     "model": "tailgater",
+     "name": "Tailgater",
+     "brand": "Obey",
+     "category": "sedans",
+     "type": "automobile",
+     "price": 64174
+    },
+    {
+     "model": "warrener",
+     "name": "Warrener",
+     "brand": "Vulcar",
+     "category": "sedans",
+     "type": "automobile",
+     "price": 64367
+    },
+    {
+     "model": "limo2",
+     "name": "Turreted Limo",
+     "brand": "Benefactor",
+     "category": "sedans",
+     "type": "automobile",
+     "price": 65584
+    },
+    {
+     "model": "intruder",
+     "name": "Intruder",
+     "brand": "Karin",
+     "category": "sedans",
+     "type": "automobile",
+     "price": 65682
+    },
+    {
+     "model": "schafter2",
+     "name": "Schafter",
+     "brand": "Benefactor",
+     "category": "sedans",
+     "type": "automobile",
+     "price": 65682
+    },
+    {
+     "model": "glendale",
+     "name": "Glendale",
+     "brand": "Benefactor",
+     "category": "sedans",
+     "type": "automobile",
+     "price": 65948
+    },
+    {
+     "model": "glendale2",
+     "name": "Glendale Custom",
+     "brand": "Benefactor",
+     "category": "sedans",
+     "type": "automobile",
+     "price": 66105
+    },
+    {
+     "model": "fugitive",
+     "name": "Fugitive",
+     "brand": "Cheval",
+     "category": "sedans",
+     "type": "automobile",
+     "price": 67317
+    },
+    {
+     "model": "warrener2",
+     "name": "Warrener HKR",
+     "brand": "Vulcar",
+     "category": "sedans",
+     "type": "automobile",
+     "price": 67374
+    },
+    {
+     "model": "stratum",
+     "name": "Stratum",
+     "brand": "Zirconium",
+     "category": "sedans",
+     "type": "automobile",
+     "price": 68894
+    },
+    {
+     "model": "driftvorschlag",
+     "name": "Vorschlaghammer (Drift)",
+     "brand": "Declasse",
+     "category": "sedans",
+     "type": "automobile",
+     "price": 70884
+    },
+    {
+     "model": "stanier",
+     "name": "Stanier",
+     "brand": "Vapid",
+     "category": "sedans",
+     "type": "automobile",
+     "price": 71053
+    },
+    {
+     "model": "washington",
+     "name": "Washington",
+     "brand": "Albany",
+     "category": "sedans",
+     "type": "automobile",
+     "price": 71053
+    },
+    {
+     "model": "asterope2",
+     "name": "Asterope GZ",
+     "brand": "Karin",
+     "category": "sedans",
+     "type": "automobile",
+     "price": 71306
+    },
+    {
+     "model": "deity",
+     "name": "Deity",
+     "brand": "Enus",
+     "category": "sedans",
+     "type": "automobile",
+     "price": 73581
+    },
+    {
+     "model": "cognoscenti2",
+     "name": "Cognoscenti (Armored)",
+     "brand": "Enus",
+     "category": "sedans",
+     "type": "automobile",
+     "price": 74605
+    },
+    {
+     "model": "superd",
+     "name": "Super Diamond",
+     "brand": "Enus",
+     "category": "sedans",
+     "type": "automobile",
+     "price": 74712
+    },
+    {
+     "model": "cog552",
+     "name": "Cognoscenti 55 (Armored)",
+     "brand": "Enus",
+     "category": "sedans",
+     "type": "automobile",
+     "price": 75535
+    },
+    {
+     "model": "cognoscenti",
+     "name": "Cognoscenti",
+     "brand": "Enus",
+     "category": "sedans",
+     "type": "automobile",
+     "price": 75535
+    },
+    {
+     "model": "cog55",
+     "name": "Cognoscenti 55",
+     "brand": "Enus",
+     "category": "sedans",
+     "type": "automobile",
+     "price": 76441
+    },
+    {
+     "model": "tailgater2",
+     "name": "Tailgater S",
+     "brand": "Obey",
+     "category": "sedans",
+     "type": "automobile",
+     "price": 77411
+    },
+    {
+     "model": "rhinehart",
+     "name": "Rhinehart",
+     "brand": "Übermacht",
+     "category": "sedans",
+     "type": "automobile",
+     "price": 78276
+    },
+    {
+     "model": "impaler5",
+     "name": "Impaler SZ",
+     "brand": "Declasse",
+     "category": "sedans",
+     "type": "automobile",
+     "price": 78875
+    },
+    {
+     "model": "cinquemila",
+     "name": "Cinquemila",
+     "brand": "Lampadati",
+     "category": "sedans",
+     "type": "automobile",
+     "price": 80476
+    },
+    {
+     "model": "schafter5",
+     "name": "Schafter V12 (Armored)",
+     "brand": "Benefactor",
+     "category": "sedans",
+     "type": "automobile",
+     "price": 83008
+    },
+    {
+     "model": "chavosv6",
+     "name": "Chavos V6",
+     "brand": "Dewbauchee",
+     "category": "sedans",
+     "type": "automobile",
+     "price": 86582
+    },
+    {
+     "model": "driftchavosv6",
+     "name": "Drift Chavos V6",
+     "brand": "Dinka",
+     "category": "sedans",
+     "type": "automobile",
+     "price": 86582
+    }
+   ],
+   "offroad": [
+    {
+     "model": "blazer2",
+     "name": "Blazer Lifeguard",
+     "brand": "Nagasaki",
+     "category": "offroad",
+     "type": "automobile",
+     "price": 15679
+    },
+    {
+     "model": "verus",
+     "name": "Verus",
+     "brand": "Dinka",
+     "category": "offroad",
+     "type": "automobile",
+     "price": 16526
+    },
+    {
+     "model": "blazer",
+     "name": "Blazer",
+     "brand": "Nagasaki",
+     "category": "offroad",
+     "type": "automobile",
+     "price": 21457
+    },
+    {
+     "model": "blazer3",
+     "name": "Hot Rod Blazer",
+     "brand": "Nagasaki",
+     "category": "offroad",
+     "type": "automobile",
+     "price": 21457
+    },
+    {
+     "model": "blazer4",
+     "name": "Blazer Sport",
+     "brand": "Nagasaki",
+     "category": "offroad",
+     "type": "automobile",
+     "price": 24453
+    },
+    {
+     "model": "blazer5",
+     "name": "Blazer Aqua",
+     "brand": "Nagasaki",
+     "category": "offroad",
+     "type": "automobile",
+     "price": 25680
+    },
+    {
+     "model": "rcbandito",
+     "name": "RC Bandito",
+     "brand": "",
+     "category": "offroad",
+     "type": "automobile",
+     "price": 44530
+    },
+    {
+     "model": "driftl352",
+     "name": "Drift Walton L35",
+     "brand": "Declasse",
+     "category": "offroad",
+     "type": "automobile",
+     "price": 44723
+    },
+    {
+     "model": "l352",
+     "name": "L35 Stock",
+     "brand": "Declasse",
+     "category": "offroad",
+     "type": "automobile",
+     "price": 44723
+    },
+    {
+     "model": "winky",
+     "name": "Winky",
+     "brand": "Vapid",
+     "category": "offroad",
+     "type": "automobile",
+     "price": 49504
+    },
+    {
+     "model": "zhaba",
+     "name": "Zhaba",
+     "brand": "RUNE",
+     "category": "offroad",
+     "type": "automobile",
+     "price": 50950
+    },
+    {
+     "model": "menacer",
+     "name": "Menacer",
+     "brand": "HVY",
+     "category": "offroad",
+     "type": "automobile",
+     "price": 53078
+    },
+    {
+     "model": "dloader",
+     "name": "Duneloader",
+     "brand": "Bravado",
+     "category": "offroad",
+     "type": "automobile",
+     "price": 55231
+    },
+    {
+     "model": "mesa3",
+     "name": "Mesa (Merryweather)",
+     "brand": "Canis",
+     "category": "offroad",
+     "type": "automobile",
+     "price": 57125
+    },
+    {
+     "model": "marshall",
+     "name": "Marshall",
+     "brand": "Cheval",
+     "category": "offroad",
+     "type": "automobile",
+     "price": 57276
+    },
+    {
+     "model": "monster",
+     "name": "Liberator",
+     "brand": "Vapid",
+     "category": "offroad",
+     "type": "automobile",
+     "price": 57276
+    },
+    {
+     "model": "rancherxl",
+     "name": "Rancher XL",
+     "brand": "Declasse",
+     "category": "offroad",
+     "type": "automobile",
+     "price": 58720
+    },
+    {
+     "model": "rancherxl2",
+     "name": "Rancher XL (Snow)",
+     "brand": "Declasse",
+     "category": "offroad",
+     "type": "automobile",
+     "price": 58720
+    },
+    {
+     "model": "insurgent",
+     "name": "Insurgent Pick-Up",
+     "brand": "HVY",
+     "category": "offroad",
+     "type": "automobile",
+     "price": 59045
+    },
+    {
+     "model": "insurgent2",
+     "name": "Insurgent",
+     "brand": "HVY",
+     "category": "offroad",
+     "type": "automobile",
+     "price": 59045
+    },
+    {
+     "model": "insurgent3",
+     "name": "Insurgent Pick-Up Custom",
+     "brand": "HVY",
+     "category": "offroad",
+     "type": "automobile",
+     "price": 59045
+    },
+    {
+     "model": "kalahari",
+     "name": "Kalahari",
+     "brand": "Canis",
+     "category": "offroad",
+     "type": "automobile",
+     "price": 59046
+    },
+    {
+     "model": "bodhi2",
+     "name": "Bodhi",
+     "brand": "Canis",
+     "category": "offroad",
+     "type": "automobile",
+     "price": 59867
+    },
+    {
+     "model": "freecrawler",
+     "name": "Freecrawler",
+     "brand": "Canis",
+     "category": "offroad",
+     "type": "automobile",
+     "price": 60453
+    },
+    {
+     "model": "outlaw",
+     "name": "Outlaw",
+     "brand": "Nagasaki",
+     "category": "offroad",
+     "type": "automobile",
+     "price": 60938
+    },
+    {
+     "model": "nightshark",
+     "name": "Nightshark",
+     "brand": "HVY",
+     "category": "offroad",
+     "type": "automobile",
+     "price": 61604
+    },
+    {
+     "model": "patriot3",
+     "name": "Mil-Spec Patriot",
+     "brand": "Mammoth",
+     "category": "offroad",
+     "type": "automobile",
+     "price": 62402
+    },
+    {
+     "model": "dune2",
+     "name": "Space Docker",
+     "brand": "BF",
+     "category": "offroad",
+     "type": "automobile",
+     "price": 63085
+    },
+    {
+     "model": "caracara",
+     "name": "Caracara",
+     "brand": "Vapid",
+     "category": "offroad",
+     "type": "automobile",
+     "price": 63685
+    },
+    {
+     "model": "bruiser",
+     "name": "Apocalypse Bruiser",
+     "brand": "Benefactor",
+     "category": "offroad",
+     "type": "automobile",
+     "price": 63687
+    },
+    {
+     "model": "bruiser2",
+     "name": "Future Shock Bruiser",
+     "brand": "Benefactor",
+     "category": "offroad",
+     "type": "automobile",
+     "price": 63687
+    },
+    {
+     "model": "bruiser3",
+     "name": "Nightmare Bruiser",
+     "brand": "Benefactor",
+     "category": "offroad",
+     "type": "automobile",
+     "price": 63687
+    },
+    {
+     "model": "rebel",
+     "name": "Rusty Rebel",
+     "brand": "Karin",
+     "category": "offroad",
+     "type": "automobile",
+     "price": 63694
+    },
+    {
+     "model": "rebel2",
+     "name": "Rebel",
+     "brand": "Karin",
+     "category": "offroad",
+     "type": "automobile",
+     "price": 63694
+    },
+    {
+     "model": "sandking",
+     "name": "Sandking",
+     "brand": "Vapid",
+     "category": "offroad",
+     "type": "automobile",
+     "price": 63694
+    },
+    {
+     "model": "sandking2",
+     "name": "Sandking SWB",
+     "brand": "Vapid",
+     "category": "offroad",
+     "type": "automobile",
+     "price": 63694
+    },
+    {
+     "model": "technical",
+     "name": "Technical",
+     "brand": "Karin",
+     "category": "offroad",
+     "type": "automobile",
+     "price": 63854
+    },
+    {
+     "model": "technical3",
+     "name": "Technical Custom",
+     "brand": "Karin",
+     "category": "offroad",
+     "type": "automobile",
+     "price": 63854
+    },
+    {
+     "model": "monster3",
+     "name": "Apocalypse Sasquatch",
+     "brand": "Bravado",
+     "category": "offroad",
+     "type": "automobile",
+     "price": 64365
+    },
+    {
+     "model": "monster4",
+     "name": "Future Shock Sasquatch",
+     "brand": "Bravado",
+     "category": "offroad",
+     "type": "automobile",
+     "price": 64365
+    },
+    {
+     "model": "monster5",
+     "name": "Nightmare Sasquatch",
+     "brand": "Bravado",
+     "category": "offroad",
+     "type": "automobile",
+     "price": 64365
+    },
+    {
+     "model": "l35",
+     "name": "Walton L35",
+     "brand": "Declasse",
+     "category": "offroad",
+     "type": "automobile",
+     "price": 64429
+    },
+    {
+     "model": "dubsta3",
+     "name": "Dubsta 6x6",
+     "brand": "Benefactor",
+     "category": "offroad",
+     "type": "automobile",
+     "price": 64556
+    },
+    {
+     "model": "dune",
+     "name": "Dune Buggy",
+     "brand": "BF",
+     "category": "offroad",
+     "type": "automobile",
+     "price": 64617
+    },
+    {
+     "model": "dune3",
+     "name": "Dune FAV",
+     "brand": "BF",
+     "category": "offroad",
+     "type": "automobile",
+     "price": 64617
+    },
+    {
+     "model": "caracara2",
+     "name": "Caracara 4x4",
+     "brand": "Vapid",
+     "category": "offroad",
+     "type": "automobile",
+     "price": 64784
+    },
+    {
+     "model": "technical2",
+     "name": "Technical Aqua",
+     "brand": "Karin",
+     "category": "offroad",
+     "type": "automobile",
+     "price": 65910
+    },
+    {
+     "model": "hellion",
+     "name": "Hellion",
+     "brand": "Annis",
+     "category": "offroad",
+     "type": "automobile",
+     "price": 66525
+    },
+    {
+     "model": "riata",
+     "name": "Riata",
+     "brand": "Vapid",
+     "category": "offroad",
+     "type": "automobile",
+     "price": 66525
+    },
+    {
+     "model": "yosemite3",
+     "name": "Yosemite Rancher",
+     "brand": "Declasse",
+     "category": "offroad",
+     "type": "automobile",
+     "price": 66896
+    },
+    {
+     "model": "yosemite1500",
+     "name": "Yosemite 1500",
+     "brand": "Declasse",
+     "category": "offroad",
+     "type": "automobile",
+     "price": 66896
+    },
+    {
+     "model": "boor",
+     "name": "Boor",
+     "brand": "Karin",
+     "category": "offroad",
+     "type": "automobile",
+     "price": 67237
+    },
+    {
+     "model": "kamacho",
+     "name": "Kamacho",
+     "brand": "Canis",
+     "category": "offroad",
+     "type": "automobile",
+     "price": 67315
+    },
+    {
+     "model": "bfinjection",
+     "name": "Injection",
+     "brand": "BF",
+     "category": "offroad",
+     "type": "automobile",
+     "price": 67551
+    },
+    {
+     "model": "monstrociti",
+     "name": "MonstroCiti",
+     "brand": "Maibatsu",
+     "category": "offroad",
+     "type": "automobile",
+     "price": 68406
+    },
+    {
+     "model": "everon",
+     "name": "Everon",
+     "brand": "Karin",
+     "category": "offroad",
+     "type": "automobile",
+     "price": 68803
+    },
+    {
+     "model": "brutus",
+     "name": "Apocalypse Brutus",
+     "brand": "Declasse",
+     "category": "offroad",
+     "type": "automobile",
+     "price": 70122
+    },
+    {
+     "model": "brutus2",
+     "name": "Future Shock Brutus",
+     "brand": "Declasse",
+     "category": "offroad",
+     "type": "automobile",
+     "price": 70122
+    },
+    {
+     "model": "brutus3",
+     "name": "Nightmare Brutus",
+     "brand": "Declasse",
+     "category": "offroad",
+     "type": "automobile",
+     "price": 70122
+    },
+    {
+     "model": "terminus",
+     "name": "Terminus",
+     "brand": "Canis",
+     "category": "offroad",
+     "type": "automobile",
+     "price": 71490
+    },
+    {
+     "model": "trophytruck",
+     "name": "Trophy Truck",
+     "brand": "Vapid",
+     "category": "offroad",
+     "type": "automobile",
+     "price": 71559
+    },
+    {
+     "model": "trophytruck2",
+     "name": "Desert Raid",
+     "brand": "Vapid",
+     "category": "offroad",
+     "type": "automobile",
+     "price": 71559
+    },
+    {
+     "model": "ratel",
+     "name": "Ratel",
+     "brand": "Vapid",
+     "category": "offroad",
+     "type": "automobile",
+     "price": 72415
+    },
+    {
+     "model": "draugur",
+     "name": "Draugur",
+     "brand": "Declasse",
+     "category": "offroad",
+     "type": "automobile",
+     "price": 72622
+    },
+    {
+     "model": "bifta",
+     "name": "Bifta",
+     "brand": "BF",
+     "category": "offroad",
+     "type": "automobile",
+     "price": 74872
+    },
+    {
+     "model": "vagrant",
+     "name": "Vagrant",
+     "brand": "Maxwell",
+     "category": "offroad",
+     "type": "automobile",
+     "price": 77576
+    },
+    {
+     "model": "brawler",
+     "name": "Brawler",
+     "brand": "Coil",
+     "category": "offroad",
+     "type": "automobile",
+     "price": 77578
+    },
+    {
+     "model": "dune5",
+     "name": "Ramp Buggy",
+     "brand": "BF",
+     "category": "offroad",
+     "type": "automobile",
+     "price": 81376
+    },
+    {
+     "model": "dune4",
+     "name": "Ramp Buggy",
+     "brand": "BF",
+     "category": "offroad",
+     "type": "automobile",
+     "price": 82003
+    }
+   ],
+   "vans": [
+    {
+     "model": "surfer",
+     "name": "Surfer",
+     "brand": "BF",
+     "category": "vans",
+     "type": "automobile",
+     "price": 34505
+    },
+    {
+     "model": "surfer2",
+     "name": "Surfer",
+     "brand": "BF",
+     "category": "vans",
+     "type": "automobile",
+     "price": 34505
+    },
+    {
+     "model": "surfer3",
+     "name": "Surfer Custom",
+     "brand": "BF",
+     "category": "vans",
+     "type": "automobile",
+     "price": 34505
+    },
+    {
+     "model": "boxville",
+     "name": "Boxville (LSDWP)",
+     "brand": "Brute",
+     "category": "vans",
+     "type": "automobile",
+     "price": 47273
+    },
+    {
+     "model": "boxville2",
+     "name": "Boxville (Go Postal)",
+     "brand": "Brute",
+     "category": "vans",
+     "type": "automobile",
+     "price": 47273
+    },
+    {
+     "model": "boxville3",
+     "name": "Boxville (Humane Labs)",
+     "brand": "Brute",
+     "category": "vans",
+     "type": "automobile",
+     "price": 47273
+    },
+    {
+     "model": "boxville4",
+     "name": "Boxville (Post Op)",
+     "brand": "Brute",
+     "category": "vans",
+     "type": "automobile",
+     "price": 47273
+    },
+    {
+     "model": "boxville6",
+     "name": "Boxville (LSDS)",
+     "brand": "Brute",
+     "category": "vans",
+     "type": "automobile",
+     "price": 47273
+    },
+    {
+     "model": "taco",
+     "name": "Taco Van",
+     "brand": "Brute",
+     "category": "vans",
+     "type": "automobile",
+     "price": 47273
+    },
+    {
+     "model": "camper",
+     "name": "Camper",
+     "brand": "Brute",
+     "category": "vans",
+     "type": "automobile",
+     "price": 50131
+    },
+    {
+     "model": "journey",
+     "name": "Journey",
+     "brand": "Zirconium",
+     "category": "vans",
+     "type": "automobile",
+     "price": 52886
+    },
+    {
+     "model": "journey2",
+     "name": "Journey II",
+     "brand": "Zirconium",
+     "category": "vans",
+     "type": "automobile",
+     "price": 52886
+    },
+    {
+     "model": "youga",
+     "name": "Youga",
+     "brand": "Bravado",
+     "category": "vans",
+     "type": "automobile",
+     "price": 55630
+    },
+    {
+     "model": "youga2",
+     "name": "Youga Classic",
+     "brand": "Bravado",
+     "category": "vans",
+     "type": "automobile",
+     "price": 55630
+    },
+    {
+     "model": "minivan",
+     "name": "Minivan",
+     "brand": "Vapid",
+     "category": "vans",
+     "type": "automobile",
+     "price": 58370
+    },
+    {
+     "model": "minivan2",
+     "name": "Minivan Custom",
+     "brand": "Vapid",
+     "category": "vans",
+     "type": "automobile",
+     "price": 58450
+    },
+    {
+     "model": "bobcatxl",
+     "name": "Bobcat XL Open",
+     "brand": "Vapid",
+     "category": "vans",
+     "type": "automobile",
+     "price": 58720
+    },
+    {
+     "model": "rumpo3",
+     "name": "Rumpo Custom",
+     "brand": "Bravado",
+     "category": "vans",
+     "type": "automobile",
+     "price": 59206
+    },
+    {
+     "model": "youga4",
+     "name": "Youga Custom",
+     "brand": "Vapid",
+     "category": "vans",
+     "type": "automobile",
+     "price": 60252
+    },
+    {
+     "model": "youga5",
+     "name": "Youga Custom",
+     "brand": "Vapid",
+     "category": "vans",
+     "type": "automobile",
+     "price": 60252
+    },
+    {
+     "model": "burrito",
+     "name": "Burrito (LSDWP)",
+     "brand": "Declasse",
+     "category": "vans",
+     "type": "automobile",
+     "price": 61195
+    },
+    {
+     "model": "burrito2",
+     "name": "Bugstars Burrito",
+     "brand": "Declasse",
+     "category": "vans",
+     "type": "automobile",
+     "price": 61195
+    },
+    {
+     "model": "burrito3",
+     "name": "Burrito",
+     "brand": "Declasse",
+     "category": "vans",
+     "type": "automobile",
+     "price": 61195
+    },
+    {
+     "model": "burrito4",
+     "name": "Burrito (McGill-Olsen)",
+     "brand": "Declasse",
+     "category": "vans",
+     "type": "automobile",
+     "price": 61195
+    },
+    {
+     "model": "burrito5",
+     "name": "Burrito (Snow)",
+     "brand": "Declasse",
+     "category": "vans",
+     "type": "automobile",
+     "price": 61195
+    },
+    {
+     "model": "gburrito",
+     "name": "Gang Burrito (Lost MC)",
+     "brand": "Declasse",
+     "category": "vans",
+     "type": "automobile",
+     "price": 61195
+    },
+    {
+     "model": "pony",
+     "name": "Pony",
+     "brand": "Brute",
+     "category": "vans",
+     "type": "automobile",
+     "price": 61195
+    },
+    {
+     "model": "pony2",
+     "name": "Pony (Smoke on the Water)",
+     "brand": "Brute",
+     "category": "vans",
+     "type": "automobile",
+     "price": 61195
+    },
+    {
+     "model": "bison",
+     "name": "Bison",
+     "brand": "Bravado",
+     "category": "vans",
+     "type": "automobile",
+     "price": 62297
+    },
+    {
+     "model": "bison2",
+     "name": "Bison (McGill-Olsen)",
+     "brand": "Bravado",
+     "category": "vans",
+     "type": "automobile",
+     "price": 62297
+    },
+    {
+     "model": "bison3",
+     "name": "Bison (The Mighty Bush)",
+     "brand": "Bravado",
+     "category": "vans",
+     "type": "automobile",
+     "price": 62297
+    },
+    {
+     "model": "youga3",
+     "name": "Youga Classic 4x4",
+     "brand": "Bravado",
+     "category": "vans",
+     "type": "automobile",
+     "price": 63150
+    },
+    {
+     "model": "paradise",
+     "name": "Paradise",
+     "brand": "Bravado",
+     "category": "vans",
+     "type": "automobile",
+     "price": 63310
+    },
+    {
+     "model": "rumpo",
+     "name": "Rumpo",
+     "brand": "Bravado",
+     "category": "vans",
+     "type": "automobile",
+     "price": 63310
+    },
+    {
+     "model": "rumpo2",
+     "name": "Rumpo (Deludamol)",
+     "brand": "Bravado",
+     "category": "vans",
+     "type": "automobile",
+     "price": 63310
+    },
+    {
+     "model": "boxville5",
+     "name": "Armored Boxville",
+     "brand": "Brute",
+     "category": "vans",
+     "type": "automobile",
+     "price": 65341
+    },
+    {
+     "model": "speedo",
+     "name": "Speedo",
+     "brand": "Vapid",
+     "category": "vans",
+     "type": "automobile",
+     "price": 66002
+    },
+    {
+     "model": "speedo2",
+     "name": "Clown Van",
+     "brand": "Vapid",
+     "category": "vans",
+     "type": "automobile",
+     "price": 66002
+    },
+    {
+     "model": "gburrito2",
+     "name": "Burrito Custom",
+     "brand": "Declasse",
+     "category": "vans",
+     "type": "automobile",
+     "price": 66162
+    },
+    {
+     "model": "speedo4",
+     "name": "Speedo Custom (Nightclub)",
+     "brand": "Vapid",
+     "category": "vans",
+     "type": "automobile",
+     "price": 70653
+    },
+    {
+     "model": "speedo5",
+     "name": "Speedo Custom",
+     "brand": "Vapid",
+     "category": "vans",
+     "type": "automobile",
+     "price": 70653
+    }
+   ],
+   "muscle": [
+    {
+     "model": "tampa4",
+     "name": "Tampa GT",
+     "brand": "Declasse",
+     "category": "muscle",
+     "type": "automobile",
+     "price": 48666
+    },
+    {
+     "model": "clique2",
+     "name": "Clique Wagon",
+     "brand": "Vapid",
+     "category": "muscle",
+     "type": "automobile",
+     "price": 54902
+    },
+    {
+     "model": "chino",
+     "name": "Chino",
+     "brand": "Vapid",
+     "category": "muscle",
+     "type": "automobile",
+     "price": 58651
+    },
+    {
+     "model": "faction3",
+     "name": "Faction Custom Donk",
+     "brand": "Willard",
+     "category": "muscle",
+     "type": "automobile",
+     "price": 58971
+    },
+    {
+     "model": "chino2",
+     "name": "Chino Custom",
+     "brand": "Vapid",
+     "category": "muscle",
+     "type": "automobile",
+     "price": 60394
+    },
+    {
+     "model": "virgo",
+     "name": "Virgo",
+     "brand": "Albany",
+     "category": "muscle",
+     "type": "automobile",
+     "price": 60554
+    },
+    {
+     "model": "virgo3",
+     "name": "Virgo Custom Classic",
+     "brand": "Dundreary",
+     "category": "muscle",
+     "type": "automobile",
+     "price": 60554
+    },
+    {
+     "model": "virgo2",
+     "name": "Virgo Custom Classic",
+     "brand": "Dundreary",
+     "category": "muscle",
+     "type": "automobile",
+     "price": 60758
+    },
+    {
+     "model": "broadway",
+     "name": "Broadway",
+     "brand": "Classique",
+     "category": "muscle",
+     "type": "automobile",
+     "price": 61702
+    },
+    {
+     "model": "ratloader",
+     "name": "Rat-Loader",
+     "brand": "Bravado",
+     "category": "muscle",
+     "type": "automobile",
+     "price": 61779
+    },
+    {
+     "model": "voodoo2",
+     "name": "Voodoo",
+     "brand": "Declasse",
+     "category": "muscle",
+     "type": "automobile",
+     "price": 63070
+    },
+    {
+     "model": "brigham",
+     "name": "Brigham",
+     "brand": "Albany",
+     "category": "muscle",
+     "type": "automobile",
+     "price": 63825
+    },
+    {
+     "model": "ratloader2",
+     "name": "Rat-Truck",
+     "brand": "Bravado",
+     "category": "muscle",
+     "type": "automobile",
+     "price": 65562
+    },
+    {
+     "model": "voodoo",
+     "name": "Voodoo Custom",
+     "brand": "Declasse",
+     "category": "muscle",
+     "type": "automobile",
+     "price": 66162
+    },
+    {
+     "model": "slamvan",
+     "name": "Slam Van",
+     "brand": "Vapid",
+     "category": "muscle",
+     "type": "automobile",
+     "price": 66207
+    },
+    {
+     "model": "eudora",
+     "name": "Eudora",
+     "brand": "Willard",
+     "category": "muscle",
+     "type": "automobile",
+     "price": 66819
+    },
+    {
+     "model": "nightshade",
+     "name": "Nightshade",
+     "brand": "Imponte",
+     "category": "muscle",
+     "type": "automobile",
+     "price": 67005
+    },
+    {
+     "model": "slamvan3",
+     "name": "Slam Van Custom",
+     "brand": "Vapid",
+     "category": "muscle",
+     "type": "automobile",
+     "price": 67005
+    },
+    {
+     "model": "slamvan2",
+     "name": "Lost Slam Van",
+     "brand": "Vapid",
+     "category": "muscle",
+     "type": "automobile",
+     "price": 67165
+    },
+    {
+     "model": "picador",
+     "name": "Picador",
+     "brand": "Cheval",
+     "category": "muscle",
+     "type": "automobile",
+     "price": 67839
+    },
+    {
+     "model": "slamvan4",
+     "name": "Apocalypse Slamvan",
+     "brand": "Vapid",
+     "category": "muscle",
+     "type": "automobile",
+     "price": 68476
+    },
+    {
+     "model": "slamvan5",
+     "name": "Future Shock Slamvan",
+     "brand": "Vapid",
+     "category": "muscle",
+     "type": "automobile",
+     "price": 68476
+    },
+    {
+     "model": "slamvan6",
+     "name": "Nightmare Slamvan",
+     "brand": "Vapid",
+     "category": "muscle",
+     "type": "automobile",
+     "price": 68476
+    },
+    {
+     "model": "moonbeam",
+     "name": "Moonbeam",
+     "brand": "Declasse",
+     "category": "muscle",
+     "type": "automobile",
+     "price": 68586
+    },
+    {
+     "model": "moonbeam2",
+     "name": "Moonbeam Custom",
+     "brand": "Declasse",
+     "category": "muscle",
+     "type": "automobile",
+     "price": 68586
+    },
+    {
+     "model": "hermes",
+     "name": "Hermes",
+     "brand": "Albany",
+     "category": "muscle",
+     "type": "automobile",
+     "price": 68776
+    },
+    {
+     "model": "yosemite",
+     "name": "Yosemite",
+     "brand": "Declasse",
+     "category": "muscle",
+     "type": "automobile",
+     "price": 69338
+    },
+    {
+     "model": "deviant",
+     "name": "Deviant",
+     "brand": "Schyster",
+     "category": "muscle",
+     "type": "automobile",
+     "price": 70267
+    },
+    {
+     "model": "tampa",
+     "name": "Tampa",
+     "brand": "Declasse",
+     "category": "muscle",
+     "type": "automobile",
+     "price": 70442
+    },
+    {
+     "model": "blade",
+     "name": "Blade",
+     "brand": "Vapid",
+     "category": "muscle",
+     "type": "automobile",
+     "price": 70520
+    },
+    {
+     "model": "driftyosemite",
+     "name": "Drift Yosemite",
+     "brand": "Declasse",
+     "category": "muscle",
+     "type": "automobile",
+     "price": 70884
+    },
+    {
+     "model": "manana2",
+     "name": "Manana Custom",
+     "brand": "Albany",
+     "category": "muscle",
+     "type": "automobile",
+     "price": 71516
+    },
+    {
+     "model": "tahoma",
+     "name": "Tahoma Coupe",
+     "brand": "Declasse",
+     "category": "muscle",
+     "type": "automobile",
+     "price": 72249
+    },
+    {
+     "model": "hustler",
+     "name": "Hustler",
+     "brand": "Vapid",
+     "category": "muscle",
+     "type": "automobile",
+     "price": 72900
+    },
+    {
+     "model": "gauntlet3",
+     "name": "Gauntlet Classic",
+     "brand": "Bravado",
+     "category": "muscle",
+     "type": "automobile",
+     "price": 73572
+    },
+    {
+     "model": "yosemite2",
+     "name": "Yosemite Drift",
+     "brand": "Declasse",
+     "category": "muscle",
+     "type": "automobile",
+     "price": 74171
+    },
+    {
+     "model": "hotknife",
+     "name": "Hotknife",
+     "brand": "Vapid",
+     "category": "muscle",
+     "type": "automobile",
+     "price": 74328
+    },
+    {
+     "model": "impaler",
+     "name": "Impaler",
+     "brand": "Declasse",
+     "category": "muscle",
+     "type": "automobile",
+     "price": 74584
+    },
+    {
+     "model": "coquette3",
+     "name": "Coquette BlackFin",
+     "brand": "Invetero",
+     "category": "muscle",
+     "type": "automobile",
+     "price": 74621
+    },
+    {
+     "model": "tulip2",
+     "name": "Tulip M-100",
+     "brand": "Declasse",
+     "category": "muscle",
+     "type": "automobile",
+     "price": 74746
+    },
+    {
+     "model": "stalion",
+     "name": "Stallion",
+     "brand": "Declasse",
+     "category": "muscle",
+     "type": "automobile",
+     "price": 74781
+    },
+    {
+     "model": "tampa3",
+     "name": "Weaponized Tampa",
+     "brand": "Declasse",
+     "category": "muscle",
+     "type": "automobile",
+     "price": 75751
+    },
+    {
+     "model": "vamos",
+     "name": "Vamos",
+     "brand": "Declasse",
+     "category": "muscle",
+     "type": "automobile",
+     "price": 75751
+    },
+    {
+     "model": "ellie",
+     "name": "Ellie",
+     "brand": "Vapid",
+     "category": "muscle",
+     "type": "automobile",
+     "price": 75782
+    },
+    {
+     "model": "dominator8",
+     "name": "Dominator GTT",
+     "brand": "Vapid",
+     "category": "muscle",
+     "type": "automobile",
+     "price": 76296
+    },
+    {
+     "model": "clique",
+     "name": "Clique",
+     "brand": "Vapid",
+     "category": "muscle",
+     "type": "automobile",
+     "price": 76525
+    },
+    {
+     "model": "buccaneer",
+     "name": "Buccaneer",
+     "brand": "Albany",
+     "category": "muscle",
+     "type": "automobile",
+     "price": 76634
+    },
+    {
+     "model": "buccaneer2",
+     "name": "Buccaneer Custom",
+     "brand": "Albany",
+     "category": "muscle",
+     "type": "automobile",
+     "price": 76634
+    },
+    {
+     "model": "faction",
+     "name": "Faction",
+     "brand": "Willard",
+     "category": "muscle",
+     "type": "automobile",
+     "price": 77450
+    },
+    {
+     "model": "faction2",
+     "name": "Faction Rider",
+     "brand": "Willard",
+     "category": "muscle",
+     "type": "automobile",
+     "price": 77450
+    },
+    {
+     "model": "sabregt",
+     "name": "Sabre Turbo",
+     "brand": "Declasse",
+     "category": "muscle",
+     "type": "automobile",
+     "price": 77450
+    },
+    {
+     "model": "vigero",
+     "name": "Vigero",
+     "brand": "Declasse",
+     "category": "muscle",
+     "type": "automobile",
+     "price": 77482
+    },
+    {
+     "model": "sabregt2",
+     "name": "Sabre GT",
+     "brand": "Declasse",
+     "category": "muscle",
+     "type": "automobile",
+     "price": 77489
+    },
+    {
+     "model": "dukes2",
+     "name": "Dukes Nightrider",
+     "brand": "Imponte",
+     "category": "muscle",
+     "type": "automobile",
+     "price": 77611
+    },
+    {
+     "model": "dominator3",
+     "name": "Dominator GTX",
+     "brand": "Vapid",
+     "category": "muscle",
+     "type": "automobile",
+     "price": 77862
+    },
+    {
+     "model": "peyote2",
+     "name": "Peyote Gasser",
+     "brand": "Vapid",
+     "category": "muscle",
+     "type": "automobile",
+     "price": 77875
+    },
+    {
+     "model": "impaler6",
+     "name": "Impaler LX",
+     "brand": "Declasse",
+     "category": "muscle",
+     "type": "automobile",
+     "price": 77917
+    },
+    {
+     "model": "gauntlet",
+     "name": "Gauntlet",
+     "brand": "Bravado",
+     "category": "muscle",
+     "type": "automobile",
+     "price": 78237
+    },
+    {
+     "model": "lurcher",
+     "name": "Lurcher",
+     "brand": "Albany",
+     "category": "muscle",
+     "type": "automobile",
+     "price": 78245
+    },
+    {
+     "model": "phoenix",
+     "name": "Phoenix",
+     "brand": "Imponte",
+     "category": "muscle",
+     "type": "automobile",
+     "price": 78433
+    },
+    {
+     "model": "dukes3",
+     "name": "Beater Dukes",
+     "brand": "Imponte",
+     "category": "muscle",
+     "type": "automobile",
+     "price": 78577
+    },
+    {
+     "model": "greenwood",
+     "name": "Greenwood",
+     "brand": "Bravado",
+     "category": "muscle",
+     "type": "automobile",
+     "price": 78897
+    },
+    {
+     "model": "stalion2",
+     "name": "Stallion Burgershot",
+     "brand": "Declasse",
+     "category": "muscle",
+     "type": "automobile",
+     "price": 79092
+    },
+    {
+     "model": "dukes",
+     "name": "Dukes",
+     "brand": "Imponte",
+     "category": "muscle",
+     "type": "automobile",
+     "price": 79383
+    },
+    {
+     "model": "ruiner",
+     "name": "Ruiner",
+     "brand": "Imponte",
+     "category": "muscle",
+     "type": "automobile",
+     "price": 80117
+    },
+    {
+     "model": "ruiner3",
+     "name": "Ruiner (Wrecked)",
+     "brand": "Imponte",
+     "category": "muscle",
+     "type": "automobile",
+     "price": 80117
+    },
+    {
+     "model": "dominator",
+     "name": "Dominator",
+     "brand": "Vapid",
+     "category": "muscle",
+     "type": "automobile",
+     "price": 80149
+    },
+    {
+     "model": "gauntlet5",
+     "name": "Gauntlet Classic Custom",
+     "brand": "Bravado",
+     "category": "muscle",
+     "type": "automobile",
+     "price": 80250
+    },
+    {
+     "model": "imperator",
+     "name": "Apocalypse Imperator",
+     "brand": "Vapid",
+     "category": "muscle",
+     "type": "automobile",
+     "price": 80296
+    },
+    {
+     "model": "imperator2",
+     "name": "Future Shock Imperator",
+     "brand": "Vapid",
+     "category": "muscle",
+     "type": "automobile",
+     "price": 80296
+    },
+    {
+     "model": "imperator3",
+     "name": "Nightmare Imperator",
+     "brand": "Vapid",
+     "category": "muscle",
+     "type": "automobile",
+     "price": 80296
+    },
+    {
+     "model": "ruiner4",
+     "name": "Ruiner ZZ-8",
+     "brand": "Imponte",
+     "category": "muscle",
+     "type": "automobile",
+     "price": 80458
+    },
+    {
+     "model": "gauntlet2",
+     "name": "Redwood Gauntlet",
+     "brand": "Bravado",
+     "category": "muscle",
+     "type": "automobile",
+     "price": 80506
+    },
+    {
+     "model": "buffalo4",
+     "name": "Buffalo STX",
+     "brand": "Bravado",
+     "category": "muscle",
+     "type": "automobile",
+     "price": 80516
+    },
+    {
+     "model": "dominator4",
+     "name": "Dominator Arena",
+     "brand": "Vapid",
+     "category": "muscle",
+     "type": "automobile",
+     "price": 80565
+    },
+    {
+     "model": "dominator5",
+     "name": "Future Shock Dominator",
+     "brand": "Vapid",
+     "category": "muscle",
+     "type": "automobile",
+     "price": 80565
+    },
+    {
+     "model": "dominator6",
+     "name": "Nightmare Dominator",
+     "brand": "Vapid",
+     "category": "muscle",
+     "type": "automobile",
+     "price": 80565
+    },
+    {
+     "model": "tulip",
+     "name": "Tulip",
+     "brand": "Declasse",
+     "category": "muscle",
+     "type": "automobile",
+     "price": 80611
+    },
+    {
+     "model": "gauntlet4",
+     "name": "Gauntlet Hellfire",
+     "brand": "Bravado",
+     "category": "muscle",
+     "type": "automobile",
+     "price": 81048
+    },
+    {
+     "model": "driftgauntlet4",
+     "name": "Drift Gauntlet Hellfire",
+     "brand": "Bravado",
+     "category": "muscle",
+     "type": "automobile",
+     "price": 81048
+    },
+    {
+     "model": "dominator2",
+     "name": "Pisswasser Dominator",
+     "brand": "Vapid",
+     "category": "muscle",
+     "type": "automobile",
+     "price": 81440
+    },
+    {
+     "model": "driftdominator10",
+     "name": "Drift Dominator FX",
+     "brand": "Vapid",
+     "category": "muscle",
+     "type": "automobile",
+     "price": 81768
+    },
+    {
+     "model": "vigero3",
+     "name": "Vigero ZX Convertible",
+     "brand": "Declasse",
+     "category": "muscle",
+     "type": "automobile",
+     "price": 81866
+    },
+    {
+     "model": "vigero2",
+     "name": "Vigero ZX",
+     "brand": "Declasse",
+     "category": "muscle",
+     "type": "automobile",
+     "price": 82143
+    },
+    {
+     "model": "dominator9",
+     "name": "Dominator GT",
+     "brand": "Vapid",
+     "category": "muscle",
+     "type": "automobile",
+     "price": 82702
+    },
+    {
+     "model": "dominator10",
+     "name": "Dominator FX",
+     "brand": "Vapid",
+     "category": "muscle",
+     "type": "automobile",
+     "price": 82702
+    },
+    {
+     "model": "dominator7",
+     "name": "Dominator ASP",
+     "brand": "Vapid",
+     "category": "muscle",
+     "type": "automobile",
+     "price": 83320
+    },
+    {
+     "model": "buffalo5",
+     "name": "Buffalo EVX",
+     "brand": "Bravado",
+     "category": "muscle",
+     "type": "automobile",
+     "price": 83332
+    },
+    {
+     "model": "weevil2",
+     "name": "Weevil Custom",
+     "brand": "BF",
+     "category": "muscle",
+     "type": "automobile",
+     "price": 83800
+    },
+    {
+     "model": "impaler2",
+     "name": "Apocalypse Impaler",
+     "brand": "Declasse",
+     "category": "muscle",
+     "type": "automobile",
+     "price": 84076
+    },
+    {
+     "model": "impaler3",
+     "name": "Future Shock Impaler",
+     "brand": "Declasse",
+     "category": "muscle",
+     "type": "automobile",
+     "price": 84076
+    },
+    {
+     "model": "impaler4",
+     "name": "Nightmare Impaler",
+     "brand": "Declasse",
+     "category": "muscle",
+     "type": "automobile",
+     "price": 84076
+    },
+    {
+     "model": "ruiner2",
+     "name": "Ruiner 2000",
+     "brand": "Imponte",
+     "category": "muscle",
+     "type": "automobile",
+     "price": 186491
+    }
+   ],
+   "cycles": [
+    {
+     "model": "inductor",
+     "name": "Inductor",
+     "brand": "Coil",
+     "category": "cycles",
+     "type": "bike",
+     "price": 2607
+    },
+    {
+     "model": "inductor2",
+     "name": "Junk Energy Inductor",
+     "brand": "Coil",
+     "category": "cycles",
+     "type": "bike",
+     "price": 2607
+    },
+    {
+     "model": "bmx",
+     "name": "BMX",
+     "brand": "PED",
+     "category": "cycles",
+     "type": "bike",
+     "price": 2735
+    },
+    {
+     "model": "cruiser",
+     "name": "Cruiser",
+     "brand": "PED",
+     "category": "cycles",
+     "type": "bike",
+     "price": 2751
+    },
+    {
+     "model": "scorcher",
+     "name": "Scorcher",
+     "brand": "PED",
+     "category": "cycles",
+     "type": "bike",
+     "price": 2782
+    },
+    {
+     "model": "fixter",
+     "name": "Fixter",
+     "brand": "",
+     "category": "cycles",
+     "type": "bike",
+     "price": 2835
+    },
+    {
+     "model": "tribike",
+     "name": "Whippet Race Bike",
+     "brand": "",
+     "category": "cycles",
+     "type": "bike",
+     "price": 3622
+    },
+    {
+     "model": "tribike2",
+     "name": "Endurex Race Bike",
+     "brand": "",
+     "category": "cycles",
+     "type": "bike",
+     "price": 3622
+    },
+    {
+     "model": "tribike3",
+     "name": "Tri-Cycles Race Bike",
+     "brand": "",
+     "category": "cycles",
+     "type": "bike",
+     "price": 3622
+    }
+   ],
+   "coupes": [
+    {
+     "model": "postlude",
+     "name": "Postlude",
+     "brand": "Dinka",
+     "category": "coupes",
+     "type": "automobile",
+     "price": 69683
+    },
+    {
+     "model": "felon2",
+     "name": "Felon GT",
+     "brand": "Lampadati",
+     "category": "coupes",
+     "type": "automobile",
+     "price": 72343
+    },
+    {
+     "model": "kanjosj",
+     "name": "Kanjo SJ",
+     "brand": "Dinka",
+     "category": "coupes",
+     "type": "automobile",
+     "price": 73789
+    },
+    {
+     "model": "cogcabrio",
+     "name": "Cognoscenti Cabrio",
+     "brand": "Enus",
+     "category": "coupes",
+     "type": "automobile",
+     "price": 74712
+    },
+    {
+     "model": "driftfr36",
+     "name": "FR36 (Drift)",
+     "brand": "Fathom",
+     "category": "coupes",
+     "type": "automobile",
+     "price": 75045
+    },
+    {
+     "model": "oracle",
+     "name": "Oracle XS",
+     "brand": "Übermacht",
+     "category": "coupes",
+     "type": "automobile",
+     "price": 75192
+    },
+    {
+     "model": "sentinel",
+     "name": "Sentinel",
+     "brand": "Übermacht",
+     "category": "coupes",
+     "type": "automobile",
+     "price": 75585
+    },
+    {
+     "model": "sentinel2",
+     "name": " Sentinel XS",
+     "brand": "Übermacht",
+     "category": "coupes",
+     "type": "automobile",
+     "price": 75585
+    },
+    {
+     "model": "felon",
+     "name": "Felon",
+     "brand": "Lampadati",
+     "category": "coupes",
+     "type": "automobile",
+     "price": 76088
+    },
+    {
+     "model": "jackal",
+     "name": "Jackal",
+     "brand": "Ocelot",
+     "category": "coupes",
+     "type": "automobile",
+     "price": 76324
+    },
+    {
+     "model": "oracle2",
+     "name": "Oracle",
+     "brand": "Übermacht",
+     "category": "coupes",
+     "type": "automobile",
+     "price": 76907
+    },
+    {
+     "model": "zion",
+     "name": "Zion",
+     "brand": "Übermacht",
+     "category": "coupes",
+     "type": "automobile",
+     "price": 77752
+    },
+    {
+     "model": "zion2",
+     "name": "Zion Cabrio",
+     "brand": "Übermacht",
+     "category": "coupes",
+     "type": "automobile",
+     "price": 77752
+    },
+    {
+     "model": "previon",
+     "name": "Previon",
+     "brand": "Karin",
+     "category": "coupes",
+     "type": "automobile",
+     "price": 78200
+    },
+    {
+     "model": "fr36",
+     "name": "FR36",
+     "brand": "Fathom",
+     "category": "coupes",
+     "type": "automobile",
+     "price": 78667
+    },
+    {
+     "model": "windsor2",
+     "name": "Windsor Drop",
+     "brand": "Enus",
+     "category": "coupes",
+     "type": "automobile",
+     "price": 79252
+    },
+    {
+     "model": "windsor",
+     "name": "Windsor",
+     "brand": "Enus",
+     "category": "coupes",
+     "type": "automobile",
+     "price": 79422
+    },
+    {
+     "model": "f620",
+     "name": "F620",
+     "brand": "Ocelot",
+     "category": "coupes",
+     "type": "automobile",
+     "price": 79607
+    },
+    {
+     "model": "exemplar",
+     "name": "Exemplar",
+     "brand": "Dewbauchee",
+     "category": "coupes",
+     "type": "automobile",
+     "price": 79891
+    }
+   ]
+  },
+  "air": {
+   "planes": [
+    {
+     "model": "dodo",
+     "name": "Dodo",
+     "brand": "Mammoth",
+     "category": "planes",
+     "type": "plane",
+     "price": 1321065
+    },
+    {
+     "model": "nimbus",
+     "name": "Nimbus",
+     "brand": "Buckingham",
+     "category": "planes",
+     "type": "plane",
+     "price": 1896246
+    },
+    {
+     "model": "alphaz1",
+     "name": "Alpha-Z1",
+     "brand": "Buckingham",
+     "category": "planes",
+     "type": "plane",
+     "price": 2587839
+    },
+    {
+     "model": "howard",
+     "name": "Howard NX-25",
+     "brand": "Buckingham",
+     "category": "planes",
+     "type": "plane",
+     "price": 2587839
+    }
+   ],
+   "helicopters": [
+    {
+     "model": "conada",
+     "name": "Conada",
+     "brand": "Buckingham",
+     "category": "helicopters",
+     "type": "heli",
+     "price": 6931736
+    }
+   ]
+  },
+  "boats": {
+   "boats": [
+    {
+     "model": "tug",
+     "name": "Tug",
+     "brand": "Buckingham",
+     "category": "boats",
+     "type": "boat",
+     "price": 67079
+    },
+    {
+     "model": "marquis",
+     "name": "Marquis",
+     "brand": "Dinka",
+     "category": "boats",
+     "type": "boat",
+     "price": 94680
+    },
+    {
+     "model": "squalo",
+     "name": "Squalo",
+     "brand": "Shitzu",
+     "category": "boats",
+     "type": "boat",
+     "price": 362680
+    },
+    {
+     "model": "suntrap",
+     "name": "Suntrap",
+     "brand": "Shitzu",
+     "category": "boats",
+     "type": "boat",
+     "price": 362680
+    },
+    {
+     "model": "tropic",
+     "name": "Tropic",
+     "brand": "Shitzu",
+     "category": "boats",
+     "type": "boat",
+     "price": 390680
+    },
+    {
+     "model": "tropic2",
+     "name": "Tropic (Yacht)",
+     "brand": "Shitzu",
+     "category": "boats",
+     "type": "boat",
+     "price": 390680
+    },
+    {
+     "model": "predator",
+     "name": "Police Predator",
+     "brand": "",
+     "category": "boats",
+     "type": "boat",
+     "price": 412680
+    },
+    {
+     "model": "seashark",
+     "name": "Seashark",
+     "brand": "Speedophile",
+     "category": "boats",
+     "type": "boat",
+     "price": 414680
+    },
+    {
+     "model": "seashark2",
+     "name": "Seashark (Lifeguard)",
+     "brand": "Speedophile",
+     "category": "boats",
+     "type": "boat",
+     "price": 414680
+    },
+    {
+     "model": "seashark3",
+     "name": "Seashark (Yacht)",
+     "brand": "Speedophile",
+     "category": "boats",
+     "type": "boat",
+     "price": 414680
+    },
+    {
+     "model": "patrolboat",
+     "name": "Kurtz 31 Patrol Boat",
+     "brand": "",
+     "category": "boats",
+     "type": "boat",
+     "price": 430680
+    },
+    {
+     "model": "dinghy",
+     "name": "Dinghy",
+     "brand": "Nagasaki",
+     "category": "boats",
+     "type": "boat",
+     "price": 446680
+    },
+    {
+     "model": "dinghy2",
+     "name": "Dinghy",
+     "brand": "Nagasaki",
+     "category": "boats",
+     "type": "boat",
+     "price": 446680
+    },
+    {
+     "model": "dinghy3",
+     "name": "Dinghy (Heist)",
+     "brand": "Nagasaki",
+     "category": "boats",
+     "type": "boat",
+     "price": 446680
+    },
+    {
+     "model": "dinghy4",
+     "name": "Dinghy (Yacht)",
+     "brand": "Nagasaki",
+     "category": "boats",
+     "type": "boat",
+     "price": 446680
+    },
+    {
+     "model": "dinghy5",
+     "name": "Weaponized Dinghy",
+     "brand": "Nagasaki",
+     "category": "boats",
+     "type": "boat",
+     "price": 446680
+    },
+    {
+     "model": "speeder",
+     "name": "Speeder (Yacht)",
+     "brand": "Pegassi",
+     "category": "boats",
+     "type": "boat",
+     "price": 462680
+    },
+    {
+     "model": "speeder2",
+     "name": "Speeder",
+     "brand": "Pegassi",
+     "category": "boats",
+     "type": "boat",
+     "price": 462680
+    },
+    {
+     "model": "jetmax",
+     "name": "Jetmax",
+     "brand": "Shitzu",
+     "category": "boats",
+     "type": "boat",
+     "price": 478680
+    },
+    {
+     "model": "toro",
+     "name": "Toro",
+     "brand": "Lampadati",
+     "category": "boats",
+     "type": "boat",
+     "price": 486680
+    },
+    {
+     "model": "toro2",
+     "name": "Toro (Yacht)",
+     "brand": "Lampadati",
+     "category": "boats",
+     "type": "boat",
+     "price": 486680
+    },
+    {
+     "model": "longfin",
+     "name": "Longfin",
+     "brand": "Shitzu",
+     "category": "boats",
+     "type": "boat",
+     "price": 500680
+    },
+    {
+     "model": "kosatka",
+     "name": "Kosatka",
+     "brand": "RUNE",
+     "category": "boats",
+     "type": "submarine",
+     "price": 624016
+    },
+    {
+     "model": "submersible",
+     "name": "Submersible",
+     "brand": "",
+     "category": "boats",
+     "type": "submarine",
+     "price": 718616
+    },
+    {
+     "model": "submersible2",
+     "name": "Kraken",
+     "brand": "Kraken",
+     "category": "boats",
+     "type": "submarine",
+     "price": 787416
+    },
+    {
+     "model": "avisa",
+     "name": "Avisa",
+     "brand": "Kraken",
+     "category": "boats",
+     "type": "boat",
+     "price": 804616
+    }
+   ]
+  }
+ },
+ "notSold": [
+  "commercial",
+  "emergency",
+  "industrial",
+  "military",
+  "openwheel",
+  "service",
+  "sports",
+  "super",
+  "trains",
+  "utility"
+ ]
+}

@@ -22,7 +22,7 @@
 -->
 <script>document.documentElement.classList.add('js')</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;700;800&family=Old+Standard+TT:ital,wght@0,400;0,700;1,400&family=UnifrakturMaguntia&display=swap" rel="stylesheet">
 <style>
   :root {
     --black: #07040d; --bg: #0c0716; --bg2: #120a22; --card: #180e2c; --line: #2c1d4d;
@@ -310,17 +310,29 @@
   .replay progress { width: 100%; height: 4px; accent-color: var(--pink); }
   .map-box .pulse { fill: none; stroke: #fff; stroke-width: 5; animation: pulse 1.2s ease-out forwards; }
   @keyframes pulse { from { r: 12; opacity: 1; } to { r: 80; opacity: 0; } }
-  .gazette { margin-top: 26px; background: #f3ead8; color: #1b1410; border-radius: 6px; padding: 26px 28px 30px; box-shadow: 0 30px 80px rgba(0, 0, 0, .45); transform: rotate(-.4deg); font-family: Georgia, 'Times New Roman', serif; }
-  .gazette .mast { display: flex; justify-content: space-between; align-items: end; gap: 12px; border-bottom: 3px double #1b1410; padding-bottom: 8px; flex-wrap: wrap; }
-  .gazette .mast b { font-family: Anton, Impact, sans-serif; font-weight: 400; font-size: clamp(1.8rem, 4vw, 2.8rem); letter-spacing: .02em; text-transform: uppercase; }
-  .gazette .mast span { font-size: .85rem; font-style: italic; }
-  .gazette h3 { font-family: Georgia, serif; font-size: clamp(1.6rem, 3.6vw, 2.4rem); line-height: 1.1; margin: 16px 0 6px; text-transform: none; letter-spacing: 0; }
-  .gazette .lead { font-style: italic; margin: 0 0 14px; color: #4a3b30; }
-  .gazette .cols { columns: 3 220px; column-gap: 26px; column-rule: 1px solid rgba(27, 20, 16, .25); }
+  /* La Gazette : papier journal d'époque, grisé (grain, bords jaunis, pli central, encre noire) */
+  .gazette { position: relative; margin-top: 26px; color: #1c1c1a; border-radius: 2px; padding: 22px 30px 26px; transform: rotate(-.4deg);
+    font-family: 'Old Standard TT', Georgia, 'Times New Roman', serif; filter: grayscale(.85) contrast(1.02);
+    background:
+      linear-gradient(90deg, transparent 49.6%, rgba(0, 0, 0, .07) 50%, rgba(255, 255, 255, .25) 50.4%, transparent 51%),
+      radial-gradient(ellipse at 15% 10%, rgba(120, 100, 60, .18), transparent 45%),
+      radial-gradient(ellipse at 90% 85%, rgba(110, 95, 60, .22), transparent 50%),
+      radial-gradient(ellipse at center, transparent 55%, rgba(60, 55, 45, .35) 100%),
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .28 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"),
+      #dcd8cc;
+    box-shadow: 0 30px 80px rgba(0, 0, 0, .5), inset 0 0 0 1px rgba(0, 0, 0, .15); }
+  .gazette .topline { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; font-size: .72rem; letter-spacing: .14em; text-transform: uppercase;
+    border-bottom: 1px solid #1c1c1a; padding-bottom: 5px; }
+  .gazette .mast { text-align: center; border-bottom: 4px double #1c1c1a; padding: 6px 0 8px; }
+  .gazette .mast b { display: block; font-family: 'UnifrakturMaguntia', 'Old Standard TT', serif; font-weight: 400; font-size: clamp(2.1rem, 6vw, 3.8rem); line-height: 1.05; letter-spacing: .01em; }
+  .gazette .mast span { display: block; font-size: .8rem; font-style: italic; letter-spacing: .08em; margin-top: 2px; }
+  .gazette h3 { font-family: 'Old Standard TT', Georgia, serif; font-weight: 700; font-size: clamp(1.7rem, 4vw, 2.7rem); line-height: 1.05; margin: 14px 0 8px; text-align: center; text-transform: uppercase; letter-spacing: .01em; }
+  .gazette .lead { font-style: italic; margin: 0 auto 16px; max-width: 760px; text-align: center; color: #3a3a36; border-bottom: 1px solid rgba(28, 28, 26, .5); padding-bottom: 12px; }
+  .gazette .cols { columns: 3 220px; column-gap: 26px; column-rule: 1px solid rgba(28, 28, 26, .35); text-align: justify; hyphens: auto; }
   .gazette .cols .gz-col { break-inside: avoid; margin-bottom: 14px; padding: 0; }
-  .gazette .cols h4 { font-family: Anton, Impact, sans-serif; font-weight: 400; text-transform: uppercase; letter-spacing: .04em; font-size: 1.05rem; margin: 0 0 6px; color: #9b1d3a; }
+  .gazette .cols h4 { font-family: 'Old Standard TT', Georgia, serif; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; font-size: .9rem; margin: 0 0 6px; color: #1c1c1a; border-bottom: 1px solid #1c1c1a; padding-bottom: 3px; }
   .gazette .cols p { margin: 0 0 6px; font-size: .95rem; line-height: 1.45; }
-  .gazette .foot { margin-top: 10px; font-size: .78rem; color: #6d5a4c; text-align: right; }
+  .gazette .foot { margin-top: 10px; border-top: 1px solid #1c1c1a; padding-top: 6px; font-size: .74rem; letter-spacing: .08em; text-transform: uppercase; color: #3a3a36; text-align: center; }
   .news { display: grid; gap: 14px; position: relative; padding-left: 26px; }
   .news::before { content: ''; position: absolute; left: 6px; top: 8px; bottom: 8px; width: 2px; background: linear-gradient(var(--pink), var(--violet), var(--cyan)); box-shadow: var(--glow-pink); }
   .news article { position: relative; display: flex; gap: 18px; align-items: baseline; padding: 18px 20px; background: var(--card); border: 1px solid var(--line); border-radius: 14px; transition: transform .35s var(--ease), border-color .3s; }
@@ -752,14 +764,16 @@
     <span class="kicker">Journal des mises à jour</span>
     <h2 class="sweep">Nouveautés</h2>
     <div class="news">
-      <article class="rv classified" title="Survole pour décrypter"><time>V4</time><div><strong>Classé confidentiel</strong><span class="new lock">🔒 BIENTÔT</span>
+      <article class="rv classified" title="Survole pour décrypter"><time>V5</time><div><strong>Classé confidentiel</strong><span class="new lock">🔒 BIENTÔT</span>
         <p><span class="redact">Convois officiels</span> à travers l'État, <span class="redact">la Saison 1</span>, et <span class="redact">les élections du maire</span>… Survole pour décrypter.</p></div></article>
-      <article class="rv" style="--d:1"><time>V11</time><div><strong>Bêta ouverte : la ville se raconte</strong><span class="new">NEW</span>
-        <ul><li><b>Lieux de mémoire</b> : les grands moments laissent une plaque, et les passants s'en souviennent.</li>
-          <li><b>Timelapse</b> : la carte du site rejoue les dernières 24 h de la ville en 30 secondes.</li>
-          <li><b>Précédemment à Los Santos</b> : l'écran de chargement te raconte ce que tu as manqué, comme une série.</li>
-          <li><b>Serveur officiel</b> : en ligne 24 h/24, sauvegardé, surveillé, redémarrage annoncé chaque matin.</li></ul>
-        <div class="chips"><span>Lieux de mémoire</span><span>La ville en timelapse</span><span>Précédemment à Los Santos</span><span>Bêta ouverte</span></div></div></article>
+      <article class="rv" style="--d:1"><time>V4</time><div><strong>Bêta ouverte : la ville se raconte</strong><span class="new">NEW</span>
+        <ul><li><b>Les jurés de Los Santos</b> : pour un vrai procès, 5 citoyens tirés au sort votent le verdict depuis leur téléphone.</li>
+          <li><b>La Gazette du dimanche</b> : chaque dimanche à 20 h, la semaine de la ville en une page, ici, sur Discord et en jeu.</li>
+          <li><b>Black-out de quartier</b> : un transformateur saboté, et tout un quartier plonge dans le noir. Caméras comprises.</li>
+          <li><b>Lieux de mémoire</b> : les grands moments laissent une plaque, et les passants s'en souviennent.</li>
+          <li><b>Précédemment à Los Santos</b> : l'écran de chargement t'accueille par ton nom et te raconte ce que tu as manqué.</li>
+          <li><b>La carte en direct</b> : la vraie carte de Los Santos, et les dernières 24 h rejouées en 30 secondes.</li></ul>
+        <div class="chips"><span>Les jurés</span><span>La Gazette</span><span>Black-out</span><span>Lieux de mémoire</span><span>Précédemment à Los Santos</span><span>La ville en timelapse</span><span>Bêta ouverte</span></div></div></article>
       <article class="rv" style="--d:1"><time>V3</time><div><strong>Une ville qui vit sans toi</strong>
         <ul><li><b>Le téléphone te guide</b> : « Que faire ? » montre ce qui se passe et t'y emmène en un clic.</li>
           <li><b>La ville bouge seule</b> : quartiers qui montent ou coulent, faits divers, radio en direct.</li>
@@ -962,7 +976,8 @@
       const el = document.querySelector('.js-gazette');
       if (!el) return;
       g = g || GAZETTE_DEMO;
-      el.innerHTML = `<div class="mast"><b>${esc(g.name)}</b><span>${g.number ? 'n°' + g.number + ' · ' : ''}${esc(g.date)}</span></div>`
+      el.innerHTML = `<div class="topline"><span>${g.number ? 'N° ' + g.number : 'Premier numéro'}</span><span>Édition du dimanche</span><span>Prix : 1 $</span></div>`
+        + `<div class="mast"><b>${esc(g.name)}</b><span>« La ville se souvient, nous l'écrivons » · ${esc(g.date)}</span></div>`
         + `<h3>${esc(g.headline)}</h3><p class="lead">${esc(g.lead)}</p><div class="cols">`
         + (g.sections || []).map((s) => `<div class="gz-col"><h4>${esc(s.title)}</h4>${(s.items || []).map((i) => `<p>${esc(i)}</p>`).join('')}</div>`).join('')
         + `</div><div class="foot">Aussi sur Discord et en jeu : /gazette</div>`;
