@@ -141,11 +141,58 @@ function Initialize-SshKey($vps) {
 }
 function SshArgs { if ($script:SshKey) { @('-i', $script:SshKey) } else { @() } }
 
+# Commande courte sur le VPS dont on lit la réponse (sans fenêtre, sans erreur PowerShell sur stderr)
+function Get-VpsOutput($vps, $command) {
+    Initialize-SshKey $vps
+    $a = SshArgs
+    $old = $ErrorActionPreference; $ErrorActionPreference = 'Continue'
+    $out = & ssh @a -o BatchMode=yes -o ConnectTimeout=15 "$($vps.user)@$($vps.ip)" $command 2>$null
+    $ErrorActionPreference = $old
+    return (($out | Out-String).Trim())
+}
+
+# Envoi robuste : vérifie la place sur le VPS, reprend là où il s'est arrêté si la connexion coupe (5 essais),
+# et contrôle la taille reçue. $dest : dossier (finit par /) ou chemin complet du fichier (un seul fichier).
 function Send-Vps($vps, [string[]]$files, $dest) {
     Initialize-SshKey $vps
     $a = SshArgs
-    & scp @a -o StrictHostKeyChecking=accept-new @files "$($vps.user)@$($vps.ip):$dest"
-    if ($LASTEXITCODE -ne 0) { throw 'Envoi refusé (adresse, utilisateur ou mot de passe du VPS ?).' }
+    $target = "$($vps.user)@$($vps.ip)"
+    $total = ($files | ForEach-Object { (Get-Item -LiteralPath $_).Length } | Measure-Object -Sum).Sum
+    $dir = if ($dest.EndsWith('/')) { $dest } else { ($dest -replace '[^/]+$', '') }
+    $free = Get-VpsOutput $vps "df -B1 --output=avail $dir | tail -1"
+    if ($free -match '^\d+$' -and [int64]$free -lt ($total * 2.2)) {
+        throw (('Pas assez de place sur le VPS : il faut environ {0} Go libres (archive {1} Go + décompression), il en reste {2} Go. ' -f
+            [math]::Ceiling($total * 2.2 / 1GB), [math]::Round($total / 1GB, 1), [math]::Round([int64]$free / 1GB, 1)) +
+            'Allège le serveur du PC (vieux mods, cache) ou prends un VPS avec plus de disque.')
+    }
+    foreach ($f in $files) {
+        $size = (Get-Item -LiteralPath $f).Length
+        $remote = if ($dest.EndsWith('/')) { $dest + (Split-Path $f -Leaf) } else { $dest }
+        Write-Host ('  {0} ({1} Mo)' -f (Split-Path $f -Leaf), [math]::Round($size / 1MB, 1)) -ForegroundColor DarkGray
+        [void](Get-VpsOutput $vps "rm -f '$remote'")
+        $batch = Join-Path $env:TEMP 'roadline-envoi.txt'
+        $got = ''
+        for ($try = 1; $try -le 5; $try++) {
+            $put = if ([int64]("0$got") -gt 0) { 'put -a' } else { 'put' } # -a : reprend un envoi coupé
+            [IO.File]::WriteAllText($batch, "$put `"$($f.Replace('\', '/'))`" `"$remote`"`n")
+            $old = $ErrorActionPreference; $ErrorActionPreference = 'Continue'
+            & sftp @a -o StrictHostKeyChecking=accept-new -o ServerAliveInterval=15 -b $batch $target 2>&1 |
+                ForEach-Object { if ("$_" -notmatch '^sftp>') { Write-Host "    $_" -ForegroundColor DarkGray } }
+            $ErrorActionPreference = $old
+            $got = Get-VpsOutput $vps "stat -c %s '$remote' 2>/dev/null"
+            if ($got -eq "$size") { break }
+            if ($try -lt 5) {
+                Write-Host ('  Envoi coupé ({0} / {1} Mo reçus), reprise dans 10 s… (essai {2}/5)' -f
+                    [math]::Round([int64]("0$got") / 1MB), [math]::Round($size / 1MB), ($try + 1)) -ForegroundColor Yellow
+                Start-Sleep -Seconds 10
+            }
+        }
+        Remove-Item -LiteralPath $batch -Force -ErrorAction SilentlyContinue
+        if ($got -ne "$size") {
+            throw ('Envoi interrompu 5 fois de suite (' + (Split-Path $f -Leaf) + '). Ta connexion internet a coupé, ' +
+                'ou le VPS est plein. Relance l''outil : rien n''est perdu.')
+        }
+    }
 }
 
 function Invoke-Vps($vps, $command) {

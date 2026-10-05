@@ -39,7 +39,7 @@ $zip = Join-Path $Out 'roadline-ovh.zip'
 New-UnixZip $Stage $zip
 Say ('  {0} ({1} Mo)' -f $zip, [math]::Round((Get-Item $zip).Length / 1MB)) 'Green'
 
-Say '[3/4] Envoi sur le VPS (mot de passe du VPS demandé si pas de clé SSH)' 'Cyan'
+Say '[3/4] Envoi sur le VPS (peut prendre plusieurs minutes, reprise automatique si ça coupe)' 'Cyan'
 Send-Vps $vps @($zip, (Join-Path $Stage 'installer-ovh.sh')) '/tmp/'
 [IO.Directory]::Delete($Stage, $true) # ne garde pas de copie de la base / des secrets en clair sur le PC
 Say '  envoyé' 'Green'
