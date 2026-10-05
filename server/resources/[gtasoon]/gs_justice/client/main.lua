@@ -48,6 +48,8 @@ local function caseMenu(c, d)
     local ok, list = lib.callback.await('gs_justice:pieces', false, 'list', c.id)
     local options = {}
     if d.judge then options[#options + 1] = { title = 'Rendre le verdict', icon = 'gavel', onSelect = function() verdict(c) end } end
+    if d.judge then options[#options + 1] = { title = 'Convoquer un jury', icon = 'users', description = '5 citoyens tirés au sort votent coupable / non coupable (3 min)',
+        onSelect = function() notify(lib.callback.await('gs_justice:jury', false, c.id)) end } end
     options[#options + 1] = { title = 'Verser une photo', icon = 'image', description = 'La photo reste sous la garde du tribunal', onSelect = function()
         local l = photos()
         if #l == 0 then return notify(false, 'Aucune photo sur toi.') end

@@ -35,8 +35,13 @@ function Justice.verdict(src, id, kind, fine, jail)
     if not onDuty(src, Config.JudgeJob) then return false, 'Réservé aux juges en service.' end
     local case = Store.get(tonumber(id) or 0)
     if not case or case.status ~= 'open' then return false, 'Affaire introuvable ou déjà jugée.' end
+    if Jury then -- V11.2 : le jury lie le juge sur la culpabilité
+        local ok, why = Jury.allows(case.id, kind)
+        if not ok then return false, why end
+    end
+    local juryNote = Jury and Jury.note(case.id) or ''
     if kind == 'acquit' then
-        Store.close(case.id, 'acquitted', 'Relaxe')
+        Store.close(case.id, 'acquitted', 'Relaxe' .. juryNote)
         TriggerEvent('gs_justice:server:verdict', 'acquitted') -- V10.2 : fil de la ville (Discord)
         PoliceApi:CloseWarrants(case.defendant)
         local t = Bridge:GetSourceByIdentifier(case.defendant)
@@ -56,7 +61,7 @@ function Justice.verdict(src, id, kind, fine, jail)
     local proof = retained > 0 and (' (%d pièce(s) retenue(s))'):format(retained) or ''
     PoliceApi:AddRecord(case.defendant, ('Condamnation : %s%s'):format(case.charge, proof), fine, jail, 'Tribunal · ' .. name(src))
     PoliceApi:CloseWarrants(case.defendant)
-    local text = ('Coupable : %s%s%s%s'):format(fine > 0 and (fine .. ' $') or '', fine > 0 and jail > 0 and ' + ' or '', jail > 0 and (jail .. ' min de prison') or '', proof)
+    local text = ('Coupable : %s%s%s%s%s'):format(fine > 0 and (fine .. ' $') or '', fine > 0 and jail > 0 and ' + ' or '', jail > 0 and (jail .. ' min de prison') or '', proof, juryNote)
     Store.close(case.id, 'guilty', text)
     TriggerEvent('gs_justice:server:verdict', 'guilty')
     if t then Bridge:Notify(t, 'Verdict : ' .. text, 'error') end

@@ -24,3 +24,8 @@ Config.Warrant = {
 -- V10.1 · Preuves recevables : la police et les avocats versent des pièces (photos développées, scellés analysés)
 -- au dossier d'une affaire ouverte ; le juge les retient ou les écarte ; le verdict mentionne les pièces retenues.
 Config.Pieces = { max = 12, photoItem = 'gs_photo' }
+
+-- V11.2 · Les jurés de Los Santos : pour une affaire ouverte, le juge convoque 5 citoyens tirés au sort (ni partie, ni police,
+-- ni juge, ni avocat en service). Ils reçoivent la convocation où qu'ils soient et votent en 3 min. Leur décision lie le juge
+-- (coupable / relaxe), le juge fixe la peine. Indemnité pour chaque juré qui a voté. /jury : rouvrir sa convocation.
+Config.Jury = { size = 5, min = 3, seconds = 180, fee = 100, cooldown = 2 * 3600, binding = true, command = 'jury' }

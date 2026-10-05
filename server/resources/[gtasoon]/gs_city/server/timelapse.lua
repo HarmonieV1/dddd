@@ -6,7 +6,7 @@ local KEEP, MAX_EVENTS, SNAP_EVERY = 24 * 3600, 600, 600
 
 Timelapse = { snaps = {}, events = {} }
 local Kinds = { crime = 'Incident signalé', faitdivers = 'Fait divers', rumeur = 'Rumeur confirmée', verdict = 'Verdict rendu',
-    cavale = 'Cavale en cours', legende = 'Nouvelle légende', memoire = 'Nouveau lieu de mémoire', blackout = 'Panne de courant' }
+    cavale = 'Cavale en cours', legende = 'Nouvelle légende', memoire = 'Nouveau lieu de mémoire', blackout = 'Panne de courant', jury = 'Jury populaire' }
 
 local function prune(now)
     local cut = now - KEEP
@@ -61,6 +61,7 @@ AddEventHandler('gs_wanted:server:reported', function(_, _, _, coords) Timelapse
 AddEventHandler('gs_faitsdivers:server:new', function() Timelapse.record('faitdivers') end)
 AddEventHandler('gs_rumors:server:realized', function() Timelapse.record('rumeur') end)
 AddEventHandler('gs_justice:server:verdict', function() Timelapse.record('verdict') end)
+AddEventHandler('gs_justice:server:jury', function() Timelapse.record('jury') end) -- V11.2
 AddEventHandler('gs_wanted:server:fugitive', function() Timelapse.record('cavale') end)
 AddEventHandler('gs_wanted:server:legend', function() Timelapse.record('legende') end)
 AddEventHandler('gs_scars:server:plaque', function(_, coords) Timelapse.record('memoire', coords) end) -- V11 : plaques
