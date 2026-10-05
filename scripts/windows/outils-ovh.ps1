@@ -38,6 +38,33 @@ function Test-KeyLogin($key, $vps) {
     cmd /c "ssh -i `"$key`" -o BatchMode=yes -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10 $target exit >nul 2>&1"
     return $LASTEXITCODE -eq 0
 }
+# Pourquoi la connexion par clé échoue, en clair (au lieu d'attendre sans rien dire)
+function Get-SshReason($key, $vps) {
+    $target = "$($vps.user)@$($vps.ip)"
+    $out = (cmd /c "ssh -v -i `"$key`" -o BatchMode=yes -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10 $target exit 2>&1") -join "`n"
+    if ($out -match 'Authenticated to') { return @('ok', 'Connexion OK.') }
+    if ($out -match 'UNPROTECTED|bad permissions') { return @('droits', 'Windows refuse d''utiliser la clé (droits du fichier) : correction automatique.') }
+    if ($out -match 'IDENTIFICATION HAS CHANGED|Host key verification failed') { return @('empreinte', 'Ancienne empreinte du VPS : effacée automatiquement.') }
+    if ($out -match 'Permission denied') {
+        $auth = [regex]::Match($out, 'Authentications that can continue: ([\w,-]+)').Groups[1].Value
+        $pw = if ($auth -match 'password') { ' (le VPS accepte le mot de passe)' } else { '' }
+        return @('refus', "Le VPS est EN LIGNE mais refuse la clé de ce PC pour l'utilisateur « $($vps.user) »$pw.")
+    }
+    if ($out -match 'timed out|Connection refused|No route|unreachable|Could not resolve') {
+        return @('injoignable', 'Le VPS ne répond pas encore (réinstallation en cours, ou mauvaise IP).')
+    }
+    return @('autre', (($out -split "`n" | Where-Object { $_ -notmatch '^debug1' } | Select-Object -Last 3) -join ' / '))
+}
+# Dernier recours : installer la clé avec le mot de passe reçu par mail d'OVH (une seule fois)
+function Install-KeyWithPassword($key, $vps) {
+    Write-Host ''
+    Write-Host '  On installe la clé avec le mot de passe du VPS, UNE SEULE FOIS (ensuite plus jamais).' -ForegroundColor Cyan
+    Write-Host '  Mot de passe : celui du dernier mail OVH (réinstallation). Copie-le dans le mail, puis dans cette' -ForegroundColor White
+    Write-Host '  fenêtre fais un CLIC DROIT (ça colle) et Entrée. Rien ne s''affiche quand tu colles : c''est normal.' -ForegroundColor White
+    $pub = (Get-Content -LiteralPath "$key.pub" -Raw).Trim()
+    $cmd = "mkdir -p ~/.ssh && chmod 700 ~/.ssh && grep -qxF '$pub' ~/.ssh/authorized_keys 2>/dev/null || echo '$pub' >> ~/.ssh/authorized_keys; chmod 600 ~/.ssh/authorized_keys"
+    & ssh -o StrictHostKeyChecking=accept-new -o PubkeyAuthentication=no -o PreferredAuthentications=password,keyboard-interactive "$($vps.user)@$($vps.ip)" $cmd
+}
 function Initialize-SshKey($vps) {
     if ($script:KeyReady) { return }
     Test-Ssh
@@ -61,10 +88,21 @@ function Initialize-SshKey($vps) {
         Write-Host "  $pub" -ForegroundColor DarkGray
         Read-Host '  Appuie sur Entrée quand tu as cliqué sur Confirmer chez OVH'
         $deadline = (Get-Date).AddMinutes(20)
+        $refus = 0
         do {
             cmd /c "ssh-keygen -R $($vps.ip) >nul 2>&1" # le VPS réinstallé change d'empreinte : on oublie l'ancienne
             if (Test-KeyLogin $key $vps) { break }
-            Write-Host ('  … le VPS se réinstalle ({0:HH:mm}), nouvel essai dans 30 s' -f (Get-Date)) -ForegroundColor DarkGray
+            $r = Get-SshReason $key $vps
+            if ($r[0] -eq 'ok') { break }
+            if ($r[0] -eq 'droits') { cmd /c "icacls `"$key`" /inheritance:r /grant:r `"%USERNAME%`":F >nul 2>&1" }
+            Write-Host ('  {0:HH:mm} · {1}' -f (Get-Date), $r[1]) -ForegroundColor DarkGray
+            if ($r[0] -eq 'refus') {
+                $refus++
+                if ($refus -ge 2) { # en ligne mais clé refusée 2 fois de suite : OVH ne l'a pas prise, on la pose nous-mêmes
+                    Write-Host '  La clé n''a pas été prise par OVH. Solution : la poser avec le mot de passe du mail OVH.' -ForegroundColor Yellow
+                    if ((Read-Host '  Le faire maintenant ? (O/N)') -match '^[oOyY]') { Install-KeyWithPassword $key $vps; $refus = 0; continue }
+                }
+            } else { $refus = 0 }
             Start-Sleep -Seconds 30
         } while ((Get-Date) -lt $deadline)
         if (-not (Test-KeyLogin $key $vps)) {
