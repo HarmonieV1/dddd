@@ -116,3 +116,12 @@ Placer n'importe quel objet du jeu, le déplacer, le tourner, le dupliquer, le s
 - **Fil de la ville** (`gs_discord`, `Config.Digest`) : chaque soir à 23 h 30, un résumé court dans #annonces (crimes, arrestations, verdicts, faits divers, rumeur réalisée, légende, quartier chaud) ; rien à dire = rien posté. `enabled = false` pour couper.
 - **Alt (ox_target)** : appui simple (`setr ox_target:toggleHotkey 1` dans cfg/convars.cfg) ; mettre 0 pour revenir au maintien.
 
+## V11 · Bêta ouverte
+- **Lieux de mémoire** (`gs_scars`, `Config.Plaques`) : `/plaque <texte>` pose une plaque là où tu es (admin et plus, 80 caractères) —
+  mariage, concert, inauguration ; `/plaqueretirer` enlève la plus proche (5 m). Automatique après un casse banque / bijouterie et à la fin
+  d'une cavale légendaire. 15 plaques maximum, 30 jours chacune.
+- **Panneau staff mobile** : `http://adresse:30120/gs_admin/` → onglets Joueurs (toucher un joueur → geler, message, avertir, expulser),
+  Tickets (toucher un ticket → le joueur), Ville (annonce, bouton txAdmin). Se rafraîchit seul toutes les 10 s.
+- **Redémarrage quotidien** : 06:00 par défaut, annoncé en jeu ; changer l'heure : GERER-OVH → 19 (« off » pour désactiver).
+- **Serveur tombé** : alerte dans le salon staff Discord au bout de 4 min, relance automatique, message quand il revient.
+  Un arrêt volontaire (GERER-OVH → 5) ne déclenche rien.

@@ -104,6 +104,19 @@ et termine tout seul une installation interrompue.
 | 13 | Revenir à la version précédente | Une mise à jour pose problème |
 | 14 / 15 | Mode simple / txAdmin | Démarrage direct (défaut) ou panneau txAdmin (port 40120) |
 | 16 | Console du VPS | Pour les habitués |
+| 17 | Vérifier Discord | Bot connecté ? Un message de test est posté dans chaque salon relié |
+| 18 | Copie automatique sur ce PC | Tâche Windows : chaque jour à 12 h, 14 copies gardées dans `C:\GTASOON\ovh\sauvegardes-vps` |
+| 19 | Heure du redémarrage quotidien | 06:00 par défaut (heure de Paris), annoncé en jeu ; `off` pour désactiver |
+
+**Tout seul sur le VPS (V11)** :
+- **veille** toutes les 2 min : serveur injoignable 4 min → alerte dans le salon staff Discord et relance ; message quand il revient.
+  Un arrêt volontaire (option 5) ne déclenche rien ;
+- **redémarrage quotidien** à 6 h, annoncé en jeu 15, 5 et 1 min avant ;
+- **sauvegardes** de la base toutes les 6 h (30 gardées), heure de Paris.
+
+**txAdmin** (option 15) : l'outil affiche le code PIN et les 3 étapes (compte Cfx.re, « Existing server data » →
+`/home/fivem/server-data`, OneSync On). Le bouton « Ouvrir txAdmin » apparaît alors dans le panneau staff mobile.
+Retour au démarrage automatique : option 14.
 
 Les mêmes commandes existent en SSH :
 

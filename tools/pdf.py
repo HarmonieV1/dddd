@@ -8,7 +8,7 @@ from reportlab.lib.units import mm
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, PageBreak, KeepTogether
 from reportlab.graphics.shapes import Drawing, Rect, Circle, String, Line
 
-VERSION = 'V10.2'
+VERSION = 'V11'
 NEON = colors.HexColor('#28E0FF')
 DARK = colors.HexColor('#0F091C')
 PINK = colors.HexColor('#FF2E88')
@@ -84,7 +84,9 @@ TOOLS = [
     ['SAUVEGARDER-BDD.bat · RESTAURER-BDD.bat', 'Sauvegarde maintenant (30 gardées) · retour en arrière de toute la base ou d\'un seul joueur (l\'état actuel est sauvegardé avant).'],
     ['CONFIGURER-DISCORD.bat', 'Webhooks (statut, annonces), jeton du bot, identifiant du Discord : écrit secrets.cfg et ouvre l\'invitation du bot.'],
     ['PREPARER-OVH.bat', 'Mise en ligne sur le VPS OVH en un clic : base + serveur envoyés, installation automatique (docs/OVH.md).'],
-    ['METTRE-A-JOUR-OVH.bat', 'Envoie la nouvelle version sur le VPS sans toucher sa base (sauvegardée avant) ; « roadline retour » pour annuler.'],
+    ['METTRE-A-JOUR-OVH.bat', 'Envoie la nouvelle version sur le VPS sans toucher sa base (sauvegardée avant) ; met d\'abord le PC à jour si besoin.'],
+    ['GERER-OVH.bat', 'Le VPS depuis le PC, sans mot de passe : état + diagnostic, console, erreurs, marche / arrêt, public / privé, sauvegardes '
+                      '(et copie quotidienne sur le PC), réglages Discord, heure du redémarrage, txAdmin, vérification Discord.'],
     ['DEVENIR-ADMIN · REPARER-LANCEUR · REPARER-MARIADB · VIDER-CACHE-FIVEM', 'Te mettre fondateur · « chemin introuvable » au démarrage · base qui ne démarre plus · ancien menu encore affiché.'],
 ]
 
@@ -98,7 +100,9 @@ INTEGRATIONS = [
     ['Panneau staff mobile', 'http://IP:30120/gs_admin/ sur téléphone (« Sur l\'écran d\'accueil ») : joueurs, geler, message, avertir, expulser, '
                              'annonce. Un code par membre du staff (gs_admin_web), 5 essais ratés = 15 min de blocage.'],
     ['txAdmin', 'http://IP:40120 (aussi sur téléphone) : bannissements, console, redémarrages programmés, joueurs.'],
-    ['VPS OVH', 'Commande « roadline » : etat, logs, redemarrer, public / prive, sauvegarde(s), restaurer(-joueur), maj, retour, programme.'],
+    ['VPS OVH', 'Commande « roadline » (ou GERER-OVH.bat) : etat, diagnostic, erreurs, discord, redemarrer, public / prive, sauvegarde(s), '
+                'restaurer(-joueur), maj, retour, mode simple / txadmin, redemarrage-auto. Veille toutes les 2 min (alerte Discord + relance).'],
+    ['Panneau staff mobile', 'http://adresse-du-serveur:30120/gs_admin/ : joueurs (cartes), tickets, annonce, bouton txAdmin. Code par membre (secrets.cfg).'],
     ['Sauvegardes', 'Toutes les 6 h (PC : tâche Windows ; VPS : cron), 30 gardées, avant chaque mise à jour, retour d\'un seul joueur possible.'],
     ['Téléphone', 'Fait maison : Que faire, Messages, Contacts, Appel, Banque, Factures, Emploi, Urgences, Vibe, Weazel, Plans, Ville, Notes, Boulots, Inconnu.'],
     ['Photos (option)', 'screenshot-basic + hébergeur d\'images (gs_photo_* dans secrets.cfg) : vraies photos dans Vibe, l\'appareil photo et la bodycam.'],
@@ -128,6 +132,7 @@ COMMANDS = [
     ['/dossier', 'police, juges, presse en service : la fiche d\'un citoyen (chacun sa vue)'],
     ['Staff', '/whitelist · /gsjob · /gsgang · /gsevent · /meteo · /builder · /economie · /faitdivers (les joueurs ne les voient pas)'],
     ['Staff · rumeurs', '/rumeurvraie storm|stash|crime · /rumeurfausse … (quand une rumeur est prête)'],
+    ['Staff · mémoire', '/plaque <texte> : poser un lieu de mémoire (mariage, concert…) · /plaqueretirer : la plus proche (admin+)'],
     ['Staff sur Discord', '/joueurs · /geler · /degeler · /avertir · /expulser · /message · /annonce (rôle staff, réponses privées)'],
 ]
 
@@ -149,6 +154,16 @@ def guide(points):
     s += [Paragraph('2. Touches', H2), table(KEYS, [38 * mm, 78 * mm, 64 * mm])]
     s += [Paragraph('3. Commandes utiles', H2), table(COMMANDS, [60 * mm, 120 * mm])]
 
+    s += [PageBreak(), Paragraph('★ V11 · Bêta ouverte : la ville se raconte', H2)]
+    s += bullets([
+        "<b>Lieux de mémoire</b> : un casse de la banque ou de la bijouterie, la fin d'une cavale légendaire, un mariage posé par le staff… "
+        "une <b>plaque</b> (couronne et bougie) reste sur place 30 jours. De près, le texte apparaît ; <b>[E] Lire la plaque</b> : un passant raconte.",
+        "<b>La ville en timelapse</b> : sur le site, « Rejouer les dernières 24 h » montre en 30 secondes la tension des quartiers et les "
+        "faits marquants (incidents, faits divers, rumeurs confirmées, verdicts, cavales, plaques). Jamais de position de joueur.",
+        "<b>Serveur officiel</b> : en ligne 24 h/24 sur le VPS, redémarrage chaque matin à 6 h (annoncé en jeu 15, 5 et 1 min avant), "
+        "veille toutes les 2 min (alerte Discord et relance si besoin), sauvegardes toutes les 6 h (et copie sur le PC).",
+        "<b>Staff mobile</b> : panneau web avec onglets Joueurs / Tickets / Ville, cartes cliquables, bouton txAdmin.",
+    ])
     s += [PageBreak(), Paragraph('★ V3 · Tout frais : deux villes en une', H2)]
     s += bullets([
         "<b>Ville de jour, ville de nuit</b> : la nuit (22 h → 5 h), noctambules devant les clubs, feu de camp à Vespucci et <b>marchés de nuit</b> "

@@ -82,6 +82,15 @@ SESSIONS = [
         ('Alt : un appui ouvre le ciblage, choisir à la souris, un appui referme (aussi en voiture)', 'Seul', 3),
         ('Discord : le soir à 23 h 30, « La nuit à Los Santos » dans #annonces (seulement s\'il s\'est passé quelque chose)', 'Staff', 1),
     ]),
+    ('5 quater · Bêta V11 (15 min)', [
+        ('Staff : /plaque Mariage de X et Y → couronne + texte doré de près ; [E] Lire la plaque → un passant raconte', 'Staff', 2),
+        ('Casse de la banque terminé → une plaque apparaît sur place (et reste après un redémarrage)', '2+', 2),
+        ('Site : « Rejouer les dernières 24 h » sous la carte → 30 s d\'animation (horloge, quartiers, faits)', 'Seul', 1),
+        ('Panneau staff sur téléphone (http://adresse:30120/gs_admin/) : onglets, toucher un joueur → geler / message / avertir', 'Staff', 3),
+        ('GERER-OVH → 17 : bot « connecté » et message de test reçu dans chaque salon Discord relié', 'Staff', 3),
+        ('5 h 45 : annonce en jeu « redémarrage dans 15 min », puis 5 et 1 ; à 6 h le serveur redémarre seul', 'Seul', 2),
+        ('GERER-OVH → 5 (Arrêter) : pas d\'alerte Discord ; → 6 (Démarrer). Couper le serveur autrement → alerte « injoignable » en 4 min', 'Staff', 2),
+    ]),
     ('6 · Staff et outils (20 min)', [
         ('F11 : mode staff, joueurs (aller à, amener, soigner, argent), vol libre / invisible SANS alerte anti-triche', 'Staff', 3),
         ('F11 → Anti-triche (alertes) ; F11 → Statistiques de rétention ; F10 panel complet (tickets /report, sanctions)', 'Staff', 2),
@@ -89,7 +98,7 @@ SESSIONS = [
         ('SAUVEGARDER-BDD.bat, puis RESTAURER-BDD.bat → un seul joueur (sur un perso de test)', 'Staff', 3),
         ('CONFIGURER-DISCORD.bat → relance : bot en ligne, salon statut mis à jour, /statut et /rdv sur Discord', 'Staff', 2),
         ('Staff à distance : /joueurs et /geler sur Discord (rôle staff) ; panneau http://IP:30120/gs_admin/ sur téléphone (code)', 'Staff', 2),
-        ('OVH : PREPARER-OVH.bat → txAdmin (PIN, OneSync On) → connexion ; METTRE-A-JOUR-OVH.bat → version à jour, base intacte', 'Staff', 3),
+        ('OVH : METTRE-A-JOUR-OVH.bat → GERER-OVH → 1 affiche « Version RoadLine : V11 » ; GERER-OVH → 3 : aucune erreur de script', 'Staff', 3),
     ]),
     ('7 · Test de charge (à faire avant d\'ouvrir)', [
         ('6 à 10 joueurs pendant 1 h : FPS, ping, resmon (aucune ressource gs_ au-dessus de 0,5 ms en continu)', '3+', 3),

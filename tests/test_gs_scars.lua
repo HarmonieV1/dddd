@@ -48,6 +48,23 @@ TriggerEvent('gs_gangs:server:warWon', 'grove', 'families', 'Families', vec3(105
 local m for _, s in pairs(Scars.list) do if s.kind == 'mural' then m = s end end
 check('fresque du dernier vainqueur, une seule par quartier', count('mural') == 1 and m.label:find('Families'))
 
+-- V11 : lieux de mémoire
+Scars.list = {}
+TriggerEvent('gs_wanted:server:crime', 1, 'bank', vec3(250.0, 220.0, 106.0))
+local plaque
+for _, s in pairs(Scars.list) do if s.kind == 'plaque' then plaque = s end end
+check('casse de la banque : plaque posée sur place', plaque and plaque.text == 'Ici, le casse de la banque' and plaque.x == 250.0)
+TriggerEvent('gs_wanted:server:crime', 1, 'bank', vec3(255.0, 225.0, 106.0))
+check('même casse au même endroit : pas de doublon', count('plaque') == 1)
+TriggerEvent('gs_wanted:server:crime', 1, 'store_robbery', vec3(900.0, 0.0, 0.0))
+check('petit braquage : pas de plaque', count('plaque') == 1)
+TriggerEvent('gs_wanted:server:legend', 2, 'Le Fantôme')
+check('cavale légendaire : plaque avec le nom public', count('plaque') == 2)
+for i = 1, Config.Plaques.max + 3 do Scars.plaque(vec3(5000.0 + i * 100, 0.0, 0.0), 'Mariage ' .. i, 'staff') end
+check('plaques plafonnées', count('plaque') == Config.Plaques.max)
+check('plaques : sauvegarde écrite (gardées au redémarrage)', kvp.gs_scars ~= nil)
+check('texte vide refusé', Scars.plaque(spot, '   ', 'staff') == nil)
+
 -- Plafond
 for i = 1, Config.Max + 5 do Scars.add('glass', vec3(i * 100.0, 0.0, 0.0), {}) end
 check('nombre de cicatrices plafonné', Scars.count() == Config.Max)

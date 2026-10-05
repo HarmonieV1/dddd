@@ -1,7 +1,7 @@
 -- gs_city (serveur) · V10.2 « Carte vivante ». Ce que la ville montre au monde, pour le site (aucune donnée privée :
 -- ni position de joueur, ni identité hormis les légendes déjà publiques en jeu) :
 --   http://ADRESSE:30120/gs_city/ville.json   (ou l'adresse https « …users.cfx.re » du serveur + /gs_city/ville.json)
--- Mis en cache 30 s. Lisible depuis le site (en-tête CORS).
+-- Mis en cache 30 s. Lisible depuis le site (en-tête CORS). V11 : + timelapse (24 h de la ville, voir timelapse.lua).
 local cache, cachedAt = nil, 0
 
 local function started(r) return GetResourceState(r) == 'started' end
@@ -25,7 +25,9 @@ function CityPublic()
     local fugitives = #(GlobalState.gsFugitives or {})
     return { at = os.time(), players = #GetPlayers(), max = GetConvarInt('sv_maxclients', 48), version = GetConvar('gs_version', ''),
         weather = started('gs_weather') and try(function() return exports.gs_weather:GetWeather() end, nil) or nil,
-        districts = districts, weekly = weekly, legends = legends, fugitives = fugitives }
+        districts = districts, weekly = weekly, legends = legends, fugitives = fugitives,
+        ids = (function() local m = {} for _, d in ipairs(districts) do m[d.id] = { x = d.x, y = d.y, label = d.label } end return m end)(),
+        timelapse = Timelapse and Timelapse.export() or nil } -- V11 : 24 h rejouées sur le site
 end
 
 SetHttpHandler(function(req, res)

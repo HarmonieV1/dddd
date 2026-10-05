@@ -50,6 +50,9 @@ HISTORY = [
               "correctifs de l'audit (prime du chasseur, anti-triche, droits de patron, METTRE-A-JOUR)"],    ['V10.2', "Retours du backtest : objets et armes en français, coiffeur avec menu de barbier, vendeurs PNJ partout (et braquables), "
               "tenue achetée = objet Tenue, alertes LSPD systématiques (tirs, arme blanche : rue + GPS), anti carkill, F11 plus pratique ; "
               "images pour tous les objets, dossier du citoyen, rumeurs qui deviennent vraies, ville de jour / ville de nuit, carte en direct du site"],
+    ['V11', "Bêta ouverte sur le VPS OVH : lieux de mémoire (plaques des grands moments, les passants racontent), la ville en timelapse "
+            "sur le site, panneau staff mobile refait (joueurs, tickets, txAdmin), vérification Discord, veille avec alerte et relance, "
+            "redémarrage quotidien annoncé, copie quotidienne des sauvegardes sur le PC, GERER-OVH complet, réglages du profil public vérifiés"],
 ]
 
 FEATURES = [

@@ -59,3 +59,10 @@ Pour bannir : txAdmin (`http://IP:40120`), qui marche aussi sur téléphone. Aut
 `http://IP:30120/gs_admin/` (voir docs/OVH.md, § 5). Chaque action est journalisée « Discord · pseudo ».
 **Ça ne marche pas ?** Console du serveur : « Bot Discord connecté » = OK ; « Jeton refusé » = relance CONFIGURER-DISCORD
 avec un nouveau jeton.
+
+## V11 · Vérifier que tout est relié (VPS)
+1. Sur le PC : **CONFIGURER-DISCORD.bat** (jeton du bot, webhooks des salons).
+2. **GERER-OVH.bat → 12** : envoie ces réglages au VPS (la base du VPS n'est pas touchée), le serveur redémarre.
+3. **GERER-OVH.bat → 17** : « Bot Discord : connecté » + un message « ✅ Test du VPS » dans chaque salon relié (sinon : REFUSÉ = webhook
+   supprimé ou mal copié, non réglé = vide dans secrets.cfg). L'adresse `/rejoindre` est réglée toute seule si elle était vide.
+- Le salon **staff** reçoit aussi les alertes de la veille (serveur tombé / revenu).

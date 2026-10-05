@@ -11,7 +11,7 @@
 <meta property="og:url" content="https://roadlinerp.netlify.app/">
 <meta property="og:type" content="website">
 <meta property="og:title" content="RoadLine RP · new generation">
-<meta property="og:description" content="Serveur GTA RP français : Free Access, zéro pay-to-win, 19 signatures exclusives, une ville qui vit même sans toi.">
+<meta property="og:description" content="Serveur GTA RP français : Free Access, zéro pay-to-win, 21 signatures exclusives, une ville qui vit même sans toi.">
 <!--
   SITE ROADLINE RP — à personnaliser (cherche « A_REMPLIR ») :
   - CONFIG plus bas (lien Discord, code cfx.re du serveur, TikTok / Twitch / YouTube)
@@ -301,6 +301,14 @@
   .live-side .card h3 { margin: 0 0 8px; font-size: 1rem; }
   .live-side ul { margin: 0; padding-left: 18px; color: var(--muted); display: grid; gap: 4px; font-size: .92rem; }
   .live-tag { font-size: .75rem; color: var(--muted); }
+  .replay { display: flex; align-items: center; gap: 10px; margin-top: 10px; flex-wrap: wrap; }
+  .replay button { background: linear-gradient(120deg, var(--pink), var(--violet, #8a5cff)); color: #fff; border: 0; border-radius: 999px; padding: 8px 16px; font: 700 .85rem Inter, sans-serif; cursor: pointer; }
+  .replay button[disabled] { opacity: .5; cursor: default; }
+  .replay .clock { font: 700 .95rem ui-monospace, monospace; color: var(--text); min-width: 54px; }
+  .replay .feed { flex: 1; min-width: 160px; font-size: .82rem; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .replay progress { width: 100%; height: 4px; accent-color: var(--pink); }
+  .map-box .pulse { fill: none; stroke: #fff; stroke-width: 2; animation: pulse 1.2s ease-out forwards; }
+  @keyframes pulse { from { r: 4; opacity: 1; } to { r: 26; opacity: 0; } }
   .news { display: grid; gap: 14px; position: relative; padding-left: 26px; }
   .news::before { content: ''; position: absolute; left: 6px; top: 8px; bottom: 8px; width: 2px; background: linear-gradient(var(--pink), var(--violet), var(--cyan)); box-shadow: var(--glow-pink); }
   .news article { position: relative; display: flex; gap: 18px; align-items: baseline; padding: 18px 20px; background: var(--card); border: 1px solid var(--line); border-radius: 14px; transition: transform .35s var(--ease), border-color .3s; }
@@ -552,7 +560,7 @@
 
 <div class="stats">
   <div class="stat rv"><strong data-count="66">0</strong><span>Systèmes maison</span></div>
-  <div class="stat rv" style="--d:1"><strong data-count="19">0</strong><span>Signatures exclusives</span></div>
+  <div class="stat rv" style="--d:1"><strong data-count="21">0</strong><span>Signatures exclusives</span></div>
   <div class="stat rv" style="--d:2"><strong data-count="25">0</strong><span>Métiers &amp; activités</span></div>
   <div class="stat rv" style="--d:3"><strong data-count="0" data-suffix=" €">0</strong><span>Pay-to-win</span></div>
 </div>
@@ -580,13 +588,14 @@
   <div class="wrap">
     <span class="kicker">Exclusif</span>
     <h2 class="sweep">Ce que tu ne trouveras <span class="grad">nulle part ailleurs</span></h2>
-    <p class="lead muted rv">19 systèmes pensés pour le RP, pas pour la vitrine, en 4 piliers.</p>
+    <p class="lead muted rv">21 systèmes pensés pour le RP, pas pour la vitrine, en 4 piliers.</p>
     <div class="pillars">
       <div class="pillar rv"><span class="tag">La ville se souvient</span><h3>Chaque acte laisse une trace</h3><ol>
         <li><b>Témoins et mémoire</b><span>Ils décrivent ta tenue, ta voiture, un bout de plaque… et te reconnaissent.</span></li>
         <li><b>Enquêtes avec preuves</b><span>Douilles, sang, empreintes, caméras : la police scientifique remonte la piste.</span></li>
         <li><b>Les cicatrices de la ville</b><span>Bougies, vitrines brisées, fresques de gang : la ville garde les marques.</span></li>
         <li><b>Les commerçants se souviennent</b><span>Habitué salué par son prénom, braqueur à visage découvert mis dehors.</span></li>
+        <li><b>Lieux de mémoire</b><span>Un grand casse, une cavale légendaire, un mariage : une plaque reste sur place, et les passants en parlent.</span></li>
       </ol></div>
       <div class="pillar rv" style="--d:1"><span class="tag">La ville vit sans toi</span><h3>Los Santos bouge tout seul</h3><ol>
         <li><b>Los Santos réactif</b><span>Crimes et commerces font monter ou couler chaque quartier.</span></li>
@@ -595,6 +604,7 @@
         <li><b>Road trip du mois</b><span>Un grand itinéraire, des spots photo, un classement.</span></li>
         <li><b>Ville de jour, ville de nuit</b><span>La nuit, d'autres gens sortent et des marchés de nuit ouvrent.</span></li>
         <li><b>Les rumeurs deviennent vraies</b><span>Fais courir un bruit au bar, ou raconte ta propre histoire : si elle prend, elle arrive.</span></li>
+        <li><b>La ville en timelapse</b><span>Sur ce site, rejoue les dernières 24 h de Los Santos en 30 secondes.</span></li>
       </ol></div>
       <div class="pillar rv" style="--d:2"><span class="tag">La rue</span><h3>Le crime a des conséquences</h3><ol>
         <li><b>Braquage à la voix</b><span>Plus tu cries, plus la peur monte… et plus on t'entend.</span></li>
@@ -625,6 +635,7 @@
           <g class="js-map-dists"></g>
         </svg>
         <div class="map-legend"><span><i style="background:#5aff8c"></i>calme</span><span><i style="background:#ffb347"></i>tendu</span><span><i style="background:#ff2340"></i>chaud</span><span class="live-tag js-map-state">aperçu</span></div>
+        <div class="replay"><button type="button" class="js-replay">▶ Rejouer les dernières 24 h</button><span class="clock js-replay-clock"></span><span class="feed js-replay-feed">La ville en accéléré : 24 h en 30 secondes.</span><progress class="js-replay-bar" max="1" value="0" hidden></progress></div>
       </div>
       <div class="live-side">
         <div class="card rv"><h3>📅 Rendez-vous de la semaine</h3><ul class="js-map-rdv"></ul></div>
@@ -730,7 +741,12 @@
     <div class="news">
       <article class="rv classified" title="Survole pour décrypter"><time>V4</time><div><strong>Classé confidentiel</strong><span class="new lock">🔒 BIENTÔT</span>
         <p><span class="redact">Convois officiels</span> à travers l'État, <span class="redact">la Saison 1</span>, et <span class="redact">les élections du maire</span>… Survole pour décrypter.</p></div></article>
-      <article class="rv" style="--d:1"><time>V3</time><div><strong>Une ville qui vit sans toi</strong><span class="new">NEW</span>
+      <article class="rv" style="--d:1"><time>V11</time><div><strong>Bêta ouverte : la ville se raconte</strong><span class="new">NEW</span>
+        <ul><li><b>Lieux de mémoire</b> : les grands moments laissent une plaque, et les passants s'en souviennent.</li>
+          <li><b>Timelapse</b> : la carte du site rejoue les dernières 24 h de la ville en 30 secondes.</li>
+          <li><b>Serveur officiel</b> : en ligne 24 h/24, sauvegardé, surveillé, redémarrage annoncé chaque matin.</li></ul>
+        <div class="chips"><span>Lieux de mémoire</span><span>La ville en timelapse</span><span>Bêta ouverte</span></div></div></article>
+      <article class="rv" style="--d:1"><time>V3</time><div><strong>Une ville qui vit sans toi</strong>
         <ul><li><b>Le téléphone te guide</b> : « Que faire ? » montre ce qui se passe et t'y emmène en un clic.</li>
           <li><b>La ville bouge seule</b> : quartiers qui montent ou coulent, faits divers, radio en direct.</li>
           <li><b>Justice et presse</b> : caméras, mandats, preuves au tribunal, dossier du citoyen, enchères, poursuites en direct.</li>
@@ -840,6 +856,8 @@
   const CONFIG = {
     discord: 'https://discord.gg/8y2sX7EvZN',
     cfxCode: '',            // code cfx.re du serveur (ex. 'abc123') : bouton « Rejoindre » + compteur de joueurs
+    connect: 'vps-f2365fb1.vps.ovh.net:30120', // V11 bêta : adresse directe (F8 → connect …), utilisée tant que cfxCode est vide
+    beta: true,             // bandeau « Bêta ouverte » dans l'en-tête
     cityUrl: '',            // carte en direct : adresse https du serveur + /gs_city/ville.json (ex. https://xxxx-abcd.users.cfx.re/gs_city/ville.json)
     tiktok: '', twitch: '', youtube: '',
     opening: '2026-10-20T21:00:00+02:00',   // date et heure d'ouverture (compte à rebours)
@@ -863,23 +881,73 @@
     const COLORS = { 1: '#5aff8c', 2: '#ffb347', 3: '#ff2340' };
     const px = (x) => ((x + 2200) / 4600) * 400, py = (y) => ((6900 - y) / 10400) * 600;
     const esc = (t) => String(t).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
-    function render(d, live) {
+    function render(d, live, mapOnly) {
       const g = document.querySelector('.js-map-dists');
       if (!g) return;
       g.innerHTML = d.districts.map((x) => `<g class="dist"><circle cx="${px(x.x).toFixed(1)}" cy="${py(x.y).toFixed(1)}" r="${8 + (x.tension || 1) * 3}" fill="${COLORS[x.tension] || COLORS[1]}" fill-opacity=".75"><title>${esc(x.label)}</title></circle>`
         + (px(x.x) > 290 ? `<text text-anchor="end" x="${(px(x.x) - 14).toFixed(1)}" y="${(py(x.y) + 3).toFixed(1)}">${esc(x.label)}</text></g>` : `<text x="${(px(x.x) + 14).toFixed(1)}" y="${(py(x.y) + 3).toFixed(1)}">${esc(x.label)}</text></g>`)).join('');
+      if (mapOnly) return;
       document.querySelector('.js-map-rdv').innerHTML = (d.weekly || []).map((w) => `<li><b>${esc(w.label)}</b> · ${esc(w.dayName)} ${esc(w.from)}</li>`).join('') || '<li>Bientôt</li>';
       document.querySelector('.js-map-legends').innerHTML = (d.legends || []).map((l) => `<li><b>${esc(l.name)}</b> · ${esc(l.date)}</li>`).join('') || '<li>Personne n\'a encore tenu la cavale… à toi ?</li>';
       document.querySelector('.js-map-standing').innerHTML = d.districts.map((x) => `<li>${esc(x.label)} : ${esc(x.standingLabel || 'ordinaire')}</li>`).join('');
       document.querySelector('.js-map-state').textContent = live ? `en direct · ${d.players} en ville` : 'aperçu (en direct à l\'ouverture)';
     }
+    // ---- V11 : la ville en timelapse (24 h en 30 s) ----
+    let current = DEMO, playing = false;
+    (function demoTimelapse() { // aperçu tant que le serveur n'est pas relié : une journée inventée mais plausible
+      const now = Math.floor(Date.now() / 1000), ids = {}, snaps = [], events = [], keys = ['ce', 'sls', 'els', 'ves', 'rh', 'vw', 'port', 'sandy', 'paleto'];
+      DEMO.districts.forEach((d, i) => { d.id = keys[i]; ids[d.id] = { x: d.x, y: d.y, label: d.label }; });
+      for (let i = 0; i <= 144; i++) {
+        const t = now - 86400 + i * 600, h = new Date(t * 1000).getHours(), night = h >= 21 || h < 3, lv = {};
+        if (night) { lv.sls = h >= 23 || h < 2 ? 3 : 2; lv.els = 2; } if (h >= 14 && h < 18) lv.port = 2; if (h === 1) lv.ce = 2;
+        snaps.push({ t, lv });
+        if (night && i % 2 === 0) events.push({ t: t + 120, k: 'crime', d: ['sls', 'els', 'ce', 'port'][i % 4] });
+        if (i % 37 === 5) events.push({ t: t + 300, k: 'faitdivers' });
+      }
+      events.push({ t: now - 30000, k: 'rumeur' }, { t: now - 20000, k: 'verdict' }, { t: now - 14000, k: 'memoire', d: 'ce' }, { t: now - 9000, k: 'cavale' });
+      DEMO.ids = ids; DEMO.timelapse = { snaps, events, kinds: { crime: 'Incident signalé', faitdivers: 'Fait divers', rumeur: 'Rumeur confirmée', verdict: 'Verdict rendu', cavale: 'Cavale en cours', legende: 'Nouvelle légende', memoire: 'Nouveau lieu de mémoire' } };
+    })();
+    function replay() {
+      const tl = current.timelapse, ids = current.ids || {};
+      if (playing || !tl || !(tl.snaps || []).length) return;
+      playing = true;
+      const btn = document.querySelector('.js-replay'), clock = document.querySelector('.js-replay-clock'), feed = document.querySelector('.js-replay-feed'), bar = document.querySelector('.js-replay-bar');
+      const svg = document.querySelector('.map-box svg'), snaps = tl.snaps, evs = (tl.events || []).slice().sort((a, b) => a.t - b.t);
+      const t0 = snaps[0].t, t1 = Math.max(snaps[snaps.length - 1].t, evs.length ? evs[evs.length - 1].t : 0), DUR = RMQ ? 6000 : 30000, start = performance.now();
+      let si = 0, ei = 0; btn.disabled = true; bar.hidden = false;
+      const base = current.districts.map((x) => ({ ...x }));
+      function frame(now) {
+        const p = Math.min(1, (now - start) / DUR), t = t0 + (t1 - t0) * p;
+        while (si + 1 < snaps.length && snaps[si + 1].t <= t) si++;
+        const lv = snaps[si].lv || {};
+        render({ ...current, districts: base.map((x) => ({ ...x, tension: lv[x.id] || 1 })) }, false, true);
+        while (ei < evs.length && evs[ei].t <= t) {
+          const e = evs[ei++], d = e.d && ids[e.d];
+          if (d && !RMQ) { const c = document.createElementNS('http://www.w3.org/2000/svg', 'circle'); c.setAttribute('class', 'pulse'); c.setAttribute('cx', px(d.x)); c.setAttribute('cy', py(d.y)); c.setAttribute('r', 4); svg.appendChild(c); setTimeout(() => c.remove(), 1300); }
+          feed.textContent = (tl.kinds && tl.kinds[e.k] || e.k) + (d ? ' · ' + d.label : '');
+        }
+        clock.textContent = new Date(t * 1000).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+        bar.value = p;
+        if (p < 1) requestAnimationFrame(frame);
+        else { playing = false; btn.disabled = false; btn.textContent = '↻ Rejouer'; bar.hidden = true; feed.textContent = 'Et maintenant : la carte en direct.'; render(current, current !== DEMO); }
+      }
+      requestAnimationFrame(frame);
+    }
+    const RMQ = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    document.querySelector('.js-replay').addEventListener('click', replay);
     render(DEMO, false);
     if (CONFIG.cityUrl) {
-      const load = () => fetch(CONFIG.cityUrl).then((r) => r.json()).then((d) => render(d, true)).catch(() => {});
+      const load = () => fetch(CONFIG.cityUrl).then((r) => r.json()).then((d) => { current = d; if (!playing) render(d, true); }).catch(() => {});
       load(); setInterval(load, 60000);
     }
   })();
 
+  // V11 : bêta ouverte, connexion directe par l'adresse du serveur (le bouton ouvre FiveM)
+  if (!CONFIG.cfxCode && CONFIG.connect) {
+    document.querySelectorAll('.js-connect').forEach(a => a.href = 'fivem://connect/' + CONFIG.connect);
+    document.querySelector('.js-connect-cmd').textContent = 'connect ' + CONFIG.connect;
+    if (CONFIG.beta) { document.querySelector('.js-state').textContent = 'Bêta ouverte'; document.querySelector('.js-dot').classList.add('on'); }
+  }
   for (const k of ['tiktok', 'twitch', 'youtube']) document.querySelectorAll('.js-' + k).forEach(a => { if (CONFIG[k]) a.href = CONFIG[k]; else a.style.display = 'none'; });
   if (CONFIG.cfxCode) {
     document.querySelectorAll('.js-connect').forEach(a => a.href = 'https://cfx.re/join/' + CONFIG.cfxCode);
@@ -1090,7 +1158,7 @@
   // Copier la commande de connexion
   $('.js-connect-cmd').addEventListener('click', e => {
     const txt = e.target.textContent;
-    if (!CONFIG.cfxCode) return toast('L\'adresse arrive à l\'ouverture : rejoins le Discord !');
+    if (!CONFIG.cfxCode && !CONFIG.connect) return toast('L\'adresse arrive à l\'ouverture : rejoins le Discord !');
     navigator.clipboard?.writeText(txt).then(() => toast('Commande copiée : colle-la dans F8'), () => {});
   });
   // Liens Discord pas encore remplis
@@ -1138,7 +1206,7 @@
 
   // Avant l'ouverture, « Rejoindre la ville » lance la mission (et descend aux étapes)
   $$('.js-connect').forEach(a => a.addEventListener('click', () => {
-    if (!CONFIG.cfxCode) banner('Mission : rejoindre la ville', 'Ouverture le ' + new Date(CONFIG.opening).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' }) + ' · prépare-toi sur le Discord');
+    if (!CONFIG.cfxCode && !CONFIG.connect) banner('Mission : rejoindre la ville', 'Ouverture le ' + new Date(CONFIG.opening).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' }) + ' · prépare-toi sur le Discord');
   }));
 
   // Choisis ta vie : changement de personnage façon GTA (défile tout seul jusqu'au premier clic)
