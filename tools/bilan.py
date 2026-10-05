@@ -47,7 +47,8 @@ HISTORY = [
               "perquisition), preuves recevables au tribunal (photo, scellé, le juge retient ou écarte), chantage à la photo, enchères "
               "de la fourrière (samedi soir), Direct Weazel (hélico, bandeau, journalistes payés) ; modération à distance (bot Discord, "
               "panneau staff mobile) ; mise en ligne OVH en un clic (PREPARER-OVH, METTRE-A-JOUR-OVH, commande roadline) ; "
-              "correctifs de l'audit (prime du chasseur, anti-triche, droits de patron, METTRE-A-JOUR)"],
+              "correctifs de l'audit (prime du chasseur, anti-triche, droits de patron, METTRE-A-JOUR)"],    ['V10.2', "Retours du backtest : objets et armes en français, coiffeur avec menu de barbier, vendeurs PNJ partout (et braquables), "
+              "tenue achetée = objet Tenue, alertes LSPD systématiques (tirs, arme blanche : rue + GPS), anti carkill, F11 plus pratique"],
 ]
 
 FEATURES = [

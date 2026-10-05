@@ -13,3 +13,7 @@ Config.Kinds = {
 -- Lieux de base (vides : les parkings publics de qbx_garages suffisent). Ex. :
 -- { kind = 'clothing', label = 'Boutique Ponsonbys', coords = vec4(x, y, z, h) },
 Config.Defaults = {}
+
+-- V10.2 · Coiffeur : menu de barbier classique (coupe, couleur, reflets, barbe, sourcils, maquillage) au lieu de l'éditeur
+-- complet. false = garder le menu d'illenium-appearance.
+Config.Barber = { enabled = true, price = 150, range = 8.0 }

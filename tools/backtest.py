@@ -66,6 +66,15 @@ SESSIONS = [
         ('Enchères de la fourrière : dépôt de saisie (police), voiture PNJ à la fourrière, vente ouverte par le staff, surenchère remboursée, lot livré', '3+', 2),
         ('Direct Weazel : poursuite 5 étoiles → bandeau, hélicoptère, journaliste payé, brève de fin', '3+', 2),
     ]),
+    ('5 ter · Retours du backtest — V10.2 (15 min)', [
+        ('Inventaire : argent sale, objets et armes de base affichés en français (après METTRE-A-JOUR.bat)', 'Seul', 2),
+        ('Coiffeur : vendeur PNJ au comptoir, [E] → menu barbier (coupe, couleur, barbe…) avec aperçu, Valider = payé et gardé', 'Seul', 3),
+        ('Boutique de vêtements : vendeuse PNJ ; acheter une tenue → objet « Tenue » dans le sac ; pas de t-shirt blanc sous les hauts', 'Seul', 3),
+        ('Braquer la vendeuse ou le coiffeur arme pointée (comme une supérette)', 'Seul', 2),
+        ('Policier en service : coup de feu ou coup de couteau à 2 → alerte avec la rue + GPS posé', '2', 3),
+        ('Foncer en voiture (puis en bateau / hélico) sur un joueur à pied : aucun dégât ; 2 fois → alerte staff « carkill »', '2', 3),
+        ('F11 : « Joueur en face », joueurs triés par distance, recherche par nom / ID', 'Staff', 1),
+    ]),
     ('6 · Staff et outils (20 min)', [
         ('F11 : mode staff, joueurs (aller à, amener, soigner, argent), vol libre / invisible SANS alerte anti-triche', 'Staff', 3),
         ('F11 → Anti-triche (alertes) ; F11 → Statistiques de rétention ; F10 panel complet (tickets /report, sanctions)', 'Staff', 2),

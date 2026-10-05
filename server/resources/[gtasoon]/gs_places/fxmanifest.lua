@@ -8,6 +8,6 @@ version '0.1.0'
 
 dependencies { 'oxmysql', 'ox_lib', 'gs_security', 'gs_markers' }
 
-shared_scripts { '@ox_lib/init.lua', 'shared/config.lua', '@gs_bridge/shared/points.lua' }
+shared_scripts { '@ox_lib/init.lua', 'shared/config.lua', '@gs_bridge/shared/points.lua', 'shared/stores.lua' }
 server_scripts { '@oxmysql/lib/MySQL.lua', 'server/main.lua' }
 client_scripts { 'client/main.lua', 'client/appearance.lua' }

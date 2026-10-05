@@ -36,6 +36,11 @@ local function fold()
     lib.notify({ description = msg, type = ok and 'success' or 'error' })
 end
 exports('FoldOutfit', fold)
+--- V10.2 : copie de la tenue portée en objet (sans l'enlever), ex. après un achat en boutique
+exports('CopyOutfit', function(name)
+    local ok = lib.callback.await('gs_details:foldOutfit', false, tostring(name or 'Tenue'), current())
+    return ok == true
+end)
 
 --- Utilisation de l'objet (ox_inventory, client.export = 'gs_details.wearOutfit')
 exports('wearOutfit', function(data, slot)

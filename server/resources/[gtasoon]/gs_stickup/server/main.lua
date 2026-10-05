@@ -16,6 +16,10 @@ function Stickup.zones()
     if started('gs_economy') then
         for _, c in ipairs(exports.gs_economy:GetClerks() or {}) do z[c.id] = { kind = 'register', label = c.label, coords = c.coords } end
     end
+    if started('gs_places') then -- V10.2 : coiffeurs, tatoueurs, boutiques de vêtements
+        local ok, l = pcall(function() return exports.gs_places:GetVendors() end)
+        for _, c in ipairs(ok and l or {}) do z[c.id] = { kind = 'register', label = c.label, coords = c.coords } end
+    end
     for _, t in ipairs(Config.Tellers) do z[t.id] = { kind = 'teller', label = t.label, coords = t.coords } end
     return z
 end

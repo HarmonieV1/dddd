@@ -629,13 +629,51 @@ local function playerMenu(p)
     show('gs_staff_player', ('[%d] %s'):format(p.id, p.name), options, 'gs_staff_players')
 end
 
-local function playersMenu()
-    local options = {}
+--- V10.2 : distance d'un joueur (nil s'il est trop loin pour être chargé)
+local function distanceTo(id)
+    local pl = GetPlayerFromServerId(id)
+    if pl == -1 then return nil end
+    local ped = GetPlayerPed(pl)
+    if ped == 0 then return nil end
+    return #(GetEntityCoords(ped) - GetEntityCoords(cache.ped))
+end
+
+--- Joueur juste devant moi (visé ou le plus proche à moins de 6 m)
+local function facingPlayer()
+    local best, bestD
     for _, p in ipairs(info.players) do
-        options[#options + 1] = { title = ('[%d] %s'):format(p.id, p.name), icon = 'user', arrow = true, onSelect = function() playerMenu(p) end }
+        if p.id ~= info.me then
+            local d = distanceTo(p.id)
+            if d and d <= 6.0 and (not bestD or d < bestD) then best, bestD = p, d end
+        end
     end
-    if #options == 0 then options[1] = { title = 'Aucun joueur', readOnly = true } end
-    show('gs_staff_players', ('Joueurs (%d)'):format(#info.players), options, 'gs_staff_quick')
+    return best
+end
+
+local function playersMenu(filter)
+    local list = {}
+    for _, p in ipairs(info.players) do
+        local f = filter and filter:lower()
+        if not f or tostring(p.id) == f or p.name:lower():find(f, 1, true) then
+            list[#list + 1] = { p = p, d = distanceTo(p.id) }
+        end
+    end
+    -- les plus proches d'abord (ceux hors de portée à la fin, par identifiant)
+    table.sort(list, function(a, b)
+        if a.d and b.d then return a.d < b.d end
+        if a.d or b.d then return a.d ~= nil end
+        return a.p.id < b.p.id
+    end)
+    local options = { { title = 'Rechercher (nom ou ID)', icon = 'magnifying-glass', onSelect = function()
+        local r = input('Rechercher un joueur', { { type = 'input', label = 'Nom ou identifiant', required = true } })
+        if r then playersMenu(r[1]) end
+    end } }
+    for _, e in ipairs(list) do
+        options[#options + 1] = { title = ('[%d] %s'):format(e.p.id, e.p.name), icon = 'user', arrow = true,
+            description = e.d and ('à %d m'):format(math.floor(e.d)) or 'loin', onSelect = function() playerMenu(e.p) end }
+    end
+    if #list == 0 then options[#options + 1] = { title = filter and 'Aucun joueur trouvé' or 'Aucun joueur', readOnly = true } end
+    show('gs_staff_players', filter and ('Recherche « %s »'):format(filter) or ('Joueurs (%d)'):format(#info.players), options, 'gs_staff_quick')
 end
 
 local function mainMenu()
@@ -744,7 +782,12 @@ local function mainMenu()
         info.onDuty = state
     end)
     if info.onDuty then
-        add(1, { title = 'Joueurs', icon = 'users', arrow = true, description = 'Aller à, amener, spectate, soigner, argent…', onSelect = playersMenu })
+        local near = facingPlayer()
+        if near then
+            add(1, { title = ('Joueur en face : [%d] %s'):format(near.id, near.name), icon = 'user-check', iconColor = ON, arrow = true,
+                description = 'Ses actions en un clic', onSelect = function() playerMenu(near) end })
+        end
+        add(1, { title = 'Joueurs', icon = 'users', arrow = true, description = 'Triés par distance, recherche par nom ou ID', onSelect = function() playersMenu() end })
         add(1, { title = 'Moi', icon = 'user-gear', arrow = true, description = 'Vol libre, invisible, TP, peds et animaux…', onSelect = meMenu })
         add(2, { title = 'Véhicules', icon = 'car', arrow = true, description = 'Faire apparaître, mods, réparer, supprimer', onSelect = vehMenu })
         add(1, { title = 'Monde et lieux', icon = 'map-location-dot', arrow = true, description = 'Lieux publics, points, gangs, décor', onSelect = worldMenu })

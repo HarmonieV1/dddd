@@ -18,7 +18,7 @@ end
 local function publish()
     local out = {}
     for key, p in pairs(Places.list) do
-        out[#out + 1] = { key = key, kind = p.kind, label = p.label, x = p.coords.x, y = p.coords.y, z = p.coords.z }
+        out[#out + 1] = { key = key, kind = p.kind, label = p.label, x = p.coords.x, y = p.coords.y, z = p.coords.z, h = p.coords.w }
     end
     GlobalState.gsPlaces = out
 end
@@ -94,3 +94,29 @@ AddEventHandler('onResourceStart', function(res)
 end)
 
 CreateThread(function() Places.load() end)
+
+--- V10.2 · Coiffeur : paiement au comptoir d'un coiffeur (liquide, sinon banque)
+lib.callback.register('gs_places:barber', function(src)
+    if not Security:RateLimit(src, 'gs_places:barber', 3, 10000) then return false, 'Doucement.' end
+    local near = false
+    for _, st in ipairs(AppearanceStores) do
+        if st[1] == 'barber' and Security:InRange(src, vec3(st[2].x, st[2].y, st[2].z), Config.Barber.range) then near = true break end
+    end
+    if not near then return false, 'Il faut être chez le coiffeur.' end
+    local Bridge = exports.gs_bridge
+    local acc = Bridge:GetMoney(src, 'cash') >= Config.Barber.price and 'cash' or 'bank'
+    if not Bridge:RemoveMoney(src, acc, Config.Barber.price, 'coiffeur') then return false, 'Pas assez d\'argent.' end
+    return true, ('Coupe réglée : %d $. Ça te va bien !'):format(Config.Barber.price)
+end)
+
+--- V10.2 · Vendeurs des boutiques d'apparence : déclarés à gs_stickup (braquage de caisse possible)
+exports('GetVendors', function()
+    local out = {}
+    for i, st in ipairs(AppearanceStores) do
+        out[#out + 1] = { id = 'app' .. i, label = AppearanceKinds[st[1]].prompt, coords = st[2] }
+    end
+    for key, p in pairs(Places.list) do
+        if p.kind == 'clothing' then out[#out + 1] = { id = 'app_' .. key, label = p.label, coords = p.coords } end
+    end
+    return out
+end)
