@@ -128,6 +128,15 @@ lib.callback.register('gs_cctv:blind', function(src, i)
 end)
 
 exports('Search', function(plate) return CCTV.find(plate) end) -- pour d'autres ressources (enquêtes)
+--- V11.2 : black-out de quartier (gs_city) : toutes les caméras dans le rayon sont aveugles pendant `minutes`
+exports('BlindArea', function(x, y, radius, minutes)
+    local n, untilTs = 0, now() + (tonumber(minutes) or 15) * 60
+    for i, cam in ipairs(Config.Cameras) do
+        if #(vec2(cam.coords.x, cam.coords.y) - vec2(x, y)) <= radius then CCTV.blind[i] = math.max(CCTV.blind[i] or 0, untilTs) n = n + 1 end
+    end
+    GlobalState.gsCctvBlind = (function() local l = {} for k, v in pairs(CCTV.blind) do if v > now() then l[#l + 1] = k end end return l end)()
+    return n
+end)
 
 CreateThread(function()
     GlobalState.gsCctvBlind = {}

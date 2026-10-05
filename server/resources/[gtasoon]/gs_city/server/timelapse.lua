@@ -6,7 +6,7 @@ local KEEP, MAX_EVENTS, SNAP_EVERY = 24 * 3600, 600, 600
 
 Timelapse = { snaps = {}, events = {} }
 local Kinds = { crime = 'Incident signalé', faitdivers = 'Fait divers', rumeur = 'Rumeur confirmée', verdict = 'Verdict rendu',
-    cavale = 'Cavale en cours', legende = 'Nouvelle légende', memoire = 'Nouveau lieu de mémoire' }
+    cavale = 'Cavale en cours', legende = 'Nouvelle légende', memoire = 'Nouveau lieu de mémoire', blackout = 'Panne de courant' }
 
 local function prune(now)
     local cut = now - KEEP
@@ -64,3 +64,7 @@ AddEventHandler('gs_justice:server:verdict', function() Timelapse.record('verdic
 AddEventHandler('gs_wanted:server:fugitive', function() Timelapse.record('cavale') end)
 AddEventHandler('gs_wanted:server:legend', function() Timelapse.record('legende') end)
 AddEventHandler('gs_scars:server:plaque', function(_, coords) Timelapse.record('memoire', coords) end) -- V11 : plaques
+AddEventHandler('gs_city:server:blackout', function(id, on) -- V11.2 : black-out (au centre du quartier)
+    if not on then return end
+    for _, d in ipairs(Config.Districts) do if d.id == id then Timelapse.record('blackout', vec3(d.center.x, d.center.y, 0.0)) end end
+end)

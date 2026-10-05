@@ -63,3 +63,28 @@ Config.Standing = {
     cleanPay = { 25, 45 }, cleanPerHour = 30,
     trashProps = { 'prop_rub_binbag_01', 'prop_rub_binbag_03', 'prop_rub_litter_03', 'prop_rub_cardpile_04', 'prop_rub_tyre_01', 'prop_bin_05a' },
 }
+
+-- V11.2 · Black-out de quartier : un transformateur par quartier. Le saboter (pince / crochet) coupe la lumière du quartier
+-- (rues, vitrines, néons : vu par tous ceux qui s'y trouvent), aveugle ses caméras et prévient la police. N'importe qui peut
+-- réparer (payé par la mairie). Positions à recaler en jeu si besoin : F11 → Déplacer un point (« Transformateur »).
+Config.Blackout = {
+    minutes = 15,            -- durée sans réparation
+    cooldown = 2 * 3600,     -- un même quartier ne peut pas retomber en panne avant 2 h
+    item = 'lockpick',       -- outil consommé pour saboter
+    sabotage = 20000, repair = 25000, -- durée des actions (ms)
+    pay = { 300, 500 },      -- réparation payée par la mairie (jamais au saboteur)
+    range = 3.0, heat = 25,  -- distance d'action ; tension ajoutée au quartier
+    transformers = {
+        downtown = { label = 'Transformateur · Centre-ville', coords = vec3(232.0, -1030.0, 29.3) },
+        south = { label = 'Transformateur · South Los Santos', coords = vec3(-48.0, -1757.0, 29.4) },
+        east = { label = 'Transformateur · East Los Santos', coords = vec3(1137.0, -1490.0, 34.7) },
+        vespucci = { label = 'Transformateur · Vespucci', coords = vec3(-1225.0, -1435.0, 4.3) },
+        rockford = { label = 'Transformateur · Rockford Hills', coords = vec3(-700.0, -150.0, 37.5) },
+        vinewood = { label = 'Transformateur · Vinewood', coords = vec3(300.0, 175.0, 104.0) },
+        port = { label = 'Transformateur · Port', coords = vec3(500.0, -3000.0, 6.0) },
+        sandy = { label = 'Transformateur · Sandy Shores', coords = vec3(1960.0, 3740.0, 32.3) },
+        paleto = { label = 'Transformateur · Paleto Bay', coords = vec3(-150.0, 6300.0, 31.5) },
+    },
+    news = { cut = 'Panne de courant à %s : rues plongées dans le noir, la police appelle à la prudence.',
+        back = 'Le courant est revenu à %s.' },
+}

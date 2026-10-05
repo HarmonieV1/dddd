@@ -292,7 +292,7 @@
   @media (max-width: 860px) { .live-map { grid-template-columns: 1fr; } }
   .map-box { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 14px; position: relative; }
   .map-box svg { width: 100%; height: auto; display: block; }
-  .map-box svg { border-radius: 12px; background: #0c0518; }
+  .map-box svg { border-radius: 12px; background: #1aa3d1; }
   .map-box .dist circle { transition: r .4s var(--ease); }
   .map-box .dist text { fill: var(--text); font: 700 26px Inter, sans-serif; paint-order: stroke; stroke: #0c0716; stroke-width: 7px; }
   .map-box .dist circle { stroke: #0c0716; stroke-width: 4px; filter: drop-shadow(0 0 10px currentColor); }
@@ -908,7 +908,7 @@
         if (i % 37 === 5) events.push({ t: t + 300, k: 'faitdivers' });
       }
       events.push({ t: now - 30000, k: 'rumeur' }, { t: now - 20000, k: 'verdict' }, { t: now - 14000, k: 'memoire', d: 'ce' }, { t: now - 9000, k: 'cavale' });
-      DEMO.ids = ids; DEMO.timelapse = { snaps, events, kinds: { crime: 'Incident signalé', faitdivers: 'Fait divers', rumeur: 'Rumeur confirmée', verdict: 'Verdict rendu', cavale: 'Cavale en cours', legende: 'Nouvelle légende', memoire: 'Nouveau lieu de mémoire' } };
+      DEMO.ids = ids; DEMO.timelapse = { snaps, events, kinds: { crime: 'Incident signalé', faitdivers: 'Fait divers', rumeur: 'Rumeur confirmée', verdict: 'Verdict rendu', cavale: 'Cavale en cours', legende: 'Nouvelle légende', memoire: 'Nouveau lieu de mémoire', blackout: 'Panne de courant' } };
     })();
     function replay() {
       const tl = current.timelapse, ids = current.ids || {};
