@@ -310,6 +310,17 @@
   .replay progress { width: 100%; height: 4px; accent-color: var(--pink); }
   .map-box .pulse { fill: none; stroke: #fff; stroke-width: 5; animation: pulse 1.2s ease-out forwards; }
   @keyframes pulse { from { r: 12; opacity: 1; } to { r: 80; opacity: 0; } }
+  .gazette { margin-top: 26px; background: #f3ead8; color: #1b1410; border-radius: 6px; padding: 26px 28px 30px; box-shadow: 0 30px 80px rgba(0, 0, 0, .45); transform: rotate(-.4deg); font-family: Georgia, 'Times New Roman', serif; }
+  .gazette .mast { display: flex; justify-content: space-between; align-items: end; gap: 12px; border-bottom: 3px double #1b1410; padding-bottom: 8px; flex-wrap: wrap; }
+  .gazette .mast b { font-family: Anton, Impact, sans-serif; font-weight: 400; font-size: clamp(1.8rem, 4vw, 2.8rem); letter-spacing: .02em; text-transform: uppercase; }
+  .gazette .mast span { font-size: .85rem; font-style: italic; }
+  .gazette h3 { font-family: Georgia, serif; font-size: clamp(1.6rem, 3.6vw, 2.4rem); line-height: 1.1; margin: 16px 0 6px; text-transform: none; letter-spacing: 0; }
+  .gazette .lead { font-style: italic; margin: 0 0 14px; color: #4a3b30; }
+  .gazette .cols { columns: 3 220px; column-gap: 26px; column-rule: 1px solid rgba(27, 20, 16, .25); }
+  .gazette .cols .gz-col { break-inside: avoid; margin-bottom: 14px; padding: 0; }
+  .gazette .cols h4 { font-family: Anton, Impact, sans-serif; font-weight: 400; text-transform: uppercase; letter-spacing: .04em; font-size: 1.05rem; margin: 0 0 6px; color: #9b1d3a; }
+  .gazette .cols p { margin: 0 0 6px; font-size: .95rem; line-height: 1.45; }
+  .gazette .foot { margin-top: 10px; font-size: .78rem; color: #6d5a4c; text-align: right; }
   .news { display: grid; gap: 14px; position: relative; padding-left: 26px; }
   .news::before { content: ''; position: absolute; left: 6px; top: 8px; bottom: 8px; width: 2px; background: linear-gradient(var(--pink), var(--violet), var(--cyan)); box-shadow: var(--glow-pink); }
   .news article { position: relative; display: flex; gap: 18px; align-items: baseline; padding: 18px 20px; background: var(--card); border: 1px solid var(--line); border-radius: 14px; transition: transform .35s var(--ease), border-color .3s; }
@@ -644,6 +655,7 @@
         <div class="card rv" style="--d:2"><h3>🌆 Les quartiers</h3><ul class="js-map-standing"></ul></div>
       </div>
     </div>
+    <article class="gazette rv js-gazette" aria-label="La Gazette de Los Santos"></article>
   </div>
 </section>
 
@@ -940,9 +952,25 @@
     }
     const RMQ = matchMedia('(prefers-reduced-motion: reduce)').matches;
     document.querySelector('.js-replay').addEventListener('click', replay);
+    // ---- V11.2 : la Gazette du dimanche (dernière édition publiée par le serveur) ----
+    const GAZETTE_DEMO = { name: 'La Gazette de Los Santos', number: 0, date: 'bientôt', headline: 'La première édition sort dimanche à 20 h',
+      lead: 'Faits divers, tribunal, légendes, rumeurs confirmées : chaque dimanche, la semaine de la ville en une page.',
+      sections: [{ title: 'Faits divers', items: ['Incidents de la semaine, quartier le plus chaud… et le plus calme.'] },
+        { title: 'Au tribunal', items: ['Verdicts et jurys de citoyens tirés au sort.'] },
+        { title: 'Mémoire de la ville', items: ['Nouvelles légendes et lieux de mémoire.'] }] };
+    function gazette(g) {
+      const el = document.querySelector('.js-gazette');
+      if (!el) return;
+      g = g || GAZETTE_DEMO;
+      el.innerHTML = `<div class="mast"><b>${esc(g.name)}</b><span>${g.number ? 'n°' + g.number + ' · ' : ''}${esc(g.date)}</span></div>`
+        + `<h3>${esc(g.headline)}</h3><p class="lead">${esc(g.lead)}</p><div class="cols">`
+        + (g.sections || []).map((s) => `<div class="gz-col"><h4>${esc(s.title)}</h4>${(s.items || []).map((i) => `<p>${esc(i)}</p>`).join('')}</div>`).join('')
+        + `</div><div class="foot">Aussi sur Discord et en jeu : /gazette</div>`;
+    }
+    gazette(null);
     render(DEMO, false);
     if (CONFIG.cityUrl) {
-      const load = () => fetch(CONFIG.cityUrl).then((r) => r.json()).then((d) => { current = d; if (!playing) render(d, true); }).catch(() => {});
+      const load = () => fetch(CONFIG.cityUrl).then((r) => r.json()).then((d) => { current = d; if (!playing) render(d, true); gazette(d.gazette); }).catch(() => {});
       load(); setInterval(load, 60000);
     }
   })();

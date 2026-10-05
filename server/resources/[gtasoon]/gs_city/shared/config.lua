@@ -88,3 +88,7 @@ Config.Blackout = {
     news = { cut = 'Panne de courant à %s : rues plongées dans le noir, la police appelle à la prudence.',
         back = 'Le courant est revenu à %s.' },
 }
+
+-- V11.2 · La Gazette du dimanche : la ville compte sa semaine et publie une édition le dimanche à 20 h (Discord #annonces,
+-- site, /gazette en jeu). Staff (admin) : /gazette publier = édition tout de suite (test).
+Config.Gazette = { day = 0, hour = 20, staffLevel = 3, command = 'gazette', name = 'La Gazette de Los Santos' }

@@ -46,3 +46,11 @@ RegisterCommand('quartiers', function()
     lib.registerContext({ id = 'gs_city_status', title = 'Los Santos : ambiance des quartiers', options = options })
     lib.showContext('gs_city_status')
 end, false)
+
+-- V11.2 · /gazette : dernière édition (et un aperçu de celle de dimanche)
+RegisterCommand(Config.Gazette.command, function()
+    local last, preview = lib.callback.await('gs_city:gazette', false)
+    if not preview then return end
+    lib.alertDialog({ header = Config.Gazette.name, size = 'lg', centered = true,
+        content = last or ('Pas encore d\'édition : la première sort dimanche à %d h.\n\n**Aperçu de la semaine**\n\n%s'):format(Config.Gazette.hour, preview) })
+end, false)

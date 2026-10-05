@@ -27,7 +27,8 @@ function CityPublic()
         weather = started('gs_weather') and try(function() return exports.gs_weather:GetWeather() end, nil) or nil,
         districts = districts, weekly = weekly, legends = legends, fugitives = fugitives,
         ids = (function() local m = {} for _, d in ipairs(districts) do m[d.id] = { x = d.x, y = d.y, label = d.label } end return m end)(),
-        timelapse = Timelapse and Timelapse.export() or nil } -- V11 : 24 h rejouées sur le site
+        timelapse = Timelapse and Timelapse.export() or nil, -- V11 : 24 h rejouées sur le site
+        gazette = Gazette and Gazette.last or nil } -- V11.2 : dernière édition
 end
 
 SetHttpHandler(function(req, res)
