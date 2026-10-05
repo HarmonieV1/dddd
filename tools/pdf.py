@@ -75,6 +75,38 @@ KEYS = [
     ['Espace / Retour', 'Passer le film du vol · annuler', ''],
 ]
 
+TOOLS = [
+    ['Fichier', 'Ce qu\'il fait'],
+    ['INSTALLER.bat', 'Première installation sur le PC (MariaDB, FiveM, Qbox, RoadLine, base, raccourci DEMARRER.bat).'],
+    ['METTRE-A-JOUR.bat', 'Nouvelle version : sauvegarde (fichiers + base), installe, réglages Qbox, mods en attente, sauvegardes programmées toutes les 6 h.'],
+    ['CAPTURER-ERREURS.bat', 'Lance le serveur 2 min et ouvre C:\\GTASOON\\logs\\erreurs.txt (erreurs + 80 dernières lignes) : à envoyer en cas de souci.'],
+    ['IMPORTER-MODS.bat', 'Véhicules, vêtements, maps (zip / rar / dlc.rpf) : tri, contrôle des marques, installation, concession. Lit aussi « Mon Drive\\GTA ».'],
+    ['SAUVEGARDER-BDD.bat · RESTAURER-BDD.bat', 'Sauvegarde maintenant (30 gardées) · retour en arrière de toute la base ou d\'un seul joueur (l\'état actuel est sauvegardé avant).'],
+    ['CONFIGURER-DISCORD.bat', 'Webhooks (statut, annonces), jeton du bot, identifiant du Discord : écrit secrets.cfg et ouvre l\'invitation du bot.'],
+    ['PREPARER-OVH.bat', 'Mise en ligne sur le VPS OVH en un clic : base + serveur envoyés, installation automatique (docs/OVH.md).'],
+    ['METTRE-A-JOUR-OVH.bat', 'Envoie la nouvelle version sur le VPS sans toucher sa base (sauvegardée avant) ; « roadline retour » pour annuler.'],
+    ['DEVENIR-ADMIN · REPARER-LANCEUR · REPARER-MARIADB · VIDER-CACHE-FIVEM', 'Te mettre fondateur · « chemin introuvable » au démarrage · base qui ne démarre plus · ancien menu encore affiché.'],
+]
+
+INTEGRATIONS = [
+    ['Quoi', 'Comment ça marche'],
+    ['Discord · bot RoadLine', 'Intégré au serveur (rien à installer) : présence « 12/48 citoyens », /statut, /rejoindre, /rdv, /site ; '
+                              'commandes staff /joueurs, /geler, /expulser… réservées au rôle staff (gs_discord_staff_role).'],
+    ['Discord · salons', 'Statut en direct (un message mis à jour chaque minute), annonces (ouverture, redémarrages, rendez-vous), '
+                         'sanctions publiques (staff anonyme), miroir de Vibe, logs staff / métiers / boutique / anti-triche.'],
+    ['Discord · rôles de métier', 'Le rôle Discord suit le métier en jeu (gs_discord_roles dans secrets.cfg : police=ID,ambulance=ID…).'],
+    ['Panneau staff mobile', 'http://IP:30120/gs_admin/ sur téléphone (« Sur l\'écran d\'accueil ») : joueurs, geler, message, avertir, expulser, '
+                             'annonce. Un code par membre du staff (gs_admin_web), 5 essais ratés = 15 min de blocage.'],
+    ['txAdmin', 'http://IP:40120 (aussi sur téléphone) : bannissements, console, redémarrages programmés, joueurs.'],
+    ['VPS OVH', 'Commande « roadline » : etat, logs, redemarrer, public / prive, sauvegarde(s), restaurer(-joueur), maj, retour, programme.'],
+    ['Sauvegardes', 'Toutes les 6 h (PC : tâche Windows ; VPS : cron), 30 gardées, avant chaque mise à jour, retour d\'un seul joueur possible.'],
+    ['Téléphone', 'Fait maison : Que faire, Messages, Contacts, Appel, Banque, Factures, Emploi, Urgences, Vibe, Weazel, Plans, Ville, Notes, Boulots, Inconnu.'],
+    ['Photos (option)', 'screenshot-basic + hébergeur d\'images (gs_photo_* dans secrets.cfg) : vraies photos dans Vibe, l\'appareil photo et la bodycam.'],
+    ['Weazel · Radio LS', 'Brèves automatiques et bandeau, journal écrit par les joueurs, Direct Weazel ; Radio Los Santos en voiture (sous-titres).'],
+    ['Boutique Tebex', 'Cosmétiques seulement (zéro pay-to-win), réclamés en jeu avec /boutique (sv_tebexSecret dans secrets.cfg).'],
+    ['Liste blanche', 'gs_whitelist "true" : candidature sur Discord avant d\'entrer (gs_discord_invite).'],
+]
+
 COMMANDS = [
     ['Commande', 'Pour quoi'],
     ['/touches · /regles · /report', 'aide des touches · règlement · ticket au staff'],
@@ -91,7 +123,10 @@ COMMANDS = [
     ['/contrat · /recap · /rdv', 'contrats signés (prêt, salaire, location) · ton récap du mois · rendez-vous de la semaine'],
     ['/racket', "gang : réclamer une protection à la caisse d'un commerce · patron : voir / arrêter de payer"],
     ['/quefaire · /radiols', "tout ce qu'on peut faire maintenant (aussi dans le téléphone : Que faire) · couper / rallumer Radio Los Santos"],
-    ['Staff', '/whitelist · /gsjob · /gsgang · /gsevent · /meteo · /builder · /economie (les joueurs ne les voient pas)'],
+    ['/mandat · /tribunal', "police / juge : signalements de planques et mandats · affaires, pièces au dossier, verdicts"],
+    ['/encheres', 'enchères de la fourrière (samedi 21 h) : lots, mises, dépôt des saisies (police)'],
+    ['Staff', '/whitelist · /gsjob · /gsgang · /gsevent · /meteo · /builder · /economie · /faitdivers (les joueurs ne les voient pas)'],
+    ['Staff sur Discord', '/joueurs · /geler · /degeler · /avertir · /expulser · /message · /annonce (rôle staff, réponses privées)'],
 ]
 
 
@@ -99,30 +134,20 @@ def guide(points):
     doc = SimpleDocTemplate('docs/pdf/ROADLINE_Guide.pdf', pagesize=A4, leftMargin=15 * mm, rightMargin=15 * mm, topMargin=14 * mm, bottomMargin=16 * mm,
                             title='RoadLine RP · Guide complet', author='RoadLine RP')
     s = [Paragraph('RoadLine RP · Guide complet', H1),
-         Paragraph(f'Tout ce qui est disponible sur le serveur ({VERSION}), comment y accéder, et les outils. '
+         Paragraph(f'Tout ce qui est disponible sur le serveur ({VERSION}), comment y accéder, les outils et les intégrations. '
+                   'Les nouveautés sont regroupées en trois grandes versions : V1 (la rue et les métiers), V2 (la ville a une mémoire), '
+                   'V3 (une ville qui vit sans toi). '
                    'Serveur FiveM RP français (Qbox, ox_lib, ox_inventory, pma-voice).', P), Spacer(1, 4)]
 
-    s += [Paragraph('1. Installer, mettre à jour, importer', H2)]
-    s += bullets([
-        '<b>Toujours</b> : clic droit sur le zip RoadLine → Extraire tout, puis ouvrir le dossier <b>gtasoon</b>.',
-        '<b>INSTALLER.bat</b> : première installation. <b>METTRE-A-JOUR.bat</b> : nouvelle version (sauvegarde auto, relance le serveur). '
-        'Il importe aussi automatiquement les mods posés dans C:\\GTASOON\\mods-a-trier.',
-        '<b>IMPORTER-MODS.bat</b> : véhicules, vêtements, maps (zip / rar / dlc.rpf) → tri, contrôle, installation, concession. '
-        'Lit aussi « Mon Drive\\GTA » si Google Drive pour ordinateur est installé.',
-        '<b>REPARER-LANCEUR.bat</b> : « le chemin d\'accès spécifié est introuvable » au démarrage. '
-        '<b>DEVENIR-ADMIN.bat</b> : te met fondateur. <b>SAUVEGARDER-BDD.bat</b>, <b>REPARER-MARIADB.bat</b>.',
-        "<b>SAUVEGARDER-BDD.bat</b> (V9) : sauvegarde maintenant et toutes les 6 h (5 h, 11 h, 17 h, 23 h), 30 gardées. "
-        "<b>RESTAURER-BDD.bat</b> : retour en arrière de TOUTE la base, ou d'UN SEUL joueur (perso + véhicules) après une triche ou un bug ; "
-        "l'état actuel est sauvegardé avant (on peut annuler). Hébergeur Linux : scripts/linux/roadline-bdd.sh.",
-        "<b>CONFIGURER-DISCORD.bat</b> (V9) : salon #statut mis à jour chaque minute, annonces (ouverture, redémarrages, rendez-vous), "
-        "bot RoadLine intégré au serveur (présence « 12/48 citoyens », /statut, /rejoindre, /rdv, /site : rien à installer, il démarre avec le serveur) "
-        "et rôles de métier. <b>METTRE-A-JOUR.bat</b> sauvegarde aussi la base avant chaque mise à jour et programme les sauvegardes.",
-    ])
+    s += [Paragraph('1. Outils en un double-clic', H2)]
+    s += [Paragraph('Toujours : clic droit sur le zip RoadLine → Extraire tout, puis ouvrir le dossier <b>gtasoon</b>.', P),
+          table(TOOLS, [48 * mm, 132 * mm])]
+    s += [Paragraph('Intégrations', H2), table(INTEGRATIONS, [40 * mm, 140 * mm])]
 
     s += [Paragraph('2. Touches', H2), table(KEYS, [38 * mm, 78 * mm, 64 * mm])]
     s += [Paragraph('3. Commandes utiles', H2), table(COMMANDS, [60 * mm, 120 * mm])]
 
-    s += [PageBreak(), Paragraph('★ Nouveautés V10.1 · Justice, presse et staff mobile', H2)]
+    s += [PageBreak(), Paragraph('★ V3 · Nouveau : justice, presse et staff mobile', H2)]
     s += bullets([
         "<b>Caméras de surveillance</b> : 20 caméras en ville. La police consulte les passages (plaque, type de véhicule, heure) aux "
         "terminaux du commissariat ; une bombe de peinture aveugle une caméra (les gangs adorent).",
@@ -141,7 +166,7 @@ def guide(points):
         "<b>Serveur officiel OVH</b> : PREPARER-OVH.bat (mise en ligne en un clic), METTRE-A-JOUR-OVH.bat (sans toucher la base), "
         "commande « roadline » sur le VPS. Guide : docs/OVH.md. <b>CAPTURER-ERREURS.bat</b> : enregistre les erreurs du démarrage.",
     ])
-    s += [PageBreak(), Paragraph('★ Nouveautés V10 · Une ville qui vit sans toi', H2)]
+    s += [PageBreak(), Paragraph('★ V3 · Une ville qui vit sans toi', H2)]
     s += bullets([
         "<b>Que faire ?</b> (téléphone, ou /quefaire) : un seul point d'entrée. « En ce moment » (rendez-vous, ring ouvert, fugitifs, "
         "quartiers chauds, services en service, faits divers pour la police) puis Gagner ma vie / Côté obscur / Me détendre / Ma vie / Aide : "
@@ -162,7 +187,7 @@ def guide(points):
         "-5 %). Braquer à visage découvert = reconnu et refusé au comptoir 48 h ; masqué, personne ne te reconnaît.",
         "<b>Bot Discord</b> : intégré au serveur, rien à installer (voir docs/DISCORD.md : 5 étapes, une seule fois).",
     ])
-    s += [PageBreak(), Paragraph('★ Nouveautés V9 · La ville porte ses cicatrices', H2)]
+    s += [PageBreak(), Paragraph('★ V2 · La ville porte ses cicatrices', H2)]
     s += bullets([
         "<b>Cicatrices de la ville</b> : bougies et ruban là où quelqu'un est tombé (quelques heures), vitrine brisée après un braquage "
         "(réparée par un joueur, payé comme ouvrier de la ville, jamais par l'auteur), fresque du gang qui gagne une guerre de quartier.",
@@ -188,7 +213,7 @@ def guide(points):
         "<b>Staff</b> : anti-triche serveur (alertes seulement, staff exempté : vol libre et TP intacts) dans F11 → Anti-triche ; "
         "F11 → Statistiques de rétention (nouveaux, retour J+1 / 7 jours, abandon à la 1re session, durée des sessions, pic).",
     ])
-    s += [PageBreak(), Paragraph('★ Signatures RoadLine (V8)', H2)]
+    s += [PageBreak(), Paragraph('★ V2 · La ville a une mémoire (signatures)', H2)]
     s += bullets([
         '<b>La ville se souvient</b> : les témoins décrivent le suspect à la police, en texte brut (homme / femme, masqué, couvre-chef, sac, '
         'gilet, armé, type et couleur du véhicule, plaque partielle). Recroisé avec la même tenue ou la même voiture (plaque + couleur), '
@@ -221,7 +246,7 @@ def guide(points):
         '<b>Mode cinéma</b> (/cinema) : interface masquée, bandes noires, filtres (cinéma, néon, noir et blanc), /ralenti : pour les clips.',
         '<b>Halloween sur la route</b> (du 24 octobre au 1er novembre) : rencontres plus fréquentes, auto-stoppeur fantôme, 13 citrouilles cachées (récompense).',
     ])
-    s += [PageBreak(), Paragraph('4. Vie légale', H2)]
+    s += [PageBreak(), Paragraph('4. Vie légale (V1 et suivantes)', H2)]
     s += bullets([
         '<b>Arrivée</b> : pas d\'appartement gratuit, apparition devant la mairie, quête « Ton premier jour » avec Max. Règlement à accepter.',
         '<b>Logement</b> : chambres de motel à la semaine (logo motel : Pink Cage 450 $, Sandy 300 $, Paleto 320 $ ; coffre + garde-robe), '
