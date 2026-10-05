@@ -276,6 +276,18 @@
   ul.check li:hover::before { transform: translateX(4px); color: var(--cyan); }
 
   /* Journal : frise lumineuse */
+  .news ul { margin: 8px 0 0; padding-left: 18px; color: var(--muted); font-size: .95rem; display: grid; gap: 4px; }
+  .news ul b { color: var(--text); font-weight: 700; }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+  .chips span { font-size: .72rem; font-weight: 700; letter-spacing: .04em; padding: 4px 9px; border-radius: 99px; border: 1px solid rgba(162, 75, 255, .45); color: #d9b8ff; background: rgba(162, 75, 255, .08); }
+  .pillars { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; margin-top: 28px; }
+  .pillar { position: relative; padding: 22px 22px 18px; background: var(--card); border: 1px solid var(--line); border-radius: 16px; overflow: hidden; }
+  .pillar::before { content: ''; position: absolute; inset: 0 auto 0 0; width: 4px; background: var(--neon); }
+  .pillar h3 { margin: 2px 0 12px; }
+  .pillar ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+  .pillar li { display: grid; gap: 2px; }
+  .pillar li b { font-size: .98rem; }
+  .pillar li span { color: var(--muted); font-size: .88rem; line-height: 1.45; }
   .news { display: grid; gap: 14px; position: relative; padding-left: 26px; }
   .news::before { content: ''; position: absolute; left: 6px; top: 8px; bottom: 8px; width: 2px; background: linear-gradient(var(--pink), var(--violet), var(--cyan)); box-shadow: var(--glow-pink); }
   .news article { position: relative; display: flex; gap: 18px; align-items: baseline; padding: 18px 20px; background: var(--card); border: 1px solid var(--line); border-radius: 14px; transition: transform .35s var(--ease), border-color .3s; }
@@ -526,8 +538,8 @@
 </div>
 
 <div class="stats">
-  <div class="stat rv"><strong data-count="61">0</strong><span>Systèmes maison</span></div>
-  <div class="stat rv" style="--d:1"><strong data-count="6">0</strong><span>Gangs &amp; organisations</span></div>
+  <div class="stat rv"><strong data-count="63">0</strong><span>Systèmes maison</span></div>
+  <div class="stat rv" style="--d:1"><strong data-count="16">0</strong><span>Signatures exclusives</span></div>
   <div class="stat rv" style="--d:2"><strong data-count="25">0</strong><span>Métiers &amp; activités</span></div>
   <div class="stat rv" style="--d:3"><strong data-count="0" data-suffix=" €">0</strong><span>Pay-to-win</span></div>
 </div>
@@ -555,24 +567,32 @@
   <div class="wrap">
     <span class="kicker">Exclusif</span>
     <h2 class="sweep">Ce que tu ne trouveras <span class="grad">nulle part ailleurs</span></h2>
-    <p class="lead muted rv">Des systèmes pensés pour le RP, pas pour la vitrine.</p>
-    <div class="grid">
-      <div class="card sig rv"><span class="num">01</span><span class="tag">Signature</span><h3>Los Santos réactif</h3><p>La tension de chaque quartier monte avec les crimes : moins de passants, plus de témoins, plus de police, des brèves dans la presse.</p></div>
-      <div class="card sig rv" style="--d:1"><span class="num">02</span><span class="tag">Signature</span><h3>La ville se souvient</h3><p>Les témoins décrivent ce qu'ils ont vu : tenue, masque, couleur de la voiture, bout de plaque. Recroise-les avec la même veste… ils te reconnaissent.</p></div>
-      <div class="card sig rv" style="--d:2"><span class="num">03</span><span class="tag">Signature</span><h3>Enquêtes avec preuves</h3><p>Douilles, sang, empreintes, traces de pneus : la police scientifique analyse tout. Les malins portent des gants et nettoient derrière eux.</p></div>
-      <div class="card sig rv"><span class="num">04</span><span class="tag">Signature</span><h3>Rencontres de la route</h3><p>Sur les routes du comté, une scène t'attend parfois au bord de l'asphalte : auto-stoppeur, panne, accident… Arrête-toi. Ou pas.</p></div>
-      <div class="card sig rv" style="--d:1"><span class="num">05</span><span class="tag">Signature</span><h3>Braquage à la voix</h3><p>Pointe ton arme, élève la voix : la peur du PNJ monte. Plus tu cries, plus ça va vite… et plus on t'entend.</p></div>
-      <div class="card sig rv" style="--d:2"><span class="num">06</span><span class="tag">Signature</span><h3>Road trip du mois</h3><p>Un grand itinéraire panoramique chaque mois, en solo ou en convoi : spots photo, primes, classement des explorateurs.</p></div>
-      <div class="card sig rv"><span class="num">07</span><span class="tag">Signature · V2</span><h3>Les cicatrices de la ville</h3><p>Des bougies là où quelqu'un est tombé, une vitrine brisée après un braquage (réparée par les ouvriers de la ville), la fresque du gang qui a pris le quartier.</p></div>
-      <div class="card sig rv" style="--d:1"><span class="num">08</span><span class="tag">Signature · V2</span><h3>La cavale</h3><p>Trop recherché ? Tu deviens fugitif : affiches dans la ville, prime pour qui te livre, et ton nom au panthéon des légendes si tu tiens.</p></div>
-      <div class="card sig rv"><span class="num">09</span><span class="tag">Signature · V2</span><h3>Ton récap du mois</h3><p>Chaque mois, ton histoire en chiffres : heures en ville, kilomètres, coups, arrestations, combats, rencontres… avec ton titre et ton classement (/recap).</p></div>
-      <div class="card sig rv" style="--d:1"><span class="num">10</span><span class="tag">Signature · V3</span><h3>Le quartier évolue</h3><p>Les commerces qui tournent font monter le quartier ; les gangs, les tags et les braquages le font couler. Rues sales ou quartier chic : c'est vous qui décidez.</p></div>
-      <div class="card sig rv" style="--d:2"><span class="num">11</span><span class="tag">Signature · V3</span><h3>Radio Los Santos</h3><p>En voiture, l'animateur raconte la ville en direct : rendez-vous du soir, fugitifs, faits divers, tempête qui arrive… et la rumeur d'un ring cette nuit.</p></div>
-      <div class="card sig rv" style="--d:3"><span class="num">12</span><span class="tag">Signature · V3</span><h3>Les commerçants se souviennent</h3><p>Habitué de ta supérette ? On te salue par ton prénom, avec une remise. Tu l'as braquée à visage découvert ? On te reconnaît… et on te met dehors.</p></div>
-      <div class="card sig rv"><span class="num">13</span><span class="tag">Signature · V3</span><h3>Caméras et mandats</h3><p>Les caméras de la ville enregistrent les plaques ; les gangs peuvent les aveugler à la bombe. Trop d'allées et venues dans une planque ? Les voisins parlent, le juge signe, la police perquisitionne.</p></div>
-      <div class="card sig rv" style="--d:1"><span class="num">14</span><span class="tag">Signature · V3</span><h3>Le tribunal des preuves</h3><p>Photos et scellés versés au dossier, le juge retient ou écarte. Et cette photo compromettante ? Elle se monnaie… ou finit dans la presse.</p></div>
-      <div class="card sig rv" style="--d:2"><span class="num">15</span><span class="tag">Signature · V3</span><h3>Les enchères de la fourrière</h3><p>Chaque samedi soir, la police vend aux enchères ses saisies et les voitures abandonnées. Mises bloquées, surenchères, et la recette va à la police.</p></div>
-      <div class="card sig rv" style="--d:3"><span class="num">16</span><span class="tag">Signature · V3</span><h3>Direct Weazel</h3><p>Une grosse poursuite passe en direct : bandeau pour toute la ville, l'hélico de la chaîne au-dessus du suspect, les journalistes payés sur place.</p></div>
+    <p class="lead muted rv">16 systèmes pensés pour le RP, pas pour la vitrine, en 4 piliers.</p>
+    <div class="pillars">
+      <div class="pillar rv"><span class="tag">La ville se souvient</span><h3>Chaque acte laisse une trace</h3><ol>
+        <li><b>Témoins et mémoire</b><span>Ils décrivent ta tenue, ta voiture, un bout de plaque… et te reconnaissent.</span></li>
+        <li><b>Enquêtes avec preuves</b><span>Douilles, sang, empreintes, caméras : la police scientifique remonte la piste.</span></li>
+        <li><b>Les cicatrices de la ville</b><span>Bougies, vitrines brisées, fresques de gang : la ville garde les marques.</span></li>
+        <li><b>Les commerçants se souviennent</b><span>Habitué salué par son prénom, braqueur à visage découvert mis dehors.</span></li>
+      </ol></div>
+      <div class="pillar rv" style="--d:1"><span class="tag">La ville vit sans toi</span><h3>Los Santos bouge tout seul</h3><ol>
+        <li><b>Los Santos réactif</b><span>Crimes et commerces font monter ou couler chaque quartier.</span></li>
+        <li><b>Radio Los Santos</b><span>L'animateur raconte la ville en direct, en voiture.</span></li>
+        <li><b>Rencontres de la route</b><span>Auto-stoppeur, panne, accident… arrête-toi. Ou pas.</span></li>
+        <li><b>Road trip du mois</b><span>Un grand itinéraire, des spots photo, un classement.</span></li>
+      </ol></div>
+      <div class="pillar rv" style="--d:2"><span class="tag">La rue</span><h3>Le crime a des conséquences</h3><ol>
+        <li><b>Braquage à la voix</b><span>Plus tu cries, plus la peur monte… et plus on t'entend.</span></li>
+        <li><b>La cavale</b><span>Affiches, prime sur ta tête, et le panthéon des légendes.</span></li>
+        <li><b>Caméras et mandats</b><span>Les gangs aveuglent les caméras, les voisins parlent, le juge signe.</span></li>
+        <li><b>Enchères de la fourrière</b><span>Saisies et voitures abandonnées, chaque samedi soir.</span></li>
+      </ol></div>
+      <div class="pillar rv" style="--d:3"><span class="tag">Justice et presse</span><h3>Ton histoire fait la une</h3><ol>
+        <li><b>Direct Weazel</b><span>Les grosses poursuites en direct, hélicoptère au-dessus du suspect.</span></li>
+        <li><b>Le tribunal des preuves</b><span>Pièces au dossier, chantage à la photo, verdicts motivés.</span></li>
+        <li><b>Weazel joué par les joueurs</b><span>Articles, brèves, flash info : la presse, c'est vous.</span></li>
+        <li><b>Ton récap du mois</b><span>Ton histoire en chiffres, ton titre, ton classement.</span></li>
+      </ol></div>
     </div>
   </div>
 </section>
@@ -672,9 +692,21 @@
     <div class="news">
       <article class="rv classified" title="Survole pour décrypter"><time>V4</time><div><strong>Classé confidentiel</strong><span class="new lock">🔒 BIENTÔT</span>
         <p><span class="redact">Convois officiels</span> à travers l'État, <span class="redact">la Saison 1</span>, et <span class="redact">les élections du maire</span>… Survole pour décrypter.</p></div></article>
-      <article class="rv" style="--d:1"><time>V3</time><div><strong>Une ville qui vit sans toi</strong><span class="new">NEW</span><p>« Que faire ? » et un téléphone refait (plans, ville, notes, notifications, mode marche), le quartier qui évolue, faits divers pour la police, Radio Los Santos, les commerçants qui se souviennent. Et tout frais : caméras de surveillance, mandats de perquisition, preuves au tribunal et chantage à la photo, enchères de la fourrière, Direct Weazel sur les grosses poursuites, modération depuis le téléphone pour le staff.</p></div></article>
-      <article class="rv" style="--d:2"><time>V2</time><div><strong>La ville a une mémoire</strong><p>Témoins qui décrivent (jusqu'aux tatouages), enquêtes avec preuves, rencontres de la route, rumeurs et indic', prison vivante, tempêtes, parrains, permis à points ; puis les cicatrices de la ville, la cavale et ses légendes, l'appareil photo argentique, combats clandestins, racket, la doublure du patron, contrats signés, ton récap du mois et les rendez-vous de la semaine.</p></div></article>
-      <article class="rv" style="--d:3"><time>V1</time><div><strong>La rue et les métiers</strong><p>Braquage à la voix, marché noir, Cayo Perico en duo, motels, blanchiment, contrats ; les 3 premières signatures (Los Santos réactif, Weazel News joué par les joueurs, road trip du mois) ; récolte, 3 bars, police IA, tenues en objets, courses et mécanos.</p></div></article>
+      <article class="rv" style="--d:1"><time>V3</time><div><strong>Une ville qui vit sans toi</strong><span class="new">NEW</span>
+        <ul><li><b>Le téléphone te guide</b> : « Que faire ? » montre ce qui se passe et t'y emmène en un clic.</li>
+          <li><b>La ville bouge seule</b> : quartiers qui montent ou coulent, faits divers, radio en direct.</li>
+          <li><b>Justice et presse</b> : caméras, mandats, preuves au tribunal, enchères, poursuites en direct.</li></ul>
+        <div class="chips"><span>Le quartier évolue</span><span>Radio Los Santos</span><span>Les commerçants se souviennent</span><span>Caméras et mandats</span><span>Le tribunal des preuves</span><span>Enchères de la fourrière</span><span>Direct Weazel</span></div></div></article>
+      <article class="rv" style="--d:2"><time>V2</time><div><strong>La ville a une mémoire</strong>
+        <ul><li><b>Elle se souvient de toi</b> : témoins, preuves, rumeurs, carnet de chaque voiture.</li>
+          <li><b>Elle garde les cicatrices</b> : mémoriaux, vitrines brisées, fresques de gang.</li>
+          <li><b>Des histoires qui durent</b> : cavale et légendes, combats clandestins, contrats, récap du mois.</li></ul>
+        <div class="chips"><span>La ville se souvient</span><span>Enquêtes avec preuves</span><span>Rencontres de la route</span><span>Les cicatrices</span><span>La cavale</span><span>Ton récap du mois</span></div></div></article>
+      <article class="rv" style="--d:3"><time>V1</time><div><strong>La rue et les métiers</strong>
+        <ul><li><b>La rue</b> : braquage à la voix, marché noir, gangs, Cayo Perico en duo.</li>
+          <li><b>Les métiers</b> : police, EMS, mécanos, bars, récolte, routiers… et une vraie économie.</li>
+          <li><b>La ville</b> : Los Santos réactif, Weazel joué par les joueurs, road trip du mois.</li></ul>
+        <div class="chips"><span>Braquage à la voix</span><span>Los Santos réactif</span><span>Weazel joué</span><span>Road trip du mois</span></div></div></article>
     </div>
   </div>
 </section>
@@ -803,7 +835,7 @@
   try { seen = sessionStorage.getItem('rl_intro') === '1'; sessionStorage.setItem('rl_intro', '1'); } catch (e) {}
   const start = () => { intro.classList.add('done'); document.body.classList.add('ready'); setTimeout(() => intro.remove(), 900); };
   if (RM || seen) { intro.remove(); document.body.classList.add('ready'); }
-  else { setTimeout(start, 1350); intro.addEventListener('click', start, { once: true }); }
+  else { setTimeout(start, 700); intro.addEventListener('click', start, { once: true }); }
 
   // Skyline générée (fenêtres qui scintillent)
   (function skyline() {
