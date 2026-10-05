@@ -8,11 +8,14 @@
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
+  <div class="intro" aria-hidden="true"><div class="intro-title"><span>Road</span><span>Line</span></div><div class="intro-sub">Los Santos · 2026</div></div>
   <!-- Décor : coucher de soleil façon côte de Vice, tout en CSS / SVG (aucune image externe) -->
   <div class="scene" aria-hidden="true">
     <div class="sky"></div>
     <div class="stars"></div>
     <div class="sun"></div>
+    <div class="moon"></div>
+    <div class="windows"></div>
     <svg class="skyline" viewBox="0 0 1600 260" preserveAspectRatio="none">
       <path d="M0 260 V190 H60 V150 H95 V175 H140 V120 H170 V90 H185 V120 H215 V160 H260 V140 H300 V60 H318 V40 H332 V60 H350 V150 H400 V175 H450 V130 H490 V100 H520 V130 H560 V185 H620 V150 H660 V110 H700 V80 H715 V110 H740 V160 H800 V140 H840 V70 H870 V140 H910 V180 H960 V150 H1000 V120 H1040 V95 H1060 V120 H1100 V170 H1150 V140 H1190 V105 H1230 V150 H1280 V185 H1330 V160 H1380 V125 H1420 V150 H1470 V180 H1530 V160 H1600 V260 Z"/>
     </svg>
@@ -37,6 +40,7 @@
 
   <main>
     <section class="recap">
+      <div class="welcome" id="welcome"></div>
       <div class="kicker">Précédemment à Los Santos</div>
       <ul id="recap"></ul>
       <div class="hot" id="hot"></div>
@@ -45,6 +49,7 @@
 
     <section class="postcards" aria-live="polite">
       <div class="card" id="card">
+        <div class="card-scene" id="card-scene"></div>
         <div class="card-band"></div>
         <div class="card-title" id="card-title">La ville se souvient</div>
         <div class="card-text" id="card-text">Témoins, preuves, cicatrices : chaque acte laisse une trace.</div>
@@ -53,6 +58,7 @@
     </section>
   </main>
 
+  <div class="ticker" aria-hidden="true"><span class="ticker-tag">Weazel News</span><div class="ticker-track"><div class="ticker-text" id="ticker"></div></div></div>
   <footer>
     <div class="tip"><span class="tip-label">Astuce</span><span id="tip"></span></div>
     <div class="keys">

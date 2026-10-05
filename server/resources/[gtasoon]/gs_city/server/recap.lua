@@ -50,8 +50,30 @@ function CityRecap(now)
         weather = weather and (WEATHER[weather] or weather:lower()) or nil, next = weekly[1], version = GetConvar('gs_version', '') }
 end
 
+--- Accueil personnalisé : dernier personnage joué sur ce compte (prénom, métier, absence). Uniquement pour le joueur lui-même.
+function CityWelcome(src)
+    if not MySQL or not MySQL.single then return nil end
+    local l2, l1 = GetPlayerIdentifierByType(src, 'license2'), GetPlayerIdentifierByType(src, 'license')
+    if not l2 and not l1 then return nil end
+    local ok, row = pcall(MySQL.single.await, 'SELECT charinfo, job, UNIX_TIMESTAMP(last_updated) AS seen FROM players WHERE license IN (?, ?) ORDER BY last_updated DESC LIMIT 1',
+        { l2 or '', l1 or '' })
+    if not ok or not row then return { new = true } end
+    local function dec(s) local okD, v = pcall(json.decode, s or '') return okD and type(v) == 'table' and v or {} end
+    local c, j = dec(row.charinfo), dec(row.job)
+    local days = row.seen and math.floor((os.time() - tonumber(row.seen)) / 86400) or nil
+    return { firstname = c.firstname, lastname = c.lastname, job = j.label, days = days }
+end
+
 AddEventHandler('playerConnecting', function(_, _, deferrals)
     if not deferrals or not deferrals.handover then return end
+    local src = source
     local ok, data = pcall(CityRecap)
-    if ok then deferrals.handover({ roadline = data }) end
+    if not ok then return end
+    if deferrals.defer then deferrals.defer() Wait(0) end -- le temps de lire la base (accueil personnalisé)
+    local okW, me = pcall(CityWelcome, src)
+    data.me = okW and me or nil
+    data.hour = tonumber(os.date('%H'))
+    data.gazette = Gazette and Gazette.last and { number = Gazette.last.number, headline = Gazette.last.headline } or nil
+    deferrals.handover({ roadline = data })
+    if deferrals.done then deferrals.done() end
 end)
