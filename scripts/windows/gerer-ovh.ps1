@@ -21,18 +21,24 @@ try {
 } catch { Say "ERREUR : $($_.Exception.Message)" 'Red'; Read-Host 'Entrée pour quitter'; exit 1 }
 
 $menu = [ordered]@{
-    '1'  = @('État + diagnostic (pourquoi le serveur ne répond pas)', 'sudo roadline etat; echo; sudo roadline diagnostic')
+    '1'  = @('État + diagnostic (version, pourquoi le serveur ne répond pas)', 'sudo roadline etat; echo; sudo roadline diagnostic')
     '2'  = @('Console (dernières lignes)', 'sudo roadline logs 60')
-    '3'  = @('Redémarrer', 'sudo roadline redemarrer')
-    '4'  = @('Ouvrir au PUBLIC (liste FiveM, 48 places)', 'sudo roadline public')
-    '5'  = @('Repasser en PRIVÉ (tests, maintenance)', 'sudo roadline prive')
-    '6'  = @('Sauvegarder la base maintenant', 'sudo roadline sauvegarde')
-    '7'  = @('Liste des sauvegardes', 'sudo roadline sauvegardes')
-    '8'  = @('Mode SIMPLE : le serveur démarre tout seul (recommandé)', 'sudo roadline mode simple')
-    '9'  = @('Mode txAdmin : panneau web sur le port 40120 (avec code PIN)', 'sudo roadline mode txadmin')
-    '10' = @('Revenir à la version précédente de RoadLine', 'sudo roadline retour')
-    '11' = @('Ouvrir une console sur le VPS (taper « exit » pour revenir)', '')
+    '3'  = @('Erreurs de scripts depuis le démarrage (backtest)', 'sudo roadline erreurs')
+    '4'  = @('Redémarrer', 'sudo roadline redemarrer')
+    '5'  = @('Arrêter le serveur', 'sudo roadline arreter')
+    '6'  = @('Démarrer le serveur', 'sudo roadline demarrer')
+    '7'  = @('Ouvrir au PUBLIC (liste FiveM, 48 places)', 'sudo roadline public')
+    '8'  = @('Repasser en PRIVÉ (caché, pour tester)', 'sudo roadline prive')
+    '9'  = @('Sauvegarder la base maintenant', 'sudo roadline sauvegarde')
+    '10' = @('Liste des sauvegardes', 'sudo roadline sauvegardes')
+    '11' = @('Copier la dernière sauvegarde du VPS sur ce PC (sécurité)', '')
+    '12' = @('Envoyer mes réglages du PC au VPS (Discord, codes staff… : cfg\secrets.cfg)', '')
+    '13' = @('Revenir à la version précédente de RoadLine', 'sudo roadline retour')
+    '14' = @('Mode SIMPLE : le serveur démarre tout seul (recommandé)', 'sudo roadline mode simple')
+    '15' = @('Mode txAdmin : panneau web sur le port 40120 (avec code PIN)', 'sudo roadline mode txadmin')
+    '16' = @('Ouvrir une console sur le VPS (taper « exit » pour revenir)', '')
 }
+$confirm = @{ '5' = 'Arrêter le serveur (les joueurs sont déconnectés) ?'; '13' = 'Remettre la version précédente ?'; '12' = 'Remplacer les réglages du VPS par ceux du PC (la base du VPS est gardée) ?' }
 while ($true) {
     Say "`n=========== ROADLINE · VPS $($vps.ip) ===========" 'Cyan'
     foreach ($k in $menu.Keys) { Say ('  {0,2}. {1}' -f $k, $menu[$k][0]) 'White' }
@@ -41,8 +47,27 @@ while ($true) {
     $c = (Read-Host 'Choix').Trim()
     if ($c -eq '0' -or $c -eq '') { break }
     if (-not $menu.Contains($c)) { Say 'Choix inconnu.' 'Yellow'; continue }
-    if ($c -eq '10' -and (Read-Host 'Remettre la version précédente ? (O/N)') -notmatch '^[oOyY]') { continue }
+    if ($confirm.ContainsKey($c) -and (Read-Host "$($confirm[$c]) (O/N)") -notmatch '^[oOyY]') { continue }
     Say "`n→ $($menu[$c][0])" 'Cyan'
-    if ($c -eq '11') { $a = SshArgs; & ssh @a "$($vps.user)@$($vps.ip)" }
-    else { Invoke-Vps $vps $menu[$c][1] }
+    try {
+        switch ($c) {
+            '16' { $a = SshArgs; & ssh @a "$($vps.user)@$($vps.ip)" }
+            '11' {
+                $name = Get-VpsOutput $vps 'sudo roadline copie-sauvegarde'
+                if ($name -notmatch '\.sql\.gz$') { Say "  $name" 'Yellow'; break }
+                $dir = 'C:\GTASOON\ovh\sauvegardes-vps'; [void][IO.Directory]::CreateDirectory($dir)
+                $a = SshArgs
+                & scp @a "$($vps.user)@$($vps.ip):/tmp/roadline-sauvegarde.sql.gz" (Join-Path $dir $name)
+                [void](Get-VpsOutput $vps 'rm -f /tmp/roadline-sauvegarde.sql.gz')
+                Say "  Copiée : $(Join-Path $dir $name)" 'Green'
+            }
+            '12' {
+                $src = 'C:\GTASOON\server-data\cfg\secrets.cfg'
+                if (-not (Test-Path -LiteralPath $src)) { Say "  Introuvable : $src" 'Yellow'; break }
+                Send-Vps $vps @($src) '/tmp/secrets-pc.cfg'
+                Invoke-Vps $vps 'sudo roadline secrets /tmp/secrets-pc.cfg'
+            }
+            default { Invoke-Vps $vps $menu[$c][1] }
+        }
+    } catch { Say "ERREUR : $($_.Exception.Message)" 'Red' }
 }

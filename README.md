@@ -5,6 +5,7 @@ Base Los Santos vanilla, finitions néon / sunset façon Vice City, touche FR.
 
 - Fondateur / décideur final : **Alpha**
 - Stack : FXServer + txAdmin, Qbox, ox_lib / ox_inventory / ox_target / oxmysql, pma-voice, NUI React + Vite, Supabase + Netlify, Make, Tebex
+- **Où on en est / priorités : [`docs/ROADMAP.md`](docs/ROADMAP.md)** · Serveur en ligne : **[`docs/OVH.md`](docs/OVH.md)** (PREPARER / METTRE-A-JOUR / GERER-OVH)
 - Docs : [`docs/AGENTS.md`](docs/AGENTS.md) · [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) · [`docs/SECURITY.md`](docs/SECURITY.md) · [`docs/ROADMAP.md`](docs/ROADMAP.md) · [`docs/JOBS.md`](docs/JOBS.md) · [`docs/V1_RESOURCES.md`](docs/V1_RESOURCES.md) · [`docs/WEATHER.md`](docs/WEATHER.md) · [`docs/FEATURES.md`](docs/FEATURES.md) · [`docs/BOUTIQUE.md`](docs/BOUTIQUE.md) · **[`docs/FAQ_FIVEM.md`](docs/FAQ_FIVEM.md)** · **[`docs/V1_CHECKLIST.md`](docs/V1_CHECKLIST.md)** · [`docs/ADMIN.md`](docs/ADMIN.md) · [`docs/STRATEGIE.md`](docs/STRATEGIE.md) · **[`docs/INSTALL.md`](docs/INSTALL.md)**
 
 ## Structure

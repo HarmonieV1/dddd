@@ -40,7 +40,7 @@ Il fait ensuite tout seul :
    - ouvre le pare-feu : SSH, `30120` pour le jeu, `40120` pour txAdmin ;
    - crée un service qui **démarre le serveur tout seul** (OneSync activé, rien à configurer) et le relance après un plantage ou un redémarrage du VPS ;
    - programme une sauvegarde de la base toutes les 6 h ;
-   - laisse le serveur en **profil privé** (caché de la liste, 8 places) pour que tu puisses tester d'abord.
+   - laisse le serveur en **profil privé** (caché de la liste, 16 places pour le backtest) pour que tu puisses tester d'abord.
 
 > **Aucun mot de passe à taper** : au début, l'outil copie la « clé » de ton PC et te dit où la coller chez OVH
 > (Réinstaller mon VPS → Ubuntu 24.04 → champ « Clé SSH » → coller → Confirmer). La fenêtre attend toute seule la fin
@@ -88,11 +88,28 @@ Si une mise à jour pose problème : `GERER-OVH.bat` → **Revenir à la version
 
 ## 4. Au quotidien : `GERER-OVH.bat`
 
-Un menu sur le PC, sans mot de passe : état, console, redémarrer, public/privé, sauvegarde, liste des sauvegardes,
-mode simple/txAdmin, retour à la version d'avant, console du VPS. Les mêmes commandes existent en SSH :
+Un menu sur le PC, sans mot de passe (connexion par la clé). Au lancement, il remet à jour la commande `roadline` du VPS
+et termine tout seul une installation interrompue.
+
+| N° | Option | Quand |
+|---|---|---|
+| 1 | État + diagnostic | Version en ligne, profil, service, port 30120, cause en clair si le serveur ne répond pas |
+| 2 | Console | Les 60 dernières lignes |
+| 3 | Erreurs de scripts | Backtest : erreurs depuis le démarrage, regroupées par ressource |
+| 4 / 5 / 6 | Redémarrer / Arrêter / Démarrer | Maintenance |
+| 7 / 8 | Public / Privé | Ouvrir (48 places, liste FiveM) ou cacher (16 places, testeurs) |
+| 9 / 10 | Sauvegarder / Liste | Sauvegarde immédiate (sinon auto toutes les 6 h, 30 gardées) |
+| 11 | Copier la dernière sauvegarde sur le PC | Copie de sécurité hors VPS (`C:\GTASOON\ovh\sauvegardes-vps`) |
+| 12 | Envoyer mes réglages du PC | Après CONFIGURER-DISCORD, codes du panneau web… (`secrets.cfg`), la base du VPS est gardée |
+| 13 | Revenir à la version précédente | Une mise à jour pose problème |
+| 14 / 15 | Mode simple / txAdmin | Démarrage direct (défaut) ou panneau txAdmin (port 40120) |
+| 16 | Console du VPS | Pour les habitués |
+
+Les mêmes commandes existent en SSH :
 
 ```
-roadline etat                 état, disque, mémoire
+roadline etat                 version, profil, état, disque, mémoire
+sudo roadline diagnostic      pourquoi le serveur ne répond pas · sudo roadline erreurs : erreurs de scripts
 sudo roadline mode simple     démarrage direct (défaut) · sudo roadline mode txadmin : panneau web 40120
 roadline logs                 dernières lignes de la console (roadline suivre : en direct)
 sudo roadline redemarrer      redémarrer le serveur
@@ -122,16 +139,20 @@ Toutes les actions sont journalisées (« Web · pseudo », « Discord · pseudo
 
 ## 6. Éditer un réglage sur le VPS
 
-Les fichiers à modifier sur le VPS sont `secrets.cfg` (codes, webhooks, jeton du bot) et `permissions.cfg` (staff). Utilise WinSCP ou FileZilla en SFTP, ou `sudo nano /home/fivem/server-data/cfg/secrets.cfg`, puis `GERER-OVH.bat` → **Redémarrer**.
+Le plus simple : modifie les réglages sur le PC (CONFIGURER-DISCORD.bat, `cfg\secrets.cfg`), puis `GERER-OVH.bat` → **12**.
+Sinon, les fichiers à modifier sur le VPS sont `secrets.cfg` (codes, webhooks, jeton du bot) et `permissions.cfg` (staff). Utilise WinSCP ou FileZilla en SFTP, ou `sudo nano /home/fivem/server-data/cfg/secrets.cfg`, puis `GERER-OVH.bat` → **Redémarrer**.
 
 ## Dépannage
 
 | Symptôme | Solution |
 |---|---|
+| « You are required to change your password » | Géré par l'outil : colle le mot de passe du mail OVH quand il le demande (une seule fois) |
 | L'envoi est refusé / la fenêtre attend sans fin | Vérifie l'IP et l'utilisateur (`ubuntu`), et que la clé a bien été collée dans « Clé SSH » à la réinstallation |
 | « ssh introuvable » | Paramètres Windows → Applications → Fonctionnalités facultatives → **Client OpenSSH** |
 | Qbox ne démarre pas, erreur OneSync | `GERER-OVH.bat` → **Mode simple** (OneSync y est toujours activé) |
 | On m'a parlé d'un code PIN txAdmin | Inutile en mode simple : `GERER-OVH.bat` → **Mode simple** |
 | Le serveur n'apparaît pas dans la liste | Normal en profil privé : `GERER-OVH.bat` → **Ouvrir au PUBLIC** |
 | Base vide après l'installation | La base du PC n'a pas pu être lue (MariaDB arrêté). Relance PREPARER-OVH avec MariaDB démarré, puis tape `ECRASER` |
+| « Quitting: Ctrl-C pressed » dans la console | Relance `GERER-OVH.bat` : il corrige le service tout seul |
+| METTRE-A-JOUR-OVH annonce une ancienne version | Il propose de mettre le PC à jour d'abord : réponds O |
 | Une mise à jour casse quelque chose | `GERER-OVH.bat` → **Revenir à la version précédente**, puis **Console** pour voir l'erreur |

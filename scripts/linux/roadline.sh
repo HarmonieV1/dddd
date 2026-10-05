@@ -129,10 +129,38 @@ diagnostic() { # pourquoi le serveur ne répond pas, en clair
   journalctl -u roadline -n 25 --no-pager -o cat 2>/dev/null | tail -25
 }
 
+erreurs() { # erreurs de scripts depuis le dernier démarrage, regroupées par ressource
+  local since log; since=$(systemctl show -p ExecMainStartTimestamp --value roadline 2>/dev/null || true)
+  [ -n "$since" ] && [ "$since" != "n/a" ] || since="-1h"
+  log=$(journalctl -u roadline --since "$since" --no-pager -o cat 2>/dev/null || true)
+  local errs; errs=$(grep -E 'SCRIPT ERROR|\^1Error|\[ERROR\]|Failed to (load|start)|Couldn.t (load|start)|stack traceback' <<<"$log" || true)
+  if [ -z "$errs" ]; then echo "Aucune erreur de script depuis le démarrage ($since)."; return 0; fi
+  echo "Erreurs depuis le démarrage : $(wc -l <<<"$errs") ligne(s). Par ressource :"
+  grep -oE '@[a-zA-Z0-9_-]+/|script:[a-zA-Z0-9_-]+|resource [a-zA-Z0-9_-]+' <<<"$errs" | sed -E 's/^@//; s#/$##; s/^script://; s/^resource //' | sort | uniq -c | sort -rn | head -15
+  echo; echo "Dernières (sans doublons) :"; awk '!vu[$0]++' <<<"$errs" | tail -15
+}
+
+secrets() { # réglages du PC (Discord, codes staff, licence…) sans toucher à la connexion de la base du VPS
+  local f="${1:?fichier}" keep
+  [ -f "$f" ] || { echo "Introuvable : $f"; exit 1; }
+  keep=$(grep -E '^set mysql_connection_string ' "$DATA/cfg/secrets.cfg" || true)
+  cp "$DATA/cfg/secrets.cfg" "$BASE/anciens/secrets-$(date +%Y%m%d_%H%M%S).cfg" 2>/dev/null || true
+  tr -d '\r' < "$f" | grep -vE '^set mysql_connection_string ' > "$DATA/cfg/secrets.cfg"
+  [ -n "$keep" ] && echo "$keep" >> "$DATA/cfg/secrets.cfg"
+  chown fivem:fivem "$DATA/cfg/secrets.cfg"; chmod 600 "$DATA/cfg/secrets.cfg"; rm -f "$f"
+  systemctl restart roadline
+  echo "Réglages du PC appliqués (connexion à la base du VPS gardée), serveur redémarré."
+}
+
 case "${1:-aide}" in
   etat) echo "Version RoadLine : $(grep -oE 'gs_version "[^"]+"' "$DATA/server.cfg" 2>/dev/null | cut -d'"' -f2) · profil $(cat "$BASE/.profil" 2>/dev/null || echo ?)"
     systemctl --no-pager status roadline | head -5; echo; df -h / | tail -1; free -h | sed -n 2p ;;
   diagnostic) need_root "$@"; diagnostic ;;
+  erreurs) need_root "$@"; erreurs ;;
+  secrets) need_root "$@"; secrets "${2:-/tmp/secrets-pc.cfg}" ;;
+  copie-sauvegarde) need_root "$@" # dernière sauvegarde → /tmp, lisible par le compte SSH (pour la garder aussi sur le PC)
+    f=$(ls -1t "$BASE"/sauvegardes/*.sql.gz 2>/dev/null | head -1); [ -n "$f" ] || { echo "Aucune sauvegarde."; exit 1; }
+    install -m 600 -o "${SUDO_USER:-root}" "$f" /tmp/roadline-sauvegarde.sql.gz; echo "$(basename "$f")" ;;
   logs) journalctl -u roadline -n "${2:-80}" --no-pager ;;
   pin) pin "${2:-}" ;;
   unite) need_root "$@"; unite "${2:-simple}" ;;
@@ -159,6 +187,8 @@ case "${1:-aide}" in
   *) cat <<'EOF'
 roadline etat              état du serveur, disque, mémoire
 roadline diagnostic        pourquoi le serveur ne répond pas (causes en clair + dernières lignes)
+roadline erreurs           erreurs de scripts depuis le démarrage, par ressource (backtest)
+roadline secrets FICHIER   appliquer le secrets.cfg du PC (garde la base du VPS)
 roadline mode simple|txadmin  démarrage direct (par défaut, rien à configurer) ou avec le panneau web txAdmin
 roadline pin               code PIN de txAdmin (première configuration)
 roadline logs [N]          N dernières lignes de la console (défaut 80) · roadline suivre : en direct

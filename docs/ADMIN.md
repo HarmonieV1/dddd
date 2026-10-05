@@ -100,7 +100,8 @@ Placer n'importe quel objet du jeu, le déplacer, le tourner, le dupliquer, le s
 - **Direct Weazel** (`gs_social`, `Config.Live`) : chaleur ≥ 45 ; un direct toutes les 20 min max ; journalistes payés 150 $/min (1 500 $ max).
 - **Staff à distance** : bot Discord (docs/DISCORD.md) et panneau web `/gs_admin/` (codes `gs_admin_web` dans secrets.cfg, docs/OVH.md § 5). Mêmes actions, journalisées.
 - **CAPTURER-ERREURS.bat** : lance le serveur 2 min et ouvre `C:\GTASOON\logs\erreurs.txt` (erreurs + 80 dernières lignes) — à m'envoyer en cas de souci au démarrage.
-- **Serveur officiel** : docs/OVH.md (PREPARER-OVH.bat, METTRE-A-JOUR-OVH.bat, commande `roadline`).
+- **Serveur officiel** : docs/OVH.md (PREPARER-OVH.bat, METTRE-A-JOUR-OVH.bat, **GERER-OVH.bat**, commande `roadline`).
+- **Backtest sur le VPS** : `GERER-OVH.bat` → 3 « Erreurs de scripts » chaque jour (regroupées par ressource), → 11 copie de la base sur le PC. Profil privé : 16 places, caché de la liste.
 
 ## V10.2 · Retours du backtest, rumeurs, nuit, dossier
 - **Objets** : METTRE-A-JOUR.bat traduit les noms (server/locales-fr/items.json, weapons.json) et ajoute les images manquantes (server/item-icons, généré par `python3 tools/item_icons.py`).
