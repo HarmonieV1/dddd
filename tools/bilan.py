@@ -52,7 +52,9 @@ HISTORY = [
               "images pour tous les objets, dossier du citoyen, rumeurs qui deviennent vraies, ville de jour / ville de nuit, carte en direct du site"],
     ['V11', "Bêta ouverte sur le VPS OVH : lieux de mémoire (plaques des grands moments, les passants racontent), la ville en timelapse "
             "sur le site, panneau staff mobile refait (joueurs, tickets, txAdmin), vérification Discord, veille avec alerte et relance, "
-            "redémarrage quotidien annoncé, copie quotidienne des sauvegardes sur le PC, GERER-OVH complet, réglages du profil public vérifiés"],
+            "redémarrage quotidien annoncé, copie quotidienne des sauvegardes sur le PC, GERER-OVH complet (22 options), réglages du profil "
+            "public vérifiés, panneau staff en appli (https, codes en un clic), txAdmin pour le fondateur, carte en direct du site branchée, "
+            "correctif de la traduction des objets (réparation automatique, test qui l'empêche de revenir)"],
 ]
 
 FEATURES = [

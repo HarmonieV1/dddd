@@ -387,7 +387,9 @@ Traductions françaises manquantes des scripts Qbox ajoutées par METTRE-A-JOUR 
   cavale légendaire, ou posée par le staff (`/plaque <texte>`, `/plaqueretirer`) ; 30 jours ; [E] Lire la plaque : un passant raconte.
 - **gs_city** : la ville en timelapse — 24 h de photos de tension (toutes les 10 min) et de faits marquants, dans `/gs_city/ville.json` ;
   le site les rejoue en 30 s (« Rejouer les dernières 24 h »). Jamais de position ni d'identité.
-- **gs_admin** : panneau staff mobile refait (onglets Joueurs / Tickets / Ville, cartes cliquables, recherche, état du serveur, bouton txAdmin) ;
+- **gs_admin** : panneau staff mobile refait (onglets Joueurs / Tickets / Ville, cartes cliquables, recherche, état du serveur, bouton txAdmin),
+  installable comme une appli (manifeste, icônes, https via `roadline https`), codes par membre (`roadline staffweb`) ;
   redémarrage quotidien annoncé en jeu 15, 5 et 1 min avant.
 - **VPS** : veille (alerte Discord + relance), redémarrage quotidien 06:00 heure de Paris, vérification Discord, copie quotidienne des
   sauvegardes sur le PC, profil public `sv_pureLevel 1` (docs/OVH.md).
+- **Correctif** : traduction des objets sans casse (apostrophes), réparation automatique sur le PC et sur le VPS, test `tests/check_labels.py`.

@@ -125,3 +125,5 @@ Placer n'importe quel objet du jeu, le déplacer, le tourner, le dupliquer, le s
 - **Redémarrage quotidien** : 06:00 par défaut, annoncé en jeu ; changer l'heure : GERER-OVH → 19 (« off » pour désactiver).
 - **Serveur tombé** : alerte dans le salon staff Discord au bout de 4 min, relance automatique, message quand il revient.
   Un arrêt volontaire (GERER-OVH → 5) ne déclenche rien.
+- **Qui utilise quoi** : modérateurs → appli staff (téléphone) + F11 en jeu + bot Discord ; fondateur → en plus txAdmin (console) et GERER-OVH.
+  Mauvais compte Cfx.re lié à txAdmin : GERER-OVH → 22.

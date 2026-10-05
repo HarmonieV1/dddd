@@ -1,56 +1,65 @@
-# Roadmap · où on en est
+# Roadmap · où on en est, où on va
 
-*Mis à jour le 05/10/2026 · **V11** · bêta ouverte sur le VPS OVH (profil privé, 16 places).*
+*Mis à jour le 05/10/2026 au soir · **V11** en ligne sur le VPS OVH · bêta privée (16 places).*
 
-## Fait
-- **Serveur** : Qbox/ox, 66 ressources RoadLine (`gs_*`), **21 signatures**. Tests automatiques au vert : 2 500+ contrôles Lua + 20 du bot.
-- **VPS OVH** (Ubuntu 24.04) :
-  - le serveur démarre tout seul ;
-  - **veille** toutes les 2 min : alerte Discord et relance si le serveur tombe ;
-  - **redémarrage quotidien** à 6 h, annoncé en jeu ;
-  - sauvegardes de la base toutes les 6 h, copiées chaque jour sur le PC ;
-  - pare-feu configuré, connexion par clé (aucun mot de passe).
-- **Outils PC**, en un double-clic :
-  - `PREPARER-OVH` : première mise en ligne ;
-  - `METTRE-A-JOUR-OVH` : mise à jour, en vérifiant que la version du PC correspond à celle du zip ;
-  - `GERER-OVH` : 19 options, dont état, diagnostic, erreurs, Discord, txAdmin, sauvegardes et redémarrage.
-- **Modération** : panneau staff mobile (joueurs, tickets, annonce, txAdmin), bot Discord, menu F11, txAdmin en option.
-- **Profil public** :
-  - `sv_pureLevel 1`, déjà actif aussi en privé pour le backtest ;
-  - `sv_authMinTrust` laissé désactivé : il obligerait à avoir Steam ;
-  - `sv_forceIndirectListing` laissé désactivé : inutile sans proxy.
-- **V11** : lieux de mémoire, ville en timelapse sur le site, site en « bêta ouverte » avec l'adresse de connexion.
+## Où on en est
+| Brique | État |
+|---|---|
+| **Jeu** | Qbox/ox, 66 ressources RoadLine, **21 signatures**, 2 500+ tests automatiques au vert |
+| **Serveur officiel** | VPS OVH (Ubuntu 24.04, 12 Go RAM, 96 Go disque) ; démarrage auto, veille (alerte Discord + relance), redémarrage 6 h annoncé, sauvegardes 6 h + copie quotidienne sur le PC |
+| **Outils** | PC = test (METTRE-A-JOUR), VPS = officiel (METTRE-A-JOUR-OVH) ; GERER-OVH : 22 options, sans mot de passe |
+| **Modération** | Appli staff sur téléphone (https, codes par membre) pour les modérateurs ; menu F11 en jeu ; bot Discord ; txAdmin réservé au fondateur |
+| **Site** | Bêta ouverte, adresse de connexion, carte en direct + timelapse 24 h branchés sur le VPS, lien Espace staff |
+| **Docs** | Guide, fiche de backtest (81 tests, 26 bloquants), bilan V11, OVH / ADMIN / DISCORD / FEATURES à jour |
 
-## Priorités
-
-| Priorité | Quoi | Statut |
+## Où on va
+| Quand | Objectif | Contenu |
 |---|---|---|
-| **P0 · cette semaine** | Backtest avec `ROADLINE_Backtest_complet.pdf` (77 tests, dont 24 bloquants). Chaque jour : `GERER-OVH` → 3 (erreurs), puis me remonter les captures avec le numéro du test | En cours |
-| **P0** | Relier Discord sur le VPS : CONFIGURER-DISCORD, puis `GERER-OVH` → 12, puis 17 | À faire (5 min) |
-| **P0** | Programmer la copie quotidienne des sauvegardes sur le PC : `GERER-OVH` → 18 | À faire (1 min) |
-| **P1 · après le backtest** | Corriger les retours du backtest (tri : bloquant → gênant → confort) | À venir |
-| **P2 · avant l'ouverture** | Nom de domaine (`connect play.roadline…`), code cfx.re (passage en public) pour la carte en direct du site, whitelist ou non | À décider |
-| **P3 · lancement** | Ouverture publique (`GERER-OVH` → 7), boutique `gs_store` après validation PLA, communication, streamers | Plus tard |
+| **Cette semaine** | **Backtest** | Fiche PDF ; chaque jour : GERER-OVH → 3 (erreurs) + captures avec le n° du test ; je corrige au fil de l'eau |
+| **Semaine prochaine** | **V11.1 · Appli staff v2** | Voir ci-dessous (boutons, raccourcis, fiches joueurs, sanctions) |
+| **Avant l'ouverture** | **V12 · Ouverture** | Corrections du backtest, passage en public (code cfx.re, liste FiveM), whitelist ou non, nom de domaine, 2 signatures « waouh » |
+| **Après l'ouverture** | **Saison 1** | Événements staff, élections, contenus du mois, boutique (après validation PLA) |
 
-> **Carte en direct du site** : le site est en https et ne peut pas lire une adresse « http://IP ». Il faut l'adresse https
-> `…users.cfx.re` donnée par FiveM quand le serveur est public (à mettre dans `CONFIG.cityUrl`). D'ici là, le site montre un aperçu,
-> timelapse compris.
+## V11.1 · Appli staff v2 (proposition précise)
+**Accueil en tuiles** (gros boutons, pas une barre de recherche) :
+- **En ville** : nombre de joueurs, staff en service, tickets ouverts, alertes anti-triche.
+- **Tickets** : priorité (nouveau, pris, en retard), puis « Je prends », « Répondre » ou « Clore ».
+- **Alertes** : carkill, téléportation, argent suspect. Un appui ouvre la fiche du joueur concerné.
+- **Annonce** : modèles prêts (« redémarrage dans 10 min », « événement à Legion Square »…).
 
-## Idées de signatures (à valider)
-**Déjà proposées :**
-- **Les jurés de Los Santos** : citoyens tirés au sort, ils votent le verdict.
-- **La Gazette du dimanche** : journal hebdomadaire généré tout seul.
-- **Élections municipales** : le maire active de vrais leviers.
-- **Héritage** : testament, tombe et épitaphe.
+**Fiche joueur** (un appui sur un joueur) : identité RP, temps de jeu, métier et gang, **historique des sanctions**, notes du staff. Actions en boutons de couleur :
+- **Geler** et **Message** ;
+- **Avertir**, avec les motifs fréquents déjà proposés ;
+- **Expulser** ;
+- **Bannir** (1 jour, 3 jours, 7 jours ou définitif), réservé aux admins.
 
-**Nouvelles :**
-1. **« Précédemment à Los Santos »** : l'écran de chargement montre les 3 ou 4 faits marquants des dernières 24 h, comme le résumé d'une série. On reprend le fil dès la connexion.
-2. **Les objets ont un passé** : comme le carnet des voitures, les bijoux, montres et armes gardent leur histoire (« volé 2 fois, revendu au marché noir »). Les receleurs paient moins cher un objet « trop connu », et la police s'en sert comme preuve.
-3. **Fantômes de la route** : sur le road trip et les courses, la voiture fantôme du meilleur temps de la semaine roule à côté de toi, en transparence.
-4. **La galerie Weazel** : les meilleures photos de presse, avec l'accord du photographe, sont publiées sur le site avec la légende et le nom du journaliste.
-5. **Files d'attente vivantes** : quand un commerce marche bien (recette, standing), des PNJ font la queue devant. Quand il est délaissé, il est vide. Le succès se voit dans la rue.
-6. **Appels d'offres de la mairie** : chaque semaine, un chantier public (réparer un quartier, sécuriser un événement, convoyer des fonds) est mis aux enchères. Les entreprises de joueurs se battent pour le décrocher.
+**Filtres en pastilles** : tous, nouveaux joueurs, police / EMS, gangs, signalés, gelés.
+
+**Journal** : qui a fait quoi, et quand (« Web · pseudo »), consultable par les admins.
+
+**Droits** : helper, modo et admin voient des boutons différents selon leur rang (le même rang qu'en jeu).
+
+**Confort** : thème RoadLine, vibration sur les nouveaux tickets, mode sombre, utilisable d'une main.
+
+## Pistes de signatures (à valider)
+**Fortes, et branchées sur ce qui existe :**
+1. **« Précédemment à Los Santos »** : l'écran de chargement résume les faits marquants des dernières 24 h (timelapse + faits divers).
+2. **Les jurés de Los Santos** : citoyens tirés au sort par téléphone pour les vrais procès, avec un vote et un verdict dans le fil de la ville.
+3. **Les objets ont un passé** : bijoux et armes gardent leur historique. Le receleur paie moins cher un objet « trop connu », et la police s'en sert comme preuve.
+4. **La Gazette du dimanche** : un journal mis en page tout seul, publié sur le site et sur Discord.
+
+**Effet « waouh » pour l'ouverture :**
+
+5. **Élections municipales** : le maire élu active de vrais leviers (taxe des commerces, couvre-feu des quartiers chauds).
+6. **Fantômes de la route** : la voiture fantôme du meilleur temps de la semaine sur le road trip et les courses.
+7. **Héritage** : testament, tombe et épitaphe à la mort définitive d'un personnage.
+
+**Vie de la ville :**
+
+8. **Files d'attente vivantes** devant les commerces qui marchent.
+9. **Appels d'offres de la mairie** pour les entreprises de joueurs.
+10. **La galerie Weazel** : les meilleures photos de presse sur le site.
 
 ## Rappels
 - Jamais de vraie marque, ni de mot de passe dans les fichiers ou les messages.
-- Avant chaque mise à jour du VPS : METTRE-A-JOUR sur le PC, test rapide, puis METTRE-A-JOUR-OVH (il vérifie la version tout seul).
+- PC = test, VPS = officiel : METTRE-A-JOUR, test rapide, puis METTRE-A-JOUR-OVH (il vérifie la version et répare ce qu'il faut).

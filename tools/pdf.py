@@ -86,7 +86,8 @@ TOOLS = [
     ['PREPARER-OVH.bat', 'Mise en ligne sur le VPS OVH en un clic : base + serveur envoyés, installation automatique (docs/OVH.md).'],
     ['METTRE-A-JOUR-OVH.bat', 'Envoie la nouvelle version sur le VPS sans toucher sa base (sauvegardée avant) ; met d\'abord le PC à jour si besoin.'],
     ['GERER-OVH.bat', 'Le VPS depuis le PC, sans mot de passe : état + diagnostic, console, erreurs, marche / arrêt, public / privé, sauvegardes '
-                      '(et copie quotidienne sur le PC), réglages Discord, heure du redémarrage, txAdmin, vérification Discord.'],
+                      '(et copie quotidienne sur le PC), réglages Discord, heure du redémarrage, txAdmin, vérification Discord, codes et adresse '
+                      'https du panneau staff. À l\'ouverture : met à jour le VPS et répare les fichiers d\'objets si besoin.'],
     ['DEVENIR-ADMIN · REPARER-LANCEUR · REPARER-MARIADB · VIDER-CACHE-FIVEM', 'Te mettre fondateur · « chemin introuvable » au démarrage · base qui ne démarre plus · ancien menu encore affiché.'],
 ]
 
@@ -97,12 +98,14 @@ INTEGRATIONS = [
     ['Discord · salons', 'Statut en direct (un message mis à jour chaque minute), annonces (ouverture, redémarrages, rendez-vous), '
                          'sanctions publiques (staff anonyme), miroir de Vibe, logs staff / métiers / boutique / anti-triche.'],
     ['Discord · rôles de métier', 'Le rôle Discord suit le métier en jeu (gs_discord_roles dans secrets.cfg : police=ID,ambulance=ID…).'],
-    ['Panneau staff mobile', 'http://IP:30120/gs_admin/ sur téléphone (« Sur l\'écran d\'accueil ») : joueurs, geler, message, avertir, expulser, '
-                             'annonce. Un code par membre du staff (gs_admin_web), 5 essais ratés = 15 min de blocage.'],
-    ['txAdmin', 'http://IP:40120 (aussi sur téléphone) : bannissements, console, redémarrages programmés, joueurs.'],
+    ['txAdmin', 'http://IP:40120 — pour le fondateur : console, bannissements, joueurs. Mise en route : GERER-OVH → 15 (PIN, « Existing server data » '
+                '→ /home/fivem/server-data, OneSync On) ; mauvais compte Cfx.re : GERER-OVH → 22. Ne pas activer ses redémarrages programmés.'],
     ['VPS OVH', 'Commande « roadline » (ou GERER-OVH.bat) : etat, diagnostic, erreurs, discord, redemarrer, public / prive, sauvegarde(s), '
                 'restaurer(-joueur), maj, retour, mode simple / txadmin, redemarrage-auto. Veille toutes les 2 min (alerte Discord + relance).'],
-    ['Panneau staff mobile', 'Appli sur téléphone (https : GERER-OVH → 21) : joueurs, tickets, annonce, txAdmin. Code par membre : GERER-OVH → 20.'],
+    ['Panneau staff (appli)', 'https://57-129-170-173.sslip.io/gs_admin/ (GERER-OVH → 21 une fois) : à installer sur le téléphone (Chrome : Installer '
+                              'l\'application ; iPhone : Sur l\'écran d\'accueil). Joueurs, tickets, annonce. Sans console : c\'est l\'outil des modérateurs. '
+                              'Un code par membre : GERER-OVH → 20 ; 5 essais ratés = 15 min de blocage. Lien « Espace staff » en bas du site.'],
+    ['Site · carte en direct', 'https://57-129-170-173.sslip.io/gs_city/ville.json : quartiers, rendez-vous, légendes, timelapse 24 h (CONFIG.cityUrl, déjà réglé).'],
     ['Sauvegardes', 'Toutes les 6 h (PC : tâche Windows ; VPS : cron), 30 gardées, avant chaque mise à jour, retour d\'un seul joueur possible.'],
     ['Téléphone', 'Fait maison : Que faire, Messages, Contacts, Appel, Banque, Factures, Emploi, Urgences, Vibe, Weazel, Plans, Ville, Notes, Boulots, Inconnu.'],
     ['Photos (option)', 'screenshot-basic + hébergeur d\'images (gs_photo_* dans secrets.cfg) : vraies photos dans Vibe, l\'appareil photo et la bodycam.'],
@@ -162,7 +165,8 @@ def guide(points):
         "faits marquants (incidents, faits divers, rumeurs confirmées, verdicts, cavales, plaques). Jamais de position de joueur.",
         "<b>Serveur officiel</b> : en ligne 24 h/24 sur le VPS, redémarrage chaque matin à 6 h (annoncé en jeu 15, 5 et 1 min avant), "
         "veille toutes les 2 min (alerte Discord et relance si besoin), sauvegardes toutes les 6 h (et copie sur le PC).",
-        "<b>Staff mobile</b> : panneau web avec onglets Joueurs / Tickets / Ville, cartes cliquables, bouton txAdmin.",
+        "<b>Staff mobile</b> : une vraie appli sur le téléphone (https), onglets Joueurs / Tickets / Ville, cartes cliquables, bouton txAdmin. "
+        "Les modérateurs n'ont ni console ni argent : txAdmin reste réservé au fondateur.",
     ])
     s += [PageBreak(), Paragraph('★ V3 · Tout frais : deux villes en une', H2)]
     s += bullets([
