@@ -153,7 +153,7 @@ Deux façons, à combiner (plus txAdmin si tu l'as activé) :
      Le serveur redémarre (1 min). R → pseudo : retire l'accès.
    - **Installer l'appli** : ouvrir l'adresse dans Chrome (Android : menu ⋮ → « Installer l'application ») ou Safari (iPhone : Partager
      → « Sur l'écran d'accueil »). Icône « RL Staff », plein écran. Marche aussi dans un navigateur classique (PC compris).
-   - Sans l'option 21, ça marche aussi en `http://vps-f2365fb1.vps.ovh.net:30120/gs_admin/` (raccourci simple, sans « vraie » appli).
+   - Sans l'option 21, ça marche aussi en `http://57.129.170.173:30120/gs_admin/` (raccourci simple, sans « vraie » appli).
    - Aussi en bas du site : lien « Espace staff ». 5 essais ratés depuis une même adresse la bloquent 15 minutes.
 2. **Bot Discord** : `/joueurs`, `/geler`, `/degeler`, `/avertir`, `/expulser`, `/message`, `/annonce`.
    - Réservé aux administrateurs du Discord et au rôle indiqué dans `set gs_discord_staff_role "ID-DU-ROLE"` (secrets.cfg).
