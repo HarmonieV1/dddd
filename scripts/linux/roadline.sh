@@ -191,7 +191,10 @@ hook() { # message Discord (salon staff, sinon statut) : $1 = texte
 veille() { # cron toutes les 2 min : serveur tombé → alerte Discord + relance ; revenu → message
   local st=/run/roadline-veille n=0
   [ -f "$BASE/.maintenance" ] && return 0 # arrêté volontairement (GERER-OVH → Arrêter)
-  if systemctl is-active --quiet roadline && ss -lntu 2>/dev/null | grep -q ':30120 '; then
+  # Mode txAdmin : c'est txAdmin qui lance / relance le jeu (et le port 30120 reste fermé tant que l'assistant n'est pas fini) :
+  # on surveille seulement que txAdmin lui-même tourne (port 40120), sinon on relancerait le service en pleine configuration.
+  local port=30120; [ "$(cat "$BASE/.mode" 2>/dev/null)" = "txadmin" ] && port=40120
+  if systemctl is-active --quiet roadline && ss -lntu 2>/dev/null | grep -q ":$port "; then
     if [ -f "$st" ] && [ "$(cat "$st")" -ge 2 ]; then hook "🟢 Serveur de nouveau en ligne ($(date '+%H:%M'))."; fi
     rm -f "$st"; return 0
   fi
