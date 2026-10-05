@@ -7,8 +7,13 @@ $VpsFile = 'C:\GTASOON\ovh\vps.txt' # adresse et utilisateur du VPS (pas de mot 
 function Get-Vps {
     $saved = if (Test-Path -LiteralPath $VpsFile) { (Get-Content -LiteralPath $VpsFile -Raw).Trim() } else { '' }
     if ($saved -match '^([\w.-]+)@([\w.:-]+)$') {
-        $a = Read-Host "VPS : $saved — Entrée pour garder, ou nouvelle adresse"
-        if (-not $a) { return @{ user = $Matches[1]; ip = $Matches[2] } }
+        $keep = @{ user = $Matches[1]; ip = $Matches[2] }
+        $a = (Read-Host "VPS : $saved — Entrée pour garder, ou nouvelle adresse").Trim()
+        # Entrée, ou une touche tapée par erreur (*, o, 1…) : on garde le VPS enregistré au lieu de tout arrêter
+        if ($a -notmatch '^[\w-]+(\.[\w-]+)+$|^[0-9a-fA-F:]+:[0-9a-fA-F:]*$') {
+            if ($a) { Write-Host "  « $a » n'est pas une adresse : VPS enregistré gardé." -ForegroundColor DarkGray }
+            return $keep
+        }
         $ip = $a
     } else {
         Write-Host "`nAdresse IP du VPS (mail d'OVH « Votre VPS est prêt », ou espace client → Bare Metal Cloud → VPS)" -ForegroundColor Cyan
