@@ -64,6 +64,9 @@ unite() {
   else
     mode="simple"; exec="$FX/run.sh +set onesync on +exec server.cfg"; wd="$DATA"; desc="RoadLine RP (FiveM)"
   fi
+  # FXServer lit sa console : sans clavier (service), il lit « fin » et croit à un Ctrl-C → il s'arrête.
+  # On lui donne une entrée qui ne se termine jamais.
+  exec="/bin/sh -c 'tail -f /dev/null | exec $exec'"
   cat > /etc/systemd/system/roadline.service <<UNIT
 [Unit]
 Description=$desc
@@ -86,7 +89,9 @@ UNIT
 }
 
 terminer() { # fin d'installation : service, commande roadline, sauvegardes auto, démarrage (relançable sans risque)
-  [ -f /etc/systemd/system/roadline.service ] || unite "$(cat "$BASE/.mode" 2>/dev/null || echo simple)"
+  local before; before=$(md5sum /etc/systemd/system/roadline.service 2>/dev/null || true)
+  unite "$(cat "$BASE/.mode" 2>/dev/null || echo simple)" # service toujours à jour
+  [ "$before" = "$(md5sum /etc/systemd/system/roadline.service)" ] || systemctl stop roadline 2>/dev/null || true
   # copie (et non lien) : /home/fivem est fermé aux autres comptes ; remplacement atomique (ce script peut être en cours)
   install -m 755 "$TOOLS/roadline.sh" /usr/local/bin/roadline.new && mv -f /usr/local/bin/roadline.new /usr/local/bin/roadline
   chown -R fivem:fivem "$BASE"
@@ -107,7 +112,8 @@ diagnostic() { # pourquoi le serveur ne répond pas, en clair
   echo "== Causes repérées dans la console =="
   local n=0
   hint() { if grep -qiE "$1" <<<"$log"; then echo "  - $2"; n=$((n+1)); fi; }
-  hint 'license key|licenseKey|authentication failed|keymaster' "Clé de licence FiveM refusée : mets une clé valide (keymaster.fivem.net) dans cfg/secrets.cfg (sv_licenseKey), puis Redémarrer."
+  hint 'Ctrl-C pressed' "Le serveur s'arrête tout seul (« Ctrl-C ») : relance GERER-OVH.bat, il corrige le service automatiquement."
+  hint 'license key authentication failed|No license key|invalid license|license key.*(invalid|rejected)' "Clé de licence FiveM refusée : mets une clé valide (keymaster.fivem.net) dans cfg/secrets.cfg (sv_licenseKey), puis Redémarrer."
   hint 'Address already in use|bind.*30120' "Le port 30120 est déjà pris par un autre programme : Redémarrer (ou redémarrer le VPS)."
   hint 'Permission denied' "Problème de droits sur les fichiers : lance « sudo roadline terminer »."
   hint 'No such file or directory.*(run\.sh|FXServer|ld-musl)' "Programme FiveM absent ou abîmé : lance « sudo roadline programme »."
