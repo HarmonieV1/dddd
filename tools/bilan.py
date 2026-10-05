@@ -55,6 +55,9 @@ HISTORY = [
             "redémarrage quotidien annoncé, copie quotidienne des sauvegardes sur le PC, GERER-OVH complet (22 options), réglages du profil "
             "public vérifiés, panneau staff en appli (https, codes en un clic), txAdmin pour le fondateur, carte en direct du site branchée, "
             "correctif de la traduction des objets (réparation automatique, test qui l'empêche de revenir)"],
+    ['V11.2', "La ville se raconte : les jurés de Los Santos (5 citoyens tirés au sort votent le verdict), la Gazette du dimanche "
+              "(publiée seule sur Discord, le site et en jeu), black-out de quartier (transformateurs à saboter ou réparer), écran de "
+              "chargement complet (accueil personnalisé, nuit, bandeau Weazel), vraie carte de Los Santos sur le site, adresse IP affichée"],
 ]
 
 FEATURES = [

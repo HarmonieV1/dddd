@@ -402,3 +402,14 @@ Traductions françaises manquantes des scripts Qbox ajoutées par METTRE-A-JOUR 
   les joueurs en ville, la météo et le prochain rendez-vous. Rien de privé.
 - **PUBLIER-SITE.bat** : ouvre le dossier du site et Netlify pour le mettre en ligne par glisser-déposer.
 
+
+## V11.2 · La ville se raconte
+- **Les jurés de Los Santos** (`gs_justice/server/jury.lua`) : 5 citoyens tirés au sort pour un vrai procès, convocation sur le téléphone,
+  vote coupable / non coupable, le verdict suit la majorité ; indemnité de 100 $.
+- **La Gazette du dimanche** (`gs_city/server/gazette.lua`) : un journal composé seul à partir de la semaine (faits divers, verdicts, jurys,
+  légendes, plaques, rumeurs, black-out), publié le dimanche à 20 h sur Discord, sur le site (section Gazette) et en jeu (`/gazette`).
+- **Black-out de quartier** (`gs_city/server/blackout.lua`) : saboter un transformateur éteint tout un quartier 15 min (lumières, néons,
+  caméras), avec alerte police ; réparation payée par la mairie.
+- **Écran de chargement complet** : intro animée, décor de nuit après 21 h, « Bon retour Prénom Nom · métier · absent depuis N jours »,
+  bandeau Weazel News (faits du jour, une de la Gazette), cartes illustrées.
+- **Site** : vraie carte de Los Santos (couleurs du jeu) avec les quartiers par-dessus ; adresse de connexion en IP ; la Gazette en une.

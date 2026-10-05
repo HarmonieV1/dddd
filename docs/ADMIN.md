@@ -127,3 +127,13 @@ Placer n'importe quel objet du jeu, le déplacer, le tourner, le dupliquer, le s
   Un arrêt volontaire (GERER-OVH → 5) ne déclenche rien.
 - **Qui utilise quoi** : modérateurs → appli staff (téléphone) + F11 en jeu + bot Discord ; fondateur → en plus txAdmin (console) et GERER-OVH.
   Mauvais compte Cfx.re lié à txAdmin : GERER-OVH → 22.
+
+## V11.2 · Jurés, Gazette, black-out
+- **Jurés** (`gs_justice`, `Config.Jury`) : le juge, pendant un procès, choisit « Convoquer un jury » (ciblage du prévenu). 5 citoyens
+  en ville (hors prévenu, police et juge) reçoivent la convocation ; ils votent en 3 min (`/jury` pour rouvrir), payés 100 $. À partir
+  de 3 votes, le verdict du juge doit suivre la majorité (« jury 3-2 » dans le fil de la ville). Un jury toutes les 2 h au plus.
+- **Gazette** (`gs_city`, `Config.Gazette`) : publiée seule le dimanche à 20 h (Discord #annonces, site, `/gazette` en jeu).
+  `/gazettepublier` (admin et plus) la publie tout de suite, par exemple pour tester.
+- **Black-out** (`gs_city`, `Config.Blackout`) : un transformateur par quartier (9). Positions estimées : à recaler en jeu si besoin
+  avec F11 → Déplacer un point (« Transformateur »). Sabotage = crochet consommé, 15 min sans lumière, police prévenue, caméras du
+  quartier aveugles ; réparation par n'importe qui (payée par la mairie). 2 h minimum entre deux pannes d'un même quartier.

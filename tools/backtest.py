@@ -96,6 +96,14 @@ SESSIONS = [
         ('5 h 45 : annonce en jeu « redémarrage dans 15 min », puis 5 et 1 ; à 6 h le serveur redémarre seul', 'Seul', 2),
         ('GERER-OVH → 5 (Arrêter) : pas d\'alerte Discord ; → 6 (Démarrer). Couper le serveur autrement → alerte « injoignable » en 4 min', 'Staff', 2),
     ]),
+    ('5 quinquies · V11.2 (15 min)', [
+        ('Juge : procès → « Convoquer un jury » → 5 joueurs reçoivent la convocation (téléphone, /jury), votent ; le verdict suit le jury (« jury 3-2 »)', '3+', 3),
+        ('Transformateur (Centre-ville, avec un crochet) : 20 s → le quartier s\'éteint pour tous, la police est prévenue, caméras aveugles', '2', 3),
+        ('Un autre joueur répare le transformateur → lumière revenue, payé 300 à 500 $ ; sinon retour seul après 15 min', '2', 2),
+        ('Staff : /gazettepublier → Gazette sur Discord ; /gazette en jeu ; le site affiche la une (sinon dimanche 20 h tout seul)', 'Staff', 2),
+        ('Connexion : « Bon retour Prénom Nom · métier · absent depuis N jours », bandeau Weazel, après 21 h le décor passe en nuit', 'Seul', 2),
+        ('Site : la carte est la vraie carte de Los Santos, les quartiers sont au bon endroit ; l\'adresse affichée est l\'IP', 'Seul', 1),
+    ]),
     ('6 · Staff et outils (20 min)', [
         ('F11 : mode staff, joueurs (aller à, amener, soigner, argent), vol libre / invisible SANS alerte anti-triche', 'Staff', 3),
         ('F11 → Anti-triche (alertes) ; F11 → Statistiques de rétention ; F10 panel complet (tickets /report, sanctions)', 'Staff', 2),
@@ -103,7 +111,7 @@ SESSIONS = [
         ('SAUVEGARDER-BDD.bat, puis RESTAURER-BDD.bat → un seul joueur (sur un perso de test)', 'Staff', 3),
         ('CONFIGURER-DISCORD.bat → relance : bot en ligne, salon statut mis à jour, /statut et /rdv sur Discord', 'Staff', 2),
         ('Staff à distance : /joueurs et /geler sur Discord (rôle staff) ; panneau http://IP:30120/gs_admin/ sur téléphone (code)', 'Staff', 2),
-        ('OVH : METTRE-A-JOUR-OVH.bat → GERER-OVH → 1 affiche « Version RoadLine : V11 » ; GERER-OVH → 3 : aucune erreur de script', 'Staff', 3),
+        ('OVH : METTRE-A-JOUR-OVH.bat → GERER-OVH → 1 affiche « Version RoadLine : V11.2 » ; GERER-OVH → 3 : aucune erreur de script', 'Staff', 3),
     ]),
     ('7 · Test de charge (à faire avant d\'ouvrir)', [
         ('6 à 10 joueurs pendant 1 h : FPS, ping, resmon (aucune ressource gs_ au-dessus de 0,5 ms en continu)', '3+', 3),

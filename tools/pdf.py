@@ -8,7 +8,7 @@ from reportlab.lib.units import mm
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, PageBreak, KeepTogether
 from reportlab.graphics.shapes import Drawing, Rect, Circle, String, Line
 
-VERSION = 'V11'
+VERSION = 'V11.2'
 NEON = colors.HexColor('#28E0FF')
 DARK = colors.HexColor('#0F091C')
 PINK = colors.HexColor('#FF2E88')
@@ -136,6 +136,8 @@ COMMANDS = [
     ['Staff', '/whitelist · /gsjob · /gsgang · /gsevent · /meteo · /builder · /economie · /faitdivers (les joueurs ne les voient pas)'],
     ['Staff · rumeurs', '/rumeurvraie storm|stash|crime · /rumeurfausse … (quand une rumeur est prête)'],
     ['Staff · mémoire', '/plaque <texte> : poser un lieu de mémoire (mariage, concert…) · /plaqueretirer : la plus proche (admin+)'],
+    ['/jury · /gazette', 'rouvrir ta convocation de juré · lire la Gazette de la semaine'],
+    ['Staff · Gazette', '/gazettepublier : publier la Gazette tout de suite (admin+), sinon dimanche 20 h tout seul'],
     ['Staff sur Discord', '/joueurs · /geler · /degeler · /avertir · /expulser · /message · /annonce (rôle staff, réponses privées)'],
 ]
 
@@ -157,6 +159,17 @@ def guide(points):
     s += [Paragraph('2. Touches', H2), table(KEYS, [38 * mm, 78 * mm, 64 * mm])]
     s += [Paragraph('3. Commandes utiles', H2), table(COMMANDS, [60 * mm, 120 * mm])]
 
+    s += [PageBreak(), Paragraph('★ V11.2 · Jurés, Gazette, black-out', H2)]
+    s += bullets([
+        "<b>Les jurés de Los Santos</b> : pour un vrai procès, le juge convoque un jury. 5 citoyens tirés au sort reçoivent la convocation "
+        "sur leur téléphone (<b>/jury</b> pour la rouvrir), votent coupable ou non coupable, et le verdict suit la majorité. Indemnité : 100 $.",
+        "<b>La Gazette du dimanche</b> : chaque dimanche à 20 h, la semaine de la ville en une page (faits divers, verdicts, légendes, plaques, "
+        "black-out), publiée sur Discord, sur le site et en jeu (<b>/gazette</b>).",
+        "<b>Black-out de quartier</b> : un transformateur par quartier. Saboté (avec un crochet), il plonge le quartier dans le noir 15 min : "
+        "lumières, néons et caméras coupés, police prévenue. N'importe qui peut le réparer, payé par la mairie.",
+        "<b>Écran de chargement</b> : accueil à ton nom (« Bon retour… absent depuis 3 jours »), décor de nuit après 21 h, bandeau Weazel News "
+        "avec les faits du jour et la une de la Gazette.",
+    ])
     s += [PageBreak(), Paragraph('★ V11 · Bêta ouverte : la ville se raconte', H2)]
     s += bullets([
         "<b>Lieux de mémoire</b> : un casse de la banque ou de la bijouterie, la fin d'une cavale légendaire, un mariage posé par le staff… "

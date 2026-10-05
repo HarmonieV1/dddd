@@ -1,11 +1,11 @@
 # Roadmap · où on en est, où on va
 
-*Mis à jour le 05/10/2026 au soir · **V11** en ligne sur le VPS OVH · bêta privée (16 places).*
+*Mis à jour le 05/10/2026 au soir · **V11.2** prête (V11 en ligne sur le VPS OVH · bêta privée, 16 places).*
 
 ## Où on en est
 | Brique | État |
 |---|---|
-| **Jeu** | Qbox/ox, 66 ressources RoadLine, **21 signatures**, 2 500+ tests automatiques au vert |
+| **Jeu** | Qbox/ox, 66 ressources RoadLine, **24 signatures**, 2 500+ tests automatiques au vert |
 | **Serveur officiel** | VPS OVH (Ubuntu 24.04, 12 Go RAM, 96 Go disque) ; démarrage auto, veille (alerte Discord + relance), redémarrage 6 h annoncé, sauvegardes 6 h + copie quotidienne sur le PC |
 | **Outils** | PC = test (METTRE-A-JOUR), VPS = officiel (METTRE-A-JOUR-OVH) ; GERER-OVH : 22 options, sans mot de passe |
 | **Modération** | Appli staff sur téléphone (https, codes par membre) pour les modérateurs ; menu F11 en jeu ; bot Discord ; txAdmin réservé au fondateur |
@@ -16,7 +16,7 @@
 | Quand | Objectif | Contenu |
 |---|---|---|
 | **Cette semaine** | **Backtest** | Fiche PDF ; chaque jour : GERER-OVH → 3 (erreurs) + captures avec le n° du test ; je corrige au fil de l'eau |
-| **Semaine prochaine** | **V11.1 · Appli staff v2** | Voir ci-dessous (boutons, raccourcis, fiches joueurs, sanctions). Fait : nouvel écran de chargement + « Précédemment à Los Santos » |
+| **Semaine prochaine** | **V11.1 · Appli staff v2** | Voir ci-dessous (boutons, raccourcis, fiches joueurs, sanctions). Fait (V11.2) : écran de chargement complet, jurés, Gazette, black-out, vraie carte sur le site |
 | **Avant l'ouverture** | **V12 · Ouverture** | Corrections du backtest, passage en public (code cfx.re, liste FiveM), whitelist ou non, nom de domaine, 2 signatures « waouh » |
 | **Après l'ouverture** | **Saison 1** | Événements staff, élections, contenus du mois, boutique (après validation PLA) |
 
@@ -45,14 +45,14 @@
 Note : 1 = rapide, 3 = gros chantier. ★ = branché sur ce qui existe déjà.
 
 **La ville raconte**
-1. **Les jurés de Los Santos** ★ (2) — pour un vrai procès, 5 citoyens tirés au sort reçoivent une convocation sur leur téléphone. Ils écoutent, ils votent, et le verdict tombe dans le fil de la ville.
-2. **La Gazette du dimanche** ★ (2) — un journal mis en page tout seul (faits divers, verdicts, légendes, plaques, photos Weazel), publié sur le site et sur Discord.
+1. ✅ **Les jurés de Los Santos** ★ (2) — pour un vrai procès, 5 citoyens tirés au sort reçoivent une convocation sur leur téléphone. Ils écoutent, ils votent, et le verdict tombe dans le fil de la ville.
+2. ✅ **La Gazette du dimanche** ★ (2) — un journal mis en page tout seul (faits divers, verdicts, légendes, plaques, photos Weazel), publié sur le site et sur Discord.
 3. **Le grand livre de Los Santos** ★ (2) — une page publique par personnage marquant (avec son accord) : biographie, légendes, plaques. Un « wiki » du serveur qui s'écrit en jouant.
 4. **La galerie Weazel** ★ (1) — les photos de presse choisies par les journalistes sont exposées sur le site, avec légende et signature.
 
 **La ville réagit**
 
-5. **Black-out de quartier** (2) — saboter un transformateur plonge un quartier dans le noir (lumières, feux, caméras). C'est une occasion pour le crime, et les électriciens de la ville réparent.
+5. ✅ **Black-out de quartier** (2) — saboter un transformateur plonge un quartier dans le noir (lumières, feux, caméras). C'est une occasion pour le crime, et les électriciens de la ville réparent.
 6. **La ville a peur** ★ (1) — après une fusillade ou un gros casse, les PNJ fuient la zone, les commerces baissent le rideau une heure et la radio en parle.
 7. **Files d'attente vivantes** ★ (1) — des PNJ font la queue devant les commerces qui marchent. Le succès se voit dans la rue.
 8. **Avis clients** ★ (2) — les clients (joueurs et PNJ) notent les commerces dans le téléphone. Les étoiles font venir ou fuir la clientèle PNJ.
@@ -78,7 +78,7 @@ Note : 1 = rapide, 3 = gros chantier. ★ = branché sur ce qui existe déjà.
 19. **Caméra de plateau Weazel** (3) — un mode réalisateur pour les directs : plans fixes, ralentis, bandeau, à suivre sur Twitch.
 20. **Soirées à thème du serveur** ★ (1) — une nuit par mois avec une règle spéciale (années 80, tempête, coupure générale), annoncée sur le site et dans l'écran de chargement.
 
-**Notre sélection pour l'ouverture** : les jurés (1), la Gazette (2), la ville a peur (6), les objets ont un passé (9), le black-out de quartier (5).
+**Notre sélection pour l'ouverture** : ✅ les jurés (1), ✅ la Gazette (2), ✅ le black-out de quartier (5) ; restent la ville a peur (6) et les objets ont un passé (9).
 
 ## Rappels
 - Jamais de vraie marque, ni de mot de passe dans les fichiers ou les messages.
