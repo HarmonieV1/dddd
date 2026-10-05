@@ -163,6 +163,8 @@ def guide(points):
         "une <b>plaque</b> (couronne et bougie) reste sur place 30 jours. De près, le texte apparaît ; <b>[E] Lire la plaque</b> : un passant raconte.",
         "<b>La ville en timelapse</b> : sur le site, « Rejouer les dernières 24 h » montre en 30 secondes la tension des quartiers et les "
         "faits marquants (incidents, faits divers, rumeurs confirmées, verdicts, cavales, plaques). Jamais de position de joueur.",
+        "<b>Précédemment à Los Santos</b> : le nouvel écran de chargement (coucher de soleil, cartes des signatures) résume ce qui s'est passé "
+        "en 24 h (incidents, faits divers, rumeurs vérifiées, verdicts, légendes), les quartiers chauds et le prochain rendez-vous.",
         "<b>Serveur officiel</b> : en ligne 24 h/24 sur le VPS, redémarrage chaque matin à 6 h (annoncé en jeu 15, 5 et 1 min avant), "
         "veille toutes les 2 min (alerte Discord et relance si besoin), sauvegardes toutes les 6 h (et copie sur le PC).",
         "<b>Staff mobile</b> : une vraie appli sur le téléphone (https), onglets Joueurs / Tickets / Ville, cartes cliquables, bouton txAdmin. "

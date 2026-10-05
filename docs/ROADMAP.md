@@ -16,7 +16,7 @@
 | Quand | Objectif | Contenu |
 |---|---|---|
 | **Cette semaine** | **Backtest** | Fiche PDF ; chaque jour : GERER-OVH → 3 (erreurs) + captures avec le n° du test ; je corrige au fil de l'eau |
-| **Semaine prochaine** | **V11.1 · Appli staff v2** | Voir ci-dessous (boutons, raccourcis, fiches joueurs, sanctions) |
+| **Semaine prochaine** | **V11.1 · Appli staff v2** | Voir ci-dessous (boutons, raccourcis, fiches joueurs, sanctions). Fait : nouvel écran de chargement + « Précédemment à Los Santos » |
 | **Avant l'ouverture** | **V12 · Ouverture** | Corrections du backtest, passage en public (code cfx.re, liste FiveM), whitelist ou non, nom de domaine, 2 signatures « waouh » |
 | **Après l'ouverture** | **Saison 1** | Événements staff, élections, contenus du mois, boutique (après validation PLA) |
 
@@ -41,24 +41,44 @@
 
 **Confort** : thème RoadLine, vibration sur les nouveaux tickets, mode sombre, utilisable d'une main.
 
-## Pistes de signatures (à valider)
-**Fortes, et branchées sur ce qui existe :**
-1. **« Précédemment à Los Santos »** : l'écran de chargement résume les faits marquants des dernières 24 h (timelapse + faits divers).
-2. **Les jurés de Los Santos** : citoyens tirés au sort par téléphone pour les vrais procès, avec un vote et un verdict dans le fil de la ville.
-3. **Les objets ont un passé** : bijoux et armes gardent leur historique. Le receleur paie moins cher un objet « trop connu », et la police s'en sert comme preuve.
-4. **La Gazette du dimanche** : un journal mis en page tout seul, publié sur le site et sur Discord.
+## 20 idées de signatures (à trier)
+Note : 1 = rapide, 3 = gros chantier. ★ = branché sur ce qui existe déjà.
 
-**Effet « waouh » pour l'ouverture :**
+**La ville raconte**
+1. **Les jurés de Los Santos** ★ (2) — pour un vrai procès, 5 citoyens tirés au sort reçoivent une convocation sur leur téléphone. Ils écoutent, ils votent, et le verdict tombe dans le fil de la ville.
+2. **La Gazette du dimanche** ★ (2) — un journal mis en page tout seul (faits divers, verdicts, légendes, plaques, photos Weazel), publié sur le site et sur Discord.
+3. **Le grand livre de Los Santos** ★ (2) — une page publique par personnage marquant (avec son accord) : biographie, légendes, plaques. Un « wiki » du serveur qui s'écrit en jouant.
+4. **La galerie Weazel** ★ (1) — les photos de presse choisies par les journalistes sont exposées sur le site, avec légende et signature.
 
-5. **Élections municipales** : le maire élu active de vrais leviers (taxe des commerces, couvre-feu des quartiers chauds).
-6. **Fantômes de la route** : la voiture fantôme du meilleur temps de la semaine sur le road trip et les courses.
-7. **Héritage** : testament, tombe et épitaphe à la mort définitive d'un personnage.
+**La ville réagit**
 
-**Vie de la ville :**
+5. **Black-out de quartier** (2) — saboter un transformateur plonge un quartier dans le noir (lumières, feux, caméras). C'est une occasion pour le crime, et les électriciens de la ville réparent.
+6. **La ville a peur** ★ (1) — après une fusillade ou un gros casse, les PNJ fuient la zone, les commerces baissent le rideau une heure et la radio en parle.
+7. **Files d'attente vivantes** ★ (1) — des PNJ font la queue devant les commerces qui marchent. Le succès se voit dans la rue.
+8. **Avis clients** ★ (2) — les clients (joueurs et PNJ) notent les commerces dans le téléphone. Les étoiles font venir ou fuir la clientèle PNJ.
 
-8. **Files d'attente vivantes** devant les commerces qui marchent.
-9. **Appels d'offres de la mairie** pour les entreprises de joueurs.
-10. **La galerie Weazel** : les meilleures photos de presse sur le site.
+**La rue et la justice**
+
+9. **Les objets ont un passé** ★ (2) — bijoux, montres et armes gardent leur historique. Le receleur paie moins cher un objet « trop connu », et c'est une preuve au tribunal.
+10. **Le portrait-robot** ★ (2) — un témoin joueur compose le visage d'un suspect (coiffure, couleurs, signes distinctifs), et la police l'affiche au commissariat.
+11. **La bourse aux tuyaux** (2) — les indics vendent des informations (convoi, planque, rendez-vous) avec un indice de fiabilité. Certaines sont fausses.
+12. **Convois officiels** (3) — transferts de fonds ou de prisonniers annoncés à l'avance. La police les protège, les braqueurs les préparent.
+
+**La vie civile**
+
+13. **Élections municipales** (3) — campagne, débats Weazel, vote. Le maire actionne 3 vrais leviers : taxe des commerces, couvre-feu, budget de la police.
+14. **Appels d'offres de la mairie** ★ (2) — chaque semaine, un chantier public est mis aux enchères. L'entreprise de joueurs qui le décroche le construit vraiment sur la carte (gs_builder).
+15. **Courrier et lettres** (2) — des lettres papier (objet) avec cachet, un facteur joueur, des lettres anonymes et des colis suspects.
+16. **Pompes funèbres et héritage** (3) — un métier de croque-mort, des cérémonies, le testament, une tombe avec son épitaphe (et la page au grand livre).
+
+**Le jeu dans le jeu**
+
+17. **Fantômes de la route** ★ (2) — la voiture fantôme du meilleur temps de la semaine sur le road trip et les courses.
+18. **Réputation de quartier** ★ (2) — chaque joueur est « connu » dans certains quartiers : les PNJ le saluent, se méfient de lui ou appellent la police plus vite.
+19. **Caméra de plateau Weazel** (3) — un mode réalisateur pour les directs : plans fixes, ralentis, bandeau, à suivre sur Twitch.
+20. **Soirées à thème du serveur** ★ (1) — une nuit par mois avec une règle spéciale (années 80, tempête, coupure générale), annoncée sur le site et dans l'écran de chargement.
+
+**Notre sélection pour l'ouverture** : les jurés (1), la Gazette (2), la ville a peur (6), les objets ont un passé (9), le black-out de quartier (5).
 
 ## Rappels
 - Jamais de vraie marque, ni de mot de passe dans les fichiers ou les messages.

@@ -85,6 +85,7 @@ SESSIONS = [
     ('5 quater · Bêta V11 (15 min)', [
         ('Staff : /plaque Mariage de X et Y → couronne + texte doré de près ; [E] Lire la plaque → un passant raconte', 'Staff', 2),
         ('Casse de la banque terminé → une plaque apparaît sur place (et reste après un redémarrage)', '2+', 2),
+        ('Connexion : nouvel écran de chargement, « Précédemment à Los Santos » avec les vrais faits du jour, % qui avance', 'Seul', 2),
         ('Site : « Rejouer les dernières 24 h » sous la carte → 30 s d\'animation (horloge, quartiers, faits)', 'Seul', 1),
         ('GERER-OVH → 21 puis → 20 (A, pseudo) : code affiché ; https://57-129-170-173.sslip.io/gs_admin/ s\'ouvre et s\'installe en appli', 'Staff', 3),
         ('Appli staff : onglets Joueurs / Tickets / Ville, toucher un joueur → geler / message / avertir ; /report en jeu → ticket visible', 'Staff', 3),

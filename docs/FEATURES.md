@@ -393,3 +393,12 @@ Traductions françaises manquantes des scripts Qbox ajoutées par METTRE-A-JOUR 
 - **VPS** : veille (alerte Discord + relance), redémarrage quotidien 06:00 heure de Paris, vérification Discord, copie quotidienne des
   sauvegardes sur le PC, profil public `sv_pureLevel 1` (docs/OVH.md).
 - **Correctif** : traduction des objets sans casse (apostrophes), réparation automatique sur le PC et sur le VPS, test `tests/check_labels.py`.
+
+## V11.1 · Écran de chargement
+- **gs_loadscreen** refait aux couleurs du site : coucher de soleil façon côte de Vice (soleil rayé, océan, palmiers, skyline), cartes
+  « bande-annonce » des signatures, astuces, touches, progression réelle en %.
+- **« Précédemment à Los Santos »** (`gs_city/server/recap.lua`) : à la connexion, le serveur envoie (handover) le résumé des 24 h
+  (incidents et quartier le plus touché, faits divers, rumeurs vérifiées, verdicts, cavales, plaques, légendes), les quartiers chauds,
+  les joueurs en ville, la météo et le prochain rendez-vous. Rien de privé.
+- **PUBLIER-SITE.bat** : ouvre le dossier du site et Netlify pour le mettre en ligne par glisser-déposer.
+
