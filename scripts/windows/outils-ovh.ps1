@@ -65,6 +65,36 @@ function Install-KeyWithPassword($key, $vps) {
     $cmd = "mkdir -p ~/.ssh && chmod 700 ~/.ssh && grep -qxF '$pub' ~/.ssh/authorized_keys 2>/dev/null || echo '$pub' >> ~/.ssh/authorized_keys; chmod 600 ~/.ssh/authorized_keys"
     & ssh -o StrictHostKeyChecking=accept-new -o PubkeyAuthentication=no -o PreferredAuthentications=password,keyboard-interactive "$($vps.user)@$($vps.ip)" $cmd
 }
+function Show-ReinstallHelp($pub) {
+    try { Set-Clipboard -Value $pub } catch { }
+    Write-Host ''
+    Write-Host '  La clé de ce PC vient d''être COPIÉE (presse-papiers). Dans l''espace client OVH :' -ForegroundColor White
+    Write-Host '   1. Bare Metal Cloud  >  Serveurs privés virtuels (VPS)  >  ton VPS' -ForegroundColor White
+    Write-Host '   2. Onglet Accueil, encadré « Votre VPS », ligne OS / Distribution : bouton « ... »  >  Réinstaller mon VPS' -ForegroundColor White
+    Write-Host '   3. Choisis Ubuntu 24.04, et dans le champ « Clé SSH » : clic droit > Coller (Ctrl+V)' -ForegroundColor White
+    Write-Host '   4. Confirmer. La réinstallation prend 5 à 10 min (le VPS est vide : rien n''est perdu).' -ForegroundColor White
+    Write-Host '  (la clé, si besoin de la recopier :)' -ForegroundColor DarkGray
+    Write-Host "  $pub" -ForegroundColor DarkGray
+}
+# Diagnostic en clair + fichier C:\GTASOON\ovh\diagnostic-ssh.txt (aucun secret dedans : adresse, port, réponse du VPS)
+function Show-SshDiagnostic($key, $vps) {
+    cmd /c "ssh-keygen -R $($vps.ip) >nul 2>&1"
+    $port = $false
+    try { $port = Test-NetConnection -ComputerName $vps.ip -Port 22 -InformationLevel Quiet -WarningAction SilentlyContinue } catch { }
+    $r = Get-SshReason $key $vps
+    if ($r[0] -eq 'droits') { cmd /c "icacls `"$key`" /inheritance:r /grant:r `"%USERNAME%`":F >nul 2>&1"; $r = Get-SshReason $key $vps }
+    Write-Host ''
+    Write-Host "  ---------- DIAGNOSTIC · $($vps.user)@$($vps.ip) ----------" -ForegroundColor Cyan
+    if ($port) { Write-Host '  Le VPS répond sur le réseau (port 22 ouvert).' -ForegroundColor Green }
+    else { Write-Host '  Le VPS ne répond PAS sur le réseau (port 22) : VPS éteint, en réinstallation, ou IP fausse.' -ForegroundColor Yellow }
+    $color = if ($r[0] -eq 'ok') { 'Green' } else { 'Yellow' }
+    Write-Host "  $($r[1])" -ForegroundColor $color
+    try {
+        $raw = (cmd /c "ssh -v -i `"$key`" -o BatchMode=yes -o ConnectTimeout=10 $($vps.user)@$($vps.ip) exit 2>&1") -join "`r`n"
+        [IO.File]::WriteAllText('C:\GTASOON\ovh\diagnostic-ssh.txt', "port22=$port`r`n$($r[0]) : $($r[1])`r`n`r`n$raw")
+    } catch { }
+    return $r[0]
+}
 function Initialize-SshKey($vps) {
     if ($script:KeyReady) { return }
     Test-Ssh
@@ -72,45 +102,40 @@ function Initialize-SshKey($vps) {
     $key = Join-Path $dir 'roadline_ovh'
     [void][IO.Directory]::CreateDirectory($dir)
     if (-not (Test-Path -LiteralPath $key)) { & ssh-keygen -q -t ed25519 -N '""' -C 'roadline-pc' -f $key | Out-Null }
-    if (-not (Test-KeyLogin $key $vps)) {
-        $pub = (Get-Content -LiteralPath "$key.pub" -Raw).Trim()
-        try { Set-Clipboard -Value $pub } catch { }
+    $pub = (Get-Content -LiteralPath "$key.pub" -Raw).Trim()
+    while (-not (Test-KeyLogin $key $vps)) {
+        $state = Show-SshDiagnostic $key $vps
+        if ($state -eq 'ok') { break }
         Write-Host ''
-        Write-Host '  ================= CONNEXION AU VPS SANS MOT DE PASSE =================' -ForegroundColor Cyan
-        Write-Host '  La clé de ce PC vient d''être COPIÉE (presse-papiers). Dans l''espace client OVH :' -ForegroundColor White
-        Write-Host '   1. Bare Metal Cloud  >  Serveurs privés virtuels (VPS)  >  ton VPS' -ForegroundColor White
-        Write-Host '   2. Onglet Accueil, encadré « Votre VPS », ligne OS / Distribution : bouton « ... »  >  Réinstaller mon VPS' -ForegroundColor White
-        Write-Host '   3. Choisis Ubuntu 24.04, et dans le champ « Clé SSH » : clic droit > Coller (Ctrl+V)' -ForegroundColor White
-        Write-Host '   4. Confirmer. La réinstallation prend 5 à 10 min (le VPS est vide : rien n''est perdu).' -ForegroundColor White
-        Write-Host '  Ne ferme pas cette fenêtre : elle attend toute seule que le VPS soit prêt, puis continue.' -ForegroundColor Yellow
-        Write-Host ''
-        Write-Host '  (la clé, si besoin de la recopier :)' -ForegroundColor DarkGray
-        Write-Host "  $pub" -ForegroundColor DarkGray
-        Read-Host '  Appuie sur Entrée quand tu as cliqué sur Confirmer chez OVH'
-        $deadline = (Get-Date).AddMinutes(20)
-        $refus = 0
-        do {
-            cmd /c "ssh-keygen -R $($vps.ip) >nul 2>&1" # le VPS réinstallé change d'empreinte : on oublie l'ancienne
-            if (Test-KeyLogin $key $vps) { break }
-            $r = Get-SshReason $key $vps
-            if ($r[0] -eq 'ok') { break }
-            if ($r[0] -eq 'droits') { cmd /c "icacls `"$key`" /inheritance:r /grant:r `"%USERNAME%`":F >nul 2>&1" }
-            Write-Host ('  {0:HH:mm} · {1}' -f (Get-Date), $r[1]) -ForegroundColor DarkGray
-            if ($r[0] -eq 'refus') {
-                $refus++
-                if ($refus -ge 2) { # en ligne mais clé refusée 2 fois de suite : OVH ne l'a pas prise, on la pose nous-mêmes
-                    Write-Host '  La clé n''a pas été prise par OVH. Solution : la poser avec le mot de passe du mail OVH.' -ForegroundColor Yellow
-                    if ((Read-Host '  Le faire maintenant ? (O/N)') -match '^[oOyY]') { Install-KeyWithPassword $key $vps; $refus = 0; continue }
-                }
-            } else { $refus = 0 }
-            Start-Sleep -Seconds 30
-        } while ((Get-Date) -lt $deadline)
-        if (-not (Test-KeyLogin $key $vps)) {
-            throw ('Le VPS ne répond toujours pas avec la clé. Vérifie que la clé a bien été collée dans « Clé SSH » et ' +
-                'que l''utilisateur est bien « ' + $vps.user + ' » (mail OVH de réinstallation), puis relance cet outil.')
+        Write-Host '  Que faire ?' -ForegroundColor Cyan
+        Write-Host '   1. Réinstaller le VPS chez OVH avec la clé de ce PC (instructions), puis attendre qu''il soit prêt' -ForegroundColor White
+        Write-Host '   2. J''ai DÉJÀ réinstallé : attendre encore (vérifie toutes les 30 s, 15 min max)' -ForegroundColor White
+        Write-Host '   3. Poser la clé avec le mot de passe du VPS (mail OVH « identifiants »), une seule fois' -ForegroundColor White
+        Write-Host '   4. Corriger l''IP ou l''utilisateur du VPS' -ForegroundColor White
+        Write-Host '   0. Quitter (le détail est dans C:\GTASOON\ovh\diagnostic-ssh.txt)' -ForegroundColor White
+        switch ((Read-Host '  Choix').Trim()) {
+            '1' { Show-ReinstallHelp $pub; Read-Host '  Appuie sur Entrée quand tu as cliqué sur Confirmer chez OVH'; $wait = $true }
+            '2' { $wait = $true }
+            '3' { Install-KeyWithPassword $key $vps; $wait = $false }
+            '4' {
+                Remove-Item -LiteralPath $VpsFile -Force -ErrorAction SilentlyContinue
+                $n = Get-Vps; $vps.user = $n.user; $vps.ip = $n.ip; $wait = $false
+            }
+            default { throw 'Arrêté. Envoie une capture du DIAGNOSTIC ci-dessus (aucun mot de passe dedans).' }
         }
-        Write-Host '  Connecté au VPS avec la clé : plus jamais de mot de passe.' -ForegroundColor Green
+        if ($wait) {
+            $deadline = (Get-Date).AddMinutes(15)
+            while ((Get-Date) -lt $deadline) {
+                cmd /c "ssh-keygen -R $($vps.ip) >nul 2>&1" # le VPS réinstallé change d'empreinte : on oublie l'ancienne
+                if (Test-KeyLogin $key $vps) { break }
+                $r = Get-SshReason $key $vps
+                Write-Host ('  {0:HH:mm} · {1}' -f (Get-Date), $r[1]) -ForegroundColor DarkGray
+                if ($r[0] -eq 'refus') { break } # en ligne mais clé refusée : inutile d'attendre, retour au diagnostic
+                Start-Sleep -Seconds 30
+            }
+        }
     }
+    Write-Host '  Connecté au VPS avec la clé : plus jamais de mot de passe.' -ForegroundColor Green
     $script:SshKey = $key
     $script:KeyReady = $true
 }
