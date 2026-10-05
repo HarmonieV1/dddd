@@ -1,6 +1,6 @@
 # Roadmap · où on en est, où on va
 
-*Mis à jour le 05/10/2026 au soir · **V11.2** prête (V11 en ligne sur le VPS OVH · bêta privée, 16 places).*
+*Mis à jour le 05/10/2026 au soir · **V11.3** prête (V11 en ligne sur le VPS OVH · bêta privée, 16 places).*
 
 ## Où on en est
 | Brique | État |
@@ -16,7 +16,7 @@
 | Quand | Objectif | Contenu |
 |---|---|---|
 | **Cette semaine** | **Backtest** | Fiche PDF ; chaque jour : GERER-OVH → 3 (erreurs) + captures avec le n° du test ; je corrige au fil de l'eau |
-| **Semaine prochaine** | **V11.1 · Appli staff v2** | Voir ci-dessous (boutons, raccourcis, fiches joueurs, sanctions). Fait (V11.2) : écran de chargement complet, jurés, Gazette, black-out, vraie carte sur le site |
+| **Semaine prochaine** | **V11.1 · Appli staff v2** | Voir ci-dessous (boutons, raccourcis, fiches joueurs, sanctions). Fait (V11.2 · V11.3) : écran de chargement, jurés, Gazette, black-out, vraie carte, salle Luxe et concession nettoyée, IP masquée jusqu'à l'ouverture, règlement, guides joueur et staff |
 | **Avant l'ouverture** | **V12 · Ouverture** | Corrections du backtest, passage en public (code cfx.re, liste FiveM), whitelist ou non, nom de domaine, 2 signatures « waouh » |
 | **Après l'ouverture** | **Saison 1** | Événements staff, élections, contenus du mois, boutique (après validation PLA) |
 

@@ -111,7 +111,7 @@ Placer n'importe quel objet du jeu, le déplacer, le tourner, le dupliquer, le s
 - **Rumeurs qui deviennent vraies** (`gs_rumors`, `Config.Seeds`) : 3 personnes différentes en 2 h → le staff reçoit l'alerte ; `/rumeurvraie storm|stash|crime` ou `/rumeurfausse …` (staff niveau 2+) ; sans réponse en 10 min, la ville tranche seule.
 - **Ville de nuit** (`gs_nightcity`) : groupes de PNJ et marchés de nuit déplaçables (F11 → Déplacer un point) ; marché ouvert 22 h → 5 h (heure du jeu).
 - **Dossier** (`gs_dossier`, `/dossier`) : lecture seule ; chaque consultation est journalisée (logs métiers).
-- **Carte en direct du site** : remplir `cityUrl` dans `docs/site/index.html` avec l'adresse https du serveur + `/gs_city/ville.json`.
+- **Carte en direct du site** : `cityUrlB64` dans `docs/site/index.html` (adresse https du serveur + `/gs_city/ville.json`, écrite à l'envers en base64 : voir le commentaire de `connectB64`).
 - **Rumeurs des joueurs** (`Config.Custom`) : au comptoir, « Raconter ma propre histoire » (100 $, une toutes les 2 h). Rien n'est public avant le staff : F11 → Événements → **Rumeurs des joueurs** → Valider (les barmans la racontent), Valider + brève Weazel, ou Écarter.
 - **Fil de la ville** (`gs_discord`, `Config.Digest`) : chaque soir à 23 h 30, un résumé court dans #annonces (crimes, arrestations, verdicts, faits divers, rumeur réalisée, légende, quartier chaud) ; rien à dire = rien posté. `enabled = false` pour couper.
 - **Alt (ox_target)** : appui simple (`setr ox_target:toggleHotkey 1` dans cfg/convars.cfg) ; mettre 0 pour revenir au maintien.
@@ -137,3 +137,15 @@ Placer n'importe quel objet du jeu, le déplacer, le tourner, le dupliquer, le s
 - **Black-out** (`gs_city`, `Config.Blackout`) : un transformateur par quartier (9). Positions estimées : à recaler en jeu si besoin
   avec F11 → Déplacer un point (« Transformateur »). Sabotage = crochet consommé, 15 min sans lumière, police prévenue, caméras du
   quartier aveugles ; réparation par n'importe qui (payée par la mairie). 2 h minimum entre deux pannes d'un même quartier.
+
+## V11.3 · Concession, IP masquée, version publique, règlement, guides
+- **Concession** (`scripts/windows/outils-communs.ps1` + `scripts/windows/prix-vehicules.json`, appliqués par METTRE-A-JOUR) :
+  salle **Luxe** à la PDM (« ★ Luxe · Sportives », « ★ Luxe · Supercars ») ; 94 véhicules retirés (armés, arène, militaires, blindés,
+  services, doublons « Yacht », sous-marins) ; aéroport : 17 avions et 14 hélicoptères civils ; prix réalistes pour les bateaux, les avions
+  et la salle Luxe (supercars de 180 000 à 650 000 $). Changer un prix : `prix-vehicules.json`, puis METTRE-A-JOUR et METTRE-A-JOUR-OVH.
+- **Site** : `hideIpUntilOpening: true` → avant `opening`, l'adresse est caviardée et « Rejoindre » mène au Discord ; le jour J, elle se dévoile
+  toute seule (rien à republier). Adresse, carte et lien staff sont encodés (`connectB64`, `cityUrlB64`, `staffUrlB64`) : invisibles en clair
+  dans la page. Limite : un curieux qui ouvre les outils réseau du navigateur voit l'adresse de la carte ; un nom de domaine réglera ça (V12).
+- **Version publique** : `setr gs_public_version "V4 · bêta"` (écran de chargement, site, statut Discord). `gs_version` (V11.3) reste pour le staff.
+- **Règlement Discord** : `docs/REGLEMENT.md` (12 messages prêts à coller). **Guides** : `tools/guide_joueur.py` (joueurs, PDF) et
+  `tools/guide_staff.py` (staff, PDF interne) → `docs/pdf/`.

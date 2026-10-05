@@ -8,7 +8,7 @@ from reportlab.lib.units import mm
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, PageBreak, KeepTogether
 from reportlab.graphics.shapes import Drawing, Rect, Circle, String, Line
 
-VERSION = 'V11.2'
+VERSION = 'V11.3'
 NEON = colors.HexColor('#28E0FF')
 DARK = colors.HexColor('#0F091C')
 PINK = colors.HexColor('#FF2E88')
@@ -105,7 +105,7 @@ INTEGRATIONS = [
     ['Panneau staff (appli)', 'https://57-129-170-173.sslip.io/gs_admin/ (GERER-OVH → 21 une fois) : à installer sur le téléphone (Chrome : Installer '
                               'l\'application ; iPhone : Sur l\'écran d\'accueil). Joueurs, tickets, annonce. Sans console : c\'est l\'outil des modérateurs. '
                               'Un code par membre : GERER-OVH → 20 ; 5 essais ratés = 15 min de blocage. Lien « Espace staff » en bas du site.'],
-    ['Site · carte en direct', 'https://57-129-170-173.sslip.io/gs_city/ville.json : quartiers, rendez-vous, légendes, timelapse 24 h (CONFIG.cityUrl, déjà réglé).'],
+    ['Site · carte en direct', 'https://57-129-170-173.sslip.io/gs_city/ville.json : quartiers, rendez-vous, légendes, timelapse 24 h (CONFIG.cityUrlB64, déjà réglé, adresse encodée).'],
     ['Sauvegardes', 'Toutes les 6 h (PC : tâche Windows ; VPS : cron), 30 gardées, avant chaque mise à jour, retour d\'un seul joueur possible.'],
     ['Téléphone', 'Fait maison : Que faire, Messages, Contacts, Appel, Banque, Factures, Emploi, Urgences, Vibe, Weazel, Plans, Ville, Notes, Boulots, Inconnu.'],
     ['Photos (option)', 'screenshot-basic + hébergeur d\'images (gs_photo_* dans secrets.cfg) : vraies photos dans Vibe, l\'appareil photo et la bodycam.'],

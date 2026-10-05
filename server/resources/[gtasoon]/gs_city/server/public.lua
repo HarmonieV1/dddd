@@ -23,7 +23,7 @@ function CityPublic()
         legends[#legends + 1] = { name = l.name, date = l.date }
     end
     local fugitives = #(GlobalState.gsFugitives or {})
-    return { at = os.time(), players = #GetPlayers(), max = GetConvarInt('sv_maxclients', 48), version = GetConvar('gs_version', ''),
+    return { at = os.time(), players = #GetPlayers(), max = GetConvarInt('sv_maxclients', 48), version = GetConvar('gs_public_version', 'V4 · bêta'),
         weather = started('gs_weather') and try(function() return exports.gs_weather:GetWeather() end, nil) or nil,
         districts = districts, weekly = weekly, legends = legends, fugitives = fugitives,
         ids = (function() local m = {} for _, d in ipairs(districts) do m[d.id] = { x = d.x, y = d.y, label = d.label } end return m end)(),

@@ -47,7 +47,7 @@ function CityRecap(now)
     local weather = started('gs_weather') and (function() local ok, w = pcall(function() return exports.gs_weather:GetWeather() end) return ok and w or nil end)() or nil
     local weekly = started('gs_events') and (function() local ok, w = pcall(function() return exports.gs_events:Weekly() end) return ok and w or {} end)() or {}
     return { lines = lines, hot = hot, players = #GetPlayers(), max = GetConvarInt('sv_maxclients', 48),
-        weather = weather and (WEATHER[weather] or weather:lower()) or nil, next = weekly[1], version = GetConvar('gs_version', '') }
+        weather = weather and (WEATHER[weather] or weather:lower()) or nil, next = weekly[1], version = GetConvar('gs_public_version', 'V4 · bêta') }
 end
 
 --- Accueil personnalisé : dernier personnage joué sur ce compte (prénom, métier, absence). Uniquement pour le joueur lui-même.

@@ -159,11 +159,11 @@ def footer(canvas, doc):
 
 
 # ------------------------------------------------------------------------------------------------------------------
-CAT_FR = {'compacts': 'Compactes', 'sedans': 'Berlines', 'coupes': 'Coupés', 'suvs': 'SUV', 'offroad': 'Tout-terrain',
+CAT_FR = {'sports': '★ Luxe · Sportives', 'super': '★ Luxe · Supercars', 'compacts': 'Compactes', 'sedans': 'Berlines', 'coupes': 'Coupés', 'suvs': 'SUV', 'offroad': 'Tout-terrain',
           'muscle': 'Muscle cars', 'sportsclassics': 'Sportives classiques', 'motorcycles': 'Motos', 'vans': 'Vans et utilitaires',
           'cycles': 'Vélos', 'boats': 'Bateaux', 'planes': 'Avions', 'helicopters': 'Hélicoptères'}
 SHOP_FR = {'pdm': 'Premium Deluxe Motorsport (Pillbox Hill)', 'boats': 'Marina (bateaux)', 'air': 'Aéroport (avions et hélicoptères)'}
-CAT_ORDER = ['cycles', 'compacts', 'sedans', 'coupes', 'muscle', 'sportsclassics', 'suvs', 'offroad', 'vans', 'motorcycles', 'boats', 'planes', 'helicopters']
+CAT_ORDER = ['sports', 'super', 'cycles', 'compacts', 'sedans', 'coupes', 'muscle', 'sportsclassics', 'suvs', 'offroad', 'vans', 'motorcycles', 'boats', 'planes', 'helicopters']
 
 
 def build():
@@ -284,11 +284,11 @@ def build():
     s += chapter(3, 'Véhicules', 'Pas de voiture au départ : location, puis concession quand tu as le permis et les moyens. Chaque '
                  'voiture a son carnet (kilomètres, accidents, propriétaires) : on sait ce qu\'on achète.')
     s += [table([['Boutique', 'Ce qu\'on y trouve', 'Nombre de modèles'],
-                 [SHOP_FR['pdm'], 'Vélos, compactes, berlines, coupés, muscle cars, sportives classiques, SUV, tout-terrain, vans, motos, '
-                  'et la catégorie <b>★ Imports RoadLine</b> (modèles exclusifs du serveur)',
+                 [SHOP_FR['pdm'], 'Vélos, compactes, berlines, coupés, muscle cars, sportives classiques, SUV, tout-terrain, vans, motos, la <b>salle Luxe</b> '
+                  '(sportives et supercars) et la catégorie <b>★ Imports RoadLine</b> (modèles exclusifs du serveur)',
                   str(sum(len(v) for v in shops['pdm'].values())) + ' + imports'],
-                 [SHOP_FR['boats'], 'Jet-skis, semi-rigides, hors-bords, voiliers, yachts', str(len(shops['boats']['boats']))],
-                 [SHOP_FR['air'], 'Avions légers et hélicoptère', str(sum(len(v) for v in shops['air'].values()))]],
+                 [SHOP_FR['boats'], 'Jet-skis, semi-rigides, hors-bords, yachts, voilier, remorqueur', str(len(shops['boats']['boats']))],
+                 [SHOP_FR['air'], 'ULM, avions de tourisme, hydravions, jets d\'affaires, hélicoptères civils', str(sum(len(v) for v in shops['air'].values()))]],
                 [55 * mm, 100 * mm, 25 * mm])]
     s += [Paragraph('Acheter une voiture, pas à pas', H3)]
     s += steps(['Va à la concession avec ton <b>permis</b>. Regarde les modèles exposés ou ouvre le catalogue au comptoir (Alt).',
@@ -665,7 +665,7 @@ def build():
             lo, hi = lst[0]['price'], lst[-1]['price']
             s += [CondPageBreak(40 * mm), Paragraph(f'{CAT_FR.get(cat, cat)} · {len(lst)} modèle' + ('s' if len(lst) > 1 else '') + (f' · de {money(lo)} à {money(hi)}' if lo != hi else f' · {money(lo)}'), H3),
                   table(rows, [33 * mm, 25 * mm, 32 * mm, 33 * mm, 25 * mm, 32 * mm], font=7.6)]
-    s += [Spacer(1, 6), Paragraph(f'{total} véhicules au catalogue. Les véhicules de service (police, EMS, taxi…) ne sont pas en vente.', SMALL)]
+    s += [Spacer(1, 6), Paragraph(f'{total} véhicules au catalogue. Les véhicules de service (police, EMS, taxi…), militaires, armés et d\'arène ne sont pas en vente.', SMALL)]
 
     doc = SimpleDocTemplate(OUT, pagesize=A4, leftMargin=15 * mm, rightMargin=15 * mm, topMargin=14 * mm, bottomMargin=16 * mm,
                             title='RoadLine RP · Guide du joueur', author='RoadLine RP')

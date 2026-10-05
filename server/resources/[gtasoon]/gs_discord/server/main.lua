@@ -32,7 +32,7 @@ function Discord.statusEmbed()
     local fields = {
         { name = '👥 En ville', value = ('**%d** / %d'):format(players, max), inline = true },
         { name = '⏱️ En ligne depuis', value = duration(os.time() - Discord.started), inline = true },
-        { name = '📦 Version', value = GetConvar('gs_version', '?'), inline = true },
+        { name = '📦 Version', value = GetConvar('gs_public_version', 'V4 · bêta'), inline = true },
     }
     local svc = {}
     for _, s in ipairs(Config.Services) do svc[#svc + 1] = ('%s : **%d**'):format(s.label, onDuty(s.job)) end

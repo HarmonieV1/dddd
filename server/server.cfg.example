@@ -20,7 +20,8 @@ sets locale "fr-FR"
 sets tags "roleplay, rp, fr, francais, french, freeaccess, serious rp, new generation, police, gangs, enquetes, qbox"
 sets Discord "https://discord.gg/8y2sX7EvZN"
 sets Site "https://roadlinerp.netlify.app"
-setr gs_version "V11.2"        # version RoadLine affichée (F11, console, METTRE-A-JOUR) : savoir quelle version tourne
+setr gs_version "V11.3"        # version RoadLine affichée (F11, console, METTRE-A-JOUR) : savoir quelle version tourne
+setr gs_public_version "V4 · bêta"   # version affichée aux joueurs (écran de chargement, site, statut Discord), gs_version reste la version interne (staff)
 # load_server_icon logo.png   # PNG 96x96
 
 ## ---- Sécurité de base (sans effet de bord) ----

@@ -76,6 +76,20 @@ $QboxPatches = @(
     # Marina : après l'essai d'un bateau, retour sur le ponton (avant : dans l'eau, à côté)
     @{ res = 'qbx_vehicleshop'; file = 'config\shared.lua'; find = 'returnLocation = vec3\(-714\.34, -1343\.31, 0\.0\)'; repl = 'returnLocation = vec3(-738.25, -1334.38, 1.6)'; why = 'marina : retour sur le ponton après l''essai' }
     @{ res = 'qbx_vehicleshop'; file = 'config\shared.lua'; find = "label = 'Marina Shop'"; repl = "label = 'Marina (bateaux)'"; why = 'marina : nom en français' }
+    # V11.2 · Concession : salle Luxe (sportives et supercars, dans la PDM), véhicules armés / d'arène / de service / doublons retirés,
+    # avions et hélicoptères civils à l'aéroport. Prix : scripts\windows\prix-vehicules.json (patch « prices » ci-dessous).
+    @{ res = 'qbx_vehicleshop'; file = 'config\shared.lua'; why = 'concession : salle Luxe (sportives, supercars)'
+       find = "(\n(\s*)roadtrip = ' ★ Imports RoadLine',)(?!\s*\n\s*sports = )"
+       repl = "`${1}`n`${2}sports = ' ★ Luxe · Sportives',`n`${2}super = ' ★ Luxe · Supercars'," }
+    @{ res = 'qbx_vehicleshop'; file = 'config\shared.lua'; why = 'concession : véhicules armés, d''arène et de service retirés'
+       find = "blocklist = \{\s*\n(\s*)'police',"
+       repl = "blocklist = {`n`${1}-- RoadLine : armés, arène, militaires, services, blindés, doublons, sous-marins`n`${1}'ardent', 'avisa', 'baller5', 'baller6', 'blazer2', 'blazer5', 'boxville', 'boxville2',`n`${1}'boxville3', 'boxville4', 'boxville5', 'bruiser', 'bruiser2', 'bruiser3', 'brutus', 'brutus2',`n`${1}'brutus3', 'burrito', 'caracara', 'cog552', 'cognoscenti2', 'deathbike', 'deathbike2', 'deathbike3',`n`${1}'deluxo', 'dinghy3', 'dinghy4', 'dinghy5', 'dominator4', 'dominator5', 'dominator6', 'dune3',`n`${1}'dune4', 'dune5', 'impaler2', 'impaler3', 'impaler4', 'imperator', 'imperator2', 'imperator3',`n`${1}'insurgent', 'insurgent2', 'insurgent3', 'issi4', 'issi5', 'issi6', 'jb700', 'jb7002',`n`${1}'kosatka', 'kuruma2', 'menacer', 'monster', 'monster3', 'monster4', 'monster5', 'nightshark',`n`${1}'oppressor', 'oppressor2', 'paragon2', 'patrolboat', 'predator', 'rcbandito', 'ruiner2', 'ruiner3',`n`${1}'schafter5', 'schafter6', 'scramjet', 'seashark2', 'seashark3', 'slamvan4', 'slamvan5', 'slamvan6',`n`${1}'speeder', 'speedo2', 'stromberg', 'submersible', 'submersible2', 'tampa3', 'technical', 'technical2',`n`${1}'technical3', 'toreador', 'toro2', 'tropic2', 'vigilante', 'voltic2', 'xls2', 'zr380',`n`${1}'zr3802', 'zr3803',`n`${1}'police'," }
+    @{ res = 'qbx_vehicleshop'; file = 'config\shared.lua'; why = 'aéroport : avions et hélicoptères civils'
+       find = "(\n(\s*)conada = 'air',)(?!\s*\n\s*-- RoadLine)"
+       repl = "`${1}`n`${2}-- RoadLine : avions et hélicoptères civils`n`${2}cuban800 = 'air', duster = 'air', frogger = 'air', havok = 'air', luxor = 'air', luxor2 = 'air',`n`${2}mammatus = 'air', maverick = 'air', microlight = 'air', miljet = 'air', seabreeze = 'air', shamal = 'air',`n`${2}stunt = 'air', supervolito = 'air', supervolito2 = 'air', swift = 'air', swift2 = 'air', velum = 'air',`n`${2}vestra = 'air', volatus = 'air'," }
+    # La config de base envoie ~170 sportives / supercars vers la boutique « luxury », désactivée : elles vont dans la salle Luxe de la PDM
+    @{ res = 'qbx_vehicleshop'; file = 'config\shared.lua'; why = 'salle Luxe : sportives et supercars à la PDM'; map = @{ " = 'luxury'," = " = 'pdm'," } }
+    @{ res = 'qbx_core'; file = 'shared\vehicles.lua'; why = 'prix des véhicules (bateaux, avions, salle Luxe)'; prices = 'prix-vehicules.json' }
     @{ res = 'qbx_ambulancejob'; file = 'client\main.lua'; find = 'for _, station in pairs\(sharedConfig\.locations\.stations\) do(\s*\n\s*local blip = AddBlipForCoord)'; repl = 'for _, station in pairs({}) do -- logo géré par gs_jobs${1}'; why = 'carte : un seul logo hôpital' }
     # Anti-AFK (qbx_smallresources) : 20 min avant expulsion (la création de perso prend du temps), messages en français
     @{ res = 'qbx_smallresources'; file = 'qbx_afk\config.json'; find = '"timeUntilAFKKick":\s*\d+'; repl = '"timeUntilAFKKick": 1200'; why = 'AFK : expulsion après 20 min' }
@@ -235,6 +249,20 @@ function Set-QboxOverrides($Res, $Repo, [scriptblock]$Say) {
             $n = 0
             foreach ($k in $p.map.Keys) { if ($text.Contains($k)) { $text = $text.Replace($k, $p.map[$k]); $n++ } }
             if ($n -gt 0) { Write-Utf8 $file $text; & $Say "  $($p.res) : $($p.why) ($n)" 'Green' }
+            continue
+        }
+        if ($p.prices) { # prix absolus par modèle (idempotent) : « modele = { … price = N, »
+            $file = if ($target) { Join-Path $target.FullName $p.file } else { $null }
+            if (-not $file -or -not (Test-Path -LiteralPath $file)) { & $Say "  $($p.res)\$($p.file) introuvable : $($p.why) non appliqué" 'Yellow'; continue }
+            $list = (Get-Content -LiteralPath (Join-Path $PSScriptRoot $p.prices) -Raw -Encoding UTF8 | ConvertFrom-Json).prices
+            $text = Get-Content -LiteralPath $file -Raw -Encoding UTF8
+            $n = 0
+            foreach ($m in $list.PSObject.Properties) {
+                $rx = "(?m)(^\s*\[?'?" + [regex]::Escape($m.Name) + "'?\]?\s*=\s*\{[^}]*?\bprice\s*=\s*)\d+"
+                if ($text -match $rx) { $text = [regex]::Replace($text, $rx, '${1}' + [string]$m.Value); $n++ }
+            }
+            if ($n -gt 0) { Write-Utf8 $file $text }
+            & $Say "  $($p.res) : $($p.why) ($n)" $(if ($n -gt 0) { 'Green' } else { 'Yellow' })
             continue
         }
         if ($p.dir) { # correctif sur des fichiers compilés (nom variable) : tous les fichiers du dossier
