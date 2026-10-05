@@ -701,8 +701,28 @@ exports('IsJailed', function(src) return Admin.jailed[src] ~= nil end)
 --- V10.1 · Modération à distance (commandes staff du bot Discord, rôle staff vérifié par gs_discord). Sous-ensemble
 --- sûr : liste, geler, dégeler, avertir, expulser, message privé, annonce. Journalisé comme une action staff.
 --- Retourne ok, texte. `staff` = pseudo Discord de l'auteur.
+-- Vue d'ensemble pour le panneau web (V11) : joueurs (cartes cliquables), tickets ouverts, état du serveur
+local startedAt = os.time()
+function Admin.overview()
+    local players = {}
+    for _, id in ipairs(GetPlayers()) do
+        local s = tonumber(id)
+        players[#players + 1] = { id = s, name = GetPlayerName(s) or '?', char = Bridge:GetName(s) or '', ping = GetPlayerPing(s),
+            frozen = Admin.frozen[s] and true or false }
+    end
+    table.sort(players, function(a, b) return a.id < b.id end)
+    local tickets = {}
+    for _, tk in ipairs(openTickets()) do
+        tickets[#tickets + 1] = { id = tk.id, src = tk.src, name = tk.name, message = tk.message, age = os.time() - (tk.time or os.time()),
+            claimedBy = tk.claimedBy, online = tk.online and true or false }
+    end
+    return { players = players, tickets = tickets, max = GetConvarInt('sv_maxclients', 0), uptime = os.time() - startedAt,
+        version = GetConvar('gs_version', '?'), staffOnDuty = (function() local n = 0 for _ in pairs(Admin.onDuty) do n = n + 1 end return n end)() }
+end
+
 function Admin.remote(action, target, text, staff)
-    staff = ('Discord · %s'):format(tostring(staff or '?'):sub(1, 40))
+    staff = tostring(staff or '?'):sub(1, 40)
+    if not staff:find('·', 1, true) then staff = 'Discord · ' .. staff end -- le bot passe le pseudo seul, le web « Web · pseudo »
     if action == 'players' then
         local out = {}
         for _, id in ipairs(GetPlayers()) do

@@ -97,8 +97,13 @@ terminer() { # fin d'installation : service, commande roadline, sauvegardes auto
   chown -R fivem:fivem "$BASE"
   [ -f "$TOOLS/.env" ] && chmod 600 "$TOOLS/.env"
   { crontab -l 2>/dev/null || true; } | grep -q roadline-bdd || "$TOOLS/roadline-bdd.sh" programmer >/dev/null
+  # V11 : heure de Paris (sauvegardes, redémarrage quotidien, journaux), veille toutes les 2 min, redémarrage 06:00
+  [ "$(timedatectl show -p Timezone --value 2>/dev/null)" = "Europe/Paris" ] || { timedatectl set-timezone Europe/Paris 2>/dev/null && systemctl restart cron 2>/dev/null || true; }
+  { crontab -l 2>/dev/null || true; } | grep -q 'roadline veille' || { { crontab -l 2>/dev/null || true; }; echo "*/2 * * * * /usr/local/bin/roadline veille"; } | crontab -
+  { crontab -l 2>/dev/null || true; } | grep -q 'roadline redemarrer-auto' || grep -q '^setr gs_restart "off"' "$DATA/cfg/secrets.cfg" 2>/dev/null || redemarrage_auto 06:00 >/dev/null
   systemctl daemon-reload
   systemctl enable roadline >/dev/null 2>&1
+  rm -f "$BASE/.maintenance"
   systemctl is-active --quiet roadline || systemctl start roadline
 }
 
@@ -143,13 +148,72 @@ erreurs() { # erreurs de scripts depuis le dernier démarrage, regroupées par r
 secrets() { # réglages du PC (Discord, codes staff, licence…) sans toucher à la connexion de la base du VPS
   local f="${1:?fichier}" keep
   [ -f "$f" ] || { echo "Introuvable : $f"; exit 1; }
-  keep=$(grep -E '^set mysql_connection_string ' "$DATA/cfg/secrets.cfg" || true)
+  keep=$(grep -E '^setr? (mysql_connection_string|gs_admin_txadmin|gs_restart) ' "$DATA/cfg/secrets.cfg" || true)
   cp "$DATA/cfg/secrets.cfg" "$BASE/anciens/secrets-$(date +%Y%m%d_%H%M%S).cfg" 2>/dev/null || true
-  tr -d '\r' < "$f" | grep -vE '^set mysql_connection_string ' > "$DATA/cfg/secrets.cfg"
+  tr -d '\r' < "$f" | grep -vE '^setr? (mysql_connection_string|gs_admin_txadmin|gs_restart) ' > "$DATA/cfg/secrets.cfg"
   [ -n "$keep" ] && echo "$keep" >> "$DATA/cfg/secrets.cfg"
   chown fivem:fivem "$DATA/cfg/secrets.cfg"; chmod 600 "$DATA/cfg/secrets.cfg"; rm -f "$f"
   systemctl restart roadline
   echo "Réglages du PC appliqués (connexion à la base du VPS gardée), serveur redémarré."
+}
+
+discord() { # bot + webhooks : réglés ? connectés ? (aucune valeur secrète affichée)
+  local sec="$DATA/cfg/secrets.cfg" v name code
+  val() { grep -E "^set $1 " "$sec" 2>/dev/null | head -1 | sed -E 's/^set [^ ]+ "?([^"]*)"?.*/\1/'; }
+  echo "== Bot Discord =="
+  if [ -n "$(val gs_discord_bot_token)" ]; then
+    if journalctl -u roadline --since "$(systemctl show -p ExecMainStartTimestamp --value roadline)" --no-pager -o cat 2>/dev/null | grep -q 'Bot Discord connecté'; then echo "  connecté"
+    elif journalctl -u roadline -n 2000 --no-pager -o cat 2>/dev/null | grep -q 'Jeton du bot refusé'; then echo "  jeton REFUSÉ par Discord : relance CONFIGURER-DISCORD.bat sur le PC, puis GERER-OVH → 12"
+    else echo "  jeton présent, mais pas encore connecté (attends 1 min après le démarrage, ou voir Console)"; fi
+  else echo "  pas de jeton (CONFIGURER-DISCORD.bat sur le PC, puis GERER-OVH → 12)"; fi
+  echo "== Salons (webhooks) : un message de test est envoyé dans chacun =="
+  for name in gs_webhook_status gs_webhook_annonces gs_staff_webhook gs_webhook_sanctions gs_webhook_anticheat gs_webhook_jobs gs_webhook_social gs_webhook_boutique; do
+    v=$(val "$name")
+    if [ -z "$v" ]; then printf '  %-22s non réglé\n' "$name"; continue; fi
+    code=$(curl -s -o /dev/null -w '%{http_code}' -H 'Content-Type: application/json' \
+      -d '{"username":"RoadLine","content":"✅ Test du VPS : ce salon est bien relié au serveur."}' "$v" || echo 000)
+    case "$code" in 2*) printf '  %-22s OK\n' "$name" ;; 401|403|404) printf '  %-22s REFUSÉ (webhook supprimé ou mal copié)\n' "$name" ;; *) printf '  %-22s erreur %s\n' "$name" "$code" ;; esac
+  done
+  if [ -z "$(val gs_connect)" ]; then
+    local ip; ip=$(curl -fsS4 --max-time 5 https://api.ipify.org 2>/dev/null || hostname -I | awk '{print $1}')
+    sed -i '/^set gs_connect /d' "$sec"; echo "set gs_connect \"$ip:30120\"" >> "$sec"
+    echo "== Adresse de connexion (/rejoindre) réglée sur $ip:30120 (pris en compte au prochain redémarrage) =="
+  fi
+}
+
+hook() { # message Discord (salon staff, sinon statut) : $1 = texte
+  local sec="$DATA/cfg/secrets.cfg" url
+  url=$(grep -E '^set (gs_staff_webhook|gs_webhook_status) ' "$sec" 2>/dev/null | sed -E 's/^set [^ ]+ "?([^"]*)"?.*/\1/' | grep -m1 '^https://')
+  [ -n "$url" ] || return 0
+  curl -s -o /dev/null -m 10 -H 'Content-Type: application/json' -d "{\"username\":\"RoadLine · VPS\",\"content\":\"$1\"}" "$url" || true
+}
+
+veille() { # cron toutes les 2 min : serveur tombé → alerte Discord + relance ; revenu → message
+  local st=/run/roadline-veille n=0
+  [ -f "$BASE/.maintenance" ] && return 0 # arrêté volontairement (GERER-OVH → Arrêter)
+  if systemctl is-active --quiet roadline && ss -lntu 2>/dev/null | grep -q ':30120 '; then
+    if [ -f "$st" ] && [ "$(cat "$st")" -ge 2 ]; then hook "🟢 Serveur de nouveau en ligne ($(date '+%H:%M'))."; fi
+    rm -f "$st"; return 0
+  fi
+  # 1er contrôle raté : peut-être un démarrage en cours, on attend le suivant (2 min) avant d'agir
+  n=$(( $(cat "$st" 2>/dev/null || echo 0) + 1 )); echo "$n" > "$st"
+  if [ "$n" -eq 2 ]; then
+    hook "🔴 Serveur injoignable depuis 4 min ($(date '+%H:%M')) : redémarrage automatique en cours."
+    systemctl restart roadline
+  elif [ "$n" -eq 6 ]; then
+    hook "⚠️ Le serveur ne repart pas tout seul : GERER-OVH → 1 (diagnostic)."
+  fi
+}
+
+redemarrage_auto() { # HH:MM | off : redémarrage quotidien (annoncé en jeu 15, 5 et 1 min avant par gs_admin)
+  local when="${1:?HH:MM ou off}" sec="$DATA/cfg/secrets.cfg"
+  local cur; cur=$( { crontab -l 2>/dev/null || true; } | grep -v 'roadline redemarrer-auto' || true)
+  sed -i '/^setr gs_restart /d' "$sec"
+  if [ "$when" = "off" ]; then echo "$cur" | crontab -; echo 'setr gs_restart "off"' >> "$sec"; echo "Redémarrage quotidien désactivé."; return 0; fi
+  [[ "$when" =~ ^([01][0-9]|2[0-3]):[0-5][0-9]$ ]] || { echo "Heure invalide (ex : 06:00)."; exit 1; }
+  { echo "$cur"; echo "$((10#${when#*:})) $((10#${when%:*})) * * * /usr/local/bin/roadline redemarrer-auto"; } | grep -v '^$' | crontab -
+  echo "setr gs_restart \"$when\"" >> "$sec"
+  echo "Redémarrage quotidien à $when (heure de Paris), annoncé en jeu 15, 5 et 1 min avant (actif après le prochain redémarrage)."
 }
 
 case "${1:-aide}" in
@@ -157,6 +221,7 @@ case "${1:-aide}" in
     systemctl --no-pager status roadline | head -5; echo; df -h / | tail -1; free -h | sed -n 2p ;;
   diagnostic) need_root "$@"; diagnostic ;;
   erreurs) need_root "$@"; erreurs ;;
+  discord) need_root "$@"; discord ;;
   secrets) need_root "$@"; secrets "${2:-/tmp/secrets-pc.cfg}" ;;
   copie-sauvegarde) need_root "$@" # dernière sauvegarde → /tmp, lisible par le compte SSH (pour la garder aussi sur le PC)
     f=$(ls -1t "$BASE"/sauvegardes/*.sql.gz 2>/dev/null | head -1); [ -n "$f" ] || { echo "Aucune sauvegarde."; exit 1; }
@@ -165,12 +230,28 @@ case "${1:-aide}" in
   pin) pin "${2:-}" ;;
   unite) need_root "$@"; unite "${2:-simple}" ;;
   terminer) need_root "$@"; terminer; echo "Installation terminée : serveur démarré, sauvegardes toutes les 6 h." ;;
-  mode) need_root "$@"; unite "${2:-simple}"; systemctl enable roadline >/dev/null 2>&1; systemctl restart roadline
-    if [ "$(cat "$BASE/.mode")" = "txadmin" ]; then sleep 20; echo "Mode txAdmin : ouvre http://IP-DU-VPS:40120"; pin; else echo "Mode simple : le serveur démarre tout seul."; fi ;;
+  mode) need_root "$@"; unite "${2:-simple}"; systemctl enable roadline >/dev/null 2>&1
+    sec="$DATA/cfg/secrets.cfg"; sed -i '/^set gs_admin_txadmin /d' "$sec" 2>/dev/null || true
+    if [ "$(cat "$BASE/.mode")" = "txadmin" ]; then
+      ip=$(curl -fsS4 --max-time 5 https://api.ipify.org 2>/dev/null || hostname -I | awk '{print $1}')
+      echo "set gs_admin_txadmin \"http://$ip:40120\"" >> "$sec" # bouton « Ouvrir txAdmin » du panneau staff web
+      systemctl restart roadline; sleep 20
+      cat <<EOF
+Mode txAdmin : le panneau web prend la main sur le serveur.
+ 1. Ouvre http://$ip:40120 et entre le code PIN ci-dessous, puis connecte-toi avec ton compte Cfx.re.
+ 2. Choisis « Existing server data » : dossier /home/fivem/server-data , fichier server.cfg
+ 3. Settings → FXServer → OneSync : On, puis Save et Start.
+ (Pour revenir au démarrage automatique : GERER-OVH → Mode simple.)
+EOF
+      pin
+    else systemctl restart roadline; echo "Mode simple : le serveur démarre tout seul."; fi ;;
   suivre) journalctl -u roadline -f ;;
-  redemarrer) need_root "$@"; systemctl restart roadline; echo "Redémarré." ;;
-  arreter) need_root "$@"; systemctl stop roadline; echo "Arrêté." ;;
-  demarrer) need_root "$@"; systemctl start roadline; echo "Démarré." ;;
+  redemarrer) need_root "$@"; rm -f "$BASE/.maintenance"; systemctl restart roadline; echo "Redémarré." ;;
+  redemarrer-auto) need_root "$@"; rm -f "$BASE/.maintenance"; systemctl restart roadline; logger -t roadline "redémarrage quotidien" ;;
+  veille) need_root "$@"; veille ;;
+  redemarrage-auto) need_root "$@"; redemarrage_auto "${2:-}" ;;
+  arreter) need_root "$@"; touch "$BASE/.maintenance"; systemctl stop roadline; echo "Arrêté (la veille ne le relance pas ; Démarrer pour reprendre)." ;;
+  demarrer) need_root "$@"; rm -f "$BASE/.maintenance"; systemctl start roadline; echo "Démarré." ;;
   public) need_root "$@"; profil public; systemctl restart roadline; echo "Serveur PUBLIC (liste FiveM, 48 places, protections prod)." ;;
   prive) need_root "$@"; profil prive; systemctl restart roadline; echo "Serveur PRIVÉ (caché, pour tester)." ;;
   profil) need_root "$@"; profil "${2:?prive ou public}" ;;
@@ -188,6 +269,8 @@ case "${1:-aide}" in
 roadline etat              état du serveur, disque, mémoire
 roadline diagnostic        pourquoi le serveur ne répond pas (causes en clair + dernières lignes)
 roadline erreurs           erreurs de scripts depuis le démarrage, par ressource (backtest)
+roadline discord           bot connecté ? message de test dans chaque salon Discord relié
+roadline redemarrage-auto HH:MM|off  redémarrage quotidien annoncé en jeu (défaut 06:00, heure de Paris)
 roadline secrets FICHIER   appliquer le secrets.cfg du PC (garde la base du VPS)
 roadline mode simple|txadmin  démarrage direct (par défaut, rien à configurer) ou avec le panneau web txAdmin
 roadline pin               code PIN de txAdmin (première configuration)

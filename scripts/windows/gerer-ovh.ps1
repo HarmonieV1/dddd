@@ -37,6 +37,9 @@ $menu = [ordered]@{
     '14' = @('Mode SIMPLE : le serveur démarre tout seul (recommandé)', 'sudo roadline mode simple')
     '15' = @('Mode txAdmin : panneau web sur le port 40120 (avec code PIN)', 'sudo roadline mode txadmin')
     '16' = @('Ouvrir une console sur le VPS (taper « exit » pour revenir)', '')
+    '17' = @('Vérifier Discord (bot connecté + message de test dans chaque salon)', 'sudo roadline discord')
+    '18' = @('Copie automatique de la base sur ce PC chaque jour à 12 h (tâche Windows)', '')
+    '19' = @('Heure du redémarrage quotidien (annoncé en jeu 15, 5 et 1 min avant)', '')
 }
 $confirm = @{ '5' = 'Arrêter le serveur (les joueurs sont déconnectés) ?'; '13' = 'Remettre la version précédente ?'; '12' = 'Remplacer les réglages du VPS par ceux du PC (la base du VPS est gardée) ?' }
 while ($true) {
@@ -66,6 +69,23 @@ while ($true) {
                 if (-not (Test-Path -LiteralPath $src)) { Say "  Introuvable : $src" 'Yellow'; break }
                 Send-Vps $vps @($src) '/tmp/secrets-pc.cfg'
                 Invoke-Vps $vps 'sudo roadline secrets /tmp/secrets-pc.cfg'
+            }
+            '18' {
+                $dst = 'C:\GTASOON\ovh\copier-sauvegarde-vps.ps1' # copie stable : le dossier du zip peut être supprimé
+                Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'copier-sauvegarde-vps.ps1') -Destination $dst -Force
+                $task = 'RoadLine - copie sauvegarde VPS'
+                $cmd = "powershell -NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -File $dst" # chemin sans espace : pas de guillemets imbriqués
+                cmd /c "schtasks /Create /TN `"$task`" /SC DAILY /ST 12:00 /TR `"$cmd`" /F >nul 2>&1"
+                if ($LASTEXITCODE -eq 0) {
+                    & powershell -NoProfile -ExecutionPolicy Bypass -File $dst
+                    Say '  Programmé : chaque jour à 12 h (si le PC est allumé ; sinon au prochain démarrage de la tâche).' 'Green'
+                    Say '  Copies (14 gardées) et journal : C:\GTASOON\ovh\sauvegardes-vps' 'Green'
+                } else { Say '  Impossible de créer la tâche Windows (lance GERER-OVH en administrateur ?).' 'Yellow' }
+            }
+            '19' {
+                $h = (Read-Host '  Heure (ex : 06:00), ou « off » pour désactiver').Trim()
+                if ($h -notmatch '^(off|([01]\d|2[0-3]):[0-5]\d)$') { Say '  Format attendu : 06:00 ou off' 'Yellow'; break }
+                Invoke-Vps $vps "sudo roadline redemarrage-auto $h"
             }
             default { Invoke-Vps $vps $menu[$c][1] }
         }

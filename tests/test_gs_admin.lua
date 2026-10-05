@@ -345,7 +345,18 @@ check('web : liste des joueurs', Web.handle('1.2.3.4', '{ token = "code-tres-lon
 for _ = 1, 5 do Web.handle('6.6.6.6', '{ token = "mauvais", action = "login" }') end
 check('web : 5 essais ratés = bloqué même avec le bon code', not Web.handle('6.6.6.6', '{ token = "code-tres-long-123", action = "login" }').ok)
 check('web : page servie', handler ~= nil)
+local ov = Web.handle('1.2.3.4', '{ token = "code-tres-long-123", action = "overview" }')
+check('web V11 : vue d\'ensemble (joueurs + tickets + version)', ov.ok and type(ov.data) == 'table' and type(ov.data.players) == 'table'
+    and type(ov.data.tickets) == 'table' and ov.data.version ~= nil)
 json.decode = realDecode
+
+-- V11 : redémarrage quotidien annoncé
+dofile(R .. 'gs_admin/server/restart.lua')
+check('redémarrage : annonce 15 min avant', Admin.restartWarning({ hour = 5, min = 45 }, '06:00') == 15)
+check('redémarrage : annonce 1 min avant', Admin.restartWarning({ hour = 5, min = 59 }, '06:00') == 1)
+check('redémarrage : passage de minuit', Admin.restartWarning({ hour = 23, min = 55 }, '00:00') == 5)
+check('redémarrage : rien hors palier', Admin.restartWarning({ hour = 5, min = 50 }, '06:00') == nil)
+check('redémarrage : off = rien', Admin.restartWarning({ hour = 5, min = 45 }, 'off') == nil)
 
 io.write(('\n%d réussis, %d échoués\n'):format(passed, failed))
 os.exit(failed == 0 and 0 or 1)
