@@ -111,4 +111,7 @@ Placer n'importe quel objet du jeu, le déplacer, le tourner, le dupliquer, le s
 - **Ville de nuit** (`gs_nightcity`) : groupes de PNJ et marchés de nuit déplaçables (F11 → Déplacer un point) ; marché ouvert 22 h → 5 h (heure du jeu).
 - **Dossier** (`gs_dossier`, `/dossier`) : lecture seule ; chaque consultation est journalisée (logs métiers).
 - **Carte en direct du site** : remplir `cityUrl` dans `docs/site/index.html` avec l'adresse https du serveur + `/gs_city/ville.json`.
+- **Rumeurs des joueurs** (`Config.Custom`) : au comptoir, « Raconter ma propre histoire » (100 $, une toutes les 2 h). Rien n'est public avant le staff : F11 → Événements → **Rumeurs des joueurs** → Valider (les barmans la racontent), Valider + brève Weazel, ou Écarter.
+- **Fil de la ville** (`gs_discord`, `Config.Digest`) : chaque soir à 23 h 30, un résumé court dans #annonces (crimes, arrestations, verdicts, faits divers, rumeur réalisée, légende, quartier chaud) ; rien à dire = rien posté. `enabled = false` pour couper.
+- **Alt (ox_target)** : appui simple (`setr ox_target:toggleHotkey 1` dans cfg/convars.cfg) ; mettre 0 pour revenir au maintien.
 

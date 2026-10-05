@@ -23,3 +23,7 @@ Config.Roles = {
     -- ambulance = '123456789012345678',
     -- mechanic = '123456789012345678',
 }
+
+-- V10.2 · Le fil de la ville : chaque soir, un court résumé de la journée dans le salon #annonces (6 lignes max, aucun
+-- nom de joueur sauf les légendes, déjà publiques). Rien à dire = rien n'est posté. false = désactivé.
+Config.Digest = { enabled = true, hour = 23, minute = 30 }

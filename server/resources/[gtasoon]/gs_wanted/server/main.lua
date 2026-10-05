@@ -328,15 +328,25 @@ function Wanted.alert(crimeType, coords)
     return report
 end
 
-RegisterNetEvent('gs_wanted:server:shot', function(silenced)
-    local src = source
-    if not Security:RateLimit(src, 'gs_wanted:shot', 1, 10000) then return end
+local lastShot = {} -- [src] = GetGameTimer() : un signalement de tirs toutes les 10 s par joueur au plus
+local function onShot(src, silenced)
+    local t = GetGameTimer()
+    if lastShot[src] and t - lastShot[src] < 10000 then return end
+    lastShot[src] = t
     local ped = GetPlayerPed(src)
     if ped == 0 or GetSelectedPedWeapon(ped) == UNARMED or isPoliceOnDuty(src) then return end
     local coords = GetEntityCoords(ped)
     local r = Wanted.report(src, 'gunshot', coords, { silenced = silenced == true, vehicle = GetVehiclePedIsIn(ped, false) })
     if not r and silenced ~= true then Wanted.alert('gunshot', coords) end
+end
+-- V10.2 : tirs détectés par gs_evidence (une seule boucle côté joueur) ; l'ancien événement reste si gs_evidence est arrêté
+AddEventHandler('gs_evidence:server:shotFired', function(src, silenced) onShot(src, silenced) end)
+RegisterNetEvent('gs_wanted:server:shot', function(silenced)
+    local src = source
+    if not Security:RateLimit(src, 'gs_wanted:shot', 1, 10000) then return end
+    onShot(src, silenced)
 end)
+AddEventHandler('playerDropped', function() lastShot[source] = nil end)
 
 -- V10.2 · Coup d'arme blanche porté (couteau, batte…) : détecté côté serveur
 local function u32(h) h = tonumber(h) or 0 return h < 0 and h + 4294967296 or h end -- hash signé ou non selon la source

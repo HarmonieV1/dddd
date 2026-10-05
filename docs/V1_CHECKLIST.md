@@ -64,7 +64,7 @@ Cocher dans l'ordre. Chaque ligne rouge en console = on s'arrête et on l'envoie
 
 ## V2.3 — à tester en jeu
 - [ ] [E] près de Max, d'un comptoir de location, d'une supérette, d'un point de métier, d'une planque : le menu s'ouvre
-- [ ] (ox_target reste dispo : maintenir ALT gauche puis viser)
+- [ ] (ox_target : appui sur ALT gauche, choisir à la souris, rappuyer sur ALT pour fermer)
 - [ ] Vendeur PNJ derrière chaque comptoir (sinon noter les coords avec F11 → Copier mes coordonnées)
 - [ ] F11 cliquable à la souris : chaque ligne fait bien ce qu'elle dit (TP marqueur ≠ soin)
 - [ ] Menus ox_lib noir-violet néon, accents roses (ligne verte « menus ox_lib en noir néon » dans METTRE-A-JOUR)

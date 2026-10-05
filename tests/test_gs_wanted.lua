@@ -298,5 +298,16 @@ local melee = 0
 for _, w in ipairs(Config.Alerts.melee) do if type(w) == 'string' and w:find('^WEAPON_') then melee = melee + 1 end end
 check('liste des armes blanches valide', melee == #Config.Alerts.melee and melee >= 10)
 
+-- V10.2 : un seul détecteur de tirs (gs_evidence) → gs_wanted signale
+W.players[1].weapon = 99
+local h0 = #Wanted.history
+advance(20000)
+TriggerEvent('gs_evidence:server:shotFired', 1, false)
+advance(60000)
+check('tir vu par gs_evidence : signalé ou alerte au central', #Wanted.history > h0 or Wanted.alerts[#Wanted.alerts] ~= nil)
+local h1, a1 = #Wanted.history, #Wanted.alerts
+TriggerEvent('gs_evidence:server:shotFired', 1, false)
+check('tirs : pas plus d\'un signalement toutes les 10 s', #Wanted.history == h1 and #Wanted.alerts == a1)
+
 io.write(('\n%d réussis, %d échoués\n'):format(passed, failed))
 os.exit(failed == 0 and 0 or 1)

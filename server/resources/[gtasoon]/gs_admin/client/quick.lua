@@ -602,6 +602,25 @@ local function eventsMenu()
                 }, 'gs_staff_events')
             end }
     end
+    -- V10.2 : rumeurs écrites par les joueurs (rien n'est public avant validation)
+    options[#options + 1] = { title = 'Rumeurs des joueurs', icon = 'comment-dots', arrow = true, description = 'Valider (le barman la raconte) ou écarter',
+        onSelect = function()
+            local list = lib.callback.await('gs_rumors:pending', false)
+            if not list then return notify(false, 'Indisponible.') end
+            local o = {}
+            for _, r in ipairs(list) do
+                o[#o + 1] = { title = r.text, icon = 'comment-dots', description = ('%s · %s · il y a %d min'):format(r.by, r.teller, r.mins), arrow = true,
+                    onSelect = function()
+                        show('gs_staff_rumor', 'Rumeur n°' .. r.id, {
+                            { title = 'Valider (les barmans la racontent)', icon = 'check', onSelect = function() notify(lib.callback.await('gs_rumors:decide', false, r.id, true, false)) end },
+                            { title = 'Valider + brève Weazel', icon = 'newspaper', onSelect = function() notify(lib.callback.await('gs_rumors:decide', false, r.id, true, true)) end },
+                            { title = 'Écarter', icon = 'xmark', onSelect = function() notify(lib.callback.await('gs_rumors:decide', false, r.id, false)) end },
+                        }, 'gs_staff_rumors')
+                    end }
+            end
+            if #o == 0 then o[1] = { title = 'Aucune rumeur en attente', readOnly = true } end
+            show('gs_staff_rumors', 'Rumeurs des joueurs', o, 'gs_staff_events')
+        end }
     options[#options + 1] = { title = 'Effets sur moi (animation d\'événement)', icon = 'wand-magic-sparkles', arrow = true,
         description = 'Course rapide, super saut, gravité lunaire…', onSelect = funMenu }
     show('gs_staff_events', 'Événements', options, 'gs_staff_quick')

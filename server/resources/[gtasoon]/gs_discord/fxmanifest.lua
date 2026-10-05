@@ -9,4 +9,4 @@ version '0.1.0'
 dependencies { 'gs_bridge' }
 
 shared_scripts { 'shared/config.lua' }
-server_scripts { 'server/main.lua', 'server/bot.js' }
+server_scripts { 'server/main.lua', 'server/digest.lua', 'server/bot.js' }

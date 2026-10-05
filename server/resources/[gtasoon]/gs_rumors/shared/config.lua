@@ -46,3 +46,8 @@ Config.Seeds = {
         spots = { vec3(-104.8, 6316.2, 31.5), vec3(1704.3, 3790.5, 34.6), vec3(-1172.9, -1572.6, 4.7), vec3(1229.8, -3170.4, 5.9),
             vec3(-428.5, 1110.2, 327.7), vec3(2556.1, 382.8, 108.6) } },
 }
+
+-- V10.2 · Rumeurs écrites par les joueurs : on raconte sa propre histoire au barman (contre un billet). Rien n'est
+-- public avant le staff : il choisit (F11 → Événements → Rumeurs des joueurs) ; validée, le barman la répète à tous
+-- et le staff peut jouer la scène. Une par personne toutes les 2 h ; au plus 15 en attente.
+Config.Custom = { price = 100, cooldown = 7200, maxLen = 140, minLen = 15, maxPending = 15, staffLevel = 2, keep = 6 * 3600 }

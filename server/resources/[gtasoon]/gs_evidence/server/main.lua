@@ -83,11 +83,12 @@ local function currentWeapon(src)
 end
 
 -- Tir : douilles au sol (le client signale qu'il tire, le serveur lit l'arme et la position)
-RegisterNetEvent('gs_evidence:server:shot', function()
+RegisterNetEvent('gs_evidence:server:shot', function(silenced)
     local src = source
     if not Security:RateLimit(src, 'gs_evidence:shot', 1, 1500) then return end
     local ped = pedOf(src)
     if not ped or GetSelectedPedWeapon(ped) == GetHashKey('WEAPON_UNARMED') or isPolice(src) then return end
+    TriggerEvent('gs_evidence:server:shotFired', src, silenced == true) -- V10.2 : gs_wanted (signalement), un seul détecteur
     local w = currentWeapon(src)
     Evidence.add('casing', GetEntityCoords(ped), { key = w.serial or tostring(GetSelectedPedWeapon(ped)),
         weapon = w.label or 'Arme à feu', serial = w.serial, registered = w.registered })

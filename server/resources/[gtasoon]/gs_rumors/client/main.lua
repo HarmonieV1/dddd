@@ -30,6 +30,12 @@ AddEventHandler('gs_rumors:client:teller', function(i)
                     notify(lib.callback.await('gs_rumors:seed', false, sd.id, i))
                 end }
             end
+            o[#o + 1] = { title = ('Raconter ma propre histoire (%d $)'):format(Config.Custom.price), icon = 'pen',
+                description = 'Le barman la fera peut-être tourner… si elle tient la route', onSelect = function()
+                    local r = lib.inputDialog('Ta rumeur', { { type = 'textarea', label = 'Ce qui se dit (sans nom de joueur)', required = true,
+                        min = Config.Custom.minLen, max = Config.Custom.maxLen } })
+                    if r then notify(lib.callback.await('gs_rumors:propose', false, r[1], i)) end
+                end }
             lib.registerContext({ id = 'gs_rumors_seed', title = 'Faire courir un bruit', menu = 'gs_rumors_teller', options = o })
             lib.showContext('gs_rumors_seed')
         end },

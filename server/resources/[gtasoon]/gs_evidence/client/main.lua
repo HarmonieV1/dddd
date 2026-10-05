@@ -3,22 +3,25 @@
 local Bridge = exports.gs_bridge
 local function notify(ok, msg) if msg then lib.notify({ description = msg, type = ok and 'success' or 'error' }) end end
 
--- Tirs → douilles (une fois par rafale, le serveur limite aussi)
-CreateThread(function()
-    local last = 0
-    while true do
-        local ped = cache.ped
-        if IsPedArmed(ped, 4) then
-            if IsPedShooting(ped) and GetGameTimer() - last > 1500 then
+-- Tirs → douilles (une fois par rafale, le serveur limite aussi). V10.2 : seul détecteur de tirs du serveur (gs_wanted
+-- reçoit l'info côté serveur, plus de 2e boucle) ; la boucle par image ne tourne que pendant qu'une arme à feu est en main.
+local shotToken = 0
+local function watchShots(weapon)
+    shotToken = shotToken + 1
+    local token, last = shotToken, 0
+    CreateThread(function()
+        while cache.weapon == weapon and token == shotToken do
+            if IsPedShooting(cache.ped) and GetGameTimer() - last > 1500 then
                 last = GetGameTimer()
-                TriggerServerEvent('gs_evidence:server:shot')
+                TriggerServerEvent('gs_evidence:server:shot', IsPedCurrentWeaponSilenced(cache.ped))
             end
             Wait(0)
-        else
-            Wait(500)
         end
-    end
-end)
+    end)
+end
+local function onWeapon(weapon) if weapon and GetWeaponDamageType(weapon) == 3 then watchShots(weapon) end end -- 3 = balles
+lib.onCache('weapon', onWeapon)
+CreateThread(function() onWeapon(cache.weapon) end)
 
 -- Blessure → sang au sol
 local lastHurt = 0

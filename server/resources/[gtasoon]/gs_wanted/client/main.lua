@@ -22,6 +22,8 @@ local function watchShots(weapon)
 end
 
 local function onWeapon(weapon)
+    -- V10.2 : gs_evidence détecte déjà les tirs (une seule boucle) ; celle-ci ne sert que s'il est arrêté
+    if GetResourceState('gs_evidence') == 'started' then return end
     if weapon and GetWeaponDamageType(weapon) == 3 then watchShots(weapon) end -- 3 = balles
 end
 lib.onCache('weapon', onWeapon)

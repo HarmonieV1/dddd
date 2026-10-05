@@ -378,4 +378,7 @@ Traductions françaises manquantes des scripts Qbox ajoutées par METTRE-A-JOUR 
 - **gs_rumors** : faire courir un bruit chez un barman ; assez de voix = il se réalise (tempête, fait divers, sac de billets caché).
 - **gs_nightcity** : la nuit, noctambules devant les clubs et marchés de nuit ; le jour, musiciens et pêcheurs (rien ne ferme).
 - **gs_city** : `/gs_city/ville.json` pour la carte en direct du site (quartiers, rendez-vous, légendes).
+- **gs_rumors** : les joueurs écrivent leurs propres rumeurs (validées par le staff avant d'être racontées).
+- **gs_discord** : le fil de la ville, un résumé court chaque soir sur Discord.
+- **Alt** : ciblage en appui simple (plus besoin de maintenir la touche).
 

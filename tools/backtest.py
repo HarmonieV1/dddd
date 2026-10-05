@@ -78,6 +78,9 @@ SESSIONS = [
         ('La nuit (22 h+) : noctambules devant le Vanilla / Bahama, marché de nuit à Legion Square (acheter) ; le jour : fermé', 'Seul', 2),
         ('Rumeur : 3 joueurs « font courir un bruit » chez un barman → alerte staff → /rumeurvraie stash → sac à trouver (un seul gagnant)', '3+', 2),
         ('/dossier en policier, en juge, en journaliste : même personne, rubriques différentes', '3+', 2),
+        ('Barman → Raconter ma propre histoire → staff : F11 → Événements → Rumeurs des joueurs → Valider : un autre joueur l\'entend au bar', '2', 2),
+        ('Alt : un appui ouvre le ciblage, choisir à la souris, un appui referme (aussi en voiture)', 'Seul', 3),
+        ('Discord : le soir à 23 h 30, « La nuit à Los Santos » dans #annonces (seulement s\'il s\'est passé quelque chose)', 'Staff', 1),
     ]),
     ('6 · Staff et outils (20 min)', [
         ('F11 : mode staff, joueurs (aller à, amener, soigner, argent), vol libre / invisible SANS alerte anti-triche', 'Staff', 3),

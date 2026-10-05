@@ -37,6 +37,7 @@ function Justice.verdict(src, id, kind, fine, jail)
     if not case or case.status ~= 'open' then return false, 'Affaire introuvable ou déjà jugée.' end
     if kind == 'acquit' then
         Store.close(case.id, 'acquitted', 'Relaxe')
+        TriggerEvent('gs_justice:server:verdict', 'acquitted') -- V10.2 : fil de la ville (Discord)
         PoliceApi:CloseWarrants(case.defendant)
         local t = Bridge:GetSourceByIdentifier(case.defendant)
         if t then Bridge:Notify(t, 'Le tribunal t\'a relaxé.', 'success') end
@@ -57,6 +58,7 @@ function Justice.verdict(src, id, kind, fine, jail)
     PoliceApi:CloseWarrants(case.defendant)
     local text = ('Coupable : %s%s%s%s'):format(fine > 0 and (fine .. ' $') or '', fine > 0 and jail > 0 and ' + ' or '', jail > 0 and (jail .. ' min de prison') or '', proof)
     Store.close(case.id, 'guilty', text)
+    TriggerEvent('gs_justice:server:verdict', 'guilty')
     if t then Bridge:Notify(t, 'Verdict : ' .. text, 'error') end
     Security:LogStaff(('[Tribunal] affaire #%d : %s (%s)'):format(case.id, text, case.defendant_name), 'jobs')
     return true, text

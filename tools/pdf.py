@@ -63,7 +63,7 @@ KEYS = [
     ['F10 · F11', 'Panel staff · menu staff rapide', 'staff uniquement'],
     ['I', 'Aide des touches', ''],
     ['W (clavier français)', 'Menu radial', 'Moi (tenue en objet, chapeau, lunettes, masque, animations, factures…), Radio, Véhicule'],
-    ['Alt gauche (maintenu)', 'Viser / interagir (ox_target)', ''],
+    ['Alt gauche (appui simple)', 'Viser / interagir (ox_target)', 'choisir à la souris ; rappuie sur Alt pour fermer'],
     ['E', 'Interagir sur un point [E] · racketter un passant visé', 'caisse / guichet : le braquage démarre seul en visant'],
     ['N · ²', 'Parler · portée de la voix', 'crier (²) fait peur aux PNJ braqués'],
     ['Verr. Maj (maintenu)', 'Parler à la radio', 'après avoir réglé une fréquence'],
@@ -154,7 +154,10 @@ def guide(points):
         "<b>Ville de jour, ville de nuit</b> : la nuit (22 h → 5 h), noctambules devant les clubs, feu de camp à Vespucci et <b>marchés de nuit</b> "
         "(food truck de Legion Square, jetée de Del Perro, Vinewood) ; le jour, musiciens et pêcheurs. Rien ne ferme : c'est du plus.",
         "<b>Les rumeurs deviennent vraies</b> : chez un barman, « Faire courir un bruit » (50 $). Assez de monde le répète ? Ça arrive : "
-        "tempête, sale coup en ville (fait divers), ou un <b>sac de billets caché</b> quelque part (un seul gagnant).",
+        "tempête, sale coup en ville (fait divers), ou un <b>sac de billets caché</b> quelque part (un seul gagnant). Tu peux aussi "
+        "<b>raconter ta propre histoire</b> (100 $) : si le staff la retient, tous les barmans la racontent… et la scène peut se jouer.",
+        "<b>Le fil de la ville</b> : chaque soir, un court résumé de la journée sur le Discord (crimes, arrestations, verdicts, légendes).",
+        "<b>Alt</b> : un simple appui ouvre le ciblage (choisis à la souris), un deuxième le referme.",
         "<b>Le dossier du citoyen</b> (/dossier) : une seule fiche, trois regards. Police : casier, mandats, véhicules, gang ; juges : casier, "
         "affaires ; presse : verdicts publics, métiers, notoriété, articles.",
         "<b>Retours du backtest</b> : objets en français avec une image chacun, menu de barbier, vendeurs PNJ partout (braquables), "

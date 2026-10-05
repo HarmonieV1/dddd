@@ -13,7 +13,7 @@ local KEYS = [[
 | **F7** | Duo |
 | **F9** | Gang |
 | **W** | Menu radial (W sur clavier français, Z en QWERTY) : Moi (tenue en objet, chapeau, lunettes, masque…), Radio, Véhicule |
-| **Alt gauche** (maintenu) | Viser / interagir (ox_target) |
+| **Alt gauche** (appui simple) | Viser / interagir : choisis à la souris, rappuie sur Alt pour fermer |
 | **N** | Parler · **²** portée de la voix |
 | **Verr. Maj** (maintenu) | Parler à la radio (fréquence réglée) |
 | **H** | Mains en l'air · en voiture : démarrer sans clé |

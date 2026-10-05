@@ -6,7 +6,7 @@ local Security = exports.gs_security
 local Bridge   = exports.gs_bridge
 local S = Config.Seeds
 
-Seeds = { votes = {}, ready = {}, last = {}, stash = nil }
+Seeds = { votes = {}, ready = {}, last = {}, stash = nil, custom = {}, customLast = {}, nextCustom = 1 }
 -- votes[id] = { [cid] = at } ; ready[id] = { at } ; last[id] = dernière réalisation
 
 local function now() return os.time() end
@@ -74,6 +74,7 @@ function Seeds.realize(id, by)
         GlobalState.gsRumorStash = { x = spot.x, y = spot.y, z = spot.z }
         announce(s.fact:format(zoneOf(spot)))
     end
+    TriggerEvent('gs_rumors:server:realized', s.label)
     Security:LogStaff(('[Rumeurs] « %s » est devenue vraie (%s)'):format(s.label, by or 'la ville'))
     return true
 end
@@ -109,6 +110,69 @@ end)
 lib.callback.register('gs_rumors:seeds', function(src)
     if not Security:RateLimit(src, 'gs_rumors:seeds', 4, 10000) then return {} end
     return S.list
+end)
+
+
+-- Rumeurs écrites par les joueurs (V10.2) ------------------------------------------------------------------------------
+local C = Config.Custom
+function Seeds.propose(src, text, teller)
+    local t = Config.Tellers[tonumber(teller) or 0]
+    if not t or not Security:InRange(src, vec3(t.coords.x, t.coords.y, t.coords.z), 4.0) then return false, 'Approche-toi du comptoir.' end
+    text = Security:Sanitize(text, C.maxLen)
+    if not text or #text < C.minLen then return false, ('« Raconte-moi ça mieux que ça. » (%d caractères minimum)'):format(C.minLen) end
+    local cid = Bridge:GetIdentifier(src)
+    if Seeds.customLast[cid] and now() - Seeds.customLast[cid] < C.cooldown then return false, '« Tu m\'en as déjà raconté une, reviens plus tard. »' end
+    local n = 0
+    for _ in pairs(Seeds.custom) do n = n + 1 end
+    if n >= C.maxPending then return false, '« J\'ai déjà trop d\'histoires à raconter. »' end
+    if not (Bridge:RemoveMoney(src, 'cash', C.price, 'rumeur') or Bridge:RemoveMoney(src, 'bank', C.price, 'rumeur')) then return false, '« Ça se paie, ces choses-là. »' end
+    local id = Seeds.nextCustom
+    Seeds.nextCustom = id + 1
+    Seeds.custom[id] = { id = id, text = text, by = Bridge:GetName(src) or '?', cid = cid, at = now(), teller = t.label, coords = t.coords }
+    Seeds.customLast[cid] = now()
+    if started('gs_admin') then pcall(function() exports.gs_admin:NotifyStaff(('Rumeur proposée par %s : « %s » (F11 → Événements → Rumeurs des joueurs)'):format(Seeds.custom[id].by, text)) end) end
+    Security:LogStaff(('[Rumeurs] %s propose : « %s »'):format(Seeds.custom[id].by, text))
+    return true, '« Je verrai ce que je peux faire… »'
+end
+
+function Seeds.pending()
+    local out = {}
+    for _, r in pairs(Seeds.custom) do
+        if now() - r.at <= C.keep then out[#out + 1] = { id = r.id, text = r.text, by = r.by, teller = r.teller, mins = math.floor((now() - r.at) / 60) }
+        else Seeds.custom[r.id] = nil end
+    end
+    table.sort(out, function(a, b) return a.id < b.id end)
+    return out
+end
+
+--- Le staff valide (le barman la répète, brève facultative) ou refuse
+function Seeds.decide(src, id, ok, brief)
+    if staffLevel(src) < C.staffLevel then return false, 'Réservé au staff.' end
+    local r = Seeds.custom[tonumber(id) or 0]
+    if not r then return false, 'Rumeur introuvable.' end
+    Seeds.custom[r.id] = nil
+    if ok then
+        Rumors.add('il paraît que ' .. r.text, r.text, r.coords)
+        if brief and started('gs_social') then pcall(function() exports.gs_social:Newsroom('rumeur', 'On murmure en ville : ' .. r.text) end) end
+        TriggerEvent('gs_rumors:server:realized', r.text)
+        local s = Bridge:GetSourceByIdentifier(r.cid)
+        if s then Bridge:Notify(s, 'Ta rumeur court en ville… le staff prépare peut-être quelque chose.', 'inform') end
+    end
+    Security:LogStaff(('[Rumeurs] %s %s : « %s »'):format(Bridge:GetName(src) or src, ok and 'valide' or 'refuse', r.text))
+    return true, ok and 'Rumeur lancée : les barmans la racontent.' or 'Rumeur écartée.'
+end
+
+lib.callback.register('gs_rumors:propose', function(src, text, teller)
+    if not Security:RateLimit(src, 'gs_rumors:propose', 2, 10000) then return false, 'Doucement.' end
+    return Seeds.propose(src, text, teller)
+end)
+lib.callback.register('gs_rumors:pending', function(src)
+    if not Security:RateLimit(src, 'gs_rumors:pending', 6, 10000) or staffLevel(src) < C.staffLevel then return nil end
+    return Seeds.pending()
+end)
+lib.callback.register('gs_rumors:decide', function(src, id, ok, brief)
+    if not Security:RateLimit(src, 'gs_rumors:decide', 6, 10000) then return false, 'Doucement.' end
+    return Seeds.decide(src, id, ok == true, brief == true)
 end)
 
 local function staffCmd(src, args, ok)
