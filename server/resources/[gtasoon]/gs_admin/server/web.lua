@@ -15,7 +15,25 @@ local function codes()
     return out
 end
 
-local function ipOf(req) return tostring(req.address or '?'):gsub(':%d+$', '') end
+local function ipOf(req)
+    local ip = tostring(req.address or '?'):gsub(':%d+$', '')
+    -- V11 : derrière l'adresse https (Caddy sur le VPS), la vraie adresse est dans X-Forwarded-For (sinon tout le monde = 127.0.0.1)
+    if ip == '127.0.0.1' or ip == '::1' or ip == '[::1]' then
+        local h = req.headers or {}
+        local fwd = h['X-Forwarded-For'] or h['x-forwarded-for']
+        if type(fwd) == 'string' and fwd ~= '' then ip = fwd:match('^%s*([^,%s]+)') or ip end
+    end
+    return ip
+end
+
+-- V11 : appli installable (PWA) — « Installer » / « Sur l'écran d'accueil » depuis le navigateur du téléphone (https conseillé)
+local MANIFEST = json.encode({ name = 'RoadLine Staff', short_name = 'RL Staff', start_url = './', scope = './', display = 'standalone',
+    background_color = '#140a24', theme_color = '#140a24', lang = 'fr',
+    icons = { { src = 'icon-192.png', sizes = '192x192', type = 'image/png' }, { src = 'icon-512.png', sizes = '512x512', type = 'image/png', purpose = 'any maskable' } } })
+local SW = "self.addEventListener('install',e=>self.skipWaiting());self.addEventListener('activate',e=>self.clients.claim());"
+    .. "self.addEventListener('fetch',e=>{if(e.request.method!=='GET')return;e.respondWith(fetch(e.request).catch(()=>new Response("
+    .. "'<meta charset=utf-8><body style=\"background:#140a24;color:#f2ecff;font:16px system-ui;padding:24px\">Serveur injoignable : réessaie dans un instant.',"
+    .. "{headers:{'Content-Type':'text/html; charset=utf-8'}})))});"
 
 function Web.auth(ip, token)
     local f = Web.fails[ip]
@@ -48,6 +66,7 @@ end
 
 local PAGE = [[<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#140a24"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><title>RoadLine Staff</title>
+<link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icon-192.png"><link rel="apple-touch-icon" href="icon-192.png"><meta name="apple-mobile-web-app-title" content="RL Staff">
 <style>:root{--bg:#140a24;--card:#22123a;--line:#3a2560;--txt:#f2ecff;--mut:#a99bc4;--acc:#b048ff;--ok:#5aff8c;--ko:#ff5470;--warn:#ffc04d}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}body{margin:0;font:16px system-ui,sans-serif;background:var(--bg);color:var(--txt);padding:16px 16px 90px;max-width:620px;margin:auto}
 h1{font-size:20px;margin:4px 0 4px}h1 b{color:var(--acc)}#stat{color:var(--mut);font-size:13px;margin-bottom:12px}.card{background:var(--card);border-radius:14px;padding:14px;margin-bottom:12px}
@@ -93,7 +112,8 @@ async function annonce(){toast(await call({action:'announce',text:$('ann').value
 function enter(){$('login').classList.add('hide');$('app').classList.remove('hide');$('nav').classList.remove('hide');refresh();clearInterval(timer);timer=setInterval(()=>{if(!document.hidden)refresh()},10000)}
 async function login(){T=$('code').value.trim();const r=await call({action:'login'});if(r.ok){sessionStorage.setItem('t',T);enter()}else{alert(r.text)}}
 function logout(){T='';sessionStorage.removeItem('t');clearInterval(timer);$('app').classList.add('hide');$('nav').classList.add('hide');$('login').classList.remove('hide');$('stat').textContent=''}
-if(T){call({action:'login'}).then(r=>{if(r.ok)enter()})}</script></body></html>]]
+if(T){call({action:'login'}).then(r=>{if(r.ok)enter()})}
+if('serviceWorker' in navigator&&location.protocol==='https:')navigator.serviceWorker.register('sw.js').catch(()=>{});</script></body></html>]]
 
 SetHttpHandler(function(req, res)
     local headers = { ['Content-Type'] = 'text/html; charset=utf-8', ['Cache-Control'] = 'no-store', ['X-Frame-Options'] = 'DENY' }
@@ -105,10 +125,25 @@ SetHttpHandler(function(req, res)
         end)
         return
     end
+    if req.path == '/manifest.webmanifest' then
+        res.writeHead(200, { ['Content-Type'] = 'application/manifest+json' })
+        return res.send(MANIFEST)
+    end
+    if req.path == '/sw.js' then
+        res.writeHead(200, { ['Content-Type'] = 'text/javascript', ['Cache-Control'] = 'no-cache', ['Service-Worker-Allowed'] = './' })
+        return res.send(SW)
+    end
+    if req.path == '/icon-192.png' or req.path == '/icon-512.png' then
+        local png = LoadResourceFile(GetCurrentResourceName(), 'web/pwa' .. req.path)
+        if png then
+            res.writeHead(200, { ['Content-Type'] = 'image/png', ['Cache-Control'] = 'max-age=86400' })
+            return res.send(png)
+        end
+    end
     if req.path == '/' or req.path == '' or req.path == '/index.html' then
         if next(codes()) == nil then
             res.writeHead(404, headers)
-            return res.send('Panneau staff désactivé (gs_admin_web vide dans secrets.cfg).')
+            return res.send('Panneau staff désactivé : aucun code d\'accès. Sur le PC : GERER-OVH.bat → « Codes du panneau staff ».')
         end
         res.writeHead(200, headers)
         return res.send(PAGE)

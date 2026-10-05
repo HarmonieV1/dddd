@@ -102,7 +102,7 @@ INTEGRATIONS = [
     ['txAdmin', 'http://IP:40120 (aussi sur téléphone) : bannissements, console, redémarrages programmés, joueurs.'],
     ['VPS OVH', 'Commande « roadline » (ou GERER-OVH.bat) : etat, diagnostic, erreurs, discord, redemarrer, public / prive, sauvegarde(s), '
                 'restaurer(-joueur), maj, retour, mode simple / txadmin, redemarrage-auto. Veille toutes les 2 min (alerte Discord + relance).'],
-    ['Panneau staff mobile', 'http://adresse-du-serveur:30120/gs_admin/ : joueurs (cartes), tickets, annonce, bouton txAdmin. Code par membre (secrets.cfg).'],
+    ['Panneau staff mobile', 'Appli sur téléphone (https : GERER-OVH → 21) : joueurs, tickets, annonce, txAdmin. Code par membre : GERER-OVH → 20.'],
     ['Sauvegardes', 'Toutes les 6 h (PC : tâche Windows ; VPS : cron), 30 gardées, avant chaque mise à jour, retour d\'un seul joueur possible.'],
     ['Téléphone', 'Fait maison : Que faire, Messages, Contacts, Appel, Banque, Factures, Emploi, Urgences, Vibe, Weazel, Plans, Ville, Notes, Boulots, Inconnu.'],
     ['Photos (option)', 'screenshot-basic + hébergeur d\'images (gs_photo_* dans secrets.cfg) : vraies photos dans Vibe, l\'appareil photo et la bodycam.'],

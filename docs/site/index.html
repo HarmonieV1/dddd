@@ -842,7 +842,7 @@
 <footer>
   <div class="wrap">
     <span class="logo" style="font-size:1.2rem"><b>RoadLine</b> RP · new generation</span>
-    <span class="links"><a class="js-tiktok" href="#">TikTok</a><a class="js-twitch" href="#">Twitch</a><a class="js-youtube" href="#">YouTube</a></span>
+    <span class="links"><a class="js-tiktok" href="#">TikTok</a><a class="js-twitch" href="#">Twitch</a><a class="js-youtube" href="#">YouTube</a><a class="js-staff" href="#" rel="nofollow">Espace staff</a></span>
     <span>Serveur non affilié à Rockstar Games ni à Take-Two.</span>
   </div>
 </footer>
@@ -858,7 +858,8 @@
     cfxCode: '',            // code cfx.re du serveur (ex. 'abc123') : bouton « Rejoindre » + compteur de joueurs
     connect: 'vps-f2365fb1.vps.ovh.net:30120', // V11 bêta : adresse directe (F8 → connect …), utilisée tant que cfxCode est vide
     beta: true,             // bandeau « Bêta ouverte » dans l'en-tête
-    cityUrl: '',            // carte en direct : adresse https du serveur + /gs_city/ville.json (ex. https://xxxx-abcd.users.cfx.re/gs_city/ville.json)
+    cityUrl: 'https://57-129-170-173.sslip.io/gs_city/ville.json', // V11 : carte en direct (adresse https du VPS : GERER-OVH → 21)
+    staffUrl: 'https://57-129-170-173.sslip.io/gs_admin/',        // V11 : panneau staff (lien discret en bas de page ; vide = caché)
     tiktok: '', twitch: '', youtube: '',
     opening: '2026-10-20T21:00:00+02:00',   // date et heure d'ouverture (compte à rebours)
     trailer: '',            // identifiant de la vidéo YouTube (ex. 'dQw4w9WgXcQ') : lue au clic sur la bande-annonce
@@ -942,6 +943,7 @@
     }
   })();
 
+  document.querySelectorAll('.js-staff').forEach(a => { if (CONFIG.staffUrl) a.href = CONFIG.staffUrl; else a.style.display = 'none'; });
   // V11 : bêta ouverte, connexion directe par l'adresse du serveur (le bouton ouvre FiveM)
   if (!CONFIG.cfxCode && CONFIG.connect) {
     document.querySelectorAll('.js-connect').forEach(a => a.href = 'fivem://connect/' + CONFIG.connect);

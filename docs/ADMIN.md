@@ -120,7 +120,7 @@ Placer n'importe quel objet du jeu, le déplacer, le tourner, le dupliquer, le s
 - **Lieux de mémoire** (`gs_scars`, `Config.Plaques`) : `/plaque <texte>` pose une plaque là où tu es (admin et plus, 80 caractères) —
   mariage, concert, inauguration ; `/plaqueretirer` enlève la plus proche (5 m). Automatique après un casse banque / bijouterie et à la fin
   d'une cavale légendaire. 15 plaques maximum, 30 jours chacune.
-- **Panneau staff mobile** : `http://adresse:30120/gs_admin/` → onglets Joueurs (toucher un joueur → geler, message, avertir, expulser),
+- **Panneau staff mobile** (appli) : codes GERER-OVH → 20, adresse https GERER-OVH → 21, détail docs/OVH.md § 5 → onglets Joueurs (toucher un joueur → geler, message, avertir, expulser),
   Tickets (toucher un ticket → le joueur), Ville (annonce, bouton txAdmin). Se rafraîchit seul toutes les 10 s.
 - **Redémarrage quotidien** : 06:00 par défaut, annoncé en jeu ; changer l'heure : GERER-OVH → 19 (« off » pour désactiver).
 - **Serveur tombé** : alerte dans le salon staff Discord au bout de 4 min, relance automatique, message quand il revient.

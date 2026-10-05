@@ -148,9 +148,9 @@ erreurs() { # erreurs de scripts depuis le dernier démarrage, regroupées par r
 secrets() { # réglages du PC (Discord, codes staff, licence…) sans toucher à la connexion de la base du VPS
   local f="${1:?fichier}" keep
   [ -f "$f" ] || { echo "Introuvable : $f"; exit 1; }
-  keep=$(grep -E '^setr? (mysql_connection_string|gs_admin_txadmin|gs_restart) ' "$DATA/cfg/secrets.cfg" || true)
+  keep=$(grep -E '^setr? (mysql_connection_string|gs_admin_txadmin|gs_restart|gs_admin_web) ' "$DATA/cfg/secrets.cfg" || true)
   cp "$DATA/cfg/secrets.cfg" "$BASE/anciens/secrets-$(date +%Y%m%d_%H%M%S).cfg" 2>/dev/null || true
-  tr -d '\r' < "$f" | grep -vE '^setr? (mysql_connection_string|gs_admin_txadmin|gs_restart) ' > "$DATA/cfg/secrets.cfg"
+  tr -d '\r' < "$f" | grep -vE '^setr? (mysql_connection_string|gs_admin_txadmin|gs_restart|gs_admin_web) ' > "$DATA/cfg/secrets.cfg"
   [ -n "$keep" ] && echo "$keep" >> "$DATA/cfg/secrets.cfg"
   chown fivem:fivem "$DATA/cfg/secrets.cfg"; chmod 600 "$DATA/cfg/secrets.cfg"; rm -f "$f"
   systemctl restart roadline
@@ -216,12 +216,73 @@ redemarrage_auto() { # HH:MM | off : redémarrage quotidien (annoncé en jeu 15,
   echo "Redémarrage quotidien à $when (heure de Paris), annoncé en jeu 15, 5 et 1 min avant (actif après le prochain redémarrage)."
 }
 
+publicip() { curl -fsS4 --max-time 5 https://api.ipify.org 2>/dev/null || hostname -I | awk '{print $1}'; }
+
+https_on() { # adresse https gratuite (certificat automatique) : panneau staff en appli + carte en direct du site
+  local ip host; ip=$(publicip); host="${ip//./-}.sslip.io" # sslip.io : nom qui pointe tout seul vers l'IP du VPS
+  if ! command -v caddy >/dev/null; then echo "Installation de Caddy (serveur https)…"; apt-get update -qq; apt-get install -y -qq caddy >/dev/null; fi
+  cat > /etc/caddy/Caddyfile <<EOF
+# RoadLine (roadline https) : seules ces deux adresses du serveur FiveM sont publiées en https
+$host {
+	redir /gs_admin /gs_admin/
+	handle /gs_admin/* {
+		reverse_proxy 127.0.0.1:30120
+	}
+	handle /gs_city/* {
+		reverse_proxy 127.0.0.1:30120
+	}
+	handle {
+		respond "RoadLine RP" 200
+	}
+}
+EOF
+  ufw allow 80/tcp >/dev/null; ufw allow 443/tcp >/dev/null
+  systemctl enable caddy >/dev/null 2>&1; systemctl restart caddy
+  echo "$host" > "$BASE/.https"
+  sleep 8
+  if curl -fsS --max-time 20 "https://$host/" >/dev/null 2>&1; then echo "Adresse https prête (certificat obtenu)."
+  else echo "Certificat en cours d'obtention (1 à 2 min) : réessaie l'adresse un peu plus tard."; fi
+  cat <<EOF
+ Panneau staff (appli) : https://$host/gs_admin/
+ Carte en direct du site : https://$host/gs_city/ville.json   (à mettre dans CONFIG.cityUrl du site)
+EOF
+}
+
+staffweb() { # codes du panneau staff : liste | ajouter PSEUDO | retirer PSEUDO (redémarre le serveur pour appliquer)
+  local sec="$DATA/cfg/secrets.cfg" cur action="${1:-liste}" who="${2:-}" code
+  cur=$(grep -E '^set gs_admin_web ' "$sec" 2>/dev/null | sed -E 's/^set gs_admin_web "?([^"]*)"?.*/\1/' || true)
+  case "$action" in
+    liste)
+      if [ -z "$cur" ]; then echo "Aucun code : le panneau est fermé."; else echo "Membres du staff avec un code :"; tr ',' '\n' <<<"$cur" | cut -d: -f1 | sed 's/^/  - /'; fi
+      return 0 ;;
+    ajouter)
+      [[ "$who" =~ ^[A-Za-z0-9_-]{2,20}$ ]] || { echo "Pseudo : 2 à 20 lettres, chiffres, - ou _ (sans espace)."; exit 1; }
+      cur=$(tr ',' '\n' <<<"$cur" | grep -v "^$who:" | grep -v '^$' | paste -sd, - || true)
+      code=$(openssl rand -hex 8)
+      cur="${cur:+$cur,}$who:$code" ;;
+    retirer)
+      cur=$(tr ',' '\n' <<<"$cur" | grep -v "^$who:" | grep -v '^$' | paste -sd, - || true) ;;
+    *) echo "staffweb liste | ajouter PSEUDO | retirer PSEUDO"; exit 1 ;;
+  esac
+  sed -i '/^set gs_admin_web /d' "$sec"; echo "set gs_admin_web \"$cur\"" >> "$sec"
+  chown fivem:fivem "$sec"; chmod 600 "$sec"
+  systemctl restart roadline
+  if [ "$action" = "ajouter" ]; then
+    local url; url=$( [ -f "$BASE/.https" ] && echo "https://$(cat "$BASE/.https")/gs_admin/" || echo "http://$(publicip):30120/gs_admin/")
+    echo "Code de $who (à lui donner en privé, il ne sera plus affiché) : $code"
+    echo "Adresse : $url   (serveur redémarré, prêt dans 1 min)"
+  else echo "Code de $who retiré (serveur redémarré)."; fi
+}
+
 case "${1:-aide}" in
-  etat) echo "Version RoadLine : $(grep -oE 'gs_version "[^"]+"' "$DATA/server.cfg" 2>/dev/null | cut -d'"' -f2) · profil $(cat "$BASE/.profil" 2>/dev/null || echo ?)"
+  etat) [ -f "$BASE/.https" ] && echo "Panneau staff : https://$(cat "$BASE/.https")/gs_admin/"
+    echo "Version RoadLine : $(grep -oE 'gs_version "[^"]+"' "$DATA/server.cfg" 2>/dev/null | cut -d'"' -f2) · profil $(cat "$BASE/.profil" 2>/dev/null || echo ?)"
     systemctl --no-pager status roadline | head -5; echo; df -h / | tail -1; free -h | sed -n 2p ;;
   diagnostic) need_root "$@"; diagnostic ;;
   erreurs) need_root "$@"; erreurs ;;
   discord) need_root "$@"; discord ;;
+  https) need_root "$@"; https_on ;;
+  staffweb) need_root "$@"; staffweb "${2:-liste}" "${3:-}" ;;
   secrets) need_root "$@"; secrets "${2:-/tmp/secrets-pc.cfg}" ;;
   copie-sauvegarde) need_root "$@" # dernière sauvegarde → /tmp, lisible par le compte SSH (pour la garder aussi sur le PC)
     f=$(ls -1t "$BASE"/sauvegardes/*.sql.gz 2>/dev/null | head -1); [ -n "$f" ] || { echo "Aucune sauvegarde."; exit 1; }
@@ -270,6 +331,8 @@ roadline etat              état du serveur, disque, mémoire
 roadline diagnostic        pourquoi le serveur ne répond pas (causes en clair + dernières lignes)
 roadline erreurs           erreurs de scripts depuis le démarrage, par ressource (backtest)
 roadline discord           bot connecté ? message de test dans chaque salon Discord relié
+roadline https             adresse https gratuite (panneau staff en appli, carte en direct du site)
+roadline staffweb liste|ajouter PSEUDO|retirer PSEUDO   codes du panneau staff
 roadline redemarrage-auto HH:MM|off  redémarrage quotidien annoncé en jeu (défaut 06:00, heure de Paris)
 roadline secrets FICHIER   appliquer le secrets.cfg du PC (garde la base du VPS)
 roadline mode simple|txadmin  démarrage direct (par défaut, rien à configurer) ou avec le panneau web txAdmin

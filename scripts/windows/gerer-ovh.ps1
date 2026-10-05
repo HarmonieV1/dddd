@@ -40,6 +40,8 @@ $menu = [ordered]@{
     '17' = @('Vérifier Discord (bot connecté + message de test dans chaque salon)', 'sudo roadline discord')
     '18' = @('Copie automatique de la base sur ce PC chaque jour à 12 h (tâche Windows)', '')
     '19' = @('Heure du redémarrage quotidien (annoncé en jeu 15, 5 et 1 min avant)', '')
+    '20' = @('Codes du panneau staff (téléphone) : voir / ajouter / retirer un membre', '')
+    '21' = @('Adresse https : panneau staff en appli + carte en direct du site (une fois)', 'sudo roadline https')
 }
 $confirm = @{ '5' = 'Arrêter le serveur (les joueurs sont déconnectés) ?'; '13' = 'Remettre la version précédente ?'; '12' = 'Remplacer les réglages du VPS par ceux du PC (la base du VPS est gardée) ?' }
 while ($true) {
@@ -86,6 +88,15 @@ while ($true) {
                 $h = (Read-Host '  Heure (ex : 06:00), ou « off » pour désactiver').Trim()
                 if ($h -notmatch '^(off|([01]\d|2[0-3]):[0-5]\d)$') { Say '  Format attendu : 06:00 ou off' 'Yellow'; break }
                 Invoke-Vps $vps "sudo roadline redemarrage-auto $h"
+            }
+            '20' {
+                Invoke-Vps $vps 'sudo roadline staffweb liste'
+                $a = (Read-Host '  A = ajouter, R = retirer, Entrée = rien').Trim().ToUpper()
+                if ($a -notin 'A', 'R') { break }
+                $who = (Read-Host '  Pseudo du membre (sans espace)').Trim()
+                if ($who -notmatch '^[A-Za-z0-9_-]{2,20}$') { Say '  Pseudo : 2 à 20 lettres, chiffres, - ou _.' 'Yellow'; break }
+                if ((Read-Host '  Le serveur va redémarrer (environ 1 min). Continuer ? (O/N)') -notmatch '^[oOyY]') { break }
+                Invoke-Vps $vps ("sudo roadline staffweb {0} {1}" -f $(if ($a -eq 'A') { 'ajouter' } else { 'retirer' }), $who)
             }
             default { Invoke-Vps $vps $menu[$c][1] }
         }

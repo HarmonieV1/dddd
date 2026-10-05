@@ -69,6 +69,10 @@ Le choix est retenu : les mises à jour ne le changent pas.
 
 ## 3. Mettre à jour (à chaque version) : `METTRE-A-JOUR-OVH.bat`
 
+> **PC = test, VPS = officiel.** METTRE-A-JOUR.bat ne change que le serveur du PC (ta base locale, tes essais). Rien ne part sur le VPS
+> tant que tu ne lances pas METTRE-A-JOUR-OVH.bat. Ce qui est envoyé : RoadLine, les autres ressources modifiées depuis le dernier envoi,
+> les `cfg`. Jamais la base, ni `secrets.cfg` / `permissions.cfg` (réglages du VPS : option 12 si tu veux les remplacer).
+
 1. Sur le PC : **METTRE-A-JOUR.bat** avec le nouveau zip, puis un test rapide en local.
 2. **METTRE-A-JOUR-OVH.bat**.
 
@@ -100,13 +104,15 @@ et termine tout seul une installation interrompue.
 | 7 / 8 | Public / Privé | Ouvrir (48 places, liste FiveM) ou cacher (16 places, testeurs) |
 | 9 / 10 | Sauvegarder / Liste | Sauvegarde immédiate (sinon auto toutes les 6 h, 30 gardées) |
 | 11 | Copier la dernière sauvegarde sur le PC | Copie de sécurité hors VPS (`C:\GTASOON\ovh\sauvegardes-vps`) |
-| 12 | Envoyer mes réglages du PC | Après CONFIGURER-DISCORD, codes du panneau web… (`secrets.cfg`), la base du VPS est gardée |
+| 12 | Envoyer mes réglages du PC | Après CONFIGURER-DISCORD (`secrets.cfg`) ; gardés côté VPS : base, codes du panneau staff, txAdmin, heure du redémarrage |
 | 13 | Revenir à la version précédente | Une mise à jour pose problème |
 | 14 / 15 | Mode simple / txAdmin | Démarrage direct (défaut) ou panneau txAdmin (port 40120) |
 | 16 | Console du VPS | Pour les habitués |
 | 17 | Vérifier Discord | Bot connecté ? Un message de test est posté dans chaque salon relié |
 | 18 | Copie automatique sur ce PC | Tâche Windows : chaque jour à 12 h, 14 copies gardées dans `C:\GTASOON\ovh\sauvegardes-vps` |
 | 19 | Heure du redémarrage quotidien | 06:00 par défaut (heure de Paris), annoncé en jeu ; `off` pour désactiver |
+| 20 | Codes du panneau staff | Voir / ajouter / retirer l'accès d'un membre au panneau sur téléphone |
+| 21 | Adresse https | Une fois : panneau staff installable comme une appli + carte en direct sur le site |
 
 **Tout seul sur le VPS (V11)** :
 - **veille** toutes les 2 min : serveur injoignable 4 min → alerte dans le salon staff Discord et relance ; message quand il revient.
@@ -139,11 +145,15 @@ Les **bannissements** et la modération se font en jeu (menu admin), sur le pann
 
 Deux façons, à combiner (plus txAdmin si tu l'as activé) :
 
-1. **Panneau staff RoadLine** (`http://IP:30120/gs_admin/`) : joueurs en ville, geler/dégeler, message, avertir, expulser, annonce.
-   - Sur le téléphone : Partager → « Sur l'écran d'accueil » pour l'utiliser comme une appli.
-   - Les codes se mettent dans `cfg/secrets.cfg` du VPS, avec un code par membre du staff (12 caractères minimum) :
-     `set gs_admin_web "Alpha:un-code-tres-long,Modo2:un-autre-code-long"`
-   - 5 essais ratés depuis une même adresse la bloquent 15 minutes.
+1. **Panneau staff RoadLine** (une appli sur le téléphone) : joueurs, tickets, geler / dégeler, message, avertir, expulser, annonce, txAdmin.
+   - **Une fois** : `GERER-OVH.bat` → **21** (adresse https gratuite, certificat automatique). L'adresse devient
+     `https://57-129-170-173.sslip.io/gs_admin/` (l'IP du VPS avec des tirets).
+   - **Pour chaque membre** : `GERER-OVH.bat` → **20** → A → son pseudo. Le code s'affiche une seule fois : donne-le-lui en privé.
+     Le serveur redémarre (1 min). R → pseudo : retire l'accès.
+   - **Installer l'appli** : ouvrir l'adresse dans Chrome (Android : menu ⋮ → « Installer l'application ») ou Safari (iPhone : Partager
+     → « Sur l'écran d'accueil »). Icône « RL Staff », plein écran. Marche aussi dans un navigateur classique (PC compris).
+   - Sans l'option 21, ça marche aussi en `http://vps-f2365fb1.vps.ovh.net:30120/gs_admin/` (raccourci simple, sans « vraie » appli).
+   - Aussi en bas du site : lien « Espace staff ». 5 essais ratés depuis une même adresse la bloquent 15 minutes.
 2. **Bot Discord** : `/joueurs`, `/geler`, `/degeler`, `/avertir`, `/expulser`, `/message`, `/annonce`.
    - Réservé aux administrateurs du Discord et au rôle indiqué dans `set gs_discord_staff_role "ID-DU-ROLE"` (secrets.cfg).
    - Réponses visibles par toi seul.
