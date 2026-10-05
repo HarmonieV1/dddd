@@ -285,5 +285,18 @@ do
     check('incarcéré par un policier : prime au policier', not Fugitive.list[60] and W.players[61].money.bank > bank)
 end
 
+-- V10.2 : alertes systématiques (tirs, arme blanche) : rue + GPS même sans témoin, pas de rafale, policier exempté
+local function alerts() local n = 0 for _, r in ipairs(Wanted.history) do if r.detector then n = n + 1 end end return n end
+local before = alerts()
+local spot = vec3(-1200.0, -1500.0, 4.0)
+check('alerte tirs envoyée', Wanted.alert('gunshot', spot) ~= nil and alerts() == before + 1)
+check('même zone, même type : pas de rafale', Wanted.alert('gunshot', vec3(-1190.0, -1500.0, 4.0)) == nil)
+check('arme blanche : alerte distincte', Wanted.alert('stabbing', spot) ~= nil)
+check('type non systématique : rien', Wanted.alert('drug_sale', vec3(900.0, 900.0, 30.0)) == nil)
+check('alerte : description jamais transmise', Wanted.history[1].desc == nil and Wanted.history[1].detector)
+local melee = 0
+for _, w in ipairs(Config.Alerts.melee) do if type(w) == 'string' and w:find('^WEAPON_') then melee = melee + 1 end end
+check('liste des armes blanches valide', melee == #Config.Alerts.melee and melee >= 10)
+
 io.write(('\n%d réussis, %d échoués\n'):format(passed, failed))
 os.exit(failed == 0 and 0 or 1)

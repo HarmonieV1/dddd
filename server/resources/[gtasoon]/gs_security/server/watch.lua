@@ -127,6 +127,30 @@ function Watch.onEntity(src)
     return true
 end
 
+--- V10.2 · Anti carkill : un véhicule (voiture, moto, bateau, avion, hélicoptère) ne blesse jamais un joueur à pied.
+--- Le coup est annulé côté serveur (impossible à contourner par le conducteur) ; à partir de 2 joueurs percutés en
+--- 1 min, le staff est alerté (carkill probable). Les PNJ restent renversables (accidents, poursuites).
+local function norm(h) local n = tonumber(h) if not n then return h end return n < 0 and n + 4294967296 or n end -- signé ou non
+local VEHICLE_HITS = {}
+for _, w in ipairs({ 'WEAPON_RUN_OVER_BY_CAR', 'WEAPON_RAMMED_BY_CAR', 'WEAPON_HELI_CRASH', 'VEHICLE_WEAPON_ROTORS' }) do
+    VEHICLE_HITS[norm(GetHashKey(w))] = w
+end
+function Watch.vehicleHit(src, weaponType, victimIsPlayer)
+    if weaponType == nil or not VEHICLE_HITS[norm(weaponType)] or not victimIsPlayer then return false end
+    if src and src > 0 and count(src, 'carkill', 60) >= 2 then
+        Watch.alert(src, 'carkill probable', 'plusieurs joueurs percutés en 1 min (dégâts annulés)')
+    end
+    return true -- annuler
+end
+if GetConvar('gs_anticarkill', 'true') ~= 'false' then
+    AddEventHandler('weaponDamageEvent', function(sender, data)
+        if type(data) ~= 'table' or not data.hitGlobalId then return end
+        local ent = NetworkGetEntityFromNetworkId(data.hitGlobalId)
+        local isPlayer = ent and ent ~= 0 and DoesEntityExist(ent) and IsPedAPlayer(ent)
+        if Watch.vehicleHit(tonumber(sender), data.weaponType, isPlayer) then CancelEvent() end
+    end)
+end
+
 if AC.enabled then
     AddEventHandler('QBCore:Server:OnMoneyChange', function(src, _, amount, action, reason) Watch.onMoney(src, amount, action, reason) end) -- [API] qbx_core
     AddEventHandler('entityCreating', function(ent)

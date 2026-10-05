@@ -1,6 +1,7 @@
 ﻿<#
   GTA SOON - fonctions partagées par installer-serveur.ps1 et mettre-a-jour.ps1 (chargé avec « . »).
   - Merge-GtaSoonItems : ajoute nos items dans ox_inventory (et remplace ceux marqués « -- remplace »)
+  - Set-FrenchLabels   : noms des objets et armes d'ox_inventory / Qbox en français
   - Set-QboxOverrides  : pose nos fichiers de config (server\overrides) et applique nos réglages Qbox
 #>
 
@@ -121,6 +122,33 @@ function Remove-ItemBlock([string]$content, [string]$name) {
     }
     while ($i -lt $content.Length -and ($content[$i] -eq ',' -or $content[$i] -eq ' ' -or $content[$i] -eq "`t")) { $i++ }
     return $content.Remove($m.Index, $i - $m.Index)
+}
+
+#--- Noms des objets et des armes d'ox_inventory / Qbox en français (server\locales-fr\items.json, weapons.json).
+#    Seul le libellé (label = '...') du bloc de l'objet est remplacé. Retourne le nombre de libellés traduits.
+function Set-FrenchLabels($Res, $Repo) {
+    $total = 0
+    foreach ($pair in @(@('items.lua', 'items.json'), @('weapons.lua', 'weapons.json'))) {
+        $file = Get-ChildItem -LiteralPath $Res -Recurse -Filter $pair[0] -ErrorAction SilentlyContinue |
+            Where-Object { $_.FullName -match 'ox_inventory\\data\\' } | Select-Object -First 1
+        $dict = Join-Path $Repo ('server\locales-fr\' + $pair[1])
+        if (-not $file -or -not (Test-Path -LiteralPath $dict)) { continue }
+        $map = Get-Content -LiteralPath $dict -Raw -Encoding UTF8 | ConvertFrom-Json
+        $text = Get-Content -LiteralPath $file.FullName -Raw -Encoding UTF8
+        $n = 0
+        foreach ($p in $map.PSObject.Properties) {
+            $re = [regex]::new("(?s)(\[\s*['""]" + [regex]::Escape($p.Name) + "['""]\s*\]\s*=\s*\{[^{}]*?\blabel\s*=\s*)(['""])(.*?)\2")
+            $m = $re.Match($text)
+            if (-not $m.Success) { continue }
+            $label = $p.Value.Replace('\', '').Replace("'", "\'")
+            if ($m.Groups[3].Value -eq $label -or $m.Groups[3].Value -eq $p.Value) { continue }
+            $text = $text.Substring(0, $m.Index) + $m.Groups[1].Value + "'" + $label + "'" + $text.Substring($m.Index + $m.Length)
+            $n++
+        }
+        if ($n -gt 0) { Write-Utf8 $file.FullName $text }
+        $total += $n
+    }
+    return $total
 }
 
 #--- Retourne @{ added; replaced } (ou $null si items.lua introuvable).

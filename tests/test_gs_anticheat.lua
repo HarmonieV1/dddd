@@ -70,5 +70,14 @@ for _ = 1, Watch.config.entities + 5 do okStaff = Watch.onEntity(2) and okStaff 
 check('staff : jamais bloqué', okStaff)
 check('alertes consultables par le staff (F11)', #getExport('gs_security', 'GetAlerts')() == #Watch.alerts)
 
+-- V10.2 : anti carkill
+local run = GetHashKey('WEAPON_RUN_OVER_BY_CAR')
+check('carkill : joueur percuté = dégâts annulés', Watch.vehicleHit(3, run, true) == true)
+check('carkill : PNJ percuté = normal', Watch.vehicleHit(3, run, false) == false)
+check('carkill : arme normale = normal', Watch.vehicleHit(3, GetHashKey('WEAPON_PISTOL'), true) == false)
+local before = alerts('carkill probable')
+Watch.vehicleHit(3, GetHashKey('WEAPON_RAMMED_BY_CAR'), true)
+check('carkill : 2 joueurs en 1 min = alerte staff', alerts('carkill probable') == before + 1)
+
 io.write(('\n%d réussis, %d échoués\n'):format(passed, failed))
 os.exit(failed == 0 and 0 or 1)

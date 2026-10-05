@@ -242,6 +242,8 @@ $r = Merge-GtaSoonItems $Res $Repo
 if ($r) { Log "  ox_inventory : $($r.added) item(s) ajouté(s), $($r.replaced) amélioré(s)" 'Green' }
 else { Log '  items.lua d''ox_inventory introuvable : ajoute server\ox_items_gtasoon.lua à la main' 'Yellow' }
 Set-QboxOverrides $Res $Repo { param($m, $c) Log $m $c }
+$fr = Set-FrenchLabels $Res $Repo
+if ($fr -gt 0) { Log "  Objets et armes : $fr nom(s) traduit(s) en français" 'Green' }
 
 # Lanceur
 Write-Launcher $Data $FxExe

@@ -26,6 +26,19 @@ Config.Crimes = {
     contract = { label = 'Contrat criminel', heat = 10, chance = 0.15 },
     refusal = { label = 'Refus d\'obtempérer (contrôle routier)', heat = 12, chance = 0.95 },
     racket = { label = 'Racket et dégradation de commerce', heat = 15, chance = 0.6 }, -- V9
+    stabbing = { label = 'Agression à l\'arme blanche', heat = 12, chance = 0.45 }, -- V10.2
+}
+
+-- V10.2 · Alertes systématiques au central : chaque coup de feu (sauf silencieux) et chaque coup d'arme blanche est
+-- signalé aux policiers en service, même sans témoin (capteurs acoustiques / appel anonyme) : rue + GPS, sans description.
+Config.Alerts = {
+    always = { gunshot = true, stabbing = true },
+    label = { gunshot = 'Coups de feu détectés', stabbing = 'Agression à l\'arme blanche signalée' },
+    radius = 60.0,          -- zone approximative (m)
+    perArea = 20,           -- pas deux alertes du même type à moins de 80 m en 20 s (rafales)
+    melee = { 'WEAPON_KNIFE', 'WEAPON_DAGGER', 'WEAPON_MACHETE', 'WEAPON_SWITCHBLADE', 'WEAPON_BOTTLE', 'WEAPON_HATCHET',
+        'WEAPON_BATTLEAXE', 'WEAPON_BAT', 'WEAPON_CROWBAR', 'WEAPON_GOLFCLUB', 'WEAPON_HAMMER', 'WEAPON_KNUCKLE',
+        'WEAPON_WRENCH', 'WEAPON_POOLCUE', 'WEAPON_STONE_HATCHET' },
 }
 
 Config.Witness = {

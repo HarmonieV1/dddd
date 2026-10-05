@@ -110,6 +110,8 @@ if ($r) { Say "  ox_inventory : $($r.added) item(s) ajouté(s), $($r.replaced) a
 else { Say '  items.lua d''ox_inventory introuvable : items GTA SOON non ajoutés' 'Yellow' }
 Say '  Réglages Qbox (spawn, magasins, hôpital) :' 'Cyan'
 Set-QboxOverrides $Res $Repo { param($m, $c) Say $m $c }
+$fr = Set-FrenchLabels $Res $Repo
+if ($fr -gt 0) { Say "  Objets et armes : $fr nom(s) traduit(s) en français" 'Green' }
 
 # Lanceur : on garde le chemin de FXServer.exe de l'installation
 $batPath = Join-Path $Data 'DEMARRER.bat'

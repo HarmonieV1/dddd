@@ -305,12 +305,51 @@ AddEventHandler('playerDropped', function() Wanted.clearUnits(source) end)
 
 local UNARMED = GetHashKey('WEAPON_UNARMED')
 
+--- V10.2 · Alerte systématique (capteurs / appel anonyme) quand les témoins n'ont rien signalé : rue + GPS, aucune
+--- description. Une seule alerte par zone et par type pendant `perArea` s (pas de spam pendant une fusillade).
+Wanted.alerts = {}
+function Wanted.alert(crimeType, coords)
+    local A = Config.Alerts
+    if not A.always[crimeType] or not coords or Wanted.inSafeZone(coords) then return nil end
+    local t = os.time()
+    for i = #Wanted.alerts, 1, -1 do
+        local a = Wanted.alerts[i]
+        if t - a.at > A.perArea then table.remove(Wanted.alerts, i)
+        elseif a.kind == crimeType and #(a.coords - coords) < 80.0 then return nil end
+    end
+    Wanted.alerts[#Wanted.alerts + 1] = { kind = crimeType, coords = coords, at = t }
+    local angle, shift = math.random() * 2 * math.pi, math.random() * A.radius * 0.6
+    Wanted.nextId = Wanted.nextId + 1
+    local report = { id = Wanted.nextId, crime = crimeType, label = A.label[crimeType], radius = math.floor(A.radius),
+        coords = vec3(coords.x + math.cos(angle) * shift, coords.y + math.sin(angle) * shift, coords.z), witnesses = 0, detector = true }
+    table.insert(Wanted.history, 1, report)
+    Wanted.history[Config.Dispatch.history + 1] = nil
+    for _, cop in ipairs(JobsApi:GetOnDutyPlayers(Config.PoliceJob)) do TriggerClientEvent('gs_wanted:client:dispatch', cop, report) end
+    return report
+end
+
 RegisterNetEvent('gs_wanted:server:shot', function(silenced)
     local src = source
     if not Security:RateLimit(src, 'gs_wanted:shot', 1, 10000) then return end
     local ped = GetPlayerPed(src)
     if ped == 0 or GetSelectedPedWeapon(ped) == UNARMED or isPoliceOnDuty(src) then return end
-    Wanted.report(src, 'gunshot', GetEntityCoords(ped), { silenced = silenced == true, vehicle = GetVehiclePedIsIn(ped, false) })
+    local coords = GetEntityCoords(ped)
+    local r = Wanted.report(src, 'gunshot', coords, { silenced = silenced == true, vehicle = GetVehiclePedIsIn(ped, false) })
+    if not r and silenced ~= true then Wanted.alert('gunshot', coords) end
+end)
+
+-- V10.2 · Coup d'arme blanche porté (couteau, batte…) : détecté côté serveur
+local function u32(h) h = tonumber(h) or 0 return h < 0 and h + 4294967296 or h end -- hash signé ou non selon la source
+local MELEE = {}
+for _, w in ipairs(Config.Alerts.melee) do MELEE[u32(GetHashKey(w))] = true end
+AddEventHandler('weaponDamageEvent', function(sender, data)
+    local src = tonumber(sender)
+    if not src or type(data) ~= 'table' or not MELEE[u32(data.weaponType)] then return end
+    if not Security:RateLimit(src, 'gs_wanted:stab', 1, 15000) then return end
+    local ped = GetPlayerPed(src)
+    if ped == 0 or isPoliceOnDuty(src) then return end
+    local coords = GetEntityCoords(ped)
+    if not Wanted.report(src, 'stabbing', coords) then Wanted.alert('stabbing', coords) end
 end)
 
 RegisterNetEvent('gs_wanted:server:carjack', function()

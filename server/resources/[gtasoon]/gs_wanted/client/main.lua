@@ -68,8 +68,15 @@ RegisterNetEvent('gs_wanted:client:heat', function(value)
 end)
 
 -- Dispatch police ----------------------------------------------------------------------------------
+local function streetOf(c)
+    local a, b = GetStreetNameAtCoord(c.x, c.y, c.z)
+    local main, cross = GetStreetNameFromHashKey(a), b ~= 0 and GetStreetNameFromHashKey(b) or ''
+    return cross ~= '' and ('%s / %s'):format(main, cross) or main
+end
+
 local function describe(r)
-    local street = GetStreetNameFromHashKey(GetStreetNameAtCoord(r.coords.x, r.coords.y, r.coords.z))
+    if r.detector then return ('n°%d · %s · ±%d m · %s'):format(r.id or 0, streetOf(r.coords), r.radius, 'détection automatique, pas de description') end
+    local street = streetOf(r.coords)
     local who = r.witnesses == -1 and 'constaté par un agent'
         or (r.witnesses == 0 and 'appel anonyme' or ('%d témoin(s)'):format(r.witnesses))
     local parts = { ('%s · ±%d m'):format(street, r.radius), who }
@@ -88,7 +95,8 @@ end
 RegisterNetEvent('gs_wanted:client:dispatch', function(r)
     table.insert(reports, 1, r)
     reports[11] = nil
-    lib.notify({ title = 'Central : ' .. r.label, description = describe(r), type = 'warning', icon = 'tower-broadcast', duration = 10000 })
+    lib.notify({ title = ('Central : %s · %s'):format(r.label, streetOf(r.coords)), description = describe(r), type = 'warning', icon = 'tower-broadcast', duration = 10000 })
+    if not IsWaypointActive() then SetNewWaypoint(r.coords.x, r.coords.y) end -- GPS posé si aucun itinéraire en cours
     PlaySoundFrontend(-1, 'Lose_1st', 'GTAO_FM_Events_Soundset', false)
 
     local area = AddBlipForRadius(r.coords.x, r.coords.y, r.coords.z, r.radius + 0.0)
