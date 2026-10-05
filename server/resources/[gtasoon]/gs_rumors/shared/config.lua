@@ -31,3 +31,18 @@ Config.Zones = {
     { 'Little Seoul', -700.0, -1000.0 }, { 'Chumash', -3150.0, 1100.0 }, { 'Harmony', 1150.0, 2650.0 }, { 'Sandy Shores', 1900.0, 3750.0 },
     { 'Grapeseed', 1700.0, 4800.0 }, { 'Paleto Bay', -150.0, 6350.0 }, { 'Mont Chiliad', 500.0, 5600.0 }, { 'Vinewood Hills', -400.0, 900.0 },
 }
+
+-- V10.2 · Les rumeurs qui deviennent vraies : chez un barman, on paie un verre pour « faire courir un bruit ». Quand
+-- `threshold` personnes DIFFÉRENTES ont lancé le même bruit en `window` s, le staff est prévenu et valide (/rumeurvraie)
+-- ou refuse (/rumeurfausse) ; sans réponse du staff au bout de `autoAfter` s, la ville tranche seule (ça arrive).
+Config.Seeds = {
+    threshold = 3, window = 7200, cooldown = 5400, autoAfter = 600, price = 50, staffLevel = 2,
+    list = {
+        { id = 'storm', label = 'Une grosse tempête arrive sur le comté', fact = 'La tempête dont tout le monde parlait arrive sur le comté !' },
+        { id = 'stash', label = 'Un sac de billets aurait été caché quelque part', fact = 'Un sac de billets a été caché du côté de %s. À vous de le trouver.' },
+        { id = 'crime', label = 'Un sale coup se prépare en ville cette nuit', fact = 'Le sale coup annoncé a eu lieu : la police est appelée.' },
+    },
+    stash = { minutes = 45, reward = { 1500, 4000 }, dirty = true, model = 'prop_money_bag_01',
+        spots = { vec3(-104.8, 6316.2, 31.5), vec3(1704.3, 3790.5, 34.6), vec3(-1172.9, -1572.6, 4.7), vec3(1229.8, -3170.4, 5.9),
+            vec3(-428.5, 1110.2, 327.7), vec3(2556.1, 382.8, 108.6) } },
+}

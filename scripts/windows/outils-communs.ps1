@@ -2,6 +2,7 @@
   GTA SOON - fonctions partagées par installer-serveur.ps1 et mettre-a-jour.ps1 (chargé avec « . »).
   - Merge-GtaSoonItems : ajoute nos items dans ox_inventory (et remplace ceux marqués « -- remplace »)
   - Set-FrenchLabels   : noms des objets et armes d'ox_inventory / Qbox en français
+  - Add-MissingItemIcons : une image pour chaque objet (celles qui manquent)
   - Set-QboxOverrides  : pose nos fichiers de config (server\overrides) et applique nos réglages Qbox
 #>
 
@@ -149,6 +150,34 @@ function Set-FrenchLabels($Res, $Repo) {
         $total += $n
     }
     return $total
+}
+
+#--- Chaque objet d'ox_inventory a une image : celles qui manquent sont prises dans server\item-icons (même nom),
+#    sinon default.png (carton). N'écrase jamais une image existante. Retourne le nombre d'images ajoutées.
+function Add-MissingItemIcons($Res, $Repo) {
+    $items = Get-ChildItem -LiteralPath $Res -Recurse -Filter items.lua -ErrorAction SilentlyContinue |
+        Where-Object { $_.FullName -match 'ox_inventory\\data\\items\.lua$' } | Select-Object -First 1
+    if (-not $items) { return 0 }
+    $imgDir = Join-Path ($items.Directory.Parent.FullName) 'web\images'
+    $icons = Join-Path $Repo 'server\item-icons'
+    if (-not (Test-Path -LiteralPath $imgDir) -or -not (Test-Path -LiteralPath $icons)) { return 0 }
+    $text = Get-Content -LiteralPath $items.FullName -Raw -Encoding UTF8
+    $n = 0
+    $heads = [regex]::Matches($text, "(?m)^\s*\[\s*['""]([\w-]+)['""]\s*\]\s*=\s*\{")
+    for ($i = 0; $i -lt $heads.Count; $i++) {
+        $m = $heads[$i]
+        $end = if ($i + 1 -lt $heads.Count) { $heads[$i + 1].Index } else { $text.Length }
+        $block = $text.Substring($m.Index, $end - $m.Index) # le bloc de l'objet, jusqu'à l'objet suivant
+        $name = $m.Groups[1].Value
+        $img = [regex]::Match($block, "\bimage\s*=\s*['""]([^'""]+)['""]")
+        $file = if ($img.Success) { $img.Groups[1].Value } else { "$name.png" }
+        if (Test-Path -LiteralPath (Join-Path $imgDir $file)) { continue }
+        $src = Join-Path $icons "$name.png"
+        if (-not (Test-Path -LiteralPath $src)) { $src = Join-Path $icons 'default.png' }
+        Copy-Item -LiteralPath $src -Destination (Join-Path $imgDir $file)
+        $n++
+    }
+    return $n
 }
 
 #--- Retourne @{ added; replaced } (ou $null si items.lua introuvable).

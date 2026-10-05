@@ -21,6 +21,18 @@ AddEventHandler('gs_rumors:client:teller', function(i)
             if not ok then return notify(false, d) end
             list(t.label, d)
         end },
+        { title = ('Faire courir un bruit (%d $)'):format(Config.Seeds.price), icon = 'bullhorn', arrow = true,
+          description = 'Si assez de monde le répète… ça finit par arriver', onSelect = function()
+            local seeds = lib.callback.await('gs_rumors:seeds', false) or {}
+            local o = {}
+            for _, sd in ipairs(seeds) do
+                o[#o + 1] = { title = '« ' .. sd.label .. ' »', icon = 'comment-dots', onSelect = function()
+                    notify(lib.callback.await('gs_rumors:seed', false, sd.id, i))
+                end }
+            end
+            lib.registerContext({ id = 'gs_rumors_seed', title = 'Faire courir un bruit', menu = 'gs_rumors_teller', options = o })
+            lib.showContext('gs_rumors_seed')
+        end },
     } })
     lib.showContext('gs_rumors_teller')
 end)
@@ -84,3 +96,47 @@ AddEventHandler('onResourceStop', function(res)
     exports.gs_markers:RemovePrefix('gs_rumors:')
     for _, p in pairs(peds) do if DoesEntityExist(p) then DeletePed(p) end end
 end)
+
+-- V10.2 · Le sac de billets d'une rumeur devenue vraie : visible de près seulement, [E] pour le prendre (un seul gagnant)
+local stashBag, stashToken = nil, 0
+local function clearStash()
+    stashToken = stashToken + 1
+    if stashBag and DoesEntityExist(stashBag) then DeleteEntity(stashBag) end
+    stashBag = nil
+    lib.hideTextUI()
+end
+local function watchStash(s)
+    clearStash()
+    if not s then return end
+    local my = stashToken
+    CreateThread(function()
+        local spot = vec3(s.x, s.y, s.z)
+        while my == stashToken do
+            local me = GetEntityCoords(cache.ped)
+            local flat = #(vec2(me.x, me.y) - vec2(spot.x, spot.y))
+            if flat < 80.0 and not stashBag then
+                local hash = GetHashKey(Config.Seeds.stash.model)
+                if lib.requestModel(hash, 5000) then
+                    local ok, gz = GetGroundZFor_3dCoord(spot.x, spot.y, spot.z + 50.0, false)
+                    stashBag = CreateObject(hash, spot.x, spot.y, ok and gz or spot.z, false, false, false)
+                    PlaceObjectOnGroundProperly(stashBag)
+                    FreezeEntityPosition(stashBag, true)
+                    SetModelAsNoLongerNeeded(hash)
+                end
+            elseif flat > 100.0 and stashBag then
+                DeleteEntity(stashBag) stashBag = nil
+            end
+            if flat < 2.5 then
+                lib.showTextUI('[E] Prendre le sac')
+                if IsControlJustPressed(0, 38) then notify(lib.callback.await('gs_rumors:stash', false)) end
+                Wait(0)
+            else
+                lib.hideTextUI()
+                Wait(flat < 30.0 and 250 or 1500)
+            end
+        end
+    end)
+end
+AddStateBagChangeHandler('gsRumorStash', 'global', function(_, _, value) watchStash(value) end)
+CreateThread(function() Wait(3000) watchStash(GlobalState.gsRumorStash) end)
+AddEventHandler('onResourceStop', function(res) if res == GetCurrentResourceName() then clearStash() end end)

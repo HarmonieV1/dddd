@@ -244,6 +244,8 @@ else { Log '  items.lua d''ox_inventory introuvable : ajoute server\ox_items_gta
 Set-QboxOverrides $Res $Repo { param($m, $c) Log $m $c }
 $fr = Set-FrenchLabels $Res $Repo
 if ($fr -gt 0) { Log "  Objets et armes : $fr nom(s) traduit(s) en français" 'Green' }
+$ic = Add-MissingItemIcons $Res $Repo
+if ($ic -gt 0) { Log "  Objets : $ic image(s) manquante(s) ajoutée(s)" 'Green' }
 
 # Lanceur
 Write-Launcher $Data $FxExe

@@ -112,6 +112,8 @@ Say '  Réglages Qbox (spawn, magasins, hôpital) :' 'Cyan'
 Set-QboxOverrides $Res $Repo { param($m, $c) Say $m $c }
 $fr = Set-FrenchLabels $Res $Repo
 if ($fr -gt 0) { Say "  Objets et armes : $fr nom(s) traduit(s) en français" 'Green' }
+$ic = Add-MissingItemIcons $Res $Repo
+if ($ic -gt 0) { Say "  Objets : $ic image(s) manquante(s) ajoutée(s)" 'Green' }
 
 # Lanceur : on garde le chemin de FXServer.exe de l'installation
 $batPath = Join-Path $Data 'DEMARRER.bat'
