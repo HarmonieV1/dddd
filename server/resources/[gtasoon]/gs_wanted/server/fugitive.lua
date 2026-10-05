@@ -121,3 +121,4 @@ end)
 
 CreateThread(function() while true do Wait(60000) Fugitive.tick() end end)
 exports('IsFugitive', function(src) return Fugitive.list[src] ~= nil end)
+exports('Legends', function() return legends() end) -- V10.2 : carte vivante du site (noms des légendes, déjà publics en jeu)

@@ -11,7 +11,7 @@
 <meta property="og:url" content="https://roadlinerp.netlify.app/">
 <meta property="og:type" content="website">
 <meta property="og:title" content="RoadLine RP · new generation">
-<meta property="og:description" content="Serveur GTA RP français : Free Access, zéro pay-to-win, 16 signatures exclusives, une ville qui vit même sans toi.">
+<meta property="og:description" content="Serveur GTA RP français : Free Access, zéro pay-to-win, 19 signatures exclusives, une ville qui vit même sans toi.">
 <!--
   SITE ROADLINE RP — à personnaliser (cherche « A_REMPLIR ») :
   - CONFIG plus bas (lien Discord, code cfx.re du serveur, TikTok / Twitch / YouTube)
@@ -288,6 +288,19 @@
   .pillar li { display: grid; gap: 2px; }
   .pillar li b { font-size: .98rem; }
   .pillar li span { color: var(--muted); font-size: .88rem; line-height: 1.45; }
+  .live-map { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 22px; margin-top: 26px; align-items: start; }
+  @media (max-width: 860px) { .live-map { grid-template-columns: 1fr; } }
+  .map-box { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 14px; position: relative; }
+  .map-box svg { width: 100%; height: auto; display: block; }
+  .map-box .land { fill: #1d1235; stroke: #3a2560; stroke-width: 1.5; }
+  .map-box .dist circle { transition: r .4s var(--ease); }
+  .map-box .dist text { fill: var(--text); font: 600 9px Inter, sans-serif; paint-order: stroke; stroke: #0c0716; stroke-width: 3px; }
+  .map-legend { display: flex; gap: 14px; flex-wrap: wrap; font-size: .8rem; color: var(--muted); margin-top: 8px; }
+  .map-legend i { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 5px; vertical-align: -1px; }
+  .live-side { display: grid; gap: 14px; }
+  .live-side .card h3 { margin: 0 0 8px; font-size: 1rem; }
+  .live-side ul { margin: 0; padding-left: 18px; color: var(--muted); display: grid; gap: 4px; font-size: .92rem; }
+  .live-tag { font-size: .75rem; color: var(--muted); }
   .news { display: grid; gap: 14px; position: relative; padding-left: 26px; }
   .news::before { content: ''; position: absolute; left: 6px; top: 8px; bottom: 8px; width: 2px; background: linear-gradient(var(--pink), var(--violet), var(--cyan)); box-shadow: var(--glow-pink); }
   .news article { position: relative; display: flex; gap: 18px; align-items: baseline; padding: 18px 20px; background: var(--card); border: 1px solid var(--line); border-radius: 14px; transition: transform .35s var(--ease), border-color .3s; }
@@ -470,7 +483,7 @@
   <div class="wrap">
     <a href="#" class="logo"><b>RoadLine</b> RP</a>
     <div class="menu">
-      <a href="#ville">La ville</a><a href="#signatures">Signatures</a><a href="#vies">Les vies</a>
+      <a href="#ville">La ville</a><a href="#signatures">Signatures</a><a href="#carte">En direct</a><a href="#vies">Les vies</a>
       <a href="#nouveautes">Nouveautés</a><a href="#rejoindre">Rejoindre</a><a href="#faq">FAQ</a>
     </div>
     <div class="nav-right">
@@ -538,8 +551,8 @@
 </div>
 
 <div class="stats">
-  <div class="stat rv"><strong data-count="63">0</strong><span>Systèmes maison</span></div>
-  <div class="stat rv" style="--d:1"><strong data-count="16">0</strong><span>Signatures exclusives</span></div>
+  <div class="stat rv"><strong data-count="66">0</strong><span>Systèmes maison</span></div>
+  <div class="stat rv" style="--d:1"><strong data-count="19">0</strong><span>Signatures exclusives</span></div>
   <div class="stat rv" style="--d:2"><strong data-count="25">0</strong><span>Métiers &amp; activités</span></div>
   <div class="stat rv" style="--d:3"><strong data-count="0" data-suffix=" €">0</strong><span>Pay-to-win</span></div>
 </div>
@@ -567,7 +580,7 @@
   <div class="wrap">
     <span class="kicker">Exclusif</span>
     <h2 class="sweep">Ce que tu ne trouveras <span class="grad">nulle part ailleurs</span></h2>
-    <p class="lead muted rv">16 systèmes pensés pour le RP, pas pour la vitrine, en 4 piliers.</p>
+    <p class="lead muted rv">19 systèmes pensés pour le RP, pas pour la vitrine, en 4 piliers.</p>
     <div class="pillars">
       <div class="pillar rv"><span class="tag">La ville se souvient</span><h3>Chaque acte laisse une trace</h3><ol>
         <li><b>Témoins et mémoire</b><span>Ils décrivent ta tenue, ta voiture, un bout de plaque… et te reconnaissent.</span></li>
@@ -580,6 +593,8 @@
         <li><b>Radio Los Santos</b><span>L'animateur raconte la ville en direct, en voiture.</span></li>
         <li><b>Rencontres de la route</b><span>Auto-stoppeur, panne, accident… arrête-toi. Ou pas.</span></li>
         <li><b>Road trip du mois</b><span>Un grand itinéraire, des spots photo, un classement.</span></li>
+        <li><b>Ville de jour, ville de nuit</b><span>La nuit, d'autres gens sortent et des marchés de nuit ouvrent.</span></li>
+        <li><b>Les rumeurs deviennent vraies</b><span>Faites courir un bruit au bar… s'il est assez répété, il arrive.</span></li>
       </ol></div>
       <div class="pillar rv" style="--d:2"><span class="tag">La rue</span><h3>Le crime a des conséquences</h3><ol>
         <li><b>Braquage à la voix</b><span>Plus tu cries, plus la peur monte… et plus on t'entend.</span></li>
@@ -592,7 +607,30 @@
         <li><b>Le tribunal des preuves</b><span>Pièces au dossier, chantage à la photo, verdicts motivés.</span></li>
         <li><b>Weazel joué par les joueurs</b><span>Articles, brèves, flash info : la presse, c'est vous.</span></li>
         <li><b>Ton récap du mois</b><span>Ton histoire en chiffres, ton titre, ton classement.</span></li>
+        <li><b>Le dossier du citoyen</b><span>Une fiche, trois regards : police, juges et presse n'y voient pas la même chose.</span></li>
       </ol></div>
+    </div>
+  </div>
+</section>
+
+<section id="carte">
+  <div class="wrap">
+    <span class="kicker">En direct</span>
+    <h2 class="sweep">Los Santos <span class="grad">en ce moment</span></h2>
+    <p class="lead muted rv">L'ambiance de chaque quartier, les rendez-vous de la semaine et les légendes de la ville, tirés du serveur.</p>
+    <div class="live-map">
+      <div class="map-box rv">
+        <svg viewBox="0 0 400 600" role="img" aria-label="Carte des quartiers de Los Santos">
+          <path class="land" d="M60 575 L35 480 L60 400 L105 355 L115 290 L95 230 L120 150 L140 60 L160 14 L235 10 L290 70 L345 140 L388 225 L380 330 L355 410 L330 460 L300 505 L240 545 L170 580 Z"/>
+          <g class="js-map-dists"></g>
+        </svg>
+        <div class="map-legend"><span><i style="background:#5aff8c"></i>calme</span><span><i style="background:#ffb347"></i>tendu</span><span><i style="background:#ff2340"></i>chaud</span><span class="live-tag js-map-state">aperçu</span></div>
+      </div>
+      <div class="live-side">
+        <div class="card rv"><h3>📅 Rendez-vous de la semaine</h3><ul class="js-map-rdv"></ul></div>
+        <div class="card rv" style="--d:1"><h3>🏆 Légendes de la ville</h3><ul class="js-map-legends"></ul></div>
+        <div class="card rv" style="--d:2"><h3>🌆 Les quartiers</h3><ul class="js-map-standing"></ul></div>
+      </div>
     </div>
   </div>
 </section>
@@ -695,8 +733,9 @@
       <article class="rv" style="--d:1"><time>V3</time><div><strong>Une ville qui vit sans toi</strong><span class="new">NEW</span>
         <ul><li><b>Le téléphone te guide</b> : « Que faire ? » montre ce qui se passe et t'y emmène en un clic.</li>
           <li><b>La ville bouge seule</b> : quartiers qui montent ou coulent, faits divers, radio en direct.</li>
-          <li><b>Justice et presse</b> : caméras, mandats, preuves au tribunal, enchères, poursuites en direct.</li></ul>
-        <div class="chips"><span>Le quartier évolue</span><span>Radio Los Santos</span><span>Les commerçants se souviennent</span><span>Caméras et mandats</span><span>Le tribunal des preuves</span><span>Enchères de la fourrière</span><span>Direct Weazel</span></div></div></article>
+          <li><b>Justice et presse</b> : caméras, mandats, preuves au tribunal, dossier du citoyen, enchères, poursuites en direct.</li>
+          <li><b>Deux villes en une</b> : la nuit ses marchés et ses noctambules, et des rumeurs qui finissent par arriver.</li></ul>
+        <div class="chips"><span>Le quartier évolue</span><span>Radio Los Santos</span><span>Les commerçants se souviennent</span><span>Caméras et mandats</span><span>Le tribunal des preuves</span><span>Enchères de la fourrière</span><span>Direct Weazel</span><span>Ville de jour / de nuit</span><span>Les rumeurs deviennent vraies</span><span>Le dossier du citoyen</span></div></div></article>
       <article class="rv" style="--d:2"><time>V2</time><div><strong>La ville a une mémoire</strong>
         <ul><li><b>Elle se souvient de toi</b> : témoins, preuves, rumeurs, carnet de chaque voiture.</li>
           <li><b>Elle garde les cicatrices</b> : mémoriaux, vitrines brisées, fresques de gang.</li>
@@ -801,6 +840,7 @@
   const CONFIG = {
     discord: 'https://discord.gg/8y2sX7EvZN',
     cfxCode: '',            // code cfx.re du serveur (ex. 'abc123') : bouton « Rejoindre » + compteur de joueurs
+    cityUrl: '',            // carte en direct : adresse https du serveur + /gs_city/ville.json (ex. https://xxxx-abcd.users.cfx.re/gs_city/ville.json)
     tiktok: '', twitch: '', youtube: '',
     opening: '2026-10-20T21:00:00+02:00',   // date et heure d'ouverture (compte à rebours)
     trailer: '',            // identifiant de la vidéo YouTube (ex. 'dQw4w9WgXcQ') : lue au clic sur la bande-annonce
@@ -809,6 +849,37 @@
     ],
   };
   document.querySelectorAll('.js-discord').forEach(a => a.href = CONFIG.discord);
+  // ---- V10.2 : carte vivante (quartiers, rendez-vous, légendes) ----
+  (function () {
+    const DEMO = { districts: [
+      { label: 'Centre-ville', x: 150, y: -850, tension: 1, standingLabel: 'en plein essor' }, { label: 'South Los Santos', x: 100, y: -1750, tension: 3, standingLabel: 'en déclin' },
+      { label: 'East Los Santos', x: 1150, y: -1500, tension: 2, standingLabel: 'ordinaire' }, { label: 'Vespucci et Del Perro', x: -1300, y: -1100, tension: 1, standingLabel: 'en plein essor' },
+      { label: 'Rockford Hills et Richman', x: -1000, y: -200, tension: 1, standingLabel: 'huppé' }, { label: 'Vinewood', x: 300, y: 300, tension: 1, standingLabel: 'huppé' },
+      { label: 'Port et Elysian Island', x: 600, y: -2900, tension: 2, standingLabel: 'ordinaire' }, { label: 'Sandy Shores et Blaine', x: 1800, y: 3700, tension: 1, standingLabel: 'en déclin' },
+      { label: 'Paleto Bay', x: -200, y: 6300, tension: 1, standingLabel: 'ordinaire' } ],
+      weekly: [ { dayName: 'mercredi', from: '21:00', label: 'Mercredi des métiers' }, { dayName: 'vendredi', from: '21:00', label: 'Vendredi des courses' },
+        { dayName: 'samedi', from: '22:00', label: 'Nuit des combats' }, { dayName: 'dimanche', from: '17:00', label: 'Dimanche road trip' } ],
+      legends: [] };
+    const COLORS = { 1: '#5aff8c', 2: '#ffb347', 3: '#ff2340' };
+    const px = (x) => ((x + 2200) / 4600) * 400, py = (y) => ((6900 - y) / 10400) * 600;
+    const esc = (t) => String(t).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+    function render(d, live) {
+      const g = document.querySelector('.js-map-dists');
+      if (!g) return;
+      g.innerHTML = d.districts.map((x) => `<g class="dist"><circle cx="${px(x.x).toFixed(1)}" cy="${py(x.y).toFixed(1)}" r="${8 + (x.tension || 1) * 3}" fill="${COLORS[x.tension] || COLORS[1]}" fill-opacity=".75"><title>${esc(x.label)}</title></circle>`
+        + (px(x.x) > 290 ? `<text text-anchor="end" x="${(px(x.x) - 14).toFixed(1)}" y="${(py(x.y) + 3).toFixed(1)}">${esc(x.label)}</text></g>` : `<text x="${(px(x.x) + 14).toFixed(1)}" y="${(py(x.y) + 3).toFixed(1)}">${esc(x.label)}</text></g>`)).join('');
+      document.querySelector('.js-map-rdv').innerHTML = (d.weekly || []).map((w) => `<li><b>${esc(w.label)}</b> · ${esc(w.dayName)} ${esc(w.from)}</li>`).join('') || '<li>Bientôt</li>';
+      document.querySelector('.js-map-legends').innerHTML = (d.legends || []).map((l) => `<li><b>${esc(l.name)}</b> · ${esc(l.date)}</li>`).join('') || '<li>Personne n\'a encore tenu la cavale… à toi ?</li>';
+      document.querySelector('.js-map-standing').innerHTML = d.districts.map((x) => `<li>${esc(x.label)} : ${esc(x.standingLabel || 'ordinaire')}</li>`).join('');
+      document.querySelector('.js-map-state').textContent = live ? `en direct · ${d.players} en ville` : 'aperçu (en direct à l\'ouverture)';
+    }
+    render(DEMO, false);
+    if (CONFIG.cityUrl) {
+      const load = () => fetch(CONFIG.cityUrl).then((r) => r.json()).then((d) => render(d, true)).catch(() => {});
+      load(); setInterval(load, 60000);
+    }
+  })();
+
   for (const k of ['tiktok', 'twitch', 'youtube']) document.querySelectorAll('.js-' + k).forEach(a => { if (CONFIG[k]) a.href = CONFIG[k]; else a.style.display = 'none'; });
   if (CONFIG.cfxCode) {
     document.querySelectorAll('.js-connect').forEach(a => a.href = 'https://cfx.re/join/' + CONFIG.cfxCode);

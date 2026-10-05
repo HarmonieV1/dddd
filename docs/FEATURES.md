@@ -369,3 +369,13 @@ Traductions françaises manquantes des scripts Qbox ajoutées par METTRE-A-JOUR 
 - **gs_social** : Direct Weazel (grosse poursuite : bandeau, hélicoptère local, journalistes payés, brève de fin).
 - **gs_admin / gs_discord** : modération à distance (commandes staff du bot, panneau web `/gs_admin/`).
 - **Outils** : CAPTURER-ERREURS.bat, PREPARER-OVH.bat, METTRE-A-JOUR-OVH.bat, commande `roadline` sur le VPS (docs/OVH.md).
+
+## V10.2 · Retours du backtest et deux villes en une
+- **Objets** : noms en français (objets et armes de base) et une image pour chaque objet (générées, ajoutées si manquantes).
+- **gs_places** : vendeurs PNJ dans chaque coiffeur / boutique / tatoueur (braquables), menu de barbier, tenue achetée = objet Tenue.
+- **gs_wanted** : alertes LSPD systématiques (tirs, arme blanche : rue + GPS) ; **gs_security** : anti carkill.
+- **gs_dossier** : `/dossier` — une fiche par citoyen, vue police / juge / presse.
+- **gs_rumors** : faire courir un bruit chez un barman ; assez de voix = il se réalise (tempête, fait divers, sac de billets caché).
+- **gs_nightcity** : la nuit, noctambules devant les clubs et marchés de nuit ; le jour, musiciens et pêcheurs (rien ne ferme).
+- **gs_city** : `/gs_city/ville.json` pour la carte en direct du site (quartiers, rendez-vous, légendes).
+

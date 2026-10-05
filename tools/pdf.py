@@ -125,7 +125,9 @@ COMMANDS = [
     ['/quefaire · /radiols', "tout ce qu'on peut faire maintenant (aussi dans le téléphone : Que faire) · couper / rallumer Radio Los Santos"],
     ['/mandat · /tribunal', "police / juge : signalements de planques et mandats · affaires, pièces au dossier, verdicts"],
     ['/encheres', 'enchères de la fourrière (samedi 21 h) : lots, mises, dépôt des saisies (police)'],
+    ['/dossier', 'police, juges, presse en service : la fiche d\'un citoyen (chacun sa vue)'],
     ['Staff', '/whitelist · /gsjob · /gsgang · /gsevent · /meteo · /builder · /economie · /faitdivers (les joueurs ne les voient pas)'],
+    ['Staff · rumeurs', '/rumeurvraie storm|stash|crime · /rumeurfausse … (quand une rumeur est prête)'],
     ['Staff sur Discord', '/joueurs · /geler · /degeler · /avertir · /expulser · /message · /annonce (rôle staff, réponses privées)'],
 ]
 
@@ -147,7 +149,18 @@ def guide(points):
     s += [Paragraph('2. Touches', H2), table(KEYS, [38 * mm, 78 * mm, 64 * mm])]
     s += [Paragraph('3. Commandes utiles', H2), table(COMMANDS, [60 * mm, 120 * mm])]
 
-    s += [PageBreak(), Paragraph('★ V3 · Nouveau : justice, presse et staff mobile', H2)]
+    s += [PageBreak(), Paragraph('★ V3 · Tout frais : deux villes en une', H2)]
+    s += bullets([
+        "<b>Ville de jour, ville de nuit</b> : la nuit (22 h → 5 h), noctambules devant les clubs, feu de camp à Vespucci et <b>marchés de nuit</b> "
+        "(food truck de Legion Square, jetée de Del Perro, Vinewood) ; le jour, musiciens et pêcheurs. Rien ne ferme : c'est du plus.",
+        "<b>Les rumeurs deviennent vraies</b> : chez un barman, « Faire courir un bruit » (50 $). Assez de monde le répète ? Ça arrive : "
+        "tempête, sale coup en ville (fait divers), ou un <b>sac de billets caché</b> quelque part (un seul gagnant).",
+        "<b>Le dossier du citoyen</b> (/dossier) : une seule fiche, trois regards. Police : casier, mandats, véhicules, gang ; juges : casier, "
+        "affaires ; presse : verdicts publics, métiers, notoriété, articles.",
+        "<b>Retours du backtest</b> : objets en français avec une image chacun, menu de barbier, vendeurs PNJ partout (braquables), "
+        "tenue achetée = objet, alertes police (rue + GPS), aucun dégât en fonçant sur un joueur à pied.",
+    ])
+    s += [PageBreak(), Paragraph('★ V3 · Justice, presse et staff mobile', H2)]
     s += bullets([
         "<b>Caméras de surveillance</b> : 20 caméras en ville. La police consulte les passages (plaque, type de véhicule, heure) aux "
         "terminaux du commissariat ; une bombe de peinture aveugle une caméra (les gangs adorent).",

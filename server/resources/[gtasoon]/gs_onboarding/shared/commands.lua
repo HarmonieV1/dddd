@@ -6,5 +6,5 @@ PlayerCommands = {
     quartiers = true, reputation = true, saison = true, retoucheperso = true, hud = true, factures = true,
     boutique = true, radio = true, e = true, emote = true, emotes = true, walk = true, walks = true, cancelemote = true,
     tribunal = true, taxi = true, depanneur = true, em = true, emotemenu = true,
-    permis = true, rencontres = true, mentor = true, rumeurs = true, carnet = true, histoire = true, droits = true, cinema = true, ralenti = true, cavale = true, livrer = true, legendes = true, racket = true, contrat = true, recap = true, rdv = true, quefaire = true, radiols = true, mandat = true, encheres = true, -- V8 / V9 / V10
+    permis = true, rencontres = true, mentor = true, rumeurs = true, carnet = true, histoire = true, droits = true, cinema = true, ralenti = true, cavale = true, livrer = true, legendes = true, racket = true, contrat = true, recap = true, rdv = true, quefaire = true, radiols = true, mandat = true, encheres = true, dossier = true, -- V8 / V9 / V10
 }

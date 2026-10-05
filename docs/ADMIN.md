@@ -101,3 +101,14 @@ Placer n'importe quel objet du jeu, le déplacer, le tourner, le dupliquer, le s
 - **Staff à distance** : bot Discord (docs/DISCORD.md) et panneau web `/gs_admin/` (codes `gs_admin_web` dans secrets.cfg, docs/OVH.md § 5). Mêmes actions, journalisées.
 - **CAPTURER-ERREURS.bat** : lance le serveur 2 min et ouvre `C:\GTASOON\logs\erreurs.txt` (erreurs + 80 dernières lignes) — à m'envoyer en cas de souci au démarrage.
 - **Serveur officiel** : docs/OVH.md (PREPARER-OVH.bat, METTRE-A-JOUR-OVH.bat, commande `roadline`).
+
+## V10.2 · Retours du backtest, rumeurs, nuit, dossier
+- **Objets** : METTRE-A-JOUR.bat traduit les noms (server/locales-fr/items.json, weapons.json) et ajoute les images manquantes (server/item-icons, généré par `python3 tools/item_icons.py`).
+- **Anti carkill** (`gs_security`) : dégâts d'un véhicule sur un joueur à pied annulés ; alerte « carkill probable » dans F11 → Anti-triche. Désactivable : `set gs_anticarkill false`.
+- **Alertes LSPD** (`gs_wanted`, `Config.Alerts`) : coups de feu (sauf silencieux) et arme blanche toujours signalés aux policiers en service (rue + GPS, sans description).
+- **Coiffeur** (`gs_places`, `Config.Barber`) : 150 $ ; `enabled = false` pour revenir au menu d'illenium.
+- **Rumeurs qui deviennent vraies** (`gs_rumors`, `Config.Seeds`) : 3 personnes différentes en 2 h → le staff reçoit l'alerte ; `/rumeurvraie storm|stash|crime` ou `/rumeurfausse …` (staff niveau 2+) ; sans réponse en 10 min, la ville tranche seule.
+- **Ville de nuit** (`gs_nightcity`) : groupes de PNJ et marchés de nuit déplaçables (F11 → Déplacer un point) ; marché ouvert 22 h → 5 h (heure du jeu).
+- **Dossier** (`gs_dossier`, `/dossier`) : lecture seule ; chaque consultation est journalisée (logs métiers).
+- **Carte en direct du site** : remplir `cityUrl` dans `docs/site/index.html` avec l'adresse https du serveur + `/gs_city/ville.json`.
+

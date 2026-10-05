@@ -74,6 +74,10 @@ SESSIONS = [
         ('Policier en service : coup de feu ou coup de couteau à 2 → alerte avec la rue + GPS posé', '2', 3),
         ('Foncer en voiture (puis en bateau / hélico) sur un joueur à pied : aucun dégât ; 2 fois → alerte staff « carkill »', '2', 3),
         ('F11 : « Joueur en face », joueurs triés par distance, recherche par nom / ID', 'Staff', 1),
+        ('Inventaire : chaque objet a une image (plus de case vide)', 'Seul', 2),
+        ('La nuit (22 h+) : noctambules devant le Vanilla / Bahama, marché de nuit à Legion Square (acheter) ; le jour : fermé', 'Seul', 2),
+        ('Rumeur : 3 joueurs « font courir un bruit » chez un barman → alerte staff → /rumeurvraie stash → sac à trouver (un seul gagnant)', '3+', 2),
+        ('/dossier en policier, en juge, en journaliste : même personne, rubriques différentes', '3+', 2),
     ]),
     ('6 · Staff et outils (20 min)', [
         ('F11 : mode staff, joueurs (aller à, amener, soigner, argent), vol libre / invisible SANS alerte anti-triche', 'Staff', 3),
