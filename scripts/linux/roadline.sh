@@ -30,6 +30,7 @@ maj() { # archive envoyée par METTRE-A-JOUR-OVH.bat
     case "$(basename "$f")" in secrets.cfg|permissions.cfg) ;; *) install -m 644 "$f" "$DATA/cfg/" ;; esac
   done
   [ -f "$st/server.cfg" ] && install -m 644 "$st/server.cfg" "$DATA/server.cfg" && profil "$(cat "$BASE/.profil" 2>/dev/null || echo prive)"
+  reparer_objets || true
   ls -1dt "$BASE"/anciens/gtasoon-* 2>/dev/null | tail -n +4 | xargs -r rm -rf # garde les 3 dernières versions
   chown -R fivem:fivem "$DATA"
   rm -rf "$st" "$zip"
@@ -104,6 +105,7 @@ terminer() { # fin d'installation : service, commande roadline, sauvegardes auto
   systemctl daemon-reload
   systemctl enable roadline >/dev/null 2>&1
   rm -f "$BASE/.maintenance"
+  if reparer_objets; then echo "Objets réparés : redémarrage du serveur."; systemctl restart roadline; fi
   systemctl is-active --quiet roadline || systemctl start roadline
 }
 
@@ -277,6 +279,30 @@ staffweb() { # codes du panneau staff : liste | ajouter PSEUDO | retirer PSEUDO 
   else echo "Code de $who retiré (serveur redémarré)."; fi
 }
 
+reparer_objets() { # V11 : libellés coupés à l'apostrophe par l'ancienne traduction (« d\'eau'eau' ») → ox_inventory cassé.
+  # Garde seulement le texte entre guillemets de chaque « label = '…' » et retire les restes collés derrière. Sans effet si tout est bon.
+  local f changed=0
+  for f in "$DATA"/resources/*/ox_inventory/data/items.lua "$DATA"/resources/*/*/ox_inventory/data/items.lua \
+           "$DATA"/resources/*/ox_inventory/data/weapons.lua "$DATA"/resources/*/*/ox_inventory/data/weapons.lua; do
+    [ -f "$f" ] || continue
+    if python3 - "$f" <<'PYEOF'
+import re, sys
+p = sys.argv[1]
+t = open(p, encoding='utf-8').read()
+n = re.sub(r"(\blabel\s*=\s*)('(?:\\.|[^'\\\r\n])*'|\"(?:\\.|[^\"\\\r\n])*\")([^,\r\n}]*)",
+           lambda m: m.group(1) + m.group(2) + ('' if m.group(3).strip() else m.group(3)), t)
+if n != t:
+    open(p + '.avant-reparation', 'w', encoding='utf-8').write(t)
+    open(p, 'w', encoding='utf-8').write(n)
+    sys.exit(0)
+sys.exit(1)
+PYEOF
+    then echo "  réparé : ${f#$DATA/}"; changed=1; fi
+  done
+  [ "$changed" = 1 ] && chown -R fivem:fivem "$DATA"/resources 2>/dev/null
+  return $(( 1 - changed ))
+}
+
 case "${1:-aide}" in
   etat) [ -f "$BASE/.https" ] && echo "Panneau staff : https://$(cat "$BASE/.https")/gs_admin/"
     echo "Version RoadLine : $(grep -oE 'gs_version "[^"]+"' "$DATA/server.cfg" 2>/dev/null | cut -d'"' -f2) · profil $(cat "$BASE/.profil" 2>/dev/null || echo ?)"
@@ -285,6 +311,7 @@ case "${1:-aide}" in
   erreurs) need_root "$@"; erreurs ;;
   discord) need_root "$@"; discord ;;
   https) need_root "$@"; https_on ;;
+  reparer-objets) need_root "$@"; reparer_objets && systemctl restart roadline && echo "Serveur redémarré." || echo "Rien à réparer." ;;
   txadmin-compte) need_root "$@" # mauvais compte Cfx.re lié à txAdmin : on met de côté la liste des admins (rien n'est effacé),
     # txAdmin redemande un code PIN et le compte principal ; la configuration du serveur (dossier, OneSync) est gardée
     [ "$(cat "$BASE/.mode" 2>/dev/null)" = "txadmin" ] || { echo "Le serveur n'est pas en mode txAdmin (GERER-OVH → 15 d'abord)."; exit 1; }

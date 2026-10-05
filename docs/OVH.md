@@ -179,4 +179,5 @@ Sinon, les fichiers à modifier sur le VPS sont `secrets.cfg` (codes, webhooks, 
 | Base vide après l'installation | La base du PC n'a pas pu être lue (MariaDB arrêté). Relance PREPARER-OVH avec MariaDB démarré, puis tape `ECRASER` |
 | « Quitting: Ctrl-C pressed » dans la console | Relance `GERER-OVH.bat` : il corrige le service tout seul |
 | METTRE-A-JOUR-OVH annonce une ancienne version | Il propose de mettre le PC à jour d'abord : réponds O |
+| `items.lua … '}' expected near 'eau'` (inventaire, coffres, qbx_core en erreur) | Relance `GERER-OVH.bat` : il répare les fichiers d'objets tout seul et redémarre (ou `sudo roadline reparer-objets`) |
 | Une mise à jour casse quelque chose | `GERER-OVH.bat` → **Revenir à la version précédente**, puis **Console** pour voir l'erreur |
