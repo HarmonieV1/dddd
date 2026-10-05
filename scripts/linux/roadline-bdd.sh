@@ -26,8 +26,14 @@ backup() {
   echo "OK : $out"
 }
 
+# Noms de clés étrangères rendus uniques (« 1 », « 2 »… : acceptés par MariaDB du PC, refusés par celui du VPS)
+fix_fk() { awk '
+  /^CREATE TABLE `/ { t=$0; sub(/^CREATE TABLE `/, "", t); sub(/`.*/, "", t) }
+  /^[ \t]*CONSTRAINT `[^`]*` FOREIGN KEY/ { n=$0; sub(/^[ \t]*CONSTRAINT `/, "", n); sub(/`.*/, "", n)
+    sub(/CONSTRAINT `[^`]*`/, "CONSTRAINT `" substr("fk_" t "_" n, 1, 64) "`") }
+  { print }'; }
 import_into() { # base fichier
-  { echo "SET FOREIGN_KEY_CHECKS=0;"; gunzip -c "$2"; echo "SET FOREIGN_KEY_CHECKS=1;"; } | sql "$1"
+  { echo "SET FOREIGN_KEY_CHECKS=0;"; gunzip -c "$2" | fix_fk; echo "SET FOREIGN_KEY_CHECKS=1;"; } | sql "$1"
 }
 
 confirm() { read -r -p "$1 Tape OUI : " a; [ "$a" = "OUI" ] || { echo "Annulé."; exit 1; }; }

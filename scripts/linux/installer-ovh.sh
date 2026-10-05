@@ -57,6 +57,12 @@ rsync -a "$STAGE/server-data/" "$DATA/"
 for f in roadline-bdd.sh roadline.sh; do [ -f "$STAGE/$f" ] && install -m 755 "$STAGE/$f" "$TOOLS/$f"; done
 ok "$(du -sh "$DATA" | cut -f1) en place"
 
+# Noms de clés étrangères rendus uniques (« 1 », « 2 »… : acceptés par MariaDB du PC, refusés par celui du VPS)
+fix_fk() { awk '
+  /^CREATE TABLE `/ { t=$0; sub(/^CREATE TABLE `/, "", t); sub(/`.*/, "", t) }
+  /^[ \t]*CONSTRAINT `[^`]*` FOREIGN KEY/ { n=$0; sub(/^[ \t]*CONSTRAINT `/, "", n); sub(/`.*/, "", n)
+    sub(/CONSTRAINT `[^`]*`/, "CONSTRAINT `" substr("fk_" t "_" n, 1, 64) "`") }
+  { print }'; }
 say "[5/8] Base de données"
 ENV="$TOOLS/.env"
 if [ ! -f "$ENV" ]; then
@@ -76,6 +82,7 @@ CHARS=$(mysql -N -B -e "SELECT COUNT(*) FROM information_schema.tables WHERE tab
 [ "$CHARS" = "1" ] && CHARS=$(mysql -N -B -e "SELECT COUNT(*) FROM gtasoon.players;") || CHARS=0
 if [ -f "$STAGE/base.sql" ]; then
   DO=1
+  [ -f "$BASE/.base-ok" ] || CHARS=0 # aucun import réussi jusqu'ici : la base du VPS n'est qu'un essai inachevé
   if [ "$CHARS" -gt 0 ]; then
     warn "La base du VPS contient déjà $CHARS personnage(s)."
     read -r -p "  Tape ECRASER pour la remplacer par celle du PC (sauvegardée avant), ou Entrée pour GARDER celle du VPS : " a
@@ -83,7 +90,10 @@ if [ -f "$STAGE/base.sql" ]; then
     [ "$DO" = 1 ] && "$TOOLS/roadline-bdd.sh" sauvegarde avant-import >/dev/null && ok "sauvegarde faite avant import"
   fi
   if [ "$DO" = 1 ]; then
-    { echo "SET FOREIGN_KEY_CHECKS=0;"; cat "$STAGE/base.sql"; echo "SET FOREIGN_KEY_CHECKS=1;"; } | mysql --default-character-set=utf8mb4 gtasoon
+    # base repartie de zéro (celle du VPS est vide ou déjà sauvegardée) : un import raté peut être relancé proprement
+    mysql -e "DROP DATABASE IF EXISTS gtasoon; CREATE DATABASE gtasoon CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+    { echo "SET FOREIGN_KEY_CHECKS=0;"; fix_fk < "$STAGE/base.sql"; echo "SET FOREIGN_KEY_CHECKS=1;"; } | mysql --default-character-set=utf8mb4 gtasoon
+    touch "$BASE/.base-ok"
     ok "base du PC importée ($(mysql -N -B -e 'SELECT COUNT(*) FROM gtasoon.players;' 2>/dev/null || echo 0) personnage(s))"
   else
     ok "base du VPS gardée"
