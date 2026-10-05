@@ -29,15 +29,47 @@ function Test-Ssh {
     }
 }
 
-function Send-Vps($vps, [string[]]$files, $dest) {
+#--- Clé de connexion : le mot de passe du VPS n'est demandé qu'UNE fois, ensuite plus jamais (envoi, installation,
+#    mises à jour). La clé privée reste sur ce PC (dossier .ssh de Windows), seule la clé publique va sur le VPS.
+$script:KeyReady = $false
+function Initialize-SshKey($vps) {
+    if ($script:KeyReady) { return }
     Test-Ssh
-    & scp -o StrictHostKeyChecking=accept-new @files "$($vps.user)@$($vps.ip):$dest"
+    $dir = Join-Path $env:USERPROFILE '.ssh'
+    $key = Join-Path $dir 'roadline_ovh'
+    [void][IO.Directory]::CreateDirectory($dir)
+    if (-not (Test-Path -LiteralPath $key)) { & ssh-keygen -q -t ed25519 -N '""' -C 'roadline-pc' -f $key | Out-Null }
+    $target = "$($vps.user)@$($vps.ip)"
+    # Déjà autorisée ? (aucun mot de passe demandé). cmd /c : pas d'erreur PowerShell sur la sortie d'erreur de ssh
+    cmd /c "ssh -i `"$key`" -o BatchMode=yes -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10 $target exit >nul 2>&1"
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host ''
+        Write-Host '  >>> Tape le MOT DE PASSE du VPS puis Entrée.' -ForegroundColor Yellow
+        Write-Host '      Rien ne s''affiche quand tu tapes (ni étoiles ni chiffres) : c''est normal sous Linux.' -ForegroundColor Yellow
+        Write-Host '      Pour coller : clic droit dans la fenêtre. Il ne sera plus jamais demandé ensuite.' -ForegroundColor Yellow
+        $pub = (Get-Content -LiteralPath "$key.pub" -Raw).Trim()
+        $pub | & ssh -o StrictHostKeyChecking=accept-new $target 'umask 077; mkdir -p ~/.ssh; cat >> ~/.ssh/authorized_keys'
+        if ($LASTEXITCODE -ne 0) {
+            throw ('Connexion refusée. Vérifie l''IP, l''utilisateur (ubuntu) et le mot de passe (mail OVH). Si OVH demande de CHANGER le ' +
+                'mot de passe à la première connexion : ouvre « Invite de commandes », tape  ssh ' + $target + '  et suis les questions, puis relance cet outil.')
+        }
+    }
+    $script:SshKey = $key
+    $script:KeyReady = $true
+}
+function SshArgs { if ($script:SshKey) { @('-i', $script:SshKey) } else { @() } }
+
+function Send-Vps($vps, [string[]]$files, $dest) {
+    Initialize-SshKey $vps
+    $a = SshArgs
+    & scp @a -o StrictHostKeyChecking=accept-new @files "$($vps.user)@$($vps.ip):$dest"
     if ($LASTEXITCODE -ne 0) { throw 'Envoi refusé (adresse, utilisateur ou mot de passe du VPS ?).' }
 }
 
 function Invoke-Vps($vps, $command) {
-    Test-Ssh
-    & ssh -t -o StrictHostKeyChecking=accept-new "$($vps.user)@$($vps.ip)" $command
+    Initialize-SshKey $vps
+    $a = SshArgs
+    & ssh @a -t -o StrictHostKeyChecking=accept-new "$($vps.user)@$($vps.ip)" $command
 }
 
 #--- Archive avec des chemins « / » (lisible sous Linux, crochets de [gtasoon] compris)

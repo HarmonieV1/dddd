@@ -47,9 +47,18 @@ retour() { # remet la version précédente de [gtasoon]
   echo "Version précédente remise ($last)."
 }
 
+pin() { # code PIN de txAdmin (première configuration)
+  local p
+  p=$(journalctl -u roadline --no-pager -n 400 2>/dev/null | grep -A4 -i 'pin' | grep -oE '\b[0-9]{4}\b' | tail -1)
+  if [ "${1:-}" = "--brut" ]; then [ -n "$p" ] && echo "$p"; return 0; fi
+  if [ -n "$p" ]; then echo "Code PIN txAdmin : $p   (à taper sur http://IP-DU-VPS:40120)"
+  else echo "Pas de PIN dans les journaux : txAdmin est peut-être déjà configuré (connecte-toi avec ton compte), ou attends 30 s et réessaie."; fi
+}
+
 case "${1:-aide}" in
   etat) systemctl --no-pager status roadline | head -5; echo; df -h / | tail -1; free -h | sed -n 2p ;;
   logs) journalctl -u roadline -n "${2:-80}" --no-pager ;;
+  pin) pin "${2:-}" ;;
   suivre) journalctl -u roadline -f ;;
   redemarrer) need_root "$@"; systemctl restart roadline; echo "Redémarré." ;;
   arreter) need_root "$@"; systemctl stop roadline; echo "Arrêté." ;;
@@ -69,6 +78,7 @@ case "${1:-aide}" in
     curl -fsSL "$URL" | tar -xJ -C "$FX"; chown -R fivem:fivem "$FX"; systemctl start roadline; echo "Programme FiveM mis à jour." ;;
   *) cat <<'EOF'
 roadline etat              état du serveur, disque, mémoire
+roadline pin               code PIN de txAdmin (première configuration)
 roadline logs [N]          N dernières lignes de la console (défaut 80) · roadline suivre : en direct
 roadline redemarrer        redémarrer (aussi : arreter, demarrer)
 roadline public | prive    ouvrir au public / repasser en privé pour tester

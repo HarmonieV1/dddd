@@ -42,7 +42,12 @@ Il fait ensuite tout seul :
    - programme une sauvegarde de la base toutes les 6 h ;
    - laisse le serveur en **profil privé** (caché de la liste, 8 places) pour que tu puisses tester d'abord.
 
-**À la fin, 3 étapes à faire à la main dans txAdmin** :
+> **Le mot de passe ne s'affiche pas quand tu le tapes** (ni étoiles, ni chiffres) : c'est normal sous Linux. Tape-le
+> (ou colle-le avec un clic droit dans la fenêtre), puis Entrée. Il n'est demandé qu'une fois : l'outil installe ensuite
+> une clé de connexion, et les mises à jour ne le redemandent plus.
+
+**À la fin, 3 étapes à faire à la main dans txAdmin** (le PIN est un code à 4 chiffres qui prouve que c'est bien toi
+qui installes ; il s'affiche à la fin de PREPARER-OVH, ou en SSH avec `roadline pin`) :
 1. Ouvre `http://IP-DU-VPS:40120` et entre le **code PIN** affiché. Crée ton compte admin, lié à ton compte Cfx.re.
 2. Choisis **« Existing server data »**, avec le dossier `/home/fivem/server-data` et le fichier `server.cfg`.
 3. Va dans **Settings → FXServer → OneSync : On**, puis **Save** et **Start**.

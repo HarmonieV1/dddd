@@ -134,13 +134,15 @@ ok "service lancé (redémarre tout seul), sauvegardes toutes les 6 h"
 
 IP=$(curl -fsS4 https://api.ipify.org 2>/dev/null || hostname -I | awk '{print $1}')
 sleep 12
-PIN=$(journalctl -u roadline --since "-2min" --no-pager 2>/dev/null | grep -oE 'PIN[^0-9]*[0-9]{4}' | tail -1 | grep -oE '[0-9]{4}$' || true)
+sleep 8
+PIN=$("$TOOLS/roadline.sh" pin --brut 2>/dev/null || true)
 cat <<EOF
 
 ==================================================================================
  RoadLine RP est installé.
- 1. Ouvre txAdmin : http://$IP:40120   ${PIN:+(code PIN : $PIN)}
-    - crée ton compte (lié à ton compte Cfx.re) ;
+ 1. Sur ton PC, ouvre Chrome à l'adresse : http://$IP:40120
+    - txAdmin demande un CODE PIN à 4 chiffres : ${PIN:-tape « roadline pin » ici pour l'afficher}
+    - « Link Account » : connecte ton compte Cfx.re (celui de keymaster), puis choisis un mot de passe txAdmin ;
     - « Existing server data » → dossier : $DATA  → fichier : server.cfg ;
     - Settings → FXServer → OneSync : On  (obligatoire pour Qbox) → Save → Start.
  2. En jeu : F8 → connect $IP:30120
