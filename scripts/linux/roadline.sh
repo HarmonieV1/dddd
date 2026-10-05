@@ -87,7 +87,8 @@ UNIT
 
 terminer() { # fin d'installation : service, commande roadline, sauvegardes auto, démarrage (relançable sans risque)
   [ -f /etc/systemd/system/roadline.service ] || unite "$(cat "$BASE/.mode" 2>/dev/null || echo simple)"
-  ln -sf "$TOOLS/roadline.sh" /usr/local/bin/roadline
+  # copie (et non lien) : /home/fivem est fermé aux autres comptes ; remplacement atomique (ce script peut être en cours)
+  install -m 755 "$TOOLS/roadline.sh" /usr/local/bin/roadline.new && mv -f /usr/local/bin/roadline.new /usr/local/bin/roadline
   chown -R fivem:fivem "$BASE"
   [ -f "$TOOLS/.env" ] && chmod 600 "$TOOLS/.env"
   { crontab -l 2>/dev/null || true; } | grep -q roadline-bdd || "$TOOLS/roadline-bdd.sh" programmer >/dev/null
