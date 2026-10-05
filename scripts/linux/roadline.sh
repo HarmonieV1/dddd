@@ -285,6 +285,17 @@ case "${1:-aide}" in
   erreurs) need_root "$@"; erreurs ;;
   discord) need_root "$@"; discord ;;
   https) need_root "$@"; https_on ;;
+  txadmin-compte) need_root "$@" # mauvais compte Cfx.re lié à txAdmin : on met de côté la liste des admins (rien n'est effacé),
+    # txAdmin redemande un code PIN et le compte principal ; la configuration du serveur (dossier, OneSync) est gardée
+    [ "$(cat "$BASE/.mode" 2>/dev/null)" = "txadmin" ] || { echo "Le serveur n'est pas en mode txAdmin (GERER-OVH → 15 d'abord)."; exit 1; }
+    f=$(ls "$BASE"/txData/admins.json 2>/dev/null | head -1)
+    [ -n "$f" ] || { echo "Aucun compte txAdmin enregistré : ouvre txAdmin, le code PIN est demandé."; pin; exit 0; }
+    mv "$f" "$BASE/anciens/txadmin-admins-$(date +%Y%m%d_%H%M%S).json"
+    systemctl restart roadline; sleep 20
+    ip=$(publicip)
+    echo "Comptes txAdmin remis à zéro (ancienne liste gardée dans $BASE/anciens)."
+    echo "Ouvre http://$ip:40120 , entre le nouveau code PIN, et connecte-toi avec le BON compte Cfx.re."
+    pin ;;
   staffweb) need_root "$@"; staffweb "${2:-liste}" "${3:-}" ;;
   secrets) need_root "$@"; secrets "${2:-/tmp/secrets-pc.cfg}" ;;
   copie-sauvegarde) need_root "$@" # dernière sauvegarde → /tmp, lisible par le compte SSH (pour la garder aussi sur le PC)
@@ -334,6 +345,7 @@ roadline etat              état du serveur, disque, mémoire
 roadline diagnostic        pourquoi le serveur ne répond pas (causes en clair + dernières lignes)
 roadline erreurs           erreurs de scripts depuis le démarrage, par ressource (backtest)
 roadline discord           bot connecté ? message de test dans chaque salon Discord relié
+roadline txadmin-compte    mauvais compte Cfx.re lié à txAdmin : nouveau PIN, garder la config
 roadline https             adresse https gratuite (panneau staff en appli, carte en direct du site)
 roadline staffweb liste|ajouter PSEUDO|retirer PSEUDO   codes du panneau staff
 roadline redemarrage-auto HH:MM|off  redémarrage quotidien annoncé en jeu (défaut 06:00, heure de Paris)

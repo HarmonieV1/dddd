@@ -42,8 +42,9 @@ $menu = [ordered]@{
     '19' = @('Heure du redémarrage quotidien (annoncé en jeu 15, 5 et 1 min avant)', '')
     '20' = @('Codes du panneau staff (téléphone) : voir / ajouter / retirer un membre', '')
     '21' = @('Adresse https : panneau staff en appli + carte en direct du site (une fois)', 'sudo roadline https')
+    '22' = @('txAdmin : mauvais compte Cfx.re ? Nouveau code PIN (config du serveur gardée)', 'sudo roadline txadmin-compte')
 }
-$confirm = @{ '5' = 'Arrêter le serveur (les joueurs sont déconnectés) ?'; '13' = 'Remettre la version précédente ?'; '12' = 'Remplacer les réglages du VPS par ceux du PC (la base du VPS est gardée) ?' }
+$confirm = @{ '22' = 'Remettre à zéro les comptes txAdmin (nouveau PIN, serveur redémarré) ?'; '5' = 'Arrêter le serveur (les joueurs sont déconnectés) ?'; '13' = 'Remettre la version précédente ?'; '12' = 'Remplacer les réglages du VPS par ceux du PC (la base du VPS est gardée) ?' }
 while ($true) {
     Say "`n=========== ROADLINE · VPS $($vps.ip) ===========" 'Cyan'
     foreach ($k in $menu.Keys) { Say ('  {0,2}. {1}' -f $k, $menu[$k][0]) 'White' }

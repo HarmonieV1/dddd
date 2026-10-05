@@ -113,6 +113,7 @@ et termine tout seul une installation interrompue.
 | 19 | Heure du redémarrage quotidien | 06:00 par défaut (heure de Paris), annoncé en jeu ; `off` pour désactiver |
 | 20 | Codes du panneau staff | Voir / ajouter / retirer l'accès d'un membre au panneau sur téléphone |
 | 21 | Adresse https | Une fois : panneau staff installable comme une appli + carte en direct sur le site |
+| 22 | txAdmin : mauvais compte | Mauvais compte Cfx.re lié ? Nouveau code PIN, la configuration du serveur est gardée |
 
 **Tout seul sur le VPS (V11)** :
 - **veille** toutes les 2 min : serveur injoignable 4 min → alerte dans le salon staff Discord et relance ; message quand il revient.
