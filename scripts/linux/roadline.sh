@@ -97,8 +97,32 @@ terminer() { # fin d'installation : service, commande roadline, sauvegardes auto
   systemctl is-active --quiet roadline || systemctl start roadline
 }
 
+diagnostic() { # pourquoi le serveur ne répond pas, en clair
+  local log; log=$(journalctl -u roadline -n 400 --no-pager 2>/dev/null || true)
+  echo "== Service =="
+  if systemctl is-active --quiet roadline; then echo "  en marche (mode $(cat "$BASE/.mode" 2>/dev/null || echo ?), redémarrages : $(systemctl show -p NRestarts --value roadline))"
+  else echo "  ARRÊTÉ ($(systemctl show -p Result --value roadline))"; fi
+  echo "== Port du jeu 30120 =="
+  if ss -lntu 2>/dev/null | grep -q ':30120 '; then echo "  ouvert : le serveur écoute"; else echo "  FERMÉ : le serveur n'écoute pas (arrêté, en plantage, ou encore en démarrage)"; fi
+  echo "== Causes repérées dans la console =="
+  local n=0
+  hint() { if grep -qiE "$1" <<<"$log"; then echo "  - $2"; n=$((n+1)); fi; }
+  hint 'license key|licenseKey|authentication failed|keymaster' "Clé de licence FiveM refusée : mets une clé valide (keymaster.fivem.net) dans cfg/secrets.cfg (sv_licenseKey), puis Redémarrer."
+  hint 'Address already in use|bind.*30120' "Le port 30120 est déjà pris par un autre programme : Redémarrer (ou redémarrer le VPS)."
+  hint 'Permission denied' "Problème de droits sur les fichiers : lance « sudo roadline terminer »."
+  hint 'No such file or directory.*(run\.sh|FXServer|ld-musl)' "Programme FiveM absent ou abîmé : lance « sudo roadline programme »."
+  hint "Couldn't find resource|Could not find resource|Failed to start resource" "Des ressources ne démarrent pas (Linux respecte les majuscules dans les noms de dossiers) : voir Console."
+  hint 'ER_ACCESS_DENIED|ECONNREFUSED.*3306|Unknown database|oxmysql.*(error|failed)' "La connexion à la base échoue : relance PREPARER-OVH (la base sera reconfigurée)."
+  hint 'onesync|OneSync is not enabled' "OneSync manquant : choisis Mode SIMPLE dans GERER-OVH."
+  hint 'Segmentation fault|core dumped|crashed|SIGSEGV' "Le programme FiveM a planté : « sudo roadline programme » (mise à jour), puis Redémarrer."
+  [ "$n" -eq 0 ] && echo "  aucune cause connue repérée : voir les dernières lignes ci-dessous"
+  echo "== Dernières lignes =="
+  journalctl -u roadline -n 25 --no-pager -o cat 2>/dev/null | tail -25
+}
+
 case "${1:-aide}" in
   etat) systemctl --no-pager status roadline | head -5; echo; df -h / | tail -1; free -h | sed -n 2p ;;
+  diagnostic) need_root "$@"; diagnostic ;;
   logs) journalctl -u roadline -n "${2:-80}" --no-pager ;;
   pin) pin "${2:-}" ;;
   unite) need_root "$@"; unite "${2:-simple}" ;;
@@ -124,6 +148,7 @@ case "${1:-aide}" in
     curl -fsSL "$URL" | tar -xJ -C "$FX"; chown -R fivem:fivem "$FX"; systemctl start roadline; echo "Programme FiveM mis à jour." ;;
   *) cat <<'EOF'
 roadline etat              état du serveur, disque, mémoire
+roadline diagnostic        pourquoi le serveur ne répond pas (causes en clair + dernières lignes)
 roadline mode simple|txadmin  démarrage direct (par défaut, rien à configurer) ou avec le panneau web txAdmin
 roadline pin               code PIN de txAdmin (première configuration)
 roadline logs [N]          N dernières lignes de la console (défaut 80) · roadline suivre : en direct

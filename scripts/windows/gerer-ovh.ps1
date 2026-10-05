@@ -21,7 +21,7 @@ try {
 } catch { Say "ERREUR : $($_.Exception.Message)" 'Red'; Read-Host 'Entrée pour quitter'; exit 1 }
 
 $menu = [ordered]@{
-    '1'  = @('État du serveur', 'sudo roadline etat')
+    '1'  = @('État + diagnostic (pourquoi le serveur ne répond pas)', 'sudo roadline etat; echo; sudo roadline diagnostic')
     '2'  = @('Console (dernières lignes)', 'sudo roadline logs 60')
     '3'  = @('Redémarrer', 'sudo roadline redemarrer')
     '4'  = @('Ouvrir au PUBLIC (liste FiveM, 48 places)', 'sudo roadline public')
