@@ -130,7 +130,8 @@ diagnostic() { # pourquoi le serveur ne répond pas, en clair
 }
 
 case "${1:-aide}" in
-  etat) systemctl --no-pager status roadline | head -5; echo; df -h / | tail -1; free -h | sed -n 2p ;;
+  etat) echo "Version RoadLine : $(grep -oE 'gs_version "[^"]+"' "$DATA/server.cfg" 2>/dev/null | cut -d'"' -f2) · profil $(cat "$BASE/.profil" 2>/dev/null || echo ?)"
+    systemctl --no-pager status roadline | head -5; echo; df -h / | tail -1; free -h | sed -n 2p ;;
   diagnostic) need_root "$@"; diagnostic ;;
   logs) journalctl -u roadline -n "${2:-80}" --no-pager ;;
   pin) pin "${2:-}" ;;
