@@ -99,6 +99,33 @@ const COMMANDS = [
   { name: 'rdv', description: 'Les rendez-vous de la semaine' },
 ];
 
+// V10.1 · Modération depuis Discord (téléphone compris) : réservé au rôle staff (`gs_discord_staff_role`) ou aux
+// administrateurs du Discord. Réponses visibles par l'auteur seulement. Actions faites par gs_admin (journalisées).
+const ID = { name: 'id', description: 'Identifiant du joueur en ville (voir /joueurs)', type: 4, required: true, min_value: 1 };
+const TEXT = (d) => ({ name: 'texte', description: d, type: 3, required: true, max_length: 200 });
+const STAFF = {
+  joueurs: { action: 'players', description: 'Staff : joueurs en ville (identifiant, nom, ping)', options: [] },
+  geler: { action: 'freeze', description: 'Staff : geler un joueur (il ne peut plus bouger)', options: [ID] },
+  degeler: { action: 'unfreeze', description: 'Staff : dégeler un joueur', options: [ID] },
+  avertir: { action: 'warn', description: 'Staff : avertir un joueur (note au dossier)', options: [ID, TEXT('Motif')] },
+  expulser: { action: 'kick', description: 'Staff : expulser un joueur du serveur', options: [ID, TEXT('Motif')] },
+  message: { action: 'message', description: 'Staff : message privé à un joueur en jeu', options: [ID, TEXT('Message')] },
+  annonce: { action: 'announce', description: 'Staff : annonce à toute la ville en jeu', options: [TEXT('Annonce')] },
+};
+for (const [name, c] of Object.entries(STAFF)) COMMANDS.push({ name, description: c.description, options: c.options, dm_permission: false });
+
+/** Staff = rôle staff configuré, ou administrateur du Discord */
+function staffAllowed(member, roleId) {
+  if (!member) return false;
+  try { if ((BigInt(member.permissions || '0') & 8n) === 8n) return true; } catch (e) { /* permissions illisibles */ }
+  return !!roleId && Array.isArray(member.roles) && member.roles.includes(roleId);
+}
+function optionsOf(d) {
+  const o = {};
+  for (const x of (d && d.data && d.data.options) || []) o[x.name] = x.value;
+  return o;
+}
+
 /** env = { token, connect(url, handlers), rest(method, path, body), presence(), answer(name) → data, log } */
 function createBot(env) {
   let ws = null, beat = null, seq = null, appId = null, lastPresence = '', stopped = false, retry = null;
@@ -130,7 +157,7 @@ function createBot(env) {
         await env.rest('PUT', `/applications/${appId}/commands`, COMMANDS);
         bot.presence(true);
       } else if (p.op === 0 && p.t === 'INTERACTION_CREATE' && p.d.type === 2) {
-        const data = env.answer(p.d.data.name);
+        const data = await env.answer(p.d.data.name, p.d);
         await env.rest('POST', `/interactions/${p.d.id}/${p.d.token}/callback`, { type: 4, data: Object.assign({ allowed_mentions: { parse: [] } }, data) });
       }
     },
@@ -152,7 +179,7 @@ function createBot(env) {
   return bot;
 }
 
-if (typeof module !== 'undefined' && module.exports) module.exports = { encodeFrame, decodeFrames, createBot, wsConnect, COMMANDS }; // tests Node seulement (absent dans FiveM)
+if (typeof module !== 'undefined' && module.exports) module.exports = { encodeFrame, decodeFrames, createBot, wsConnect, COMMANDS, STAFF, staffAllowed, optionsOf }; // tests Node seulement (absent dans FiveM)
 
 // --- Branchement FiveM -----------------------------------------------------------------------------------------
 if (typeof GetConvar === 'function') {
@@ -166,7 +193,19 @@ if (typeof GetConvar === 'function') {
       rest: (m, p, b) => rest(token, m, p, b),
       log: (m) => console.log(`[gs_discord] ${m}`),
       presence: () => `${GetNumPlayerIndices()}/${GetConvarInt('sv_maxclients', 48)} citoyens à Los Santos`,
-      answer: (name) => {
+      answer: (name, interaction) => {
+        const staff = STAFF[name];
+        if (staff) {
+          const member = interaction && interaction.member;
+          if (!staffAllowed(member, GetConvar('gs_discord_staff_role', ''))) return { content: 'Réservé au staff.', flags: 64 };
+          if (GetResourceState('gs_admin') !== 'started') return { content: 'Outils staff indisponibles (gs_admin arrêté).', flags: 64 };
+          const o = optionsOf(interaction);
+          const who = (member.user && (member.user.global_name || member.user.username)) || '?';
+          let r = null;
+          try { r = exports.gs_admin.RemoteAction(staff.action, o.id || 0, o.texte || '', who); } catch (e) { r = null; }
+          const text = r && r.text ? String(r.text) : 'Pas de réponse du serveur.';
+          return { content: ((r && r.ok) ? '✅ ' : '❌ ') + text.slice(0, 1900), flags: 64 };
+        }
         const connect = GetConvar('gs_connect', '');
         if (name === 'statut') return { embeds: [lua().StatusEmbed()] };
         if (name === 'rejoindre') return { embeds: [{ title: 'Rejoindre RoadLine RP', color: 0xb048ff,

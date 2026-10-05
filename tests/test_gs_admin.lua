@@ -312,5 +312,40 @@ check('course de rue : annonce à tous + inscription gratuite', ok and lastClien
 ok = cb('gs_admin:action', 2, 'event', nil, { kind = 'moon' }); step()
 check('événement : modo refusé', not ok)
 
+-- V10.1 : modération à distance (bot Discord / panneau web)
+local remote = getExport('gs_admin', 'RemoteAction')
+local r = remote('players', nil, nil, 'Modo')
+check('à distance : liste des joueurs', r.ok and r.text:find('42 ms', 1, true))
+r = remote('freeze', 4, '', 'Modo')
+check('à distance : geler', r.ok and W.players[4].frozen == true)
+r = remote('unfreeze', 4, '', 'Modo')
+check('à distance : dégeler', r.ok and W.players[4].frozen == false)
+W.players[4].kicked = nil
+r = remote('kick', 4, '', 'Modo')
+check('à distance : motif obligatoire', not r.ok and not W.players[4].kicked)
+r = remote('kick', 999, 'triche', 'Modo')
+check('à distance : joueur inconnu', not r.ok)
+r = remote('reboot', 4, 'x', 'Modo')
+check('à distance : action inconnue refusée', not r.ok)
+r = remote('kick', 4, 'triche', 'Modo')
+check('à distance : expulser', r.ok and W.players[4].kicked and W.players[4].kicked:find('triche', 1, true))
+
+-- V10.1 : panneau staff web (codes dans gs_admin_web, blocage après 5 essais ratés)
+local handler
+SetHttpHandler = function(fn) handler = fn end
+GetConvar = function(k, d) if k == 'gs_admin_web' then return 'Alpha:code-tres-long-123,Court:abc' end return d end
+local realDecode = json.decode
+json.decode = function(s) return load('return ' .. s)() end -- corps de test écrits en table Lua
+dofile(R .. 'gs_admin/server/web.lua')
+local Web = AdminWeb
+check('web : bon code accepté', Web.handle('1.2.3.4', '{ token = "code-tres-long-123", action = "login" }').ok)
+check('web : code trop court ignoré', not Web.handle('1.2.3.4', '{ token = "abc", action = "login" }').ok)
+check('web : action inconnue', not Web.handle('1.2.3.4', '{ token = "code-tres-long-123", action = "money" }').ok)
+check('web : liste des joueurs', Web.handle('1.2.3.4', '{ token = "code-tres-long-123", action = "players" }').ok)
+for _ = 1, 5 do Web.handle('6.6.6.6', '{ token = "mauvais", action = "login" }') end
+check('web : 5 essais ratés = bloqué même avec le bon code', not Web.handle('6.6.6.6', '{ token = "code-tres-long-123", action = "login" }').ok)
+check('web : page servie', handler ~= nil)
+json.decode = realDecode
+
 io.write(('\n%d réussis, %d échoués\n'):format(passed, failed))
 os.exit(failed == 0 and 0 or 1)

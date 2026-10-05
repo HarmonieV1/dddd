@@ -68,6 +68,14 @@ srv.listen(0, async () => {
   await bot.onMessage(JSON.stringify({ op: 0, t: 'INTERACTION_CREATE', s: 2, d: { type: 2, id: '7', token: 'abc', data: { name: 'statut' } } }));
   const r = calls[1];
   check('réponse à /statut', r.m === 'POST' && r.p === '/interactions/7/abc/callback' && r.b.type === 4 && r.b.data.content === 'réponse statut' && r.b.data.allowed_mentions);
+  // V10.1 : commandes staff
+  const { STAFF, staffAllowed, optionsOf, COMMANDS: CMDS } = require('../server/resources/[gtasoon]/gs_discord/server/bot.js');
+  check('commandes staff déclarées (hors messages privés)', ['joueurs', 'geler', 'expulser', 'annonce'].every((n) => CMDS.some((c) => c.name === n && c.dm_permission === false)));
+  check('geler : identifiant obligatoire', STAFF.geler.options[0].name === 'id' && STAFF.geler.options[0].required);
+  check('rôle staff : autorisé', staffAllowed({ roles: ['111'], permissions: '0' }, '111'));
+  check('administrateur Discord : autorisé', staffAllowed({ roles: [], permissions: '8' }, ''));
+  check('membre simple : refusé', !staffAllowed({ roles: ['222'], permissions: '1024' }, '111') && !staffAllowed(null, '111'));
+  check('options lues', optionsOf({ data: { options: [{ name: 'id', value: 4 }, { name: 'texte', value: 'triche' }] } }).texte === 'triche');
   await bot.onMessage(JSON.stringify({ op: 1 }));
   check('battement de cœur demandé : renvoyé', sent[sent.length - 1].op === 1 && sent[sent.length - 1].d === 2);
   bot.stop();

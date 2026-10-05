@@ -698,5 +698,78 @@ exports('GetStaffLevel', Admin.level)
 exports('NotifyStaff', function(msg) for s in pairs(Admin.onDuty) do notify(s, msg, 'warning') end return true end)
 exports('IsJailed', function(src) return Admin.jailed[src] ~= nil end)
 
+--- V10.1 · Modération à distance (commandes staff du bot Discord, rôle staff vérifié par gs_discord). Sous-ensemble
+--- sûr : liste, geler, dégeler, avertir, expulser, message privé, annonce. Journalisé comme une action staff.
+--- Retourne ok, texte. `staff` = pseudo Discord de l'auteur.
+function Admin.remote(action, target, text, staff)
+    staff = ('Discord · %s'):format(tostring(staff or '?'):sub(1, 40))
+    if action == 'players' then
+        local out = {}
+        for _, id in ipairs(GetPlayers()) do
+            local s = tonumber(id)
+            out[#out + 1] = ('`%d` %s (%s) · %d ms%s'):format(s, GetPlayerName(s) or '?', Bridge:GetName(s) or '—', GetPlayerPing(s),
+                Admin.frozen[s] and ' · gelé' or '')
+        end
+        return true, #out > 0 and table.concat(out, '\n') or 'Personne en ville.'
+    end
+    if action == 'announce' then
+        local msg = Security:Sanitize(text, 200)
+        if not msg or msg == '' then return false, 'Annonce vide.' end
+        TriggerClientEvent('gs_admin:client:announce', -1, msg)
+        Admin.logRemote(staff, 'announce', nil, msg)
+        return true, 'Annonce envoyée en jeu.'
+    end
+    target = tonumber(target)
+    if not online(target) then return false, 'Aucun joueur avec cet identifiant en ville.' end
+    local who = label(target)
+    local reason = Security:Sanitize(text, 200)
+    if reason == '' then reason = nil end
+    if action == 'freeze' or action == 'unfreeze' then
+        local on = action == 'freeze'
+        Admin.frozen[target] = on or nil
+        FreezeEntityPosition(GetPlayerPed(target), on)
+        notify(target, on and 'Tu es figé par le staff.' or 'Tu peux de nouveau bouger.', on and 'warning' or 'success')
+        Admin.logRemote(staff, action, who, reason)
+        return true, (on and '%s est gelé.' or '%s est dégelé.'):format(who)
+    end
+    if action == 'message' then
+        if not reason then return false, 'Message vide.' end
+        notify(target, 'Message du staff : ' .. reason, 'warning')
+        Admin.logRemote(staff, 'message', who, reason)
+        return true, 'Message envoyé à ' .. who .. '.'
+    end
+    if not reason then return false, 'Motif obligatoire.' end
+    if action == 'warn' then
+        local lic = license(target)
+        if lic then Store.addNote(lic, 'warn', reason, staff) end
+        TriggerClientEvent('gs_admin:client:warn', target, reason)
+        Admin.publishSanction('Avertissement', Bridge:GetName(target) or GetPlayerName(target), reason)
+        Admin.logRemote(staff, 'warn', who, reason)
+        return true, who .. ' a été averti.'
+    end
+    if action == 'kick' then
+        local name = Bridge:GetName(target) or GetPlayerName(target)
+        Admin.logRemote(staff, 'kick', who, reason)
+        DropPlayer(target, 'Expulsé par le staff : ' .. reason)
+        Admin.publishSanction('Expulsion', name, reason)
+        return true, who .. ' a été expulsé.'
+    end
+    return false, 'Action inconnue.'
+end
+
+function Admin.logRemote(staff, action, target, details)
+    table.insert(Admin.logs, 1, { staff = staff, action = action, target = target, details = details, time = os.time() })
+    Admin.logs[Config.LogHistory + 1] = nil
+    Store.log(staff, action, target, details)
+    Security:LogStaff(('[Staff] %s → %s %s %s'):format(staff, action, target or '', details or ''))
+end
+
+-- Un seul retour (table) : lisible tel quel depuis le JavaScript du bot
+exports('RemoteAction', function(action, target, text, staff)
+    local ok, a, b = pcall(Admin.remote, action, target, text, staff)
+    if not ok then return { ok = false, text = 'Erreur : ' .. tostring(a) } end
+    return { ok = a == true, text = b or '' }
+end)
+
 -- Version RoadLine affichée au démarrage (console) : savoir d'un coup d'œil quelle version tourne
 CreateThread(function() print(('^5[RoadLine RP]^7 version %s'):format(GetConvar('gs_version', 'inconnue'))) end)
