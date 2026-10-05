@@ -42,9 +42,13 @@ Il fait ensuite tout seul :
    - programme une sauvegarde de la base toutes les 6 h ;
    - laisse le serveur en **profil privé** (caché de la liste, 8 places) pour que tu puisses tester d'abord.
 
-> **Le mot de passe ne s'affiche pas quand tu le tapes** (ni étoiles, ni chiffres) : c'est normal sous Linux. Tape-le
+> **Aucun mot de passe à taper** : au début, l'outil copie la « clé » de ton PC et te dit où la coller chez OVH
+> (Réinstaller mon VPS → Ubuntu 24.04 → champ « Clé SSH » → coller → Confirmer). La fenêtre attend toute seule la fin
+> de la réinstallation (5 à 10 min), puis enchaîne. Les mises à jour suivantes n'ont plus rien à demander.
+>
+> (Ancienne méthode, si tu préfères le mot de passe : il ne s'affiche pas quand tu le tapes (ni étoiles, ni chiffres) : c'est normal sous Linux. Tape-le
 > (ou colle-le avec un clic droit dans la fenêtre), puis Entrée. Il n'est demandé qu'une fois : l'outil installe ensuite
-> une clé de connexion, et les mises à jour ne le redemandent plus.
+> une clé de connexion, et les mises à jour ne le redemandent plus.)
 
 **À la fin, 3 étapes à faire à la main dans txAdmin** (le PIN est un code à 4 chiffres qui prouve que c'est bien toi
 qui installes ; il s'affiche à la fin de PREPARER-OVH, ou en SSH avec `roadline pin`) :

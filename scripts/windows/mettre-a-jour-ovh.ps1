@@ -20,6 +20,7 @@ $ver = [regex]::Match((Get-Content -LiteralPath (Join-Path $Data 'server.cfg') -
 Say "Version à envoyer (celle du PC) : $ver" 'Cyan'
 Say '  (as-tu bien lancé METTRE-A-JOUR.bat avant ? sinon ferme cette fenêtre)' 'DarkGray'
 $vps = Get-Vps
+Initialize-SshKey $vps # connexion sans mot de passe (clé), avant tout le reste
 
 Say '[1/3] Préparation' 'Cyan'
 if (Test-Path -LiteralPath $Stage) { [IO.Directory]::Delete($Stage, $true) }

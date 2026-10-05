@@ -17,6 +17,7 @@ $Stage = Join-Path $Out 'envoi'
 if (-not (Test-Path -LiteralPath (Join-Path $Data 'server.cfg'))) { Fail "Serveur introuvable ($Data). Lance d'abord INSTALLER.bat / METTRE-A-JOUR.bat." }
 if (Get-Process -Name FXServer -ErrorAction SilentlyContinue) { Fail 'Le serveur du PC tourne : ferme-le d''abord (la base doit être figée pour la copie).' }
 $vps = Get-Vps
+Initialize-SshKey $vps # connexion sans mot de passe (clé), avant tout le reste
 Say "`nVPS : $($vps.user)@$($vps.ip)" 'Cyan'
 
 Say '[1/4] Sauvegarde de la base du PC' 'Cyan'
