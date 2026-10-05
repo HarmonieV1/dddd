@@ -22,14 +22,19 @@ local function promoMult()
 end
 
 function Market.buyPrice(item)
+    if not Config.Items[item] then return nil end -- objet inconnu ou retiré (absent d'ox_inventory) : pas de prix, pas d'erreur
     local price = Pricing.buyPrice(item, Market.pressure[item], Market.eventMult(item))
     local m = promoMult()
     return m ~= 1.0 and math.max(1, math.floor(price * m + 0.5)) or price
 end
-function Market.sellPrice(item) return Pricing.sellPrice(item, Market.pressure[item], Market.eventMult(item)) end
+function Market.sellPrice(item)
+    if not Config.Items[item] then return nil end
+    return Pricing.sellPrice(item, Market.pressure[item], Market.eventMult(item))
+end
 
 function Market.push(item, delta)
     local def = Config.Items[item]
+    if not def then return end
     Market.pressure[item] = (Market.pressure[item] or 0) + delta / def.volume
     Market.dirty = true
 end

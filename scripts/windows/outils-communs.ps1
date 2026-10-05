@@ -138,11 +138,13 @@ function Set-FrenchLabels($Res, $Repo) {
         $text = Get-Content -LiteralPath $file.FullName -Raw -Encoding UTF8
         $n = 0
         foreach ($p in $map.PSObject.Properties) {
-            $re = [regex]::new("(?s)(\[\s*['""]" + [regex]::Escape($p.Name) + "['""]\s*\]\s*=\s*\{[^{}]*?\blabel\s*=\s*)(['""])(.*?)\2")
+            # Valeur entre guillemets en tenant compte des \' (sinon « d\'eau » était coupé au 2e passage → items.lua cassé, V11),
+            # suivie d'éventuels restes d'une ancienne coupure (« eau' ») : réparés au passage.
+            $re = [regex]::new('(?s)(\[\s*[''"]' + [regex]::Escape($p.Name) + '[''"]\s*\]\s*=\s*\{[^{}]*?\blabel\s*=\s*)(''(?:\\.|[^''\\\r\n])*''|"(?:\\.|[^"\\\r\n])*")([^,\r\n}]*)')
             $m = $re.Match($text)
             if (-not $m.Success) { continue }
             $label = $p.Value.Replace('\', '').Replace("'", "\'")
-            if ($m.Groups[3].Value -eq $label -or $m.Groups[3].Value -eq $p.Value) { continue }
+            if ($m.Groups[2].Value -eq "'$label'" -and $m.Groups[3].Value.Trim() -eq '') { continue }
             $text = $text.Substring(0, $m.Index) + $m.Groups[1].Value + "'" + $label + "'" + $text.Substring($m.Index + $m.Length)
             $n++
         }

@@ -5,6 +5,7 @@ cd "$(dirname "$0")/.."
 find server/resources -name node_modules -prune -o -name '*.lua' -print0 | xargs -0 -n1 luac5.4 -p
 echo "Syntaxe OK"
 python3 tests/check_cfg.py
+python3 tests/check_labels.py
 python3 tests/check_links.py
 python3 tests/check_perf.py
 # Liste des marques refusées : identique dans l'importeur et dans NETTOYER-MARQUES.bat
