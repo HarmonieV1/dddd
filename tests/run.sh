@@ -36,4 +36,4 @@ done
 if command -v node >/dev/null; then
     node --check "server/resources/[gtasoon]/gs_discord/server/bot.js" && node tests/test_discord_bot.js
 fi
-bash -n scripts/linux/roadline-bdd.sh && echo "Script Linux BDD OK"
+for s in scripts/linux/*.sh; do bash -n "$s" || exit 1; done && echo "Scripts Linux OK (sauvegardes, installation OVH, commande roadline)"
