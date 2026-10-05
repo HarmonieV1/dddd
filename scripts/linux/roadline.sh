@@ -85,11 +85,23 @@ UNIT
   systemctl daemon-reload
 }
 
+terminer() { # fin d'installation : service, commande roadline, sauvegardes auto, démarrage (relançable sans risque)
+  [ -f /etc/systemd/system/roadline.service ] || unite "$(cat "$BASE/.mode" 2>/dev/null || echo simple)"
+  ln -sf "$TOOLS/roadline.sh" /usr/local/bin/roadline
+  chown -R fivem:fivem "$BASE"
+  [ -f "$TOOLS/.env" ] && chmod 600 "$TOOLS/.env"
+  { crontab -l 2>/dev/null || true; } | grep -q roadline-bdd || "$TOOLS/roadline-bdd.sh" programmer >/dev/null
+  systemctl daemon-reload
+  systemctl enable roadline >/dev/null 2>&1
+  systemctl is-active --quiet roadline || systemctl start roadline
+}
+
 case "${1:-aide}" in
   etat) systemctl --no-pager status roadline | head -5; echo; df -h / | tail -1; free -h | sed -n 2p ;;
   logs) journalctl -u roadline -n "${2:-80}" --no-pager ;;
   pin) pin "${2:-}" ;;
   unite) need_root "$@"; unite "${2:-simple}" ;;
+  terminer) need_root "$@"; terminer; echo "Installation terminée : serveur démarré, sauvegardes toutes les 6 h." ;;
   mode) need_root "$@"; unite "${2:-simple}"; systemctl enable roadline >/dev/null 2>&1; systemctl restart roadline
     if [ "$(cat "$BASE/.mode")" = "txadmin" ]; then sleep 20; echo "Mode txAdmin : ouvre http://IP-DU-VPS:40120"; pin; else echo "Mode simple : le serveur démarre tout seul."; fi ;;
   suivre) journalctl -u roadline -f ;;
@@ -121,6 +133,7 @@ roadline sauvegardes       liste des sauvegardes · roadline restaurer FICHIER �
 roadline maj               installer la mise à jour envoyée par METTRE-A-JOUR-OVH.bat (base sauvegardée avant)
 roadline retour            revenir à la version précédente de RoadLine (si une mise à jour pose problème)
 roadline programme         mettre à jour le programme FiveM (version recommandée)
+roadline terminer          finir une installation interrompue (service, sauvegardes auto, démarrage)
 EOF
   ;;
 esac

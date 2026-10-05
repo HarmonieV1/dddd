@@ -70,7 +70,8 @@ case "${1:-}" in
   programmer)
     line="0 5,11,17,23 * * * $HERE/roadline-bdd.sh sauvegarde >> $DIR/sauvegarde.log 2>&1"
     mkdir -p "$DIR"
-    ( crontab -l 2>/dev/null | grep -v 'roadline-bdd.sh sauvegarde'; echo "$line" ) | crontab -
+    # (VPS neuf : pas encore de crontab, « crontab -l » échoue → ne doit pas arrêter le script)
+    { { crontab -l 2>/dev/null || true; } | { grep -v 'roadline-bdd.sh sauvegarde' || true; }; echo "$line"; } | crontab -
     echo "Programmé : toutes les 6 h (5 h, 11 h, 17 h, 23 h)." ;;
   *) sed -n '2,8p' "$0" ;;
 esac

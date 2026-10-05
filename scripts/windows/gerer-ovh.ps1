@@ -11,12 +11,12 @@ $Repo = (Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path
 try {
     $vps = Get-Vps
     Initialize-SshKey $vps
-    Say "`nMise à jour de la commande roadline sur le VPS…" 'DarkGray'
+    Say "`nMise à jour de la commande roadline sur le VPS (et fin d'installation si besoin)…" 'DarkGray'
     $tmp = Join-Path $env:TEMP 'roadline-outils'
     [void][IO.Directory]::CreateDirectory($tmp)
     $files = foreach ($f in 'roadline.sh', 'roadline-bdd.sh') { $d = Join-Path $tmp $f; Copy-Unix (Join-Path $Repo "scripts\linux\$f") $d; $d }
     Send-Vps $vps $files '/tmp/'
-    Invoke-Vps $vps 'sudo install -m 755 /tmp/roadline.sh /tmp/roadline-bdd.sh /home/fivem/outils/ && sudo ln -sf /home/fivem/outils/roadline.sh /usr/local/bin/roadline && rm -f /tmp/roadline.sh /tmp/roadline-bdd.sh'
+    Invoke-Vps $vps 'sudo install -m 755 /tmp/roadline.sh /tmp/roadline-bdd.sh /home/fivem/outils/ && sudo ln -sf /home/fivem/outils/roadline.sh /usr/local/bin/roadline && rm -f /tmp/roadline.sh /tmp/roadline-bdd.sh && { [ -f /etc/systemd/system/roadline.service ] && sudo crontab -l 2>/dev/null | grep -q roadline-bdd || sudo roadline terminer; }'
     [IO.Directory]::Delete($tmp, $true)
 } catch { Say "ERREUR : $($_.Exception.Message)" 'Red'; Read-Host 'Entrée pour quitter'; exit 1 }
 

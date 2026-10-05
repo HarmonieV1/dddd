@@ -9,6 +9,7 @@
 #   - installe la commande « roadline » (état, logs, redémarrer, public/privé, sauvegarde, mise à jour).
 # Ne supprime jamais rien : une ancienne installation est mise de côté dans /home/fivem/anciens/.
 set -euo pipefail
+trap 'echo "ERREUR (ligne $LINENO) : $BASH_COMMAND" >&2' ERR # jamais d'arrêt sans explication
 [ "$(id -u)" -eq 0 ] || exec sudo bash "$0" "$@"
 ZIP="${1:-/tmp/roadline-ovh.zip}"
 BASE=/home/fivem; FX=$BASE/fxserver; DATA=$BASE/server-data; TOOLS=$BASE/outils
@@ -120,12 +121,7 @@ say "[8/8] Service, sauvegardes, commande roadline"
 # Mode SIMPLE par défaut : le serveur démarre tout seul (OneSync activé), aucun PIN ni configuration web.
 # txAdmin reste disponible plus tard : « roadline mode txadmin » (ou GERER-OVH.bat sur le PC).
 "$TOOLS/roadline.sh" unite "$(cat "$BASE/.mode" 2>/dev/null || echo simple)"
-ln -sf "$TOOLS/roadline.sh" /usr/local/bin/roadline
-chown -R fivem:fivem "$BASE"
-chmod 600 "$ENV"
-crontab -l 2>/dev/null | grep -q roadline-bdd || "$TOOLS/roadline-bdd.sh" programmer >/dev/null
-systemctl daemon-reload
-systemctl enable --now roadline >/dev/null
+"$TOOLS/roadline.sh" terminer
 ok "service lancé (redémarre tout seul), sauvegardes toutes les 6 h"
 
 IP=$(curl -fsS4 https://api.ipify.org 2>/dev/null || hostname -I | awk '{print $1}')
