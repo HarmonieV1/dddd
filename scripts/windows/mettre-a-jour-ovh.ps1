@@ -17,8 +17,17 @@ $Stamp = Join-Path $Out 'dernier-envoi.txt'
 $Stage = Join-Path $Out 'maj'
 if (-not (Test-Path -LiteralPath (Join-Path $Res '[gtasoon]'))) { Fail "RoadLine introuvable sur le PC ($Res). Lance d'abord METTRE-A-JOUR.bat." }
 $ver = [regex]::Match((Get-Content -LiteralPath (Join-Path $Data 'server.cfg') -Raw), 'setr gs_version "([^"]+)"').Groups[1].Value
-Say "Version à envoyer (celle du PC) : $ver" 'Cyan'
-Say '  (as-tu bien lancé METTRE-A-JOUR.bat avant ? sinon ferme cette fenêtre)' 'DarkGray'
+# Le PC doit avoir la version de CE zip : sinon on enverrait l'ancienne au VPS
+$Repo = (Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path
+$zipVer = [regex]::Match((Get-Content -LiteralPath (Join-Path $Repo 'server\server.cfg.example') -Raw), 'setr gs_version "([^"]+)"').Groups[1].Value
+if ($zipVer -and $ver -ne $zipVer) {
+    Say "Le serveur du PC est en $ver, mais ce dossier contient la $zipVer." 'Yellow'
+    if ((Read-Host "  Mettre d'abord le PC en $zipVer (METTRE-A-JOUR), puis envoyer au VPS ? (O/N)") -notmatch '^[oOyY]') { exit 1 }
+    & powershell -NoProfile -ExecutionPolicy Bypass -File (Join-Path $PSScriptRoot 'mettre-a-jour.ps1')
+    $ver = [regex]::Match((Get-Content -LiteralPath (Join-Path $Data 'server.cfg') -Raw), 'setr gs_version "([^"]+)"').Groups[1].Value
+    if ($ver -ne $zipVer) { Fail "Le PC est toujours en $ver : la mise à jour du PC n'a pas abouti (voir sa fenêtre)." }
+}
+Say "Version à envoyer : $ver" 'Cyan'
 $vps = Get-Vps
 Initialize-SshKey $vps # connexion sans mot de passe (clé), avant tout le reste
 
