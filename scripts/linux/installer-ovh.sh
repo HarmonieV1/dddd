@@ -107,23 +107,9 @@ ufw --force enable >/dev/null
 ok "ouverts : SSH, 30120 (jeu), 40120 (txAdmin)"
 
 say "[8/8] Service, sauvegardes, commande roadline"
-cat > /etc/systemd/system/roadline.service <<EOF
-[Unit]
-Description=RoadLine RP (FiveM + txAdmin)
-After=network-online.target mariadb.service
-Wants=network-online.target
-
-[Service]
-User=fivem
-WorkingDirectory=$BASE
-ExecStart=$FX/run.sh +set txAdminPort 40120 +set txDataPath $BASE/txData
-Restart=on-failure
-RestartSec=10
-LimitNOFILE=65535
-
-[Install]
-WantedBy=multi-user.target
-EOF
+# Mode SIMPLE par défaut : le serveur démarre tout seul (OneSync activé), aucun PIN ni configuration web.
+# txAdmin reste disponible plus tard : « roadline mode txadmin » (ou GERER-OVH.bat sur le PC).
+"$TOOLS/roadline.sh" unite "$(cat "$BASE/.mode" 2>/dev/null || echo simple)"
 ln -sf "$TOOLS/roadline.sh" /usr/local/bin/roadline
 chown -R fivem:fivem "$BASE"
 chmod 600 "$ENV"
@@ -133,19 +119,13 @@ systemctl enable --now roadline >/dev/null
 ok "service lancé (redémarre tout seul), sauvegardes toutes les 6 h"
 
 IP=$(curl -fsS4 https://api.ipify.org 2>/dev/null || hostname -I | awk '{print $1}')
-sleep 12
-sleep 8
-PIN=$("$TOOLS/roadline.sh" pin --brut 2>/dev/null || true)
+sleep 15
+if systemctl is-active --quiet roadline; then STATE="en ligne"; else STATE="en démarrage (vérifie avec GERER-OVH.bat → État)"; fi
 cat <<EOF
 
 ==================================================================================
- RoadLine RP est installé.
- 1. Sur ton PC, ouvre Chrome à l'adresse : http://$IP:40120
-    - txAdmin demande un CODE PIN à 4 chiffres : ${PIN:-tape « roadline pin » ici pour l'afficher}
-    - « Link Account » : connecte ton compte Cfx.re (celui de keymaster), puis choisis un mot de passe txAdmin ;
-    - « Existing server data » → dossier : $DATA  → fichier : server.cfg ;
-    - Settings → FXServer → OneSync : On  (obligatoire pour Qbox) → Save → Start.
- 2. En jeu : F8 → connect $IP:30120
- 3. Commandes utiles (en SSH) : roadline aide
+ RoadLine RP est installé sur le VPS : serveur $STATE.
+ En jeu : F8 →  connect $IP:30120
+ Tout se pilote depuis ton PC avec GERER-OVH.bat (état, logs, redémarrer, public / privé, sauvegardes…).
 ==================================================================================
 EOF

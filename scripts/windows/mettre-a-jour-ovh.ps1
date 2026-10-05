@@ -52,5 +52,5 @@ Invoke-Vps $vps 'sudo roadline maj /tmp/roadline-maj.zip'
 if ($LASTEXITCODE -ne 0) { Fail 'La mise à jour a échoué sur le VPS (voir au-dessus). Rien n''est perdu : « roadline retour » sur le VPS si besoin.' }
 [IO.File]::WriteAllText($Stamp, $started.ToString('o', [Globalization.CultureInfo]::InvariantCulture))
 Remove-Item -LiteralPath $zip -Force -ErrorAction SilentlyContinue
-Say "`nMise à jour $ver en ligne. Vérifie la console dans txAdmin (http://$($vps.ip):40120)." 'Green'
+Say "`nMise à jour $ver en ligne. Vérifie avec GERER-OVH.bat → Console." 'Green'
 Read-Host 'Entrée pour fermer'

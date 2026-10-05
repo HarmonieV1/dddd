@@ -55,10 +55,43 @@ pin() { # code PIN de txAdmin (première configuration)
   else echo "Pas de PIN dans les journaux : txAdmin est peut-être déjà configuré (connecte-toi avec ton compte), ou attends 30 s et réessaie."; fi
 }
 
+# Service systemd : « simple » = le serveur démarre directement (OneSync activé, rien à configurer) ;
+# « txadmin » = panneau web txAdmin sur le port 40120 (PIN et configuration au premier lancement).
+unite() {
+  local mode="${1:-simple}" exec wd desc
+  if [ "$mode" = "txadmin" ]; then
+    exec="$FX/run.sh +set txAdminPort 40120 +set txDataPath $BASE/txData"; wd="$BASE"; desc="RoadLine RP (FiveM + txAdmin)"
+  else
+    mode="simple"; exec="$FX/run.sh +set onesync on +exec server.cfg"; wd="$DATA"; desc="RoadLine RP (FiveM)"
+  fi
+  cat > /etc/systemd/system/roadline.service <<UNIT
+[Unit]
+Description=$desc
+After=network-online.target mariadb.service
+Wants=network-online.target
+
+[Service]
+User=fivem
+WorkingDirectory=$wd
+ExecStart=$exec
+Restart=on-failure
+RestartSec=10
+LimitNOFILE=65535
+
+[Install]
+WantedBy=multi-user.target
+UNIT
+  echo "$mode" > "$BASE/.mode"
+  systemctl daemon-reload
+}
+
 case "${1:-aide}" in
   etat) systemctl --no-pager status roadline | head -5; echo; df -h / | tail -1; free -h | sed -n 2p ;;
   logs) journalctl -u roadline -n "${2:-80}" --no-pager ;;
   pin) pin "${2:-}" ;;
+  unite) need_root "$@"; unite "${2:-simple}" ;;
+  mode) need_root "$@"; unite "${2:-simple}"; systemctl enable roadline >/dev/null 2>&1; systemctl restart roadline
+    if [ "$(cat "$BASE/.mode")" = "txadmin" ]; then sleep 20; echo "Mode txAdmin : ouvre http://IP-DU-VPS:40120"; pin; else echo "Mode simple : le serveur démarre tout seul."; fi ;;
   suivre) journalctl -u roadline -f ;;
   redemarrer) need_root "$@"; systemctl restart roadline; echo "Redémarré." ;;
   arreter) need_root "$@"; systemctl stop roadline; echo "Arrêté." ;;
@@ -78,6 +111,7 @@ case "${1:-aide}" in
     curl -fsSL "$URL" | tar -xJ -C "$FX"; chown -R fivem:fivem "$FX"; systemctl start roadline; echo "Programme FiveM mis à jour." ;;
   *) cat <<'EOF'
 roadline etat              état du serveur, disque, mémoire
+roadline mode simple|txadmin  démarrage direct (par défaut, rien à configurer) ou avec le panneau web txAdmin
 roadline pin               code PIN de txAdmin (première configuration)
 roadline logs [N]          N dernières lignes de la console (défaut 80) · roadline suivre : en direct
 roadline redemarrer        redémarrer (aussi : arreter, demarrer)

@@ -1,7 +1,7 @@
 ﻿<#
   ROADLINE - MISE EN LIGNE SUR LE VPS OVH (première fois, ou pour renvoyer toute la base).
   1) sauvegarde la base du PC  2) prépare le serveur (sans cache)  3) l'envoie sur le VPS (SSH, inclus dans Windows)
-  4) lance l'installation automatique sur le VPS (MariaDB, FiveM, txAdmin, pare-feu, sauvegardes, commande roadline).
+  4) lance l'installation automatique sur le VPS (MariaDB, FiveM, pare-feu, sauvegardes, commande roadline).
   Rien n'est modifié sur le PC. Mots de passe : jamais affichés ; celui de la base du VPS est créé là-bas.
 #>
 $ErrorActionPreference = 'Stop'
@@ -49,5 +49,7 @@ Invoke-Vps $vps 'sudo bash /tmp/installer-ovh.sh /tmp/roadline-ovh.zip && rm -f 
 if ($LASTEXITCODE -ne 0) { Fail 'L''installation sur le VPS a signalé une erreur (voir au-dessus). Rien n''est perdu : relance cet outil.' }
 Remove-Item -LiteralPath $zip -Force -ErrorAction SilentlyContinue
 [IO.File]::WriteAllText((Join-Path $Out 'dernier-envoi.txt'), $copiedAt.ToString('o', [Globalization.CultureInfo]::InvariantCulture))
-Say "`nTerminé. Suis les 3 étapes affichées (txAdmin, OneSync, connexion). Ensuite, pour les mises à jour : METTRE-A-JOUR-OVH.bat" 'Green'
+Say "`nTerminé : le serveur démarre tout seul sur le VPS (rien à configurer)." 'Green'
+Say "  En jeu : F8 → connect $($vps.ip):30120" 'Green'
+Say '  Pour piloter le serveur : GERER-OVH.bat · Pour les mises à jour : METTRE-A-JOUR-OVH.bat' 'Green'
 Read-Host 'Entrée pour fermer'
