@@ -10,7 +10,7 @@ provide('gs_jobs', { IsOnDutyAs = function(src, job) return duty[src] == job end
 provide('gs_weather', { GetGameTime = function() return hour end, GetEvent = function() end })
 provide('gs_wanted', { GetHeat = function() return 0 end, ReportCrime = function() return true end })
 loadResource('gs_security', { R .. 'gs_security/server/main.lua' })
-loadResource('gs_blackmarket', { R .. 'gs_blackmarket/shared/config.lua', R .. 'gs_blackmarket/server/main.lua', R .. 'gs_blackmarket/server/legal.lua' })
+loadResource('gs_blackmarket', { R .. 'gs_blackmarket/shared/config.lua', R .. 'gs_blackmarket/server/fake.lua', R .. 'gs_blackmarket/server/main.lua', R .. 'gs_blackmarket/server/legal.lua' })
 local crows, cnext = {}, 0
 CStore = { init = function() end, all = function() return {} end, insert = function(c) cnext = cnext + 1 crows[cnext] = c return cnext end,
     setTaker = function(id, t) if crows[id] then crows[id].taker = t end end, delete = function(id) crows[id] = nil end }
@@ -81,6 +81,46 @@ ok, msg = Legal.check(4, 'ammo-9', 30)
 check('légal : plafond journalier', not ok and msg:find('120'))
 check('légal : couteau libre', Legal.check(4, 'WEAPON_KNIFE', 1) == true)
 check('légal : 1re arme ok, 2e refusée', Legal.check(4, 'WEAPON_PISTOL', 1) == true and not Legal.check(4, 'WEAPON_PISTOL', 1))
+-- V11.5 : un achat qui ne peut pas aboutir (pas d'argent, inventaire plein) ne consomme pas le plafond
+W.players[4].items.money = 10
+check('légal : sans argent, l\'achat ne compte pas', Legal.affordable(4, 'ammo-9', 10, 'money', 500) == false)
+W.players[4].items.money = 1000
+check('légal : argent et place → achat possible', Legal.affordable(4, 'ammo-9', 10, 'money', 500) == true)
+W.players[4].full = true
+check('légal : inventaire plein → pas d\'achat', Legal.affordable(4, 'ammo-9', 10, 'money', 500) == false)
+W.players[4].full = nil
+
+-- V11.5 : permis de port d'arme au comptoir → carte PPA dans l'inventaire
+local desk = Config.Permit.desks[1]
+join(5, 'CID5', 'Citoyen', vec3(desk.x, desk.y, desk.z)); W.players[5].money.bank = 10000; W.players[5].licences = { driver = true }
+ok, msg = Legal.permit(5)
+check('PPA : délivré, 5 000 $ payés, carte remise', ok and W.players[5].licences.weapon == true and W.players[5].money.bank == 5000 and W.players[5].items.weaponlicense == 1)
+ok = Legal.permit(5)
+check('PPA : déjà délivré', not ok)
+join(6, 'CID6', 'Sans permis', vec3(desk.x, desk.y, desk.z)); W.players[6].money.bank = 10000
+ok, msg = Legal.permit(6)
+check('PPA : permis de conduire exigé', not ok and msg:find('permis de conduire'))
+
+-- V12 · Faux papiers : identité inventée à l'achat, présentation 10 min, visible des voisins
+local meta = Fake.metadata(1, 'driver')
+check('faux permis : identité inventée', meta.fake == 'driver' and meta.fakeName:find(' ') and meta.fakeBirth:match('^%d%d/%d%d/%d%d%d%d$'))
+local slots = { [3] = { name = 'gs_fake_driver', metadata = meta } }
+provide('ox_inventory', { GetSlot = function(src, slot) return slots[slot] end })
+check('présenter : papier introuvable refusé', not Fake.present(1, 'gs_fake_driver', 9))
+tp(1, here) tp(2, vec3(here.x + 1.0, here.y, here.z))
+ok, msg = Fake.present(1, 'gs_fake_driver', 3)
+local f = Player(1).state.gsFake
+check('présenter : état public posé 10 min, voisin prévenu', ok and f and f.name == meta.fakeName and f.kinds.driver and f.untilTs > os.time() + 500
+    and W.notes[2] and W.notes[2].msg:find(meta.fakeName, 1, true))
+slots[4] = { name = 'gs_fake_id', metadata = Fake.metadata(1, 'id') }
+slots[4].metadata.fakeName = meta.fakeName
+Fake.present(1, 'gs_fake_id', 4)
+check('deux papiers au même nom : cumulés', Player(1).state.gsFake.kinds.id and Player(1).state.gsFake.kinds.driver)
+local fakeIdx = idx('gs_fake_id')
+W.players[1].items.black_money = 100000
+hour = 23 tp(1, here)
+ok = cb('gs_blackmarket:buy', 1, fakeIdx, 'dirty'); step()
+check('faux papier acheté au marché noir', ok and W.players[1].items.gs_fake_id == 1)
 
 -- Contrats entre joueurs ------------------------------------------------------------------------------------
 W.players[1].items.black_money = 1000

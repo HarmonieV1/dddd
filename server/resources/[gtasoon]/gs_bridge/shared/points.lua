@@ -7,6 +7,8 @@
 do
     local res = GetCurrentResourceName()
     local overrides = GlobalState.gsPoints or {}
+    local off = GlobalState.gsPointsOff or {}   -- V11.6 : points retirés par le staff → position hors carte
+    local FAR = vector3(-9000.0, -9000.0, -500.0)
     local SKIP = { size = true, offset = true, rotation = true, rot = true, scale = true, color = true, colour = true, dims = true }
     local found = {}
 
@@ -30,8 +32,12 @@ do
                         if type(v) == 'vector4' then t[k] = vector4(o.x, o.y, o.z, o.w or v.w) else t[k] = vector3(o.x, o.y, o.z) end
                     end
                     local what = type(k) == 'number' and ('point ' .. k) or tostring(k)
+                    local real = vector3(t[k].x, t[k].y, t[k].z) -- gardée pour le menu staff (réactiver un point retiré)
+                    if off[key] then
+                        if type(v) == 'vector4' then t[k] = vector4(FAR.x, FAR.y, FAR.z, t[k].w) else t[k] = FAR end
+                    end
                     found[#found + 1] = { key = key, label = ('%s · %s'):format(here or path:match('[^.]+$') or res, what),
-                        coords = vector3(t[k].x, t[k].y, t[k].z), moved = o ~= nil }
+                        coords = real, moved = o ~= nil, off = off[key] == true }
                 elseif type(v) == 'table' then
                     walk(v, p, here, depth + 1, seen)
                 end

@@ -8,6 +8,7 @@ local strings = {
     busy = 'Opération déjà en cours, réessaie.',
     slow_down = 'Doucement, tu vas trop vite.',
     too_far = 'Tu es trop loin.',
+    duty_no_phone = 'Il te faut un téléphone pour prévenir ton employeur (sinon : au point de service).',
     action_done = 'Terminé.',
     player_not_found = 'Joueur introuvable.',
     not_self = 'Pas sur toi-même.',

@@ -68,7 +68,7 @@ local function setHandsUp(on)
     end)
 end
 
-RegisterCommand('levermains', function() setHandsUp(not handsUp) end, false)
+RegisterCommand('levermains', function() if not IsNuiFocused() then setHandsUp(not handsUp) end end, false) -- V11.5 : pas pendant une saisie
 RegisterKeyMapping('levermains', 'Mains en l\'air', 'keyboard', Config.HandsUpKey)
 
 -- Menus cliquables (ox_lib context) : METTRE-A-JOUR règle ox_lib pour garder les déplacements menu ouvert

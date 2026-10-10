@@ -413,3 +413,48 @@ Traductions françaises manquantes des scripts Qbox ajoutées par METTRE-A-JOUR 
 - **Écran de chargement complet** : intro animée, décor de nuit après 21 h, « Bon retour Prénom Nom · métier · absent depuis N jours »,
   bandeau Weazel News (faits du jour, une de la Gazette), cartes illustrées.
 - **Site** : vraie carte de Los Santos (couleurs du jeu) avec les quartiers par-dessus ; adresse de connexion en IP ; la Gazette en une.
+
+## V11.5 · Retours du backtest (09/10/2026)
+- **Un seul personnage** par joueur ; **deux** pour le fondateur, les super-admins et les **VIP** (F11 → Joueurs → VIP, fondateur).
+  Correctif qbx_core posé par METTRE-A-JOUR (`defaultNumberOfCharacters = 1`, `gs_admin:CharacterSlots`).
+- **Apparition** : on réapparaît où on s'est déconnecté (plus de choix du lieu, `qbx_spawn` retiré). Un nouveau perso **arrive en bus**
+  (Dashound, Rockford Hills → arrêt de la mairie, Max à deux pas ; Espace pour passer ; une seule fois par personnage).
+- **Téléphone** : impossible menotté, mort ou dans le coma (se range seul) ; ouvert = caméra figée, aucun coup / tir / carte, option
+  « marcher » comprise. **Touches pendant une saisie** : plus aucune touche de jeu (F3…F11, I, H, B, [E]) ne passe quand une interface a le clavier.
+- **Prise de service par téléphone** (appli Emplois, ou `/service` à assigner) : de n'importe où, avec un téléphone sur soi.
+- **Permis de conduire** : plus de points (réactivable `Config.Points.enabled`) ; la police **retire ou rend** le permis depuis le contrôle
+  d'identité (motif obligatoire, inscrit au casier, carte reprise).
+- **Port d'arme** : la **carte PPA** est bien remise (achat au comptoir, police) et reprise au retrait ; un achat d'armurerie qui échoue ne
+  consomme plus le plafond du jour.
+- **Tout en français** : toutes les armes (Mk II comprises), **munitions** et **accessoires d'armes** (jamais traduits avant).
+- **Menu staff F11** : items par **catégorie avec image** + recherche (munitions enfin donnables) ; véhicules par **catalogue Qbox** (marque, nom, prix).
+- **Armes longues dans le dos** quand elles sont rangées (fusils, pompes, mitraillettes, précision ; 2 max ; vues par tous).
+- **Nourriture périssable** : frais 2 jours, chips / donut 7 jours, boissons jamais (barre de durabilité ox_inventory).
+- **Food truck de Legion Square** enfin présent ; **caméras** accrochées aux murs / poteaux et orientées vers la rue ; un **PNJ acheteur**
+  à la poissonnerie, la scierie, le marché et la boucherie.
+
+## V11.6 · Outils staff en jeu
+- **Mapping dans F11** (Monde et lieux → Mapping) : catalogue d'objets **par catégorie** (mobilier, chantier, éclairage et fête, végétation,
+  commerce et stands, déchets, plage et loisirs, police), placement à la souris comme avant, modification, retrait d'objets de la map.
+- **Porter un objet** (W → Moi → Porter, ou `/porter`) : carton, caisse à outils, caisse de bière, pizzas, sac de courses, boisson, cônes,
+  pneu, poubelle, plante, guitare.
+- **Points mal placés** : F11 → « Déplacer / retirer un point » (300 m, filtre par ressource) ; le super-admin peut **retirer un point du jeu**
+  (réversible) en plus de le déplacer ou le remettre à l'origine.
+
+## V12 · La ville se souvient
+- **Site** : bandeau « En ce moment en ville » (météo, heure, joueurs, quartier sous tension, prochain rendez-vous, dernière rumeur vérifiée,
+  lieux de mémoire) et **candidature en trois questions** qui arrive directement sur Discord (webhook), sans bot externe.
+- **La mémoire des lieux** (`gs_memoire`) : chaque endroit accumule ce qui s'y est passé (crimes, arrestations, mariages, courses, braquages,
+  guerres de gang). Les passants en parlent quand tu passes, Radio Los Santos le rappelle, une plaque naît au 10e événement.
+- **Les échos** (signature) : la nuit, près d'un lieu chargé, des silhouettes translucides rejouent le passé quelques secondes.
+- **Le registre des véhicules disparus** : une voiture volée jamais retrouvée refait surface après 48 h (casse, garage louche ou enchères),
+  carnet intact. Une rumeur circule, le propriétaire enquête ; s'il la reprend, l'assurance récupère son indemnité, sans pénalité.
+- **Le marché des faux papiers** : fausse carte d'identité, faux permis, fausse PPA. Ils passent un contrôle visuel, pas le scanner du commissariat.
+- **Le témoin protégé** : en garde à vue, dénoncer un gang divise la peine par deux ; le gang apprend que « quelqu'un a parlé », la police
+  protège le témoin 7 jours. S'il tombe, le gang est dans le viseur.
+- **La guerre de l'information** : un gang peut brouiller les caméras d'un quartier ou pirater le scanner police 10 minutes (payé par la
+  caisse) ; la police remonte la source depuis l'ordinateur du commissariat.
+- **V12.2 · Site en mode cinéma** : grain de film, bandes letterbox, caméra qui pousse sur l'accueil, parallaxe au défilement, rail de chapitres,
+  mots révélés un à un, page qui tangue avec la vitesse, réticule qui suit la souris, barre qui se cache en descendant. Sans toucher au contenu.
+- **V12.3 · Staff à distance et site vivant** : `/isoler`, `/liberer`, `/reanimer` sur le bot et l'appli staff (admins du Discord acceptés) ;
+  bandeau Weazel en direct, SMS en jeu pendant la visite du site, places affichées = 48 ; site plus fluide (grain, aurora, étoiles) et police GTA de secours.

@@ -51,7 +51,7 @@ def build():
              ['F10 · panel', 'Tickets, fiches joueurs complètes, sanctions, journal de toutes les actions du staff.'],
              ['Appli staff (téléphone)', 'Joueurs, tickets, annonce, depuis ton téléphone (un code par membre, demandé au fondateur). '
               '5 mauvais codes = 15 min de blocage.'],
-             ['Bot Discord', '/joueurs, /geler, /expulser… (rôle staff) quand tu n\'es pas en jeu.'],
+             ['Bot Discord', '/joueurs, /geler, /degeler, /avertir, /expulser, /message, /annonce, <b>/isoler, /liberer, /reanimer</b> (rôle staff ou admin du Discord) quand tu n\'es pas en jeu ; /ticket pour les joueurs.'],
              ['txAdmin', 'Réservé au fondateur.']],
             [40 * G.mm, 140 * G.mm])]
 
@@ -92,8 +92,20 @@ def build():
              ['Enchères', '/encheres : ouvrir ou clore une vente (sinon samedi 21 h 30)', 'Admin'],
              ['Gangs', '/gsgang create… après validation du projet RP en ticket', 'Admin']],
             [38 * G.mm, 120 * G.mm, 22 * G.mm], font=8.2)]
-    s += [Paragraph('Un point mal placé (transformateur, ring, vendeur, PNJ…) : F11 → Monde et lieux → <b>Déplacer un point</b>, puis préviens '
-                    'le fondateur pour qu\'il reste au prochain envoi.', SMALL)]
+    s += [Paragraph('Un point mal placé (transformateur, ring, vendeur, PNJ…) : F11 → Monde et lieux → <b>Déplacer / retirer un point</b> (filtre par ressource ; '
+                    'super-admin : retirer du jeu, réversible). Points de métier : menu dédié. Tout est gardé aux mises à jour.', SMALL)]
+    s += [Paragraph('8. Nouveautés V11.4 → V12 pour le staff', H2)]
+    s += [t([['Quoi', 'Comment'],
+             ['VIP (2 personnages)', 'F11 → Joueurs → le joueur → VIP (fondateur). Tout le monde a 1 personnage ; staff super-admin+ et VIP en ont 2.'],
+             ['Mapping', 'F11 → Monde et lieux → Mapping : catalogue par catégorie (mobilier, chantier, éclairage, végétation, stands, plage, police), placement à la souris, retrait d\'objets de la map.'],
+             ['Items et véhicules', 'F11 → Items : par catégorie avec image + recherche (munitions enfin donnables). Véhicules : catalogue Qbox par catégorie.'],
+             ['Permis et PPA', 'F4 → Contrôle d\'identité → Permis : délivrer / rendre / retirer le permis de conduire (motif au casier), port d\'arme (carte PPA remise ou reprise), chasse.'],
+             ['Faux papiers', 'Un contrôle F4 loin du commissariat affiche la fausse identité (« contrôle visuel »). Au commissariat, le scanner démasque : casier automatique.'],
+             ['Témoin protégé', 'Un suspect en garde à vue peut dénoncer un gang (/droits) : peine ÷ 2, protection 7 jours, lieu sûr. La police est prévenue. S\'il meurt : alerte, chaleur sur le gang.'],
+             ['Opérations de gang', 'Brouillage de caméras et scanner piraté laissent une trace : terminal du commissariat → « Remonter la source » (5 min d\'analyse).'],
+             ['Tickets Discord', '/ticket ouvre un fil privé dans #tickets (joueur + rôle staff) ; /fermer le clôt. Candidatures du site : webhook #candidatures.'],
+             ['Isolement à distance', 'Bot : /isoler id minutes motif · /liberer id · /reanimer id. Appli staff : boutons Isoler / Libérer / Réanimer. Publié dans #sanctions, journalisé.']],
+            [38 * G.mm, 142 * G.mm], font=8.2)]
 
     s += [Paragraph('6. La déontologie du staff', H2)]
     s += b(['<b>Le mode staff, c\'est pour modérer.</b> Jamais de pouvoir (vol, TP, argent, objets) pour ton personnage ou tes amis.',

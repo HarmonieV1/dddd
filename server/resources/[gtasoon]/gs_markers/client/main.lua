@@ -101,7 +101,7 @@ CreateThread(function()
                 BeginTextCommandDisplayText('STRING')
                 AddTextComponentSubstringPlayerName('[E] ' .. (best.prompt or 'Interagir'))
                 EndTextCommandDisplayText(0.5, 0.88)
-                if IsControlJustReleased(0, 38) then TriggerEvent(best.event, table.unpack(best.args)) end
+                if IsControlJustReleased(0, 38) and not IsNuiFocused() then TriggerEvent(best.event, table.unpack(best.args)) end -- V11.5 : pas pendant une saisie
             end
             for _, n in ipairs(nearby) do
                 local p, c, s = n.p, n.p.coords, n.p.style

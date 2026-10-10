@@ -23,6 +23,11 @@ $QboxPatches = @(
     @{ res = 'illenium-appearance'; file = 'shared\config.lua'; find = 'Config\.EnablePedsForClothingRooms\s*=\s*true'; repl = 'Config.EnablePedsForClothingRooms = false'; why = 'vestiaires : pas de ped GTA' },
     @{ res = 'illenium-appearance'; file = 'shared\config.lua'; find = 'Config\.EnablePedsForPlayerOutfitRooms\s*=\s*true'; repl = 'Config.EnablePedsForPlayerOutfitRooms = false'; why = 'garde-robes : pas de ped GTA' },
     @{ res = 'qbx_core'; file = 'config\client.lua'; find = 'startingApartment\s*=\s*true'; repl = 'startingApartment = false'; why = 'nouveau perso : apparition en ville (mairie), pas d''appartement gratuit' },
+    # V11.5 : un seul personnage par joueur ; 2 pour le fondateur, les super-admins et les VIP (gs_admin:CharacterSlots)
+    @{ res = 'qbx_core'; file = 'config\server.lua'; find = 'defaultNumberOfCharacters\s*=\s*[2-9]'; repl = 'defaultNumberOfCharacters = 1'; why = 'personnages : 1 par joueur' },
+    @{ res = 'qbx_core'; file = 'server\character.lua'; why = 'personnages : 2 pour le staff et les VIP (gs_admin)'
+       find = 'return config\.characters\.playersNumberOfCharacters\[license2\] or license and config\.characters\.playersNumberOfCharacters\[license\] or config\.characters\.defaultNumberOfCharacters'
+       repl = "local gsSlots = GetResourceState('gs_admin') == 'started' and exports.gs_admin:CharacterSlots(license2, license) -- RoadLine : 2 persos staff / VIP`n    return gsSlots or config.characters.playersNumberOfCharacters[license2] or license and config.characters.playersNumberOfCharacters[license] or config.characters.defaultNumberOfCharacters" }
     # Clés : moins de voitures PNJ verrouillées (garées 50 %, en circulation 35 %), clés trouvées plus souvent en fouillant
     @{ res = 'qbx_vehiclekeys'; file = 'config\shared.lua'; find = 'spawnLockedIfParked = 0\.75'; repl = 'spawnLockedIfParked = 0.5'; why = 'voitures PNJ garées : 50 % verrouillées' },
     @{ res = 'qbx_vehiclekeys'; file = 'config\shared.lua'; find = 'spawnLockedIfDriven = 0\.75'; repl = 'spawnLockedIfDriven = 0.35'; why = 'voitures PNJ en circulation : 35 % verrouillées' },

@@ -67,7 +67,7 @@ end
 
 RegisterCommand('ceinture', function()
     local veh = cache.vehicle
-    if not veh or not hasBelt(veh) then return end
+    if not veh or not hasBelt(veh) or IsNuiFocused() then return end -- V11.5 : pas pendant une saisie
     belt = not belt
     PlaySoundFrontend(-1, belt and 'Faster_Click' or 'Faster_Click', 'RESPAWN_ONLINE_SOUNDSET', true)
     lib.notify({ description = belt and 'Ceinture attachée' or 'Ceinture détachée', type = belt and 'success' or 'warning', icon = 'user-shield' })

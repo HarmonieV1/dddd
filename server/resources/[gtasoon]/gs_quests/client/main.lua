@@ -341,6 +341,7 @@ end
 RegisterCommand('gs_progression_v7', function()
     -- même touche = fermer (Échap part au jeu : les menus laissent marcher)
     if lib.getOpenContextMenu() then return lib.hideContext() end
+    if IsNuiFocused() then return end -- V11.5 : jamais pendant une saisie ou une autre interface
     openMenu()
 end, false)
 RegisterKeyMapping('gs_progression_v7', 'Progression et quêtes', 'keyboard', Config.Key)

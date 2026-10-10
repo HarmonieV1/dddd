@@ -127,7 +127,7 @@ CreateThread(function()
                 local kindName, zid = classify(ped)
                 if kindName == 'street' then
                     text('[E] Racketter', 0.86)
-                    if IsControlJustReleased(0, 38) then robbery(ped, kindName, zid) break end
+                    if IsControlJustReleased(0, 38) and not IsNuiFocused() then robbery(ped, kindName, zid) break end
                 else
                     local left = Config.AutoStartMs - (GetGameTimer() - since)
                     text(kindName == 'register' and 'Braquage de la caisse…' or 'Braquage du guichet…', 0.86)

@@ -44,8 +44,18 @@ AddEventHandler('gs_bridge:server:playerLoaded', function(src)
         TriggerClientEvent('gs_onboarding:client:rules', src, true)
     end
     if GetResourceState('gs_quests') == 'started' and not exports.gs_quests:HasDone(src, 'welcome') then
-        TriggerClientEvent('gs_onboarding:client:welcome', src)
+        -- V11.5 : arrivée en bus la toute première fois (jamais rejouée, même si la quête d'accueil n'est pas finie)
+        local cid = Bridge:GetIdentifier(src)
+        local arrival = Config.Arrival and Config.Arrival.enabled == true and cid ~= nil and not Store.arrivalDone(cid)
+        TriggerClientEvent('gs_onboarding:client:welcome', src, arrival)
     end
+end)
+
+RegisterNetEvent('gs_onboarding:server:arrived', function()
+    local src = source
+    if not Security:RateLimit(src, 'gs_onboarding:arrived', 2, 60000) then return end
+    local cid = Bridge:GetIdentifier(src)
+    if cid then Store.setArrival(cid) end
 end)
 
 lib.callback.register('gs_onboarding:accept', function(src, accepted)

@@ -18,7 +18,10 @@ local function openPanel()
     SendNUIMessage({ action = 'open', data = data })
 end
 
-RegisterCommand('admin', openPanel, false)
+RegisterCommand('admin', function()
+    if not open and IsNuiFocused() then return end -- V11.5 : pas par-dessus une saisie ou une autre interface
+    openPanel()
+end, false)
 RegisterKeyMapping('admin', 'Panel staff', 'keyboard', Config.Key)
 
 RegisterCommand('staff', function()

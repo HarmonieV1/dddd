@@ -61,8 +61,18 @@ local function close()
     phoneInHand(false)
 end
 
+-- V11.5 · Pas de téléphone menotté, mort ou dans le coma (le serveur revérifie), ni par-dessus une autre interface.
+local function canOpen()
+    if IsNuiFocused() then return false end -- inventaire, menu, saisie en cours : la touche ne fait rien
+    if LocalPlayer.state.gsCuffed then return false, 'Impossible : tu es menotté.' end
+    if LocalPlayer.state.isDead or IsEntityDead(PlayerPedId()) then return false, 'Tu n\'es pas en état d\'utiliser ton téléphone.' end
+    return true
+end
+
 local function openPhone()
     if open then return close() end
+    local ok, why = canOpen()
+    if not ok then if why then lib.notify({ description = why, type = 'error' }) end return end
     local data = lib.callback.await('gs_phone:open', false)
     if data == false then return lib.notify({ description = 'Tu n\'as pas de téléphone.', type = 'error' }) end
     if not data then return end
@@ -81,20 +91,29 @@ local function openPhone()
             if open then SendNUIMessage({ action = 'clock', clock = clock() }) end
         end
     end)
-    if walk then -- seulement téléphone ouvert ET option active : caméra, tir et menu pause bloqués, le reste libre
-        CreateThread(function()
-            while open do
-                DisableControlAction(0, 1, true) DisableControlAction(0, 2, true)
-                DisableControlAction(0, 24, true) DisableControlAction(0, 25, true) DisableControlAction(0, 257, true)
-                DisableControlAction(0, 199, true) DisableControlAction(0, 200, true) DisablePlayerFiring(PlayerId(), true)
-                Wait(0)
-            end
-        end)
-    end
+    -- V11.5 : téléphone ouvert = caméra figée, aucun coup ni tir, pas de carte / menu pause, pas de changement d'arme,
+    -- quelle que soit l'option « marcher » (avant : seulement en mode marche → coups et carte possibles en tapant).
+    CreateThread(function()
+        while open do
+            DisableControlAction(0, 1, true) DisableControlAction(0, 2, true)
+            for _, c in ipairs({ 24, 25, 37, 44, 45, 47, 58, 140, 141, 142, 143, 257, 263, 264 }) do DisableControlAction(0, c, true) end
+            DisableControlAction(0, 199, true) DisableControlAction(0, 200, true) DisablePlayerFiring(PlayerId(), true)
+            Wait(0)
+        end
+    end)
 end
 
 RegisterCommand('telephone', openPhone, false)
 RegisterKeyMapping('telephone', 'Téléphone', 'keyboard', Config.Key)
+
+-- Menotté ou tombé pendant un appel / un SMS : le téléphone se range tout seul
+local function watchState(key)
+    AddStateBagChangeHandler(key, ('player:%s'):format(GetPlayerServerId(PlayerId())), function(_, _, value)
+        if value and open then close() end
+    end)
+end
+watchState('gsCuffed')
+watchState('isDead')
 
 -- NUI → serveur ------------------------------------------------------------------------------------
 RegisterNUICallback('close', function(_, cb) close() cb(true) end)
@@ -145,7 +164,8 @@ RegisterNUICallback('payBill', function(b, cb)
     cb({ ok = ok == true, message = res })
 end)
 
-RegisterNUICallback('duty', function(_, cb) TriggerServerEvent('gs_jobs:server:toggleDuty') cb(true) end)
+-- V11.5 : prise / fin de service depuis le téléphone, de n'importe où (on prévient son employeur)
+RegisterNUICallback('duty', function(_, cb) TriggerServerEvent('gs_jobs:server:toggleDuty', true) cb(true) end)
 -- Applis qui ouvrent un menu d'une autre ressource (le téléphone se range) : plus RP qu'une commande tapée
 local EXTERNAL = { jobs = 'job', carnet = 'carnet', journal = 'journal', orders = 'commandes' }
 RegisterNUICallback('openApp', function(b, cb)

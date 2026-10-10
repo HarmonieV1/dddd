@@ -50,7 +50,7 @@ CreateThread(function()
                     BeginTextCommandDisplayText('STRING')
                     AddTextComponentSubstringPlayerName('[G] Effacer le tag')
                     EndTextCommandDisplayText(0.5, 0.84)
-                    if IsControlJustReleased(0, 47) then
+                    if IsControlJustReleased(0, 47) and not IsNuiFocused() then
                         if lib.progressBar({ duration = Config.Tags.eraseTime, label = 'Nettoyage du tag…', canCancel = true,
                             anim = { scenario = 'WORLD_HUMAN_MAID_CLEAN' }, disable = { move = true, car = true } }) then
                             ClearPedTasks(cache.ped)

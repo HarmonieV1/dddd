@@ -219,10 +219,33 @@ Actions.clearobjects = { job = 'police', run = function(src)
     return 'Tes objets sont retirés'
 end }
 
-Actions.identity = { job = 'police', target = true, run = function(_, target)
+Actions.identity = { job = 'police', target = true, run = function(src, target)
     local ci = Bridge:GetCharInfo(target) or {}
     local lic = Bridge:GetLicences(target) or {}
     local heat = GetResourceState('gs_wanted') == 'started' and exports.gs_wanted:GetHeat(target) or 0
+    -- V12 · Faux papiers présentés (gs_blackmarket) : loin du commissariat, le contrôle visuel montre la fausse identité ;
+    -- au commissariat, le scanner démasque, le casier s'alourdit, le papier ne sert plus.
+    local fake = Player(target).state.gsFake
+    if type(fake) == 'table' and (fake.untilTs or 0) > os.time() then
+        local ped = GetPlayerPed(src)
+        local st = Config.Custody.station
+        local atStation = ped ~= 0 and #(GetEntityCoords(ped) - vec3(st.x, st.y, st.z)) <= Config.Custody.stationRange
+        if not atStation then
+            local k = fake.kinds or {}
+            return { name = fake.name or '?', birthdate = fake.birth, nationality = ci.nationality, basic = true,
+                driver = lic.driver == true or k.driver == true, weapon = lic.weapon == true or k.weapon == true, hunting = lic.hunting == true,
+                records = 0, spouse = nil, wanted = false, warrant = false, points = nil }
+        end
+        Player(target).state:set('gsFake', nil, true)
+        Store.addRecord(Bridge:GetIdentifier(target), ('Usage de faux papiers (%s)'):format(fake.name or '?'), 0, 0, label(src))
+        Bridge:Notify(target, 'Le scanner du commissariat a démasqué tes faux papiers.', 'error')
+        return {
+            name = ('%s %s'):format(ci.firstname or '?', ci.lastname or '?'), birthdate = ci.birthdate, nationality = ci.nationality, fake = fake.name,
+            driver = lic.driver == true, weapon = lic.weapon == true, hunting = lic.hunting == true, records = #Store.records(Bridge:GetIdentifier(target)),
+            spouse = GetResourceState('gs_civil') == 'started' and exports.gs_civil:GetSpouseName(Bridge:GetIdentifier(target)) or nil,
+            wanted = heat > 0, warrant = Store.hasWarrant and Store.hasWarrant(Bridge:GetIdentifier(target)) or false,
+        }
+    end
     return {
         name = ('%s %s'):format(ci.firstname or '?', ci.lastname or '?'), birthdate = ci.birthdate, nationality = ci.nationality,
         driver = lic.driver == true, weapon = lic.weapon == true, hunting = lic.hunting == true, records = #Store.records(Bridge:GetIdentifier(target)),
@@ -237,8 +260,17 @@ Actions.licence = { job = 'police', target = true, run = function(src, target, d
     need(job and job.grade >= Config.Licences.minGrade, 'Grade insuffisant pour délivrer un permis.')
     need(Config.Licences.kinds[data.kind] ~= nil, 'Permis inconnu.')
     local on = data.on == true
-    need(Bridge:SetLicence(target, data.kind, on), 'Erreur.')
     local what = Config.Licences.kinds[data.kind]
+    if data.kind == 'driver' then
+        -- V11.5 : retrait du permis de conduire (fichier gs_driving, carte reprise, casier) ; rendu = permis + carte
+        need(GetResourceState('gs_driving') == 'started', 'Fichier des permis indisponible.')
+        local reason = on and 'rendu par la police' or need(Security:Sanitize(data.reason, 80), 'Motif obligatoire.')
+        need(exports.gs_driving:SetLicence(target, on, reason), on and 'Erreur.' or 'Pas de permis valide à retirer.')
+        if not on then Store.addRecord(Bridge:GetIdentifier(target), 'Retrait du permis de conduire : ' .. reason, 0, 0, label(src)) end
+    else
+        need(Bridge:SetLicence(target, data.kind, on), 'Erreur.')
+        if data.kind == 'weapon' then Bridge:LicenceCard(target, 'weapon', on) end -- carte PPA remise / reprise
+    end
     Bridge:Notify(target, ('%s %s par la police.'):format(what, on and 'délivré' or 'retiré'), on and 'success' or 'error')
     return ('%s %s.'):format(what, on and 'délivré' or 'retiré')
 end }

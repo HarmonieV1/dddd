@@ -67,7 +67,7 @@ CreateThread(function()
             end
             if best and not ui then lib.showTextUI('[E] Mettre sous scellé', { icon = 'box-archive' }) ui = true
             elseif not best and ui then lib.hideTextUI() ui = false end
-            if best and IsControlJustReleased(0, 38) then
+            if best and IsControlJustReleased(0, 38) and not IsNuiFocused() then
                 if lib.progressBar({ duration = 3000, label = 'Prélèvement…', canCancel = true,
                     anim = { dict = 'amb@medic@standing@kneel@base', clip = 'base' }, disable = { move = true, car = true, combat = true } }) then
                     notify(lib.callback.await('gs_evidence:collect', false, best.id))

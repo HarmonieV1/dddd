@@ -22,7 +22,9 @@ Store = {
     setGrade = function(cid, grade) members[cid].grade = grade end,
     removeMember = function(cid) local had = members[cid] ~= nil members[cid] = nil return had end,
 }
-loadResource('gs_gangs', { R .. 'gs_gangs/server/main.lua' })
+local blinded, traces = {}, {}
+provide('gs_cctv', { BlindArea = function(x, y, r, m) blinded[#blinded + 1] = { r = r, m = m } return 3 end, Trace = function(k, g) traces[#traces + 1] = { k = k, g = g } return true end })
+loadResource('gs_gangs', { R .. 'gs_gangs/server/main.lua', R .. 'gs_gangs/server/ops.lua' })
 local defaults = Config.DefaultGangs
 Config.DefaultGangs = {}
 Gangs.init()
@@ -97,6 +99,27 @@ check('retrait > caisse refusé', not ok)
 step()
 ok = cb('gs_gangs:bank', 1, 'withdraw', 100)
 check('retrait par le chef', ok and money.ballas == 200 and W.players[1].money.cash == 100)
+
+-- V12 · Opérations : brouillage des caméras, scanner police piraté (caisse, grade, repos, trace, écoute)
+do
+    local opsExports = { MembersOnline = getExport('gs_gangs', 'MembersOnline'), Scanner = getExport('gs_gangs', 'ScannerListeners') }
+    ok = cb('gs_gangs:op', 2, 'jam'); step()
+    check('opération : grade insuffisant (recrue)', not ok)
+    ok = cb('gs_gangs:op', 1, 'jam'); step()
+    check('opération : caisse insuffisante', not ok and #blinded == 0)
+    money.ballas = 20000
+    ok = cb('gs_gangs:op', 1, 'jam'); step()
+    check('brouillage : caméras aveugles, caisse débitée, trace laissée', ok and #blinded == 1 and blinded[1].r == Config.Ops.jam.radius and money.ballas == 15000 and traces[1].k == 'jam' and traces[1].g == 'Ballas')
+    ok = cb('gs_gangs:op', 1, 'jam'); step()
+    check('brouillage : repos entre deux', not ok)
+    check('scanner : personne n\'écoute avant', #opsExports.Scanner() == 0)
+    ok = cb('gs_gangs:op', 1, 'scanner'); step()
+    check('scanner piraté : actif pour le gang, membres en ligne à l\'écoute', ok and GlobalState.gsScanner.gang == 'ballas' and #opsExports.Scanner() == 3 and money.ballas == 7000)
+    check('membres en ligne listés (chef, recrue, bras droit)', #opsExports.MembersOnline('ballas') == 3)
+    ok = cb('gs_gangs:op', 1, 'inconnu'); step()
+    check('opération inconnue refusée', not ok)
+    GlobalState.gsScanner = nil
+end
 step()
 ok = cb('gs_gangs:bank', 1, 'withdraw', -50)
 check('montant négatif refusé', not ok)

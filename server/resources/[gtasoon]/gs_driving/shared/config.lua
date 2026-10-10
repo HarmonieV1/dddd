@@ -11,7 +11,9 @@ Config.Job = 'drivingschool'                   -- moniteurs (gs_jobs) : peuvent 
 
 -- V8 · Permis à points : 12 points. Retirés par la police (F4 → Retirer des points) ou un refus d'obtempérer.
 -- À 0 : permis annulé, il faut repasser l'auto-école (code et conduite). +1 point tous les `recoverDays` jours sans infraction.
-Config.Points = { max = 12, recoverDays = 2, maxPerOffense = 6 }
+-- V11.5 : `enabled = false` (pas de permis à points aux États-Unis) : la police retire ou rend le permis directement
+-- (F4 → Contrôle d'identité → Permis), motif au casier. Remettre true pour retrouver les points.
+Config.Points = { enabled = false, max = 12, recoverDays = 2, maxPerOffense = 6 }
 
 Config.Theory = { price = 500, questions = 10, toPass = 8, cooldown = 300 }
 Config.Practical = {

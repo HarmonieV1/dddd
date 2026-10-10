@@ -106,8 +106,24 @@ rows.CID5 = 0 join(5, 'CID5', 'Sans code', Config.Desk)
 ok = cb('gs_driving:grant', 4, 5); step()
 check('moniteur : il faut le code', not ok)
 
+-- V11.5 · Retrait / restitution par la police (points désactivés par défaut) ----------------------------------------
+do
+    local records = {}
+    provide('gs_police', { AddRecord = function(cid, charge) records[#records + 1] = charge return true end })
+    rows.OLD = 2 W.players[2].licences.driver = true W.players[2].items.driver_license = 1
+    check('points désactivés : pas de solde', Driving.points('OLD') == nil and Driving.removePoints(2, 3, 'x') == nil)
+    local _, _, valid = cb('gs_driving:points', 2); step()
+    check('/permis : permis valide sans points', valid == true)
+    check('retrait par la police : fichier à 0, permis et carte retirés', Driving.setLicence(2, false, 'Délit de fuite') == true
+        and rows.OLD == 0 and W.players[2].licences.driver == false and W.players[2].items.driver_license == nil)
+    check('retrait sans permis : refusé', Driving.setLicence(2, false, 'x') == false)
+    check('restitution : permis et carte rendus', Driving.setLicence(2, true) == true and rows.OLD == 2
+        and W.players[2].licences.driver == true and W.players[2].items.driver_license == 1)
+end
+
 -- V8 · Permis à points --------------------------------------------------------------------------------------------
 do
+    Config.Points.enabled = true
     local pts = {}
     Store.points = function(cid) local r = pts[cid] if not r then return nil end return r[1], r[2] end
     Store.setPoints = function(cid, p, last) pts[cid] = { p, last } end
@@ -123,8 +139,9 @@ do
     check('récupération : +1 point après la période sans infraction', Driving.points('OLD') == 10)
     Driving.removePoints(2, 6, 'Refus d\'obtempérer')
     check('solde 4', Driving.points('OLD') == 4)
-    check('solde nul : permis annulé, retour à l\'auto-école', Driving.removePoints(2, 6, 'Délit de fuite') == 0
-        and rows.OLD == 0 and W.players[2].licences.driver == false and records[#records]:find('Permis annulé'))
+    W.players[2].items.driver_license = 1
+    check('solde nul : permis annulé, retour à l\'auto-école, carte reprise', Driving.removePoints(2, 6, 'Délit de fuite') == 0
+        and rows.OLD == 0 and W.players[2].licences.driver == false and records[#records]:find('Permis annulé') and W.players[2].items.driver_license == nil)
     check('plus de permis : plus de points', Driving.points('OLD') == nil)
 end
 

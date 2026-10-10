@@ -111,9 +111,19 @@ end)
 
 -- Ouverture / messages / contacts ---------------------------------------------------------------------
 
+--- V11.5 · Menotté (gs_police) ou mort / dans le coma (qbx_medical) : pas de téléphone, même avec un client modifié
+local function unableToUse(src)
+    local okC, cuffed = pcall(function() return exports.gs_police:IsCuffed(src) end)
+    if okC and cuffed == true then return true end
+    local st = Player(src).state
+    return st and st.isDead == true
+end
+Phone.unableToUse = unableToUse
+
 lib.callback.register('gs_phone:open', function(src)
     if not guard(src, 'open', 10, 10000) then return nil end
     if not hasPhone(src) then return false end
+    if unableToUse(src) then return nil end
     local me = Phone.numbers[src]
     local conversations = {}
     for _, row in ipairs(Store.conversations(me)) do
@@ -216,6 +226,11 @@ lib.callback.register('gs_phone:emergency', function(src, service, text)
             TriggerClientEvent('gs_phone:client:emergency', s, alert)
             reached = reached + 1
         end
+    end
+    -- V12 : scanner police piraté (gs_gangs) : les appels police fuitent vers le gang
+    if service == 'police' then
+        local okL, listeners = pcall(function() return exports.gs_gangs:ScannerListeners() end)
+        for _, s in ipairs(okL and listeners or {}) do TriggerClientEvent('gs_phone:client:emergency', s, alert) end
     end
     if reached == 0 then return true, 'Aucune unité disponible pour le moment. Ton appel est enregistré.' end
     return true, ('Appel transmis à %d unité(s).'):format(reached)

@@ -183,6 +183,23 @@ local function openMenu()
         lib.registerContext({ id = 'gs_gang_wars', title = 'Guerres de territoire', menu = 'gs_gang', options = opts })
         lib.showContext('gs_gang_wars')
     end }
+    -- V12 · Opérations (guerre de l'information), payées par la caisse
+    if info.grade >= 2 then
+        options[#options + 1] = { title = 'Opérations', icon = 'satellite-dish', iconColor = '#ffb347', arrow = true, description = 'Brouiller les caméras, pirater le scanner police', onSelect = function()
+            local o = {}
+            for kind, def in pairs(Config.Ops) do
+                o[#o + 1] = { title = def.label, icon = def.icon, description = ('%d $ (caisse) · %d min · grade %d · la police peut remonter la source'):format(def.cost, def.minutes, def.minGrade),
+                    onSelect = function()
+                        if lib.alertDialog({ header = def.label, content = def.help, centered = true, cancel = true }) == 'confirm' then
+                            result(lib.callback.await('gs_gangs:op', false, kind))
+                        end
+                    end }
+            end
+            table.sort(o, function(a, b) return a.title < b.title end)
+            lib.registerContext({ id = 'gs_gang_ops', title = 'Opérations', menu = 'gs_gang', options = o })
+            lib.showContext('gs_gang_ops')
+        end }
+    end
     options[#options + 1] = { title = 'Quitter le gang', icon = 'door-open', iconColor = '#ff2e88', onSelect = function()
         if lib.alertDialog({ header = 'Quitter le gang', content = 'Sûr ?', centered = true, cancel = true }) == 'confirm' then
             TriggerServerEvent('gs_gangs:server:leave')
@@ -194,6 +211,7 @@ end
 
 RegisterCommand('gang', function()
     if lib.getOpenContextMenu() then return lib.hideContext() end -- même touche = fermer
+    if IsNuiFocused() then return end -- V11.5 : jamais pendant une saisie ou une autre interface
     openMenu()
 end, false)
 RegisterKeyMapping('gang', 'Menu gang', 'keyboard', Config.Key)

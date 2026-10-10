@@ -22,7 +22,7 @@
 -->
 <script>document.documentElement.classList.add('js')</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;700;800&family=Old+Standard+TT:ital,wght@0,400;0,700;1,400&family=UnifrakturMaguntia&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Bowlby+One&family=Inter:wght@400;500;700;800&family=Old+Standard+TT:ital,wght@0,400;0,700;1,400&family=UnifrakturMaguntia&display=swap" rel="stylesheet">
 <style>
   :root {
     --black: #07040d; --bg: #0c0716; --bg2: #120a22; --card: #180e2c; --line: #2c1d4d;
@@ -121,10 +121,11 @@
       linear-gradient(180deg, #0c0716 0%, #1b0b2b 60%, #2a0c25 100%); }
   .hero::after { content: ''; position: absolute; inset: auto 0 0 0; height: 90px; background: linear-gradient(transparent, var(--black)); z-index: 2; }
   .hero .wrap { position: relative; z-index: 3; width: 100%; }
-  .aurora { position: absolute; inset: -20%; z-index: 0; pointer-events: none; filter: blur(60px); opacity: .55;
+  .aurora { position: absolute; inset: -20%; z-index: 0; pointer-events: none; filter: blur(44px); opacity: .55; will-change: transform;
     background: radial-gradient(circle at 20% 30%, rgba(176, 72, 255, .45), transparent 30%), radial-gradient(circle at 80% 20%, rgba(79, 216, 255, .3), transparent 28%), radial-gradient(circle at 60% 70%, rgba(162, 75, 255, .4), transparent 30%);
     animation: aurora 18s ease-in-out infinite alternate; }
   @keyframes aurora { to { transform: translate3d(4%, -3%, 0) rotate(8deg) scale(1.08); } }
+  .hero.off .aurora, .hero.off .skyline rect.w { animation-play-state: paused; }
   #particles { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none; }
 
   /* Décor : soleil couchant, skyline, route en perspective */
@@ -388,7 +389,7 @@
   /* HUD de l'accueil : heure de Los Santos (1 minute en jeu = 2 secondes) */
   .hud { position: absolute; z-index: 3; top: 92px; right: max(20px, calc((100vw - 1160px) / 2 + 20px)); text-align: right; font-family: Anton, sans-serif; text-transform: uppercase; line-height: 1.1;
     text-shadow: 0 2px 10px rgba(0, 0, 0, .7); pointer-events: none; }
-  .hud b { display: block; font-family: 'GTA Mission', Anton, sans-serif; font-weight: 400; font-size: 2.2rem; letter-spacing: .04em; color: #fff; }
+  .hud b { display: block; font-family: 'GTA Mission', 'Bowlby One', Anton, sans-serif; font-weight: 400; font-size: 2.2rem; letter-spacing: .04em; color: #fff; }
   .hud b i { font-style: normal; animation: caret 1s steps(1) infinite; }
   .hud span { font-size: .8rem; letter-spacing: .2em; color: #c79bff; }
   .hud small { display: block; margin-top: 4px; font-family: Inter, sans-serif; font-weight: 700; font-size: .78rem; color: #8cff9e; letter-spacing: .06em; }
@@ -446,9 +447,9 @@
   .gta-banner { position: fixed; left: 0; right: 0; top: 38%; z-index: 60; text-align: center; pointer-events: none; padding: 24px 16px;
     background: linear-gradient(90deg, transparent, rgba(7, 4, 13, .9) 18%, rgba(7, 4, 13, .9) 82%, transparent); opacity: 0; transform: scaleY(0); transition: opacity .3s, transform .45s var(--ease); }
   .gta-banner.show { opacity: 1; transform: none; }
-  /* Police des écrans de mission de GTA V (Pricedown) : dépose fonts/pricedown.woff2 ou .ttf à côté de index.html */
+  /* Police des écrans de mission de GTA V (Pricedown) : dépose fonts/pricedown.woff2 ou .ttf à côté de index.html ; sinon Bowlby One (Google Fonts) */
   @font-face { font-family: 'GTA Mission'; src: local('Pricedown'), local('Pricedown Bl'), local('PricedownBl-Regular'), url('fonts/pricedown.woff2') format('woff2'), url('fonts/pricedown.ttf') format('truetype'); font-display: swap; }
-  .gta-banner b { display: block; font-family: 'GTA Mission', Anton, sans-serif; font-weight: 400; text-transform: lowercase; font-size: clamp(2.6rem, 8vw, 5.2rem); line-height: 1.05; letter-spacing: .02em; color: #f2c230;
+  .gta-banner b { display: block; font-family: 'GTA Mission', 'Bowlby One', Anton, sans-serif; font-weight: 400; text-transform: lowercase; font-size: clamp(2.6rem, 8vw, 5.2rem); line-height: 1.05; letter-spacing: .02em; color: #f2c230;
     text-shadow: 2px 2px 0 #000, -2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000, 0 3px 0 #000, 0 8px 30px rgba(0, 0, 0, .7); }
   .gta-banner.red b { color: #d0122f; }
   .gta-banner.show b { animation: bannerIn .7s var(--ease); }
@@ -499,6 +500,111 @@
   .mock-app i { width: 44px; height: 44px; border-radius: 13px; display: grid; place-items: center; font-style: normal; font-size: 20px;
     background: linear-gradient(135deg, var(--c), #1a0f2e); box-shadow: 0 6px 14px rgba(0, 0, 0, .4); }
   @media (max-width: 860px) { .phone-sec { grid-template-columns: 1fr; } .mock { transform: none; } }
+/* V12 : en ce moment en ville */
+.now{display:flex;flex-wrap:wrap;gap:8px 18px;align-items:center;max-width:1160px;margin:18px auto 0;padding:12px 18px;border:1px solid var(--line);border-radius:14px;background:linear-gradient(90deg,rgba(162,75,255,.12),rgba(79,216,255,.06));font-size:.92rem}
+.now .now-k{font-family:Anton,sans-serif;text-transform:uppercase;letter-spacing:.06em;color:var(--cyan);display:flex;align-items:center;gap:8px}
+.now .now-k i{width:8px;height:8px;border-radius:50%;background:#6b6380;display:inline-block}
+.now .now-k i.on{background:#5aff8c;box-shadow:0 0 10px #5aff8c}
+.now .now-i{color:var(--muted);white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis}
+.now .now-i b{color:var(--text);font-weight:600}
+/* V12 : candidature */
+.apply{margin-top:56px;border:1px solid var(--line);border-radius:18px;background:var(--card);padding:28px;display:grid;grid-template-columns:1fr 1.4fr;gap:28px}
+.apply h3{font-family:Anton,sans-serif;text-transform:uppercase;font-size:1.6rem;margin:8px 0 10px}
+.apply-form{display:grid;gap:12px}
+.apply-form .row{display:grid;grid-template-columns:1fr 120px;gap:12px}
+.apply-form label{display:grid;gap:6px;font-size:.9rem;color:var(--muted)}
+.apply-form input,.apply-form textarea{width:100%;background:var(--bg2);border:1px solid var(--line);border-radius:10px;color:var(--text);padding:10px 12px;font:inherit;font-size:.95rem}
+.apply-form textarea{min-height:72px;resize:vertical}
+.apply-form input:focus,.apply-form textarea:focus{outline:none;border-color:var(--violet);box-shadow:0 0 0 3px rgba(162,75,255,.2)}
+.apply-foot{display:flex;flex-wrap:wrap;gap:14px;align-items:center}
+@media(max-width:820px){.apply{grid-template-columns:1fr}.apply-form .row{grid-template-columns:1fr}.now{margin:14px 16px 0}}
+
+/* ======================================================================================
+   V12.2 · Couche cinéma. Additive : rien du contenu ni des sélecteurs existants ne change.
+   Tout ce qui bouge est coupé par prefers-reduced-motion ; la souris n'agit que sur ordinateur.
+   ====================================================================================== */
+:root { --skew: 0deg; --scroll: 0; }
+/* Grain de film, vignette, fines lignes de balayage : un voile de 4 à 6 % qui unifie toute la page */
+.grain, .vignette { position: fixed; inset: 0; pointer-events: none; z-index: 90; }
+.grain { opacity: .055; mix-blend-mode: screen; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); background-size: 220px 220px; animation: grain .9s steps(6) infinite; }
+@keyframes grain { 0% { transform: translate3d(0, 0, 0); } 20% { transform: translate3d(-40px, 30px, 0); } 40% { transform: translate3d(60px, -20px, 0); } 60% { transform: translate3d(-20px, -60px, 0); } 80% { transform: translate3d(40px, 50px, 0); } 100% { transform: translate3d(0, 0, 0); } }
+.grain { inset: -64px; will-change: transform; }
+.vignette { z-index: 89; background: radial-gradient(ellipse 110% 90% at 50% 45%, transparent 55%, rgba(4, 2, 8, .55) 100%), repeating-linear-gradient(0deg, rgba(255, 255, 255, .018) 0 1px, transparent 1px 4px); }
+/* Bandes « letterbox » : fermées pendant l'intro, s'ouvrent à l'entrée ; reviennent quand un titre de mission s'affiche */
+.cine-bars { position: fixed; inset: 0; pointer-events: none; z-index: 95; }
+.cine-bars::before, .cine-bars::after { content: ''; position: absolute; left: 0; right: 0; height: 0; background: #020105; transition: height .9s var(--ease); }
+.cine-bars::before { top: 0; } .cine-bars::after { bottom: 0; }
+html.js:not(.ready) .cine-bars::before, html.js:not(.ready) .cine-bars::after, body.cine .cine-bars::before, body.cine .cine-bars::after { height: 11vh; }
+/* Accueil : la caméra « pousse » (le décor part un peu plus grand et se pose), aberration chromatique d'une seconde sur le titre */
+html.js .hero .scene, html.js .hero .aurora { transform-origin: 50% 80%; transform: scale(1.12); }
+body.ready .hero .scene, body.ready .hero .aurora { transform: scale(1); transition: transform 2.6s cubic-bezier(.16, .84, .3, 1); }
+body.ready .hero h1 { animation: chroma 1.3s ease-out .35s; }
+@keyframes chroma { 0% { text-shadow: -6px 0 0 rgba(255, 35, 64, .9), 6px 0 0 rgba(79, 216, 255, .9), 0 8px 40px rgba(0, 0, 0, .5); filter: blur(.6px); } 60% { text-shadow: -2px 0 0 rgba(255, 35, 64, .6), 2px 0 0 rgba(79, 216, 255, .6), 0 8px 40px rgba(0, 0, 0, .5); } 100% { text-shadow: 0 8px 40px rgba(0, 0, 0, .5); filter: none; } }
+/* Parallaxe au défilement de l'accueil (variables posées par le script), déjà combinée à la souris via [data-depth] */
+.hero .wrap { will-change: transform, opacity; }
+.hero .scroll-hint, .hero .hud { transition: opacity .4s; }
+/* Rail de chapitres (ordinateur) : numéro, nom, progression ; se cache tant qu'on est sur l'accueil */
+.chapters { position: fixed; left: 18px; top: 50%; transform: translateY(-50%); z-index: 40; display: grid; gap: 10px; opacity: 0; pointer-events: none; transition: opacity .5s var(--ease), transform .5s var(--ease); }
+body.chapters-on .chapters { opacity: 1; pointer-events: auto; }
+.chapters a { display: flex; align-items: center; gap: 10px; color: var(--muted); font-size: .68rem; font-weight: 800; letter-spacing: .16em; text-transform: uppercase; opacity: .55; transition: opacity .3s, color .3s, transform .3s var(--ease); }
+.chapters a i { width: 14px; height: 2px; background: currentColor; transition: width .35s var(--ease), background .3s; }
+.chapters a span { max-width: 0; overflow: hidden; white-space: nowrap; transition: max-width .45s var(--ease); }
+.chapters a:hover, .chapters a.on { opacity: 1; color: var(--white); transform: translateX(4px); }
+.chapters a.on i { width: 34px; background: var(--neon); box-shadow: var(--glow-pink); }
+.chapters a.on span, .chapters:hover a span { max-width: 180px; }
+@media (max-width: 1320px) { .chapters { display: none; } }
+/* Numéro de chapitre fantôme en haut à droite de chaque section, qui glisse avec le défilement */
+section[data-chapter] > .wrap::before { content: attr(data-num); position: absolute; right: 0; top: -70px; font-family: Anton, sans-serif; font-size: clamp(5rem, 14vw, 11rem); line-height: 1; color: transparent; -webkit-text-stroke: 1px rgba(162, 75, 255, .18); pointer-events: none; z-index: 0; letter-spacing: -.02em; transform: translateY(calc(var(--scroll) * -30px)); }
+section > .wrap { position: relative; }
+/* Mots qui se révèlent (lead, tagline) : le script découpe en mots, chaque mot monte avec un décalage */
+.w-in { display: inline-block; overflow: hidden; vertical-align: bottom; }
+.w-in > span { display: inline-block; transform: translateY(110%); opacity: 0; transition: transform .7s var(--ease), opacity .5s; transition-delay: calc(var(--w, 0) * 28ms); }
+.in .w-in > span, .ready .hero .w-in > span { transform: none; opacity: 1; }
+/* Skew lié à la vitesse de défilement : la page « tangue » légèrement quand on descend vite (contenu seulement) */
+section > .wrap, .stats, .band > * { transform: skewY(var(--skew)); transition: transform .12s linear; }
+/* Barre du haut : se cache quand on descend vite, revient dès qu'on remonte */
+nav { transition: background .3s, transform .45s var(--ease); }
+nav.hide { transform: translateY(-100%); }
+/* Réticule qui suit la souris (ordinateur) : anneau lissé, se dilate sur ce qui est cliquable, ne remplace pas le curseur */
+.reticle { position: fixed; left: 0; top: 0; z-index: 85; width: 34px; height: 34px; margin: -17px 0 0 -17px; border-radius: 50%; border: 1.5px solid rgba(247, 243, 255, .55); pointer-events: none; opacity: 0; mix-blend-mode: difference; transition: width .25s var(--ease), height .25s var(--ease), margin .25s var(--ease), opacity .4s, border-color .25s; }
+.reticle::before, .reticle::after { content: ''; position: absolute; background: rgba(247, 243, 255, .55); }
+.reticle::before { left: 50%; top: -5px; width: 1px; height: 6px; margin-left: -.5px; box-shadow: 0 34px 0 rgba(247, 243, 255, .55); }
+.reticle::after { top: 50%; left: -5px; height: 1px; width: 6px; margin-top: -.5px; box-shadow: 34px 0 0 rgba(247, 243, 255, .55); }
+body.has-glow .reticle { opacity: 1; }
+.reticle.hot { width: 58px; height: 58px; margin: -29px 0 0 -29px; border-color: var(--cyan); }
+/* Profondeur au défilement (navigateurs récents seulement, sans script) : décor des captures, mock du téléphone, carte */
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .shot::before { animation: depth linear both; animation-timeline: view(); animation-range: entry 0% exit 100%; }
+    .mock, .map-box { animation: lift linear both; animation-timeline: view(); animation-range: entry 0% exit 100%; }
+    .stat strong { animation: pop linear both; animation-timeline: view(); animation-range: entry 0% entry 60%; }
+    @keyframes depth { from { transform: translateY(-6%) scale(1.06); } to { transform: translateY(6%) scale(1.06); } }
+    @keyframes lift { from { transform: translateY(34px); } to { transform: translateY(-34px); } }
+    @keyframes pop { from { opacity: .2; transform: scale(.8); } to { opacity: 1; transform: none; } }
+    .mock:hover { animation: none; }
+  }
+}
+/* V12.3 : SMS en jeu pendant la visite + éléments live du bandeau Weazel */
+.sms-box { position: fixed; right: 18px; bottom: 18px; z-index: 65; display: grid; gap: 10px; width: min(360px, calc(100vw - 36px)); pointer-events: none; }
+.sms { display: grid; grid-template-columns: 34px 1fr 28px; gap: 10px; align-items: start; padding: 12px 12px 12px 14px; border-radius: 16px; background: rgba(12, 7, 22, .96); border: 1px solid var(--line); box-shadow: 0 16px 40px rgba(0, 0, 0, .5), var(--glow-pink); pointer-events: auto; transform: translateX(120%); opacity: 0; transition: transform .55s var(--ease), opacity .4s; }
+.sms.in { transform: none; opacity: 1; }
+.sms i { font-style: normal; font-size: 1.4rem; line-height: 1; }
+.sms b { display: block; font-size: .8rem; letter-spacing: .08em; text-transform: uppercase; color: var(--cyan); margin-bottom: 2px; }
+.sms span { font-size: .9rem; color: var(--text); line-height: 1.35; }
+.sms button { background: none; border: 0; color: var(--muted); cursor: pointer; font-size: .9rem; padding: 2px; }
+.ticker .move .live-item { color: var(--white); }
+.ticker .move .live-item::before { content: '● LIVE'; color: var(--red); font-size: .7rem; letter-spacing: .12em; margin-right: 12px; animation: caret 1.2s steps(1) infinite; }
+@media (max-width: 600px) { .sms-box { bottom: 12px; right: 12px; } }
+/* Intro : sous-titre défilant façon chargement de mission */
+.intro-sub { margin-top: 14px; min-height: 1.2em; color: #c79bff; font-size: .78rem; letter-spacing: .14em; text-transform: uppercase; }
+.intro-sub b { font-weight: 800; color: var(--white); }
+@media (prefers-reduced-motion: reduce) {
+  .grain { animation: none; }
+  .cine-bars, .reticle, .chapters { display: none; }
+  html.js .hero .scene, html.js .hero .aurora { transform: none; }
+  .w-in > span { transform: none !important; opacity: 1 !important; }
+  section > .wrap, .stats, .band > * { transform: none !important; }
+}
 </style>
 </head>
 <body>
@@ -508,9 +614,14 @@
     <div class="intro-logo"><span class="grad">RoadLine</span> RP</div>
     <div class="intro-bar"><i></i></div>
     <small>Chargement de Los Santos…</small>
+    <div class="intro-sub js-intro-sub" aria-hidden="true"></div>
   </div>
 </div>
 <div class="glow" aria-hidden="true"></div>
+<!-- V12.2 : couche cinéma (grain, vignette, bandes, réticule, rail de chapitres) -->
+<div class="grain" aria-hidden="true"></div><div class="vignette" aria-hidden="true"></div><div class="cine-bars" aria-hidden="true"></div>
+<div class="reticle" aria-hidden="true"></div>
+<aside class="chapters" aria-label="Chapitres"></aside>
 
 <nav>
   <div class="wrap">
@@ -581,6 +692,18 @@
     <span>South Los Santos à l'abandon : les commerçants baissent le rideau</span>
     <span>Macabre découverte à La Puerta : la police scientifique sur place</span>
   </div></div>
+</div>
+
+<!-- V12 : en ce moment en ville (ville.json, 60 s) -->
+<div class="now rv" aria-label="En ce moment en ville">
+  <span class="now-k"><i class="js-now-dot"></i>En ce moment en ville</span>
+  <span class="now-i js-now-weather" title="Météo">🌤️ <b>—</b></span>
+  <span class="now-i js-now-hour" title="Heure à Los Santos">🕒 <b>—</b></span>
+  <span class="now-i js-now-players" title="Joueurs en ville">👥 <b>—</b> en ville</span>
+  <span class="now-i js-now-hot" title="Quartier sous tension">🔥 <b>calme</b></span>
+  <span class="now-i js-now-next" title="Prochain rendez-vous">📅 <b>—</b></span>
+  <span class="now-i js-now-rumor" title="Dernière rumeur vérifiée">🗣️ <b>—</b></span>
+  <span class="now-i js-now-mem" title="Lieux de mémoire">🏛️ <b>—</b> lieux de mémoire</span>
 </div>
 
 <div class="stats">
@@ -818,6 +941,27 @@
       <div class="step rv" style="--d:2"><strong>Connecte-toi</strong><p class="muted">Bouton « Rejoindre la ville », ou dans FiveM : <code>F8</code> puis <code class="js-connect-cmd copy" title="Cliquer pour copier">connect (adresse bientôt)</code></p></div>
       <div class="step rv" style="--d:3"><strong>Crée ton perso</strong><p class="muted">Accepte le règlement, et laisse Max te guider pour ton premier jour.</p></div>
     </div>
+    <!-- V12 : candidature en 3 questions → ticket Discord (webhook), sans bot externe -->
+    <div class="apply rv" id="candidature">
+      <div class="apply-head">
+        <span class="kicker">Candidature</span>
+        <h3>Trois questions, <span class="grad">et on se voit en ville</span></h3>
+        <p class="muted">Pas de formulaire de 40 lignes : dis-nous qui tu es, le staff te répond sur Discord.</p>
+      </div>
+      <form class="apply-form js-apply" novalidate>
+        <div class="row">
+          <label>Ton pseudo Discord <input name="discord" maxlength="40" required placeholder="ex : jason_ls"></label>
+          <label>Ton âge <input name="age" type="number" min="13" max="99" required placeholder="18"></label>
+        </div>
+        <label>Ton personnage en une phrase <textarea name="q1" maxlength="600" required placeholder="Un ancien mécano qui veut ouvrir son garage… ou le braquer."></textarea></label>
+        <label>Pourquoi RoadLine ? <textarea name="q2" maxlength="600" required placeholder="Ce que tu cherches dans une ville qui se souvient."></textarea></label>
+        <label>Ton expérience RP <textarea name="q3" maxlength="600" required placeholder="Débutant bienvenu : dis-le simplement."></textarea></label>
+        <div class="apply-foot">
+          <button class="btn btn-main" type="submit">Envoyer ma candidature</button>
+          <span class="muted js-apply-state">Réponse sur Discord sous 48 h.</span>
+        </div>
+      </form>
+    </div>
   </div>
 </section>
 
@@ -898,6 +1042,7 @@
   const CONFIG = {
     discord: 'https://discord.gg/8y2sX7EvZN',
     cfxCode: '',            // code cfx.re du serveur (ex. 'abc123') : bouton « Rejoindre » + compteur de joueurs
+    slots: 48,              // places affichées sur le site (0 = la valeur que le serveur annonce ; 64 seulement avec l'Element Club Argentum)
     // Adresse directe (F8 → connect …), utilisée tant que cfxCode est vide. Écrite à l'envers en base64 pour ne pas apparaître en clair
     // dans la page : btoa('IP:30120'.split('').reverse().join('')). Masquée (caviardée) jusqu'à « opening », puis dévoilée toute seule.
     connectB64: 'MDIxMDM6MzcxLjA3MS45MjEuNzU=',
@@ -1005,9 +1150,57 @@
     }
     gazette(null);
     render(DEMO, false);
+    // ---- V12 : « En ce moment en ville » (bandeau) ----
+    function nowStrip(d) {
+      const n = d.now || {};
+      const set = (sel, val, suffix) => { const el = document.querySelector(sel + ' b'); if (el) el.textContent = val; const w = document.querySelector(sel); if (w && suffix !== undefined) w.title = suffix; };
+      set('.js-now-weather', n.weather || '—');
+      set('.js-now-hour', n.hour || '—');
+      set('.js-now-players', String(d.players ?? '—'));
+      set('.js-now-hot', (n.hot && n.hot.length) ? n.hot.join(', ') : 'calme');
+      set('.js-now-next', n.next ? `${n.next.label} · ${n.next.dayName} ${n.next.from}` : '—');
+      set('.js-now-rumor', n.rumor ? ('« ' + n.rumor + ' »') : 'rien de vérifié');
+      set('.js-now-mem', String(n.memories ?? 0));
+      const dot = document.querySelector('.js-now-dot'); if (dot) dot.classList.add('on');
+      if (!CONFIG.cfxCode) { const p = document.querySelector('.js-players'); if (p) p.textContent = `${d.players ?? 0} / ${CONFIG.slots || d.max || '?'}`; }
+      // V12.3 : Weazel News en direct : ce qui vient vraiment de la ville passe en tête du bandeau
+      const move = document.querySelector('.ticker .move');
+      if (move) {
+        move.querySelectorAll('.live-item').forEach((x) => x.remove());
+        const items = [];
+        if (n.rumor) items.push('Rumeur confirmée : ' + n.rumor);
+        if (n.hot && n.hot.length) items.push('Tension maximale à ' + n.hot.join(' et ') + ' : les habitants restent chez eux');
+        if (n.next) items.push(`${n.next.label} ${n.next.dayName} à ${n.next.from} : la ville se prépare`);
+        if (d.legends && d.legends[0]) items.push(`Légende : ${d.legends[0].name} a tenu la cavale`);
+        if (n.fugitives) items.push(`Avis de recherche : ${n.fugitives} fugitif${n.fugitives > 1 ? 's' : ''} en cavale`);
+        if (n.memories) items.push(`${n.memories} lieux de mémoire recensés : la ville se souvient`);
+        items.slice(0, 6).reverse().forEach((t) => { const s = document.createElement('span'); s.className = 'live-item'; s.textContent = t; move.prepend(s); });
+      }
+    }
     if (CONFIG.cityUrl) {
-      const load = () => fetch(CONFIG.cityUrl).then((r) => r.json()).then((d) => { current = d; if (!playing) render(d, true); gazette(d.gazette); }).catch(() => {});
+      const load = () => fetch(CONFIG.cityUrl).then((r) => r.json()).then((d) => { current = d; if (!playing) render(d, true); gazette(d.gazette); nowStrip(d); }).catch(() => {});
       load(); setInterval(load, 60000);
+    }
+    // ---- V12 : candidature → POST /gs_city/candidature (même serveur que ville.json), webhook Discord côté serveur ----
+    const form = document.querySelector('.js-apply');
+    if (form) {
+      const state = document.querySelector('.js-apply-state');
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const url = CONFIG.cityUrl ? CONFIG.cityUrl.replace(/ville\.json$/, 'candidature') : '';
+        const data = Object.fromEntries(new FormData(form).entries());
+        if (!url) { state.textContent = 'Candidatures bientôt ouvertes : passe par le Discord.'; return; }
+        if (!data.discord || !data.age || (data.q1 || '').length < 10 || (data.q2 || '').length < 10 || (data.q3 || '').length < 10) {
+          state.textContent = 'Réponds aux trois questions (10 caractères minimum).'; return;
+        }
+        state.textContent = 'Envoi…';
+        try {
+          const r = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
+          const j = await r.json();
+          state.textContent = j.message || (j.ok ? 'Envoyée.' : 'Refusée.');
+          if (j.ok) { form.reset(); toast('Candidature envoyée'); }
+        } catch (err) { state.textContent = 'Serveur injoignable : passe par le Discord.'; }
+      });
     }
   })();
 
@@ -1048,9 +1241,17 @@
   const intro = $('#intro');
   let seen = false;
   try { seen = sessionStorage.getItem('rl_intro') === '1'; sessionStorage.setItem('rl_intro', '1'); } catch (e) {}
-  const start = () => { intro.classList.add('done'); document.body.classList.add('ready'); setTimeout(() => intro.remove(), 900); };
-  if (RM || seen) { intro.remove(); document.body.classList.add('ready'); }
-  else { setTimeout(start, 700); intro.addEventListener('click', start, { once: true }); }
+  const start = () => { intro.classList.add('done'); document.body.classList.add('ready'); document.documentElement.classList.add('ready'); setTimeout(() => intro.remove(), 900); };
+  if (RM || seen) { intro.remove(); document.body.classList.add('ready'); document.documentElement.classList.add('ready'); }
+  else {
+    // V12.2 : l'intro prend le temps d'un vrai chargement de mission (lignes de contexte), Entrée ou clic pour passer
+    const sub = $('.js-intro-sub'), lines = ['Chargement des quartiers', 'Réveil des PNJ', 'La ville se souvient de toi', '<b>Appuie pour entrer</b>'];
+    let li = 0; const next = () => { if (!intro.isConnected) return; sub.innerHTML = lines[li++ % lines.length]; if (li < lines.length) setTimeout(next, 420); };
+    next();
+    setTimeout(start, 1900);
+    intro.addEventListener('click', start, { once: true });
+    addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') start(); }, { once: true });
+  }
 
   // Skyline générée (fenêtres qui scintillent)
   (function skyline() {
@@ -1082,6 +1283,11 @@
     const c = $('#particles'), ctx = c.getContext('2d'), hero = $('.hero');
     const cols = ['228,59,209', '162,75,255', '162,75,255', '79,216,255', '79,216,255', '255,35,64'];
     let W, H, dpr, ps = [], visible = true, raf;
+    const sprites = {}, sprite = (c) => sprites[c] || (sprites[c] = (() => {
+      const o = document.createElement('canvas'); o.width = o.height = 32; const g = o.getContext('2d');
+      const r = g.createRadialGradient(16, 16, 0, 16, 16, 16); r.addColorStop(0, `rgba(${c},1)`); r.addColorStop(.22, `rgba(${c},.85)`); r.addColorStop(1, `rgba(${c},0)`);
+      g.fillStyle = r; g.fillRect(0, 0, 32, 32); return o;
+    })());
     const resize = () => {
       dpr = Math.min(devicePixelRatio || 1, 2); W = c.clientWidth; H = c.clientHeight;
       c.width = W * dpr; c.height = H * dpr; ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
@@ -1094,13 +1300,13 @@
         p.y -= p.v; p.a += .01; p.x += Math.sin(p.a) * .3;
         if (p.y < -10) { p.y = H + 10; p.x = Math.random() * W; }
         const al = .25 + .5 * Math.abs(Math.sin(p.a * 2));
-        ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, 7);
-        ctx.fillStyle = `rgba(${p.c},${al})`; ctx.shadowBlur = 12; ctx.shadowColor = `rgba(${p.c},1)`; ctx.fill();
+        const s = p.r * 7; ctx.globalAlpha = al; ctx.drawImage(sprite(p.c), p.x - s / 2, p.y - s / 2, s, s);
       }
+      ctx.globalAlpha = 1;
       raf = visible && !document.hidden ? requestAnimationFrame(tick) : null;
     };
     const resume = () => { if (!raf && visible && !document.hidden) raf = requestAnimationFrame(tick); };
-    new IntersectionObserver(([e]) => { visible = e.isIntersecting; resume(); }).observe(hero);
+    new IntersectionObserver(([e]) => { visible = e.isIntersecting; hero.classList.toggle('off', !visible); resume(); }).observe(hero);
     document.addEventListener('visibilitychange', resume);
     addEventListener('resize', resize); resize(); resume();
   })();
@@ -1249,6 +1455,7 @@
 
   // Bandeau central façon « mission »
   let bannerT;
+  try { document.fonts.load('1em "Bowlby One"'); } catch (e) {} // police des titres de mission prête avant le premier bandeau
   function banner(title, sub, red) {
     const b = $('.gta-banner');
     b.classList.toggle('red', !!red);
@@ -1367,6 +1574,117 @@
 
   // V8 classifiée : se décrypte au toucher sur téléphone
   $$('.classified').forEach(a => a.addEventListener('click', () => a.classList.toggle('open')));
+
+  // ======================================================================================
+  // V12.2 · Couche cinéma. Une seule boucle rAF (parallaxe, skew, réticule), passive, qui s'endort quand rien ne bouge.
+  // ======================================================================================
+  (function cinema() {
+    const html = document.documentElement, body = document.body;
+    const hero = $('.hero'), heroWrap = $('.hero .wrap'), nav = $('nav'), bars = $('.cine-bars'), rail = $('.chapters'), ret = $('.reticle');
+    // 1) Chapitres : numéro fantôme sur chaque section visible, rail à gauche, lien actif
+    const sections = $$('section[id]').filter(s => !s.hidden);
+    sections.forEach((s, i) => { s.dataset.chapter = s.id; s.dataset.num = String(i + 1).padStart(2, '0'); const w = $(':scope > .wrap', s); if (w) w.dataset.num = s.dataset.num; });
+    const names = { ville: 'La ville', signatures: 'Signatures', carte: 'En direct', telephone: 'Téléphone', vies: 'Les vies', nouveautes: 'Nouveautés', rejoindre: 'Rejoindre', connecte: 'Connecté', regles: 'Règles', equipe: 'Équipe', faq: 'FAQ' };
+    rail.innerHTML = sections.map(s => `<a href="#${s.id}" data-id="${s.id}"><i></i><span>${s.dataset.num} · ${names[s.id] || s.id}</span></a>`).join('');
+    const railLinks = new Map($$('a', rail).map(a => [a.dataset.id, a]));
+    const spy2 = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { railLinks.forEach(a => a.classList.remove('on')); railLinks.get(e.target.id)?.classList.add('on'); } }), { rootMargin: '-45% 0px -50% 0px' });
+    sections.forEach(s => spy2.observe(s));
+    // 2) Mots qui se révèlent : chaque mot des accroches monte avec un décalage (les balises internes sont conservées)
+    if (!RM) $$('.lead.rv, .hero .tagline').forEach(p => { // jamais la Gazette (rendue dynamiquement, sans observateur)
+      if (p.querySelector('a, code, b, strong, em')) {
+        // présence de balises : on découpe seulement les nœuds texte
+        let k = 0;
+        const walk = n => { [...n.childNodes].forEach(c => {
+          if (c.nodeType === 3 && c.textContent.trim()) {
+            const frag = document.createDocumentFragment();
+            c.textContent.split(/(\s+)/).forEach(t => { if (!t) return; if (/^\s+$/.test(t)) return frag.appendChild(document.createTextNode(t)); const o = document.createElement('span'); o.className = 'w-in'; o.innerHTML = `<span style="--w:${k++}">${t.replace(/[&<>]/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[ch]))}</span>`; frag.appendChild(o); });
+            c.replaceWith(frag);
+          } else if (c.nodeType === 1 && !c.classList.contains('w-in')) walk(c);
+        }); };
+        walk(p);
+      } else {
+        let k = 0;
+        p.innerHTML = p.textContent.split(/(\s+)/).map(t => /^\s+$/.test(t) ? t : (t ? `<span class="w-in"><span style="--w:${k++}">${t.replace(/[&<>]/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[ch]))}</span></span>` : '')).join('');
+      }
+    });
+    if (RM) return;
+    // 3) Bandes letterbox quand un titre de mission s'affiche (banner) : on enveloppe la fonction existante
+    const banner0 = banner;
+    banner = function (t, s, r) { body.classList.add('cine'); setTimeout(() => body.classList.remove('cine'), 2600); return banner0(t, s, r); };
+    // 4) Boucle : parallaxe de l'accueil, skew par vitesse, barre qui se cache, rail visible hors accueil, réticule lissé
+    let lastY = scrollY, lastT = performance.now(), vel = 0, skew = 0, dirty = true, raf = null;
+    let mx = innerWidth / 2, my = innerHeight / 2, rx = mx, ry = my, hot = false;
+    const depthLayers = $$('[data-depth]');
+    let pdx = 0, pdy = 0;
+    if (FINE) hero.addEventListener('pointermove', e => { pdx = e.clientX / innerWidth - .5; pdy = e.clientY / innerHeight - .5; dirty = true; }, { passive: true });
+    const frame = (now) => {
+      raf = null;
+      const y = scrollY, dt = Math.max(16, now - lastT);
+      vel = (y - lastY) / dt; lastY = y; lastT = now;
+      // skew : lissé, borné à 1,4°, revient vers 0 tout seul
+      skew += ((Math.max(-1.4, Math.min(1.4, vel * 18))) - skew) * .18;
+      html.style.setProperty('--skew', skew.toFixed(3) + 'deg');
+      // accueil : le texte monte plus vite que le décor, le décor descend doucement, le tout s'estompe
+      const hh = hero.offsetHeight || 1, k = Math.min(1, y / hh);
+      if (k < 1.05) {
+        heroWrap.style.transform = `translate3d(0, ${(y * .28).toFixed(1)}px, 0)`;
+        heroWrap.style.opacity = (1 - k * 1.15).toFixed(3);
+        depthLayers.forEach(l => { const d = +l.dataset.depth; l.style.transform = `translate3d(${(-pdx * d).toFixed(1)}px, ${(-pdy * d * .5 + y * (d / 60)).toFixed(1)}px, 0)`; });
+        const sh = $('.scroll-hint'); if (sh) sh.style.opacity = String(1 - k * 3);
+      }
+      html.style.setProperty('--scroll', (y / Math.max(1, document.documentElement.scrollHeight - innerHeight)).toFixed(4));
+      // barre : cachée en descendant vite, visible en remontant ou tout en haut
+      nav.classList.toggle('hide', vel > .35 && y > 200 && !nav.classList.contains('open'));
+      body.classList.toggle('chapters-on', y > hh * .7);
+      // réticule : suit la souris avec un léger retard
+      rx += (mx - rx) * .22; ry += (my - ry) * .22;
+      ret.style.transform = `translate3d(${rx.toFixed(1)}px, ${ry.toFixed(1)}px, 0)`;
+      const moving = Math.abs(mx - rx) + Math.abs(my - ry) > .3 || Math.abs(skew) > .01 || Math.abs(vel) > .001;
+      if (moving || dirty) { dirty = false; raf = requestAnimationFrame(frame); }
+    };
+    const wake = () => { dirty = true; if (!raf) raf = requestAnimationFrame(frame); };
+    addEventListener('scroll', wake, { passive: true });
+    addEventListener('resize', wake, { passive: true });
+    if (FINE) {
+      addEventListener('pointermove', e => { mx = e.clientX; my = e.clientY; const t = e.target.closest('a, button, .card, .shot, .sw, .step, summary, .trailer, input, textarea'); if (!!t !== hot) { hot = !!t; ret.classList.toggle('hot', hot); } wake(); }, { passive: true });
+    }
+    wake();
+    // 5) Tous les 4 chapitres franchis vers le bas, un titre de mission discret (une fois par chapitre)
+    const shown = new Set();
+    const chap = new IntersectionObserver(es => es.forEach(e => {
+      if (!e.isIntersecting || shown.has(e.target.id)) return;
+      shown.add(e.target.id);
+      if (e.target.id === 'signatures') banner('ce que tu ne trouveras nulle part ailleurs', 'chapitre 02 · signatures');
+    }), { rootMargin: '-30% 0px -60% 0px' });
+    sections.forEach(s => chap.observe(s));
+  })();
+
+  // V12.3 · La touche GTA : SMS en jeu pendant la visite
+  (function gtaTouch() {
+    if (RM) return;
+    let seenSms = false; try { seenSms = sessionStorage.getItem('rl_sms') === '1'; } catch (e) {}
+    const box = document.createElement('div'); box.className = 'sms-box'; box.setAttribute('aria-live', 'polite'); document.body.appendChild(box);
+    const SMS = { ville: ['Max « le Guide »', 'Tu arrives quand ? Je t\'attends devant la mairie. Ton premier jour, c\'est avec moi.'],
+      carte: ['Weazel News', 'Tu veux savoir ce qui se passe en ville avant d\'arriver ? Regarde la carte, elle est en direct.'],
+      nouveautes: ['Inconnu', 'Si t\'as du cran, le marché noir recrute. Demande le contact. Et oublie ce numéro.'],
+      faq: ['LSPD · Dispatch', 'Dernier avis avant que tu rejoignes la ville : on se souvient de tout, ici.'] };
+    const show = (from, text) => {
+      const el = document.createElement('div'); el.className = 'sms';
+      el.innerHTML = `<i>📱</i><div><b>${from}</b><span>${text}</span></div><button aria-label="Fermer">✕</button>`;
+      box.appendChild(el); requestAnimationFrame(() => el.classList.add('in'));
+      const close = () => { el.classList.remove('in'); setTimeout(() => el.remove(), 500); };
+      el.querySelector('button').addEventListener('click', close); setTimeout(close, 7000);
+    };
+    if (!seenSms) {
+      const done = new Set();
+      const io2 = new IntersectionObserver(es => es.forEach(e => {
+        if (!e.isIntersecting || done.has(e.target.id) || !SMS[e.target.id]) return;
+        done.add(e.target.id); show(...SMS[e.target.id]);
+        if (done.size === Object.keys(SMS).length) { try { sessionStorage.setItem('rl_sms', '1'); } catch (err) {} }
+      }), { rootMargin: '-35% 0px -55% 0px' });
+      Object.keys(SMS).forEach(id => { const s = document.getElementById(id); if (s) io2.observe(s); });
+    }
+  })();
 
   // Code de triche : tape « roadline » n'importe où sur la page
   (function cheat() {

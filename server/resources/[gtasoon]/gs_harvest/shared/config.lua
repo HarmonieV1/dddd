@@ -95,13 +95,15 @@ Config.Hunting = {
 
 -- Acheteurs : prix unitaire tiré dans [min, max] à chaque vente. Loin des points de récolte (V7).
 -- Ferraille, cuivre, pierre et minerais : ferrailleur de Cypress Flats (gs_economy, prix selon le marché).
+-- V11.5 : `ped` = acheteur visible (PNJ local, figé, recalé au sol), `heading` = direction où il regarde.
 Config.Buyers = {
     { label = 'Poissonnerie de Del Perro', coords = vec3(-1637.0, -1093.0, 13.0), blip = { sprite = 356, color = 3 },
-      items = { fish = { 25, 40 }, tuna = { 90, 140 } } },
+      items = { fish = { 25, 40 }, tuna = { 90, 140 } }, ped = 'a_m_m_salton_01', heading = 320.0 },
     { label = 'Scierie de Paleto', coords = vec3(-552.4, 5348.5, 74.7), blip = { sprite = 77, color = 47 },
-      items = { wood_log = { 20, 28 } } },
+      items = { wood_log = { 20, 28 } }, ped = 's_m_y_construct_01', heading = 90.0 },
     { label = 'Marché de Grapeseed', coords = vec3(1678.4, 4880.4, 42.2), blip = { sprite = 52, color = 2 },
-      items = { tomato = { 6, 9 }, potato = { 5, 8 } } },
+      items = { tomato = { 6, 9 }, potato = { 5, 8 } }, ped = 'a_m_m_farmer_01', heading = 180.0 },
     { label = 'Boucherie de Paleto (gibier de la chasse)', coords = vec3(-69.2, 6253.8, 31.1), blip = { sprite = 141, color = 47 },
-      items = { meat = { 40, 60 }, leather = { 55, 80 } } },
+      items = { meat = { 40, 60 }, leather = { 55, 80 } }, ped = 's_m_m_linecook', heading = 45.0 },
 }
+Config.BuyerPedRange = 90.0   -- PNJ acheteur créé à l'approche, retiré au loin

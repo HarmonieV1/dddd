@@ -162,6 +162,14 @@ provide('gs_bridge', {
         p.items[item] = p.items[item] - n
         return true
     end,
+    -- V11.5 : carte de permis (weaponlicense / driver_license) donnée ou reprise avec le permis
+    LicenceCard = function(src, kind, on)
+        local item = ({ weapon = 'weaponlicense', driver = 'driver_license' })[kind]
+        local p = W.players[src]
+        if not item or not p then return false end
+        if on then p.items[item] = 1 else p.items[item] = nil end
+        return true
+    end,
     RegisterStash = function() return true end,
     StashCount = function(id, item) W.stashes = W.stashes or {} return (W.stashes[id] or {})[item] or 0 end,
     StashRemove = function(id, item, n) W.stashes = W.stashes or {} local s = W.stashes[id] or {} if (s[item] or 0) < n then return false end s[item] = s[item] - n return true end,

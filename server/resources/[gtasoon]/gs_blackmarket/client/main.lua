@@ -3,6 +3,12 @@
 local ped, loc
 local function notify(ok, msg) if msg then lib.notify({ description = msg, type = ok and 'success' or 'error', duration = 7000 }) end end
 
+-- V12 · Faux papiers (item ox_inventory, double-clic) : le serveur lit la metadata du slot et « présente » le papier
+exports('showFake', function(data, slot)
+    if not data or not data.name then return end
+    TriggerServerEvent('gs_blackmarket:server:presentFake', data.name, slot)
+end)
+
 local function buy(e)
     local r = lib.inputDialog(e.label, { { type = 'select', label = 'Paiement', required = true, default = 'dirty', options = {
         { value = 'dirty', label = ('Argent sale : %d $'):format(e.price) }, { value = 'cash', label = ('Liquide : %d $'):format(e.cashPrice) } } } })

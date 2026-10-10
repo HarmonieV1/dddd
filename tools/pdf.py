@@ -8,7 +8,7 @@ from reportlab.lib.units import mm
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, PageBreak, KeepTogether
 from reportlab.graphics.shapes import Drawing, Rect, Circle, String, Line
 
-VERSION = 'V11.3'
+VERSION = 'V12.3'
 NEON = colors.HexColor('#28E0FF')
 DARK = colors.HexColor('#0F091C')
 PINK = colors.HexColor('#FF2E88')
@@ -94,7 +94,7 @@ TOOLS = [
 INTEGRATIONS = [
     ['Quoi', 'Comment ça marche'],
     ['Discord · bot RoadLine', 'Intégré au serveur (rien à installer) : présence « 12/48 citoyens », /statut, /rejoindre, /rdv, /site ; '
-                              'commandes staff /joueurs, /geler, /expulser… réservées au rôle staff (gs_discord_staff_role).'],
+                              'commandes staff /joueurs, /geler, /expulser, /isoler, /liberer, /reanimer… (rôle staff ou admin du Discord RoadLine), /ticket pour les joueurs, /aide.'],
     ['Discord · salons', 'Statut en direct (un message mis à jour chaque minute), annonces (ouverture, redémarrages, rendez-vous), '
                          'sanctions publiques (staff anonyme), miroir de Vibe, logs staff / métiers / boutique / anti-triche.'],
     ['Discord · rôles de métier', 'Le rôle Discord suit le métier en jeu (gs_discord_roles dans secrets.cfg : police=ID,ambulance=ID…).'],
@@ -159,6 +159,33 @@ def guide(points):
     s += [Paragraph('2. Touches', H2), table(KEYS, [38 * mm, 78 * mm, 64 * mm])]
     s += [Paragraph('3. Commandes utiles', H2), table(COMMANDS, [60 * mm, 120 * mm])]
 
+    s += [PageBreak(), Paragraph('★ V12 · La ville se souvient', H2)]
+    s += bullets([
+        "<b>La mémoire des lieux</b> (gs_memoire) : chaque endroit accumule ce qui s'y est passé (crimes signalés, arrestations, mariages, "
+        "courses gagnées, braquages, guerres de gang). Les passants en parlent quand on passe, Radio Los Santos le rappelle, une plaque naît au 10e événement.",
+        "<b>Les échos</b> (signature) : la nuit, près d'un lieu chargé, des silhouettes translucides rejouent le passé quelques secondes.",
+        "<b>Le registre des véhicules disparus</b> : une voiture volée jamais retrouvée refait surface après 48 h (casse, garage louche ou enchères), "
+        "carnet intact ; rumeur et tuyau au propriétaire ; s'il la reprend, l'assurance récupère l'indemnité sans pénalité.",
+        "<b>Faux papiers</b> (marché noir) : fausse carte d'identité, faux permis, fausse PPA, identité inventée ; présentés 10 min ; crus au contrôle "
+        "visuel, démasqués par le scanner du commissariat (casier).",
+        "<b>Témoin protégé</b> : en garde à vue, dénoncer un gang divise la peine par deux ; le gang apprend que quelqu'un a parlé, la police protège "
+        "le témoin 7 jours ; s'il tombe, le gang est dans le viseur.",
+        "<b>Guerre de l'information</b> (gangs, F9 → Opérations) : brouiller les caméras d'un quartier ou pirater le scanner police 10 min, payé par "
+        "la caisse ; la police remonte la source depuis le commissariat.",
+        "<b>Site</b> : « En ce moment en ville » (météo, heure, joueurs, quartier chaud, rendez-vous, rumeur, lieux de mémoire), candidature en trois "
+        "questions vers Discord, Weazel News en direct, SMS en jeu pendant la visite, mode cinéma.",
+    ])
+    s += [PageBreak(), Paragraph('★ V11.5 · Retours du backtest', H2)]
+    s += bullets([
+        "<b>Un seul personnage</b> par joueur (deux pour le staff et les VIP) ; plus de choix du lieu : on réapparaît où on s'est déconnecté ; "
+        "un nouveau personnage <b>arrive en bus</b> à la mairie.",
+        "<b>Téléphone</b> : impossible menotté, mort ou dans le coma ; ouvert = caméra figée, aucun coup. Aucune touche de jeu ne passe pendant une saisie.",
+        "<b>Prise de service par téléphone</b> (appli Emplois ou /service), de n'importe où, avec un téléphone sur soi.",
+        "<b>Permis de conduire</b> : plus de points ; la police le retire ou le rend (motif au casier, carte reprise). <b>Port d'arme</b> : la carte PPA est remise et reprise.",
+        "<b>Tout en français</b> : armes, munitions, accessoires. <b>F11</b> : items par catégorie avec image, catalogue de véhicules, mapping par catégorie, "
+        "retrait / réactivation des points. <b>Armes longues dans le dos</b>, nourriture périssable, /porter (cartons, caisses…).",
+        "Food truck de Legion Square, caméras accrochées aux murs, PNJ acheteurs de la récolte.",
+    ])
     s += [PageBreak(), Paragraph('★ V11.2 · Jurés, Gazette, black-out', H2)]
     s += bullets([
         "<b>Les jurés de Los Santos</b> : pour un vrai procès, le juge convoque un jury. 5 citoyens tirés au sort reçoivent la convocation "
@@ -283,7 +310,7 @@ def guide(points):
         'évasion seulement à plusieurs, la nuit, avec des outils de fortune.',
         '<b>Météo événementielle</b> : pendant la tempête, routes fermées (barrières, logo) et interventions payées (arbres, véhicules en détresse).',
         '<b>Mentors</b> (/mentor) : un ancien (niveau 5+) parraine un nouveau ; s\'il reste 7 jours, primes pour les deux.',
-        '<b>Permis à points</b> : 12 points, retirés par la police (F4 → Contrôle d\'identité) ou un refus d\'obtempérer ; à 0, retour à l\'auto-école.',
+        '<b>Permis</b> : retiré ou rendu par la police (F4 → Contrôle d\'identité → Permis), motif au casier, carte reprise ; le permis à points reste désactivable (Config.Points.enabled).',
         '<b>Signes distinctifs</b> : les témoins décrivent aussi les tatouages visibles (visage sans masque, bras nus, torse nu).',
         '<b>Fausses plaques</b> (marché noir) : la voiture n\'est plus reliée à ses signalements ni à son carnet pendant 45 min ; '
         'mais « Vérifier une plaque » révèle que le châssis ne correspond pas. Remettre la vraie plaque avant de garer.',

@@ -44,6 +44,18 @@ Config.Catalog = {
     { item = 'advancedlockpick', label = 'Crochet avancé', price = 900, stock = 10 },
     { item = 'armour', label = 'Gilet pare-balles', price = 2500, stock = 10 },
     { item = 'gs_fakeplate', label = 'Fausse plaque', price = 3500, stock = 5 }, -- V8 : la ville ne relie plus la voiture
+    -- V12 · Faux papiers : passent un contrôle visuel (F4 loin du commissariat), échouent au scanner du commissariat
+    { item = 'gs_fake_id', label = 'Fausse carte d\'identité', price = 2500, stock = 4, fake = 'id' },
+    { item = 'gs_fake_driver', label = 'Faux permis de conduire', price = 3500, stock = 4, fake = 'driver' },
+    { item = 'gs_fake_ppa', label = 'Faux permis de port d\'arme', price = 6000, stock = 2, fake = 'weapon' },
+}
+
+-- V12 · Faux papiers : identité inventée à l'achat (metadata), présentée pendant `minutes` après utilisation.
+Config.Fake = {
+    minutes = 10,
+    first = { 'Alex', 'Jordan', 'Sam', 'Charlie', 'Morgan', 'Casey', 'Lou', 'Noa', 'Eden', 'Sacha', 'Robin', 'Maxime' },
+    last = { 'Martin', 'Garcia', 'Nguyen', 'Dubois', 'Moreau', 'Silva', 'Costa', 'Lopez', 'Fischer', 'Rossi', 'Novak', 'Reyes' },
+    charge = 'Usage de faux papiers',
 }
 
 -- Armureries légales (ox_inventory, boutique « Ammunation ») : plafond par personnage et par jour.

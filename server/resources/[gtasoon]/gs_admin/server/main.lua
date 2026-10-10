@@ -291,7 +291,8 @@ Actions.removemoney = { level = 4, target = true, run = function(_, target, data
 end }
 
 local function itemOf(data)
-    local item = need(type(data.item) == 'string' and data.item:match('^[%w_]+$') and data.item, 'Item invalide.')
+    -- V11.5 : le tiret est accepté (munitions ox_inventory : ammo-9, ammo-rifle…), refusées avant par erreur
+    local item = need(type(data.item) == 'string' and data.item:match('^[%w_%-]+$') and data.item, 'Item invalide.')
     return need(Bridge:ItemExists(item) and item, 'Item inconnu d\'ox_inventory.')
 end
 
@@ -356,6 +357,33 @@ Actions.setrank = { level = 5, target = true, run = function(src, target, data)
     return rank > 0 and ('Rang : %s'):format(Config.LevelNames[rank]) or 'Retiré du staff'
 end }
 
+-- V11.5 · VIP : 2 personnages (comme le fondateur et les super-admins), rien d'autre. Donné par le fondateur, par licence.
+function Admin.applyVip(lic, on)
+    ExecuteCommand(('%s identifier.%s group.vip'):format(on and 'add_principal' or 'remove_principal', lic))
+end
+
+Actions.setvip = { level = 5, target = true, run = function(src, target, data)
+    local lic = need(license(target), 'Licence introuvable.')
+    local on = data.on == true
+    Store.vipSet(lic, on, label(src))
+    Admin.applyVip(lic, on)
+    notify(target, on and 'Tu es VIP : un deuxième personnage t\'est ouvert.' or 'Statut VIP retiré.', 'inform')
+    return on and 'VIP accordé (2 personnages)' or 'VIP retiré'
+end }
+
+--- Nombre de personnages autorisés (appelé par qbx_core, correctif posé par METTRE-A-JOUR) : 2 pour le fondateur,
+--- les super-admins et les VIP, sinon nil = valeur par défaut de qbx_core (1).
+function Admin.characterSlots(license2, lic)
+    local function extra(id)
+        if type(id) ~= 'string' or id == '' then return false end
+        local who = 'identifier.' .. id
+        return IsPrincipalAceAllowed(who, 'gs.admin.superadmin') or IsPrincipalAceAllowed(who, 'gs.vip')
+    end
+    if extra(lic) or extra(license2) then return Config.Characters.extra end
+    return nil
+end
+exports('CharacterSlots', function(license2, lic) return Admin.characterSlots(license2, lic) end)
+
 -- Menu rapide : pouvoirs (appliqués par le client après accord), métier / gang de test, véhicules --------
 
 Actions.power = { level = 1, duty = true, run = function(src, _, data)
@@ -383,6 +411,19 @@ Actions.resetpoint = { level = 3, duty = true, run = function(_, _, data)
     local ok, res = exports.gs_bridge:ResetPoint(data.key)
     need(ok, res)
     return ('Point remis à l\'origine (%s relancé)'):format(res)
+end }
+
+-- V11.6 · Retirer un point du jeu (super-admin), réversible
+Actions.disablepoint = { level = 4, duty = true, run = function(_, _, data)
+    local ok, res = exports.gs_bridge:DisablePoint(data.key)
+    need(ok, res)
+    return ('Point retiré du jeu (%s relancé)'):format(res)
+end }
+
+Actions.enablepoint = { level = 4, duty = true, run = function(_, _, data)
+    local ok, res = exports.gs_bridge:EnablePoint(data.key)
+    need(ok, res)
+    return ('Point réactivé (%s relancé)'):format(res)
 end }
 
 Actions.spectate = { level = 2, duty = true, target = true, run = function(src, target)
@@ -594,10 +635,11 @@ lib.callback.register('gs_admin:quick', function(src)
     if not staffGuard(src, 'quick', 10, 10000) then return nil end
     local lvl = Admin.level(src)
     local players = {}
-    for _, p in ipairs(Admin.playerList()) do players[#players + 1] = { id = p.id, name = p.name } end
+    for _, p in ipairs(Admin.playerList()) do players[#players + 1] = { id = p.id, name = p.name, license = lvl >= 5 and license(p.id) or nil } end
     return {
         level = lvl, levelName = Config.LevelNames[lvl], me = src, onDuty = Admin.onDuty[src] ~= nil, players = players,
         jobs = lvl >= 3 and JobsApi:ListJobs() or {}, ranks = lvl >= 5 and Config.LevelNames or nil,
+        vips = lvl >= 5 and (function() local t = {} for _, r in ipairs(Store.vips()) do t[r.license] = true end return t end)() or nil,
         gangs = lvl >= 3 and started('gs_gangs') and exports.gs_gangs:ListGangs() or {},
     }
 end)
@@ -686,6 +728,7 @@ end)
 CreateThread(function()
     Store.init()
     for _, row in ipairs(Store.ranks()) do Admin.applyRank(row.license, row.rank) end
+    for _, row in ipairs(Store.vips()) do Admin.applyVip(row.license, true) end
     for _, row in ipairs(Store.recentLogs(Config.LogHistory)) do Admin.logs[#Admin.logs + 1] = row end
     while true do
         Wait(5000)
@@ -720,7 +763,7 @@ function Admin.overview()
         version = GetConvar('gs_version', '?'), staffOnDuty = (function() local n = 0 for _ in pairs(Admin.onDuty) do n = n + 1 end return n end)() }
 end
 
-function Admin.remote(action, target, text, staff)
+function Admin.remote(action, target, text, staff, extra)
     staff = tostring(staff or '?'):sub(1, 40)
     if not staff:find('·', 1, true) then staff = 'Discord · ' .. staff end -- le bot passe le pseudo seul, le web « Web · pseudo »
     if action == 'players' then
@@ -752,6 +795,18 @@ function Admin.remote(action, target, text, staff)
         Admin.logRemote(staff, action, who, reason)
         return true, (on and '%s est gelé.' or '%s est dégelé.'):format(who)
     end
+    -- V12.3 : réanimer et libérer de l'isolement (sans motif), isoler (motif + minutes) depuis le bot et l'appli staff
+    if action == 'revive' then
+        Bridge:Revive(target)
+        TriggerClientEvent('gs_admin:client:heal', target)
+        Admin.logRemote(staff, 'revive', who)
+        return true, who .. ' réanimé et soigné.'
+    end
+    if action == 'unjail' then
+        if not Admin.release(target) then return false, who .. ' n\'est pas en isolement.' end
+        Admin.logRemote(staff, 'unjail', who)
+        return true, who .. ' libéré de l\'isolement.'
+    end
     if action == 'message' then
         if not reason then return false, 'Message vide.' end
         notify(target, 'Message du staff : ' .. reason, 'warning')
@@ -766,6 +821,14 @@ function Admin.remote(action, target, text, staff)
         Admin.publishSanction('Avertissement', Bridge:GetName(target) or GetPlayerName(target), reason)
         Admin.logRemote(staff, 'warn', who, reason)
         return true, who .. ' a été averti.'
+    end
+    if action == 'jail' then
+        local minutes = math.floor(tonumber(extra) or 15)
+        if minutes < 1 or minutes > Config.Jail.maxMinutes then return false, ('Durée : 1 à %d min.'):format(Config.Jail.maxMinutes) end
+        Admin.jail(target, minutes, reason, staff)
+        Admin.publishSanction('Isolement', Bridge:GetName(target) or GetPlayerName(target), reason, minutes .. ' min')
+        Admin.logRemote(staff, 'jail', who, ('%d min · %s'):format(minutes, reason))
+        return true, ('%s isolé %d min.'):format(who, minutes)
     end
     if action == 'kick' then
         local name = Bridge:GetName(target) or GetPlayerName(target)
@@ -785,8 +848,8 @@ function Admin.logRemote(staff, action, target, details)
 end
 
 -- Un seul retour (table) : lisible tel quel depuis le JavaScript du bot
-exports('RemoteAction', function(action, target, text, staff)
-    local ok, a, b = pcall(Admin.remote, action, target, text, staff)
+exports('RemoteAction', function(action, target, text, staff, extra)
+    local ok, a, b = pcall(Admin.remote, action, target, text, staff, extra)
     if not ok then return { ok = false, text = 'Erreur : ' .. tostring(a) } end
     return { ok = a == true, text = b or '' }
 end)

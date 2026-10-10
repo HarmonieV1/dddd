@@ -39,7 +39,18 @@ function Store.init()
         `reason` VARCHAR(120) NOT NULL DEFAULT '',
         PRIMARY KEY (`citizenid`)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4]])
+    MySQL.query.await([[CREATE TABLE IF NOT EXISTS `gs_police_witness` (
+        `citizenid` VARCHAR(50) NOT NULL,
+        `gang` VARCHAR(30) NOT NULL,
+        `until_ts` INT UNSIGNED NOT NULL,
+        PRIMARY KEY (`citizenid`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4]])
 end
+
+-- V12 · Témoins protégés
+function Store.witnessAll() return MySQL.query.await('SELECT citizenid, gang, until_ts FROM gs_police_witness WHERE until_ts > UNIX_TIMESTAMP()') or {} end
+function Store.witnessSet(cid, gang, untilTs) MySQL.query.await('REPLACE INTO gs_police_witness (citizenid, gang, until_ts) VALUES (?, ?, ?)', { cid, gang, untilTs }) end
+function Store.witnessClear(cid) MySQL.query.await('DELETE FROM gs_police_witness WHERE citizenid = ?', { cid }) end
 
 function Store.addRecord(cid, charge, fine, jail, officer)
     MySQL.insert('INSERT INTO gs_police_records (citizenid, charge, fine, jail, officer) VALUES (?, ?, ?, ?, ?)', { cid, charge, fine, jail, officer })

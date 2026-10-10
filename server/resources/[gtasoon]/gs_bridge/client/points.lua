@@ -12,7 +12,7 @@ exports('NearbyPoints', function(from, radius)
     for res, list in pairs(registry) do
         for _, p in ipairs(list) do
             local d = #(from - p.coords)
-            if d <= radius then out[#out + 1] = { key = p.key, label = p.label, res = res, dist = d, moved = p.moved } end
+            if d <= radius then out[#out + 1] = { key = p.key, label = p.label, res = res, dist = d, moved = p.moved, off = p.off == true } end
         end
     end
     table.sort(out, function(a, b) return a.dist < b.dist end)

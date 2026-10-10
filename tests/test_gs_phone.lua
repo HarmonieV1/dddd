@@ -53,6 +53,16 @@ end
 check('sans item : pas de téléphone', cb('gs_phone:open', 3) == false)
 local data = cb('gs_phone:open', 1)
 check('ouverture', data and data.number == n1 and data.money ~= nil)
+-- V11.5 : menotté ou dans le coma : pas de téléphone (vérifié côté serveur)
+local cuffed = {}
+provide('gs_police', { IsCuffed = function(src) return cuffed[src] == true end })
+cuffed[1] = true
+check('menotté : refusé', cb('gs_phone:open', 1) == nil)
+cuffed[1] = nil
+Player(1).state:set('isDead', true)
+check('mort / coma : refusé', cb('gs_phone:open', 1) == nil)
+Player(1).state:set('isDead', nil)
+check('de nouveau libre : ouverture', cb('gs_phone:open', 1) ~= nil)
 
 -- SMS -------------------------------------------------------------------------------------------------
 W.clientEvents = {}

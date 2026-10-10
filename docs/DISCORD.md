@@ -43,8 +43,10 @@ comme chez l'hébergeur). Ensuite, plus rien à faire : les mises à jour passen
 (gardé aux mises à jour), et place le rôle du bot au-dessus d'eux (Paramètres → Rôles).
 
 ## Modérer depuis Discord (V10.1), même sur téléphone
-Commandes réservées aux **administrateurs du Discord** et au **rôle staff** indiqué dans `cfg/secrets.cfg` :
-`set gs_discord_staff_role "ID-DU-ROLE"` (clic droit sur le rôle → Copier l'identifiant). Les réponses ne sont visibles que par toi.
+V12.3 : commandes réservées au **rôle staff** (`set gs_discord_staff_role "ID-DU-ROLE"`), au **propriétaire** et aux
+**administrateurs du Discord RoadLine**, et **uniquement sur ce Discord** (`gs_discord_guild`, vérifié avant tout :
+un bot invité ailleurs ne répond à personne). CONFIGURER-DISCORD.bat demande ces identifiants.
+Les réponses ne sont visibles que par toi. `/aide` liste les commandes (avec celles du staff si tu y as droit).
 
 | Commande | Effet en jeu |
 |---|---|
@@ -54,11 +56,23 @@ Commandes réservées aux **administrateurs du Discord** et au **rôle staff** i
 | `/expulser id texte` | expulsion du serveur |
 | `/message id texte` | message privé du staff au joueur |
 | `/annonce texte` | annonce à toute la ville |
+| `/isoler id minutes motif` · `/liberer id` | isolement hors RP (cour de Bolingbroke, 1 à 240 min, publié dans #sanctions) / libération |
+| `/reanimer id` | réanime et soigne un joueur bloqué |
+| `/ticket sujet` · `/fermer` · `/aide` | tickets en fil privé (tous les membres) · liste des commandes |
 
 Pour bannir : txAdmin (`http://IP:40120`), qui marche aussi sur téléphone. Autre possibilité : le panneau staff web
 `http://IP:30120/gs_admin/` (voir docs/OVH.md, § 5). Chaque action est journalisée « Discord · pseudo ».
 **Ça ne marche pas ?** Console du serveur : « Bot Discord connecté » = OK ; « Jeton refusé » = relance CONFIGURER-DISCORD
 avec un nouveau jeton.
+
+## Tickets (V11.4)
+`/ticket sujet` ouvre un **fil privé** dans `#tickets` : le joueur et le rôle staff y sont ajoutés, rien n'est visible
+des autres. `/fermer` (auteur ou staff) l'archive et le verrouille. Un ticket ouvert par membre, 2 min entre deux.
+1. Crée le salon `tickets` : les membres peuvent **voir** le salon et **utiliser les commandes**, mais pas y écrire ni
+   créer de fils eux-mêmes. Le staff : « Gérer les fils » (voit tous les tickets).
+2. **CONFIGURER-DISCORD.bat** : colle l'identifiant du salon `tickets` (et du rôle staff), puis réautorise le bot avec le
+   lien qui s'ouvre (nouveaux droits : fils privés). **GERER-OVH.bat → 12** pour l'envoyer au VPS.
+Bot de tickets externe à la place : `set gs_discord_tickets "false"` dans `secrets.cfg` (les commandes disparaissent).
 
 ## V11 · Vérifier que tout est relié (VPS)
 1. Sur le PC : **CONFIGURER-DISCORD.bat** (jeton du bot, webhooks des salons).

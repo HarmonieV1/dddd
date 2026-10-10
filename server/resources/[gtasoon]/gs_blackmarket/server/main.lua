@@ -96,7 +96,7 @@ lib.callback.register('gs_blackmarket:buy', function(src, index, pay)
     if e.weapon and (Market.weapons[cid] or 0) >= 1 then return false, 'Une arme par jour, pas plus : je veux pas d\'ennuis.' end
     local price = Market.price(index, gang)
     local count = e.pack or 1
-    local metadata = e.weapon and { registered = false } or nil
+    local metadata = e.weapon and { registered = false } or (e.fake and Fake and Fake.metadata(src, e.fake)) or nil -- V12 : faux papiers
     if pay == 'cash' then
         price = math.floor(price * Config.CashMarkup)
         if not Bridge:RemoveMoney(src, 'cash', price, 'marché noir') then return false, ('Il te faut %d $ en liquide.'):format(price) end

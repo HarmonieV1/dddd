@@ -138,6 +138,32 @@ exports('BlindArea', function(x, y, radius, minutes)
     return n
 end)
 
+-- V12 · Traces des opérations de gang (brouillage, scanner) : la police les remonte au commissariat après un délai
+CCTV.traces = {}
+exports('Trace', function(kind, gang, coords)
+    table.insert(CCTV.traces, 1, { kind = kind, gang = tostring(gang or '?'), at = now(), x = coords and coords.x or 0.0, y = coords and coords.y or 0.0 })
+    CCTV.traces[Config.Trace.keep + 1] = nil
+    return true
+end)
+function CCTV.traceList()
+    local out = {}
+    for _, t in ipairs(CCTV.traces) do
+        if now() - t.at <= Config.Trace.maxAge * 60 then
+            local revealed = now() - t.at >= Config.Trace.delay * 60
+            out[#out + 1] = { kind = t.kind, at = os.date('%H:%M', t.at), gang = revealed and t.gang or nil,
+                zone = GetResourceState('gs_rumors') == 'started' and select(2, pcall(function() return exports.gs_rumors:Zone(vec3(t.x, t.y, 0.0)) end)) or nil,
+                left = revealed and 0 or math.ceil((Config.Trace.delay * 60 - (now() - t.at)) / 60) }
+        end
+    end
+    return out
+end
+lib.callback.register('gs_cctv:traces', function(src)
+    if not Security:RateLimit(src, 'gs_cctv:traces', 5, 10000) then return false, 'Doucement.' end
+    if not isCop(src) then return false, 'Réservé à la police en service.' end
+    if not atTerminal(src) then return false, 'Il faut être devant un ordinateur du commissariat.' end
+    return true, CCTV.traceList()
+end)
+
 CreateThread(function()
     GlobalState.gsCctvBlind = {}
     local n = 0

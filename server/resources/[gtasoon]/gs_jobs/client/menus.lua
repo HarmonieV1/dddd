@@ -27,10 +27,10 @@ function GSJ.openJobMenu()
     }
 
     if def then
-        if def.dutyAnywhere then
-            options[#options + 1] = { title = L('menu_duty'), icon = 'id-badge',
-                onSelect = function() TriggerServerEvent('gs_jobs:server:toggleDuty') end }
-        end
+        -- V11.5 : pour tous les métiers, par téléphone (de n'importe où) ; sans téléphone, le point de service reste
+        local duty = { title = L('menu_duty'), icon = 'id-badge', onSelect = function() TriggerServerEvent('gs_jobs:server:toggleDuty', not def.dutyAnywhere) end }
+        if not def.dutyAnywhere then duty.description = 'Par téléphone, de n\'importe où' end
+        options[#options + 1] = duty
         if def.mission and job.onduty then
             if GSJ.missionActive() then
                 options[#options + 1] = { title = L('menu_mission_cancel'), icon = 'xmark',
@@ -76,9 +76,16 @@ end
 
 RegisterCommand('job', function()
     if lib.getOpenContextMenu() then return lib.hideContext() end -- même touche = fermer
+    if IsNuiFocused() then return end -- V11.5 : jamais pendant une saisie ou une autre interface
     GSJ.openJobMenu()
 end, false)
 RegisterKeyMapping('job', 'Menu emplois', 'keyboard', 'F6')
+-- V11.5 · /service : prise / fin de service par téléphone, touche à choisir dans Paramètres → Raccourcis → FiveM (aucune par défaut)
+RegisterCommand('service', function()
+    if IsNuiFocused() or not GSJ.job then return end
+    TriggerServerEvent('gs_jobs:server:toggleDuty', true)
+end, false)
+RegisterKeyMapping('service', 'Prise / fin de service (par téléphone)', 'keyboard', '')
 RegisterCommand('factures', function() GSJ.openBills() end, false)
 
 -- Pôle Emploi -------------------------------------------------------------------------

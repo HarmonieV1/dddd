@@ -21,11 +21,22 @@ function Legal.check(src, itemName, count)
     return true
 end
 
+--- V11.5 · L'achat va-t-il aboutir ? (argent en liquide et place dans l'inventaire) Sinon le plafond du jour ne
+--- doit pas être consommé : avant, un achat refusé faute d'argent comptait quand même.
+function Legal.affordable(src, itemName, count, currency, total)
+    if currency == 'money' and total and (Bridge:GetItemCount(src, 'money') or 0) < total then return false end
+    if currency == 'black_money' and total and (Bridge:GetItemCount(src, 'black_money') or 0) < total then return false end
+    if not Bridge:CanCarry(src, itemName, count) then return false end
+    return true
+end
+
 CreateThread(function()
     if GetResourceState('ox_inventory') ~= 'started' then return end
     exports.ox_inventory:registerHook('buyItem', function(payload) -- [API] ox_inventory hooks
         if payload.shopType ~= Config.Legal.shopType then return end
-        local ok, msg = Legal.check(payload.source, payload.itemName or '', tonumber(payload.count) or 1)
+        local count = tonumber(payload.count) or 1
+        if not Legal.affordable(payload.source, payload.itemName or '', count, payload.currency, tonumber(payload.totalPrice)) then return end -- ox refusera lui-même
+        local ok, msg = Legal.check(payload.source, payload.itemName or '', count)
         if not ok then Bridge:Notify(payload.source, msg, 'error') return false end
     end, {})
 end)
@@ -46,7 +57,8 @@ function Legal.permit(src)
         return false, ('Il faut %d $ (banque ou liquide).'):format(P.price)
     end
     Bridge:SetLicence(src, 'weapon', true)
-    return true, 'Permis de port d\'arme délivré. Les armes du comptoir te sont accessibles (1 arme et 120 munitions par jour).'
+    Bridge:LicenceCard(src, 'weapon', true) -- V11.5 : la carte PPA dans l'inventaire (avant : rien de visible, « ça ne marche pas »)
+    return true, 'Permis de port d\'arme délivré : la carte est dans ton inventaire. Armes du comptoir : 1 arme et 120 munitions par jour.'
 end
 
 lib.callback.register('gs_blackmarket:permit', function(src)

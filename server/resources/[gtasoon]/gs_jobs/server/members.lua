@@ -143,13 +143,16 @@ RegisterNetEvent('gs_jobs:server:switch', function(job)
     GSJ.notify(src, L('switched', GSJ.jobLabel(job)), 'success')
 end)
 
-RegisterNetEvent('gs_jobs:server:toggleDuty', function()
+RegisterNetEvent('gs_jobs:server:toggleDuty', function(remote)
     local src = source
     if not GSJ.guard(src, 'duty', 3, 10000) then return end
     local job, def = GSJ.activeJob(src)
     if not job or not def then return end
-    if not def.dutyAnywhere and not GSJ.nearAny(src, def.points.duty) then
-        return GSJ.notify(src, L('too_far'), 'error')
+    -- V11.5 : depuis le téléphone (appli Emplois, /service) on prend ou quitte le service de n'importe où : il faut
+    -- un téléphone sur soi. Sinon : au point de service du métier, comme avant.
+    local byPhone = remote == true and Bridge:GetItemCount(src, 'phone') > 0
+    if not byPhone and not def.dutyAnywhere and not GSJ.nearAny(src, def.points.duty) then
+        return GSJ.notify(src, L(remote == true and 'duty_no_phone' or 'too_far'), 'error')
     end
     local on = not job.onduty
     if not on then GSJ.endService(src) end

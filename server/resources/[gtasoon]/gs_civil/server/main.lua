@@ -49,6 +49,7 @@ function Civil.answer(src, accepted)
     for _, s in ipairs({ src, p.from }) do Bridge:Notify(s, ('Félicitations ! Mariage %s.'):format(who), 'success') end
     if off then Bridge:Notify(off, ('Tu as célébré le mariage de %s et %s.'):format(name(p.from), name(src)), 'success') end
     Security:LogStaff(('[État civil] mariage %s + %s (%s)'):format(name(p.from), name(src), who))
+    TriggerEvent('gs_civil:server:married', GetEntityCoords(GetPlayerPed(src)), ('%s et %s'):format(name(p.from), name(src))) -- V12 : mémoire des lieux
     return true, 'Marié(e) !'
 end
 

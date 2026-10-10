@@ -84,34 +84,50 @@ end
 local function showIdentity(id)
     local ok, d = act('identity', id)
     if not ok then return notify(false, d) end
-    lib.registerContext({ id = 'gs_police_identity', title = 'Contrôle d\'identité', menu = 'gs_police_menu', options = {
-        { title = d.name, icon = 'id-card', readOnly = true, description = ('Né(e) le %s · %s'):format(d.birthdate or '?', d.nationality or '?') },
+    local o = {
+        { title = d.name, icon = 'id-card', readOnly = true, description = ('Né(e) le %s · %s'):format(d.birthdate or '?', d.nationality or '?')
+            .. (d.basic and ' · contrôle visuel (scanner au commissariat pour vérifier)' or '') },
+    }
+    if d.fake then
+        o[#o + 1] = { title = ('⚠ FAUX PAPIERS : se présentait comme « %s »'):format(d.fake), icon = 'triangle-exclamation', iconColor = '#ff4d6d', readOnly = true,
+            description = 'Démasqué par le scanner · inscrit au casier' }
+    end
+    local o2 = {
         { title = d.spouse and ('Marié(e) à %s'):format(d.spouse) or 'Célibataire', icon = 'heart', readOnly = true },
         { title = ('Permis de conduire : %s'):format(d.driver and (d.points and ('valide · %d / 12 points'):format(d.points) or 'valide') or 'aucun'),
           icon = 'car', iconColor = d.driver and '#5aff8c' or '#ff4d6d', readOnly = true },
-        { title = 'Retirer des points (infraction routière)', icon = 'minus', arrow = true, onSelect = function()
+    }
+    for _, opt in ipairs(o2) do o[#o + 1] = opt end
+    -- V11.5 : le permis à points est désactivé par défaut (pas de points aux États-Unis) : retrait direct via « Permis »
+    if d.points then
+        o[#o + 1] = { title = 'Retirer des points (infraction routière)', icon = 'minus', arrow = true, onSelect = function()
             local r = lib.inputDialog('Permis à points', {
                 { type = 'number', label = 'Points retirés', default = 2, min = 1, max = 6, required = true },
                 { type = 'input', label = 'Infraction', required = true, max = 80, placeholder = 'Excès de vitesse, feu rouge…' },
             })
             if r then notify(act('points', id, { n = r[1], reason = r[2] })) end
-        end },
+        end }
+    end
+    local rest = {
         { title = ('Port d\'arme : %s'):format(d.weapon and 'oui' or 'non'), icon = 'gun', iconColor = d.weapon and '#5aff8c' or '#6b6380', readOnly = true },
         { title = ('Permis de chasse : %s'):format(d.hunting and 'oui' or 'non'), icon = 'crosshairs', iconColor = d.hunting and '#5aff8c' or '#6b6380', readOnly = true },
-        { title = 'Délivrer / retirer un permis', icon = 'stamp', arrow = true, onSelect = function()
+        { title = 'Délivrer / retirer un permis', icon = 'stamp', arrow = true, description = 'Port d\'arme, chasse, conduire (retrait : motif au casier)', onSelect = function()
             local r = lib.inputDialog('Permis', {
                 { type = 'select', label = 'Permis', required = true, default = 'weapon', options = {
-                    { value = 'weapon', label = 'Port d\'arme' }, { value = 'hunting', label = 'Permis de chasse' } } },
+                    { value = 'weapon', label = 'Port d\'arme' }, { value = 'hunting', label = 'Permis de chasse' }, { value = 'driver', label = 'Permis de conduire' } } },
                 { type = 'select', label = 'Action', required = true, default = 'on', options = {
-                    { value = 'on', label = 'Délivrer' }, { value = 'off', label = 'Retirer' } } },
+                    { value = 'on', label = 'Délivrer / rendre' }, { value = 'off', label = 'Retirer' } } },
+                { type = 'input', label = 'Motif (obligatoire pour retirer le permis de conduire)', max = 80, placeholder = 'Délit de fuite, conduite dangereuse…' },
             })
-            if r then notify(act('licence', id, { kind = r[1], on = r[2] == 'on' })) end
+            if r then notify(act('licence', id, { kind = r[1], on = r[2] == 'on', reason = r[3] })) end
         end },
         { title = ('Casier : %d mention(s)'):format(d.records), icon = 'folder-open', iconColor = d.records > 0 and '#ff8a3d' or '#5aff8c',
           onSelect = function() showRecords(id) end },
         { title = d.warrant and 'MANDAT ACTIF (voir Dossiers)' or 'Aucun mandat', icon = 'gavel', iconColor = d.warrant and '#ff4d6d' or '#6b6380', readOnly = true },
         { title = d.wanted and 'SIGNALÉ : recherché' or 'Non recherché', icon = 'triangle-exclamation', iconColor = d.wanted and '#ff4d6d' or '#6b6380', readOnly = true },
-    } })
+    }
+    for _, opt in ipairs(rest) do o[#o + 1] = opt end
+    lib.registerContext({ id = 'gs_police_identity', title = 'Contrôle d\'identité', menu = 'gs_police_menu', options = o })
     lib.showContext('gs_police_identity')
 end
 
@@ -269,6 +285,7 @@ end
 
 RegisterCommand('intervention', function()
     if lib.getOpenContextMenu() then return lib.hideContext() end -- même touche = fermer
+    if IsNuiFocused() then return end -- V11.5 : jamais pendant une saisie ou une autre interface
     GSPolice.openMenu()
 end, false)
 RegisterKeyMapping('intervention', 'Menu intervention (police / EMS)', 'keyboard', Config.Key)

@@ -11,9 +11,20 @@ end
 local points = loadPoints()
 GlobalState.gsPoints = points
 
+-- V11.6 · Points retirés (désactivés, réversible) : la ressource reçoit une position hors carte, le menu staff garde
+-- la vraie pour pouvoir le réactiver.
+local KVP_OFF = 'gs_points_off'
+local off = (function()
+    local ok, data = pcall(json.decode, GetResourceKvpString(KVP_OFF) or '{}')
+    return ok and type(data) == 'table' and data or {}
+end)()
+GlobalState.gsPointsOff = off
+
 local function save()
     SetResourceKvp(KVP, json.encode(points))
     GlobalState.gsPoints = points
+    SetResourceKvp(KVP_OFF, json.encode(off))
+    GlobalState.gsPointsOff = off
 end
 
 --- Clé valide : « ressource:Config.chemin » d'une ressource gs_ démarrée (jamais gs_bridge lui-même).
@@ -63,5 +74,27 @@ local function ResetPoint(key)
     return true, res
 end
 
+--- V11.6 · Retire un point du jeu (position hors carte) ; réversible avec EnablePoint. [API]
+local function DisablePoint(key)
+    local res = parseKey(key)
+    if not res then return false, 'Point inconnu.' end
+    if off[key] then return false, 'Ce point est déjà retiré.' end
+    off[key] = true
+    save()
+    restart(res)
+    return true, res
+end
+
+local function EnablePoint(key)
+    local res = parseKey(key)
+    if not res or not off[key] then return false, 'Ce point n\'est pas retiré.' end
+    off[key] = nil
+    save()
+    restart(res)
+    return true, res
+end
+
 exports('SetPoint', SetPoint)
 exports('ResetPoint', ResetPoint)
+exports('DisablePoint', DisablePoint)
+exports('EnablePoint', EnablePoint)

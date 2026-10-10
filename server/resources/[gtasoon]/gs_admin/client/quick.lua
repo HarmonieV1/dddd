@@ -390,39 +390,95 @@ local function gangsMenu(target)
     show('gs_staff_gangs', 'Gang · ' .. target.name, options, 'gs_staff_quick')
 end
 
+-- V11.5 · Items par catégorie, avec l'image de chaque objet (celle de l'inventaire) : plus besoin de connaître les noms.
+local ITEM_CATEGORIES = {
+    { id = 'weapons', label = 'Armes', icon = 'gun', match = function(it) return it.name:find('^WEAPON_') ~= nil end },
+    { id = 'ammo', label = 'Munitions', icon = 'bullseye', match = function(it) return it.name:find('^ammo%-') ~= nil end },
+    { id = 'attach', label = 'Accessoires d\'armes', icon = 'crosshairs', match = function(it) return it.name:find('^at_') ~= nil end },
+    { id = 'food', label = 'Nourriture et boissons', icon = 'utensils', match = function(it) return it.food == true end },
+    { id = 'cards', label = 'Cartes et permis', icon = 'id-card', match = function(it) return it.name:find('license') or it.name:find('id_card') or it.name:find('pass$') end },
+    { id = 'roadline', label = 'Objets RoadLine', icon = 'star', match = function(it) return it.name:find('^gs_') ~= nil end },
+    { id = 'other', label = 'Autres objets', icon = 'box', match = function() return true end },
+}
+local function itemImage(it)
+    local file = it.image or (it.name .. '.png')
+    return 'nui://ox_inventory/web/images/' .. file
+end
+
 local function itemsMenu(target)
     local list = lib.callback.await('gs_admin:items', false)
     if not list then return notify(false, 'Réservé au super-admin et au fondateur.') end
     local founder = info.level >= 5
     local choices = {}
     for _, it in ipairs(list) do choices[#choices + 1] = { value = it.name, label = ('%s (%s)'):format(it.label, it.name) } end
-    local function ask(title)
+    --- Quantité (et motif pour un super-admin) → r[1] quantité, r[2] motif
+    local function askCount(title, it)
+        local fields = { { type = 'number', label = 'Quantité', default = 1, min = 1, max = Config.Give.maxItems, required = true } }
+        -- super-admin : motif obligatoire (journal + webhook) ; le fondateur seul s'en passe
+        if not founder then fields[2] = { type = 'input', label = 'Motif (journalisé)', required = true, max = 200 } end
+        local r = input(('%s · %s'):format(title, it.label), fields)
+        return r and r[1], r and r[2]
+    end
+    --- Recherche libre (ancien fonctionnement) → item, quantité, motif
+    local function askSearch(title)
         local fields = {
             { type = 'select', label = 'Item', options = choices, searchable = true, required = true },
             { type = 'number', label = 'Quantité', default = 1, min = 1, max = Config.Give.maxItems, required = true },
         }
-        -- super-admin : motif obligatoire (journal + webhook) ; le fondateur seul s'en passe
         if not founder then fields[3] = { type = 'input', label = 'Motif (journalisé)', required = true, max = 200 } end
         local r = input(title, fields)
         return r and r[1], r and r[2], r and r[3]
     end
-    local options = {
-        { title = 'Donner à ' .. target.name, icon = 'plus', onSelect = function()
-            local item, count, reason = ask('Donner')
-            if item then notify(act('giveitem', target.id, { item = item, amount = count, reason = reason })) end
-        end },
+    local ACTIONS = {
+        give = { title = 'Donner à ' .. target.name, icon = 'plus', action = 'giveitem', target = target.id },
+        remove = { title = 'Retirer à ' .. target.name, icon = 'minus', action = 'removeitem', target = target.id },
+        drop = { title = 'Poser au sol, ici', icon = 'box', action = 'dropitem' },
     }
+    local function run(a, item, count, reason)
+        notify(act(a.action, a.target, { item = item, amount = count, reason = reason }))
+    end
+    local function categoryMenu(a, cat)
+        local o = {}
+        for _, it in ipairs(list) do
+            if cat.match(it) and not it._taken then
+                o[#o + 1] = { title = it.label, description = it.name, image = itemImage(it), onSelect = function()
+                    local count, reason = askCount(a.title, it)
+                    if count then run(a, it.name, count, reason) end
+                end }
+            end
+        end
+        if #o == 0 then o[1] = { title = 'Rien dans cette catégorie', readOnly = true } end
+        show('gs_staff_items_cat', ('%s · %s'):format(a.title, cat.label), o, 'gs_staff_items_' .. a.action)
+    end
+    local function actionMenu(a)
+        -- chaque item va dans la 1re catégorie qui le reconnaît (le compte sert d'aperçu)
+        for _, it in ipairs(list) do it._taken = nil end
+        local o = { { title = 'Rechercher (nom)', icon = 'magnifying-glass', description = 'Taper un nom, comme avant', onSelect = function()
+            local item, count, reason = askSearch(a.title)
+            if item then run(a, item, count, reason) end
+        end } }
+        for _, cat in ipairs(ITEM_CATEGORIES) do
+            local n = 0
+            for _, it in ipairs(list) do if not it._taken and cat.match(it) then it._taken = true n = n + 1 end end
+            if n > 0 then
+                o[#o + 1] = { title = cat.label, icon = cat.icon, arrow = true, description = ('%d objet(s)'):format(n), onSelect = function()
+                    for _, it in ipairs(list) do it._taken = nil end
+                    for _, c in ipairs(ITEM_CATEGORIES) do
+                        if c == cat then break end
+                        for _, it in ipairs(list) do if not it._taken and c.match(it) then it._taken = true end end
+                    end
+                    categoryMenu(a, cat)
+                end }
+            end
+        end
+        show('gs_staff_items_' .. a.action, a.title, o, 'gs_staff_items')
+    end
+    local options = { { title = ACTIONS.give.title, icon = ACTIONS.give.icon, arrow = true, onSelect = function() actionMenu(ACTIONS.give) end } }
     if not founder then return show('gs_staff_items', 'Items (super-admin)', options, 'gs_staff_quick') end
     show('gs_staff_items', 'Items (fondateur)', {
         options[1],
-        { title = 'Retirer à ' .. target.name, icon = 'minus', onSelect = function()
-            local item, count = ask('Retirer')
-            if item then notify(act('removeitem', target.id, { item = item, amount = count })) end
-        end },
-        { title = 'Poser au sol, ici', icon = 'box', onSelect = function()
-            local item, count = ask('Poser au sol')
-            if item then notify(act('dropitem', nil, { item = item, amount = count })) end
-        end },
+        { title = ACTIONS.remove.title, icon = ACTIONS.remove.icon, arrow = true, onSelect = function() actionMenu(ACTIONS.remove) end },
+        { title = ACTIONS.drop.title, icon = ACTIONS.drop.icon, arrow = true, onSelect = function() actionMenu(ACTIONS.drop) end },
     }, 'gs_staff_quick')
 end
 
@@ -645,6 +701,16 @@ local function playerMenu(p)
     if info.ranks and p.id ~= info.me then
         add(5, { title = 'Rang staff (fondateur)', icon = 'user-shield', arrow = true, onSelect = function() rankMenu(p) end })
     end
+    if info.vips then
+        -- V11.5 : VIP = un deuxième personnage (comme le staff), rien d'autre
+        local vip = p.license and info.vips[p.license] == true
+        add(5, { title = ('VIP (2 personnages) : %s'):format(vip and 'OUI' or 'NON'), icon = 'crown', iconColor = vip and ON or OFF,
+            description = vip and 'Retirer le statut VIP' or 'Accorder un deuxième personnage', onSelect = function()
+                local ok, msg = act('setvip', p.id, { on = not vip })
+                notify(ok, msg)
+                if ok then info.vips[p.license] = (not vip) or nil playerMenu(p) end
+            end })
+    end
     show('gs_staff_player', ('[%d] %s'):format(p.id, p.name), options, 'gs_staff_players')
 end
 
@@ -740,16 +806,52 @@ local function mainMenu()
         show('gs_staff_me', 'Moi', o, 'gs_staff_quick')
     end
 
+    local function spawnModel(model)
+        local hash = GetHashKey(model)
+        if not IsModelInCdimage(hash) or not IsModelAVehicle(hash) then return notify(false, 'Modèle inconnu : ' .. model) end
+        notify(act('spawnveh', nil, { model = model, vtype = vehicleType(hash) }))
+    end
+    -- V11.5 · Catalogue Qbox par catégorie (nom lisible, marque, prix) : plus besoin de connaître le nom de spawn.
+    local VEH_CATEGORIES = { compacts = 'Citadines', sedans = 'Berlines', suvs = 'SUV', coupes = 'Coupés', muscle = 'Muscle cars',
+        sportsclassics = 'Sportives classiques', sports = 'Sportives', super = 'Supercars', motorcycles = 'Motos', offroad = 'Tout-terrain',
+        industrial = 'Industriels', utility = 'Utilitaires', vans = 'Camionnettes', cycles = 'Vélos', boats = 'Bateaux', helicopters = 'Hélicoptères',
+        planes = 'Avions', service = 'Service', emergency = 'Urgences', military = 'Militaires', commercial = 'Poids lourds', trains = 'Trains', roadtrip = '★ Imports RoadLine' }
+    local function catalogMenu()
+        local ok, all = pcall(function() return exports.qbx_core:GetVehiclesByName() end) -- [API] qbx_core
+        if not ok or type(all) ~= 'table' then return notify(false, 'Catalogue indisponible.') end
+        local byCat = {}
+        for model, v in pairs(all) do
+            local c = v.category or 'other'
+            byCat[c] = byCat[c] or {}
+            byCat[c][#byCat[c] + 1] = { model = model, name = v.name or model, brand = v.brand or '', price = v.price or 0 }
+        end
+        local cats = {}
+        for c, l in pairs(byCat) do
+            table.sort(l, function(x, y) return (x.brand .. x.name) < (y.brand .. y.name) end)
+            cats[#cats + 1] = { id = c, label = VEH_CATEGORIES[c] or c, n = #l }
+        end
+        table.sort(cats, function(x, y) return x.label < y.label end)
+        local o = {}
+        for _, c in ipairs(cats) do
+            o[#o + 1] = { title = c.label, icon = 'car-side', arrow = true, description = ('%d modèle(s)'):format(c.n), onSelect = function()
+                local l = {}
+                for _, v in ipairs(byCat[c.id]) do
+                    l[#l + 1] = { title = ('%s %s'):format(v.brand, v.name), description = ('%s · %s $'):format(v.model, lib.math.groupdigits(v.price)),
+                        icon = 'car', onSelect = function() spawnModel(v.model) end }
+                end
+                show('gs_staff_veh_cat', c.label, l, 'gs_staff_veh_catalog')
+            end }
+        end
+        show('gs_staff_veh_catalog', 'Catalogue des véhicules', o, 'gs_staff_veh')
+    end
     local function vehMenu()
         local o = {}
         local function a(minLvl, opt) if lvl >= minLvl then o[#o + 1] = opt end end
-        a(3, { title = 'Faire apparaître un véhicule', icon = 'car', onSelect = function()
+        a(3, { title = 'Catalogue par catégorie', icon = 'list', arrow = true, description = 'Berlines, sportives, motos… (nom, marque, prix)', onSelect = catalogMenu })
+        a(3, { title = 'Faire apparaître un véhicule (nom de spawn)', icon = 'car', onSelect = function()
             local r = input('Véhicule', { { type = 'input', label = 'Modèle (ex : sultan, faggio, buzzard)', required = true } })
             if not r then return end
-            local model = r[1]:gsub('%s', ''):lower()
-            local hash = GetHashKey(model)
-            if not IsModelInCdimage(hash) or not IsModelAVehicle(hash) then return notify(false, 'Modèle inconnu : ' .. model) end
-            notify(act('spawnveh', nil, { model = model, vtype = vehicleType(hash) }))
+            spawnModel(r[1]:gsub('%s', ''):lower())
         end })
         a(3, { title = 'Véhicules ajoutés (mods)', icon = 'car-side', arrow = true, description = 'Nom, prix, spawn en un clic', onSelect = addonVehiclesMenu })
         a(2, { title = 'Réparer mon véhicule', icon = 'wrench', onSelect = function() notify(act('fixveh', info.me)) end })
@@ -778,12 +880,13 @@ local function mainMenu()
                     { title = 'Retirer le lieu le plus proche', icon = 'trash', onSelect = function() notify(lib.callback.await('gs_places:delete', false)) end },
                 }, 'gs_staff_world')
             end })
-        a(3, { title = 'Déplacer un point (métiers, récolte, magasins…)', icon = 'location-crosshairs', arrow = true,
-            description = 'Point mal placé ? Mets-toi au bon endroit et choisis-le', onSelect = function() TriggerEvent('gs_bridge:client:pointsMenu') end })
+        a(3, { title = 'Déplacer / retirer un point (récolte, gangs, magasins…)', icon = 'location-crosshairs', arrow = true,
+            description = 'Point mal placé ? Mets-toi au bon endroit et choisis-le. Super-admin : retirer du jeu', onSelect = function() TriggerEvent('gs_bridge:client:pointsMenu') end })
         a(3, { title = 'Points de métier (placer ici)', icon = 'briefcase', arrow = true,
             description = 'Service, coffre, armurerie, direction, garage', onSelect = pointsMenu })
         a(3, { title = 'Gangs (création, QG, garage)', icon = 'people-group', arrow = true, onSelect = gangAdminMenu })
-        a(4, { title = 'Objets du décor (placer / retirer)', icon = 'cube', description = 'Bancs, poubelles, barrières… (/builder)', onSelect = function() ExecuteCommand('builder') end })
+        a(4, { title = 'Mapping : objets du décor', icon = 'cube', arrow = true, description = 'Catalogue par catégorie, placer, modifier, retirer de la map (/builder)',
+            onSelect = function() exports.gs_builder:Open('gs_staff_world') end })
         a(1, { title = 'Copier mes coordonnées', icon = 'crosshairs', description = 'vec4 dans le presse-papiers', onSelect = function()
             local ped = PlayerPedId()
             local c = GetEntityCoords(ped)
@@ -844,17 +947,38 @@ local function mainMenu()
     show('gs_staff_quick', ('Staff · %s · RoadLine %s'):format(info.levelName or '', GetConvar('gs_version', '?')), options)
 end
 
--- Déplacer un point (toutes ressources) : les 25 points les plus proches (200 m), du plus proche au plus loin.
-AddEventHandler('gs_bridge:client:pointsMenu', function()
-    local list = exports.gs_bridge:NearbyPoints(GetEntityCoords(PlayerPedId()), 200.0)
+-- Déplacer / retirer un point (toutes ressources) : les plus proches (300 m), filtre par ressource.
+-- V11.6 : « Retirer du jeu » (super-admin, réversible) en plus de déplacer / remettre à l'origine.
+local POINT_RES = { gs_harvest = 'Récolte', gs_jobs = 'Métiers', gs_gangs = 'Gangs', gs_economy = 'Magasins', gs_bank = 'Banques', gs_drugs = 'Drogue',
+    gs_heists = 'Braquages', gs_rental = 'Locations', gs_gigs = 'Petits boulots', gs_races = 'Courses', gs_blackmarket = 'Marché noir', gs_police = 'Police',
+    gs_hideouts = 'Planques', gs_casino = 'Casino', gs_driving = 'Auto-école', gs_cctv = 'Caméras', gs_nightcity = 'Ville de nuit', gs_world = 'Monde' }
+local function pointsAllMenu(filter)
+    local me = GetEntityCoords(PlayerPedId())
+    local all = exports.gs_bridge:NearbyPoints(me, 300.0)
+    local list, byRes = {}, {}
+    for _, p in ipairs(all) do
+        byRes[p.res] = (byRes[p.res] or 0) + 1
+        if not filter or p.res == filter then list[#list + 1] = p end
+    end
     local options = {}
-    for i = 1, math.min(#list, 25) do
+    if not filter then
+        options[1] = { title = 'Filtrer par ressource', icon = 'filter', arrow = true, description = 'Récolte, métiers, gangs, magasins…', onSelect = function()
+            local o = {}
+            for res, n in pairs(byRes) do o[#o + 1] = { title = POINT_RES[res] or res, description = ('%s · %d point(s)'):format(res, n), icon = 'folder',
+                onSelect = function() pointsAllMenu(res) end } end
+            table.sort(o, function(a, b) return a.title < b.title end)
+            show('gs_staff_points_filter', 'Filtrer par ressource', o, 'gs_staff_points_all')
+        end }
+    end
+    for i = 1, math.min(#list, 30) do
         local p = list[i]
-        options[#options + 1] = { title = p.label, icon = p.moved and 'location-dot' or 'location-crosshairs', iconColor = p.moved and ON or nil,
-            description = ('%s · à %d m%s'):format(p.res, math.floor(p.dist), p.moved and ' · déjà déplacé' or ''), arrow = true,
+        local state = p.off and ' · RETIRÉ' or (p.moved and ' · déjà déplacé' or '')
+        options[#options + 1] = { title = p.label, icon = p.off and 'ban' or (p.moved and 'location-dot' or 'location-crosshairs'),
+            iconColor = p.off and '#ff4d6d' or (p.moved and ON or nil),
+            description = ('%s · à %d m%s'):format(POINT_RES[p.res] or p.res, math.floor(p.dist), state), arrow = true,
             onSelect = function()
-                show('gs_staff_point', p.label, {
-                    { title = 'Placer ce point ici (ma position)', icon = 'location-crosshairs', onSelect = function()
+                local o = {
+                    { title = 'Placer ce point ici (ma position)', icon = 'location-crosshairs', disabled = p.off, onSelect = function()
                         if lib.alertDialog({ header = p.label, content = 'Le point est posé à tes pieds, orienté comme toi.\n\n' .. p.res
                             .. ' est relancé quelques secondes (les joueurs en train de l\'utiliser devront recommencer).', centered = true, cancel = true }) == 'confirm' then
                             notify(act('movepoint', nil, { key = p.key }))
@@ -862,12 +986,27 @@ AddEventHandler('gs_bridge:client:pointsMenu', function()
                     end },
                     { title = 'Remettre la position d\'origine', icon = 'rotate-left', disabled = not p.moved,
                         onSelect = function() notify(act('resetpoint', nil, { key = p.key })) end },
-                }, 'gs_staff_points_all')
+                }
+                if info.level >= 4 then
+                    if p.off then
+                        o[#o + 1] = { title = 'Réactiver ce point', icon = 'circle-check', iconColor = ON, onSelect = function() notify(act('enablepoint', nil, { key = p.key })) end }
+                    else
+                        o[#o + 1] = { title = 'Retirer ce point du jeu', icon = 'ban', iconColor = '#ff4d6d', description = 'Réversible : il réapparaît ici avec « Réactiver »',
+                            onSelect = function()
+                                if lib.alertDialog({ header = p.label, content = 'Le point disparaît pour tout le monde (marqueur, logo, interaction). ' .. p.res
+                                    .. ' est relancé quelques secondes.', centered = true, cancel = true }) == 'confirm' then
+                                    notify(act('disablepoint', nil, { key = p.key }))
+                                end
+                            end }
+                    end
+                end
+                show('gs_staff_point', p.label, o, 'gs_staff_points_all')
             end }
     end
-    if #options == 0 then options[1] = { title = 'Aucun point déplaçable à moins de 200 m', readOnly = true } end
-    show('gs_staff_points_all', 'Déplacer un point', options, 'gs_staff_world')
-end)
+    if #list == 0 then options[#options + 1] = { title = 'Aucun point à moins de 300 m', readOnly = true } end
+    show('gs_staff_points_all', filter and ('Points · ' .. (POINT_RES[filter] or filter)) or 'Déplacer / retirer un point', options, 'gs_staff_world')
+end
+AddEventHandler('gs_bridge:client:pointsMenu', function() pointsAllMenu(nil) end)
 
 --- Ouvre le menu principal (données rafraîchies depuis le serveur).
 function openQuick()
@@ -877,7 +1016,11 @@ function openQuick()
 end
 
 -- Nom neuf en V7 : la touche par défaut (F11) s'applique à tous, même à ceux qui avaient l'ancienne (Suppr)
-RegisterCommand('gs_staffmenu_v7', function() openQuick('main') end, false)
+RegisterCommand('gs_staffmenu_v7', function()
+    if lib.getOpenContextMenu() then return lib.hideContext() end -- même touche = fermer
+    if IsNuiFocused() then return end -- V11.5 : jamais pendant une saisie ou une autre interface
+    openQuick('main')
+end, false)
 RegisterKeyMapping('gs_staffmenu_v7', 'Menu staff rapide', 'keyboard', Config.QuickKey)
 
 -- Raccourcis du mode staff : Ctrl gauche maintenu + touche (le serveur vérifie niveau et mode staff).
@@ -892,7 +1035,7 @@ local SHORTCUTS = {
     end },
 }
 for id, sc in pairs(SHORTCUTS) do
-    RegisterCommand('staff_' .. id, function() if ctrlHeld() then sc.run() end end, false)
+    RegisterCommand('staff_' .. id, function() if ctrlHeld() and not IsNuiFocused() then sc.run() end end, false)
     RegisterKeyMapping('staff_' .. id, sc.label, 'keyboard', Config.Shortcuts[id])
 end
 

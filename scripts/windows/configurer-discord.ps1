@@ -38,6 +38,8 @@ Say '  ROADLINE · CONFIGURER DISCORD' 'Magenta'
 Say '  -----------------------------' 'DarkMagenta'
 Ask-Hook '1/4 · Salon #statut (un message mis à jour chaque minute : joueurs, services, météo)' 'gs_webhook_status'
 Ask-Hook '2/4 · Salon #annonces (serveur ouvert, redémarrages)' 'gs_webhook_annonces'
+Ask-Hook '   · Salon #logs-staff (PRIVÉ : sécurité, commandes staff, alertes serveur)' 'gs_staff_webhook'
+Ask-Hook '   · Salon #sanctions (PUBLIC : sanctions, staff anonyme)' 'gs_webhook_sanctions'
 
 Say ''
 Say '  3/4 · Adresse pour rejoindre (ex : cfx.re/join/abc123, visible dans txAdmin). Entrée = garder.' 'Cyan'
@@ -53,15 +55,26 @@ if ($token) {
     if ($token -notmatch '^[\w.-]{50,100}$') { Say '  Jeton invalide, ignoré.' 'Yellow'; $token = '' }
     else {
         Set-Conv 'gs_discord_bot_token' $token 'NE JAMAIS PARTAGER'
-        $guild = (Read-Host '  Identifiant du serveur Discord (clic droit sur le serveur → Copier l''identifiant), Entrée = passer').Trim()
-        if ($guild -match '^\d{15,22}$') { Set-Conv 'gs_discord_guild' $guild }
         Say '  Rôles de métier : mets les identifiants des rôles dans [gtasoon]\gs_discord\shared\config.lua (Config.Roles).' 'DarkGray'
     }
 }
+# V11.4 : identifiants Discord (Paramètres Discord → Avancés → Mode développeur, puis clic droit → Copier l'identifiant).
+# Demandés même sans nouveau jeton : le bot n'accepte les commandes staff et les tickets QUE sur ce Discord.
+function Ask-Id($label, $name) {
+    $has = (Get-Conv $name) -ne ''
+    $v = (Read-Host ("  $label" + $(if ($has) { ' · déjà réglé, Entrée = garder' } else { ', Entrée = passer' }))).Trim()
+    if ($v -match '^\d{15,22}$') { Set-Conv $name $v; Say '  OK.' 'Green' } elseif ($v -ne '') { Say '  Identifiant invalide (que des chiffres), ignoré.' 'Yellow' }
+}
+Say ''
+Say '  Identifiants Discord (clic droit → Copier l''identifiant ; activer le Mode développeur si absent)' 'Cyan'
+Ask-Id 'Serveur Discord (clic droit sur l''icône du serveur)' 'gs_discord_guild'
+Ask-Id 'Rôle staff (Paramètres du serveur → Rôles → clic droit sur le rôle)' 'gs_discord_staff_role'
+Ask-Id 'Salon #tickets (clic droit sur le salon)' 'gs_discord_ticket_channel'
 [IO.File]::WriteAllText($secrets, $text, (New-Object Text.UTF8Encoding $false))
 Say ''
 Say '  secrets.cfg mis à jour (effet au prochain démarrage du serveur).' 'Green'
 
+if (-not $token) { $token = Get-Conv 'gs_discord_bot_token' } # bot déjà réglé : on redonne le lien (nouveaux droits V11.4 : tickets)
 if ($token) {
     # Le bot tourne DANS le serveur FiveM (gs_discord) : rien à installer, il démarre avec le serveur, en local comme chez l'hébergeur.
     # Lien d'invitation : l'identifiant du bot est la 1re partie du jeton (pas secrète).
@@ -71,7 +84,8 @@ if ($token) {
         $pad = $first + ('=' * ((4 - $first.Length % 4) % 4))
         $botId = [Text.Encoding]::ASCII.GetString([Convert]::FromBase64String($pad))
         if ($botId -match '^\d{15,22}$') {
-            $invite = "https://discord.com/oauth2/authorize?client_id=$botId&scope=bot%20applications.commands&permissions=268435456"
+            # Droits : voir les salons, écrire, liens, historique, gérer les rôles (métiers), fils privés (tickets) et les gérer
+            $invite = "https://discord.com/oauth2/authorize?client_id=$botId&scope=bot%20applications.commands&permissions=361045773312"
             Say ''
             Say '  Ajoute le bot à ton Discord (une fois) : la page s''ouvre, choisis ton serveur → Autoriser.' 'Cyan'
             Say "  $invite" 'DarkGray'

@@ -1,6 +1,10 @@
 -- [CONFIG] gs_cctv · Caméras de surveillance. Positions [À CALER] (déplaçables en jeu : F11 → Déplacer un point).
 -- Une caméra relève les véhicules qui passent dans son champ (rayon) ; le serveur décide, le client ne déclare rien.
+-- V11.5 : le boîtier s'accroche tout seul au mur ou au poteau le plus proche (rayon Mount.reach), à hauteur Mount.height,
+-- et regarde vers la rue. `heading` facultatif par caméra = direction imposée (sinon : celle du mur trouvé).
 Config = {}
+
+Config.Mount = { reach = 7.0, height = 3.2, minHeight = 2.6, maxHeight = 5.0 }
 
 Config.Sample = 4             -- secondes entre deux relevés
 Config.Radius = 32.0          -- portée d'une caméra
@@ -16,6 +20,7 @@ Config.Terminals = {          -- ordinateurs où la police consulte les enregist
 Config.TerminalRange = 2.5
 Config.Blind = { item = 'spraycan', minutes = 120, time = 5000, range = 3.0 } -- aveugler à la bombe de peinture
 Config.Prop = 'prop_cctv_cam_01a'
+Config.Trace = { delay = 5, maxAge = 90, keep = 30 } -- V12 : opérations de gang remontées après 5 min, visibles 90 min
 Config.Cameras = {
     { label = 'Legion Square', coords = vec3(195.0, -935.0, 34.0) },
     { label = 'Mission Row (commissariat)', coords = vec3(410.0, -970.0, 33.0) },

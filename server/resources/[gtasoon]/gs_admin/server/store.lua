@@ -27,6 +27,12 @@ function Store.init()
         `staff` VARCHAR(100) NOT NULL,
         PRIMARY KEY (`license`)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4]])
+    MySQL.query.await([[CREATE TABLE IF NOT EXISTS `gs_admin_vip` (
+        `license` VARCHAR(64) NOT NULL,
+        `staff` VARCHAR(100) NOT NULL,
+        `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (`license`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4]])
     MySQL.query.await([[CREATE TABLE IF NOT EXISTS `gs_admin_ranks` (
         `license` VARCHAR(64) NOT NULL,
         `rank` TINYINT UNSIGNED NOT NULL,
@@ -44,6 +50,16 @@ end
 function Store.rankSet(license, rank, staff)
     if rank == 0 then return MySQL.update.await('DELETE FROM gs_admin_ranks WHERE license = ?', { license }) end
     MySQL.update.await('REPLACE INTO gs_admin_ranks (license, `rank`, staff) VALUES (?, ?, ?)', { license, rank, staff })
+end
+
+--- V11.5 · VIP (2 personnages), par licence
+function Store.vips()
+    return MySQL.query.await('SELECT license FROM gs_admin_vip') or {}
+end
+
+function Store.vipSet(license, on, staff)
+    if not on then return MySQL.update.await('DELETE FROM gs_admin_vip WHERE license = ?', { license }) end
+    MySQL.update.await('REPLACE INTO gs_admin_vip (license, staff) VALUES (?, ?)', { license, staff })
 end
 
 function Store.log(staff, action, target, details)

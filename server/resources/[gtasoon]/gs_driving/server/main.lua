@@ -17,13 +17,22 @@ end
 local function grant(src, cid)
     Store.set(cid, 2)
     Bridge:SetLicence(src, 'driver', true)
-    -- Carte « permis de conduire » (qbx_idcard) remise avec le permis : c'est le seul moyen de l'obtenir
-    if GetResourceState('qbx_idcard') == 'started' and GetResourceState('ox_inventory') == 'started' then
-        pcall(function()
-            exports.ox_inventory:AddItem(src, 'driver_license', 1, exports.qbx_idcard:GetMetaLicense(src, { 'driver_license' }))
-        end)
-    end
+    Bridge:LicenceCard(src, 'driver', true) -- carte « permis de conduire » (qbx_idcard) remise avec le permis
 end
+
+--- V11.5 · Retrait / restitution par la police. Retiré = retour à l'auto-école (ou la police le rend), carte reprise.
+function Driving.setLicence(src, on, reason)
+    local cid = Bridge:GetIdentifier(src)
+    if not cid then return false end
+    if on then grant(src, cid) return true end
+    if status(cid) < 2 then return false end
+    Store.set(cid, 0)
+    Bridge:SetLicence(src, 'driver', false)
+    Bridge:LicenceCard(src, 'driver', false)
+    Bridge:Notify(src, ('Permis de conduire retiré (%s). Pour le récupérer : auto-école (code et conduite), ou décision de la police.'):format(reason or 'infraction'), 'error')
+    return true
+end
+exports('SetLicence', function(src, on, reason) return Driving.setLicence(src, on, reason) end)
 
 --- À la connexion : un nouveau personnage perd le permis donné par défaut ; un ancien avec un véhicule le garde.
 function Driving.onLoaded(src)
@@ -184,7 +193,7 @@ AddEventHandler('gs_bridge:server:playerUnloaded', function(src) finish(src, fal
 
 --- Solde de points (avec la récupération : +1 point par période sans infraction). nil = pas de permis.
 function Driving.points(cid)
-    if status(cid) < 2 then return nil end
+    if not Config.Points.enabled or status(cid) < 2 then return nil end
     local pts, last = Store.points(cid)
     pts, last = pts or Config.Points.max, last or 0
     if pts < Config.Points.max and last > 0 then
@@ -209,6 +218,7 @@ function Driving.removePoints(src, n, reason)
     if pts == 0 then
         Store.set(cid, 0)
         Bridge:SetLicence(src, 'driver', false)
+        Bridge:LicenceCard(src, 'driver', false) -- V11.5 : la carte ne reste plus dans l'inventaire
         Bridge:Notify(src, 'Solde de points nul : permis annulé. Il faut repasser l\'auto-école (code et conduite).', 'error')
         if GetResourceState('gs_police') == 'started' then
             pcall(function() exports.gs_police:AddRecord(cid, 'Permis annulé (solde de points nul)', 0, 0, 'Préfecture') end)
@@ -222,7 +232,8 @@ end
 lib.callback.register('gs_driving:points', function(src)
     if not Security:RateLimit(src, 'gs_driving:points', 3, 5000) then return nil end
     local cid = Bridge:GetIdentifier(src)
-    return cid and Driving.points(cid) or nil, Config.Points.max
+    -- 3e valeur (V11.5) : permis valide ou non, pour /permis quand les points sont désactivés
+    return cid and Driving.points(cid) or nil, Config.Points.max, cid ~= nil and status(cid) >= 2
 end)
 
 exports('RemovePoints', function(src, n, reason) return Driving.removePoints(src, n, reason) end)

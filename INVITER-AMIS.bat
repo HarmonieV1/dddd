@@ -53,4 +53,4 @@ Say '  A distance : ton ami installe Tailscale (https://tailscale.com/download) 
 Say '    Toi : va sur https://login.tailscale.com/admin/machines , a droite de ton PC clique les 3 points > Share > entre l''e-mail de ton ami.'
 Say '    Lui : accepte l''invitation recue par e-mail, garde Tailscale connecte.'
 Say '  Ensuite, dans FiveM, il appuie sur F8 et tape la ligne "connect ..." affichee plus haut.'
-Say '  Ton serveur doit etre lance (DEMARRER.bat) et ton PC allume. 8 places max en test (cfg\dev.cfg).'
+Say '  Ton serveur doit etre lance (DEMARRER.bat) et ton PC allume. 48 places max (cfg\dev.cfg).'

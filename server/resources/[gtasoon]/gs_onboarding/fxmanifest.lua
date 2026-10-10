@@ -10,4 +10,4 @@ dependencies { 'oxmysql', 'ox_lib', 'gs_security', 'gs_bridge' }
 
 shared_scripts { '@ox_lib/init.lua', 'shared/config.lua', '@gs_bridge/shared/points.lua', 'shared/commands.lua', 'shared/guide.lua' }
 server_scripts { '@oxmysql/lib/MySQL.lua', 'server/store.lua', 'server/main.lua', 'server/commands.lua', 'server/mentors.lua', 'server/quefaire.lua' }
-client_scripts { 'client/main.lua', 'client/keys.lua', 'client/commands.lua', 'client/mentors.lua', 'client/quefaire.lua' }
+client_scripts { 'client/arrival.lua', 'client/main.lua', 'client/keys.lua', 'client/commands.lua', 'client/mentors.lua', 'client/quefaire.lua' }

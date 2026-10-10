@@ -223,6 +223,24 @@ local function RemoveItem(src, item, count, metadata)
     return OX:RemoveItem(src, item, count, metadata) and true or false
 end
 
+--- V11.5 · Carte physique d'un permis (qbx_idcard) : remise avec le permis, reprise quand il est retiré.
+--- kind : 'weapon' (port d'arme) ou 'driver' (conduire). true si rien à faire ou fait. [API] qbx_idcard GetMetaLicense
+local LICENCE_ITEMS = { weapon = 'weaponlicense', driver = 'driver_license' }
+local function LicenceCard(src, kind, on)
+    local item = LICENCE_ITEMS[kind]
+    if not item or not IsLoaded(src) or not ItemExists(item) then return false end
+    if on then
+        if GetItemCount(src, item) > 0 then return true end
+        local meta
+        if GetResourceState('qbx_idcard') == 'started' then
+            pcall(function() meta = exports.qbx_idcard:GetMetaLicense(src, { item }) end)
+        end
+        return AddItem(src, item, 1, meta)
+    end
+    local n = GetItemCount(src, item)
+    return n == 0 or RemoveItem(src, item, n)
+end
+
 --- Contenu d'un coffre (commerces de joueurs) : compter, retirer, ajouter. [API] ox_inventory (inventaire par id de coffre)
 local function StashCount(id, item)
     if type(id) ~= 'string' or type(item) ~= 'string' then return 0 end
@@ -253,7 +271,11 @@ local function ListItems()
     local list = {}
     local ok, items = pcall(function() return OX:Items() end)
     if not ok or type(items) ~= 'table' then return list end
-    for name, it in pairs(items) do list[#list + 1] = { name = name, label = it.label or name } end
+    for name, it in pairs(items) do
+        -- image : celle déclarée par l'item, sinon ox_inventory prend <nom>.png (V11.5 : menu staff illustré)
+        list[#list + 1] = { name = name, label = it.label or name, image = type(it.client) == 'table' and it.client.image or nil,
+            food = type(it.client) == 'table' and type(it.client.status) == 'table' or nil }
+    end
     table.sort(list, function(a, b) return a.label < b.label end)
     return list
 end
@@ -369,6 +391,7 @@ exports('GetItemCount', GetItemCount)
 exports('ItemExists', ItemExists)
 exports('AddItem', AddItem)
 exports('RemoveItem', RemoveItem)
+exports('LicenceCard', LicenceCard)
 exports('RegisterStash', RegisterStash)
 exports('GiveVehicleKeys', GiveVehicleKeys)
 exports('GiveVehicle', GiveVehicle)

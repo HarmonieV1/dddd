@@ -78,6 +78,14 @@ check('job whitelisté non rejoignable au Pôle Emploi', Members[2].jobs.police 
 net('gs_jobs:server:switch', 2, 'police'); step()
 net('gs_jobs:server:toggleDuty', 2); step()
 check('service refusé loin du point', not W.players[2].job.onduty)
+net('gs_jobs:server:toggleDuty', 2, true); step()
+check('V11.5 par téléphone sans téléphone : refusé', not W.players[2].job.onduty)
+W.players[2].items.phone = 1
+net('gs_jobs:server:toggleDuty', 2, true); step()
+check('V11.5 par téléphone, loin du point : accepté', W.players[2].job.onduty)
+net('gs_jobs:server:toggleDuty', 2, true); step()
+check('fin de service par téléphone', not W.players[2].job.onduty)
+W.players[2].items.phone = nil
 tp(2, P.duty[1])
 net('gs_jobs:server:toggleDuty', 2); step()
 check('prise de service au point', W.players[2].job.onduty)

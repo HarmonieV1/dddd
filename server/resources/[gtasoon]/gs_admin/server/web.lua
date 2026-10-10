@@ -50,7 +50,7 @@ function Web.auth(ip, token)
     return who
 end
 
-local ACTIONS = { players = true, freeze = true, unfreeze = true, warn = true, message = true, kick = true, announce = true }
+local ACTIONS = { players = true, freeze = true, unfreeze = true, warn = true, message = true, kick = true, announce = true, jail = true, unjail = true, revive = true } -- V12.3 : isolement, réanimation
 
 function Web.handle(ip, body)
     local ok, d = pcall(json.decode, body or '')
@@ -60,7 +60,7 @@ function Web.handle(ip, body)
     if d.action == 'login' then return { ok = true, text = 'Bonjour ' .. who .. '.', who = who } end
     if d.action == 'overview' then return { ok = true, data = Admin.overview(), txadmin = GetConvar('gs_admin_txadmin', '') } end
     if not ACTIONS[d.action] then return { ok = false, text = 'Action inconnue.' } end
-    local good, text = Admin.remote(d.action, d.id, d.text, 'Web · ' .. who)
+    local good, text = Admin.remote(d.action, d.id, d.text, 'Web · ' .. who, d.minutes)
     return { ok = good == true, text = text or '' }
 end
 
@@ -85,7 +85,8 @@ nav button{flex:1;margin:0;border-radius:0;background:none;color:var(--mut);font
 <section id="t-players"><div class="card"><input id="q" placeholder="Rechercher (pseudo, personnage, n°)" oninput="draw()"><div id="plist"></div></div>
 <div class="card hide" id="sheet"><div id="who"></div><small>Motif / message (obligatoire pour avertir et expulser)</small><textarea id="txt" rows="2" maxlength="200"></textarea>
 <button onclick="act('freeze')">🧊 Geler</button><button class="g" onclick="act('unfreeze')">Dégeler</button><button class="g" onclick="act('message')">✉️ Message</button>
-<button class="g" onclick="act('warn')">⚠️ Avertir</button><button class="r" onclick="if(confirm('Expulser ce joueur ?'))act('kick')">Expulser</button></div></section>
+<button class="g" onclick="act('warn')">⚠️ Avertir</button><button class="r" onclick="if(confirm('Expulser ce joueur ?'))act('kick')">Expulser</button>
+<div class="row" style="margin-top:8px"><input id="min" type="number" min="1" max="240" value="15" placeholder="min"><button class="r" onclick="if(confirm('Isoler ce joueur ?'))act('jail')">⛓️ Isoler</button><button class="g" onclick="act('unjail')">Libérer</button><button class="g" onclick="act('revive')">❤️ Réanimer</button></div></div></section>
 <section id="t-tickets" class="hide"><div class="card"><div id="tlist"></div></div></section>
 <section id="t-city" class="hide"><div class="card"><small>Annonce à toute la ville</small><div class="row"><input id="ann" maxlength="200"><button onclick="annonce()">📢</button></div></div>
 <div class="card"><small>Bannissements durables, console, redémarrages programmés</small><div id="tx"></div></div>
@@ -107,7 +108,7 @@ if(SEL&&!D.players.some(p=>p.id==SEL)){SEL=0;$('sheet').classList.add('hide')}}
 function pick(id,fromTicket){SEL=id;const p=D.players.find(x=>x.id==id);if(!p){toast({ok:false,text:'Ce joueur n\'est plus en ville.'});return}
 $('who').textContent=p.id+' · '+p.name+(p.char?' ('+p.char+')':'');$('sheet').classList.remove('hide');if(fromTicket)tab('players',document.querySelector('nav button'));draw();$('sheet').scrollIntoView({behavior:'smooth'})}
 function tab(n,b){for(const s of ['players','tickets','city'])$('t-'+s).classList.toggle('hide',s!==n);document.querySelectorAll('nav button').forEach(x=>x.classList.toggle('on',x===b))}
-async function act(a){if(!SEL)return;toast(await call({action:a,id:SEL,text:$('txt').value}));refresh()}
+async function act(a){if(!SEL)return;toast(await call({action:a,id:SEL,text:$('txt').value,minutes:+$('min').value||15}));refresh()}
 async function annonce(){toast(await call({action:'announce',text:$('ann').value}));$('ann').value=''}
 function enter(){$('login').classList.add('hide');$('app').classList.remove('hide');$('nav').classList.remove('hide');refresh();clearInterval(timer);timer=setInterval(()=>{if(!document.hidden)refresh()},10000)}
 async function login(){T=$('code').value.trim();const r=await call({action:'login'});if(r.ok){sessionStorage.setItem('t',T);enter()}else{alert(r.text)}}

@@ -106,7 +106,10 @@ end)
 
 -- V8 · Permis à points : /permis
 RegisterCommand('permis', function()
-    local pts, max = lib.callback.await('gs_driving:points', false)
+    local pts, max, valid = lib.callback.await('gs_driving:points', false)
+    if not pts and valid then -- V11.5 : points désactivés, le permis est juste valide ou retiré
+        return lib.notify({ title = 'Permis de conduire', description = 'Permis valide.', type = 'success', icon = 'id-card' })
+    end
     if not pts then return notify(false, 'Pas de permis de conduire valide. Direction l\'auto-école !') end
     lib.notify({ title = 'Permis de conduire', description = ('Solde : %d / %d points'):format(pts, max), type = pts > 6 and 'success' or 'warning',
         icon = 'id-card', duration = 7000 })

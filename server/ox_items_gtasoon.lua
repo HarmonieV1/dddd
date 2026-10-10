@@ -6,7 +6,9 @@
 -- Images : client.image pointe vers une image déjà fournie par Qbox (ox_inventory/web/images).
 -- Au démarrage, gs_economy / gs_jobs / gs_drugs affichent en jaune dans la console les items encore manquants.
 
-['sandwich'] = { label = 'Sandwich', weight = 200, stack = true, close = true, client = { status = { hunger = 150000 }, anim = 'eating', usetime = 2500, notification = 'Pas mal, ce sandwich.' } }, -- remplace
+-- V11.5 · Date limite de conservation (ox_inventory degrade, en minutes de temps réel) : frais 2 jours (2880), conserves 7 jours
+-- (10080), boissons jamais. Un aliment périmé devient inutilisable (barre de durabilité à zéro) : il se jette.
+['sandwich'] = { label = 'Sandwich', weight = 200, stack = true, close = true, degrade = 2880, client = { status = { hunger = 150000 }, anim = 'eating', usetime = 2500, notification = 'Pas mal, ce sandwich.' } }, -- remplace
 ['repairkit'] = { label = 'Kit de réparation', weight = 2500, stack = true, close = true, description = 'Réparation de fortune du moteur (le mécano fait le reste).', client = { export = 'gs_details.repair' } }, -- remplace
 ['advancedrepairkit'] = { label = 'Kit de réparation avancé', weight = 4000, stack = true, close = true, description = 'Réparation complète du véhicule.', client = { image = 'advancedkit.png', export = 'gs_details.advancedRepair' } }, -- remplace
 ['cleaningkit'] = { label = 'Kit de nettoyage', weight = 250, stack = true, close = true, client = { export = 'gs_details.clean' } }, -- remplace
@@ -18,8 +20,8 @@
 ['coke_bag'] = { label = 'Pochon de cocaïne', weight = 20, stack = true, client = { image = 'cocaine_baggy.png' } }, -- remplace
 ['gs_parcel'] = { label = 'Colis', weight = 800, stack = true, description = 'Objet de quête', client = { image = 'paperbag.png' } }, -- remplace
 ['gs_envelope'] = { label = 'Enveloppe', weight = 20, stack = true, description = 'Objet de quête', client = { image = 'envelope.png' } }, -- remplace
-['gs_chips'] = { label = 'Chips', weight = 100, stack = true, close = true, client = { image = 'trash_chips.png', status = { hunger = 60000 }, anim = 'eating', usetime = 2000 } }, -- remplace
-['gs_donut'] = { label = 'Donut', weight = 100, stack = true, close = true, client = { image = 'donut.png', status = { hunger = 80000 }, anim = 'eating', usetime = 2000 } }, -- remplace
+['gs_chips'] = { label = 'Chips', weight = 100, stack = true, close = true, degrade = 10080, client = { image = 'trash_chips.png', status = { hunger = 60000 }, anim = 'eating', usetime = 2000 } }, -- remplace
+['gs_donut'] = { label = 'Donut', weight = 100, stack = true, close = true, degrade = 10080, client = { image = 'donut.png', status = { hunger = 80000 }, anim = 'eating', usetime = 2000 } }, -- remplace
 ['gs_energy'] = { label = 'Boisson énergisante', weight = 300, stack = true, close = true, client = { image = 'energy.png', status = { thirst = 150000 }, anim = 'drinking', usetime = 2000 } }, -- remplace
 ['coffee'] = { label = 'Café', weight = 200, stack = true, close = true, client = { status = { thirst = 80000 }, anim = 'drinking', usetime = 2500, notification = 'Réveillé !' } }, -- remplace
 ['beer'] = { label = 'Bière', weight = 350, stack = true, close = true, client = { status = { thirst = 100000 }, anim = 'drinking', usetime = 3000, export = 'gs_economy.drink' } }, -- remplace
@@ -36,21 +38,21 @@
 ['pickaxe'] = { label = 'Pioche', weight = 2500, stack = false, description = 'Pour miner à la carrière.', client = { image = 'pickaxe.png' } }, -- remplace
 ['axe'] = { label = 'Hache', weight = 2500, stack = false, description = 'Pour couper du bois à Paleto.', client = { image = 'axe.png' } }, -- remplace
 ['huntingknife'] = { label = 'Couteau de chasse', weight = 400, stack = false, description = 'Pour dépecer le gibier.', client = { image = 'huntingknife.png' } }, -- remplace
-['fish'] = { label = 'Poisson', weight = 600, stack = true, client = { image = 'fish.png' } }, -- remplace
-['tuna'] = { label = 'Thon', weight = 3000, stack = true, client = { image = 'tuna.png' } }, -- remplace
+['fish'] = { label = 'Poisson', weight = 600, stack = true, degrade = 2880, client = { image = 'fish.png' } }, -- remplace
+['tuna'] = { label = 'Thon', weight = 3000, stack = true, degrade = 2880, client = { image = 'tuna.png' } }, -- remplace
 ['stone'] = { label = 'Pierre', weight = 1000, stack = true, client = { image = 'stone.png' } }, -- remplace
 ['iron_ore'] = { label = 'Minerai de fer', weight = 1000, stack = true, client = { image = 'iron.png' } }, -- remplace
 ['gold_ore'] = { label = 'Pépite d\'or', weight = 200, stack = true, client = { image = 'goldbar.png' } }, -- remplace
 ['wood_log'] = { label = 'Bûche', weight = 2000, stack = true, client = { image = 'wood.png' } }, -- remplace
-['tomato'] = { label = 'Tomate', weight = 150, stack = true, client = { status = { hunger = 50000 }, anim = 'eating', usetime = 2000, image = 'tomato.png' } }, -- remplace
+['tomato'] = { label = 'Tomate', weight = 150, stack = true, degrade = 2880, client = { status = { hunger = 50000 }, anim = 'eating', usetime = 2000, image = 'tomato.png' } }, -- remplace
 ['potato'] = { label = 'Pomme de terre', weight = 200, stack = true, client = { image = 'potato.png' } }, -- remplace
-['meat'] = { label = 'Viande de gibier', weight = 1000, stack = true, client = { image = 'meat.png' } }, -- remplace
+['meat'] = { label = 'Viande de gibier', weight = 1000, stack = true, degrade = 2880, client = { image = 'meat.png' } }, -- remplace
 ['leather'] = { label = 'Cuir', weight = 800, stack = true, client = { image = 'leather.png' } }, -- remplace
 ['painkillers'] = { label = 'Antidouleurs', weight = 50, stack = true, close = true, description = '+30 PV en quelques secondes.', client = { image = 'painkillers.png', export = 'gs_details.painkillers' } }, -- remplace
 ['gs_cocktail'] = { label = 'Cocktail Vice', weight = 400, stack = true, close = true, client = { status = { thirst = 60000 }, anim = 'drinking', usetime = 3500, image = 'cocktail.png', export = 'gs_economy.drink' } }, -- remplace
 ['gs_whiskycola'] = { label = 'Whisky-cola', weight = 400, stack = true, close = true, client = { status = { thirst = 60000 }, anim = 'drinking', usetime = 3500, image = 'whiskycola.png', export = 'gs_economy.drink' } }, -- remplace
-['gs_burger_deluxe'] = { label = 'Burger deluxe', weight = 350, stack = true, close = true, client = { status = { hunger = 350000 }, anim = 'eating', usetime = 3500, image = 'burger.png' } }, -- remplace
-['gs_fries'] = { label = 'Frites maison', weight = 200, stack = true, close = true, client = { status = { hunger = 150000 }, anim = 'eating', usetime = 2500, image = 'fries.png' } }, -- remplace
+['gs_burger_deluxe'] = { label = 'Burger deluxe', weight = 350, stack = true, close = true, degrade = 2880, client = { status = { hunger = 350000 }, anim = 'eating', usetime = 3500, image = 'burger.png' } }, -- remplace
+['gs_fries'] = { label = 'Frites maison', weight = 200, stack = true, close = true, degrade = 2880, client = { status = { hunger = 150000 }, anim = 'eating', usetime = 2500, image = 'fries.png' } }, -- remplace
 ['gs_outfit'] = { label = 'Tenue', weight = 600, stack = false, close = true, description = 'Vêtements pliés. Double-clic : les enfiler (ta tenue actuelle est pliée à sa place).', client = { image = 'outfit.png', export = 'gs_details.wearOutfit' } }, -- remplace
 ['evidence_bag'] = { label = 'Scellé de preuve', weight = 100, stack = false, description = 'Preuve sous scellé : à analyser au labo du commissariat.', client = { image = 'evidence_bag.png' } }, -- remplace
 ['gs_gloves'] = { label = 'Gants en cuir', weight = 100, stack = true, close = true, consume = 0, description = 'Double-clic : enfiler / retirer. Pas d\'empreintes avec des gants.', client = { image = 'gloves.png', export = 'gs_evidence.gloves' } }, -- remplace
@@ -61,3 +63,6 @@
 ['gs_camera'] = { label = 'Appareil photo argentique', weight = 600, stack = false, close = true, consume = 0, description = 'Double-clic : prendre une photo (elle devient un objet).', client = { image = 'camera.png', export = 'gs_evidence.camera' } }, -- remplace
 ['gs_photo'] = { label = 'Photo', weight = 10, stack = false, close = true, consume = 0, description = 'Une photo développée.', client = { image = 'photo.png', export = 'gs_evidence.photo' } }, -- remplace
 ['gs_contrat'] = { label = 'Contrat signé', weight = 10, stack = false, close = true, consume = 0, description = 'Copie papier d\'un contrat (V9 · /contrat).', client = { image = 'contrat.png' } }, -- remplace
+['gs_fake_id'] = { label = 'Carte d\'identité (fausse)', weight = 10, stack = false, close = true, consume = 0, description = 'Papier au nom de quelqu\'un d\'autre. Double-clic : le présenter.', client = { image = 'id_card.png', export = 'gs_blackmarket.showFake' } }, -- remplace
+['gs_fake_driver'] = { label = 'Permis de conduire (faux)', weight = 10, stack = false, close = true, consume = 0, description = 'Passe un contrôle visuel, pas le scanner du commissariat.', client = { image = 'driver_license.png', export = 'gs_blackmarket.showFake' } }, -- remplace
+['gs_fake_ppa'] = { label = 'Permis de port d\'arme (faux)', weight = 10, stack = false, close = true, consume = 0, description = 'Passe un contrôle visuel, pas le scanner du commissariat.', client = { image = 'weaponlicense.png', export = 'gs_blackmarket.showFake' } }, -- remplace

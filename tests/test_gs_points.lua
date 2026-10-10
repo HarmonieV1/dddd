@@ -66,6 +66,20 @@ check('chemin invalide refusé', not set('gs_harvest:os.exit()', vec3(1.0, 2.0, 
 check('remise à l\'origine', reset('gs_harvest:Config.Buyers.1.coords') and GlobalState.gsPoints['gs_harvest:Config.Buyers.1.coords'] == nil)
 check('remise d\'un point jamais déplacé refusée', not reset('gs_harvest:Config.Buyers.1.coords'))
 
+-- V11.6 · Retirer un point du jeu (réversible)
+local disable, enable = getExport('gs_bridge', 'DisablePoint'), getExport('gs_bridge', 'EnablePoint')
+restarted = {}
+ok, res = disable('gs_harvest:Config.Activities.fishing.spots.1')
+check('retrait accepté, ressource relancée, sauvegardé', ok and res == 'gs_harvest' and restarted[1] == 'stop:gs_harvest' and kvp.gs_points_off ~= nil
+    and GlobalState.gsPointsOff['gs_harvest:Config.Activities.fishing.spots.1'] == true)
+check('retrait en double refusé', not disable('gs_harvest:Config.Activities.fishing.spots.1'))
+check('réactivation d\'un point non retiré refusée', not enable('gs_harvest:Config.Buyers.1.coords'))
+c = loadConfig('gs_harvest', {})
+check('point retiré : hors carte dans la config, position réelle gardée pour le menu', c.Activities.fishing.spots[1].x == -9000.0 and c.Activities.fishing.spots[2].x == 1299.4)
+check('réactivation', enable('gs_harvest:Config.Activities.fishing.spots.1') and GlobalState.gsPointsOff['gs_harvest:Config.Activities.fishing.spots.1'] == nil)
+c = loadConfig('gs_harvest', {})
+check('point réactivé : position d\'origine', c.Activities.fishing.spots[1].x == -1850.3)
+
 type = rawtype
 io.write(('\n%d réussis, %d échoués\n'):format(passed, failed))
 os.exit(failed == 0 and 0 or 1)

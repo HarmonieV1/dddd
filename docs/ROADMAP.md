@@ -1,6 +1,6 @@
 # Roadmap · où on en est, où on va
 
-*Mis à jour le 05/10/2026 au soir · **V11.3** prête (V11 en ligne sur le VPS OVH · bêta privée, 16 places).*
+*Mis à jour le 09/10/2026 · **V12.0** prête (retours du backtest, bot Discord sécurisé, outils staff, la ville se souvient) (V11 en ligne sur le VPS OVH · bêta privée, 16 places).*
 
 ## Où on en est
 | Brique | État |

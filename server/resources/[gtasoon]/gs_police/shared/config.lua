@@ -11,7 +11,8 @@ Config.Tolerance = 2.0
 
 -- Permis délivrés / retirés par la police (grade ≥ minGrade) depuis le contrôle d'identité. Sans permis d'arme :
 -- pas d'arme de poing à Ammu-Nation (ox_inventory). Le permis de chasse s'achète aussi au pavillon de chasse.
-Config.Licences = { minGrade = 2, kinds = { weapon = 'Port d\'arme', hunting = 'Permis de chasse' } }
+-- V11.5 : le permis de conduire se retire (infraction grave, motif obligatoire) et se rend aussi ici ; la carte suit.
+Config.Licences = { minGrade = 2, kinds = { weapon = 'Port d\'arme', hunting = 'Permis de chasse', driver = 'Permis de conduire' } }
 
 Config.CuffItem = 'handcuffs'   -- consommé ? non : il faut juste en avoir sur soi
 
@@ -65,8 +66,12 @@ Config.Prison = {
 -- V8 · Garde à vue et interrogatoire (Mission Row, sous-sol). Le suspect a des droits (/droits) : demander un avocat,
 -- garder le silence, passer aux aveux (peine réduite si incarcéré ensuite). Interrogatoire sans avocat malgré la demande
 -- = vice de procédure noté au rapport. Points à caler en jeu (F11 → Points).
+-- V12 · Témoin protégé : en garde à vue, dénoncer un gang (/droits) divise la peine par deux ; le gang apprend que
+-- « quelqu'un a parlé » (sans le nom), la police protège le témoin `witnessDays` jours (lieu sûr). S'il meurt pendant
+-- ce temps : alerte police, chaleur sur les membres du gang en ligne, rumeur.
 Config.Custody = {
     maxMinutes = 30, radius = 30.0, confessDiscount = 0.3, lawyerJob = 'lawyer', lawyerRange = 8.0,
+    snitchDiscount = 0.5, witnessDays = 7, witnessHeat = 60, safeHouse = vec3(-1150.0, -1520.0, 10.6),
     cell = vec4(459.9, -994.3, 24.91, 270.0),
     room = vec4(472.3, -994.9, 24.91, 90.0),
     release = vec4(434.1, -981.9, 30.71, 90.0),

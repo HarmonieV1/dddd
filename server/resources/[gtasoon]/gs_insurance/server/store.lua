@@ -37,3 +37,23 @@ function Store.saveClaim(c)
 end
 --- citizenid du propriétaire actuel d'une plaque [API] player_vehicles
 function Store.ownerOf(plate) return MySQL.scalar.await('SELECT citizenid FROM player_vehicles WHERE TRIM(plate) = ? LIMIT 1', { plate }) end
+
+-- V12 · Véhicules disparus qui ont refait surface
+function Store.initLost()
+    MySQL.query.await([[CREATE TABLE IF NOT EXISTS `gs_insurance_lost` (
+        `vehicle_id` INT UNSIGNED NOT NULL,
+        `plate` VARCHAR(16) NOT NULL,
+        `model` VARCHAR(40) NOT NULL,
+        `fate` VARCHAR(12) NOT NULL,
+        `x` FLOAT NULL, `y` FLOAT NULL, `z` FLOAT NULL, `w` FLOAT NULL,
+        `at` INT UNSIGNED NOT NULL,
+        PRIMARY KEY (`vehicle_id`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4]])
+end
+function Store.modelOf(id) return MySQL.scalar.await('SELECT vehicle FROM player_vehicles WHERE id = ?', { id }) end
+function Store.lostAll() return MySQL.query.await('SELECT vehicle_id AS id, plate, model, fate, x, y, z, w, at FROM gs_insurance_lost') or {} end
+function Store.lostSet(e)
+    MySQL.query.await('REPLACE INTO gs_insurance_lost (vehicle_id, plate, model, fate, x, y, z, w, at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+        { e.id, e.plate, e.model, e.fate, e.x, e.y, e.z, e.w, e.at })
+end
+function Store.lostClear(id) MySQL.query.await('DELETE FROM gs_insurance_lost WHERE vehicle_id = ?', { id }) end

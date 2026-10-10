@@ -200,7 +200,7 @@ def build():
                   'Un souci ? <b>/report</b> en jeu : le staff le reçoit tout de suite.'])
 
     # ---- 1. Premiers pas ----
-    s += chapter(1, 'Premiers pas', 'Tu arrives en ville à la mairie, sans voiture et sans permis. En une heure de jeu, tu peux avoir '
+    s += chapter(1, 'Premiers pas', 'Tu arrives en ville <b>en bus</b>, à l\'arrêt de la mairie (un seul personnage par joueur), sans voiture et sans permis. En une heure de jeu, tu peux avoir '
                  'tes papiers, ton permis, un premier boulot et un scooter. Suis Max « le Guide » : il t\'attend devant la mairie.')
     s += [Paragraph('Ton premier jour (quête de Max)', H3)]
     s += steps(['Parle à <b>Max « le Guide » Delgado</b> devant la mairie (Rockford Hills).',
@@ -214,7 +214,7 @@ def build():
     s += [table([['Étape', 'Prix', 'Comment'],
                  ['Code', money(500), '10 questions tirées au hasard, 8 bonnes réponses pour réussir (nouvel essai 5 min après un échec).'],
                  ['Conduite', money(1000), 'Parcours en ville avec la voiture-école : 80 km/h maximum, 3 fautes au plus (excès, accrochage).'],
-                 ['Permis à points', '12 points', 'La police en retire (2 à 6 par infraction). +1 point tous les 2 jours sans infraction. À 0 : on repasse tout.']],
+                 ['Retrait', 'Police', 'Pas de points : une infraction grave et la police te <b>retire le permis</b> (carte reprise, motif au casier). Pour le récupérer : l\'auto-école, ou décision de la police.']],
                 [28 * mm, 22 * mm, 130 * mm])]
     s += [tip('Un moniteur de l\'auto-école (joueur) peut aussi te faire passer un examen en RP.')]
     s += [Paragraph('Les touches', H3)]
@@ -223,7 +223,7 @@ def build():
             ['F2 · TAB · 1 à 5', 'Inventaire · barre rapide (double-clic = utiliser)'],
             ['F3', 'Progression : niveau, quêtes, défis du jour, badges'],
             ['F5 · X', 'Animations (emotes) · annuler'],
-            ['F6', 'Métiers : prise de service, tenue, factures, missions, direction'],
+            ['F6', 'Métiers : prise de service (aussi par téléphone, de n\'importe où, ou /service), tenue, factures, missions, direction'],
             ['F7 · F9', 'Duo criminel · Gang'],
             ['W (clavier français)', 'Menu rapide : tenue, accessoires, radio, véhicule, factures'],
             ['Alt (appui simple)', 'Interagir avec ce que tu regardes (PNJ, portes, véhicules, objets)'],
@@ -243,7 +243,9 @@ def build():
             ['/histoire', 'Au volant : l\'historique public de la voiture (avant d\'acheter une occasion)'],
             ['/rumeurs · /legendes', 'Ce qui se raconte · les légendes de Los Santos'],
             ['/mentor', 'Choisir un parrain (nouveaux joueurs)'],
-            ['/droits', 'En garde à vue : avocat, silence, aveux'],
+            ['/droits', 'En garde à vue : avocat, silence, aveux, dénoncer un gang (témoin protégé)'],
+            ['/porter', 'Porter un carton, une caisse, une pizza… (aussi W → Moi → Porter)'],
+            ['/permis', 'Ton permis est-il valide ?'],
             ['/jury', 'Rouvrir ta convocation de juré'],
             ['/report', 'Prévenir le staff']]
     s += [table(cmds, [40 * mm, 140 * mm])]
@@ -323,6 +325,12 @@ def build():
     s += [Paragraph('Aller à Cayo Perico', H3)]
     s += [Paragraph('Vol régulier <b>gratuit</b> au comptoir de l\'aéroport de Los Santos (LSIA), retour au comptoir de la piste de l\'île. '
                     'Ou en bateau (location à la jetée de Cayo).', P)]
+
+    s += [Paragraph('Voiture volée : le registre des disparus', H3)]
+    s += bullets(['Déclare le vol à <b>Mors Mutual</b> (véhicule assuré depuis 24 h). Si elle n\'est pas retrouvée en <b>48 h</b>, elle refait surface : '
+                  'à la casse, dans un garage louche, ou aux enchères de la fourrière du samedi. Une rumeur circule et tu reçois un tuyau.',
+                  'Va la chercher : son <b>carnet</b> (kilomètres, accidents, propriétaires) est intact. Si tu reprends le volant, l\'assurance '
+                  'récupère l\'indemnité versée, <b>sans pénalité</b>. Rouler avec une voiture « volée » sans la déclarer retrouvée reste une fraude.'])
 
     # ---- 4. Métiers libres ----
     s += chapter(4, 'Métiers libres', 'Sans entretien : tu prends le métier au <b>Pôle Emploi</b> (centre-ville), tu sors le véhicule de service '
@@ -590,6 +598,15 @@ def build():
     s += [Paragraph('Très recherché, tu peux entrer en <b>cavale</b> (/cavale) : avis de recherche placardés, prime pour qui te livre. '
                     'Tiens 2 heures de jeu sans te faire prendre et tu deviens une <b>légende</b> de Los Santos (et peut-être une plaque).', P)]
 
+    s += [Paragraph('Faux papiers', H3)]
+    s += bullets(['Au marché noir : fausse <b>carte d\'identité</b>, faux <b>permis de conduire</b>, faux <b>permis de port d\'arme</b>, chacun avec une identité inventée.',
+                  'Double-clic pour le <b>présenter</b> (10 min) : les joueurs à côté voient le faux nom, et un contrôle de police <b>loin du commissariat</b> le croit.',
+                  'Au <b>commissariat</b>, le scanner démasque tout : vraie identité, mention au casier, et le papier ne sert plus. Choisis où tu te fais contrôler.'])
+    s += [Paragraph('Gangs : la guerre de l\'information', H3)]
+    s += bullets(['F9 → Opérations (bras droit ou chef, payé par la caisse du gang) : <b>brouiller les caméras</b> du quartier 10 min (5 000 $), '
+                  'ou <b>pirater le scanner police</b> 10 min (8 000 $) : tous les membres en ligne entendent les signalements et les appels au 911.',
+                  'Chaque opération laisse une <b>trace</b> : depuis l\'ordinateur du commissariat, la police remonte jusqu\'au gang après 5 minutes d\'analyse.'])
+
     # ---- 11. Justice ----
     s += chapter(11, 'Justice et police', 'Comment la ville apprend un crime, et ce qui t\'attend ensuite.')
     s += [Paragraph('Comment la police te trouve', H3)]
@@ -602,7 +619,8 @@ def build():
                   'Sans policier joueur en service, la <b>police IA</b> prend le relais (1 à 4 étoiles).'])
     s += [Paragraph('Ce que risque un suspect', H3)]
     s += [table([['Étape', 'Ce qui se passe'],
-                 ['Contrôle', 'Identité, fouille, retrait de points ou de permis, amende (/factures). Refuser d\'obtempérer est un délit.'],
+                 ['Contrôle', 'Identité (contrôle visuel ; au commissariat, le scanner démasque les faux papiers), fouille, retrait de permis, amende (/factures). Refuser d\'obtempérer est un délit.'],
+                 ['Témoin protégé', 'En garde à vue, /droits → <b>dénoncer un gang</b> : peine divisée par deux. Le gang apprend que « quelqu\'un a parlé », jamais qui ; la police te protège 7 jours (lieu sûr sur le GPS). Si tu tombes pendant ce temps, le gang est dans le viseur.'],
                  ['Garde à vue', 'Jusqu\'à 30 min à Mission Row. /droits : avocat, silence, aveux (peine réduite de 30 %).'],
                  ['Procès', 'Devant un juge, avec avocat. Pour un vrai procès, le juge peut convoquer un <b>jury de 5 citoyens</b> tirés au sort : '
                   'le verdict suit leur vote (les jurés touchent 100 $).'],
@@ -620,6 +638,8 @@ def build():
                  ['Cicatrices', 'Mémorial là où quelqu\'un est tombé, vitrine brisée après un braquage (un ouvrier la répare : 250 à 450 $), '
                   'fresque du gang vainqueur.'],
                  ['Lieux de mémoire', 'Un grand casse, une cavale légendaire, un mariage : une plaque reste 30 jours. [E] : un passant raconte.'],
+                 ['La mémoire des lieux', 'Chaque endroit accumule ce qui s\'y est passé (crimes, arrestations, mariages, courses, braquages, guerres). Les <b>passants en parlent</b> quand tu passes, Radio Los Santos le rappelle, et une plaque naît toute seule au 10e événement.'],
+                 ['Les échos', 'La nuit, près d\'un lieu chargé, des <b>silhouettes translucides</b> rejouent le passé quelques secondes : deux danseurs là où il y a eu un mariage, des guetteurs là où il y a eu un braquage…'],
                  ['Rumeurs', 'Les barmans racontent ce qui s\'est passé (250 $ pour le détail). Paie un verre (50 $) pour lancer un bruit : '
                   'si 3 personnes répètent le même, il arrive (tempête, sac de billets caché, sale coup).'],
                  ['Faits divers', 'Quand la ville est calme, elle a ses propres criminels : cambriolage, corps retrouvé, délit de fuite, vandalisme. '
@@ -628,7 +648,7 @@ def build():
                  ['Météo', 'Canicule, tempête, brouillard : prix, refus de vente, butins et visibilité changent.'],
                  ['Presse', 'Brèves Weazel automatiques, Direct pendant les grosses poursuites, Radio Los Santos en voiture, '
                   'et la <b>Gazette du dimanche</b> à 20 h (site, Discord, /gazette).'],
-                 ['Le site', 'Carte en direct de la vraie Los Santos : tension des quartiers, rendez-vous, légendes, et les 24 dernières heures rejouées.']],
+                 ['Le site', 'Carte en direct de la vraie Los Santos : tension des quartiers, rendez-vous, légendes, les 24 dernières heures rejouées, « En ce moment en ville », et une candidature en trois questions.']],
                 [32 * mm, 148 * mm], font=8.3)]
     s += [Paragraph('Le calendrier', H3)]
     s += [table([['Quand', 'Rendez-vous', 'Bonus'],

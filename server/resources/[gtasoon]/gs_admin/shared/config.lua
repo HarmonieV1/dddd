@@ -109,6 +109,10 @@ Config.Jail = {
 -- Argent et items : super-admin minimum (motif obligatoire, journalisé) ; le fondateur seul sans motif.
 Config.Give = { maxMoney = 100000, maxItems = 100 }
 
+-- V11.5 · Personnages : 1 par joueur (réglage qbx_core posé par METTRE-A-JOUR), `extra` pour le fondateur, les
+-- super-admins et les VIP (menu staff → Joueurs → VIP, fondateur seulement).
+Config.Characters = { extra = 2 }
+
 -- Transparence (prompt maître) : sanctions publiées sur un salon public (convar gs_webhook_sanctions).
 Config.PublicSanctions = true
 Config.PublicShowName = true   -- nom du joueur sanctionné visible ; le staff reste anonyme

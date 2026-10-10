@@ -110,6 +110,8 @@ function Scars.plaque(coords, text, by)
     return id
 end
 
+exports('Plaque', function(coords, text, by) return Scars.plaque(coords, text, by or 'ville') end) -- V12 : gs_memoire
+
 local function plaqueCmd(src, args)
     if src == 0 then return end
     local lvl = 0

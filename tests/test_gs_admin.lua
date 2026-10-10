@@ -49,7 +49,12 @@ Store = {
     jailGet = function(lic) return jail[lic] end,
     jailSet = function(lic, untilTs, reason) jail[lic] = { until_ts = untilTs, reason = reason } end,
     jailClear = function(lic) jail[lic] = nil end,
+    vips = function() local l = {} for lic in pairs(W.vips or {}) do l[#l + 1] = { license = lic } end return l end,
+    vipSet = function(lic, on) W.vips = W.vips or {} W.vips[lic] = on or nil end,
 }
+-- ACE par principal (V11.5 : nombre de personnages) : group.vip / super-admin posés par les tests
+W.principals = {}
+function IsPrincipalAceAllowed(principal, ace) return W.principals[principal] ~= nil and W.principals[principal][ace] == true end
 loadResource('gs_admin', { R .. 'gs_admin/server/main.lua' })
 
 local passed, failed = 0, 0
@@ -113,6 +118,10 @@ ok = cb('gs_admin:action', 1, 'giveitem', 4, { item = 'introuvable', amount = 1,
 check('item inconnu refusé', not ok)
 ok = cb('gs_admin:action', 1, 'giveitem', 4, { item = 'water', amount = 3, reason = 'test' }); step()
 check('don d\'item', ok and W.players[4].items.water == 3)
+ok = cb('gs_admin:action', 1, 'giveitem', 4, { item = 'ammo-9', amount = 20, reason = 'test' }); step()
+check('V11.5 munitions (tiret) acceptées', ok and W.players[4].items['ammo-9'] == 20)
+ok = cb('gs_admin:action', 1, 'giveitem', 4, { item = 'ammo 9', amount = 1, reason = 'test' }); step()
+check('nom d\'item avec espace refusé', not ok)
 
 -- Sanctions publiques ---------------------------------------------------------------------------------------------
 sanctions = {}
@@ -312,6 +321,20 @@ check('course de rue : annonce à tous + inscription gratuite', ok and lastClien
 ok = cb('gs_admin:action', 2, 'event', nil, { kind = 'moon' }); step()
 check('événement : modo refusé', not ok)
 
+-- V11.5 : personnages (1 par défaut, 2 pour staff / VIP) et statut VIP donné par le fondateur
+local slots = getExport('gs_admin', 'CharacterSlots')
+check('joueur simple : valeur par défaut de qbx_core', slots('license2:aaa', 'license:4') == nil)
+W.principals['identifier.license:4'] = { ['gs.admin.superadmin'] = true }
+check('super-admin : 2 personnages', slots('license2:aaa', 'license:4') == 2)
+W.principals['identifier.license:4'] = nil
+ExecuteCommand = function(c) cmds[#cmds + 1] = c if c:find('add_principal identifier.license:7 group.vip') then W.principals['identifier.license:7'] = { ['gs.vip'] = true } end end
+ok = cb('gs_admin:action', 1, 'setvip', 7, { on = true }); step()
+check('VIP : réservé au fondateur', not ok)
+ok = cb('gs_admin:action', 6, 'setvip', 7, { on = true }); step()
+check('fondateur accorde le VIP : principal posé, 2 personnages', ok and W.vips['license:7'] and slots(nil, 'license:7') == 2)
+ok = cb('gs_admin:action', 6, 'setvip', 7, { on = false }); step()
+check('VIP retiré', ok and not W.vips['license:7'] and cmds[#cmds] == 'remove_principal identifier.license:7 group.vip')
+
 -- V10.1 : modération à distance (bot Discord / panneau web)
 local remote = getExport('gs_admin', 'RemoteAction')
 local r = remote('players', nil, nil, 'Modo')
@@ -329,6 +352,18 @@ r = remote('reboot', 4, 'x', 'Modo')
 check('à distance : action inconnue refusée', not r.ok)
 r = remote('kick', 4, 'triche', 'Modo')
 check('à distance : expulser', r.ok and W.players[4].kicked and W.players[4].kicked:find('triche', 1, true))
+-- V12.3 : isoler / libérer / réanimer depuis le bot et l'appli
+join(9, 'CID9', 'Isolé Distance', here); W.players[9].license = 'license:9'; step()
+r = remote('jail', 9, 'Freekill', 'Modo', 999)
+check('à distance : isolement, durée bornée', not r.ok)
+r = remote('jail', 9, 'Freekill', 'Modo', 20)
+check('à distance : isolé 20 min', r.ok and Admin.jailed[9] and Admin.jailed[9].untilTs - os.time() <= 20 * 60)
+r = remote('unjail', 9, '', 'Modo')
+check('à distance : libéré', r.ok and Admin.jailed[9] == nil)
+r = remote('unjail', 9, '', 'Modo')
+check('à distance : pas en isolement', not r.ok)
+r = remote('revive', 9, '', 'Modo')
+check('à distance : réanimé', r.ok and W.players[9].revived)
 
 -- V10.1 : panneau staff web (codes dans gs_admin_web, blocage après 5 essais ratés)
 local handler

@@ -7,6 +7,14 @@ Config.Grades = {
     [2] = { label = 'Bras droit', manage = true },      -- recrute / gère les grades inférieurs
     [3] = { label = 'Chef', manage = true, bank = true }, -- + caisse
 }
+-- V12 · Opérations (guerre de l'information) : payées par la caisse, grade minimum, repos entre deux, trace remontable
+-- par la police au commissariat (gs_cctv, 5 min d'analyse)
+Config.Ops = {
+    jam = { label = 'Brouiller les caméras du quartier', icon = 'video-slash', cost = 5000, minutes = 10, radius = 350.0, minGrade = 2, cooldown = 1800,
+        help = 'Toutes les caméras de surveillance à 350 m deviennent aveugles pendant 10 min. 5 000 $ de la caisse. La police pourra remonter jusqu\'à vous.' },
+    scanner = { label = 'Pirater le scanner police', icon = 'tower-broadcast', cost = 8000, minutes = 10, minGrade = 2, cooldown = 3600,
+        help = 'Pendant 10 min, tous les membres en ligne reçoivent les appels passés à la police (signalements, 911). 8 000 $ de la caisse. Traçable.' },
+}
 Config.MaxMembers = 25
 Config.InviteRange = 4.0
 Config.InviteTimeout = 60

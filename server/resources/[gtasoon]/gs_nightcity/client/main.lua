@@ -27,8 +27,25 @@ local function spawnPed(model, c, scenario, offset)
     return ped
 end
 
+--- V11.5 · Véhicule de décor (food truck) : local, figé, portes arrière ouvertes, placé `back` m derrière le vendeur
+local function spawnVehicle(model, c, back)
+    local hash = GetHashKey(model)
+    if not IsModelInCdimage(hash) or not lib.requestModel(hash, 5000) then return nil end
+    local h = math.rad(c.w)
+    local x, y = c.x + math.sin(h) * back, c.y - math.cos(h) * back -- derrière = opposé au regard du vendeur
+    local veh = CreateVehicle(hash, x, y, c.z, c.w + 90.0, false, false) -- de profil : le comptoir face au client
+    SetModelAsNoLongerNeeded(hash)
+    SetVehicleOnGroundProperly(veh)
+    FreezeEntityPosition(veh, true)
+    SetEntityInvincible(veh, true)
+    SetVehicleDoorsLocked(veh, 2)
+    SetVehicleDoorOpen(veh, 2, false, false) SetVehicleDoorOpen(veh, 3, false, false)
+    SetVehicleEngineOn(veh, false, true, true)
+    return veh
+end
+
 local function despawn(key)
-    for _, p in ipairs(spawned[key] or {}) do if DoesEntityExist(p) then DeletePed(p) end end
+    for _, p in ipairs(spawned[key] or {}) do if DoesEntityExist(p) then DeleteEntity(p) end end
     spawned[key] = nil
 end
 
@@ -88,6 +105,7 @@ CreateThread(function()
             if now == 'night' and d < Config.SpawnRange and not spawned[key] then
                 spawned[key] = { spawnPed(m.model, m.coords, 'WORLD_HUMAN_STAND_IMPATIENT') }
                 if spawned[key][1] then FreezeEntityPosition(spawned[key][1], true) SetEntityInvincible(spawned[key][1], true) end
+                if m.vehicle then spawned[key][#spawned[key] + 1] = spawnVehicle(m.vehicle, m.coords, m.back or 2.5) end
             elseif spawned[key] and (now ~= 'night' or d > Config.DespawnRange) then
                 despawn(key)
             end

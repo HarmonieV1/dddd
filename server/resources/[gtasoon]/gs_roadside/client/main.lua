@@ -84,7 +84,7 @@ local function waitInteract(target, radius, prompt, allowCar)
             if ready then lib.showTextUI('[E] ' .. prompt, { icon = 'hand' }) else lib.hideTextUI() end
             shown = ready
         end
-        if ready and IsControlJustReleased(0, 38) then lib.hideTextUI() return true end
+        if ready and IsControlJustReleased(0, 38) and not IsNuiFocused() then lib.hideTextUI() return true end
         Wait(d < 60.0 and 0 or 500)
     end
     lib.hideTextUI()

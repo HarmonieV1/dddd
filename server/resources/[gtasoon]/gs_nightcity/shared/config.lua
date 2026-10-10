@@ -19,9 +19,10 @@ Config.Ambience = {
       peds = { { 'a_m_m_salton_01', 'WORLD_HUMAN_STAND_FISHING' }, { 'a_m_o_beach_01', 'WORLD_HUMAN_STAND_FISHING' } } },
 }
 
--- Marchés de nuit : un stand avec vendeur, ouvert seulement la nuit (vérifié par le serveur)
+-- Marchés de nuit : un stand avec vendeur, ouvert seulement la nuit (vérifié par le serveur).
+-- V11.5 : `vehicle` = camion posé derrière le vendeur (local, figé, portes arrière ouvertes), `back` = recul en mètres.
 Config.Markets = {
-    { label = 'Food truck de Legion Square', coords = vec4(194.6, -931.9, 30.7, 150.0), model = 's_m_m_linecook' },
+    { label = 'Food truck de Legion Square', coords = vec4(194.6, -931.9, 30.7, 150.0), model = 's_m_m_linecook', vehicle = 'taco', back = 2.8 },
     { label = 'Stand de la jetée de Del Perro', coords = vec4(-1637.4, -1018.6, 13.1, 50.0), model = 'a_f_y_beach_01' },
     { label = 'Stand de Vinewood', coords = vec4(-556.9, 267.8, 83.0, 175.0), model = 's_m_y_strvend_01' },
 }

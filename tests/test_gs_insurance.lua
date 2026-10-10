@@ -18,8 +18,16 @@ Store.ownerOf = function(plate) return owners[plate] end
 local records = {}
 provide('gs_police', { AddRecord = function(cid, charge, fine) records[#records + 1] = { cid = cid, charge = charge, fine = fine } return true end })
 provide('gs_jobs', { GetOnDutyPlayers = function() return {} end })
-provide('gs_rumors', { Add = function() end })
-loadResource('gs_insurance', { R .. 'gs_insurance/server/main.lua', R .. 'gs_insurance/server/claims.lua' })
+local rumors = {}
+provide('gs_rumors', { Add = function(t, d) rumors[#rumors + 1] = { t = t, d = d } end, Zone = function() return 'Rogers Salvage' end })
+-- V12 : registre des véhicules disparus
+local lostRows = {}
+Store.initLost = function() end
+Store.modelOf = function(id) return ({ [10] = 'sultan', [11] = 'panto', [30] = 'sultan' })[id] end
+Store.lostAll = function() return {} end
+Store.lostSet = function(e) lostRows[e.id] = e end
+Store.lostClear = function(id) lostRows[id] = nil end
+loadResource('gs_insurance', { R .. 'gs_insurance/server/main.lua', R .. 'gs_insurance/server/claims.lua', R .. 'gs_insurance/server/lost.lua' })
 
 local passed, failed = 0, 0
 local function check(name, cond)
@@ -103,6 +111,35 @@ W_KVP['claimcd:CID1'] = os.time()
 Insurance.expires[10] = os.time() + 86400 Claims.list[10] = nil
 ok = cb('gs_insurance:claim', 1, 10); step()
 check('une déclaration toutes les 2 semaines', not ok)
+
+-- V12 · Le registre des véhicules disparus ------------------------------------------------------------------------
+do
+    owners.DDD444 = 'CID1'
+    Claims.list[30] = { id = 30, plate = 'DDD444', cid = 'CID1', amount = 5000, status = 'paid', at = os.time() - 10 * 3600 }
+    check('moins de 48 h : rien ne refait surface', Lost.scan(Claims.list) == 0)
+    Claims.list[30].at = os.time() - 49 * 3600
+    fixRandom(0.1)
+    check('48 h après : la voiture refait surface à la casse', Lost.scan(Claims.list) == 1 and Lost.list[30] and Lost.list[30].fate == 'casse' and Lost.list[30].x ~= nil and lostRows[30] ~= nil)
+    fixRandom()
+    check('rumeur et tuyau au propriétaire', rumors[#rumors].d:find('DDD444', 1, true) and W.notes[1] and W.notes[1].msg:find('casse', 1, true))
+    check('pas refait surface deux fois', Lost.scan(Claims.list) == 0)
+    local e = Lost.list[30]
+    tp(1, vec3(e.x + 20.0, e.y, e.z))
+    Lost.tick()
+    check('joueur proche : véhicule créé avec sa plaque', Lost.spawned[30] and W.entities[Lost.spawned[30]] ~= nil)
+    W.players[1].money.bank = 6000
+    Claims.driven('DDD444', 1)
+    check('propriétaire au volant : indemnité reprise, dossier « recovered », pas de fraude', Claims.list[30].status == 'recovered'
+        and W.players[1].money.bank == 1000 and Lost.list[30] == nil and lostRows[30] == nil)
+    -- aux enchères : l'événement de la fourrière part vers gs_auction
+    local impounded = {}
+    AddEventHandler('gs_police:server:impounded', function(hash, plate) impounded[#impounded + 1] = plate end)
+    Claims.list[31] = { id = 31, plate = 'EEE555', cid = 'CID1', amount = 5000, status = 'pending', at = os.time() - 50 * 3600 }
+    Store.modelOf = function() return 'panto' end
+    fixRandom(0.95)
+    check('sort « enchères » : lot de la fourrière', Lost.scan(Claims.list) == 1 and Lost.list[31].fate == 'encheres' and impounded[1] == 'EEE555' and Lost.list[31].x == nil)
+    fixRandom()
+end
 
 io.write(('\n%d réussis, %d échoués\n'):format(passed, failed))
 os.exit(failed == 0 and 0 or 1)

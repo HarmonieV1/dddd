@@ -242,6 +242,9 @@ lib.callback.register('gs_races:checkpoint', function(src)
     TriggerClientEvent('gs_races:client:end', src, ('%s · %s%s%s'):format(Config.Circuits[lobby.circuit].label, fmt(ms),
         lobby.solo and '' or (' · ' .. position .. 'e'), prize > 0 and (' · +' .. prize .. ' $') or ''), true)
     if record then Bridge:Notify(src, 'Record personnel !', 'success') end
+    if not lobby.solo and position == 1 then
+        TriggerEvent('gs_races:server:won', name, Config.Circuits[lobby.circuit].label, GetEntityCoords(GetPlayerPed(src))) -- V12 : mémoire des lieux
+    end
     if not lobby.solo and position == 1 and started('gs_social') then
         exports.gs_social:Newsroom('race', ('SPORTS MÉCANIQUES · %s remporte « %s » en %s. La police dénonce des rodéos urbains.'):format(name, Config.Circuits[lobby.circuit].label, fmt(ms)))
     end

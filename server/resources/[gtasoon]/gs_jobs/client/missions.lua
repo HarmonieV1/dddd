@@ -36,7 +36,7 @@ RegisterNetEvent('gs_jobs:client:missionStep', function(step)
             shown = inside
             if inside then lib.showTextUI(text) else lib.hideTextUI() end
         end
-        if inside and not busy and IsControlJustReleased(0, 38) then
+        if inside and not busy and IsControlJustReleased(0, 38) and not IsNuiFocused() then
             busy, shown = true, false
             lib.hideTextUI()
             CreateThread(function()

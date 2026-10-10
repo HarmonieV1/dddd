@@ -32,7 +32,16 @@ function Store.init()
         `used_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
         PRIMARY KEY (`citizenid`)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4]])
+    MySQL.query.await([[CREATE TABLE IF NOT EXISTS `gs_arrival` (
+        `citizenid` VARCHAR(50) NOT NULL,
+        `arrived_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (`citizenid`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4]])
 end
+
+--- V11.5 · Arrivée en bus : jouée une seule fois par personnage
+function Store.arrivalDone(cid) return MySQL.scalar.await('SELECT 1 FROM gs_arrival WHERE citizenid = ?', { cid }) ~= nil end
+function Store.setArrival(cid) MySQL.query.await('INSERT IGNORE INTO gs_arrival (citizenid) VALUES (?)', { cid }) end
 
 --- Retouche du personnage (une fois) : déjà utilisée ? / marquer utilisée / rendre (staff)
 function Store.retoucheUsed(cid) return MySQL.scalar.await('SELECT 1 FROM gs_retouche WHERE citizenid = ?', { cid }) ~= nil end

@@ -9,7 +9,7 @@ local KEYS = [[
 | **F3** | Progression, quêtes, niveau |
 | **F4** | Intervention (police / EMS en service) |
 | **F5** | Emotes · **X** annuler · **J** pointer · **G** effets |
-| **F6** | Métiers (service, tenue, facture, patron) |
+| **F6** | Métiers (service, tenue, facture, patron) · **/service** prise de service par téléphone (touche à choisir) |
 | **F7** | Duo |
 | **F9** | Gang |
 | **W** | Menu radial (W sur clavier français, Z en QWERTY) : Moi (tenue en objet, chapeau, lunettes, masque…), Radio, Véhicule |
@@ -32,6 +32,7 @@ local STAFF = [[
 ]]
 
 RegisterCommand('touches', function()
+    if IsNuiFocused() then return end -- V11.5 : pas pendant une saisie (I dans un message ouvrait l'aide)
     local staff = LocalPlayer.state.gsStaff == true
     lib.alertDialog({ header = 'Touches de RoadLine', content = KEYS .. (staff and STAFF or '') ..
         '\n*Réassigner : Échap → Paramètres → Raccourcis clavier → FiveM.*', centered = true, size = 'lg', labels = { confirm = 'Fermer' } })

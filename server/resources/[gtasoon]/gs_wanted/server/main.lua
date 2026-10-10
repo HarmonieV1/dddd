@@ -197,6 +197,9 @@ function Wanted.report(src, crimeType, coords, opts)
         for _, cop in ipairs(cops) do
             TriggerClientEvent('gs_wanted:client:dispatch', cop, report)
         end
+        -- V12 : scanner police piraté par un gang (gs_gangs) : ses membres reçoivent aussi l'appel
+        local okL, listeners = pcall(function() return exports.gs_gangs:ScannerListeners() end)
+        for _, s in ipairs(okL and listeners or {}) do TriggerClientEvent('gs_wanted:client:dispatch', s, report) end
         if #cops < Config.NpcPolice.minCops then
             TriggerClientEvent('gs_wanted:client:npcPolice', src, math.min(5, Wanted.npcStars(crime.heat) + Wanted.city('NpcBonus', coords, 0)))
         end

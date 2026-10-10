@@ -88,6 +88,8 @@ function Claims.driven(plate, src)
     Claims.seen[plate] = { cid = cid, at = now() }
     local c = byPlate(plate)
     if not c or c.cid ~= cid then return end
+    -- V12 : voiture qui avait refait surface (registre des disparus) et que le propriétaire reprend : pas une fraude
+    if Lost and Lost.list[c.id] then return Lost.recovered(c, src) end
     if c.status == 'pending' then
         c.status = 'closed'
         save(c)
@@ -136,6 +138,7 @@ exports('IsDeclaredStolen', Claims.isStolen)
 
 CreateThread(function()
     Wait(2000)
+    Store.initLost()
     for _, c in ipairs(Store.claims()) do Claims.list[c.id] = c end
     while true do Wait(60000) Claims.tick() end
 end)

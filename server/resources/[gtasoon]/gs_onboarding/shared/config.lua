@@ -21,6 +21,14 @@ Config.Rules = [[
 Règlement complet et sanctions : discord.gg/8y2sX7EvZN · roadlinerp.netlify.app
 ]]
 
+-- V11.5 · Arrivée en bus d'un nouveau personnage : part de `from`, s'arrête au nœud de route le plus proche de `stop`
+-- (arrêt devant la mairie, Max à deux pas), descente, puis le bus repart. Espace pour passer. false = apparition simple.
+Config.Arrival = {
+    enabled = true, bus = 'bus', driver = 's_m_m_gentransport', seat = 1, speed = 13.0, seconds = 28, leaveAfter = 6,
+    from = vec3(-790.0, -300.0, 36.5),               -- Rockford Hills, quelques rues avant la mairie
+    stop = vec4(-548.0, -200.5, 37.7, 30.0),         -- trottoir de la mairie (le perso est posé ici en descendant)
+}
+
 -- Liste blanche : active seulement si la convar `gs_whitelist` vaut "true" (cfg/prod.cfg). Candidature sur Discord,
 -- puis un staff ajoute le joueur avec /whitelist add <id serveur | license:...>. Les ACE `WhitelistBypassAce` passent toujours.
 Config.WhitelistBypassAce = 'gs.admin.helper'

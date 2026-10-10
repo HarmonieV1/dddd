@@ -160,6 +160,44 @@ CreateThread(function()
         exports.gs_markers:Add('gs_harvest:buyer:' .. i, { coords = b.coords, style = 'shop', label = b.label,
             event = 'gs_harvest:client:sell', args = { i }, prompt = 'Vendre · ' .. b.label })
     end
+end)
+
+-- V11.5 · Un acheteur visible à chaque point de vente (PNJ local, créé à l'approche) : plus de logo sans personne.
+local buyerPeds = {}
+local function spawnBuyer(i, b)
+    local hash = GetHashKey(b.ped)
+    if not IsModelInCdimage(hash) or not lib.requestModel(hash, 5000) then return end
+    local h = math.rad(b.heading or 0.0)
+    local at = groundOf(b.coords) + vec3(math.sin(h) * 1.2, -math.cos(h) * 1.2, 0.0) -- 1,2 m derrière le point, face au client
+    local ped = CreatePed(4, hash, at.x, at.y, at.z, b.heading or 0.0, false, true)
+    SetModelAsNoLongerNeeded(hash)
+    SetEntityHeading(ped, b.heading or 0.0)
+    SetBlockingOfNonTemporaryEvents(ped, true)
+    SetPedCanRagdollFromPlayerImpact(ped, false)
+    FreezeEntityPosition(ped, true)
+    SetEntityInvincible(ped, true)
+    TaskStartScenarioInPlace(ped, 'WORLD_HUMAN_CLIPBOARD', 0, true)
+    buyerPeds[i] = ped
+end
+
+CreateThread(function()
+    while true do
+        local me = GetEntityCoords(cache.ped)
+        for i, b in ipairs(Config.Buyers) do
+            if b.ped then
+                local d = #(me - b.coords)
+                if d < Config.BuyerPedRange and not buyerPeds[i] then spawnBuyer(i, b)
+                elseif d > Config.BuyerPedRange + 40.0 and buyerPeds[i] then
+                    if DoesEntityExist(buyerPeds[i]) then DeleteEntity(buyerPeds[i]) end
+                    buyerPeds[i] = nil
+                end
+            end
+        end
+        Wait(3000)
+    end
+end)
+
+CreateThread(function()
     blip(Config.Hunting.center, Config.Hunting.blip, Config.Hunting.label)
     exports.gs_markers:Add('gs_harvest:licence', { coords = Config.Hunting.lodge, style = 'shop', label = 'Permis de chasse',
         event = 'gs_harvest:client:licence', prompt = ('Permis de chasse (%d $)'):format(Config.Hunting.licencePrice) })
@@ -185,4 +223,5 @@ AddEventHandler('onResourceStop', function(res)
     exports.gs_markers:RemovePrefix('gs_harvest:')
     for k in pairs(props) do removeNode(k) end
     for _, b in ipairs(blips) do RemoveBlip(b) end
+    for i, p in pairs(buyerPeds) do if DoesEntityExist(p) then DeleteEntity(p) end buyerPeds[i] = nil end
 end)

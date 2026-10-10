@@ -237,7 +237,29 @@ local function hiddenMenu()
     lib.showContext('gs_builder_hidden')
 end
 
-local function openMenu()
+--- V11.6 · Catalogue par catégories (F11 → Monde et lieux → Mapping) : un clic sur l'objet lance le placement
+local function catalogMenu()
+    local cats = {}
+    for i, c in ipairs(Config.Catalog) do
+        cats[#cats + 1] = { title = c.label, icon = c.icon or 'cube', arrow = true, description = ('%d objets'):format(#c.items), onSelect = function()
+            local items = {}
+            for _, it in ipairs(c.items) do
+                items[#items + 1] = { title = it.label, description = it.model, icon = 'cube', onSelect = function() newObject(it.model) end }
+            end
+            lib.registerContext({ id = 'gs_builder_cat_' .. i, title = c.label, menu = 'gs_builder_catalog', options = items })
+            lib.showContext('gs_builder_cat_' .. i)
+        end }
+    end
+    cats[#cats + 1] = { title = 'Autre modèle (nom)', icon = 'keyboard', description = 'ex : prop_bench_01a', onSelect = function()
+        local i = lib.inputDialog('Nom du modèle', { { type = 'input', label = 'ex : prop_bench_01a', required = true } })
+        if i then newObject(i[1]:gsub('%s', '')) end
+    end }
+    lib.registerContext({ id = 'gs_builder_catalog', title = 'Catalogue d\'objets', menu = 'gs_builder', options = cats })
+    lib.showContext('gs_builder_catalog')
+end
+
+--- parent (facultatif) : menu ox_lib où revenir avec « retour » (menu staff F11)
+local function openMenu(parent)
     if not lib.callback.await('gs_builder:canUse', false) then
         return lib.notify({ description = 'Accès réservé au staff.', type = 'error' })
     end
@@ -247,7 +269,8 @@ local function openMenu()
     end
     lib.registerContext({ id = 'gs_builder_fav', title = 'Objets favoris', menu = 'gs_builder', options = favorites })
 
-    lib.registerContext({ id = 'gs_builder', title = 'Mapping', options = {
+    lib.registerContext({ id = 'gs_builder', title = 'Mapping', menu = type(parent) == 'string' and parent or nil, options = {
+        { title = 'Catalogue (par catégorie)', icon = 'layer-group', arrow = true, description = 'Mobilier, chantier, éclairage, végétation, stands, plage…', onSelect = catalogMenu },
         { title = 'Placer un objet (nom du modèle)', icon = 'plus', onSelect = function()
             local i = lib.inputDialog('Nom du modèle', { { type = 'input', label = 'ex : prop_bench_01a', required = true } })
             if i then newObject(i[1]:gsub('%s', '')) end
@@ -269,7 +292,8 @@ local function openMenu()
     lib.showContext('gs_builder')
 end
 
-RegisterCommand('builder', openMenu, false)
+RegisterCommand('builder', function() if not IsNuiFocused() then openMenu() end end, false)
+exports('Open', openMenu) -- V11.6 : depuis le menu staff F11 (retour vers le menu appelant)
 
 AddEventHandler('onResourceStop', function(res)
     if res ~= GetCurrentResourceName() then return end

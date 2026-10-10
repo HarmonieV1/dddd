@@ -62,7 +62,7 @@ Actions.custodyend = { job = 'police', target = true, range = 12.0, run = functi
 end }
 
 --- Droits du suspect : avocat, silence, aveux
-function Custody.right(src, what)
+function Custody.right(src, what, extra)
     local g = Custody.list[src]
     if not g then return false, 'Tu n\'es pas en garde à vue.' end
     if what == 'lawyer' then
@@ -81,13 +81,90 @@ function Custody.right(src, what)
         Player(src).state:set('gsConfessed', true, true)
         for _, cop in ipairs(JobsApi:GetOnDutyPlayers(Config.PoliceJob)) do Bridge:Notify(cop, (Bridge:GetName(src) or '?') .. ' passe aux aveux.', 'inform') end
         return true, ('Aveux enregistrés : peine réduite de %d %% si tu es incarcéré.'):format(math.floor(C.confessDiscount * 100))
+    elseif what == 'denounce' then
+        -- V12 · Témoin protégé : balancer un gang (jamais le sien pour rien : c'est le but, mais la peine est divisée par deux)
+        if GetResourceState('gs_gangs') ~= 'started' then return false, 'Indisponible.' end
+        if g.snitch then return false, 'Tu as déjà parlé.' end
+        local known = false
+        for _, gg in ipairs(exports.gs_gangs:ListGangs()) do if gg.name == extra then known = gg.label end end
+        if not known then return false, 'Gang inconnu.' end
+        g.snitch = extra
+        Player(src).state:set('gsSnitch', extra, true)
+        for _, cop in ipairs(JobsApi:GetOnDutyPlayers(Config.PoliceJob)) do Bridge:Notify(cop, ('%s balance %s. Témoin à protéger %d jours.'):format(Bridge:GetName(src) or '?', known, C.witnessDays), 'inform') end
+        return true, ('Tu as parlé de %s. Peine divisée par deux si tu es incarcéré, et la police te protège %d jours (lieu sûr : GPS après ta sortie). Le gang saura que quelqu\'un a parlé, pas qui.'):format(known, C.witnessDays)
     end
     return false
 end
 
-lib.callback.register('gs_police:custodyRight', function(src, what)
+-- V12 · Témoins protégés -------------------------------------------------------------------------------------------
+Witness = { list = {} } -- [cid] = { gang, untilTs }
+
+function Witness.protect(target, gang)
+    local cid = Bridge:GetIdentifier(target)
+    if not cid then return false end
+    local untilTs = os.time() + C.witnessDays * 86400
+    Witness.list[cid] = { gang = gang, untilTs = untilTs }
+    Store.witnessSet(cid, gang, untilTs)
+    local label = gang
+    for _, gg in ipairs(exports.gs_gangs:ListGangs()) do if gg.name == gang then label = gg.label end end
+    pcall(function() exports.gs_gangs:NotifyGang(gang, 'Un bruit court : quelqu\'un a parlé de vous aux flics. Personne ne sait qui.', 'warning') end)
+    if GetResourceState('gs_rumors') == 'started' then
+        pcall(function() exports.gs_rumors:Add(('quelqu\'un a balancé %s aux flics'):format(label), 'Un témoin sous protection. Le gang cherche qui.') end)
+    end
+    Store.addRecord(cid, ('Témoin protégé (%s) jusqu\'au %s'):format(label, os.date('%d/%m', untilTs)), 0, 0, 'Procureur')
+    TriggerClientEvent('gs_police:client:witness', target, { x = C.safeHouse.x, y = C.safeHouse.y, z = C.safeHouse.z }, C.witnessDays)
+    return true
+end
+
+function Witness.active(cid)
+    local w = Witness.list[cid]
+    if w and w.untilTs > os.time() then return w end
+    if w then Witness.list[cid] = nil Store.witnessClear(cid) end
+    return nil
+end
+
+--- Le témoin meurt pendant sa protection : la ville réagit
+function Witness.killed(src)
+    local cid = Bridge:GetIdentifier(src)
+    local w = cid and Witness.active(cid)
+    if not w then return false end
+    local name = Bridge:GetName(src) or '?'
+    local c = GetEntityCoords(GetPlayerPed(src))
+    for _, cop in ipairs(JobsApi:GetOnDutyPlayers(Config.PoliceJob)) do
+        TriggerClientEvent('gs_police:client:backup', cop, { x = c.x, y = c.y, z = c.z }, 'TÉMOIN PROTÉGÉ ABATTU : ' .. name)
+    end
+    if GetResourceState('gs_wanted') == 'started' then
+        local okM, members = pcall(function() return exports.gs_gangs:MembersOnline(w.gang) end)
+        for _, s in ipairs(okM and members or {}) do pcall(function() exports.gs_wanted:AddHeat(s, C.witnessHeat) end) end
+    end
+    if GetResourceState('gs_rumors') == 'started' then
+        pcall(function() exports.gs_rumors:Add('un témoin protégé est tombé', 'La police parle de représailles. Le gang visé est dans le viseur.') end)
+    end
+    Witness.list[cid] = nil
+    Store.witnessClear(cid)
+    return true
+end
+
+AddStateBagChangeHandler('isDead', nil, function(bag, _, value)
+    if value ~= true then return end
+    local src = tonumber(bag:match('^player:(%d+)$') or '')
+    if src and next(Witness.list) then Witness.killed(src) end
+end)
+
+exports('IsWitness', function(src) local cid = Bridge:GetIdentifier(src) return cid ~= nil and Witness.active(cid) ~= nil end)
+
+CreateThread(function()
+    Wait(2500)
+    for _, w in ipairs(Store.witnessAll()) do Witness.list[w.citizenid] = { gang = w.gang, untilTs = w.until_ts } end
+end)
+
+lib.callback.register('gs_police:custodyRight', function(src, what, extra)
     if not Security:RateLimit(src, 'gs_police:custodyRight', 3, 5000) then return false, 'Doucement.' end
-    return Custody.right(src, what)
+    return Custody.right(src, what, type(extra) == 'string' and extra:sub(1, 30) or nil)
+end)
+lib.callback.register('gs_police:gangsList', function(src)
+    if not Security:RateLimit(src, 'gs_police:gangsList', 3, 5000) or not Custody.list[src] then return {} end
+    return GetResourceState('gs_gangs') == 'started' and exports.gs_gangs:ListGangs() or {}
 end)
 
 function Custody.tick()
@@ -145,5 +222,13 @@ Actions.jail.run = function(src, target, data)
         data.minutes = math.max(1, math.ceil(tonumber(data.minutes) * (1 - C.confessDiscount)))
         Player(target).state:set('gsConfessed', nil, true)
     end
-    return jailRun(src, target, data)
+    -- V12 : témoin qui a balancé un gang → peine divisée par deux, protection après coup
+    local snitch = Player(target).state.gsSnitch
+    if snitch and tonumber(data.minutes) then
+        data.minutes = math.max(1, math.ceil(tonumber(data.minutes) * (1 - C.snitchDiscount)))
+        Player(target).state:set('gsSnitch', nil, true)
+    end
+    local r = jailRun(src, target, data)
+    if snitch and GetResourceState('gs_gangs') == 'started' then Witness.protect(target, snitch) end
+    return r
 end

@@ -10,6 +10,8 @@ Store = {
     init = function() end,
     retoucheUsed = function(cid) return retouches[cid] == true end,
     useRetouche = function(cid) retouches[cid] = true end,
+    arrivalDone = function(cid) return W.arrivals ~= nil and W.arrivals[cid] == true end,
+    setArrival = function(cid) W.arrivals = W.arrivals or {} W.arrivals[cid] = true end,
     resetRetouche = function(cid) retouches[cid] = nil end,
     rulesVersion = function(l) return accepted[l] or 0 end,
     acceptRules = function(l, v) accepted[l] = v end,

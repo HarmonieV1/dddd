@@ -15,10 +15,31 @@ local function rights()
                   notify(lib.callback.await('gs_police:custodyRight', false, 'confess'))
               end
           end },
+        -- V12 · Témoin protégé
+        { title = 'Dénoncer un gang (témoin protégé)', icon = 'user-secret', iconColor = '#ffb347',
+          description = ('Peine divisée par deux, protection %d jours. Le gang saura que quelqu\'un a parlé.'):format(Config.Custody.witnessDays),
+          onSelect = function()
+              local gangs = lib.callback.await('gs_police:gangsList', false) or {}
+              if #gangs == 0 then return notify(false, 'Aucun gang connu.') end
+              local opts = {}
+              for _, g in ipairs(gangs) do opts[#opts + 1] = { value = g.name, label = g.label } end
+              local r = lib.inputDialog('Dénoncer un gang', { { type = 'select', label = 'Gang', options = opts, required = true } })
+              if not r then return end
+              if lib.alertDialog({ header = 'Tu es sûr ?', content = 'Une fois dit, impossible de revenir en arrière. Le gang cherchera qui a parlé.', centered = true, cancel = true }) == 'confirm' then
+                  notify(lib.callback.await('gs_police:custodyRight', false, 'denounce', r[1]))
+              end
+          end },
     } })
     lib.showContext('gs_police_rights')
 end
 RegisterCommand('droits', rights, false)
+
+-- V12 · Lieu sûr du témoin protégé (GPS + rappel)
+RegisterNetEvent('gs_police:client:witness', function(c, days)
+    SetNewWaypoint(c.x, c.y)
+    lib.notify({ title = 'Témoin protégé', description = ('La police te protège %d jours. Lieu sûr sur ton GPS : évite les quartiers du gang.'):format(days or 7),
+        type = 'inform', icon = 'shield-halved', duration = 15000 })
+end)
 
 RegisterNetEvent('gs_police:client:custody', function(seconds)
     local was = custodyEnd > GetGameTimer()

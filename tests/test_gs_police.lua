@@ -34,6 +34,8 @@ Store = {
     reports = function() local l = {} for _, r in pairs(reports) do l[#l + 1] = r end return l end,
     report = function(id) local r = reports[id] return r and { id = r.id, title = r.title, body = r.body, officer = r.officer, officer_cid = r.officer_cid } end,
     deleteReport = function(id) if reports[id] then reports[id] = nil return true end return false end,
+    witnessAll = function() return {} end, witnessSet = function(cid, gang, u) W.witness = W.witness or {} W.witness[cid] = { gang = gang, u = u } end,
+    witnessClear = function(cid) if W.witness then W.witness[cid] = nil end end,
 }
 loadResource('gs_police', { R .. 'gs_police/server/main.lua', R .. 'gs_police/server/dossiers.lua', R .. 'gs_police/server/prison.lua', R .. 'gs_police/server/custody.lua' })
 
@@ -200,6 +202,38 @@ ok = cb('gs_police:action', 1, 'licence', 2, { kind = 'hunting', on = true }); s
 check('permis de chasse délivré', ok and W.players[2].licences.hunting == true)
 ok = cb('gs_police:action', 1, 'licence', 2, { kind = 'hunting', on = false }); step()
 check('permis retiré', ok and W.players[2].licences.hunting == false)
+-- V11.5 : carte PPA remise / reprise, permis de conduire retiré avec motif (gs_driving) et rendu
+ok = cb('gs_police:action', 1, 'licence', 2, { kind = 'weapon', on = true }); step()
+check('port d\'arme : carte PPA dans l\'inventaire', ok and W.players[2].licences.weapon == true and W.players[2].items.weaponlicense == 1)
+ok = cb('gs_police:action', 1, 'licence', 2, { kind = 'weapon', on = false }); step()
+check('port d\'arme retiré : carte reprise', ok and W.players[2].licences.weapon == false and W.players[2].items.weaponlicense == nil)
+local drv = {}
+provide('gs_driving', { GetPoints = function() return nil end, SetLicence = function(src, on, reason) drv[#drv + 1] = { src = src, on = on, reason = reason } return true end })
+ok = cb('gs_police:action', 1, 'licence', 2, { kind = 'driver', on = false }); step()
+check('permis de conduire : motif obligatoire pour retirer', not ok and #drv == 0)
+ok = cb('gs_police:action', 1, 'licence', 2, { kind = 'driver', on = false, reason = 'Délit de fuite' }); step()
+check('permis de conduire retiré : gs_driving + casier', ok and drv[1] and drv[1].on == false and drv[1].reason == 'Délit de fuite'
+    and records[#records].charge:find('Délit de fuite'))
+ok = cb('gs_police:action', 1, 'licence', 2, { kind = 'driver', on = true }); step()
+check('permis de conduire rendu', ok and drv[2] and drv[2].on == true)
+
+-- V12 · Faux papiers : contrôle visuel loin du commissariat, scanner au commissariat
+W.players[2].licences = { driver = false }
+Player(2).state:set('gsFake', { name = 'Alex Martin', birth = '01/01/1990', kinds = { id = true, driver = true }, untilTs = os.time() + 600 })
+local st = Config.Custody.station
+tp(1, vec3(st.x + 500.0, st.y, st.z)) tp(2, vec3(st.x + 501.0, st.y, st.z))
+ok, d = cb('gs_police:action', 1, 'identity', 2); step()
+check('faux papiers, contrôle visuel : fausse identité et faux permis crus', ok and d.name == 'Alex Martin' and d.basic and d.driver == true and d.records == 0)
+tp(1, vec3(st.x, st.y, st.z)) tp(2, vec3(st.x + 1.0, st.y, st.z))
+local nRec = #records
+ok, d = cb('gs_police:action', 1, 'identity', 2); step()
+check('au commissariat : scanner → vraie identité, faux démasqué, casier', ok and d.name == 'Suspect ' and d.fake == 'Alex Martin' and d.driver == false
+    and #records == nRec + 1 and records[#records].charge:find('faux papiers') and Player(2).state.gsFake == nil)
+Player(2).state:set('gsFake', { name = 'X', kinds = {}, untilTs = os.time() - 1 })
+ok, d = cb('gs_police:action', 1, 'identity', 2); step()
+check('faux papier expiré : ignoré', ok and d.name == 'Suspect ' and not d.fake)
+Player(2).state:set('gsFake', nil)
+tp(1, vec3(200.0, -800.0, 30.0)) tp(2, vec3(201.0, -800.0, 30.0))
 
 -- Dossiers : recherche par nom, mandats, rapports
 W.players[1].job.grade = 1
@@ -314,6 +348,29 @@ do
     ok = cb('gs_police:action', 51, 'jail', 52, { minutes = 10, reason = 'Vol' }) advance(3000)
     check('aveux : peine réduite à l\'incarcération, fin de garde à vue', ok and Police.jailed[52]
         and Police.jailed[52].untilTs - os.time() <= 7 * 60 and Custody.list[52] == nil)
+    Police.release(52)
+
+    -- V12 · Témoin protégé : dénoncer un gang en garde à vue
+    local gangMsgs, heat, rumors = {}, {}, {}
+    provide('gs_gangs', { ListGangs = function() return { { name = 'ballas', label = 'Ballas' } } end,
+        NotifyGang = function(g, msg) gangMsgs[#gangMsgs + 1] = { g = g, msg = msg } return 1 end, MembersOnline = function(g) return g == 'ballas' and { 60 } or {} end })
+    provide('gs_wanted', { GetHeat = function() return 0 end, AddHeat = function(s, n) heat[s] = (heat[s] or 0) + n end })
+    provide('gs_rumors', { Add = function(t) rumors[#rumors + 1] = t end })
+    tp(51, vec3(C.station.x, C.station.y, C.station.z)) tp(52, vec3(C.station.x + 1.0, C.station.y, C.station.z))
+    Player(52).state:set('gsCuffed', true)
+    cb('gs_police:action', 51, 'custody', 52, { minutes = 10 }) advance(3000)
+    check('dénoncer : gang inconnu refusé', not Custody.right(52, 'denounce', 'vagos'))
+    local okD, msgD = Custody.right(52, 'denounce', 'ballas')
+    check('dénoncer un gang : accepté, état posé', okD and msgD:find('Ballas', 1, true) and Player(52).state.gsSnitch == 'ballas')
+    check('dénoncer deux fois : refusé', not Custody.right(52, 'denounce', 'ballas'))
+    tp(51, vec3(C.cell.x + 2.0, C.cell.y, C.cell.z)) tp(52, vec3(C.cell.x + 1.0, C.cell.y, C.cell.z))
+    ok = cb('gs_police:action', 51, 'jail', 52, { minutes = 10, reason = 'Vol' }) advance(3000)
+    check('témoin : peine divisée par deux, protection posée, gang prévenu sans nom, rumeur', ok and Police.jailed[52]
+        and Police.jailed[52].untilTs - os.time() <= 5 * 60 and W.witness and W.witness.CID52 and W.witness.CID52.gang == 'ballas'
+        and gangMsgs[1] and gangMsgs[1].g == 'ballas' and not gangMsgs[1].msg:find('Suspect') and #rumors == 1 and Player(52).state.gsSnitch == nil)
+    join(60, 'CID60', 'Ballas Online', vec3(0.0, 0.0, 0.0))
+    W.sbh.isDead('player:52', 'isDead', true)
+    check('témoin abattu : chaleur sur le gang, protection levée, rumeur', heat[60] == C.witnessHeat and not W.witness.CID52 and #rumors == 2)
     Police.release(52)
 
     -- fin de garde à vue à l'échéance
