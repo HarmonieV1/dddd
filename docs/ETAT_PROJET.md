@@ -17,8 +17,8 @@ exclusifs (« ce que tu ne trouveras nulle part ailleurs »).
 - `feature/phase1-bridge`
 - `claude/gta-rp-architecture-stack-pbvdxz`
 
-**Dernier commit poussé** : `2c1c335` — « V11.3 : salle Luxe et concession nettoyée, IP masquée jusqu'à l'ouverture,
-version publique V4, règlement Discord, guide du staff ».
+**Dernier commit poussé** : `68d70b6` — « V12.4 : pots de miel anti-triche, bannissements posés et levés en jeu,
+bus d'arrivée corrigé ».
 
 ## 2. Versions : interne vs publique (important, piège classique)
 
