@@ -6,6 +6,7 @@ chaque nom d'event et de callback piégé n'apparaît nulle part ailleurs dans l
 À lancer par tests/run.sh. Sortie non nulle = un piège est dangereux, il faut le renommer ou le retirer.
 """
 import re
+import subprocess
 import sys
 from pathlib import Path
 
@@ -36,15 +37,24 @@ def main() -> int:
         print('Pots de miel : aucun piège déclaré.')
         return 1
 
-    # Tous les fichiers de code du dépôt, sauf le piège lui-même et ce test
+    # Les fichiers de code du dépôt, sauf le piège lui-même, ses copies et ce test. On lit la liste de Git quand il
+    # est là : les dossiers ignorés (livraison/, colis de synchronisation dézippés…) contiennent des COPIES de
+    # honeypot.lua qui ne sont pas de vrais scripts et feraient échouer le contrôle à tort.
+    candidates = []
+    try:
+        out = subprocess.run(['git', 'ls-files', '--cached', '--others', '--exclude-standard'],
+                             cwd=ROOT, capture_output=True, text=True, check=True).stdout
+        candidates = [ROOT / p for p in out.splitlines()]
+    except (OSError, subprocess.CalledProcessError):
+        for pattern in ('**/*.lua', '**/*.js', '**/*.html'):
+            candidates += [f for f in ROOT.glob(pattern) if 'node_modules' not in f.parts and '.git' not in f.parts]
     files = []
-    for pattern in ('**/*.lua', '**/*.js', '**/*.html'):
-        for f in ROOT.glob(pattern):
-            if 'node_modules' in f.parts or '.git' in f.parts:
-                continue
-            if f == TRAP or f.name == 'check_honeypot.py':
-                continue
-            files.append(f)
+    for f in candidates:
+        if f.suffix not in ('.lua', '.js', '.html') or not f.is_file():
+            continue
+        if f.name == 'check_honeypot.py' or f.as_posix().endswith('gs_security/server/honeypot.lua'):
+            continue
+        files.append(f)
 
     bad = []
     for f in files:

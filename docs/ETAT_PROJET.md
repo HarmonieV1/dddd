@@ -252,6 +252,16 @@ Résumé très condensé (le détail complet est dans `docs/ROADMAP.md`, `docs/F
     garde-côtes (`gs_smuggling`). Le chemin de migration (les passer côté serveur) est écrit dans les deux cfg. `relaxed`
     bloque déjà les entités créées hors script : le gain est réel mais marginal, et le risque de casse à ~9 jours de
     l'ouverture ne l'est pas. **À faire après l'ouverture.**
+  - **Audit `bob74_ipl`** (`docs/BOB74_IPL.md`, source 2.7.1 lue fichier par fichier) : RoadLine exploite **6 intérieurs
+    sur ~90**. Inventaire complet avec les coordonnées exactes, 3 familles (sous la carte → porte `gs_interiors` ; en place
+    → rien à téléporter ; coquille → routing bucket comme `gs_hideouts`), 12 portes recommandées branchées sur des
+    ressources existantes (faux papiers, primes, Car Meet, casse, studio radio, agence, boîte de nuit…), blocs prêts à
+    coller (`inside` exacts, `outside` à relever en jeu — déplaçables par F11 car `gs_interiors` inclut `points.lua`).
+    **Rien n'est branché** : en attente du choix des portes.
+  - **`docs/MLO.md`** : ordre de recherche (bob74 → coquille → MLO gratuit → MLO payant), les 5 contrôles (poids,
+    licence, marques, chiffrement, performance), procédure `IMPORTER-MODS.bat`, sources acceptables, sites à proscrire.
+  - **`check_honeypot.py` durci** : ne lit plus que les fichiers suivis par Git et ignore les copies de `honeypot.lua`.
+    Avant, un colis de synchronisation dézippé dans le dépôt (ou `livraison/`) bloquait le push à tort.
   - **Tests** : +23 assertions `gs_admin` (niveaux, durées, anti-abus, déban, liste, peine écoulée, ban auto staff/joueur).
     Suite complète verte : 2648 tests Lua / 90 fichiers, 44 tests bot Discord, 27 pièges vérifiés.
 
