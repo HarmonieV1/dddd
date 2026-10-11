@@ -67,7 +67,7 @@ HISTORY = [
     ['V12.4 – V12.7', "Sécurité et fiabilité : 27 pièges anti-triche, bannissements posés et levés en jeu, bus d'arrivée réparé, bot Discord "
                       "réparé (/help, /ip, /annonce, détection du Discord), déplacement des points vérifié en jeu, audit des alertes police "
                       "(chasse légale, intitulés justes, vols de voiture et /911p via le central)"],
-    ['V12.8 – V12.11', "Synchronisation des deux sessions de travail : bienvenue Discord, police IA quand on est seul en ville, bus encore plus "
+    ['V12.8 – V12.12', "Synchronisation des deux sessions de travail : bienvenue Discord, police IA quand on est seul en ville, bus encore plus "
                       "robuste, site V13 (météo et heure de la ville en direct), catalogues véhicules et armes ; contrôle des doublons (aucun) ; "
                       "14 maps importées, F11 « Mappings installés » (emplacement lu dans les fichiers, téléportation, conflits entre maps), "
                       "sous-sol du commissariat de Mission Row (police)"],

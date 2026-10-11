@@ -951,13 +951,21 @@ local function mainMenu()
                 mappingsMenu(r) -- même liste, sans redemander au serveur
             end }
         if #r.conflicts > 0 then
-            local c = {}
+            local c, open = {}, 0
             for _, x in ipairs(r.conflicts) do
-                c[#c + 1] = { title = x.file, icon = 'triangle-exclamation', iconColor = '#ff6b6b', disabled = true,
-                    description = 'Remplacé par ' .. table.concat(x.resources, ' ET ') .. ' : une seule des deux s\'affichera correctement' }
+                if x.resolved then
+                    c[#c + 1] = { title = x.file .. ' (résolu)', icon = 'circle-check', iconColor = '#5aff8c', disabled = true,
+                        description = table.concat(x.resources, ' + ') .. ' : versions fusionnées par ' .. x.resolved }
+                else
+                    open = open + 1
+                    c[#c + 1] = { title = x.file, icon = 'triangle-exclamation', iconColor = '#ff6b6b', disabled = true,
+                        description = 'Remplacé par ' .. table.concat(x.resources, ' ET ') .. ' : une seule des deux s\'affichera correctement' }
+                end
             end
-            o[#o + 1] = { title = ('%d conflit(s) entre maps'):format(#r.conflicts), icon = 'triangle-exclamation', iconColor = '#ff6b6b', arrow = true,
-                description = 'Deux maps remplacent le même fichier du jeu : en garder une', onSelect = function() show('gs_staff_maps_conf', 'Conflits entre maps', c, 'gs_staff_maps') end }
+            o[#o + 1] = { title = open > 0 and ('%d conflit(s) entre maps'):format(open) or 'Conflits entre maps : tous résolus',
+                icon = open > 0 and 'triangle-exclamation' or 'circle-check', iconColor = open > 0 and '#ff6b6b' or '#5aff8c', arrow = true,
+                description = open > 0 and 'Deux maps remplacent le même fichier du jeu : fusionner (Claude) ou en garder une' or 'Fusionnés par la ressource gsa_zz_fusion',
+                onSelect = function() show('gs_staff_maps_conf', 'Conflits entre maps', c, 'gs_staff_maps') end }
         end
         for _, m in ipairs(r.maps) do
             for _, h in ipairs(m.heavy or {}) do

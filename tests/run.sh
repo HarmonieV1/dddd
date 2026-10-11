@@ -9,6 +9,8 @@ python3 tests/check_labels.py
 python3 tests/check_links.py
 python3 tests/check_honeypot.py
 python3 tests/check_crimes.py
+# Fusion des fichiers d'occlusion de deux maps (tools/maps/fusion_occlusion.py) ; -B : pas de cache Python (piège des mutations)
+python3 -B tests/test_fusion_occlusion.py
 python3 tests/check_perf.py
 # Liste des marques refusées : identique dans l'importeur et dans NETTOYER-MARQUES.bat
 for v in BrandBlock BrandStrong; do

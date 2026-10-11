@@ -59,7 +59,7 @@ check('nom affiché', M.labelOf('gsa_moreo_gym') === 'Moreo gym');
 const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'gsmaps-'));
 const mk = (res, files) => { for (const [f, b] of Object.entries(files)) { const p = path.join(tmp, res, f); fs.mkdirSync(path.dirname(p), { recursive: true }); fs.writeFileSync(p, b); } return { name: res, dir: path.join(tmp, res) }; };
 const a = mk('gsa_atelier', { 'stream/ymap/TM_Workshop.ymap': ymap([[927.2, -1563.9, 34.2]]), 'stream/ymap/id1_occl_02.ymap': ymap([]), 'stream/_manifest.ymf': 'x', 'fxmanifest.lua': "this_is_a_map 'yes'" });
-const b = mk('gsa_autre', { 'stream/id1_occl_02.ymap': ymap([]), 'stream/garage_b.ymap': ymap([[1200, -1500, 34]]), 'stream/_manifest.ymf': 'x' });
+const b = mk('gsa_autre', { 'stream/id1_occl_02.ymap': ymap([], 128), 'stream/garage_b.ymap': ymap([[1200, -1500, 34]]), 'stream/_manifest.ymf': 'x' });
 const c = mk('gsa_vide', { 'LICENSE': 'GPL' });
 const d = mk('gsa_casse', { 'stream/abime.ymap': Buffer.from('RSC7 pas compressé du tout') });
 const r = M.scanAll([a, b, c, d]);
@@ -88,6 +88,19 @@ check('modèle de plus de 16 Mo en mémoire signalé', r2.gsa_lourde.heavy.lengt
 check('petite texture : pas signalée', !r2.gsa_lourde.heavy.some((h) => h.file === 'petit.ytd'));
 check('habillage sans .ymap (Fleeca) : fichiers du jeu comptés, pas « vide »', r2.gsa_habillage.ymaps === 0 && r2.gsa_habillage.assets === 2);
 check('map vide : 0 fichier de jeu', by.gsa_vide.assets === 0);
+
+// 6. Copies identiques : pas un conflit ; fusion : conflit résolu
+const g1 = mk('gsa_copie_a', { 'stream/cs1_occl_10.ymap': ymap([], 64) });
+const g2 = mk('gsa_copie_b', { 'stream/cs1_occl_10.ymap': ymap([], 64) });
+check('deux copies identiques du même fichier : pas un conflit', M.scanAll([g1, g2]).conflicts.length === 0);
+const h1 = mk('gsa_liquor', { 'stream/cs1_occl_10.ymap': ymap([], 64) });
+const h2 = mk('gsa_willies', { 'stream/cs1_occl_10.ymap': ymap([], 96) });
+let rc = M.scanAll([h1, h2]).conflicts;
+check('versions différentes : conflit non résolu', rc.length === 1 && rc[0].resolved === null && rc[0].resources.length === 2);
+const fx = mk('gsa_zz_fusion_occlusion', { 'stream/cs1_occl_10.ymap': ymap([], 32) });
+rc = M.scanAll([h1, h2, fx]).conflicts;
+check('ressource de fusion : conflit marqué résolu', rc.length === 1 && rc[0].resolved === 'gsa_zz_fusion_occlusion');
+check('la fusion n\'est pas comptée comme une map en conflit', !rc[0].resources.includes('gsa_zz_fusion_occlusion'));
 fs.rmSync(tmp, { recursive: true, force: true });
 
 console.log(`lecteur de maps : ${passed} réussis, ${failed} échoués`);

@@ -8,6 +8,7 @@
 const fs = require('fs');
 const path = require('path');
 const zlib = require('zlib');
+const crypto = require('crypto');
 
 const STREAM_CHECK = ['.ymap', '.ybn', '.ytyp'];   // fichiers dont le doublon casse une map (.ymf : nom commun, ignoré)
 const MAX_FILE = 32 * 1024 * 1024;
@@ -112,7 +113,7 @@ function scanResource(name, dir) {
   let unreadable = 0, assets = 0;
   for (const f of files) {
     const ext = path.extname(f).toLowerCase();
-    if (STREAM_CHECK.includes(ext)) streamed.push(path.basename(f).toLowerCase());
+    if (STREAM_CHECK.includes(ext)) streamed.push({ file: path.basename(f).toLowerCase(), path: f });
     if (HEAVY.includes(ext) || STREAM_CHECK.includes(ext)) assets++;
     if (HEAVY.includes(ext)) {
       let head = null;
@@ -136,12 +137,36 @@ function labelOf(name) {
   return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
-/** Fichiers remplacés par au moins deux maps. */
+const FUSION = /^gsa_zz_fusion/; // ressource de fusion (tools/maps/fusion_occlusion.py), démarrée après les maps
+
+function digest(file) {
+  try { return crypto.createHash('sha1').update(fs.readFileSync(file)).digest('hex'); } catch (e) { return file; }
+}
+
+/** Fichiers remplacés par au moins deux maps AVEC un contenu différent (deux copies identiques ne gênent pas).
+ *  `resolved` : une ressource de fusion livre aussi ce fichier et passe après les autres → c'est sa version qui compte. */
 function conflictsOf(maps) {
   const by = new Map();
-  for (const m of maps) for (const f of new Set(m.streamed)) { if (!by.has(f)) by.set(f, []); by.get(f).push(m.name); }
-  return [...by.entries()].filter(([, r]) => r.length > 1).map(([file, resources]) => ({ file, resources }))
-    .sort((a, b) => a.file.localeCompare(b.file));
+  for (const m of maps) {
+    const seen = new Set();
+    for (const s of m.streamed) {
+      const f = typeof s === 'string' ? s : s.file;
+      if (seen.has(f)) continue;
+      seen.add(f);
+      if (!by.has(f)) by.set(f, []);
+      by.get(f).push({ name: m.name, path: typeof s === 'string' ? null : s.path });
+    }
+  }
+  const out = [];
+  for (const [file, list] of by.entries()) {
+    if (list.length < 2) continue;
+    const others = list.filter((x) => !FUSION.test(x.name));
+    const sums = new Set(others.map((x) => (x.path ? digest(x.path) : x.name)));
+    if (others.length < 2 || sums.size < 2) continue;
+    const fix = list.find((x) => FUSION.test(x.name));
+    out.push({ file, resources: others.map((x) => x.name), resolved: fix ? fix.name : null });
+  }
+  return out.sort((a, b) => a.file.localeCompare(b.file));
 }
 
 /** `list` = [{ name, dir }] → résultat envoyé au menu F11 (sans la liste brute des fichiers). */
@@ -181,9 +206,13 @@ if (typeof GetCurrentResourceName === 'function') {
   setTimeout(() => {
     const r = scan();
     const placed = r.maps.filter((m) => m.places.length).length;
+    const open = r.conflicts.filter((c) => !c.resolved);
     console.log(`[gs_admin] Mappings : ${r.maps.length} installé(s), ${placed} situé(s) (F11 → Monde et lieux → Mappings installés)` +
-      (r.conflicts.length ? `, ^1${r.conflicts.length} CONFLIT(S)^7` : ', aucun conflit'));
+      (open.length ? `, ^1${open.length} CONFLIT(S)^7` : ', aucun conflit') + (r.conflicts.length - open.length ? `, ${r.conflicts.length - open.length} résolu(s) par fusion` : ''));
     for (const m of r.maps) for (const h of m.heavy) console.log(`^3[gs_admin] Map ${m.name} : ${h.file} prend ${h.mb} Mo en mémoire (limite conseillée 16 Mo) : textures ou murs qui peuvent ne pas s'afficher chez certains joueurs^7`);
-    for (const c of r.conflicts) console.log(`^1[gs_admin] Conflit de maps : ${c.file} est remplacé par ${c.resources.join(' ET ')} (une seule des deux s'affichera correctement)^7`);
+    for (const c of r.conflicts) {
+      if (c.resolved) console.log(`^2[gs_admin] Conflit résolu : ${c.file} (${c.resources.join(' + ')}) fusionné par ${c.resolved}^7`);
+      else console.log(`^1[gs_admin] Conflit de maps : ${c.file} est remplacé par ${c.resources.join(' ET ')} (une seule des deux s'affichera correctement)^7`);
+    }
   }, 15000);
 }

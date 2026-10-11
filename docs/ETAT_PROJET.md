@@ -1,4 +1,4 @@
-# État du projet RoadLine RP — récapitulatif complet (à jour au 12/10/2026, V12.11)
+# État du projet RoadLine RP — récapitulatif complet (à jour au 12/10/2026, V12.12)
 
 Ce document sert de **point de sauvegarde** : si une conversation avec Claude est perdue, compressée ou doit reprendre
 ailleurs, tout ce qu'il faut savoir est ici. Il est versionné avec le code (`git log` en garde aussi l'historique).
@@ -47,7 +47,7 @@ exclusifs (« ce que tu ne trouveras nulle part ailleurs »).
 - `feature/phase1-bridge`
 - `claude/gta-rp-architecture-stack-pbvdxz`
 
-**Dernier commit poussé** : « V12.11 : contrôle de la mémoire des maps » (hash exact :
+**Dernier commit poussé** : « V12.12 : fusion des conflits d'occlusion » (hash exact :
 `git log -1 origin/feature/phase1-bridge`). Les deux branches pointent sur le même commit.
 
 **Deux sessions Claude en parallèle** (poste Windows et session web) : elles ne se voient pas. Toujours synchroniser
@@ -57,7 +57,7 @@ par un colis (zip de l'installation ou de la session) + ce fichier, et comparer 
 ## 2. Versions : interne vs publique (important, piège classique)
 
 Depuis la V11.3, il y a **deux numéros de version différents**, volontairement :
-- `gs_version` (convar, `server.cfg.example`) = **V12.11** → version technique interne, vue par le staff (F11, console,
+- `gs_version` (convar, `server.cfg.example`) = **V12.12** → version technique interne, vue par le staff (F11, console,
   METTRE-A-JOUR). Continue d'avancer à chaque mise à jour (V11.2, V11.3...).
 - `gs_public_version` (convar) = **« V4 · bêta »** → version vue par les **joueurs** (écran de chargement, statut
   Discord, Gazette). Le site affiche son propre journal (V1 à V4, V5 « classé confidentiel »).
@@ -262,6 +262,18 @@ Résumé très condensé (le détail complet est dans `docs/ROADMAP.md`, `docs/F
   ne remplace pas le curseur), profondeur CSS `animation-timeline: view()` (captures, mock, carte, chiffres), intro
   façon chargement de mission (Entrée / clic pour passer). Tout coupé par `prefers-reduced-motion`, souris seulement
   sur ordinateur. Une seule boucle rAF qui s'endort quand rien ne bouge. Vérifié dans le navigateur : 0 erreur.
+
+- **V12.12** (12/10/2026) — **premier conflit réel signalé par la console** : `cs1_occl_10.ymap` (occlusion de Paleto Bay) livré
+  par `gsa_cfx_draft_pb_liquor_pack` ET `gsa_mlo_willies_supermarket` → l'un des deux intérieurs peut clignoter ou disparaître.
+  - **`tools/maps/fusion_occlusion.py`** : lit le format Meta du jeu (table des blocs, CMapData, `boxOccluders` +128,
+    `occludeModels` +144, sommets dans les blocs d'octets) et garde les occluders présents dans TOUTES les versions
+    (jeu − retraits de A − retraits de B = A ∩ B), réécrits sur place (même taille, même en-tête RSC7). Vérifié sur le vrai
+    fichier du magasin d'alcool (95 boîtes, 8 modèles : identique au bit près fusionné avec lui-même). Produit la ressource
+    `zz_fusion_occlusion` (→ `gsa_zz_fusion_occlusion`, dernière dans addons.cfg trié, donc prioritaire).
+  - `maps.js` : deux copies **identiques** ne sont plus un conflit ; un conflit couvert par `gsa_zz_fusion*` est « résolu »
+    (vert en console et en F11).
+  - **En attente** : `cs1_occl_10.ymap` de Willie's (dossier de la map sur le PC) pour produire la fusion.
+  - Tests : `test_fusion_occlusion.py` (16, fichier fabriqué, mutation vérifiée), `test_gs_maps.js` 44.
 
 - **V12.11** (12/10/2026) — 4 maps de plus vérifiées (Pillbox, Fleeca, gym Moreo, Vinewood) :
   - **Aucun conflit** entre les 7 maps reçues (aucun fichier du jeu remplacé deux fois).

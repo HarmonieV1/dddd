@@ -40,7 +40,13 @@ l'intérieur, pas sur le toit). « Afficher leurs blips sur ma carte » : blips 
 Console au démarrage : `[gs_admin] Mappings : N installé(s), N situé(s), aucun conflit`.
 **Conflit** = deux maps qui remplacent le même fichier du jeu (`.ymap`, `.ybn`, `.ytyp`) : une seule des deux
 s'affiche correctement (trous, murs invisibles, textures qui clignotent). Le menu et la console donnent le fichier et
-les deux maps : en garder une (mettre un `#` devant l'autre dans `cfg\addons.cfg`).
+les deux maps. Deux copies **identiques** du même fichier ne comptent pas (aucun effet).
+**Conflit d'occlusion** (`*_occl_*.ymap`, le cas le plus courant : chaque MLO retire du jeu ce qui cacherait son intérieur) :
+envoie-moi ce fichier depuis le dossier de **chacune** des deux maps ; je les fusionne (`tools/maps/fusion_occlusion.py` :
+on garde ce qui est présent dans toutes les versions) et je te renvoie `zz_fusion_occlusion.zip` à mettre dans
+`mods-a-trier` puis IMPORTER-MODS. Son nom `gsa_zz_…` le fait démarrer après les maps (addons.cfg est trié par ordre
+alphabétique) : c'est sa version qui compte, et F11 / la console affichent « conflit résolu » en vert. Autre type de conflit :
+en garder une (mettre un `#` devant l'autre dans `cfg\addons.cfg`).
 Map sans lieu dans la liste : soit un **habillage** d'objets du jeu (ex. `hp_fleeca` retexture les 6 agences Fleeca, normal),
 soit une map **vide** (aucun fichier de jeu, ex. `moto_free_shell`), à supprimer.
 **Modèle trop lourd** (V12.11) : la mémoire réelle de chaque modèle / texture est lue dans son en-tête. Au-delà de 16 Mo,
