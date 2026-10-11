@@ -23,7 +23,7 @@ bus d'arrivée corrigé ».
 ## 2. Versions : interne vs publique (important, piège classique)
 
 Depuis la V11.3, il y a **deux numéros de version différents**, volontairement :
-- `gs_version` (convar, `server.cfg.example`) = **V12.4** → version technique interne, vue par le staff (F11, console,
+- `gs_version` (convar, `server.cfg.example`) = **V12.5** → version technique interne, vue par le staff (F11, console,
   METTRE-A-JOUR). Continue d'avancer à chaque mise à jour (V11.2, V11.3...).
 - `gs_public_version` (convar) = **« V4 · bêta »** → version vue par les **joueurs** (écran de chargement, statut
   Discord, Gazette). Le site affiche son propre journal (V1 à V4, V5 « classé confidentiel »).
@@ -228,6 +228,21 @@ Résumé très condensé (le détail complet est dans `docs/ROADMAP.md`, `docs/F
   ne remplace pas le curseur), profondeur CSS `animation-timeline: view()` (captures, mock, carte, chiffres), intro
   façon chargement de mission (Entrée / clic pour passer). Tout coupé par `prefers-reduced-motion`, souris seulement
   sur ordinateur. Une seule boucle rAF qui s'endort quand rien ne bouge. Vérifié dans le navigateur : 0 erreur.
+
+- **V12.5** (11/10/2026) — bot Discord réparé (retours du backtest) :
+  - **Cause commune** de 3 symptômes : `gs_discord_guild` vide ou faux sur le VPS (l'outil le présentait comme facultatif).
+    Résultat : `/ticket` et les commandes staff refusés avec « uniquement sur le Discord RoadLine » alors qu'on y était, et
+    les anciennes commandes (`/help`, `/ip`) jamais nettoyées. **Correctif** : à la connexion, le bot lit la liste de ses
+    Discords (READY) ; s'il n'est que sur un seul, c'est forcément RoadLine → adopté et signalé en console. Plusieurs
+    Discords et réglage vide/faux → refus de deviner (protection conservée). Message d'erreur qui dit quoi corriger.
+  - **`/help`** (alias de `/aide`) et **`/ip`** (adresse + `connect` F8) ajoutées. Toute commande inconnue répond l'aide,
+    plus le site (c'était la cause de « /help donne le site »).
+  - **`/annonce` publie enfin sur Discord** : `#annonces` (webhook), sinon le salon courant ; titre, `@everyone`/`@here`,
+    1 800 caractères ; `en_jeu` pour l'afficher aussi en ville. Avant, elle n'envoyait qu'une annonce en jeu.
+  - Réponses sorties dans `createAnswer()` (testable) : +21 tests (65 au total). `CONFIGURER-DISCORD` marque l'identifiant
+    du serveur comme INDISPENSABLE ; diagnostic GERER-OVH : « réglé / NON RÉGLÉ » pour guild, rôle staff, #tickets, adresse.
+  - Revérifié sans changement : statut en direct, annonces de redémarrage, résumé du soir (6 événements bien émis), Gazette,
+    rendez-vous.
 
 - **V12.4** (11/10/2026) — sécurité sur mesure et arrivée réparée :
   - **Pots de miel** (`gs_security/server/honeypot.lua`) : 27 appâts (23 events + 4 callbacks) enregistrés côté serveur et

@@ -67,7 +67,8 @@ function Ask-Id($label, $name) {
 }
 Say ''
 Say '  Identifiants Discord (clic droit → Copier l''identifiant ; activer le Mode développeur si absent)' 'Cyan'
-Ask-Id 'Serveur Discord (clic droit sur l''icône du serveur)' 'gs_discord_guild'
+Say '  IMPORTANT : sans l''identifiant du serveur Discord, /ticket et les commandes staff (/annonce…) sont refusés.' 'Yellow'
+Ask-Id 'Serveur Discord (clic droit sur l''icône du serveur) · INDISPENSABLE' 'gs_discord_guild'
 Ask-Id 'Rôle staff (Paramètres du serveur → Rôles → clic droit sur le rôle)' 'gs_discord_staff_role'
 Ask-Id 'Salon #tickets (clic droit sur le salon)' 'gs_discord_ticket_channel'
 [IO.File]::WriteAllText($secrets, $text, (New-Object Text.UTF8Encoding $false))
@@ -92,6 +93,7 @@ if ($token) {
             Start-Process $invite
         }
     } catch { }
-    Say '  Le bot démarre tout seul avec le serveur (présence « 12/48 citoyens », /statut, /rejoindre, /rdv, /site).' 'Green'
+    Say '  Le bot démarre tout seul avec le serveur (présence « 12/48 citoyens », /statut, /ip, /rejoindre, /rdv, /site, /ticket, /annonce).' 'Green'
+    Say '  Sur le VPS : GERER-OVH → 12 pour y envoyer ces réglages, puis redémarrer le serveur.' 'Yellow'
 }
 Read-Host 'Entrée pour fermer'

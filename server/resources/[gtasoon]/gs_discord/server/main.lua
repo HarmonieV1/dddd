@@ -78,10 +78,13 @@ function Discord.status()
 end
 
 --- Annonce publique (salon #annonces). Exportée : `exports.gs_discord:Announce('Titre', 'Texte')`
-function Discord.announce(title, text, color)
+--- V12.5 : `mention` = 'everyone' | 'here' notifie le salon (utilisé par /annonce du bot, staff uniquement).
+function Discord.announce(title, text, color, mention)
     local hook = conv('gs_webhook_annonces')
     if not validHook(hook) then return false end
-    post(hook, { data = { username = Config.Name, allowed_mentions = { parse = {} },
+    local ping = (mention == 'everyone' or mention == 'here') and mention or nil
+    post(hook, { data = { username = Config.Name, content = ping and ('@' .. ping) or nil,
+        allowed_mentions = { parse = ping and { 'everyone' } or {} },
         embeds = { { title = tostring(title or ''):sub(1, 250), description = tostring(text or ''):sub(1, 2000), color = color or Config.Color,
             timestamp = os.date('!%Y-%m-%dT%H:%M:%SZ') } } } })
     return true

@@ -168,6 +168,11 @@ discord() { # bot + webhooks : réglés ? connectés ? (aucune valeur secrète a
     elif journalctl -u roadline -n 2000 --no-pager -o cat 2>/dev/null | grep -q 'Jeton du bot refusé'; then echo "  jeton REFUSÉ par Discord : relance CONFIGURER-DISCORD.bat sur le PC, puis GERER-OVH → 12"
     else echo "  jeton présent, mais pas encore connecté (attends 1 min après le démarrage, ou voir Console)"; fi
   else echo "  pas de jeton (CONFIGURER-DISCORD.bat sur le PC, puis GERER-OVH → 12)"; fi
+  # V12.5 : identifiants indispensables à /ticket et aux commandes staff (vides = « uniquement sur le Discord RoadLine »)
+  for name in gs_discord_guild gs_discord_staff_role gs_discord_ticket_channel gs_connect; do
+    if [ -n "$(val "$name")" ]; then printf '  %-26s réglé\n' "$name"; else printf '  %-26s NON RÉGLÉ\n' "$name"; fi
+  done
+  journalctl -u roadline -n 3000 --no-pager -o cat 2>/dev/null | grep -E 'Discord RoadLine détecté|PAS sur ce Discord|refus de deviner|Discords et gs_discord_guild' | tail -2 | sed 's/^/  bot : /'
   echo "== Salons (webhooks) : un message de test est envoyé dans chacun =="
   for name in gs_webhook_status gs_webhook_annonces gs_staff_webhook gs_webhook_sanctions gs_webhook_anticheat gs_webhook_jobs gs_webhook_social gs_webhook_boutique; do
     v=$(val "$name")

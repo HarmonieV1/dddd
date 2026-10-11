@@ -55,13 +55,17 @@ Les réponses ne sont visibles que par toi. `/aide` liste les commandes (avec ce
 | `/avertir id texte` | avertissement (note au dossier, publié dans les sanctions) |
 | `/expulser id texte` | expulsion du serveur |
 | `/message id texte` | message privé du staff au joueur |
-| `/annonce texte` | annonce à toute la ville |
+| `/annonce texte [titre] [mention] [en_jeu]` | V12.5 : **publiée sur Discord** dans `#annonces` (ou dans le salon courant si `#annonces` n'est pas relié), 1 800 caractères, `@everyone` / `@here` en option ; `en_jeu` = aussi affichée à toute la ville |
 | `/isoler id minutes motif` · `/liberer id` | isolement hors RP (cour de Bolingbroke, 1 à 240 min, publié dans #sanctions) / libération |
 | `/reanimer id` | réanime et soigne un joueur bloqué |
-| `/ticket sujet` · `/fermer` · `/aide` | tickets en fil privé (tous les membres) · liste des commandes |
+| `/ticket sujet` · `/fermer` · `/aide` (= `/help`) | tickets en fil privé (tous les membres) · liste des commandes |
+| `/ip` · `/rejoindre` · `/statut` · `/rdv` · `/site` | tous les membres : adresse de connexion, mode d'emploi, état du serveur, rendez-vous, site |
 
 Pour bannir : txAdmin (`http://IP:40120`), qui marche aussi sur téléphone. Autre possibilité : le panneau staff web
 `http://IP:30120/gs_admin/` (voir docs/OVH.md, § 5). Chaque action est journalisée « Discord · pseudo ».
+**« Commande disponible uniquement sur le Discord RoadLine » alors que tu y es** (avant V12.5) : l'identifiant du serveur
+Discord (`gs_discord_guild`) était vide ou faux. Depuis V12.5 : si le bot n'est que sur ton Discord, il le **détecte tout
+seul** à la connexion ; sinon le message dit exactement quoi corriger. GERER-OVH → diagnostic affiche « réglé / NON RÉGLÉ ».
 **Ça ne marche pas ?** Console du serveur : « Bot Discord connecté » = OK ; « Jeton refusé » = relance CONFIGURER-DISCORD
 avec un nouveau jeton.
 

@@ -99,6 +99,9 @@ const COMMANDS = [
   { name: 'site', description: 'Le site de RoadLine RP' },
   { name: 'rdv', description: 'Les rendez-vous de la semaine' },
   { name: 'aide', description: 'Les commandes du bot RoadLine' },
+  // V12.5 : /help (alias de /aide) et /ip. Avant, ces noms tombaient dans le cas par défaut, qui répondait le site.
+  { name: 'help', description: 'Les commandes du bot RoadLine (= /aide)' },
+  { name: 'ip', description: 'Adresse du serveur pour se connecter (F8 → connect)' },
 ];
 
 // V11.4 · Tickets en fil privé dans le salon #tickets (`gs_discord_ticket_channel`). `set gs_discord_tickets "false"`
@@ -109,7 +112,7 @@ COMMANDS.push(
     options: [{ name: 'sujet', description: 'En quelques mots : ton problème ou ta demande', type: 3, required: true, max_length: 100 }] },
   { name: 'fermer', description: 'Fermer ce ticket (dans le fil du ticket)', dm_permission: false },
 );
-const SLOW = new Set(TICKET_COMMANDS); // plusieurs appels à Discord : réponse différée (sinon délai de 3 s dépassé)
+const SLOW = new Set([...TICKET_COMMANDS, 'annonce']); // appels à Discord : réponse différée (sinon délai de 3 s dépassé)
 
 // V10.1 · Modération depuis Discord (téléphone compris). V11.4 : uniquement sur le Discord RoadLine (`gs_discord_guild`),
 // pour le rôle staff (`gs_discord_staff_role`) ou le propriétaire du Discord. Plus de passe-droit « administrateur » :
@@ -124,13 +127,24 @@ const STAFF = {
   avertir: { action: 'warn', description: 'Staff : avertir un joueur (note au dossier)', options: [ID, TEXT('Motif')] },
   expulser: { action: 'kick', description: 'Staff : expulser un joueur du serveur', options: [ID, TEXT('Motif')] },
   message: { action: 'message', description: 'Staff : message privé à un joueur en jeu', options: [ID, TEXT('Message')] },
-  annonce: { action: 'announce', description: 'Staff : annonce à toute la ville en jeu', options: [TEXT('Annonce')] },
   // V12.3
   isoler: { action: 'jail', description: 'Staff : isoler un joueur (cour de Bolingbroke, hors RP)', options: [ID, MINUTES, TEXT('Motif')] },
   liberer: { action: 'unjail', description: 'Staff : libérer un joueur de l\'isolement', options: [ID] },
   reanimer: { action: 'revive', description: 'Staff : réanimer et soigner un joueur', options: [ID] },
 };
 for (const [name, c] of Object.entries(STAFF)) COMMANDS.push({ name, description: c.description, options: c.options, dm_permission: false });
+
+// V12.5 · /annonce publie VRAIMENT sur Discord (avant : seulement en jeu, d'où « le bot n'écrit pas d'annonce »).
+// Salon #annonces (webhook gs_webhook_annonces) ou, à défaut, le salon où la commande est tapée. En jeu : option.
+const ANNOUNCE = { name: 'annonce', description: 'Staff : publier une annonce sur Discord (et en jeu si demandé)', dm_permission: false,
+  options: [
+    { name: 'texte', description: 'Le texte de l\'annonce', type: 3, required: true, max_length: 1800 },
+    { name: 'titre', description: 'Titre (facultatif)', type: 3, required: false, max_length: 100 },
+    { name: 'mention', description: 'Notifier tout le monde ?', type: 3, required: false,
+      choices: [{ name: 'Personne', value: 'none' }, { name: '@everyone', value: 'everyone' }, { name: '@here', value: 'here' }] },
+    { name: 'en_jeu', description: 'Afficher aussi l\'annonce à toute la ville en jeu', type: 5, required: false },
+  ] };
+COMMANDS.push(ANNOUNCE);
 
 /** Staff = rôle staff configuré, propriétaire du Discord, ou administrateur du Discord RoadLine (serveur vérifié par fromGuild) */
 function staffAllowed(member, roleId, ownerId) {
@@ -140,6 +154,26 @@ function staffAllowed(member, roleId, ownerId) {
   // V12.3 : les administrateurs du Discord RoadLine passent aussi (fromGuild est vérifié avant : jamais depuis un autre Discord)
   try { if ((BigInt(member.permissions || '0') & 8n) === 8n) return true; } catch (e) { /* permissions illisibles */ }
   return !!roleId && Array.isArray(member.roles) && member.roles.includes(roleId);
+}
+/**
+ * V12.5 · Discord RoadLine effectif. `configured` = gs_discord_guild ; `guilds` = Discords où le bot est (READY).
+ * - réglé et le bot y est → on le garde ;
+ * - vide ou faux, mais le bot n'est que sur UN Discord → c'est forcément celui de RoadLine : on le prend (et on le dit) ;
+ * - vide ou faux, bot sur plusieurs Discords → rien (refus de deviner : c'est la protection contre un bot invité ailleurs).
+ * Avant, un identifiant vide ou faux cassait /ticket et les commandes staff avec un message trompeur.
+ */
+function resolveGuild(configured, guilds, log) {
+  const ids = (Array.isArray(guilds) ? guilds : []).map((g) => g && g.id).filter((id) => /^\d{15,22}$/.test(id || ''));
+  const say = log || (() => {});
+  if (!ids.length) return configured || ''; // liste inconnue : on fait confiance au réglage
+  if (configured && ids.includes(configured)) return configured;
+  if (configured) say(`gs_discord_guild = ${configured}, mais le bot n'est PAS sur ce Discord (il est sur : ${ids.join(', ')}). Corrige avec CONFIGURER-DISCORD.bat puis GERER-OVH → 12.`);
+  if (ids.length === 1) {
+    say(`Discord RoadLine détecté automatiquement : ${ids[0]} (le bot n'est que sur ce Discord). Pour le figer : CONFIGURER-DISCORD.bat → identifiant du serveur.`);
+    return ids[0];
+  }
+  say(`Bot présent sur ${ids.length} Discords et gs_discord_guild ${configured ? 'faux' : 'vide'} : commandes staff et tickets désactivés. Règle l'identifiant (CONFIGURER-DISCORD.bat).`);
+  return '';
 }
 /** La commande vient bien du Discord RoadLine (jamais d'un autre serveur où le bot aurait été invité) */
 function fromGuild(interaction, guildId) {
@@ -218,12 +252,102 @@ function createTickets(env) {
 
 const FATAL = new Set([4004, 4010, 4011, 4012, 4013, 4014]); // jeton refusé, intents invalides… : réessayer ne sert à rien
 
+/**
+ * V12.5 · Réponses aux commandes, sorties du branchement FiveM pour être testées.
+ * deps = { conv(nom, défaut), staffRole(), ticketsOn(), tickets, adminOn(), remote(action, id, texte, auteur, minutes),
+ *          statusEmbed(), weekly(), announce(titre, texte, mention) → bool, post(salon, corps) → { status } }
+ */
+const NOT_HERE = 'Le bot ne reconnaît pas ce Discord comme celui de RoadLine : l\'identifiant du serveur Discord '
+  + '(gs_discord_guild) est vide ou faux. Corrige-le avec CONFIGURER-DISCORD.bat puis GERER-OVH → 12, et redémarre.';
+function helpEmbed(member, deps, ctx) {
+  const lines = ['`/statut` état du serveur', '`/ip` adresse pour se connecter', '`/rejoindre` comment se connecter',
+    '`/rdv` rendez-vous de la semaine', '`/site` le site'];
+  if (deps.ticketsOn()) lines.push('`/ticket sujet` ouvrir un ticket privé avec le staff', '`/fermer` fermer ton ticket');
+  if (staffAllowed(member, deps.staffRole(), ctx.ownerId)) {
+    lines.push('', '**Staff** : `/annonce` ' + Object.keys(STAFF).map((n) => '`/' + n + '`').join(' '));
+  }
+  return { embeds: [{ title: 'Commandes RoadLine', color: 0xb048ff, description: lines.join('\n') }], flags: 64 };
+}
+function createAnswer(deps) {
+  return async function answer(name, interaction, ctx) {
+    const member = interaction && interaction.member;
+    const o = optionsOf(interaction);
+    if (TICKET_COMMANDS.includes(name)) {
+      if (!deps.ticketsOn()) return { content: 'Les tickets passent par un autre bot sur ce Discord.' };
+      if (!fromGuild(interaction, ctx.guild)) return { content: NOT_HERE };
+      if (name === 'ticket') return deps.tickets.open(interaction, o.sujet);
+      return deps.tickets.close(interaction, staffAllowed(member, deps.staffRole(), ctx.ownerId));
+    }
+    if (name === 'aide' || name === 'help') return helpEmbed(member, deps, ctx);
+    const staffGate = () => {
+      if (!fromGuild(interaction, ctx.guild)) return NOT_HERE;
+      if (!staffAllowed(member, deps.staffRole(), ctx.ownerId)) return deps.staffRole() ? 'Réservé au staff.' : 'Rôle staff non configuré (CONFIGURER-DISCORD.bat).';
+      return null;
+    };
+    const who = (member && member.user && (member.user.global_name || member.user.username)) || '?';
+    if (name === 'annonce') {
+      const refused = staffGate();
+      if (refused) return { content: refused };
+      const text = String(o.texte || '').trim();
+      if (!text) return { content: 'Texte de l\'annonce vide.' };
+      const title = String(o.titre || '').trim() || '📢 Annonce';
+      const mention = o.mention === 'everyone' || o.mention === 'here' ? o.mention : 'none';
+      const done = [];
+      let posted = false;
+      try { posted = !!deps.announce(title, text, mention); } catch (e) { posted = false; }
+      if (posted) done.push('publiée dans #annonces');
+      else if (interaction.channel_id) {
+        // Pas de webhook #annonces : on publie dans le salon où la commande a été tapée
+        const r = await deps.post(interaction.channel_id, {
+          content: mention === 'none' ? undefined : '@' + mention,
+          allowed_mentions: { parse: mention === 'none' ? [] : ['everyone'] },
+          embeds: [{ title, description: text, color: 0xb048ff, timestamp: new Date().toISOString() }],
+        });
+        if (r && r.status >= 200 && r.status < 300) { posted = true; done.push('publiée dans ce salon (#annonces non relié : CONFIGURER-DISCORD.bat)'); }
+      }
+      if (o.en_jeu) {
+        if (!deps.adminOn()) done.push('pas en jeu (gs_admin arrêté)');
+        else {
+          let r = null;
+          try { r = deps.remote('announce', 0, text.slice(0, 200), who); } catch (e) { r = null; }
+          done.push(r && r.ok ? 'affichée en jeu' : 'pas en jeu (' + ((r && r.text) || 'pas de réponse') + ')');
+        }
+      }
+      if (!posted && !o.en_jeu) return { content: '❌ Annonce non publiée : le bot n\'a pas pu écrire (salon #annonces non relié et pas le droit d\'écrire ici).' };
+      return { content: (posted ? '✅ Annonce ' : '⚠️ Annonce ') + done.join(', ') + '.' };
+    }
+    const staff = STAFF[name];
+    if (staff) {
+      const refused = staffGate();
+      if (refused) return { content: refused, flags: 64 };
+      if (!deps.adminOn()) return { content: 'Outils staff indisponibles (gs_admin arrêté).', flags: 64 };
+      let r = null;
+      try { r = deps.remote(staff.action, o.id || 0, o.texte || '', who, o.minutes); } catch (e) { r = null; }
+      const text = r && r.text ? String(r.text) : 'Pas de réponse du serveur.';
+      return { content: ((r && r.ok) ? '✅ ' : '❌ ') + text.slice(0, 1900), flags: 64 };
+    }
+    const connect = deps.conv('gs_connect');
+    if (name === 'statut') return { embeds: [deps.statusEmbed()] };
+    if (name === 'ip') {
+      if (!connect) return { content: 'L\'adresse du serveur n\'est pas encore réglée (gs_connect). Le staff la règle avec CONFIGURER-DISCORD.bat.', flags: 64 };
+      return { embeds: [{ title: 'Se connecter à RoadLine RP', color: 0xb048ff,
+        description: `**Adresse :** \`${connect}\`\n\n1. Lance FiveM\n2. Touche **F8**\n3. Tape \`connect ${connect}\` puis Entrée` }] };
+    }
+    if (name === 'rejoindre') return { embeds: [{ title: 'Rejoindre RoadLine RP', color: 0xb048ff,
+      description: `1. Lance FiveM\n2. Touche **F8**\n3. Tape \`connect ${connect || 'adresse du serveur'}\`\n\nFree Access · zéro pay-to-win` }] };
+    if (name === 'rdv') return { embeds: [{ title: 'Rendez-vous de la semaine', color: 0xf2c230, description: deps.weekly() }] };
+    if (name === 'site') return { content: deps.conv('gs_site', 'https://roadlinerp.netlify.app') };
+    return helpEmbed(member, deps, ctx); // commande inconnue (ancienne version encore enregistrée) : l'aide, plus le site
+  };
+}
+
 /** env = { token, connect(url, handlers), rest(method, path, body), presence(), answer(name, interaction, ctx) → data, log, guild()?, tickets()? } */
 function createBot(env) {
   let ws = null, beat = null, seq = null, appId = null, ownerId = null, lastPresence = '', stopped = false, retry = null;
   let acked = true, delay = 10000;
   const send = (op, d) => ws && ws.send(JSON.stringify({ op, d }));
-  const guild = () => (env.guild ? env.guild() : '');
+  let active = ''; // Discord RoadLine retenu à la connexion (réglé, ou détecté : voir resolveGuild)
+  const guild = () => active || (env.guild ? env.guild() : '');
   const bot = {
     state: () => ({ appId, seq, lastPresence, ownerId, delay }),
     presence(force) {
@@ -254,7 +378,8 @@ function createBot(env) {
         delay = 10000;
         env.log(`Bot Discord connecté (${p.d.user.username}).`);
         const list = commandsFor({ tickets: env.tickets ? env.tickets() : true });
-        const g = guild();
+        active = resolveGuild(env.guild ? env.guild() : '', p.d.guilds, env.log);
+        const g = active;
         if (g) {
           // Commandes enregistrées sur le Discord RoadLine seulement (visibles nulle part ailleurs, mises à jour immédiates)
           const r = await env.rest('PUT', `/applications/${appId}/guilds/${g}/commands`, list);
@@ -302,7 +427,7 @@ function createBot(env) {
   return bot;
 }
 
-if (typeof module !== 'undefined' && module.exports) module.exports = { encodeFrame, decodeFrames, createBot, createTickets, wsConnect, COMMANDS, STAFF, staffAllowed, fromGuild, optionsOf, commandsFor }; // tests Node seulement (absent dans FiveM)
+if (typeof module !== 'undefined' && module.exports) module.exports = { encodeFrame, decodeFrames, createBot, createTickets, createAnswer, resolveGuild, wsConnect, COMMANDS, STAFF, ANNOUNCE, staffAllowed, fromGuild, optionsOf, commandsFor }; // tests Node seulement (absent dans FiveM)
 
 // --- Branchement FiveM -----------------------------------------------------------------------------------------
 if (typeof GetConvar === 'function') {
@@ -324,6 +449,18 @@ if (typeof GetConvar === 'function') {
       },
       now: () => Date.now(),
     });
+    const answer = createAnswer({
+      conv: (n, d) => GetConvar(n, d || ''),
+      staffRole,
+      ticketsOn,
+      tickets,
+      adminOn: () => GetResourceState('gs_admin') === 'started',
+      remote: (action, id, text, who, minutes) => exports.gs_admin.RemoteAction(action, id, text, who, minutes),
+      statusEmbed: () => lua().StatusEmbed(),
+      weekly: () => lua().WeeklyText(),
+      announce: (title, text, mention) => lua().Announce(title, text, null, mention),
+      post: (channelId, body) => call('POST', `/channels/${channelId}/messages`, body),
+    });
     const bot = createBot({
       token,
       connect: wsConnect,
@@ -332,41 +469,7 @@ if (typeof GetConvar === 'function') {
       tickets: ticketsOn,
       log: (m) => console.log(`[gs_discord] ${m}`),
       presence: () => `${GetNumPlayerIndices()}/${GetConvarInt('sv_maxclients', 48)} citoyens à Los Santos`,
-      answer: async (name, interaction, ctx) => {
-        const member = interaction && interaction.member;
-        if (TICKET_COMMANDS.includes(name)) {
-          if (!ticketsOn()) return { content: 'Les tickets passent par un autre bot sur ce Discord.' };
-          if (!fromGuild(interaction, ctx.guild)) return { content: 'Commande disponible uniquement sur le Discord RoadLine.' };
-          if (name === 'ticket') return tickets.open(interaction, optionsOf(interaction).sujet);
-          return tickets.close(interaction, staffAllowed(member, staffRole(), ctx.ownerId));
-        }
-        if (name === 'aide') {
-          const lines = ['`/statut` état du serveur', '`/rejoindre` comment se connecter', '`/rdv` rendez-vous de la semaine', '`/site` le site'];
-          if (ticketsOn()) lines.push('`/ticket sujet` ouvrir un ticket privé avec le staff', '`/fermer` fermer ton ticket');
-          if (staffAllowed(member, staffRole(), ctx.ownerId)) lines.push('', '**Staff** : ' + Object.keys(STAFF).map((n) => '`/' + n + '`').join(' '));
-          return { embeds: [{ title: 'Commandes RoadLine', color: 0xb048ff, description: lines.join('\n') }], flags: 64 };
-        }
-        const staff = STAFF[name];
-        if (staff) {
-          if (!fromGuild(interaction, ctx.guild)) return { content: 'Commandes staff utilisables uniquement sur le Discord RoadLine.', flags: 64 };
-          if (!staffAllowed(member, staffRole(), ctx.ownerId)) {
-            return { content: staffRole() ? 'Réservé au staff.' : 'Rôle staff non configuré (CONFIGURER-DISCORD.bat).', flags: 64 };
-          }
-          if (GetResourceState('gs_admin') !== 'started') return { content: 'Outils staff indisponibles (gs_admin arrêté).', flags: 64 };
-          const o = optionsOf(interaction);
-          const who = (member.user && (member.user.global_name || member.user.username)) || '?';
-          let r = null;
-          try { r = exports.gs_admin.RemoteAction(staff.action, o.id || 0, o.texte || '', who, o.minutes); } catch (e) { r = null; }
-          const text = r && r.text ? String(r.text) : 'Pas de réponse du serveur.';
-          return { content: ((r && r.ok) ? '✅ ' : '❌ ') + text.slice(0, 1900), flags: 64 };
-        }
-        const connect = GetConvar('gs_connect', '');
-        if (name === 'statut') return { embeds: [lua().StatusEmbed()] };
-        if (name === 'rejoindre') return { embeds: [{ title: 'Rejoindre RoadLine RP', color: 0xb048ff,
-          description: `1. Lance FiveM\n2. Touche **F8**\n3. Tape \`connect ${connect || 'adresse du serveur'}\`\n\nFree Access · zéro pay-to-win` }] };
-        if (name === 'rdv') return { embeds: [{ title: 'Rendez-vous de la semaine', color: 0xf2c230, description: lua().WeeklyText() }] };
-        return { content: GetConvar('gs_site', 'https://roadlinerp.netlify.app') };
-      },
+      answer,
     });
     setTimeout(() => bot.start(), 5000);
     setInterval(() => bot.presence(false), 60000);

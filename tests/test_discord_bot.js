@@ -163,6 +163,77 @@ srv.listen(0, async () => {
   const T3 = createTickets({ channelId: '500', roleId: '', now: () => 0, store: { load: () => ({}), save: () => {} }, rest: async () => ({ status: 403, body: { code: 50013 } }) });
   check('bot sans droits sur #tickets : message clair', (await T3.open({ member }, 'x')).content.includes('droits'));
 
+  // V12.5 · Les 4 symptômes remontés en jeu ---------------------------------------------------------------------
+  const { createAnswer, resolveGuild } = require('../server/resources/[gtasoon]/gs_discord/server/bot.js');
+  const G = '111111111111111111', OTHER = '222222222222222222';
+  // Discord RoadLine : gs_discord_guild vide ou faux → avant, /ticket et /annonce disaient « uniquement sur le Discord RoadLine »
+  check('guild réglé et bot présent : gardé', resolveGuild(G, [{ id: G }, { id: OTHER }]) === G);
+  const glogs = [];
+  check('guild vide, bot sur UN Discord : détecté', resolveGuild('', [{ id: G }], (m) => glogs.push(m)) === G && glogs[0].includes('détecté'));
+  check('guild faux, bot sur UN Discord : corrigé + signalé', resolveGuild(OTHER, [{ id: G }], (m) => glogs.push(m)) === G && glogs.some((l) => l.includes('PAS sur ce Discord')));
+  check('guild vide, bot sur 2 Discords : refus de deviner', resolveGuild('', [{ id: G }, { id: OTHER }], () => {}) === '');
+  check('liste inconnue : réglage conservé', resolveGuild(G, undefined) === G);
+  const calls5 = [];
+  const bot5 = createBot({ token: 'T'.repeat(60), log: () => {}, presence: () => '', guild: () => '', tickets: () => true,
+    connect: () => ({ send: () => {}, close: () => {} }),
+    rest: async (m, p, b) => { calls5.push({ m, p, b }); return { status: 200, body: {} }; }, answer: () => ({}) });
+  bot5.start();
+  await bot5.onMessage(JSON.stringify({ op: 0, t: 'READY', s: 1, d: { application: { id: '42' }, user: { username: 'R' }, guilds: [{ id: G, unavailable: true }] } }));
+  check('guild vide : commandes posées sur le Discord détecté (nettoie les anciennes /help /ip)', calls5[0].p === `/applications/42/guilds/${G}/commands`);
+  bot5.stop();
+
+  // Réponses
+  const posted = [], remotes = [];
+  let hookOk = true;
+  const mkDeps = (over) => Object.assign({
+    conv: (n, d) => ({ gs_connect: '51.38.1.2:30120' })[n] || d || '',
+    staffRole: () => '999', ticketsOn: () => true,
+    tickets: { open: async () => ({ content: 'Ticket ouvert : <#1>' }), close: async () => ({ content: 'Ticket fermé.' }) },
+    adminOn: () => true,
+    remote: (a, id, text) => { remotes.push({ a, text }); return { ok: true, text: 'ok' }; },
+    statusEmbed: () => ({ title: 'statut' }), weekly: () => 'rdv',
+    announce: (t, x, m) => { posted.push({ t, x, m }); return hookOk; },
+    post: async (ch, body) => { posted.push({ ch, body }); return { status: 200 }; },
+  }, over || {});
+  const ans = createAnswer(mkDeps());
+  const ctx = { ownerId: '9', guild: G };
+  const staffMember = { user: { id: '5', username: 'Modo' }, roles: ['999'], permissions: '0' };
+  const plain = { user: { id: '6', username: 'Joueur' }, roles: [], permissions: '0' };
+  const it = (name, options, member, guild) => ({ guild_id: guild === undefined ? G : guild, channel_id: '300', member: member || plain,
+    data: { name, options: Object.entries(options || {}).map(([k, v]) => ({ name: k, value: v })) } });
+
+  // 1. /help donnait le site
+  const h = await ans('help', it('help'), ctx);
+  check('/help : liste des commandes (plus le site)', h.embeds && h.embeds[0].title === 'Commandes RoadLine' && h.embeds[0].description.includes('/ip'));
+  check('commande inconnue : l\'aide, pas le site', (await ans('vieille', it('vieille'), ctx)).embeds[0].title === 'Commandes RoadLine');
+  check('/site : toujours le lien du site', (await ans('site', it('site'), ctx)).content.startsWith('https://'));
+  // 2. /ip ne donnait pas l'IP
+  const ip = await ans('ip', it('ip'), ctx);
+  check('/ip : adresse + commande F8', ip.embeds && ip.embeds[0].description.includes('connect 51.38.1.2:30120'));
+  const ipEmpty = await createAnswer(mkDeps({ conv: (n, d) => d || '' }))('ip', it('ip'), ctx);
+  check('/ip sans adresse réglée : message clair', ipEmpty.content.includes('gs_connect'));
+  check('/ip et /help déclarées', CMDS.some((c) => c.name === 'ip') && CMDS.some((c) => c.name === 'help'));
+  // 3. /annonce n'écrivait pas sur Discord
+  const a1 = await ans('annonce', it('annonce', { texte: 'Ouverture samedi 21h', titre: 'Grande ouverture', mention: 'everyone' }, staffMember), ctx);
+  check('/annonce : publiée dans #annonces avec titre et @everyone', a1.content.startsWith('✅') && posted[0].t === 'Grande ouverture' && posted[0].m === 'everyone');
+  check('/annonce : pas en jeu par défaut', remotes.length === 0);
+  posted.length = 0;
+  await ans('annonce', it('annonce', { texte: 'Tempête ce soir', en_jeu: true }, staffMember), ctx);
+  check('/annonce en_jeu : aussi en ville', remotes.length === 1 && remotes[0].a === 'announce' && posted[0].t === '📢 Annonce');
+  posted.length = 0; hookOk = false;
+  const a3 = await ans('annonce', it('annonce', { texte: 'Test' }, staffMember), ctx);
+  check('/annonce sans webhook #annonces : publiée dans le salon courant', posted.some((x) => x.ch === '300') && a3.content.includes('ce salon'));
+  hookOk = true; posted.length = 0;
+  check('/annonce : refusée à un joueur', (await ans('annonce', it('annonce', { texte: 'x' }), ctx)).content === 'Réservé au staff.' && posted.length === 0);
+  check('/annonce : texte max 1800 (avant 200)', CMDS.find((c) => c.name === 'annonce').options[0].max_length === 1800);
+  // 4. /ticket disait « sois sur le Discord » alors qu'on y était
+  check('/ticket sur le Discord RoadLine : ouvert', (await ans('ticket', it('ticket', { sujet: 'bug' }), ctx)).content.includes('Ticket ouvert'));
+  const wrong = await ans('ticket', it('ticket', { sujet: 'bug' }), { ownerId: '9', guild: '' });
+  check('/ticket Discord non reconnu : dit QUOI corriger', wrong.content.includes('gs_discord_guild') && wrong.content.includes('CONFIGURER-DISCORD'));
+  // Staff via le bot : inchangé
+  const g2 = await ans('geler', it('geler', { id: 4 }, staffMember), ctx);
+  check('commande staff : toujours relayée à gs_admin', g2.content.startsWith('✅') && remotes[remotes.length - 1].a === 'freeze');
+
   console.log(`bot Discord intégré : ${passed} réussis, ${failed} échoués`);
   process.exit(failed ? 1 : 0);
 });
