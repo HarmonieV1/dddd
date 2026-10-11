@@ -71,6 +71,9 @@ Say '  IMPORTANT : sans l''identifiant du serveur Discord, /ticket et les comman
 Ask-Id 'Serveur Discord (clic droit sur l''icône du serveur) · INDISPENSABLE' 'gs_discord_guild'
 Ask-Id 'Rôle staff (Paramètres du serveur → Rôles → clic droit sur le rôle)' 'gs_discord_staff_role'
 Ask-Id 'Salon #tickets (clic droit sur le salon)' 'gs_discord_ticket_channel'
+# V13 : message de bienvenue par le bot (demande l'intent « Server Members » : portail développeur → Bot → Privileged Gateway Intents)
+Ask-Id 'Salon #bienvenue (message d''accueil des nouveaux ; vide = désactivé)' 'gs_discord_welcome_channel'
+if ((Get-Conv 'gs_discord_welcome_channel') -ne '') { Say '  Bienvenue : active « Server Members Intent » sur discord.com/developers (ton application → Bot → Privileged Gateway Intents), sinon le bot le signale et continue sans.' 'DarkGray' }
 [IO.File]::WriteAllText($secrets, $text, (New-Object Text.UTF8Encoding $false))
 Say ''
 Say '  secrets.cfg mis à jour (effet au prochain démarrage du serveur).' 'Green'

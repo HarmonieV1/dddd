@@ -359,5 +359,27 @@ for _, k in ipairs({ 'vandalism', 'sabotage', 'shop_robbery', 'vehicle_theft' })
 end
 check('caméra peinte ≠ racket', Config.Crimes.vandalism.label ~= Config.Crimes.racket.label)
 
+-- V13 : seul en ville (aucun policier, aucun témoin) : un braquage est quand même signalé 6 fois sur 10, un petit délit non
+duty = {}
+local far = vec3(2800.0, 5500.0, 20.0)
+join(8, 'CID8', 'Seul Enville', far)
+clearPeds()
+fixRandom(0.55)
+W.clientEvents = {}
+Wanted.heat[8] = nil
+Wanted.report(8, 'robbery', far, {})
+check('V13 seul en ville : braquage signalé grâce au plancher → police IA', lastClientEvent('gs_wanted:client:npcPolice', 8) ~= nil)
+W.clientEvents = {}
+Wanted.heat[8] = nil
+Wanted.report(8, 'drug_sale', far, {})
+check('V13 plancher réservé aux crimes sérieux', lastClientEvent('gs_wanted:client:npcPolice', 8) == nil)
+duty = savedDuty
+W.clientEvents = {}
+Wanted.heat[8] = nil
+Wanted.report(8, 'robbery', far, {})
+check('V13 avec policier en service : pas de plancher', lastClientEvent('gs_wanted:client:npcPolice', 8) == nil)
+Wanted.heat[8] = nil
+fixRandom()
+
 io.write(('\n%d réussis, %d échoués\n'):format(passed, failed))
 os.exit(failed == 0 and 0 or 1)

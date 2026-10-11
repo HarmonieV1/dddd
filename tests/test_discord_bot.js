@@ -234,6 +234,29 @@ srv.listen(0, async () => {
   const g2 = await ans('geler', it('geler', { id: 4 }, staffMember), ctx);
   check('commande staff : toujours relayée à gs_admin', g2.content.startsWith('✅') && remotes[remotes.length - 1].a === 'freeze');
 
+  // V12.8 · Message de bienvenue : intent « membres » demandé seulement si #bienvenue est réglé ; nouveau membre → message avec mention
+  const { welcomeText } = require('../server/resources/[gtasoon]/gs_discord/server/bot.js');
+  const sentW = [], callsW = [], logsW = [];
+  let hW = null;
+  const botW = createBot({ token: 'T'.repeat(60), log: (m) => logsW.push(m), presence: () => '0/48', guild: () => '123', welcome: () => ({ channelId: '777', text: '' }),
+    connect: (u, h) => { hW = h; return { send: (t) => sentW.push(JSON.parse(t)), close: () => {} }; },
+    rest: async (m, p, b) => { callsW.push({ m, p, b }); return { status: 200 }; }, answer: () => ({}) });
+  botW.start();
+  await botW.onMessage(JSON.stringify({ op: 10, d: { heartbeat_interval: 999999 } }));
+  check('V12.8 intent « membres » demandé quand #bienvenue est réglé', sentW[0].op === 2 && sentW[0].d.intents === 2);
+  await botW.onMessage(JSON.stringify({ op: 0, t: 'GUILD_MEMBER_ADD', s: 3, d: { guild_id: '123', user: { id: '555', username: 'nouveau' } } }));
+  const wMsg = callsW.find((c) => c.p === '/channels/777/messages');
+  check('V12.8 nouveau membre → message de bienvenue avec mention', !!wMsg && wMsg.m === 'POST' && wMsg.b.content.includes('<@555>') && wMsg.b.allowed_mentions.users[0] === '555');
+  callsW.length = 0;
+  await botW.onMessage(JSON.stringify({ op: 0, t: 'GUILD_MEMBER_ADD', s: 4, d: { guild_id: '123', user: { id: '555', username: 'nouveau' } } }));
+  await botW.onMessage(JSON.stringify({ op: 0, t: 'GUILD_MEMBER_ADD', s: 5, d: { guild_id: '999', user: { id: '556' } } }));
+  await botW.onMessage(JSON.stringify({ op: 0, t: 'GUILD_MEMBER_ADD', s: 6, d: { guild_id: '123', user: { id: '557', bot: true } } }));
+  check('V12.8 déjà accueilli, autre Discord ou bot : ignoré', callsW.length === 0);
+  hW.close(4014);
+  check('V12.8 intent refusé par le portail (4014) : bienvenue coupée, bot gardé, message clair', botW.state().membersDenied === true && logsW.some((m) => /Server Members Intent/.test(m)));
+  botW.stop();
+  check('V12.8 texte de bienvenue : {membre} remplacé, mention ajoutée sinon', welcomeText('Bienvenue {membre} !', '1') === 'Bienvenue <@1> !' && welcomeText('', '2').includes('<@2>') && welcomeText('Salut', '3') === '<@3> Salut');
+
   console.log(`bot Discord intégré : ${passed} réussis, ${failed} échoués`);
   process.exit(failed ? 1 : 0);
 });

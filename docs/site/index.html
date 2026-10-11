@@ -32,7 +32,13 @@
     --glow-pink: 0 0 24px rgba(176, 72, 255, .55);
     --glow-cyan: 0 0 24px rgba(79, 216, 255, .45);
     --ease: cubic-bezier(.2, .8, .2, 1);
+    --au1: rgba(176, 72, 255, .45); --au2: rgba(79, 216, 255, .3); --au3: rgba(162, 75, 255, .4);
   }
+  /* V13 · le site vit à l'heure de la ville (ville.json → nowStrip → rlAmbiance) */
+  body.tod-dawn { --au1: rgba(255, 140, 90, .5); --au2: rgba(255, 80, 160, .35); --au3: rgba(255, 200, 120, .35); }
+  body.tod-day { --au1: rgba(79, 216, 255, .45); --au2: rgba(120, 160, 255, .35); --au3: rgba(255, 230, 160, .25); }
+  body.tod-dusk { --au1: rgba(255, 60, 120, .5); --au2: rgba(255, 140, 60, .4); --au3: rgba(162, 75, 255, .4); }
+  body.tod-night { --au1: rgba(120, 40, 220, .5); --au2: rgba(40, 120, 255, .3); --au3: rgba(176, 72, 255, .45); }
   * { box-sizing: border-box; }
   html { scroll-behavior: smooth; }
   body { margin: 0; background: var(--black); color: var(--text); font: 16px/1.6 Inter, system-ui, sans-serif; overflow-x: clip; }
@@ -122,7 +128,7 @@
   .hero::after { content: ''; position: absolute; inset: auto 0 0 0; height: 90px; background: linear-gradient(transparent, var(--black)); z-index: 2; }
   .hero .wrap { position: relative; z-index: 3; width: 100%; }
   .aurora { position: absolute; inset: -20%; z-index: 0; pointer-events: none; filter: blur(44px); opacity: .55; will-change: transform;
-    background: radial-gradient(circle at 20% 30%, rgba(176, 72, 255, .45), transparent 30%), radial-gradient(circle at 80% 20%, rgba(79, 216, 255, .3), transparent 28%), radial-gradient(circle at 60% 70%, rgba(162, 75, 255, .4), transparent 30%);
+    background: radial-gradient(circle at 20% 30%, var(--au1), transparent 30%), radial-gradient(circle at 80% 20%, var(--au2), transparent 28%), radial-gradient(circle at 60% 70%, var(--au3), transparent 30%);
     animation: aurora 18s ease-in-out infinite alternate; }
   @keyframes aurora { to { transform: translate3d(4%, -3%, 0) rotate(8deg) scale(1.08); } }
   .hero.off .aurora, .hero.off .skyline rect.w { animation-play-state: paused; }
@@ -595,11 +601,28 @@ body.has-glow .reticle { opacity: 1; }
 .ticker .move .live-item { color: var(--white); }
 .ticker .move .live-item::before { content: '● LIVE'; color: var(--red); font-size: .7rem; letter-spacing: .12em; margin-right: 12px; animation: caret 1.2s steps(1) infinite; }
 @media (max-width: 600px) { .sms-box { bottom: 12px; right: 12px; } }
+/* V13 · météo de la ville en direct : couches composées (transform seulement), au-dessus du contenu, sous le grain */
+.sky-layer { position: fixed; inset: 0; z-index: 88; pointer-events: none; opacity: 0; transition: opacity 1.5s; }
+.sky-layer.on { opacity: 1; }
+.rain { inset: -192px -48px 0 0; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='192'%3E%3Cg stroke='%23bcd3ff' stroke-opacity='.4' stroke-width='1.2' stroke-linecap='round'%3E%3Cline x1='20' y1='0' x2='11.5' y2='34'/%3E%3Cline x1='40' y1='50' x2='31.5' y2='84'/%3E%3Cline x1='12' y1='110' x2='3.5' y2='144'/%3E%3Cline x1='34' y1='150' x2='25.5' y2='184'/%3E%3C/g%3E%3C/svg%3E"); will-change: transform; animation: rainfall .55s linear infinite; }
+.rain.on { opacity: .65; }
+@keyframes rainfall { to { transform: translate3d(-48px, 192px, 0); } }
+.fog { inset: -20%; background: radial-gradient(ellipse 60% 40% at 30% 60%, rgba(200, 200, 230, .2), transparent 70%), radial-gradient(ellipse 50% 35% at 75% 35%, rgba(200, 200, 230, .16), transparent 70%); will-change: transform; animation: fogdrift 40s ease-in-out infinite alternate; }
+@keyframes fogdrift { to { transform: translate3d(6%, -3%, 0); } }
+.snow { inset: -128px 0 0 0; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='128'%3E%3Cg fill='%23fff' fill-opacity='.75'%3E%3Ccircle cx='10' cy='12' r='1.6'/%3E%3Ccircle cx='44' cy='40' r='1.2'/%3E%3Ccircle cx='26' cy='74' r='1.8'/%3E%3Ccircle cx='56' cy='100' r='1.1'/%3E%3Ccircle cx='8' cy='118' r='1.3'/%3E%3C/g%3E%3C/svg%3E"); will-change: transform; animation: snowfall 6s linear infinite; }
+@keyframes snowfall { to { transform: translate3d(0, 128px, 0); } }
+.flash { background: #fff; transition: none; }
+.flash.go { animation: lightning .7s ease-out; }
+@keyframes lightning { 0% { opacity: .35; } 12% { opacity: 0; } 20% { opacity: .22; } 100% { opacity: 0; } }
+.sound { width: 38px; height: 38px; margin-right: 8px; border-radius: 999px; border: 1px solid var(--line); background: rgba(24, 14, 44, .6); color: var(--text); cursor: pointer; font-size: 1rem; line-height: 1; transition: border-color .25s, box-shadow .25s; }
+.sound:hover, .sound[aria-pressed="true"] { border-color: var(--pink); box-shadow: var(--glow-pink); }
+@media (max-width: 600px) { .sound { width: 34px; height: 34px; margin-right: 6px; } }
 /* Intro : sous-titre défilant façon chargement de mission */
 .intro-sub { margin-top: 14px; min-height: 1.2em; color: #c79bff; font-size: .78rem; letter-spacing: .14em; text-transform: uppercase; }
 .intro-sub b { font-weight: 800; color: var(--white); }
 @media (prefers-reduced-motion: reduce) {
   .grain { animation: none; }
+  .rain, .fog, .snow, .flash { display: none; }
   .cine-bars, .reticle, .chapters { display: none; }
   html.js .hero .scene, html.js .hero .aurora { transform: none; }
   .w-in > span { transform: none !important; opacity: 1 !important; }
@@ -632,6 +655,7 @@ body.has-glow .reticle { opacity: 1; }
     </div>
     <div class="nav-right">
       <div class="wanted" title="Niveau de recherche" aria-hidden="true"></div>
+      <button class="sound js-sound" type="button" aria-pressed="false" title="Activer le son (ambiance et effets)">🔇</button>
       <a class="btn btn-main js-discord" href="#">Discord</a>
       <button class="burger" aria-label="Menu"><span></span></button>
     </div>
@@ -1156,6 +1180,7 @@ body.has-glow .reticle { opacity: 1; }
       const set = (sel, val, suffix) => { const el = document.querySelector(sel + ' b'); if (el) el.textContent = val; const w = document.querySelector(sel); if (w && suffix !== undefined) w.title = suffix; };
       set('.js-now-weather', n.weather || '—');
       set('.js-now-hour', n.hour || '—');
+      if (window.rlAmbiance) window.rlAmbiance(n.weather, n.hour); // V13 : météo et heure de la ville sur le site
       set('.js-now-players', String(d.players ?? '—'));
       set('.js-now-hot', (n.hot && n.hot.length) ? n.hot.join(', ') : 'calme');
       set('.js-now-next', n.next ? `${n.next.label} · ${n.next.dayName} ${n.next.from}` : '—');
@@ -1455,8 +1480,82 @@ body.has-glow .reticle { opacity: 1; }
 
   // Bandeau central façon « mission »
   let bannerT;
+  // V13 · Son, opt-in (bouton de la barre, mémorisé) : ambiance, pluie, tonnerre, SMS, titres de mission, sirène. Tout est
+  // synthétisé (WebAudio), aucun fichier audio. Coupé par défaut, jamais lancé sans un geste du visiteur.
+  const Sound = (() => {
+    const btn = $('.js-sound'); if (!btn || !(window.AudioContext || window.webkitAudioContext)) return null;
+    let ctx, master, noise, noiseGain, on = false, wx = 'clear';
+    const ensure = () => {
+      if (!ctx) {
+        ctx = new (window.AudioContext || window.webkitAudioContext)();
+        master = ctx.createGain(); master.gain.value = 0; master.connect(ctx.destination);
+        const buf = ctx.createBuffer(1, ctx.sampleRate * 2, ctx.sampleRate), d = buf.getChannelData(0);
+        for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+        noise = ctx.createBufferSource(); noise.buffer = buf; noise.loop = true;
+        const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 1200;
+        noiseGain = ctx.createGain(); noiseGain.gain.value = 0; noise.connect(lp); lp.connect(noiseGain); noiseGain.connect(master); noise.start();
+        [[55, 'sine', .05], [82.41, 'triangle', .022], [110, 'sine', .018]].forEach(([f, ty, g]) => {
+          const o = ctx.createOscillator(); o.type = ty; o.frequency.value = f;
+          const gn = ctx.createGain(); gn.gain.value = g;
+          const lfo = ctx.createOscillator(); lfo.frequency.value = .06 + Math.random() * .05; const lg = ctx.createGain(); lg.gain.value = 1.4;
+          lfo.connect(lg); lg.connect(o.frequency); o.connect(gn); gn.connect(master); o.start(); lfo.start();
+        });
+      }
+      if (ctx.state === 'suspended') ctx.resume();
+    };
+    const env = (node, t, a, d, peak) => { const g = ctx.createGain(); g.gain.setValueAtTime(.0001, t); g.gain.linearRampToValueAtTime(peak, t + a); g.gain.exponentialRampToValueAtTime(.0001, t + a + d); node.connect(g); g.connect(master); };
+    const tone = (f, type, t, a, d, peak) => { const o = ctx.createOscillator(); o.type = type; o.frequency.value = f; env(o, t, a, d, peak); o.start(t); o.stop(t + a + d + .05); };
+    const rainGain = () => (wx === 'rain' || wx === 'storm') ? .16 : 0;
+    const set = (v) => {
+      on = v; btn.textContent = v ? '🔊' : '🔇'; btn.setAttribute('aria-pressed', String(v)); btn.title = v ? 'Couper le son' : 'Activer le son (ambiance et effets)';
+      if (ctx) { const now = ctx.currentTime; master.gain.cancelScheduledValues(now); master.gain.linearRampToValueAtTime(v ? .8 : 0, now + .6); noiseGain.gain.linearRampToValueAtTime(v ? rainGain() : 0, now + 1); }
+      try { localStorage.setItem('rl_sound', v ? '1' : '0'); } catch (e) {}
+    };
+    btn.addEventListener('click', () => { ensure(); set(!on); });
+    let wanted = false; try { wanted = localStorage.getItem('rl_sound') === '1'; } catch (e) {}
+    if (wanted) { btn.textContent = '🔈'; btn.title = 'Son activé au premier clic'; const arm = () => { ensure(); set(true); }; addEventListener('pointerdown', arm, { once: true }); addEventListener('keydown', arm, { once: true }); }
+    return {
+      tick() { if (!on) return; tone(1500, 'square', ctx.currentTime, .004, .035, .035); },
+      sms() { if (!on) return; const t = ctx.currentTime; tone(880, 'sine', t, .01, .18, .22); tone(1318.5, 'sine', t + .13, .01, .28, .18); },
+      mission() { if (!on) return; const t = ctx.currentTime; [[220, 'sawtooth'], [277.18, 'sawtooth'], [329.63, 'sawtooth'], [440, 'triangle']].forEach(([f, ty], i) => tone(f, ty, t + i * .03, .06, 1.8, .09)); },
+      siren() { if (!on) return; const t = ctx.currentTime, o = ctx.createOscillator(); o.type = 'sawtooth'; o.frequency.setValueAtTime(620, t); for (let i = 0; i < 4; i++) { o.frequency.linearRampToValueAtTime(1150, t + i * .5 + .25); o.frequency.linearRampToValueAtTime(620, t + i * .5 + .5); } env(o, t, .05, 2, .07); o.start(t); o.stop(t + 2.3); },
+      thunder() { if (!on) return; const t = ctx.currentTime, s = ctx.createBufferSource(); s.buffer = noise.buffer; const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.setValueAtTime(400, t); lp.frequency.exponentialRampToValueAtTime(60, t + 1.8); s.connect(lp); env(lp, t, .08, 2.2, .5); s.start(t); s.stop(t + 2.5); },
+      weather(w) { wx = w; if (on && ctx) noiseGain.gain.linearRampToValueAtTime(rainGain(), ctx.currentTime + 1.5); },
+    };
+  })();
+  if (FINE && Sound) $$('.btn, nav .menu a').forEach(el => el.addEventListener('pointerenter', () => Sound.tick()));
+
+  // V13 · La cerise : le site vit à l'heure et à la météo de Los Santos (données ville.json via nowStrip ; repli : heure du visiteur)
+  (function ambiance() {
+    const layers = {};
+    const layer = (cls) => layers[cls] || (layers[cls] = (() => { const d = document.createElement('div'); d.className = 'sky-layer ' + cls; d.setAttribute('aria-hidden', 'true'); document.body.appendChild(d); return d; })());
+    let flashT = null, told = false;
+    const flash = () => { const f = layer('flash'); f.classList.remove('go'); void f.offsetWidth; f.classList.add('go'); if (Sound) Sound.thunder(); flashT = setTimeout(flash, 6000 + Math.random() * 14000); };
+    const NOTE = { storm: 'Orage sur Los Santos en ce moment : ça gronde ici aussi ⛈️', rain: 'Il pleut à Los Santos en ce moment : il pleut ici aussi 🌧️', fog: 'Brouillard sur Los Santos : la ville se cache 🌫️', snow: 'Il neige sur Los Santos ❄️' };
+    window.rlAmbiance = (weather, hour) => {
+      const h = hour && /^\d{1,2}:/.test(hour) ? parseInt(hour, 10) : new Date().getHours();
+      const tod = h < 6 ? 'night' : h < 9 ? 'dawn' : h < 18 ? 'day' : h < 21 ? 'dusk' : 'night';
+      document.body.classList.remove('tod-dawn', 'tod-day', 'tod-dusk', 'tod-night'); document.body.classList.add('tod-' + tod);
+      const w = (weather || '').toLowerCase();
+      const wx = /orage|temp[êe]te|foudre/.test(w) ? 'storm' : /pluie|averse|bruine/.test(w) ? 'rain' : /brouillard|brume/.test(w) ? 'fog' : /neige|blizzard/.test(w) ? 'snow' : 'clear';
+      if (!RM) {
+        layer('rain').classList.toggle('on', wx === 'rain' || wx === 'storm');
+        layer('fog').classList.toggle('on', wx === 'fog');
+        layer('snow').classList.toggle('on', wx === 'snow');
+        clearTimeout(flashT); flashT = null; if (wx === 'storm') flashT = setTimeout(flash, 3000);
+      }
+      if (Sound) Sound.weather(wx);
+      if (weather && NOTE[wx] && !told) {
+        told = true; let seen = false; try { seen = sessionStorage.getItem('rl_wx') === '1'; } catch (e) {}
+        if (!seen) { try { sessionStorage.setItem('rl_wx', '1'); } catch (e) {} setTimeout(() => toast(NOTE[wx]), 2500); }
+      }
+    };
+    window.rlAmbiance(null, null);
+  })();
+
   try { document.fonts.load('1em "Bowlby One"'); } catch (e) {} // police des titres de mission prête avant le premier bandeau
   function banner(title, sub, red) {
+    if (Sound) { if (red) Sound.siren(); else Sound.mission(); }
     const b = $('.gta-banner');
     b.classList.toggle('red', !!red);
     $('b', b).textContent = title; $('span', b).textContent = sub || '';
@@ -1668,13 +1767,24 @@ body.has-glow .reticle { opacity: 1; }
       carte: ['Weazel News', 'Tu veux savoir ce qui se passe en ville avant d\'arriver ? Regarde la carte, elle est en direct.'],
       nouveautes: ['Inconnu', 'Si t\'as du cran, le marché noir recrute. Demande le contact. Et oublie ce numéro.'],
       faq: ['LSPD · Dispatch', 'Dernier avis avant que tu rejoignes la ville : on se souvient de tout, ici.'] };
-    const show = (from, text) => {
-      const el = document.createElement('div'); el.className = 'sms';
-      el.innerHTML = `<i>📱</i><div><b>${from}</b><span>${text}</span></div><button aria-label="Fermer">✕</button>`;
-      box.appendChild(el); requestAnimationFrame(() => el.classList.add('in'));
-      const close = () => { el.classList.remove('in'); setTimeout(() => el.remove(), 500); };
-      el.querySelector('button').addEventListener('click', close); setTimeout(close, 7000);
+    // File d'attente : jamais deux SMS à la fois, 6 s après l'arrivée pour le premier, 12 s de silence entre deux
+    const FIRST = 6000, GAP = 12000, t0 = performance.now(), queue = []; let busy = false, lastEnd = 0;
+    const pump = () => {
+      if (busy || !queue.length) return;
+      busy = true;
+      const wait = Math.max(FIRST - (performance.now() - t0), lastEnd ? GAP - (performance.now() - lastEnd) : 0, 0);
+      setTimeout(() => {
+        const [from, text] = queue.shift();
+        const el = document.createElement('div'); el.className = 'sms';
+        el.innerHTML = `<i>📱</i><div><b>${from}</b><span>${text}</span></div><button aria-label="Fermer">✕</button>`;
+        box.appendChild(el); requestAnimationFrame(() => el.classList.add('in'));
+        if (Sound) Sound.sms();
+        let closed = false;
+        const close = () => { if (closed) return; closed = true; el.classList.remove('in'); setTimeout(() => el.remove(), 500); lastEnd = performance.now(); busy = false; pump(); };
+        el.querySelector('button').addEventListener('click', close); setTimeout(close, 7000);
+      }, wait);
     };
+    const show = (from, text) => { queue.push([from, text]); pump(); };
     if (!seenSms) {
       const done = new Set();
       const io2 = new IntersectionObserver(es => es.forEach(e => {

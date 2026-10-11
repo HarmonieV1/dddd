@@ -97,6 +97,9 @@ Config.SafeZones = {
 -- du jeu (étoiles GTA) sur le suspect. La ville ne reste jamais sans police. 0 = désactivé.
 Config.NpcPolice = {
     minCops = 1,
+    -- V13 : sans policier joueur en service, un crime de gravité ≥ `heat` est signalé au moins à `chance` (60 %), même sans
+    -- témoin : la ville réagit aussi quand on est seul en ville (braquages, bijouterie, banque…). Les petits délits restent discrets.
+    floor = { heat = 20, chance = 0.6 },
     search = { seconds = 120, radius = 180.0 },   -- après avoir semé la police IA : elle fouille la dernière zone connue
     stars = { { heat = 10, stars = 1 }, { heat = 30, stars = 2 }, { heat = 45, stars = 3 }, { heat = 999, stars = 4 } },
     -- V7 : patrouilles créées par le serveur (le « dispatch » du jeu donnait des voitures vides avec la protection

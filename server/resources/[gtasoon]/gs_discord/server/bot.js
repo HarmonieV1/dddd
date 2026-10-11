@@ -1,7 +1,7 @@
 // gs_discord (serveur, JS) · V9.1 « Bot RoadLine » intégré au serveur FiveM : rien à installer, il démarre avec le serveur
 // (en local comme chez l'hébergeur) dès que `set gs_discord_bot_token` est rempli (CONFIGURER-DISCORD.bat).
 // Présence « 12/48 citoyens à Los Santos », commandes /statut /rejoindre /site /rdv /aide, tickets /ticket /fermer (V11.4),
-// commandes staff. Le jeton ne sort jamais du serveur.
+// commandes staff. V12.8 : message de bienvenue aux nouveaux membres (`gs_discord_welcome_channel`). Le jeton ne sort jamais du serveur.
 // Client WebSocket minimal écrit ici (compatible avec toutes les versions de Node de FXServer, aucune dépendance).
 'use strict';
 const https = require('https');
@@ -250,6 +250,17 @@ function createTickets(env) {
   };
 }
 
+// V12.8 · Message de bienvenue : {membre} = mention du nouveau. Demande l'intent « Server Members » (privilégié : à activer sur
+// discord.com/developers → ton application → Bot → Privileged Gateway Intents). Sans lui, Discord ferme avec le code 4014 :
+// on repart alors SANS l'intent (le reste du bot marche) et on l'écrit dans la console.
+const DEFAULT_WELCOME = 'Nous sommes heureux de t\'accueillir parmi nous, {membre}, sur RoadLine RP ! Lis le règlement, puis `/ticket` si tu as une question.';
+const MEMBERS_INTENT = 1 << 1;
+function welcomeText(template, userId) {
+  const mention = `<@${userId}>`;
+  const t = String(template || '').trim() || DEFAULT_WELCOME;
+  return t.includes('{membre}') ? t.split('{membre}').join(mention) : `${mention} ${t}`;
+}
+
 const FATAL = new Set([4004, 4010, 4011, 4012, 4013, 4014]); // jeton refusé, intents invalides… : réessayer ne sert à rien
 
 /**
@@ -345,11 +356,14 @@ function createAnswer(deps) {
 function createBot(env) {
   let ws = null, beat = null, seq = null, appId = null, ownerId = null, lastPresence = '', stopped = false, retry = null;
   let acked = true, delay = 10000;
+  let membersDenied = false, lastIntents = 0;
+  const welcomed = new Set(); // membres déjà accueillis (pas deux messages si Discord renvoie l'événement)
+  const welcome = () => { const w = env.welcome ? env.welcome() : null; return w && w.channelId ? w : null; };
   const send = (op, d) => ws && ws.send(JSON.stringify({ op, d }));
   let active = ''; // Discord RoadLine retenu à la connexion (réglé, ou détecté : voir resolveGuild)
   const guild = () => active || (env.guild ? env.guild() : '');
   const bot = {
-    state: () => ({ appId, seq, lastPresence, ownerId, delay }),
+    state: () => ({ appId, seq, lastPresence, ownerId, delay, membersDenied }),
     presence(force) {
       const text = env.presence();
       if (!force && text === lastPresence) return false;
@@ -366,7 +380,8 @@ function createBot(env) {
         acked = true;
         // Pas d'accusé de réception depuis le dernier battement : connexion morte, on la coupe (reconnexion auto)
         beat = setInterval(() => { if (!acked) { ws && ws.close(); return; } acked = false; send(1, seq); }, p.d.heartbeat_interval);
-        send(2, { token: env.token, intents: 0, properties: { os: 'linux', browser: 'roadline', device: 'roadline' } });
+        lastIntents = (welcome() && !membersDenied) ? MEMBERS_INTENT : 0;
+        send(2, { token: env.token, intents: lastIntents, properties: { os: 'linux', browser: 'roadline', device: 'roadline' } });
       } else if (p.op === 11) {
         acked = true;
       } else if (p.op === 1) {
@@ -392,6 +407,14 @@ function createBot(env) {
           await env.rest('PUT', `/applications/${appId}/commands`, list);
         }
         bot.presence(true);
+      } else if (p.op === 0 && p.t === 'GUILD_MEMBER_ADD') {
+        // V12.8 · nouveau membre sur le Discord RoadLine → message de bienvenue dans #bienvenue (jamais pour un bot, jamais ailleurs)
+        const w = welcome();
+        const u = p.d && p.d.user;
+        if (!w || !u || u.bot || (guild() && p.d.guild_id !== guild()) || welcomed.has(u.id)) return;
+        welcomed.add(u.id);
+        if (welcomed.size > 500) welcomed.clear();
+        await env.rest('POST', `/channels/${w.channelId}/messages`, { content: welcomeText(w.text, u.id), allowed_mentions: { users: [u.id] } });
       } else if (p.op === 0 && p.t === 'INTERACTION_CREATE' && p.d.type === 2) {
         const name = p.d.data.name;
         const ctx = { ownerId, guild: guild() };
@@ -415,6 +438,13 @@ function createBot(env) {
           if (beat) clearInterval(beat);
           beat = null;
           if (stopped) return;
+          if (code === 4014 && lastIntents !== 0) {
+            // V12.8 · intent « membres » refusé : le portail développeur ne l'a pas activé → bienvenue coupée, le reste du bot continue
+            membersDenied = true;
+            env.log('Message de bienvenue désactivé : active « Server Members Intent » sur discord.com/developers (ton application → Bot → Privileged Gateway Intents), puis GERER-OVH → 12. Le bot repart sans.');
+            retry = setTimeout(() => bot.start(), 1500);
+            return;
+          }
           if (FATAL.has(code)) { env.log(`Connexion refusée par Discord (code ${code}) : jeton à vérifier, relance CONFIGURER-DISCORD.bat.`); return; }
           // Attente qui double à chaque échec (10 s → 5 min) : Discord limite les connexions par jour
           retry = setTimeout(() => bot.start(), delay);
@@ -427,7 +457,7 @@ function createBot(env) {
   return bot;
 }
 
-if (typeof module !== 'undefined' && module.exports) module.exports = { encodeFrame, decodeFrames, createBot, createTickets, createAnswer, resolveGuild, wsConnect, COMMANDS, STAFF, ANNOUNCE, staffAllowed, fromGuild, optionsOf, commandsFor }; // tests Node seulement (absent dans FiveM)
+if (typeof module !== 'undefined' && module.exports) module.exports = { encodeFrame, decodeFrames, createBot, createTickets, createAnswer, resolveGuild, wsConnect, COMMANDS, STAFF, ANNOUNCE, staffAllowed, fromGuild, optionsOf, commandsFor, welcomeText }; // tests Node seulement (absent dans FiveM)
 
 // --- Branchement FiveM -----------------------------------------------------------------------------------------
 if (typeof GetConvar === 'function') {
@@ -467,6 +497,7 @@ if (typeof GetConvar === 'function') {
       rest: call,
       guild: guildId,
       tickets: ticketsOn,
+      welcome: () => { const c = GetConvar('gs_discord_welcome_channel', ''); return { channelId: /^\d{15,22}$/.test(c) ? c : '', text: GetConvar('gs_discord_welcome_text', '') }; },
       log: (m) => console.log(`[gs_discord] ${m}`),
       presence: () => `${GetNumPlayerIndices()}/${GetConvarInt('sv_maxclients', 48)} citoyens à Los Santos`,
       answer,

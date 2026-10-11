@@ -23,7 +23,7 @@ bus d'arrivée corrigé ».
 ## 2. Versions : interne vs publique (important, piège classique)
 
 Depuis la V11.3, il y a **deux numéros de version différents**, volontairement :
-- `gs_version` (convar, `server.cfg.example`) = **V12.7** → version technique interne, vue par le staff (F11, console,
+- `gs_version` (convar, `server.cfg.example`) = **V12.8** → version technique interne, vue par le staff (F11, console,
   METTRE-A-JOUR). Continue d'avancer à chaque mise à jour (V11.2, V11.3...).
 - `gs_public_version` (convar) = **« V4 · bêta »** → version vue par les **joueurs** (écran de chargement, statut
   Discord, Gazette). Le site affiche son propre journal (V1 à V4, V5 « classé confidentiel »).
@@ -229,6 +229,18 @@ Résumé très condensé (le détail complet est dans `docs/ROADMAP.md`, `docs/F
   façon chargement de mission (Entrée / clic pour passer). Tout coupé par `prefers-reduced-motion`, souris seulement
   sur ordinateur. Une seule boucle rAF qui s'endort quand rien ne bouge. Vérifié dans le navigateur : 0 erreur.
 
+- **V12.8** (11/10/2026, poste Windows) — **fusion des deux sessions** (locale V12.3b → V12.4 et distante V12.4 → V12.7, base commune
+  V11.3) : 19 fichiers en conflit résolus à la main, les deux côtés conservés. Depuis la session locale : site V13 (SMS espacés, météo
+  et heure de la ville en direct, son opt-in, Bowlby One, fluidité), police IA seule en ville (plancher de signalement + `/policeia`),
+  message de bienvenue du bot Discord (`gs_discord_welcome_channel`, intent « Server Members » optionnel, repli propre), fiche de
+  backtest refaite, 57 propositions (`docs/PROPOSITIONS.md`), catalogues véhicules et armes (`docs/ROADLINE_*.xlsx`, `tools/catalogues_xlsx.py`).
+  Depuis la session distante : pots de miel, bannissements en jeu, `/help` `/ip` `/annonce` Discord, détection automatique du Discord,
+  déplacement des points réparé (gs_markers, gs_quests, cabine), cohérence des alertes (`check_crimes.py`), audit bob74 / MLO,
+  importeur (maps escrow). **Bus d'arrivée** : les deux correctifs combinés (sol chargé avant de poser le bus + bus figé/surveillé côté
+  local, attente de la sortie réelle + calage au sol réel + GPS vers Max côté distant). Suite complète verte après fusion
+  (70 tests bot Discord). Les features V13 en cours (cabines, distributeur, chantier, mur, tournoi…) restent hors du dépôt tant
+  qu'elles ne sont pas terminées et testées.
+
 - **V12.7** (11/10/2026) — audit des alertes et de la cohérence RP (`docs/ALERTES.md`) :
   - **Sain** : central unique `gs_wanted` (témoins, caméras, nuit, mémoire, police IA), les 24 appels utilisent un type
     existant, le shérif reçoit tout (`countsAs = 'police'`), tirs détectés côté serveur (un seul détecteur), EMS prévenus
@@ -358,7 +370,9 @@ Résumé très condensé (le détail complet est dans `docs/ROADMAP.md`, `docs/F
   déposer dans `docs/site/fonts/` si voulue à l'identique (Bowlby One sinon).
 - **Idées retenues pour plus tard** (demande du 10/10) : missions et contacts depuis les **vraies cabines téléphoniques** de la
   map (plus de points / blips posés), **arracher un distributeur** avec un câble et une voiture puis l'ouvrir au calme ; les
-  20 propositions de signatures sont dans la réponse du 10/10 (à trier par l'utilisateur).
+  57 propositions (signatures, modes, embellissement, gains rapides bêta) et les 12 questions de vision sont dans
+  `docs/PROPOSITIONS.md` (à trier par l'utilisateur). **Ouverture bêta officieuse prévue dans quelques jours** (mi-octobre),
+  officielle le 20/10/2026.
 - Le guide du joueur (PDF) n'a volontairement **pas été mis en ligne sur le site** : l'utilisateur veut en reprendre
   le design lui-même avant publication.
 

@@ -1,0 +1,601 @@
+﻿boutique;catégorie;marque;véhicule;modèle;prix
+air;helicopters;Nagasaki;Havok;havok;380000
+air;helicopters;Western;Maverick;maverick;950000
+air;helicopters;Maibatsu;Frogger;frogger;1100000
+air;helicopters;Buckingham;Conada;conada;1350000
+air;helicopters;Buckingham;SuperVolito;supervolito;1600000
+air;helicopters;Buckingham;Swift;swift;1800000
+air;helicopters;Buckingham;SuperVolito Carbon;supervolito2;1900000
+air;helicopters;Buckingham;Swift Deluxe;swift2;2400000
+air;helicopters;Buckingham;Volatus;volatus;2900000
+air;helicopters;;Sea Sparrow;seasparrow;6293144
+air;helicopters;Maibatsu;Frogger (Trevor Philips Enterprises);frogger2;6367865
+air;helicopters;Nagasaki;Buzzard;buzzard2;6462758
+air;helicopters;;Sparrow;seasparrow2;7760028
+air;helicopters;;Sparrow (Prop);seasparrow3;7760028
+air;planes;Nagasaki;Ultralight;microlight;45000
+air;planes;Western;Duster;duster;220000
+air;planes;Western Company;Mallard;stunt;260000
+air;planes;Western;Cuban 800;cuban800;280000
+air;planes;JoBuilt;Mammatus;mammatus;320000
+air;planes;Mammoth;Dodo;dodo;380000
+air;planes;Western;Seabreeze;seabreeze;480000
+air;planes;JoBuilt;Velum;velum;520000
+air;planes;Buckingham;Howard NX-25;howard;650000
+air;planes;Buckingham;Alpha-Z1;alphaz1;750000
+air;planes;Buckingham;Vestra;vestra;950000
+air;planes;JoBuilt;Velum;velum2;1439638
+air;planes;Buckingham;Nimbus;nimbus;1800000
+air;planes;Buckingham;Shamal;shamal;2200000
+air;planes;Buckingham;Luxor;luxor;2600000
+air;planes;Buckingham;Miljet;miljet;2800000
+air;planes;Buckingham;Luxor Deluxe;luxor2;3400000
+boats;boats;Speedophile;Seashark;seashark;12500
+boats;boats;Nagasaki;Dinghy;dinghy;28000
+boats;boats;Nagasaki;Dinghy;dinghy2;30000
+boats;boats;Shitzu;Suntrap;suntrap;38000
+boats;boats;Shitzu;Squalo;squalo;45000
+boats;boats;Shitzu;Tropic;tropic;52000
+boats;boats;Pegassi;Speeder;speeder2;72000
+boats;boats;Shitzu;Jetmax;jetmax;95000
+boats;boats;Lampadati;Toro;toro;135000
+boats;boats;Shitzu;Longfin;longfin;160000
+boats;boats;Buckingham;Tug;tug;180000
+boats;boats;Dinka;Marquis;marquis;210000
+pdm;compacts;Karin;Dilettante;dilettante;40298
+pdm;compacts;Karin;Dilettante (Security);dilettante2;40298
+pdm;compacts;BF;Weevil;weevil;53983
+pdm;compacts;Grotti;Brioso 300;brioso2;54291
+pdm;compacts;Grotti;Brioso 300 Widebody;brioso3;61333
+pdm;compacts;Maxwell;Asbo;asbo;63020
+pdm;compacts;Weeny;Issi Classic;issi3;65593
+pdm;compacts;Bollokan;Prairie;prairie;67519
+pdm;compacts;Benefactor;Panto;panto;67549
+pdm;compacts;Declasse;Rhapsody;rhapsody;68425
+pdm;compacts;Grotti;Brioso R/A;brioso;69113
+pdm;compacts;BF;Club;club;69335
+pdm;compacts;Dinka;Blista;blista;69371
+pdm;compacts;Weeny;Issi;issi2;69371
+pdm;compacts;Dinka;Blista Kanjo;kanjo;73478
+pdm;coupes;Dinka;Postlude;postlude;69683
+pdm;coupes;Lampadati;Felon GT;felon2;72343
+pdm;coupes;Dinka;Kanjo SJ;kanjosj;73789
+pdm;coupes;Enus;Cognoscenti Cabrio;cogcabrio;74712
+pdm;coupes;Fathom;FR36 (Drift);driftfr36;75045
+pdm;coupes;Übermacht;Oracle XS;oracle;75192
+pdm;coupes;Übermacht;Sentinel;sentinel;75585
+pdm;coupes;Übermacht; Sentinel XS;sentinel2;75585
+pdm;coupes;Lampadati;Felon;felon;76088
+pdm;coupes;Ocelot;Jackal;jackal;76324
+pdm;coupes;Übermacht;Oracle;oracle2;76907
+pdm;coupes;Übermacht;Zion;zion;77752
+pdm;coupes;Übermacht;Zion Cabrio;zion2;77752
+pdm;coupes;Karin;Previon;previon;78200
+pdm;coupes;Fathom;FR36;fr36;78667
+pdm;coupes;Enus;Windsor Drop;windsor2;79252
+pdm;coupes;Enus;Windsor;windsor;79422
+pdm;coupes;Ocelot;F620;f620;79607
+pdm;coupes;Dewbauchee;Exemplar;exemplar;79891
+pdm;cycles;Coil;Inductor;inductor;2607
+pdm;cycles;Coil;Junk Energy Inductor;inductor2;2607
+pdm;cycles;PED;BMX;bmx;2735
+pdm;cycles;PED;Cruiser;cruiser;2751
+pdm;cycles;PED;Scorcher;scorcher;2782
+pdm;cycles;;Fixter;fixter;2835
+pdm;cycles;;Whippet Race Bike;tribike;3622
+pdm;cycles;;Endurex Race Bike;tribike2;3622
+pdm;cycles;;Tri-Cycles Race Bike;tribike3;3622
+pdm;motorcycles;Pegassi;Faggio Sport;faggio2;12263
+pdm;motorcycles;Pegassi;Faggio Mod;faggio3;14291
+pdm;motorcycles;Pegassi;Faggio Sport;faggio;14728
+pdm;motorcycles;Western;Rat Bike;ratbike;19441
+pdm;motorcycles;Western;Wolfsbane;wolfsbane;19441
+pdm;motorcycles;Western;Bagger;bagger;19934
+pdm;motorcycles;Maibatsu;Sanchez (livery);sanchez;20686
+pdm;motorcycles;Maibatsu;Sanchez;sanchez2;20686
+pdm;motorcycles;Dinka;Enduro;enduro;20848
+pdm;motorcycles;Shitzu;PCJ-600;pcj;20997
+pdm;motorcycles;Maibatsu;Manchez Scout;manchez2;21545
+pdm;motorcycles;Maibatsu;Manchez Scout C;manchez3;21632
+pdm;motorcycles;Shitzu;Vader;vader;22163
+pdm;motorcycles;Western;Daemon;daemon;22321
+pdm;motorcycles;Nagasaki;Chimera;chimera;22412
+pdm;motorcycles;Western;Daemon Custom;daemon2;22423
+pdm;motorcycles;LCC;Hexer;hexer;22521
+pdm;motorcycles;Western;Powersurge;powersurge;23026
+pdm;motorcycles;LCC;Avarus;avarus;23028
+pdm;motorcycles;Western;Sovereign;sovereign;23078
+pdm;motorcycles;Nagasaki;BF400;bf400;23103
+pdm;motorcycles;Pegassi;Esskey;esskey;23138
+pdm;motorcycles;Maibatsu;Manchez;manchez;23138
+pdm;motorcycles;Western;Zombie Bobber;zombiea;23182
+pdm;motorcycles;Western;Zombie Chopper;zombieb;23182
+pdm;motorcycles;LCC;Innovation;innovation;23509
+pdm;motorcycles;Principe;Nemesis;nemesis;23612
+pdm;motorcycles;Pegassi;FCR 1000;fcr;24321
+pdm;motorcycles;LCC;Sanctus;sanctus;24351
+pdm;motorcycles;Pegassi;Ruffian;ruffian;24413
+pdm;motorcycles;Pegassi;FCR 1000 Custom;fcr2;24491
+pdm;motorcycles;Western;Nightblade;nightblade;24551
+pdm;motorcycles;Nagasaki;Carbon RS;carbonrs;24649
+pdm;motorcycles;Principe;Diablous;diablous;24745
+pdm;motorcycles;Principe;Diablous Custom;diablous2;24901
+pdm;motorcycles;Dinka;Double-T;double;25173
+pdm;motorcycles;Western;Gargoyle;gargoyle;25195
+pdm;motorcycles;Dinka;Akuma;akuma;25356
+pdm;motorcycles;Pegassi;Vortex;vortex;25612
+pdm;motorcycles;Shitzu;Defiler;defiler;25616
+pdm;motorcycles;Western;Cliffhanger;cliffhanger;25621
+pdm;motorcycles;Pegassi;Bati 801;bati;25838
+pdm;motorcycles;Pegassi;Bati 801RR;bati2;25838
+pdm;motorcycles;Dinka;Thrust;thrust;25865
+pdm;motorcycles;Shitzu;Hakuchou;hakuchou;25975
+pdm;motorcycles;Western;Rampant Rocket;rrocket;26257
+pdm;motorcycles;Western;Reever;reever;26269
+pdm;motorcycles;Nagasaki;Stryder;stryder;26711
+pdm;motorcycles;Nagasaki;Shotaro Concept;shotaro;26899
+pdm;motorcycles;Principe;Lectro;lectro;27225
+pdm;motorcycles;Nagasaki;Shinobi;shinobi;27244
+pdm;motorcycles;Shitzu;Hakuchou Drag;hakuchou2;27374
+pdm;motorcycles;Dinka;Vindicator;vindicator;31055
+pdm;motorcycles;Pegassi;Pizza Boy;pizzaboy;82282
+pdm;muscle;Declasse;Tampa GT;tampa4;48666
+pdm;muscle;Vapid;Clique Wagon;clique2;54902
+pdm;muscle;Vapid;Chino;chino;58651
+pdm;muscle;Willard;Faction Custom Donk;faction3;58971
+pdm;muscle;Vapid;Chino Custom;chino2;60394
+pdm;muscle;Albany;Virgo;virgo;60554
+pdm;muscle;Dundreary;Virgo Custom Classic;virgo3;60554
+pdm;muscle;Dundreary;Virgo Custom Classic;virgo2;60758
+pdm;muscle;Classique;Broadway;broadway;61702
+pdm;muscle;Bravado;Rat-Loader;ratloader;61779
+pdm;muscle;Declasse;Voodoo;voodoo2;63070
+pdm;muscle;Albany;Brigham;brigham;63825
+pdm;muscle;Bravado;Rat-Truck;ratloader2;65562
+pdm;muscle;Declasse;Voodoo Custom;voodoo;66162
+pdm;muscle;Vapid;Slam Van;slamvan;66207
+pdm;muscle;Willard;Eudora;eudora;66819
+pdm;muscle;Imponte;Nightshade;nightshade;67005
+pdm;muscle;Vapid;Slam Van Custom;slamvan3;67005
+pdm;muscle;Vapid;Lost Slam Van;slamvan2;67165
+pdm;muscle;Cheval;Picador;picador;67839
+pdm;muscle;Declasse;Moonbeam;moonbeam;68586
+pdm;muscle;Declasse;Moonbeam Custom;moonbeam2;68586
+pdm;muscle;Albany;Hermes;hermes;68776
+pdm;muscle;Declasse;Yosemite;yosemite;69338
+pdm;muscle;Schyster;Deviant;deviant;70267
+pdm;muscle;Declasse;Tampa;tampa;70442
+pdm;muscle;Vapid;Blade;blade;70520
+pdm;muscle;Declasse;Drift Yosemite;driftyosemite;70884
+pdm;muscle;Albany;Manana Custom;manana2;71516
+pdm;muscle;Declasse;Tahoma Coupe;tahoma;72249
+pdm;muscle;Vapid;Hustler;hustler;72900
+pdm;muscle;Bravado;Gauntlet Classic;gauntlet3;73572
+pdm;muscle;Declasse;Yosemite Drift;yosemite2;74171
+pdm;muscle;Vapid;Hotknife;hotknife;74328
+pdm;muscle;Declasse;Impaler;impaler;74584
+pdm;muscle;Invetero;Coquette BlackFin;coquette3;74621
+pdm;muscle;Declasse;Tulip M-100;tulip2;74746
+pdm;muscle;Declasse;Stallion;stalion;74781
+pdm;muscle;Declasse;Vamos;vamos;75751
+pdm;muscle;Vapid;Ellie;ellie;75782
+pdm;muscle;Vapid;Dominator GTT;dominator8;76296
+pdm;muscle;Vapid;Clique;clique;76525
+pdm;muscle;Albany;Buccaneer;buccaneer;76634
+pdm;muscle;Albany;Buccaneer Custom;buccaneer2;76634
+pdm;muscle;Willard;Faction;faction;77450
+pdm;muscle;Willard;Faction Rider;faction2;77450
+pdm;muscle;Declasse;Sabre Turbo;sabregt;77450
+pdm;muscle;Declasse;Vigero;vigero;77482
+pdm;muscle;Declasse;Sabre GT;sabregt2;77489
+pdm;muscle;Imponte;Dukes Nightrider;dukes2;77611
+pdm;muscle;Vapid;Dominator GTX;dominator3;77862
+pdm;muscle;Vapid;Peyote Gasser;peyote2;77875
+pdm;muscle;Declasse;Impaler LX;impaler6;77917
+pdm;muscle;Bravado;Gauntlet;gauntlet;78237
+pdm;muscle;Albany;Lurcher;lurcher;78245
+pdm;muscle;Imponte;Phoenix;phoenix;78433
+pdm;muscle;Imponte;Beater Dukes;dukes3;78577
+pdm;muscle;Bravado;Greenwood;greenwood;78897
+pdm;muscle;Declasse;Stallion Burgershot;stalion2;79092
+pdm;muscle;Imponte;Dukes;dukes;79383
+pdm;muscle;Imponte;Ruiner;ruiner;80117
+pdm;muscle;Vapid;Dominator;dominator;80149
+pdm;muscle;Bravado;Gauntlet Classic Custom;gauntlet5;80250
+pdm;muscle;Imponte;Ruiner ZZ-8;ruiner4;80458
+pdm;muscle;Bravado;Redwood Gauntlet;gauntlet2;80506
+pdm;muscle;Bravado;Buffalo STX;buffalo4;80516
+pdm;muscle;Declasse;Tulip;tulip;80611
+pdm;muscle;Bravado;Gauntlet Hellfire;gauntlet4;81048
+pdm;muscle;Bravado;Drift Gauntlet Hellfire;driftgauntlet4;81048
+pdm;muscle;Vapid;Pisswasser Dominator;dominator2;81440
+pdm;muscle;Vapid;Drift Dominator FX;driftdominator10;81768
+pdm;muscle;Declasse;Vigero ZX Convertible;vigero3;81866
+pdm;muscle;Declasse;Vigero ZX;vigero2;82143
+pdm;muscle;Vapid;Dominator GT;dominator9;82702
+pdm;muscle;Vapid;Dominator FX;dominator10;82702
+pdm;muscle;Vapid;Dominator ASP;dominator7;83320
+pdm;muscle;Bravado;Buffalo EVX;buffalo5;83332
+pdm;muscle;BF;Weevil Custom;weevil2;83800
+pdm;offroad;Dinka;Verus;verus;16526
+pdm;offroad;Nagasaki;Blazer;blazer;21457
+pdm;offroad;Nagasaki;Hot Rod Blazer;blazer3;21457
+pdm;offroad;Nagasaki;Blazer Sport;blazer4;24453
+pdm;offroad;Declasse;Drift Walton L35;driftl352;44723
+pdm;offroad;Declasse;L35 Stock;l352;44723
+pdm;offroad;Vapid;Winky;winky;49504
+pdm;offroad;RUNE;Zhaba;zhaba;50950
+pdm;offroad;Bravado;Duneloader;dloader;55231
+pdm;offroad;Canis;Mesa (Merryweather);mesa3;57125
+pdm;offroad;Cheval;Marshall;marshall;57276
+pdm;offroad;Declasse;Rancher XL;rancherxl;58720
+pdm;offroad;Declasse;Rancher XL (Snow);rancherxl2;58720
+pdm;offroad;Canis;Kalahari;kalahari;59046
+pdm;offroad;Canis;Bodhi;bodhi2;59867
+pdm;offroad;Canis;Freecrawler;freecrawler;60453
+pdm;offroad;Nagasaki;Outlaw;outlaw;60938
+pdm;offroad;Mammoth;Mil-Spec Patriot;patriot3;62402
+pdm;offroad;BF;Space Docker;dune2;63085
+pdm;offroad;Karin;Rusty Rebel;rebel;63694
+pdm;offroad;Karin;Rebel;rebel2;63694
+pdm;offroad;Vapid;Sandking;sandking;63694
+pdm;offroad;Vapid;Sandking SWB;sandking2;63694
+pdm;offroad;Declasse;Walton L35;l35;64429
+pdm;offroad;Benefactor;Dubsta 6x6;dubsta3;64556
+pdm;offroad;BF;Dune Buggy;dune;64617
+pdm;offroad;Vapid;Caracara 4x4;caracara2;64784
+pdm;offroad;Annis;Hellion;hellion;66525
+pdm;offroad;Vapid;Riata;riata;66525
+pdm;offroad;Declasse;Yosemite Rancher;yosemite3;66896
+pdm;offroad;Declasse;Yosemite 1500;yosemite1500;66896
+pdm;offroad;Karin;Boor;boor;67237
+pdm;offroad;Canis;Kamacho;kamacho;67315
+pdm;offroad;BF;Injection;bfinjection;67551
+pdm;offroad;Maibatsu;MonstroCiti;monstrociti;68406
+pdm;offroad;Karin;Everon;everon;68803
+pdm;offroad;Canis;Terminus;terminus;71490
+pdm;offroad;Vapid;Trophy Truck;trophytruck;71559
+pdm;offroad;Vapid;Desert Raid;trophytruck2;71559
+pdm;offroad;Vapid;Ratel;ratel;72415
+pdm;offroad;Declasse;Draugur;draugur;72622
+pdm;offroad;BF;Bifta;bifta;74872
+pdm;offroad;Maxwell;Vagrant;vagrant;77576
+pdm;offroad;Coil;Brawler;brawler;77578
+pdm;sedans;Annis;Drift Hardy;drifthardy;22789
+pdm;sedans;Annis;Hardy;hardy;22789
+pdm;sedans;Benefactor;Vorschlaghammer;vorschlaghammer;25612
+pdm;sedans;Annis;Minimus;minimus;38763
+pdm;sedans;Cheval;Surge;surge;40605
+pdm;sedans;Dundreary;Regina;regina;50997
+pdm;sedans;Chariot;Romero Hearse;romero;53105
+pdm;sedans;Vulcar;Ingot;ingot;53344
+pdm;sedans;Albany;Emperor;emperor;56110
+pdm;sedans;Albany;Emperor (Beater);emperor2;56110
+pdm;sedans;Albany;Emperor (Snow);emperor3;56110
+pdm;sedans;Enus;Stafford;stafford;62882
+pdm;sedans;Declasse;Asea;asea;63374
+pdm;sedans;Declasse;Asea (Snow);asea2;63374
+pdm;sedans;Declasse;Premier;premier;63694
+pdm;sedans;Dundreary;Stretch;stretch;63950
+pdm;sedans;Karin;Asterope;asterope;64174
+pdm;sedans;Albany;Primo;primo;64174
+pdm;sedans;Albany;Primo Custom;primo2;64174
+pdm;sedans;Obey;Tailgater;tailgater;64174
+pdm;sedans;Vulcar;Warrener;warrener;64367
+pdm;sedans;Benefactor;Turreted Limo;limo2;65584
+pdm;sedans;Karin;Intruder;intruder;65682
+pdm;sedans;Benefactor;Schafter;schafter2;65682
+pdm;sedans;Benefactor;Glendale;glendale;65948
+pdm;sedans;Benefactor;Glendale Custom;glendale2;66105
+pdm;sedans;Cheval;Fugitive;fugitive;67317
+pdm;sedans;Vulcar;Warrener HKR;warrener2;67374
+pdm;sedans;Zirconium;Stratum;stratum;68894
+pdm;sedans;Declasse;Vorschlaghammer (Drift);driftvorschlag;70884
+pdm;sedans;Vapid;Stanier;stanier;71053
+pdm;sedans;Albany;Washington;washington;71053
+pdm;sedans;Karin;Asterope GZ;asterope2;71306
+pdm;sedans;Enus;Deity;deity;73581
+pdm;sedans;Enus;Super Diamond;superd;74712
+pdm;sedans;Enus;Cognoscenti;cognoscenti;75535
+pdm;sedans;Enus;Cognoscenti 55;cog55;76441
+pdm;sedans;Obey;Tailgater S;tailgater2;77411
+pdm;sedans;Übermacht;Rhinehart;rhinehart;78276
+pdm;sedans;Declasse;Impaler SZ;impaler5;78875
+pdm;sedans;Lampadati;Cinquemila;cinquemila;80476
+pdm;sedans;Dewbauchee;Chavos V6;chavosv6;86582
+pdm;sedans;Dinka;Drift Chavos V6;driftchavosv6;86582
+pdm;sports;Dinka;Veto Classic;veto;64000
+pdm;sports;Dinka;Veto Modern;veto2;68000
+pdm;sports;Hijak;Khamelion;khamelion;80000
+pdm;sports;Coil;Raiden;raiden;96500
+pdm;sports;Pfister;Neon;neon;98500
+pdm;sports;Benefactor;Schafter LWB;schafter4;98500
+pdm;sports;Maibatsu;Penumbra;penumbra;102000
+pdm;sports;Dinka;Blista Compact;blista2;104000
+pdm;sports;Dinka;Blista Go Go Monkey;blista3;104000
+pdm;sports;Weeny;Issi Sport;issi7;105500
+pdm;sports;Lampadati;Tropos Rallye;tropos;106500
+pdm;sports;Benefactor;Streiter;streiter;107000
+pdm;sports;BF;Raptor;raptor;108000
+pdm;sports;Obey;Omnis;omnis;109500
+pdm;sports;Emperor;Vectre;vectre;110000
+pdm;sports;Vapid;Flash GT;flashgt;111000
+pdm;sports;Übermacht;Sentinel Classic;sentinel3;111000
+pdm;sports;Karin;Futo;futo;111500
+pdm;sports;Karin;Sultan;sultan;111500
+pdm;sports;Vapid;GB 200;gb200;112000
+pdm;sports;Bravado;Banshee GTS;banshee3;112500
+pdm;sports;Bravado;Buffalo;buffalo;112500
+pdm;sports;Karin;Futo GTX (Drift);driftfuto;112500
+pdm;sports;Karin;Futo (Drift);driftfuto2;112500
+pdm;sports;Dinka;Jester RR (Drift);driftjester;112500
+pdm;sports;Annis;ZR350 (Drift);driftzr350;112500
+pdm;sports;Enus;Paragon S;paragon3;112500
+pdm;sports;Maibatsu;Penumbra FF;penumbra2;112500
+pdm;sports;Übermacht;Revolter;revolter;112500
+pdm;sports;Karin;Futo GTX;futo2;113000
+pdm;sports;Enus;Paragon;paragon;113000
+pdm;sports;Dinka;Sugoi;sugoi;113000
+pdm;sports;Übermacht;Cypher;cypher;113500
+pdm;sports;Declasse;Drift Tampa;tampa2;113500
+pdm;sports;Übermacht;Cypher (Drift);driftcypher;114000
+pdm;sports;Annis;Euros (Drift);drifteuros;114000
+pdm;sports;Dinka;Jester;jester;115000
+pdm;sports;Bravado;Buffalo S;buffalo2;115500
+pdm;sports;Överflöd;Imorgon;imorgon;115500
+pdm;sports;Karin;Kuruma;kuruma;116000
+pdm;sports;Karin;Sultan Custom;sultan2;116000
+pdm;sports;Penaud;La Coureuse;coureur;116500
+pdm;sports;Dinka;Jester (Racecar);jester2;117000
+pdm;sports;Karin;Sultan Classic Custom;sultan3;117000
+pdm;sports;Pfister;Comet Safari;comet4;117500
+pdm;sports;Annis;Remus (Drift);driftremus;117500
+pdm;sports;Übermacht;Sentinel Classic Widebody (Drift);driftsentinel;117500
+pdm;sports;Declasse;Drift Tampa;drifttampa;117500
+pdm;sports;Annis;Remus;remus;117500
+pdm;sports;Hijak;Ruston;ruston;117500
+pdm;sports;Pfister;Comet SR;comet5;118000
+pdm;sports;Annis;Elegy Retro Custom;elegy;118000
+pdm;sports;Dewbauchee;Rapid GT X;rapidgt4;118000
+pdm;sports;Annis;Euros;euros;118500
+pdm;sports;Annis;Euros X32;eurosx32;118500
+pdm;sports;Übermacht;Sentinel Classic Widebody;sentinel4;118500
+pdm;sports;Bravado;Banshee;banshee;119000
+pdm;sports;Annis;300R;r300;119000
+pdm;sports;Grotti;Bestia GTS;bestiagts;119500
+pdm;sports;Declasse;Hotring Sabre;hotring;119500
+pdm;sports;Albany;V-STR;vstr;119500
+pdm;sports;Obey;8F Drafter;drafter;120000
+pdm;sports;Karin;Hotring Everon;everon2;120000
+pdm;sports;Bollokan;Envisage;envisage;120000
+pdm;sports;Dinka;Jester RR;jester4;120000
+pdm;sports;Dinka;Jester RR Widebody;jester5;120000
+pdm;sports;Annis;ZR350;zr350;120000
+pdm;sports;Bravado;Sprunk Buffalo;buffalo3;120500
+pdm;sports;Grotti;Carbonizzare;carbonizzare;120500
+pdm;sports;Annis;Elegy RH8;elegy2;120500
+pdm;sports;Dinka;Jester Classic;jester3;120500
+pdm;sports;Obey;Omnis e-GT;omnisegt;120500
+pdm;sports;Dinka;RT3000;rt3000;120500
+pdm;sports;Benefactor;Schwartzer;schwarzer;120500
+pdm;sports;Benefactor;SM722;sm722;120500
+pdm;sports;Invetero;Coquette D10;coquette4;121000
+pdm;sports;Invetero;Coquette D5;coquette6;121000
+pdm;sports;Obey;9F;ninef;121500
+pdm;sports;Obey;9F Cabrio;ninef2;121500
+pdm;sports;Übermacht;Niobe;niobe;121500
+pdm;sports;Dewbauchee;Specter;specter;121500
+pdm;sports;Schyster;Fusilade;fusilade;122000
+pdm;sports;Ocelot;Jugular;jugular;122000
+pdm;sports;Ocelot;Locust;locust;122000
+pdm;sports;Ocelot;Pariah;pariah;122000
+pdm;sports;Bravado;Hotring Hellfire;gauntlet6;122500
+pdm;sports;Ocelot;Lynx;lynx;122500
+pdm;sports;Karin;Calico GTF;calico;123000
+pdm;sports;Obey;10F;tenf;123000
+pdm;sports;Benefactor;Feltzer;feltzer2;123500
+pdm;sports;Toundra;Panthere;panthere;123500
+pdm;sports;Dewbauchee;Specter Custom;specter2;123500
+pdm;sports;Albany;Alpha;alpha;124000
+pdm;sports;Pfister;Growler;growler;124000
+pdm;sports;Obey;10F Widebody;tenf2;124000
+pdm;sports;Lampadati;Komoda;komoda;124500
+pdm;sports;Benefactor;Schafter V12;schafter3;124500
+pdm;sports;Pfister;Comet;comet2;125000
+pdm;sports;Pfister;Comet Retro Custom;comet3;125000
+pdm;sports;Pfister;Comet S2;comet6;125000
+pdm;sports;Bravado;Verlierer;verlierer2;125000
+pdm;sports;Pfister;Comet S2 Cabrio;comet7;125500
+pdm;sports;Invetero;Coquette;coquette;125500
+pdm;sports;Dewbauchee;Rapid GT;rapidgt;125500
+pdm;sports;Dewbauchee;Rapid GT Cabrio;rapidgt2;125500
+pdm;sports;Dewbauchee;Massacro;massacro;126000
+pdm;sports;Dewbauchee;Massacro Racecar;massacro2;126000
+pdm;sports;Benefactor;Surano;surano;126000
+pdm;sports;Lampadati;Furore GT;furoregt;126500
+pdm;sports;Dewbauchee;Seven-70;seven70;127000
+pdm;sports;Vysser;Neo;neo;128500
+pdm;sports;Benefactor;Schlagen GT;schlagen;129500
+pdm;sports;Grotti;Itali GTO;italigto;131000
+pdm;sports;Grotti;Itali GTO Stinger TT;stingertt;131000
+pdm;sports;Lampadati;Corsita;corsita;131500
+pdm;sports;Grotti;Itali RSX;italirsx;131500
+pdm;sports;;Sentinel GTS;sentinel5;180500
+pdm;sportsclassics;Vapid;Uranus LozSpeed;uranus;50131
+pdm;sportsclassics;Vulcar;Fagaloa;fagaloa;57546
+pdm;sportsclassics;Weeny;Dynasty;dynasty;58840
+pdm;sportsclassics;Albany;Manana;manana;60635
+pdm;sportsclassics;Vapid;Peyote;peyote;60635
+pdm;sportsclassics;Declasse;Tornado;tornado;60635
+pdm;sportsclassics;Declasse;Tornado Gang;tornado2;60635
+pdm;sportsclassics;Declasse;Tornado (Beater);tornado3;60635
+pdm;sportsclassics;Declasse;Tornado (Mariachi);tornado4;60635
+pdm;sportsclassics;Declasse;Tornado Custom;tornado5;60890
+pdm;sportsclassics;Vulcar;Nebula Turbo;nebula;62877
+pdm;sportsclassics;Declasse;Tornado Rat Rod;tornado6;66096
+pdm;sportsclassics;Albany;Roosevelt;btype;69018
+pdm;sportsclassics;Albany;Roosevelt Valor;btype3;69018
+pdm;sportsclassics;Vapid;Peyote Custom;peyote3;70150
+pdm;sportsclassics;Vapid;Retinue;retinue;70738
+pdm;sportsclassics;Annis;Savestra;savestra;72617
+pdm;sportsclassics;Karin;190Z;z190;73299
+pdm;sportsclassics;Lampadati;Michelli GT;michelli;74020
+pdm;sportsclassics;RUNE;Cheburek;cheburek;74166
+pdm;sportsclassics;Übermacht;Zion Classic;zion3;74281
+pdm;sportsclassics;Albany;Franken Stange;btype2;74624
+pdm;sportsclassics;Grotti;Stinger;stinger;74712
+pdm;sportsclassics;Grotti;Stinger GT;stingergt;74712
+pdm;sportsclassics;Dinka;Jester Classic (Drift);driftjester3;74933
+pdm;sportsclassics;Vulcar;Nebula Turbo (Drift);driftnebula;74933
+pdm;sportsclassics;Vapid;Retinue MKII;retinue2;76099
+pdm;sportsclassics;Grotti;GT500;gt500;76158
+pdm;sportsclassics;RUNE;Cheburek (Drift);driftcheburek;76163
+pdm;sportsclassics;Benefactor;Stirling GT;feltzer3;76445
+pdm;sportsclassics;Dewbauchee;Rapid GT Classic;rapidgt3;77766
+pdm;sportsclassics;Lampadati;Viseris;viseris;78246
+pdm;sportsclassics;Pegassi;Torero;torero;78457
+pdm;sportsclassics;Pegassi;Infernus Classic;infernus2;79349
+pdm;sportsclassics;Invetero;Coquette D1;coquette5;80771
+pdm;sportsclassics;Ocelot;Swinger;swinger;81274
+pdm;sportsclassics;Declasse;Mamba;mamba;81429
+pdm;sportsclassics;Invetero;Coquette Classic;coquette2;81755
+pdm;sportsclassics;Grotti;Turismo Classic;turismo2;81835
+pdm;sportsclassics;Lampadati;Pigalle;pigalle;82282
+pdm;sportsclassics;Pegassi;Monroe;monroe;82544
+pdm;sportsclassics;Grotti;Cheetah Classic;cheetah2;82724
+pdm;sportsclassics;Lampadati;Casco;casco;83125
+pdm;sportsclassics;Truffade;Z-Type;ztype;84821
+pdm;sportsclassics;Grotti;Cheetah 3;cheetah3;459381
+pdm;super;Coil;Voltic;voltic;180000
+pdm;super;Coil;Cyclone;cyclone;189000
+pdm;super;Bravado;Banshee 900R;banshee2;197000
+pdm;super;Pegassi;Tezeract;tezeract;206000
+pdm;super;Ocelot;Virtue;virtue;215000
+pdm;super;Übermacht;SC1;sc1;224000
+pdm;super;Pegassi;Infernus;infernus;232000
+pdm;super;Emperor;ETR1;sheava;241000
+pdm;super;Ocelot;Penetrator;penetrator;250000
+pdm;super;Pegassi;Tempesta;tempesta;258000
+pdm;super;Karin;Sultan RS;sultanrs;267000
+pdm;super;Överflöd;Pipistrello;pipistrello;276000
+pdm;super;Vapid;Bullet;bullet;284000
+pdm;super;Pegassi;Zentorno;zentorno;293000
+pdm;super;Pegassi;Osiris;osiris;302000
+pdm;super;Ocelot;XA-21;xa21;311000
+pdm;super;Grotti;Cheetah;cheetah;319000
+pdm;super;Pegassi;Reaper;reaper;328000
+pdm;super;Progen;Progen T20;t20;337000
+pdm;super;Grotti;Furia;furia;345000
+pdm;super;Annis;S80RR;s80;354000
+pdm;super;Grotti;Turismo Omaggio;turismo3;363000
+pdm;super;Pegassi;Vacca;vacca;371000
+pdm;super;Truffade;Thrax;thrax;380000
+pdm;super;Annis;RE-7B;le7b;389000
+pdm;super;Progen;GP1;gp1;398000
+pdm;super;Progen;Tyrus;tyrus;406000
+pdm;super;Benefactor;LM87;lm87;415000
+pdm;super;Överflöd;Entity XF;entityxf;424000
+pdm;super;Progen;Progen Emerus;emerus;432000
+pdm;super;Pegassi;Pegassi Zorrusso;zorrusso;441000
+pdm;super;Grotti;Grotti Turismo R;turismor;450000
+pdm;super;Grotti;Visione;visione;459000
+pdm;super;Överflöd;Autarch;autarch;467000
+pdm;super;Truffade;Adder;adder;476000
+pdm;super;Lampadati;Tigon;tigon;485000
+pdm;super;Dewbauchee;Champion;champion;493000
+pdm;super;Progen;Itali GTB;italigtb;502000
+pdm;super;Pegassi;Ignus;ignus;511000
+pdm;super;Truffade;Nero;nero;519000
+pdm;super;Pegassi;Torero XO;torero2;528000
+pdm;super;Progen;Itali GTB Custom;italigtb2;537000
+pdm;super;Benefactor;Krieger;krieger;546000
+pdm;super;Dewbauchee;Vagner;vagner;554000
+pdm;super;Principe;Deveste;deveste;563000
+pdm;super;Vapid;FMJ;fmj;572000
+pdm;super;Truffade;Nero Custom;nero2;580000
+pdm;super;Överflöd;Tyrant;tyrant;589000
+pdm;super;Grotti;X80 Proto;prototipo;598000
+pdm;super;Pfister;811;pfister811;606000
+pdm;super;Överflöd;Entity MT;entity3;615000
+pdm;super;Överflöd;Entity XXR;entity2;624000
+pdm;super;Cheval;Taipan;taipan;633000
+pdm;super;Överflöd;Zeno;zeno;641000
+pdm;super;Overflöd;Suzume;suzume;650000
+pdm;suvs;Karin;Vivanite;vivanite;46334
+pdm;suvs;Obey;I-Wagen;iwagen;55888
+pdm;suvs;Declasse;Granger 3600LX;granger2;57057
+pdm;suvs;Canis;Mesa;mesa;57125
+pdm;suvs;Canis;Mesa (Snow);mesa2;57125
+pdm;suvs;Mammoth;Patriot Stretch;patriot2;59238
+pdm;suvs;Karin;BeeJay XL;bjxl;60692
+pdm;suvs;Declasse;Granger;granger;60692
+pdm;suvs;Dundreary;Landstalker;landstalker;61393
+pdm;suvs;Canis;Seminole;seminole;61393
+pdm;suvs;Benefactor;Dubsta;dubsta;62617
+pdm;suvs;Benefactor;Dubsta;dubsta2;62617
+pdm;suvs;Dundreary;Landstalker XL;landstalker2;62744
+pdm;suvs;Mammoth;Squaddie;squaddie;63238
+pdm;suvs;Mammoth;Patriot;patriot;63246
+pdm;suvs;Albany;Cavalcade;cavalcade;63694
+pdm;suvs;Albany;Cavalcade;cavalcade2;63694
+pdm;suvs;Bravado;Gresley;gresley;63694
+pdm;suvs;Canis;Seminole Frontier;seminole2;64904
+pdm;suvs;Fathom;FQ2;fq2;65442
+pdm;suvs;Emperor;Habanero;habanero;65442
+pdm;suvs;Vapid;Radius;radi;65522
+pdm;suvs;Gallivanter;Baller;baller;65628
+pdm;suvs;Vapid;Aleutian;aleutian;66169
+pdm;suvs;Benefactor;Serrano;serrano;66517
+pdm;suvs;Obey;Rocoto;rocoto;67755
+pdm;suvs;Albany;Cavalcade XL;cavalcade3;67959
+pdm;suvs;Vapid;Contender;contender;68578
+pdm;suvs;Bravado;Dorado;dorado;69578
+pdm;suvs;Enus;Jubilee;jubilee;71210
+pdm;suvs;Benefactor;XLS;xls;72768
+pdm;suvs;Gallivanter;Baller LE LWB;baller4;74384
+pdm;suvs;Gallivanter;Baller;baller2;74432
+pdm;suvs;Gallivanter;Baller LE;baller3;74448
+pdm;suvs;Enus;Huntley S;huntley;74869
+pdm;suvs;Gallivanter;Baller ST;baller7;77229
+pdm;suvs;Übermacht;Rebla GTS;rebla;77543
+pdm;suvs;Gallivanter;Baller ST-D;baller8;77694
+pdm;suvs;Lampadati;Novak;novak;78077
+pdm;suvs;Weeny;Issi Rally;issi8;79711
+pdm;suvs;Karin;Everon RS;everon3;79842
+pdm;suvs;Pegassi;Toros;toros;81091
+pdm;suvs;Pfister;Astron;astron;81719
+pdm;suvs;Canis;Castigator;castigator;83125
+pdm;vans;BF;Surfer;surfer;34505
+pdm;vans;BF;Surfer;surfer2;34505
+pdm;vans;BF;Surfer Custom;surfer3;34505
+pdm;vans;Brute;Boxville (LSDS);boxville6;47273
+pdm;vans;Brute;Taco Van;taco;47273
+pdm;vans;Brute;Camper;camper;50131
+pdm;vans;Zirconium;Journey;journey;52886
+pdm;vans;Zirconium;Journey II;journey2;52886
+pdm;vans;Bravado;Youga;youga;55630
+pdm;vans;Bravado;Youga Classic;youga2;55630
+pdm;vans;Vapid;Minivan;minivan;58370
+pdm;vans;Vapid;Minivan Custom;minivan2;58450
+pdm;vans;Vapid;Bobcat XL Open;bobcatxl;58720
+pdm;vans;Bravado;Rumpo Custom;rumpo3;59206
+pdm;vans;Vapid;Youga Custom;youga4;60252
+pdm;vans;Vapid;Youga Custom;youga5;60252
+pdm;vans;Declasse;Bugstars Burrito;burrito2;61195
+pdm;vans;Declasse;Burrito;burrito3;61195
+pdm;vans;Declasse;Burrito (McGill-Olsen);burrito4;61195
+pdm;vans;Declasse;Burrito (Snow);burrito5;61195
+pdm;vans;Declasse;Gang Burrito (Lost MC);gburrito;61195
+pdm;vans;Brute;Pony;pony;61195
+pdm;vans;Brute;Pony (Smoke on the Water);pony2;61195
+pdm;vans;Bravado;Bison;bison;62297
+pdm;vans;Bravado;Bison (McGill-Olsen);bison2;62297
+pdm;vans;Bravado;Bison (The Mighty Bush);bison3;62297
+pdm;vans;Bravado;Youga Classic 4x4;youga3;63150
+pdm;vans;Bravado;Paradise;paradise;63310
+pdm;vans;Bravado;Rumpo;rumpo;63310
+pdm;vans;Bravado;Rumpo (Deludamol);rumpo2;63310
+pdm;vans;Vapid;Speedo;speedo;66002
+pdm;vans;Declasse;Burrito Custom;gburrito2;66162
+pdm;vans;Vapid;Speedo Custom (Nightclub);speedo4;70653
+pdm;vans;Vapid;Speedo Custom;speedo5;70653

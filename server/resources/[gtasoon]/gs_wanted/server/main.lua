@@ -155,6 +155,11 @@ function Wanted.report(src, crimeType, coords, opts)
         chance = clamp(chance + Config.Memory.linkChance, 0, math.max(chance, Config.Witness.maxChance))
         precision = clamp(precision + Config.Memory.linkPrecision, 0, 1)
     end
+    -- V13 : sans policier joueur en service, la ville réagit quand même aux crimes sérieux (police IA) : plancher de signalement
+    local floor = Config.NpcPolice.floor
+    if floor and not police and crime.heat >= floor.heat and #JobsApi:GetOnDutyPlayers(Config.PoliceJob) < Config.NpcPolice.minCops then
+        chance = math.max(chance, floor.chance)
+    end
     if math.random() >= chance then return nil end
 
     -- Zone floutée : le centre est décalé aléatoirement dans le rayon d'incertitude.
@@ -275,6 +280,16 @@ end
 lib.callback.register('gs_wanted:npcUnits', function(src, stars, positions)
     if not Security:RateLimit(src, 'gs_wanted:npcUnits', 2, 15000) then return {} end
     return Wanted.spawnUnits(src, stars, positions)
+end)
+
+-- V13 : tester la police IA seul en ville (staff) : /policeia [étoiles 1-5] déclenche étoiles + patrouilles sur soi
+lib.addCommand('policeia', {
+    help = 'Staff : déclencher la police IA sur soi pour la tester (étoiles 1 à 5)',
+    params = { { name = 'etoiles', type = 'number', help = '1 à 5 (2 par défaut)', optional = true } },
+    restricted = 'group.admin',
+}, function(src, args)
+    local stars = math.min(5, math.max(1, math.floor(tonumber(args.etoiles) or 2)))
+    TriggerClientEvent('gs_wanted:client:npcPolice', src, stars)
 end)
 
 RegisterNetEvent('gs_wanted:server:npcClear', function()

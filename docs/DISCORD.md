@@ -78,6 +78,38 @@ des autres. `/fermer` (auteur ou staff) l'archive et le verrouille. Un ticket ou
    lien qui s'ouvre (nouveaux droits : fils privés). **GERER-OVH.bat → 12** pour l'envoyer au VPS.
 Bot de tickets externe à la place : `set gs_discord_tickets "false"` dans `secrets.cfg` (les commandes disparaissent).
 
+## Message de bienvenue (V12.8)
+
+Le bot RoadLine accueille chaque nouveau membre dans le salon de ton choix : « Nous sommes heureux de t'accueillir parmi
+nous, @membre, sur RoadLine RP ! Lis le règlement, puis `/ticket` si tu as une question. » (texte modifiable).
+
+1. discord.com/developers → ton application → **Bot** → **Privileged Gateway Intents** → activer **Server Members Intent** → Save.
+   Sans ça, Discord refuse l'intent : le bot l'écrit dans la console, coupe la bienvenue et continue normalement.
+2. CONFIGURER-DISCORD.bat → « Salon #bienvenue » : identifiant du salon (clic droit → Copier l'identifiant).
+   Le bot doit pouvoir écrire dans ce salon (droits du rôle du bot sur le salon).
+3. Texte personnalisé (optionnel) : `set gs_discord_welcome_text "Bienvenue {membre} ! …"` dans `cfg/secrets.cfg`
+   (`{membre}` = mention du nouveau).
+4. GERER-OVH → 12 (le bot redémarre avec le serveur), puis fais entrer un compte de test : le message doit apparaître.
+
+Avant la V12.8, le bot RoadLine n'envoyait **aucun** message de bienvenue : si tu en avais un jusqu'au 4 octobre, il venait
+d'un autre bot (MEE6, Dyno, Carl…) ou de l'onboarding Discord ; vérifie-le de son côté, ou laisse le bot RoadLine s'en charger.
+
+## Liste de contrôle Discord (à faire une fois, dans l'ordre)
+
+1. Portail développeur : application créée, **Bot** → jeton (Reset Token), **Server Members Intent** activé.
+2. CONFIGURER-DISCORD.bat : webhooks #statut, #annonces, #logs-staff (privé), #sanctions (public), adresse de connexion,
+   jeton du bot, identifiants : serveur Discord, rôle staff, salon #tickets, salon #bienvenue.
+   Dans `cfg/secrets.cfg` aussi : `gs_webhook_candidatures` (site → #candidatures), `gs_webhook_social`, `gs_webhook_jobs`,
+   `gs_webhook_boutique`, `gs_webhook_anticheat`, `gs_discord_roles` (métier → rôle).
+3. Inviter le bot avec le lien affiché par CONFIGURER-DISCORD (droits : voir, écrire, liens, historique, gérer les rôles,
+   fils privés et les gérer). Sur #tickets : le bot doit pouvoir **créer des fils privés** et **gérer les fils**.
+4. GERER-OVH → 12 (envoi + redémarrage) puis → 17 : un message de test dans chaque salon relié, bot « connecté » dans la console.
+5. Tester en tant que membre : `/statut`, `/ip`, `/rejoindre`, `/rdv`, `/site`, `/aide` (= `/help`), `/ticket test` puis `/fermer` ;
+   en tant que staff (rôle staff ou administrateur) : `/joueurs`, `/geler`, `/degeler`, `/avertir`, `/message`, `/annonce`,
+   `/expulser`, `/isoler`, `/liberer`, `/reanimer` ; faire entrer un compte de test → message de bienvenue.
+6. Si une commande manque : le bot enregistre les commandes à chaque connexion sur le Discord `gs_discord_guild` ;
+   si l'identifiant est faux ou le bot absent du serveur, elles passent en « globales » (jusqu'à 1 h de délai Discord).
+
 ## V11 · Vérifier que tout est relié (VPS)
 1. Sur le PC : **CONFIGURER-DISCORD.bat** (jeton du bot, webhooks des salons).
 2. **GERER-OVH.bat → 12** : envoie ces réglages au VPS (la base du VPS n'est pas touchée), le serveur redémarre.
