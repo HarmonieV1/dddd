@@ -51,7 +51,7 @@ def build():
              ['F10 · panel', 'Tickets, fiches joueurs complètes, sanctions, journal de toutes les actions du staff.'],
              ['Appli staff (téléphone)', 'Joueurs, tickets, annonce, depuis ton téléphone (un code par membre, demandé au fondateur). '
               '5 mauvais codes = 15 min de blocage.'],
-             ['Bot Discord', '/joueurs, /geler, /degeler, /avertir, /expulser, /message, /annonce, <b>/isoler, /liberer, /reanimer</b> (rôle staff ou admin du Discord) quand tu n\'es pas en jeu ; /ticket pour les joueurs.'],
+             ['Bot Discord', '/joueurs, /geler, /degeler, /avertir, /expulser, /message, <b>/annonce</b> (texte, titre, mention @everyone / @here, en_jeu pour l\'afficher aussi en ville), <b>/isoler, /liberer, /reanimer</b> (rôle staff ou admin du Discord) quand tu n\'es pas en jeu. Joueurs : /aide (/help), /ip, /ticket, /fermer.'],
              ['txAdmin', 'Réservé au fondateur.']],
             [40 * G.mm, 140 * G.mm])]
 
@@ -79,6 +79,13 @@ def build():
     s += [Paragraph('Anti-triche (F11 → Anti-triche)', H3)]
     s += [Paragraph('Le serveur signale (téléportation, vitesse impossible, arme interdite, argent anormal, carkill probable) mais <b>ne sanctionne jamais '
                     'seul</b>. Toi, tu vérifies : spectate, Aller à, fiche, journal. Doute = fondateur. Le staff en mode staff est exempté (vol, invisible, TP).', P)]
+    s += [Paragraph('<b>Seule exception : les pièges.</b> 27 faux événements qu\'aucun script ne déclenche, mais que les menus de triche essaient : '
+                    'les toucher = <b>bannissement définitif automatique</b> (« PIÈGE » dans #logs-staff). Un membre du staff n\'est jamais banni, seulement signalé. '
+                    'Pendant les tests, le fondateur peut passer en simple signalement (<i>gs_honeypot "log"</i>).', P)]
+    s += [Paragraph('Bannir et débannir (super-admin)', H3)]
+    s += b(['<b>F11 → Joueurs → le joueur → Bannir</b> : durée en jours (0 = définitif), motif obligatoire, double confirmation. Publié dans #sanctions.',
+            '<b>F11 → Bannissements</b> : liste des bans en cours, recherche par pseudo ou licence, <b>Débannir</b> (même hors ligne).',
+            'Le banni voit à la connexion son motif, la date de fin et le lien Discord. Les peines écoulées s\'effacent seules.'])
 
     s += [Paragraph('5. Faire vivre la ville', H2)]
     s += [t([['Quoi', 'Comment', 'Rang'],
@@ -94,7 +101,7 @@ def build():
             [38 * G.mm, 120 * G.mm, 22 * G.mm], font=8.2)]
     s += [Paragraph('Un point mal placé (transformateur, ring, vendeur, PNJ…) : F11 → Monde et lieux → <b>Déplacer / retirer un point</b> (filtre par ressource ; '
                     'super-admin : retirer du jeu, réversible). Points de métier : menu dédié. Tout est gardé aux mises à jour.', SMALL)]
-    s += [Paragraph('8. Nouveautés V11.4 → V12 pour le staff', H2)]
+    s += [Paragraph('6. Nouveautés V11.4 → V12.12 pour le staff', H2)]
     s += [t([['Quoi', 'Comment'],
              ['VIP (2 personnages)', 'F11 → Joueurs → le joueur → VIP (fondateur). Tout le monde a 1 personnage ; staff super-admin+ et VIP en ont 2.'],
              ['Mapping', 'F11 → Monde et lieux → Mapping : catalogue par catégorie (mobilier, chantier, éclairage, végétation, stands, plage, police), placement à la souris, retrait d\'objets de la map.'],
@@ -105,16 +112,22 @@ def build():
              ['Témoin protégé', 'Un suspect en garde à vue peut dénoncer un gang (/droits) : peine ÷ 2, protection 7 jours, lieu sûr. La police est prévenue. S\'il meurt : alerte, chaleur sur le gang.'],
              ['Opérations de gang', 'Brouillage de caméras et scanner piraté laissent une trace : terminal du commissariat → « Remonter la source » (5 min d\'analyse).'],
              ['Tickets Discord', '/ticket ouvre un fil privé dans #tickets (joueur + rôle staff) ; /fermer le clôt. Candidatures du site : webhook #candidatures.'],
-             ['Isolement à distance', 'Bot : /isoler id minutes motif · /liberer id · /reanimer id. Appli staff : boutons Isoler / Libérer / Réanimer. Publié dans #sanctions, journalisé.']],
+             ['Isolement à distance', 'Bot : /isoler id minutes motif · /liberer id · /reanimer id. Appli staff : boutons Isoler / Libérer / Réanimer. Publié dans #sanctions, journalisé.'],
+             ['Déplacer un point', 'F11 → Monde et lieux → Déplacer / retirer un point : 6 s après « Placer ce point ici », message « Vérifié : la ressource a redémarré avec la nouvelle position » (sinon un avertissement précis).'],
+             ['Mappings : conflits', 'Console au démarrage : rouge = deux maps remplacent le même fichier (envoyer les deux fichiers à Claude, qui les fusionne) ; jaune = modèle trop lourd en mémoire (> 16 Mo) ; vert = conflit résolu.'],
+             ['Alertes police', 'Toutes les alertes passent par le central (docs/ALERTES.md) : tirs, armes blanches, vols de voiture, braquages… Chasseur avec permis en zone de chasse : pas d\'alerte. /911p réservé au staff.'],
+             ['Police IA', 'Seul en ville : un crime sérieux est signalé au moins 6 fois sur 10. <b>/policeia 1-5</b> (admin) la déclenche sur toi pour la tester.'],
+             ['Mission Row agrandi', 'Sous-sol (interrogatoire, briefing, réserve) : 3 portes réservées à la police, actives seulement si la map mrpd_etendu tourne.'],
+             ['Discord', 'Message de bienvenue des nouveaux membres (salon réglé dans CONFIGURER-DISCORD, option « Server Members Intent » du portail Discord).']],
             [38 * G.mm, 142 * G.mm], font=8.2)]
 
-    s += [Paragraph('6. La déontologie du staff', H2)]
+    s += [Paragraph('7. La déontologie du staff', H2)]
     s += b(['<b>Le mode staff, c\'est pour modérer.</b> Jamais de pouvoir (vol, TP, argent, objets) pour ton personnage ou tes amis.',
             '<b>Neutralité</b> : en jeu, tu es un joueur comme les autres. Tes infos de staff (fiches, journal, positions) ne servent jamais à ton RP.',
             '<b>Confidentialité</b> : codes, captures du panel, discussions staff et identités restent entre nous. Ton code d\'appli est personnel.',
             '<b>Ton calme</b> : on explique, on ne se moque pas, on ne menace pas. Un joueur énervé reçoit une réponse courte et polie.',
             '<b>En cas de doute, on demande.</b> Un ticket qui attend 5 minutes vaut mieux qu\'une mauvaise sanction.'])
-    s += [Paragraph('7. Quand ça casse', H2)]
+    s += [Paragraph('8. Quand ça casse', H2)]
     s += b(['Serveur tombé : l\'alerte arrive dans le salon staff au bout de 4 min et il se relance tout seul. Sinon : fondateur.',
             'Bug qui rapporte de l\'argent ou des objets : on note qui, quand, combien, et on prévient le fondateur (retour en arrière d\'un seul joueur possible).',
             'Joueur bloqué (sous la carte, dans un mur) : mode staff → Amener, ou le TP à un lieu sûr. Notez-le dans le ticket.'])

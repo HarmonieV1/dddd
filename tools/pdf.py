@@ -94,7 +94,8 @@ TOOLS = [
 INTEGRATIONS = [
     ['Quoi', 'Comment ça marche'],
     ['Discord · bot RoadLine', 'Intégré au serveur (rien à installer) : présence « 12/48 citoyens », /statut, /rejoindre, /rdv, /site ; '
-                              'commandes staff /joueurs, /geler, /expulser, /isoler, /liberer, /reanimer… (rôle staff ou admin du Discord RoadLine), /ticket pour les joueurs, /aide.'],
+                              'commandes staff /joueurs, /geler, /expulser, /isoler, /liberer, /reanimer, /annonce (titre, mention, en_jeu)… (rôle staff ou admin du Discord RoadLine) ; '
+                              'joueurs : /aide (/help), /ip, /ticket, /fermer. Discord RoadLine détecté tout seul s\'il est le seul du bot. Message de bienvenue des nouveaux membres.'],
     ['Discord · salons', 'Statut en direct (un message mis à jour chaque minute), annonces (ouverture, redémarrages, rendez-vous), '
                          'sanctions publiques (staff anonyme), miroir de Vibe, logs staff / métiers / boutique / anti-triche.'],
     ['Discord · rôles de métier', 'Le rôle Discord suit le métier en jeu (gs_discord_roles dans secrets.cfg : police=ID,ambulance=ID…).'],
@@ -147,8 +148,9 @@ def guide(points):
                             title='RoadLine RP · Guide complet', author='RoadLine RP')
     s = [Paragraph('RoadLine RP · Guide complet', H1),
          Paragraph(f'Tout ce qui est disponible sur le serveur ({VERSION}), comment y accéder, les outils et les intégrations. '
-                   'Les nouveautés sont regroupées en trois grandes versions : V1 (la rue et les métiers), V2 (la ville a une mémoire), '
-                   'V3 (une ville qui vit sans toi). '
+                   'Les nouveautés sont regroupées en grandes versions : V1 (la rue et les métiers), V2 (la ville a une mémoire), '
+                   'V3 (une ville qui vit sans toi), puis V11-V12 (bêta : mémoire des lieux, sécurité, mappings). La recette à jour est '
+                   '« ROADLINE_Backtest_complet.pdf ». '
                    'Serveur FiveM RP français (Qbox, ox_lib, ox_inventory, pma-voice).', P), Spacer(1, 4)]
 
     s += [Paragraph('1. Outils en un double-clic', H2)]
@@ -159,6 +161,21 @@ def guide(points):
     s += [Paragraph('2. Touches', H2), table(KEYS, [38 * mm, 78 * mm, 64 * mm])]
     s += [Paragraph('3. Commandes utiles', H2), table(COMMANDS, [60 * mm, 120 * mm])]
 
+    s += [PageBreak(), Paragraph('★ V12.4 → V12.12 · Sécurité, fiabilité, mappings', H2)]
+    s += bullets([
+        "<b>Pièges anti-triche</b> : 27 faux événements que seuls les menus de triche déclenchent → bannissement définitif automatique, staff jamais banni.",
+        "<b>Bannissements en jeu</b> (super-admin) : F11 → Joueurs → Bannir (durée, motif) et F11 → Bannissements (liste, débannir même hors ligne) ; "
+        "le banni voit motif, date de fin et lien Discord à la connexion.",
+        "<b>Arrivée en bus</b> réparée : sol chargé avant le bus, dépose sur le trottoir réel de la mairie, GPS vers Max ; bus bloqué → dépose directe.",
+        "<b>Bot Discord</b> : /help, /ip, /annonce qui publie vraiment, Discord détecté tout seul, message de bienvenue.",
+        "<b>Déplacer un point</b> (F11) : vérifié en jeu 6 s après (« la ressource a redémarré avec la nouvelle position ») ; cabines et Max déplaçables.",
+        "<b>Alertes police cohérentes</b> (docs/ALERTES.md) : un seul central, 25 types de crimes, chasse légale sans alerte, vols de voiture au central, "
+        "/911p réservé au staff, shérif inclus ; seul en ville, un crime sérieux est signalé au moins 6 fois sur 10 (police IA, /policeia pour le staff).",
+        "<b>Mappings</b> : F11 → Monde et lieux → Mappings installés (emplacement lu dans les fichiers de chaque map, téléportation, blips staff), "
+        "conflits entre maps et modèles trop lourds signalés en console ; fusion des fichiers d'occlusion en conflit (zz_fusion_occlusion).",
+        "<b>Commissariat de Mission Row agrandi</b> : salles d'interrogatoire, de briefing et réserve au sous-sol, portes réservées à la police.",
+        "<b>Site V13</b> : météo et heure de la ville en direct, son en option, affichage corrigé sur téléphone.",
+    ])
     s += [PageBreak(), Paragraph('★ V12 · La ville se souvient', H2)]
     s += bullets([
         "<b>La mémoire des lieux</b> (gs_memoire) : chaque endroit accumule ce qui s'y est passé (crimes signalés, arrestations, mariages, "
@@ -374,12 +391,17 @@ def guide(points):
         '<b>Déplacer un point</b> (F11 → Monde et lieux) : n\'importe quel point mal placé (récolte, magasins, bars, PNJ, courses…) se pose à ta position.',
         'Raccourcis : Ctrl+Y TP marqueur, Ctrl+U vol libre, Ctrl+O noms et ID (150 m, PV, « parle »), auto en spectate.',
         'Argent / items : super-admin minimum, motif obligatoire, tout est journalisé.',
+        'Bannir / débannir (super-admin) : F11 → Joueurs → Bannir · F11 → Bannissements. Pièges anti-triche : ban automatique, staff seulement signalé.',
+        'Mappings installés (F11 → Monde et lieux) : y aller, blips staff, conflits ; /policeia pour tester la police IA (admin).',
     ])
     s += [Paragraph('8. Mods importés (Drive)', H2)]
     s += bullets([
         'Marques réelles (voitures, mode, police) refusées par l\'importeur : risque de retrait du serveur par Cfx.re / Rockstar. Préférer des versions « lore GTA ».',
-        'Maps : pharmacie du centre, garage clandestin, supermarché Willie\'s, club Bahamas Mamas, bureau d\'entreprise, village abandonné.',
+        'Maps (14) : pharmacie du centre, garage clandestin, supermarché Willie\'s, club Bahamas Mamas, bureau d\'entreprise, village abandonné, '
+        'hôpital Pillbox, agences Fleeca, salle de sport, atelier TM, magasin d\'alcool de Paleto, commissariat de Vinewood, pack Redline ; '
+        '+ sous-sol de Mission Row (mrpd_etendu). Emplacements, conflits et poids : F11 → Monde et lieux → Mappings installés.',
         'Vêtements : bikini (haut + bas), robe d\'été, 6 coiffures femme.',
+        'NETTOYER-MARQUES.bat : supprime les mods de marques réelles (nom du mod ou de ses fichiers) et leurs copies.',
     ])
     s += [Spacer(1, 6), Paragraph(f'{len(points)} points de carte configurés : voir « ROADLINE_Carte_points.pdf ».', SMALL)]
     doc.build(s, onFirstPage=footer, onLaterPages=footer)
@@ -524,8 +546,14 @@ MLO = [
     ['Garage clandestin + casse', '-59.97, -1211.09, 30.0', 'fichier « lisez-moi » du mod'],
     ['Bureau d\'entreprise', '~ -643, -490, 34', 'estimé depuis les fichiers de la map'],
     ['Club Bahamas Mamas', '~ -1388, -586, 30', 'emplacement du club du jeu'],
-    ['Supermarché Willie\'s', 'à relever en jeu', 'F11 → Copier mes coordonnées'],
-    ['Village abandonné', 'à relever en jeu', 'F11 → Copier mes coordonnées'],
+    ['Hôpital Pillbox (intérieur)', '327.7, -580.6, 60.6', 'lu dans la map (F11 → Mappings installés)'],
+    ['Atelier mécanique (TM, protégée)', '927.2, -1563.9, 34.2', 'lu dans la map'],
+    ['Magasin d\'alcool de Paleto (protégée)', '-161.5, 6325.4, 31.0', 'lu dans la map'],
+    ['Commissariat de Vinewood', '574.2, -10.6, 87.7', 'lu dans la map'],
+    ['Salle de sport (Moreo)', '-453.7, -10.9, 48.9', 'lisez-moi du mod (26,5 Mo en mémoire : à surveiller)'],
+    ['Commissariat de Mission Row agrandi', '444.0, -1000.2, 5.1 (sous-sol)', 'lu dans la map, 3 portes police'],
+    ['Agences Fleeca (habillage, les 6)', '— (pas de lieu propre)', 'remplace les modèles du jeu'],
+    ['Supermarché Willie\'s, village abandonné, pack Redline', 'F11 → Mappings installés', 'emplacement lu automatiquement en jeu'],
 ]
 
 

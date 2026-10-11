@@ -263,6 +263,15 @@ Résumé très condensé (le détail complet est dans `docs/ROADMAP.md`, `docs/F
   façon chargement de mission (Entrée / clic pour passer). Tout coupé par `prefers-reduced-motion`, souris seulement
   sur ordinateur. Une seule boucle rAF qui s'endort quand rien ne bouge. Vérifié dans le navigateur : 0 erreur.
 
+- **Documentation à jour (12/10/2026, V12.12)** : guide du joueur (secours et urgences, appli Urgences, /911p staff, alertes :
+  chasse légale, vols de voiture, police IA seul en ville, shérif ; Discord /aide /ip /ticket ; /retoucheperso ; nouveaux lieux),
+  guide du staff (pièges anti-triche, bannir / débannir, /annonce complet, Déplacer un point vérifié, conflits de maps, /policeia,
+  Mission Row agrandi, bienvenue Discord), guide RoadLine (chapitre V12.4 → V12.12, table des 14 maps avec coordonnées lues
+  dans les fichiers, intégrations Discord). **Fiche de backtest refaite** : 99 → 57 tests (32 bloquants), doublons fusionnés
+  (bus ×3, Discord ×4, points ×3, police IA, site, Fleeca), validé retiré (backtest du 09/10, import des mods et console des
+  maps du 12/10). La fiche du 10/10 renvoyée par l'utilisateur n'avait aucune case cochée : rien d'autre ne pouvait être retiré.
+  `ROADLINE_Fiche_tests.pdf` (V10.1) et `ROADLINE_Reste_a_tester.pdf` (V7-V10) sont obsolètes : la seule recette est le backtest.
+
 - **V12.12** (12/10/2026) — **premier conflit réel signalé par la console** : `cs1_occl_10.ymap` (occlusion de Paleto Bay) livré
   par `gsa_cfx_draft_pb_liquor_pack` ET `gsa_mlo_willies_supermarket` → l'un des deux intérieurs peut clignoter ou disparaître.
   - **`tools/maps/fusion_occlusion.py`** : lit le format Meta du jeu (table des blocs, CMapData, `boxOccluders` +128,

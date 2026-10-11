@@ -210,6 +210,7 @@ def build():
                 '<b>Auto-école</b> (Strawberry) : passe ton permis.',
                 '<b>Location de la mairie</b> : un scooter en attendant.',
                 'Reviens voir Max : <b>300 XP et 500 $</b>.'])
+    s += [tip('L\'arrivée en bus ne se joue qu\'une fois par personnage (Espace pour la passer). À la descente, le GPS est déjà tracé vers Max.')]
     s += [Paragraph('Le permis de conduire', H3)]
     s += [table([['Étape', 'Prix', 'Comment'],
                  ['Code', money(500), '10 questions tirées au hasard, 8 bonnes réponses pour réussir (nouvel essai 5 min après un échec).'],
@@ -246,9 +247,20 @@ def build():
             ['/droits', 'En garde à vue : avocat, silence, aveux, dénoncer un gang (témoin protégé)'],
             ['/porter', 'Porter un carton, une caisse, une pizza… (aussi W → Moi → Porter)'],
             ['/permis', 'Ton permis est-il valide ?'],
+            ['/retoucheperso', 'Retoucher ton apparence une fois après la création (visage, coiffure)'],
             ['/jury', 'Rouvrir ta convocation de juré'],
             ['/report', 'Prévenir le staff']]
     s += [table(cmds, [40 * mm, 140 * mm])]
+    s += [Paragraph('Secours et urgences', H3)]
+    s += [table([['Situation', 'Ce que tu fais'],
+                 ['Tu es à terre', '<b>[G]</b> : « Demander de l\'aide » si un ambulancier est en service (il reçoit ta position), sinon « Appeler les secours » : un secouriste arrive et te réanime (payant).'],
+                 ['Témoin d\'un accident ou d\'un crime', 'Téléphone → appli <b>Urgences</b> : police, ambulance ou dépanneuse, avec ta position.'],
+                 ['Menotté ou à terre', 'Le téléphone est bloqué : c\'est voulu (pas d\'appel à l\'aide en pleine arrestation). /911p est réservé au staff.']],
+                [45 * mm, 135 * mm])]
+    s += [Paragraph('Le Discord RoadLine', H3)]
+    s += bullets(['<b>/aide</b> (ou /help) : toutes les commandes du bot · <b>/ip</b> : l\'adresse du serveur et la commande à taper dans F8.',
+                  '<b>/ticket sujet</b> : ouvre un fil privé avec le staff (une question, un remboursement, une plainte) ; /fermer quand c\'est réglé.',
+                  'Annonces, statut du serveur en direct, résumé de la nuit à 23 h 30 et Gazette du dimanche sont publiés automatiquement.'])
 
     # ---- 2. Argent ----
     s += chapter(2, 'L\'argent', 'Trois poches : le <b>liquide</b> (dans l\'inventaire), la <b>banque</b> (carte, téléphone) et '
@@ -616,12 +628,16 @@ def build():
                   'Les témoins décrivent ce qu\'ils ont vu : sexe, véhicule, masque, chapeau, sac, gilet, tatouages visibles. Jamais ton nom… sauf si tu es célèbre.',
                   'Les <b>preuves</b> restent sur place : douilles, sang, empreintes (sans gants), traces de pneus, éclats de peinture. '
                   'La police les relève à la lampe et les analyse au labo.',
-                  'Sans policier joueur en service, la <b>police IA</b> prend le relais (1 à 4 étoiles).'])
+                  'Sans policier joueur en service, la <b>police IA</b> prend le relais (1 à 4 étoiles). Seul en ville ne veut pas dire tranquille : '
+                  'un crime sérieux (braquage, banque, bijouterie, explosion, sabotage) est signalé au moins <b>6 fois sur 10</b>, même sans témoin.',
+                  'Les <b>vols de voiture</b> (serrure forcée, fils, conducteur sorti de force) arrivent au central comme les autres crimes.',
+                  'Exceptions : un <b>chasseur avec permis</b> dans la zone de chasse ne déclenche pas d\'alerte en tirant sur le gibier ; les stands de tir Ammu-Nation non plus.',
+                  'Le <b>shérif</b> du comté reçoit les mêmes alertes que le LSPD.'])
     s += [Paragraph('Ce que risque un suspect', H3)]
     s += [table([['Étape', 'Ce qui se passe'],
                  ['Contrôle', 'Identité (contrôle visuel ; au commissariat, le scanner démasque les faux papiers), fouille, retrait de permis, amende (/factures). Refuser d\'obtempérer est un délit.'],
                  ['Témoin protégé', 'En garde à vue, /droits → <b>dénoncer un gang</b> : peine divisée par deux. Le gang apprend que « quelqu\'un a parlé », jamais qui ; la police te protège 7 jours (lieu sûr sur le GPS). Si tu tombes pendant ce temps, le gang est dans le viseur.'],
-                 ['Garde à vue', 'Jusqu\'à 30 min à Mission Row. /droits : avocat, silence, aveux (peine réduite de 30 %).'],
+                 ['Garde à vue', 'Jusqu\'à 30 min à Mission Row (salle d\'interrogatoire au sous-sol). /droits : avocat, silence, aveux (peine réduite de 30 %).'],
                  ['Procès', 'Devant un juge, avec avocat. Pour un vrai procès, le juge peut convoquer un <b>jury de 5 citoyens</b> tirés au sort : '
                   'le verdict suit leur vote (les jurés touchent 100 $).'],
                  ['Prison', 'Bolingbroke, jusqu\'à 60 min. Petits boulots pour réduire la peine, cantine payée en tickets, évasion possible la nuit, à plusieurs.']],
@@ -648,6 +664,8 @@ def build():
                  ['Météo', 'Canicule, tempête, brouillard : prix, refus de vente, butins et visibilité changent.'],
                  ['Presse', 'Brèves Weazel automatiques, Direct pendant les grosses poursuites, Radio Los Santos en voiture, '
                   'et la <b>Gazette du dimanche</b> à 20 h (site, Discord, /gazette).'],
+                 ['Nouveaux lieux', 'Intérieurs refaits ou ajoutés : hôpital Pillbox, agences Fleeca, Bahama Mamas, pharmacie Pop\'s Pills, supermarché Willie\'s, '
+                  'commissariat de Mission Row agrandi, commissariat de Vinewood, salle de sport, atelier de La Mesa, magasin d\'alcool de Paleto.'],
                  ['Le site', 'Carte en direct de la vraie Los Santos : tension des quartiers, rendez-vous, légendes, les 24 dernières heures rejouées, « En ce moment en ville », et une candidature en trois questions.']],
                 [32 * mm, 148 * mm], font=8.3)]
     s += [Paragraph('Le calendrier', H3)]
