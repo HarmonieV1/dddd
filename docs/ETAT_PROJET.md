@@ -262,8 +262,11 @@ Résumé très condensé (le détail complet est dans `docs/ROADMAP.md`, `docs/F
     licence, marques, chiffrement, performance), procédure `IMPORTER-MODS.bat`, sources acceptables, sites à proscrire.
   - **`check_honeypot.py` durci** : ne lit plus que les fichiers suivis par Git et ignore les copies de `honeypot.lua`.
     Avant, un colis de synchronisation dézippé dans le dépôt (ou `livraison/`) bloquait le push à tort.
+  - **Pots de miel testés à l'exécution** (`tests/test_gs_honeypot.lua`, 16 vérifications) : piège → ban définitif,
+    staff jamais banni ni expulsé, déclenchement côté serveur ignoré, modes `kick` / `log`, expulsion de secours si
+    `gs_admin` est en panne. Les noms de pièges y sont relus depuis `GSSec.Honeypot`, jamais écrits en clair.
   - **Tests** : +23 assertions `gs_admin` (niveaux, durées, anti-abus, déban, liste, peine écoulée, ban auto staff/joueur).
-    Suite complète verte : 2648 tests Lua / 90 fichiers, 44 tests bot Discord, 27 pièges vérifiés.
+    Suite complète verte : 2664 tests Lua, 44 tests bot Discord, 27 pièges vérifiés.
 
 - **V12.3** (10/10/2026) :
   - **Bot Discord** : les administrateurs du Discord RoadLine ont les commandes staff (le serveur est vérifié avant, donc sûr) ;
