@@ -12,11 +12,28 @@ const zlib = require('zlib');
 const STREAM_CHECK = ['.ymap', '.ybn', '.ytyp'];   // fichiers dont le doublon casse une map (.ymf : nom commun, ignoré)
 const MAX_FILE = 32 * 1024 * 1024;
 const CLUSTER = 200.0;                              // deux lieux à moins de 200 m = le même endroit
+const HEAVY = ['.ydr', '.ytd', '.ydd', '.yft'];      // modèles et textures : taille en mémoire lue dans l'en-tête
+const HEAVY_MB = 16;                                 // au-delà, FiveM prévient : textures ou modèles qui ne s'affichent pas
 
 /** Un .ymap est une ressource RSC7 : en-tête de 16 octets puis données compressées (deflate brut). */
 function inflateRsc7(buf) {
   if (!buf || buf.length < 20 || buf.toString('latin1', 0, 4) !== 'RSC7') return null;
   try { return zlib.inflateRawSync(buf.subarray(16)); } catch (e) { return null; }
+}
+
+/** Taille en mémoire d'un bloc RSC7 (formule des « page flags » du format de ressource du jeu). */
+function pagesSize(flags) {
+  const s = (((flags >>> 27) & 1) << 0) + (((flags >>> 26) & 1) << 1) + (((flags >>> 25) & 1) << 2) + (((flags >>> 24) & 1) << 3)
+    + (((flags >>> 17) & 0x7f) << 4) + (((flags >>> 11) & 0x3f) << 5) + (((flags >>> 7) & 0xf) << 6) + (((flags >>> 5) & 3) << 7)
+    + (((flags >>> 4) & 1) << 8);
+  return (0x200 * 2 ** (flags & 0xf)) * s;
+}
+
+/** Mémoire occupée une fois chargé (Mo) : la plus grande des deux parties (système / graphique). Le poids du fichier
+ *  compressé ne suffit pas : un modèle de 15 Mo sur le disque peut en prendre 26 en mémoire. */
+function memoryMB(head) {
+  if (!head || head.length < 16 || head.toString('latin1', 0, 4) !== 'RSC7') return 0;
+  return Math.max(pagesSize(head.readUInt32LE(8)), pagesSize(head.readUInt32LE(12))) / 1048576;
 }
 
 /** Positions des objets posés par la map. Un CEntityDef = position (3 flottants), puis 16 octets plus loin une rotation
@@ -44,7 +61,7 @@ function isVanillaName(file) {
   const base = path.basename(file).toLowerCase().replace(/\.[^.]+$/, '');
   if (/(^|_)(occl|lodlights|distantlights)(_|$)/.test(base)) return true;
   // Codes de zone de la carte du jeu : ap1, bh1, ch1-3, cs1-6, dt1, hw1, id1-2, kt1, po1, sc1, ss1, vb…
-  return base.split(/[_\-]/).some((t) => /^(ap|bh|ch|cs|dt|hw|id|kt|po|sc|ss|vb|cv)\d{1,2}$/.test(t));
+  return base.split(/[_\-]/).some((t) => /^(ap|bh|bt|ch|cs|dt|hw|id|kt|po|sc|ss|vb|cv)\d{1,2}$/.test(t));
 }
 
 const median = (a) => { const s = [...a].sort((u, v) => u - v); return s.length ? s[Math.floor(s.length / 2)] : 0; };
@@ -91,11 +108,18 @@ function walk(dir, out = []) {
 /** Lit une ressource map : ses lieux et les fichiers du jeu qu'elle remplace. */
 function scanResource(name, dir) {
   const files = walk(dir);
-  const ymaps = [], streamed = [];
-  let unreadable = 0;
+  const ymaps = [], streamed = [], heavy = [];
+  let unreadable = 0, assets = 0;
   for (const f of files) {
     const ext = path.extname(f).toLowerCase();
     if (STREAM_CHECK.includes(ext)) streamed.push(path.basename(f).toLowerCase());
+    if (HEAVY.includes(ext) || STREAM_CHECK.includes(ext)) assets++;
+    if (HEAVY.includes(ext)) {
+      let head = null;
+      try { const fd = fs.openSync(f, 'r'); head = Buffer.alloc(16); fs.readSync(fd, head, 0, 16, 0); fs.closeSync(fd); } catch (e) { head = null; }
+      const mb = memoryMB(head);
+      if (mb > HEAVY_MB) heavy.push({ file: path.basename(f), mb: Math.round(mb * 10) / 10 });
+    }
     if (ext !== '.ymap') continue;
     let buf = null;
     try { if (fs.statSync(f).size <= MAX_FILE) buf = fs.readFileSync(f); } catch (e) { buf = null; }
@@ -103,7 +127,8 @@ function scanResource(name, dir) {
     if (!data) { unreadable++; continue; }
     ymaps.push({ file: path.basename(f), entities: entitiesOf(data) });
   }
-  return { name, label: labelOf(name), places: placesOf(ymaps, name), ymaps: ymaps.length, unreadable, streamed };
+  heavy.sort((a, b) => b.mb - a.mb);
+  return { name, label: labelOf(name), places: placesOf(ymaps, name), ymaps: ymaps.length, unreadable, assets, heavy, streamed };
 }
 
 function labelOf(name) {
@@ -127,7 +152,7 @@ function scanAll(list) {
   return { maps: maps.map(({ streamed, ...m }) => m), conflicts };
 }
 
-if (typeof module !== 'undefined' && module.exports) module.exports = { inflateRsc7, entitiesOf, isVanillaName, placesOf, scanResource, conflictsOf, scanAll, labelOf }; // tests Node seulement
+if (typeof module !== 'undefined' && module.exports) module.exports = { inflateRsc7, entitiesOf, memoryMB, pagesSize, isVanillaName, placesOf, scanResource, conflictsOf, scanAll, labelOf }; // tests Node seulement
 
 if (typeof GetCurrentResourceName === 'function') {
   const mapResources = () => {
@@ -158,6 +183,7 @@ if (typeof GetCurrentResourceName === 'function') {
     const placed = r.maps.filter((m) => m.places.length).length;
     console.log(`[gs_admin] Mappings : ${r.maps.length} installé(s), ${placed} situé(s) (F11 → Monde et lieux → Mappings installés)` +
       (r.conflicts.length ? `, ^1${r.conflicts.length} CONFLIT(S)^7` : ', aucun conflit'));
+    for (const m of r.maps) for (const h of m.heavy) console.log(`^3[gs_admin] Map ${m.name} : ${h.file} prend ${h.mb} Mo en mémoire (limite conseillée 16 Mo) : textures ou murs qui peuvent ne pas s'afficher chez certains joueurs^7`);
     for (const c of r.conflicts) console.log(`^1[gs_admin] Conflit de maps : ${c.file} est remplacé par ${c.resources.join(' ET ')} (une seule des deux s'affichera correctement)^7`);
   }, 15000);
 }

@@ -1,4 +1,4 @@
-# Génère docs/pdf/ROADLINE_Backtest_complet.pdf : TOUT ce qui reste à tester en jeu (V5 → V12.10, sans ce que le backtest du 09/10 a couvert), rangé en sessions de
+# Génère docs/pdf/ROADLINE_Backtest_complet.pdf : TOUT ce qui reste à tester en jeu (V5 → V12.11, sans ce que le backtest du 09/10 a couvert), rangé en sessions de
 # jeu (dans l'ordre le plus efficace), avec qui il faut (Seul / 2 / 3+ / Staff) et la priorité (★★★ = bloquant à l'ouverture).
 import sys
 sys.path.insert(0, 'tools')
@@ -7,9 +7,9 @@ from pdf import H1, H2, P, SMALL, VERSION, footer, A4, mm, colors, SimpleDocTemp
 # (test, qui, priorité)
 SESSIONS = [
     ('0 · Avant de commencer (5 min)', [
-        ('METTRE-A-JOUR.bat : version V12.10 affichée, « Base de données sauvegardée », « Sauvegardes programmées » ; METTRE-A-JOUR-OVH puis GERER-OVH → 1 : « Version RoadLine : V12.10 »', 'Staff', 3),
+        ('METTRE-A-JOUR.bat : version V12.11 affichée, « Base de données sauvegardée », « Sauvegardes programmées » ; METTRE-A-JOUR-OVH puis GERER-OVH → 1 : « Version RoadLine : V12.11 »', 'Staff', 3),
         ('Fenêtre du serveur : aucune ligne ROUGE au démarrage ; F8 en jeu : aucune erreur rouge ; GERER-OVH → 3 : aucune erreur de script', 'Seul', 3),
-        ('VIDER-CACHE-FIVEM.bat si tu vois encore un ancien menu (F11 doit afficher « RoadLine V12.10 ») ; bio du bot : X/48 ; site : « En ce moment en ville » 0/48', 'Seul', 2),
+        ('VIDER-CACHE-FIVEM.bat si tu vois encore un ancien menu (F11 doit afficher « RoadLine V12.11 ») ; bio du bot : X/48 ; site : « En ce moment en ville » 0/48', 'Seul', 2),
     ]),
     ('1 · À re-vérifier après correction — ton retour du 09/10 (30 min)', [
         ('Nouveau joueur : un seul personnage ; fondateur, super-admins et VIP (F11 → Joueurs → VIP) : deux ; plus de choix du lieu ; déco / reco = même endroit', '2', 3),
@@ -58,10 +58,13 @@ SESSIONS = [
         ('Discord : un compte de test rejoint le Discord → message de bienvenue dans le salon réglé (CONFIGURER-DISCORD) ; sans l\'option « Server Members » du portail Discord → console : bienvenue coupée, le bot reste connecté', 'Staff', 2),
         ('Site : météo et heure de la ville en direct, bouton son (coupé par défaut), fluide sur téléphone', 'Seul', 1),
     ]),
-    ('1e · Mappings — V12.10 (20 min, en mode staff)', [
+    ('1e · Mappings — V12.10 / V12.11 (25 min, en mode staff)', [
         ('Console du serveur au démarrage : « [gs_admin] Mappings : N installé(s), N situé(s), aucun conflit » ; s\'il y a un CONFLIT, me copier la ligne rouge', 'Staff', 3),
         ('F11 → Monde et lieux → Mappings installés : chaque map a un quartier ; clic → téléporté DEDANS (pas sur le toit) ; « Afficher leurs blips » → visibles sur ta carte, pas chez les autres', 'Staff', 3),
         ('Faire le tour : Pillbox, Fleeca, Pops Pills, Bahama Mamas, Willie\'s → nos points (soins, braquage, pharmacie, bar, supérette) dans la map et pas dans un mur ; sinon F11 → Déplacer un point', 'Staff', 3),
+        ('Pillbox (nouvel intérieur) : prise de service EMS, direction, pharmacie, armurerie, vestiaire, garage, chirurgien, pharmacie publique → chaque [E] dans une pièce, pas dans un mur', 'Staff', 3),
+        ('Fleeca Legion Square (habillage hp_fleeca, change les 6 agences) : banque, braquage du guichet, braquage du coffre et gros coup en duo : points accessibles, porte du coffre cohérente', '2', 3),
+        ('Gym (Moreo) : murs, sol et miroirs s\'affichent bien, y compris chez un joueur avec un PC modeste (modèle de 26,5 Mo en mémoire, signalé en console)', '2', 2),
         ('mrpd_etendu installé : policier en service au sous-sol du commissariat → 3 portes (interrogatoire, briefing, réserve) ; un civil ne les voit pas', '2', 2),
         ('NETTOYER-MARQUES.bat : liste les mods de marque (dont mp_male_the_goat), supprime après « O », le reste (maps, vêtements sans marque) intact', 'Staff', 2),
     ]),

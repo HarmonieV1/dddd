@@ -960,9 +960,17 @@ local function mainMenu()
                 description = 'Deux maps remplacent le même fichier du jeu : en garder une', onSelect = function() show('gs_staff_maps_conf', 'Conflits entre maps', c, 'gs_staff_maps') end }
         end
         for _, m in ipairs(r.maps) do
+            for _, h in ipairs(m.heavy or {}) do
+                o[#o + 1] = { title = ('%s : modèle trop lourd'):format(m.label), icon = 'weight-hanging', iconColor = '#ffb020', disabled = true,
+                    description = ('%s prend %.1f Mo en mémoire (16 conseillés) : textures ou murs qui peuvent ne pas s\'afficher'):format(h.file, h.mb) }
+            end
             if #m.places == 0 then
-                o[#o + 1] = { title = m.label, icon = 'circle-question', disabled = true,
-                    description = m.name .. (m.ymaps == 0 and ' · aucun fichier de map (.ymap) : vide ou incomplète' or ' · emplacement introuvable') }
+                local why = ' · emplacement introuvable'
+                if m.ymaps == 0 then
+                    why = (m.assets or 0) > 0 and ' · habillage d\'objets du jeu (ex. toutes les agences Fleeca), pas de lieu propre'
+                        or ' · aucun fichier de map : vide ou incomplète, à supprimer'
+                end
+                o[#o + 1] = { title = m.label, icon = 'circle-question', disabled = true, description = m.name .. why }
             end
             for i, p in ipairs(m.places) do
                 local zone = GetLabelText(GetNameOfZone(p.x, p.y, p.z))

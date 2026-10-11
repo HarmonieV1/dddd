@@ -1,4 +1,4 @@
-# État du projet RoadLine RP — récapitulatif complet (à jour au 12/10/2026, V12.10)
+# État du projet RoadLine RP — récapitulatif complet (à jour au 12/10/2026, V12.11)
 
 Ce document sert de **point de sauvegarde** : si une conversation avec Claude est perdue, compressée ou doit reprendre
 ailleurs, tout ce qu'il faut savoir est ici. Il est versionné avec le code (`git log` en garde aussi l'historique).
@@ -47,7 +47,7 @@ exclusifs (« ce que tu ne trouveras nulle part ailleurs »).
 - `feature/phase1-bridge`
 - `claude/gta-rp-architecture-stack-pbvdxz`
 
-**Dernier commit poussé** : « V12.10 : mappings situés dans F11 » (hash exact :
+**Dernier commit poussé** : « V12.11 : contrôle de la mémoire des maps » (hash exact :
 `git log -1 origin/feature/phase1-bridge`). Les deux branches pointent sur le même commit.
 
 **Deux sessions Claude en parallèle** (poste Windows et session web) : elles ne se voient pas. Toujours synchroniser
@@ -57,7 +57,7 @@ par un colis (zip de l'installation ou de la session) + ce fichier, et comparer 
 ## 2. Versions : interne vs publique (important, piège classique)
 
 Depuis la V11.3, il y a **deux numéros de version différents**, volontairement :
-- `gs_version` (convar, `server.cfg.example`) = **V12.10** → version technique interne, vue par le staff (F11, console,
+- `gs_version` (convar, `server.cfg.example`) = **V12.11** → version technique interne, vue par le staff (F11, console,
   METTRE-A-JOUR). Continue d'avancer à chaque mise à jour (V11.2, V11.3...).
 - `gs_public_version` (convar) = **« V4 · bêta »** → version vue par les **joueurs** (écran de chargement, statut
   Discord, Gazette). Le site affiche son propre journal (V1 à V4, V5 « classé confidentiel »).
@@ -262,6 +262,19 @@ Résumé très condensé (le détail complet est dans `docs/ROADMAP.md`, `docs/F
   ne remplace pas le curseur), profondeur CSS `animation-timeline: view()` (captures, mock, carte, chiffres), intro
   façon chargement de mission (Entrée / clic pour passer). Tout coupé par `prefers-reduced-motion`, souris seulement
   sur ordinateur. Une seule boucle rAF qui s'endort quand rien ne bouge. Vérifié dans le navigateur : 0 erreur.
+
+- **V12.11** (12/10/2026) — 4 maps de plus vérifiées (Pillbox, Fleeca, gym Moreo, Vinewood) :
+  - **Aucun conflit** entre les 7 maps reçues (aucun fichier du jeu remplacé deux fois).
+  - **Mémoire réelle des modèles** lue dans l'en-tête RSC7 (`maps.js`, « page flags ») : au-delà de 16 Mo, signalé en F11 et en
+    console. Le gym Moreo : `moreo_gym_shell.ydr` = 15,3 Mo sur le disque mais **26,5 Mo en mémoire** (l'importeur, qui ne regarde
+    que le fichier, ne pouvait pas le voir) → risque de murs / textures invisibles sur PC modeste, à vérifier en jeu.
+  - Map sans `.ymap` : distinguée entre **habillage** (`hp_fleeca` remplace les modèles des 6 agences Fleeca : coffre, guichets,
+    collisions ; mêmes noms de modèles, aucun de nos scripts ne manipule ces portes) et map **vide**.
+  - Points à recaler en jeu si besoin : Pillbox (8 points EMS / pharmacie / chirurgien, tous à z 43,3), Fleeca Legion (10 points :
+    banque, braquages, quête). Gym et Vinewood : aucun point RoadLine.
+  - **Licence Pillbox (phxlsmc) : CC BY-NC-ND** (pas d'usage commercial) → à remplacer si une boutique payante ouvre.
+  - Archive du gym reçue avec 2 fichiers abîmés (envoi) : `asd.cwproj` (inutile) et `moreo_gym_lights.ydr` ; la copie du PC fait foi.
+  - Tests : +8 (`test_gs_maps.js` : 40, mutations vérifiées). Recette session 1e : +3 tests (Pillbox, Fleeca, gym).
 
 - **V12.10** (12/10/2026) — **les mappings se retrouvent tout seuls** :
   - Rapport IMPORTER-MODS du 12/10 : 14 maps installées (dont 3 protégées, achetées avec la clé Cfx du serveur), 3 vêtements,

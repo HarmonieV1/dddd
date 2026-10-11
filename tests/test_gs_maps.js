@@ -72,6 +72,22 @@ check('map vide : signalée sans lieu', by.gsa_vide.places.length === 0 && by.gs
 check('fichier abîmé : compté illisible, rien ne plante', by.gsa_casse.unreadable === 1 && by.gsa_casse.places.length === 0);
 check('liste brute des fichiers non envoyée au menu', r.maps.every((m) => m.streamed === undefined));
 check('maps triées par nom', r.maps.map((m) => m.label).join() === [...r.maps.map((m) => m.label)].sort((x, y) => x.localeCompare(y)).join());
+
+// 5. Mémoire des modèles (en-tête RSC7) : le poids du fichier ne suffit pas
+const rsc = (sysFlags, gfxFlags) => { const h = Buffer.alloc(16); h.write('RSC7', 0, 'latin1'); h.writeUInt32LE(165, 4); h.writeUInt32LE(sysFlags, 8); h.writeUInt32LE(gfxFlags, 12); return h; };
+check('taille d\'une page : 0x200 << 0 × 1 page de rang 0', M.pagesSize((1 << 27) | 0) === 0x200);
+check('taille : 2 pages de rang 4 de 0x2000 = 0x20000', M.pagesSize((2 << 17) | 4) === 0x2000 * 2 * 16);
+const gym = rsc(0xa3020003, 0x52020188); // en-tête réel de moreo_gym_shell.ydr (26,5 Mo en mémoire graphique)
+check('modèle lourd : ~26,5 Mo en mémoire', Math.abs(M.memoryMB(gym) - 26.5) < 0.3);
+check('pas un RSC7 : 0', M.memoryMB(Buffer.from('PK\u0003\u0004xxxxxxxxxxxx')) === 0);
+const e = mk('gsa_lourde', { 'stream/shell.ydr': Buffer.concat([gym, Buffer.alloc(64)]), 'stream/petit.ytd': Buffer.concat([rsc(0, (1 << 17) | 2), Buffer.alloc(64)]),
+  'stream/lieu.ymap': ymap([[-451.5, -33.3, 48.9]]) });
+const f = mk('gsa_habillage', { 'stream/v_ilev_gb_vauldr.ydr': Buffer.concat([rsc(0, (1 << 17) | 2), Buffer.alloc(32)]), 'stream/v_int_10.ytyp': 'x' });
+const r2 = Object.fromEntries(M.scanAll([e, f]).maps.map((m) => [m.name, m]));
+check('modèle de plus de 16 Mo en mémoire signalé', r2.gsa_lourde.heavy.length === 1 && r2.gsa_lourde.heavy[0].file === 'shell.ydr' && r2.gsa_lourde.heavy[0].mb > 26);
+check('petite texture : pas signalée', !r2.gsa_lourde.heavy.some((h) => h.file === 'petit.ytd'));
+check('habillage sans .ymap (Fleeca) : fichiers du jeu comptés, pas « vide »', r2.gsa_habillage.ymaps === 0 && r2.gsa_habillage.assets === 2);
+check('map vide : 0 fichier de jeu', by.gsa_vide.assets === 0);
 fs.rmSync(tmp, { recursive: true, force: true });
 
 console.log(`lecteur de maps : ${passed} réussis, ${failed} échoués`);
