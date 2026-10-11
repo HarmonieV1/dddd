@@ -80,7 +80,7 @@ function Double.rob(src, id)
     if not JobsApi:RemoveSocietyMoney(id, take) then return false, 'La caisse est vide.' end
     if Bridge:ItemExists('black_money') then Bridge:AddItem(src, 'black_money', take) else Bridge:AddMoney(src, 'cash', take, 'braquage') end
     if GetResourceState('gs_wanted') == 'started' then
-        pcall(function() exports.gs_wanted:ReportCrime(src, 'store_robbery', vec3(b.register.x, b.register.y, b.register.z)) end)
+        pcall(function() exports.gs_wanted:ReportCrime(src, 'shop_robbery', vec3(b.register.x, b.register.y, b.register.z)) end)
     end
     local owner = Bridge:GetSourceByIdentifier(Double.list[id].cid)
     if owner then Bridge:Notify(owner, ('Ta doublure du %s s\'est fait braquer (%d $ pris dans la caisse).'):format(b.label, take), 'error') end

@@ -32,7 +32,7 @@ function Blackout.sabotage(src, id)
     Blackout.active[id], Blackout.last[id], Blackout.by[id] = now() + B.minutes * 60, now(), Bridge:GetIdentifier(src)
     publish()
     if started('gs_cctv') then pcall(function() exports.gs_cctv:BlindArea(d.center.x, d.center.y, d.radius, B.minutes) end) end
-    if started('gs_wanted') then pcall(function() exports.gs_wanted:ReportCrime(src, 'racket', tr.coords) end) end
+    if started('gs_wanted') then pcall(function() exports.gs_wanted:ReportCrime(src, 'sabotage', tr.coords) end) end
     City.add(tr.coords, B.heat)
     news(id, 'cut')
     TriggerEvent('gs_city:server:blackout', id, true)

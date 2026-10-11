@@ -123,4 +123,4 @@ Config.Blips = {
 
 -- V10 · Les commerçants se souviennent : un habitué (achats sur plusieurs jours différents) est salué par son prénom et
 -- a une remise ; un braqueur à visage découvert est reconnu et se fait refuser au comptoir pendant un moment.
-Config.Regulars = { visits = 5, discount = 0.05, banHours = 48, maxDiscount = 0.25, crimes = { store_robbery = true }, radius = 35.0 }
+Config.Regulars = { visits = 5, discount = 0.05, banHours = 48, maxDiscount = 0.25, crimes = { store_robbery = true, shop_robbery = true }, radius = 35.0 }

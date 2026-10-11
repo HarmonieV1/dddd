@@ -110,7 +110,7 @@ function CCTV.blindCam(src, i)
     if not Bridge:RemoveItem(src, Config.Blind.item, 1) then return false, 'Il te faut une bombe de peinture.' end
     CCTV.blind[i] = now() + Config.Blind.minutes * 60
     GlobalState.gsCctvBlind = (function() local l = {} for k, v in pairs(CCTV.blind) do if v > now() then l[#l + 1] = k end end return l end)()
-    if GetResourceState('gs_wanted') == 'started' then pcall(function() exports.gs_wanted:ReportCrime(src, 'racket', cam.coords) end) end
+    if GetResourceState('gs_wanted') == 'started' then pcall(function() exports.gs_wanted:ReportCrime(src, 'vandalism', cam.coords) end) end
     return true, ('Objectif peint : la caméra %s est aveugle pour %d min.'):format(cam.label, Config.Blind.minutes)
 end
 

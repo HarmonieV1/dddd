@@ -331,6 +331,18 @@ function Wanted.alert(crimeType, coords)
     return report
 end
 
+--- V12.7 · Chasseur en règle dans une zone de chasse : ses tirs ne sont pas une alerte (le braconnage, lui, est
+--- signalé par gs_harvest au dépeçage).
+function Wanted.legalHunter(src, coords)
+    for _, z in ipairs(Config.HuntingGrounds or {}) do
+        if #(coords - z.coords) <= z.radius then
+            local ok, lic = pcall(function() return Bridge:GetLicences(src) end)
+            return ok and type(lic) == 'table' and lic[z.licence] == true
+        end
+    end
+    return false
+end
+
 local lastShot = {} -- [src] = GetGameTimer() : un signalement de tirs toutes les 10 s par joueur au plus
 local function onShot(src, silenced)
     local t = GetGameTimer()
@@ -339,6 +351,7 @@ local function onShot(src, silenced)
     local ped = GetPlayerPed(src)
     if ped == 0 or GetSelectedPedWeapon(ped) == UNARMED or isPoliceOnDuty(src) then return end
     local coords = GetEntityCoords(ped)
+    if Wanted.legalHunter(src, coords) then return end
     local r = Wanted.report(src, 'gunshot', coords, { silenced = silenced == true, vehicle = GetVehiclePedIsIn(ped, false) })
     if not r and silenced ~= true then Wanted.alert('gunshot', coords) end
 end
@@ -349,7 +362,7 @@ RegisterNetEvent('gs_wanted:server:shot', function(silenced)
     if not Security:RateLimit(src, 'gs_wanted:shot', 1, 10000) then return end
     onShot(src, silenced)
 end)
-AddEventHandler('playerDropped', function() lastShot[source] = nil end)
+AddEventHandler('playerDropped', function() lastShot[source] = nil lastVehicleCrime[source] = nil end)
 
 -- V10.2 · Coup d'arme blanche porté (couteau, batte…) : détecté côté serveur
 local function u32(h) h = tonumber(h) or 0 return h < 0 and h + 4294967296 or h end -- hash signé ou non selon la source
@@ -365,12 +378,30 @@ AddEventHandler('weaponDamageEvent', function(sender, data)
     if not Wanted.report(src, 'stabbing', coords) then Wanted.alert('stabbing', coords) end
 end)
 
+-- V12.7 · Vols de véhicule : un seul signalement par joueur et par 20 s, que ce soit un car-jacking (on sort le
+-- conducteur) ou une serrure forcée / démarrage aux fils (qbx_vehiclekeys, branché ici au lieu du canal qbx_police).
+-- Avant : le même vol pouvait arriver deux fois au policier, sous deux formes d'alerte différentes.
+local lastVehicleCrime = {}
+local function vehicleCrime(src, crimeType)
+    local t = GetGameTimer()
+    if lastVehicleCrime[src] and t - lastVehicleCrime[src] < 20000 then return end
+    local ped = GetPlayerPed(src)
+    if ped == 0 or isPoliceOnDuty(src) then return end
+    lastVehicleCrime[src] = t
+    local veh = GetVehiclePedIsIn(ped, false) -- serrure forcée de l'extérieur : pas encore à bord, signalement sans plaque
+    Wanted.report(src, crimeType, GetEntityCoords(ped), { vehicle = veh ~= 0 and veh or nil })
+end
+
 RegisterNetEvent('gs_wanted:server:carjack', function()
     local src = source
     if not Security:RateLimit(src, 'gs_wanted:carjack', 1, 20000) then return end
-    local ped = GetPlayerPed(src)
-    if ped == 0 or isPoliceOnDuty(src) then return end
-    Wanted.report(src, 'carjack', GetEntityCoords(ped), { vehicle = GetVehiclePedIsIn(ped, false) })
+    vehicleCrime(src, 'carjack')
+end)
+
+RegisterNetEvent('gs_wanted:server:vehicleTheft', function()
+    local src = source
+    if not Security:RateLimit(src, 'gs_wanted:vehicleTheft', 1, 10000) then return end
+    vehicleCrime(src, 'vehicle_theft')
 end)
 
 -- Explosions : détectées côté serveur (le client ne peut pas les cacher).

@@ -32,7 +32,7 @@ end
 local function allowed(item, d)
     if item.only == 'gang' then return d.gang ~= nil end
     if item.only == 'nogang' then return d.gang == nil end
-    if item.only == 'police' then return d.job and d.job.name == 'police' end
+    if item.only == 'police' then return d.job and (d.job.name == 'police' or d.job.name == 'sheriff') end -- V12.7 : shérif compris
     return true
 end
 

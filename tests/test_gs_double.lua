@@ -58,7 +58,7 @@ W.players[1].weapon = joaat('WEAPON_PISTOL') + 1000
 before = society.bar
 ok = cb('gs_business:double', 1, 'rob', 'bar'); step()
 local take = math.min(Config.Double.rob.max, math.floor(before * Config.Double.rob.pct))
-check('braquage : pris dans la caisse, crime signalé', ok and society.bar == before - take and crimes[1] == 'store_robbery')
+check('braquage : pris dans la caisse, crime signalé', ok and society.bar == before - take and crimes[1] == 'shop_robbery')
 ok = cb('gs_business:double', 1, 'rob', 'bar'); step()
 check('une fois toutes les 2 h', not ok)
 Double.robbed.bar = nil

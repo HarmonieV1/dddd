@@ -32,6 +32,17 @@ $QboxPatches = @(
     @{ res = 'qbx_vehiclekeys'; file = 'config\shared.lua'; find = 'spawnLockedIfParked = 0\.75'; repl = 'spawnLockedIfParked = 0.5'; why = 'voitures PNJ garées : 50 % verrouillées' },
     @{ res = 'qbx_vehiclekeys'; file = 'config\shared.lua'; find = 'spawnLockedIfDriven = 0\.75'; repl = 'spawnLockedIfDriven = 0.35'; why = 'voitures PNJ en circulation : 35 % verrouillées' },
     @{ res = 'qbx_vehiclekeys'; file = 'config\shared.lua'; find = 'findKeysChance = 0\.5,'; repl = 'findKeysChance = 0.65,'; why = 'fouiller une voiture (H) : 65 % de trouver les clés' },
+    # V12.7 · Cohérence des alertes : un vol de voiture (serrure forcée, fils, car-jacking) passe par le central RoadLine
+    # (gs_wanted : témoins, caméras, nuit, mémoire de la ville) au lieu du canal qbx_police, qui envoyait une 2e alerte
+    # sous une autre forme, à 75 % même sans aucun témoin.
+    @{ res = 'qbx_vehiclekeys'; file = 'config\client.lua'; why = 'vols de véhicule : alerte par le central RoadLine'
+       find = "TriggerServerEvent\('police:server:policeAlert', locale\(""info\.vehicle_theft""\) \.\. crime\)"
+       repl = "TriggerServerEvent('gs_wanted:server:vehicleTheft', crime) -- RoadLine : central gs_wanted" },
+    # V12.7 · /911p (qbx_police) : appel police sans téléphone, même menotté ou à terre. Les citoyens passent par l'appli
+    # Urgences du téléphone (gs_phone) ; la commande reste au staff.
+    @{ res = 'qbx_police'; file = 'server\commands.lua'; why = '/911p réservé au staff (citoyens : appli Urgences)'
+       find = "(lib\.addCommand\('911p', \{\s*\n(\s*)help = locale\('commands\.police_report'\),)(?!\s*\n\s*restricted)"
+       repl = "`${1}`n`${2}restricted = 'group.admin', -- RoadLine : citoyens = appli Urgences du téléphone" },
     # Inventaire : double-clic sur un objet = l'utiliser (ox_inventory ne le fait qu'avec Alt + clic)
     @{ res = 'ox_inventory'; file = 'web\build\index.html'; why = 'inventaire : double-clic pour utiliser un objet'
        find = '(?<!<!--gs-dblclick-->)</body>'

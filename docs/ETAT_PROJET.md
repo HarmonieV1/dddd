@@ -23,7 +23,7 @@ bus d'arrivée corrigé ».
 ## 2. Versions : interne vs publique (important, piège classique)
 
 Depuis la V11.3, il y a **deux numéros de version différents**, volontairement :
-- `gs_version` (convar, `server.cfg.example`) = **V12.6** → version technique interne, vue par le staff (F11, console,
+- `gs_version` (convar, `server.cfg.example`) = **V12.7** → version technique interne, vue par le staff (F11, console,
   METTRE-A-JOUR). Continue d'avancer à chaque mise à jour (V11.2, V11.3...).
 - `gs_public_version` (convar) = **« V4 · bêta »** → version vue par les **joueurs** (écran de chargement, statut
   Discord, Gazette). Le site affiche son propre journal (V1 à V4, V5 « classé confidentiel »).
@@ -228,6 +228,24 @@ Résumé très condensé (le détail complet est dans `docs/ROADMAP.md`, `docs/F
   ne remplace pas le curseur), profondeur CSS `animation-timeline: view()` (captures, mock, carte, chiffres), intro
   façon chargement de mission (Entrée / clic pour passer). Tout coupé par `prefers-reduced-motion`, souris seulement
   sur ordinateur. Une seule boucle rAF qui s'endort quand rien ne bouge. Vérifié dans le navigateur : 0 erreur.
+
+- **V12.7** (11/10/2026) — audit des alertes et de la cohérence RP (`docs/ALERTES.md`) :
+  - **Sain** : central unique `gs_wanted` (témoins, caméras, nuit, mémoire, police IA), les 24 appels utilisent un type
+    existant, le shérif reçoit tout (`countsAs = 'police'`), tirs détectés côté serveur (un seul détecteur), EMS prévenus
+    quand on est à terre (`qbx_ambulancejob` si EMS en service, secouriste IA sinon), annonces générales cohérentes.
+  - **Corrigé** :
+    1. Chasse : un chasseur AVEC permis dans la zone de chasse déclenchait « Coups de feu détectés » à chaque cerf.
+       `Config.HuntingGrounds` + `Wanted.legalHunter`. Sans permis ou hors zone : alerte normale.
+    2. Intitulés faux pour le policier : caméra peinte et transformateur saboté arrivaient en « Racket et dégradation
+       de commerce », caisse d'un bar / d'une boutique en « Braquage de supérette ». Nouveaux types `vandalism`,
+       `sabotage`, `shop_robbery` (propagés aux empreintes, vitres brisées et commerçants).
+    3. Vols de véhicule (crochetage, fils) : `qbx_vehiclekeys` alertait par le canal `qbx_police` (2e interface, 75 %
+       même sans témoin) et un car-jacking pouvait arriver deux fois. Retouche Qbox → `gs_wanted:server:vehicleTheft`,
+       type `vehicle_theft`, un seul signalement par vol (20 s).
+    4. `/911p` (`qbx_police`) : appel police sans téléphone, même menotté. Réservé au staff (retouche Qbox).
+    5. « Que faire ? » : les conseils police ne s'affichaient pas pour un shérif.
+  - Garde-fou : `tests/check_crimes.py` (25 types, 50 utilisations) dans `tests/run.sh`. +11 tests `gs_wanted`
+    (dont mutation vérifiée). Recette : session 1c (8 tests). 2685 tests Lua, 65 bot Discord.
 
 - **V12.6** (11/10/2026) — passe de correctifs (fin du développement de fonctionnalités) :
   - **Déplacer un point (F11) — 3 causes trouvées et corrigées** :

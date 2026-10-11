@@ -46,7 +46,7 @@ tp(1, shop)
 ok = cb('gs_stickup:begin', 1, 'register', 'inconnue'); step()
 check('caisse : zone inconnue', not ok)
 ok = cb('gs_stickup:begin', 1, 'register', 'shop1'); step()
-check('caisse lancée', ok and reports[#reports].crime == 'store_robbery')
+check('caisse lancée (V12.7 : « Braquage de commerce »)', ok and reports[#reports].crime == 'shop_robbery')
 advance(9000)
 ok, msg = cb('gs_stickup:finish', 1); step()
 local bagged = 0

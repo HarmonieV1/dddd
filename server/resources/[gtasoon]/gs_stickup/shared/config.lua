@@ -18,7 +18,7 @@ Config.Fear = { aim = 6, voice = { [1] = 3, [2] = 8, [3] = 18 }, decay = 12 }
 Config.Kinds = {
     street = { label = 'Racket', crime = 'mugging', reward = { 25, 140 }, dirty = false, minTime = 4, fearScale = 1.0,
         itemChance = 0.2, items = { 'phone', 'gs_cigarettes', 'lighter', 'water' }, playerCooldown = 90 },
-    register = { label = 'Caisse', crime = 'store_robbery', reward = { 280, 650 }, dirty = true, minTime = 8, fearScale = 0.6,
+    register = { label = 'Caisse', crime = 'shop_robbery', reward = { 280, 650 }, dirty = true, minTime = 8, fearScale = 0.6,
         zoneCooldown = 1200, playerCooldown = 300, radius = 4.0, alarmChance = 0.5 },
     teller = { label = 'Guichet', crime = 'teller_robbery', reward = { 550, 1100 }, dirty = true, minTime = 12, fearScale = 0.45,
         zoneCooldown = 2700, playerCooldown = 600, radius = 5.0, alarmChance = 0.8 },

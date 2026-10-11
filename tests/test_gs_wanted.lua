@@ -309,5 +309,55 @@ local h1, a1 = #Wanted.history, #Wanted.alerts
 TriggerEvent('gs_evidence:server:shotFired', 1, false)
 check('tirs : pas plus d\'un signalement toutes les 10 s', #Wanted.history == h1 and #Wanted.alerts == a1)
 
+-- V12.7 · Cohérence des alertes ----------------------------------------------------------------------------------
+-- (l'historique du central est plafonné à 20 : on compte les appels émis avec Wanted.nextId)
+-- Chasse : un chasseur avec permis dans la zone de chasse ne déclenche pas « Coups de feu détectés »
+local forest = vec3(-580.0, 5010.0, 140.0)
+join(31, 'CID31', 'Chasseur', forest)
+W.players[31].weapon = joaat('WEAPON_SNIPERRIFLE')
+W.players[31].licences = { hunting = true }
+local n0 = Wanted.nextId
+advance(30000)
+TriggerEvent('gs_evidence:server:shotFired', 31, false)
+advance(60000)
+check('chasse : tir d\'un chasseur en règle = aucune alerte', Wanted.nextId == n0 and not Wanted.heat[31])
+W.players[31].licences = {}
+advance(30000)
+TriggerEvent('gs_evidence:server:shotFired', 31, false)
+advance(60000)
+check('chasse : sans permis, les tirs sont signalés comme ailleurs', Wanted.nextId > n0)
+tp(31, vec3(-580.0, 5800.0, 30.0)) -- hors de la zone
+W.players[31].licences = { hunting = true }
+local n1 = Wanted.nextId
+advance(30000)
+TriggerEvent('gs_evidence:server:shotFired', 31, false)
+advance(60000)
+check('permis de chasse HORS zone : signalé (ce n\'est plus de la chasse)', Wanted.nextId > n1)
+
+-- Vols de véhicule : car-jacking + serrure forcée sur la même voiture = UN signalement, au central
+fixRandom(0.0)
+join(32, 'CID32', 'Voleur', street)
+spawnPeds(street, 3)
+advance(30000)
+local nv = Wanted.nextId
+net('gs_wanted:server:vehicleTheft', 32)
+net('gs_wanted:server:carjack', 32)
+advance(60000)
+check('vol de véhicule (qbx_vehiclekeys) : signalé au central gs_wanted', Wanted.nextId == nv + 1 and Wanted.history[1].crime == 'vehicle_theft')
+check('car-jacking juste après : pas de 2e signalement pour le même vol', Wanted.nextId == nv + 1)
+duty[32] = true
+advance(30000)
+net('gs_wanted:server:vehicleTheft', 32)
+advance(60000)
+check('policier en service : pas signalé', Wanted.nextId == nv + 1)
+duty[32] = nil
+fixRandom()
+
+-- Intitulés : chaque crime a un libellé lisible par le policier
+for _, k in ipairs({ 'vandalism', 'sabotage', 'shop_robbery', 'vehicle_theft' }) do
+    check('intitulé « ' .. k .. ' » déclaré', Config.Crimes[k] and #Config.Crimes[k].label > 5)
+end
+check('caméra peinte ≠ racket', Config.Crimes.vandalism.label ~= Config.Crimes.racket.label)
+
 io.write(('\n%d réussis, %d échoués\n'):format(passed, failed))
 os.exit(failed == 0 and 0 or 1)

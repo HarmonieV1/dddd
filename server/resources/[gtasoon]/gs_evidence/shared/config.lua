@@ -17,7 +17,7 @@ Config.MergeRadius = 6.0          -- même type, même auteur, à moins de X m e
 Config.MaxTraces = 400
 
 -- Crimes (gs_wanted) qui laissent des empreintes sans gants
-Config.PrintCrimes = { robbery = true, store_robbery = true, jewelry = true, bank = true, teller_robbery = true,
+Config.PrintCrimes = { robbery = true, store_robbery = true, shop_robbery = true, sabotage = true, vehicle_theft = true, jewelry = true, bank = true, teller_robbery = true,
     carjack = true, duo_contract = true, mugging = true, contract = true }
 Config.Blood = { health = 180 }   -- sang au sol quand la santé passe sous ce seuil (200 = pleine forme)
 Config.Paint = { body = 950 }     -- éclats de peinture si la carrosserie est abîmée (1000 = neuve)

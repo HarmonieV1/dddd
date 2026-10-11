@@ -27,6 +27,18 @@ Config.Crimes = {
     refusal = { label = 'Refus d\'obtempérer (contrôle routier)', heat = 12, chance = 0.95 },
     racket = { label = 'Racket et dégradation de commerce', heat = 15, chance = 0.6 }, -- V9
     stabbing = { label = 'Agression à l\'arme blanche', heat = 12, chance = 0.45 }, -- V10.2
+    -- V12.7 · Intitulés justes pour le policier (avant : une caméra peinte ou un transformateur saboté arrivaient en
+    -- « Racket et dégradation de commerce », la caisse d'un bar en « Braquage de supérette »)
+    vandalism = { label = 'Dégradation d\'une caméra de surveillance', heat = 10, chance = 0.5 },
+    sabotage = { label = 'Sabotage du réseau électrique', heat = 20, chance = 0.75 },
+    shop_robbery = { label = 'Braquage de commerce', heat = 25, chance = 0.45 },
+    vehicle_theft = { label = 'Vol de véhicule (serrure forcée / fils)', heat = 8, chance = 0.6 }, -- qbx_vehiclekeys
+}
+
+-- V12.7 · Zones de chasse : un tir de chasseur AVEC permis n'est pas une alerte (avant : chaque cerf abattu envoyait
+-- « Coups de feu détectés » au central). Sans permis, l'alerte part comme partout. Reprend gs_harvest Config.Hunting.
+Config.HuntingGrounds = {
+    { label = 'Zone de chasse (tirs sans alerte avec permis)', coords = vec3(-580.0, 5010.0, 140.0), radius = 600.0, licence = 'hunting' },
 }
 
 -- V10.2 · Alertes systématiques au central : chaque coup de feu (sauf silencieux) et chaque coup d'arme blanche est

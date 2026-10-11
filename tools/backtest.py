@@ -7,9 +7,9 @@ from pdf import H1, H2, P, SMALL, VERSION, footer, A4, mm, colors, SimpleDocTemp
 # (test, qui, priorité)
 SESSIONS = [
     ('0 · Avant de commencer (5 min)', [
-        ('METTRE-A-JOUR.bat : version V12.6 affichée, « Base de données sauvegardée », « Sauvegardes programmées » ; METTRE-A-JOUR-OVH puis GERER-OVH → 1 : « Version RoadLine : V12.6 »', 'Staff', 3),
+        ('METTRE-A-JOUR.bat : version V12.7 affichée, « Base de données sauvegardée », « Sauvegardes programmées » ; METTRE-A-JOUR-OVH puis GERER-OVH → 1 : « Version RoadLine : V12.7 »', 'Staff', 3),
         ('Fenêtre du serveur : aucune ligne ROUGE au démarrage ; F8 en jeu : aucune erreur rouge ; GERER-OVH → 3 : aucune erreur de script', 'Seul', 3),
-        ('VIDER-CACHE-FIVEM.bat si tu vois encore un ancien menu (F11 doit afficher « RoadLine V12.6 ») ; bio du bot : X/48 ; site : « En ce moment en ville » 0/48', 'Seul', 2),
+        ('VIDER-CACHE-FIVEM.bat si tu vois encore un ancien menu (F11 doit afficher « RoadLine V12.7 ») ; bio du bot : X/48 ; site : « En ce moment en ville » 0/48', 'Seul', 2),
     ]),
     ('1 · À re-vérifier après correction — ton retour du 09/10 (30 min)', [
         ('Nouveau joueur : un seul personnage ; fondateur, super-admins et VIP (F11 → Joueurs → VIP) : deux ; plus de choix du lieu ; déco / reco = même endroit', '2', 3),
@@ -40,6 +40,16 @@ SESSIONS = [
         ('Discord : /annonce texte titre mention:@everyone → publiée dans #annonces ; avec en_jeu → aussi en ville ; un membre simple → « Réservé au staff » ; /ticket sujet → fil privé ouvert', 'Staff', 3),
         ('Anti-triche : pendant le backtest, set gs_honeypot "log" dans secrets.cfg ; console serveur sans erreur gs_security ; aucun joueur honnête signalé « PIÈGE » de toute la session', 'Staff', 2),
         ('IMPORTER-MODS avec une map protégée (escrow, .fxap) achetée sur la boutique officielle → installée (avertissement dans RAPPORT-MODS.txt) ; METTRE-A-JOUR-OVH → elle est bien sur le VPS', 'Staff', 2),
+    ]),
+    ('1c · Alertes et cohérence RP — V12.7 (20 min, à 2 : un policier en service + un civil)', [
+        ('Le civil tire en ville (Legion Square) : le policier reçoit « Coups de feu détectés » avec le nom de rue et le GPS, même sans témoin ; un 2e tir dans les 10 s = pas de 2e alerte', '2', 3),
+        ('Le policier en service tire : AUCUNE alerte ; un shérif en service : reçoit les alertes comme le LSPD, et ses tirs ne déclenchent rien', '2', 3),
+        ('Chasse (forêt de Paleto, au nord) : avec le permis de chasse, tirer sur un cerf = aucune alerte ; sans permis = alerte « Coups de feu » ; dépecer sans permis = « Braconnage »', '2', 2),
+        ('Voler une voiture garée (crochetage / fils) ou sortir un conducteur : UNE seule alerte « Vol de véhicule » dans l\'interface du central (plus d\'alerte Qbox en double)', '2', 3),
+        ('Peindre une caméra (bombe) : alerte « Dégradation d\'une caméra de surveillance » ; saboter un transformateur : « Sabotage du réseau électrique » (plus « Racket »)', '2', 2),
+        ('Braquer la caisse d\'un commerce (vêtements, coiffeur, bar avec doublure) : « Braquage de commerce » ; une vraie supérette 24/7 : « Braquage de supérette »', '2', 2),
+        ('Civil : /911p refusé (« pas la permission ») ; l\'appli Urgences du téléphone fonctionne et arrive au policier', '2', 3),
+        ('À terre avec un EMS en service : « [G] Demander de l\'aide » → l\'EMS reçoit l\'alerte + GPS ; sans EMS en service : « [G] Appeler les secours » (secouriste IA)', '2', 3),
     ]),
     ('2 · Jamais testé — nouveautés V11.4 à V12.3 (45 min)', [
         ('Discord : /ticket sujet → fil privé dans #tickets (joueur + rôle staff), /fermer ; /aide ; commande staff refusée sans rôle staff / admin, acceptée avec', 'Staff', 3),
