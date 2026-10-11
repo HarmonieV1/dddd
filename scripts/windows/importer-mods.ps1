@@ -290,7 +290,12 @@ function Analyze($pkg) {
     $big = @($all | Where-Object { $_.Extension -match '^\.(ytd|yft|ydd|ydr)$' -and $_.Length -gt 16MB })
     foreach ($b in $big) { [void]$r.issues.Add("fichier trop lourd $($b.Name) ($(MB $b.Length) Mo > 16 Mo) : textures qui disparaissent / crash, à optimiser") }
     if ($r.sizeMB -gt 150) { [void]$r.issues.Add("mod très lourd ($($r.sizeMB) Mo) : temps de chargement et mémoire des joueurs") }
-    if (@($all | Where-Object { $_.Name -ieq '.fxap' -or $_.Extension -ieq '.fxap' }).Count -gt 0) { [void]$r.issues.Add('script chiffré (escrow Tebex) : ne marche que pour le compte qui l''a acheté') }
+    # V12.5 : escrow Cfx (.fxap). Une MAP achetée sur la boutique officielle du créateur (Gabz, UncleJust…) est presque
+    # toujours protégée ainsi : elle est installée, avec un avertissement. Un SCRIPT chiffré reste refusé (illisible).
+    $fxap = @($all | Where-Object { $_.Name -ieq '.fxap' -or $_.Extension -ieq '.fxap' }).Count -gt 0
+    $escrowMap = $fxap -and @($all | Where-Object { $_.Extension -match '^\.(ymap|ytyp|ybn)$' }).Count -gt 0 -and @($all | Where-Object { $_.Extension -ieq '.yft' }).Count -eq 0
+    if ($escrowMap) { [void]$r.notes.Add('map protégée (escrow Cfx) : ne fonctionne QUE si elle a été achetée avec le compte Cfx.re lié à la clé du serveur. Achat sur la boutique officielle du créateur uniquement') }
+    elseif ($fxap) { [void]$r.issues.Add('script chiffré (escrow Tebex) : ne marche que pour le compte qui l''a acheté') }
     if (@($all | Where-Object { $_.Extension -match '^\.(oiv|asi|dll)$' -or $_.Name -match 'reshade|visualsettings|timecycle' }).Count -gt 0) {
         [void]$r.notes.Add('contient un mod graphique / solo (oiv, asi, reshade) : inutile côté serveur')
     }
@@ -303,7 +308,7 @@ function Analyze($pkg) {
     }
     if ($manifest) {
         $r.root = $manifest.DirectoryName
-        if ($lua.Count -gt 0) {
+        if ($lua.Count -gt 0 -and -not $escrowMap) {
             $r.type = 'script'
             $code = ($lua | ForEach-Object { Get-Content -LiteralPath $_.FullName -Raw -ErrorAction SilentlyContinue }) -join "`n"
             if ($code -match 'es_extended|ESX\.') { [void]$r.issues.Add('script ESX : incompatible avec notre base Qbox (à réécrire)') }
@@ -449,6 +454,10 @@ foreach ($r in $results) {
         try {
             if (Test-Path -LiteralPath $dest) { Remove-Item -LiteralPath $dest -Recurse -Force }
             Copy-Item -LiteralPath $sorted -Destination $dest -Recurse -Force
+            # V12.5 : les fichiers gardent la date de l'archive (ex. 2024) ; METTRE-A-JOUR-OVH n'envoie que ce qui a changé
+            # depuis le dernier envoi → un mod tout juste importé n'arrivait jamais sur le VPS. On le date d'aujourd'hui.
+            $now = Get-Date
+            Get-ChildItem -LiteralPath $dest -Recurse -File -Force | ForEach-Object { $_.LastWriteTime = $now }
             $installed += $name
         } catch {
             [void]$r.issues.Add("installation impossible (fichier utilisé par un autre programme : serveur lancé ?) — ferme le serveur puis relance")
