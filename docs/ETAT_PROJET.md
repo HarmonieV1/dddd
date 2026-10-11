@@ -23,7 +23,7 @@ version publique V4, règlement Discord, guide du staff ».
 ## 2. Versions : interne vs publique (important, piège classique)
 
 Depuis la V11.3, il y a **deux numéros de version différents**, volontairement :
-- `gs_version` (convar, `server.cfg.example`) = **V12.3** → version technique interne, vue par le staff (F11, console,
+- `gs_version` (convar, `server.cfg.example`) = **V12.4** → version technique interne, vue par le staff (F11, console,
   METTRE-A-JOUR). Continue d'avancer à chaque mise à jour (V11.2, V11.3...).
 - `gs_public_version` (convar) = **« V4 · bêta »** → version vue par les **joueurs** (écran de chargement, statut
   Discord, Gazette). Le site affiche son propre journal (V1 à V4, V5 « classé confidentiel »).
@@ -228,6 +228,32 @@ Résumé très condensé (le détail complet est dans `docs/ROADMAP.md`, `docs/F
   ne remplace pas le curseur), profondeur CSS `animation-timeline: view()` (captures, mock, carte, chiffres), intro
   façon chargement de mission (Entrée / clic pour passer). Tout coupé par `prefers-reduced-motion`, souris seulement
   sur ordinateur. Une seule boucle rAF qui s'endort quand rien ne bouge. Vérifié dans le navigateur : 0 erreur.
+
+- **V12.4** (11/10/2026) — sécurité sur mesure et arrivée réparée :
+  - **Pots de miel** (`gs_security/server/honeypot.lua`) : 27 appâts (23 events + 4 callbacks) enregistrés côté serveur et
+    déclenchables par personne. Deux familles : des noms de frameworks qu'on n'utilise pas (ESX, vieux scripts fuités) que les
+    menus de triche tentent en aveugle, et de fausses failles alléchantes (« donne-moi de l'argent », « passe-moi admin »).
+    Toucher l'un des deux ne s'explique pas en jouant → bannissement définitif automatique. Réglage par convar `gs_honeypot`
+    = `ban` (défaut) / `kick` / `log`. **Le staff n'est jamais banni** : il est signalé dans `#logs-staff` (erreur ou test).
+  - **Zéro faux positif garanti par un test** (`tests/check_honeypot.py`, dans `tests/run.sh`) : aucun nom de piège ne doit
+    apparaître ailleurs dans le dépôt. Si un jour on nomme un vrai event comme un piège, les tests refusent le push.
+  - **Bannissements RoadLine, posés ET levés en jeu** (nouvelle table `gs_admin_bans`, par licence) : `F11 → Joueurs → Bannir`
+    (durée en jours, 0 = définitif, motif obligatoire, double confirmation) et `F11 → Bannissements` (liste des bans actifs,
+    recherche par pseudo ou licence, déban **même sur un joueur hors ligne**). Réservé au super-admin ; l'anti-abus s'applique
+    (pas de sanction sur un staff de rang égal ou supérieur). txAdmin reste en place, mais ne sait pas débannir depuis le jeu.
+  - **Message de refus clair à la connexion** (`gs_onboarding`) : un banni voit son motif, la date de fin et le lien Discord —
+    vérifié **avant** la liste blanche, donc un banni whitelisté est bien refusé. Les peines écoulées s'effacent toutes seules.
+  - **Bus d'arrivée corrigé** (`gs_onboarding/client/arrival.lua`) : la cause des deux bugs signalés était la même ligne —
+    le perso était posé à `stop.z - 1.0`, soit **1 m sous le trottoir** : il traversait la map et réapparaissait n'importe où
+    (donc jamais devant la mairie). On attend maintenant la sortie réelle du bus, le chargement des collisions, puis on cale
+    sur le sol (`GetGroundZFor_3dCoord`). Bonus : itinéraire GPS tracé vers Max « le Guide » + notification d'accueil.
+  - **`entityLockdown strict` : audité, documenté, PAS basculé** (`server/cfg/prod.cfg` et `dev.cfg`). 4 créations d'entités
+    réseau côté client casseraient : garde du gros coup (`gs_heists`), téléphone en main (`gs_phone`), chien K9 (`gs_police`),
+    garde-côtes (`gs_smuggling`). Le chemin de migration (les passer côté serveur) est écrit dans les deux cfg. `relaxed`
+    bloque déjà les entités créées hors script : le gain est réel mais marginal, et le risque de casse à ~9 jours de
+    l'ouverture ne l'est pas. **À faire après l'ouverture.**
+  - **Tests** : +23 assertions `gs_admin` (niveaux, durées, anti-abus, déban, liste, peine écoulée, ban auto staff/joueur).
+    Suite complète verte : 2648 tests Lua / 90 fichiers, 44 tests bot Discord, 27 pièges vérifiés.
 
 - **V12.3** (10/10/2026) :
   - **Bot Discord** : les administrateurs du Discord RoadLine ont les commandes staff (le serveur est vérifié avant, donc sûr) ;

@@ -51,6 +51,31 @@ Store = {
     jailClear = function(lic) jail[lic] = nil end,
     vips = function() local l = {} for lic in pairs(W.vips or {}) do l[#l + 1] = { license = lic } end return l end,
     vipSet = function(lic, on) W.vips = W.vips or {} W.vips[lic] = on or nil end,
+    -- V12.4 · bannissements RoadLine (posés en jeu, levés en jeu)
+    ban = function(lic)
+        local b = W.bans and W.bans[lic]
+        if not b then return nil end
+        if b.until_ts ~= 0 and b.until_ts <= os.time() then W.bans[lic] = nil return nil end
+        return b
+    end,
+    banSet = function(lic, name, untilTs, reason, staff)
+        W.bans = W.bans or {}
+        W.bans[lic] = { name = name, until_ts = untilTs, reason = reason, staff = staff }
+    end,
+    banClear = function(lic)
+        if not (W.bans and W.bans[lic]) then return false end
+        W.bans[lic] = nil
+        return true
+    end,
+    bans = function(search)
+        local l = {}
+        for lic, b in pairs(W.bans or {}) do
+            if not search or search == '' or b.name:find(search, 1, true) then
+                l[#l + 1] = { license = lic, name = b.name, until_ts = b.until_ts, reason = b.reason, staff = b.staff }
+            end
+        end
+        return l
+    end,
 }
 -- ACE par principal (V11.5 : nombre de personnages) : group.vip / super-admin posés par les tests
 W.principals = {}
@@ -392,6 +417,57 @@ check('redémarrage : annonce 1 min avant', Admin.restartWarning({ hour = 5, min
 check('redémarrage : passage de minuit', Admin.restartWarning({ hour = 23, min = 55 }, '00:00') == 5)
 check('redémarrage : rien hors palier', Admin.restartWarning({ hour = 5, min = 50 }, '06:00') == nil)
 check('redémarrage : off = rien', Admin.restartWarning({ hour = 5, min = 45 }, 'off') == nil)
+
+-- V12.4 : bannissements RoadLine, posés ET levés depuis le jeu (super-admin uniquement) ---------------------------
+local getBan = getExport('gs_admin', 'GetBan')
+local autoBan = getExport('gs_admin', 'AutoBan')
+W.bans = {}
+sanctions = {}
+ok, msg = cb('gs_admin:action', 2, 'ban', 9, { days = 0, reason = 'triche' }); step()
+check('ban : modo refusé', not ok and msg == 'Niveau insuffisant.' and not W.bans['license:9'])
+ok = cb('gs_admin:action', 1, 'ban', 9, { days = 0 }); step()
+check('ban : motif obligatoire', not ok and not W.bans['license:9'])
+for _, bad in ipairs({ -1, 1.5, 4000 }) do
+    ok = cb('gs_admin:action', 1, 'ban', 9, { days = bad, reason = 'triche' }); step()
+    check('ban : durée invalide refusée : ' .. bad, not ok and not W.bans['license:9'])
+end
+ok = cb('gs_admin:action', 1, 'ban', 7, { days = 0, reason = 'abus' }); step()
+check('ban : pas de ban sur un staff de rang supérieur', not ok and not W.bans['license:7'])
+ok = cb('gs_admin:action', 1, 'ban', 9, { days = 0, reason = 'Menu de triche' }); step()
+check('ban définitif : enregistré par licence', ok and W.bans['license:9'] and W.bans['license:9'].until_ts == 0)
+check('ban : joueur expulsé avec le motif', (W.players[9].kicked or ''):find('Menu de triche', 1, true))
+check('ban : publié dans les sanctions', #sanctions == 1 and sanctions[1]:find('Bannissement') and sanctions[1]:find('définitif'))
+check('ban : note au dossier', getBan('license:9') ~= nil and #Store.notes('license:9') > 0)
+
+ok = cb('gs_admin:action', 2, 'unban', nil, { license = 'license:9' }); step()
+check('deban : modo refusé', not ok and W.bans['license:9'])
+ok = cb('gs_admin:action', 1, 'unban', nil, {}); step()
+check('deban : licence obligatoire', not ok)
+ok, msg = cb('gs_admin:action', 1, 'unban', nil, { license = 'license:inconnue' }); step()
+check('deban : licence non bannie refusée', not ok and msg:find('pas banni'))
+ok = cb('gs_admin:action', 1, 'unban', nil, { license = 'license:9' }); step()
+check('deban en jeu : bannissement levé', ok and not W.bans['license:9'] and getBan('license:9') == nil)
+
+-- Liste des bannis (lecture seule, F11) : super-admin uniquement
+cb('gs_admin:action', 1, 'ban', 9, { days = 3, reason = 'Pot de miel' }); step()
+check('ban temporaire : échéance calculée', W.bans['license:9'].until_ts > os.time())
+check('liste des bannis : modo refusé', cb('gs_admin:bans', 2, '') == nil)
+local list = cb('gs_admin:bans', 1, '')
+check('liste des bannis : super-admin', type(list) == 'table' and #list == 1 and list[1].license == 'license:9')
+check('liste des bannis : recherche par pseudo', #cb('gs_admin:bans', 1, 'Isolé') == 1 and #cb('gs_admin:bans', 1, 'Zorro') == 0)
+advance(4 * 86400 * 1000)
+check('peine écoulée : bannissement effacé tout seul', getBan('license:9') == nil and W.bans['license:9'] == nil)
+
+-- Ban automatique (pots de miel de gs_security) : jamais sur un staff
+staffLogs = {}
+ok, msg = autoBan(2, 'Pot de miel déclenché', 0)
+check('ban auto : staff signalé, pas banni', not ok and not W.bans['license:2'] and msg:find('Staff'))
+check('ban auto : signalement au journal staff', #staffLogs > 0 and staffLogs[#staffLogs]:find('STAFF'))
+ok = autoBan(999, 'Pot de miel déclenché', 0)
+check('ban auto : joueur absent', not ok)
+ok = autoBan(4, 'Pot de miel : event appât déclenché', 0)
+check('ban auto : joueur banni définitivement et expulsé', ok and W.bans['license:4']
+    and W.bans['license:4'].until_ts == 0 and (W.players[4].kicked or ''):find('triche', 1, true))
 
 io.write(('\n%d réussis, %d échoués\n'):format(passed, failed))
 os.exit(failed == 0 and 0 or 1)

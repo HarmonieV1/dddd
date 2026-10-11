@@ -78,10 +78,30 @@ function GSArrival(done)
     TaskVehicleTempAction(driver, bus, 27, 2000)
     Wait(300)
     TaskLeaveVehicle(ped, bus, 0)
-    Wait(1500)
-    SetEntityCoords(ped, A.stop.x, A.stop.y, A.stop.z - 1.0, false, false, false, false)
+    -- On attend d'être VRAIMENT sorti : téléporter un perso encore assis ne marche pas (il repartait avec le bus)
+    local tl = GetGameTimer()
+    while IsPedInAnyVehicle(ped, true) and GetGameTimer() - tl < 2500 do Wait(50) end
+    if IsPedInAnyVehicle(ped, true) then ClearPedTasksImmediately(ped) Wait(100) end -- dernier recours : on le sort de force
+    -- Dépose sur le trottoir. Le « - 1.0 m » d'avant plaçait le perso SOUS le trottoir : il traversait la map et
+    -- réapparaissait n'importe où (donc jamais devant la mairie). On attend la collision, puis on cale au sol réel.
+    local sx, sy, sz = A.stop.x, A.stop.y, A.stop.z
+    RequestCollisionAtCoord(sx, sy, sz)
+    SetEntityCoords(ped, sx, sy, sz, false, false, false, false)
+    local tc = GetGameTimer()
+    while not HasCollisionLoadedAroundEntity(ped) and GetGameTimer() - tc < 5000 do
+        RequestCollisionAtCoord(sx, sy, sz)
+        Wait(50)
+    end
+    local okG, gz = GetGroundZFor_3dCoord(sx, sy, sz + 3.0, false)
+    SetEntityCoords(ped, sx, sy, (okG and gz or sz) + 0.1, false, false, false, false)
     SetEntityHeading(ped, A.stop.w)
+    FreezeEntityPosition(ped, false)
     DoScreenFadeIn(500)
+    -- Max « le Guide » est à ~20 m : on trace l'itinéraire, sinon le nouveau ne sait pas où aller
+    if A.guide then
+        SetNewWaypoint(A.guide.x, A.guide.y)
+        lib.notify({ title = 'Bienvenue à Los Santos', description = 'Max « le Guide » t\'attend devant la mairie.', type = 'inform', duration = 8000 })
+    end
     SetTimeout(A.leaveAfter * 1000, function()
         if DoesEntityExist(driver) and DoesEntityExist(bus) then
             SetVehicleDoorsShut(bus, false)

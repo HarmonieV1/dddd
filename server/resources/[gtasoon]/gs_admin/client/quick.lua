@@ -698,6 +698,20 @@ local function playerMenu(p)
     add(3, { title = 'Le mettre dans un gang', icon = 'people-group', arrow = true, onSelect = function() gangsMenu(p) end })
     add(4, { title = 'Argent', icon = 'money-bill', arrow = true, onSelect = function() moneyMenu(p) end })
     add(4, { title = 'Items', icon = 'box-open', arrow = true, onSelect = function() itemsMenu(p) end })
+    -- V12.4 · Bannissement RoadLine (super-admin) : posé ici, LEVÉ depuis « Bannissements » (même hors ligne)
+    add(4, { title = 'Bannir', icon = 'gavel', iconColor = '#ff4d6d', description = 'Durée en jours (0 = définitif), motif obligatoire',
+        onSelect = function()
+            local r = lib.inputDialog('Bannir ' .. p.name, {
+                { type = 'number', label = 'Durée en jours', description = '0 = définitif', required = true, min = 0, max = 3650, default = 3 },
+                { type = 'input', label = 'Motif', description = 'Visible par le joueur et dans #sanctions', required = true, max = 200 },
+            })
+            if not r then return end
+            local days = math.floor(tonumber(r[1]) or 0)
+            if lib.alertDialog({ header = 'Bannir ' .. p.name,
+                content = ('**Durée** : %s\n**Motif** : %s\n\nLe joueur est déconnecté immédiatement et ne pourra plus se reconnecter.')
+                    :format(days == 0 and 'DÉFINITIF' or (days .. ' jour(s)'), r[2]), centered = true, cancel = true }) ~= 'confirm' then return end
+            notify(act('ban', p.id, { days = days, reason = r[2] }))
+        end })
     if info.ranks and p.id ~= info.me then
         add(5, { title = 'Rang staff (fondateur)', icon = 'user-shield', arrow = true, onSelect = function() rankMenu(p) end })
     end
@@ -712,6 +726,36 @@ local function playerMenu(p)
             end })
     end
     show('gs_staff_player', ('[%d] %s'):format(p.id, p.name), options, 'gs_staff_players')
+end
+
+--- V12.4 · Bannissements RoadLine (super-admin) : la liste des bannis actifs, une recherche par pseudo ou licence,
+--- et la levée du bannissement — même sur un joueur hors ligne, ce que txAdmin ne permet pas depuis le jeu.
+local function bansMenu(search)
+    local list = lib.callback.await('gs_admin:bans', false, search)
+    if type(list) ~= 'table' then return notify(false, 'Liste indisponible (super-admin requis).') end
+    local options = { { title = 'Rechercher', icon = 'magnifying-glass',
+        description = search and ('Filtre actuel : « %s »'):format(search) or 'Par pseudo ou par licence', onSelect = function()
+            local r = lib.inputDialog('Chercher un banni', { { type = 'input', label = 'Pseudo ou licence', max = 64 } })
+            bansMenu(r and r[1] ~= '' and r[1] or nil)
+        end } }
+    for i = 1, #list do
+        local b = list[i]
+        local when = b.until_ts == 0 and 'définitif' or ('jusqu\'au ' .. os.date('%d/%m/%Y %H:%M', b.until_ts))
+        options[#options + 1] = { title = b.name, icon = 'user-lock', iconColor = '#ff4d6d', arrow = true,
+            description = ('%s · %s · par %s'):format(when, b.reason or '—', b.staff or '?'),
+            onSelect = function()
+                if lib.alertDialog({ header = 'Débannir ' .. b.name,
+                    content = ('**Motif du ban** : %s\n**Posé par** : %s\n**Fin** : %s\n\nIl pourra se reconnecter immédiatement.')
+                        :format(b.reason or '—', b.staff or '?', when), centered = true, cancel = true }) ~= 'confirm' then return end
+                local ok, msg = act('unban', nil, { license = b.license })
+                notify(ok, msg)
+                if ok then bansMenu(search) end
+            end }
+    end
+    if #list == 0 then
+        options[#options + 1] = { title = search and 'Aucun banni trouvé' or 'Aucun bannissement actif', icon = 'circle-check', readOnly = true }
+    end
+    show('gs_staff_bans', 'Bannissements', options, 'gs_staff_quick')
 end
 
 --- V10.2 : distance d'un joueur (nil s'il est trop loin pour être chargé)
@@ -926,6 +970,8 @@ local function mainMenu()
             if #o == 0 then o[1] = { title = 'Aucune alerte', icon = 'circle-check', readOnly = true } end
             show('gs_staff_ac', 'Anti-triche', o, 'gs_staff_quick')
         end })
+        -- V12.4 · Bannissements : lever un bannissement sans quitter le jeu, même sur un joueur hors ligne
+        add(4, { title = 'Bannissements', icon = 'gavel', arrow = true, description = 'Voir les bannis, chercher, débannir', onSelect = bansMenu })
         add(3, { title = 'Statistiques de rétention', icon = 'chart-line', arrow = true, description = 'Nouveaux joueurs, retours J+1 / 7 jours, abandon, sessions', onSelect = function()
             local r = GetResourceState('gs_stats') == 'started' and lib.callback.await('gs_stats:retention', false)
             if not r then return notify(false, 'Statistiques indisponibles.') end

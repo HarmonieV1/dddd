@@ -269,6 +269,32 @@ Actions.unjail = { level = 2, target = true, run = function(_, target)
     return 'Libéré'
 end }
 
+-- V12.4 · Bannissements RoadLine, posés ET retirés depuis le jeu (txAdmin ne sait pas débannir en jeu).
+-- `days` : 0 = définitif. Réservé au super-admin ; l'anti-abus (pas de sanction sur un staff de rang ≥) s'applique.
+Actions.ban = { level = 4, target = true, sanction = true, run = function(src, target, data)
+    local reason = reasonOf(data)
+    local days = tonumber(data.days)
+    need(days and days == math.floor(days) and days >= 0 and days <= 3650, 'Durée : 0 (définitif) à 3650 jours.')
+    local lic = need(license(target), 'Licence introuvable.')
+    local name = Bridge:GetName(target) or GetPlayerName(target) or '?'
+    local untilTs = days == 0 and 0 or (os.time() + days * 86400)
+    Store.banSet(lic, name, untilTs, reason, label(src))
+    Store.addNote(lic, 'warn', ('Bannissement (%s) : %s'):format(days == 0 and 'définitif' or (days .. ' j'), reason), label(src))
+    Admin.publishSanction('Bannissement', name, reason, days == 0 and 'définitif' or (days .. ' jour(s)'))
+    DropPlayer(target, ('Banni de RoadLine RP (%s)\nMotif : %s'):format(days == 0 and 'définitif' or (days .. ' jour(s)'), reason))
+    return days == 0 and 'Banni définitivement' or ('Banni %d jour(s)'):format(days)
+end }
+
+--- Lève un bannissement par licence (le joueur n'est plus en ville : on ne passe pas par une cible).
+Actions.unban = { level = 4, run = function(src, _, data)
+    local lic = need(Security:Sanitize(data.license, 64), 'Licence manquante.')
+    local b = Store.ban(lic)
+    need(Store.banClear(lic), 'Ce joueur n\'est pas banni.')
+    Store.log(label(src), 'unban', b and b.name or lic, lic)
+    Admin.publishSanction('Lévée de bannissement', b and b.name or lic, 'Décision du staff')
+    return ('Débanni : %s'):format(b and b.name or lic)
+end }
+
 local function amountOf(data, max)
     local n = tonumber(data.amount)
     return need(n and n == math.floor(n) and n >= 1 and n <= max and n, ('Montant : 1 à %d.'):format(max))
@@ -609,6 +635,14 @@ lib.callback.register('gs_admin:acAlerts', function(src)
     return ok and list or {}
 end)
 
+--- V12.4 : bannis actifs pour le menu F11 (lecture seule, pas journalisée). Super-admin uniquement.
+lib.callback.register('gs_admin:bans', function(src, search)
+    if not staffGuard(src, 'bans', 6, 10000) then return nil end
+    if Admin.level(src) < 4 then return nil end
+    local ok, list = pcall(function() return Store.bans(Security:Sanitize(search, 64), 25) end)
+    return ok and list or {}
+end)
+
 lib.callback.register('gs_admin:open', function(src)
     if not staffGuard(src, 'open', 10, 10000) then return nil end
     local lvl = Admin.level(src)
@@ -740,6 +774,31 @@ exports('GetStaffLevel', Admin.level)
 --- V9 : alerte aux membres du staff en service (anti-triche…)
 exports('NotifyStaff', function(msg) for s in pairs(Admin.onDuty) do notify(s, msg, 'warning') end return true end)
 exports('IsJailed', function(src) return Admin.jailed[src] ~= nil end)
+--- V12.4 · Bannissement actif d'une licence : { name, until_ts, reason, staff } ou nil. Lu par gs_onboarding à la connexion.
+exports('GetBan', function(lic) return lic and Store.ban(lic) or nil end)
+
+--- V12.4 · Bannissement automatique (pots de miel de gs_security). `days` = 0 : définitif. Jamais appliqué au staff :
+--- un membre du staff qui déclencherait un piège est seulement signalé (erreur de manipulation ou test).
+exports('AutoBan', function(src, reason, days)
+    src = tonumber(src)
+    if not src or not online(src) then return false, 'Joueur absent.' end
+    local name = Bridge:GetName(src) or GetPlayerName(src) or '?'
+    if Admin.level(src) > 0 then
+        Security:LogStaff(('[Anti-triche] PIÈGE déclenché par un STAFF : %s · %s (aucun ban)'):format(label(src), reason), 'anticheat')
+        return false, 'Staff : signalé, pas banni.'
+    end
+    local lic = license(src)
+    days = tonumber(days) or 0
+    local untilTs = days <= 0 and 0 or (os.time() + days * 86400)
+    if lic then
+        Store.banSet(lic, name, untilTs, reason, 'Anti-triche (automatique)')
+        Store.addNote(lic, 'warn', 'Bannissement automatique : ' .. reason, 'Anti-triche')
+    end
+    Store.log('Anti-triche (automatique)', 'ban', ('%s [%s]'):format(name, src), reason)
+    Admin.publishSanction('Bannissement', name, reason, days <= 0 and 'définitif' or (days .. ' jour(s)'))
+    DropPlayer(src, ('Banni de RoadLine RP (triche détectée)\nMotif : %s\n\nContestation : notre Discord.'):format(reason))
+    return true
+end)
 
 --- V10.1 · Modération à distance (commandes staff du bot Discord, rôle staff vérifié par gs_discord). Sous-ensemble
 --- sûr : liste, geler, dégeler, avertir, expulser, message privé, annonce. Journalisé comme une action staff.

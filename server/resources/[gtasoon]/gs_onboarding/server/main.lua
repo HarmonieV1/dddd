@@ -17,8 +17,24 @@ end
 
 function Onboarding.whitelistOn() return GetConvar('gs_whitelist', 'false') == 'true' end
 
+--- V12.4 · Bannissement RoadLine (posé en jeu, F11 → Joueurs → Bannir). Vérifié avant la liste blanche : un banni
+--- reçoit son motif et la date de fin, même s'il est sur la liste blanche.
+local function banMessage(src)
+    if GetResourceState('gs_admin') ~= 'started' then return nil end
+    local lic = license(src)
+    if not lic then return nil end
+    local ok, b = pcall(function() return exports.gs_admin:GetBan(lic) end)
+    if not ok or not b then return nil end
+    local when = b.until_ts == 0 and 'définitif'
+        or ('jusqu\'au ' .. os.date('%d/%m/%Y à %H:%M', b.until_ts))
+    return ('Tu es banni de RoadLine RP (%s).\nMotif : %s\n\nContestation sur notre Discord : %s')
+        :format(when, b.reason or '—', discord())
+end
+
 --- Contrôle de connexion : true | false, message
 function Onboarding.check(src)
+    local banned = banMessage(src)
+    if banned then return false, banned end
     if not Onboarding.whitelistOn() then return true end
     if IsPlayerAceAllowed(src, Config.WhitelistBypassAce) then return true end
     local lic = license(src)

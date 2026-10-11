@@ -458,3 +458,8 @@ Traductions françaises manquantes des scripts Qbox ajoutées par METTRE-A-JOUR 
   mots révélés un à un, page qui tangue avec la vitesse, réticule qui suit la souris, barre qui se cache en descendant. Sans toucher au contenu.
 - **V12.3 · Staff à distance et site vivant** : `/isoler`, `/liberer`, `/reanimer` sur le bot et l'appli staff (admins du Discord acceptés) ;
   bandeau Weazel en direct, SMS en jeu pendant la visite du site, places affichées = 48 ; site plus fluide (grain, aurora, étoiles) et police GTA de secours.
+- **V12.4 · Pots de miel et bannissements en jeu** : 27 events et callbacks « appâts » qu'aucun script RoadLine ne déclenche jamais (noms de
+  frameworks qu'on n'utilise pas, fausses failles alléchantes) — les toucher ne s'explique que par un menu de triche, donc zéro faux positif
+  (vérifié par un test automatique). Bannissement **posé ET levé depuis le jeu** (F11 → Joueurs → Bannir, F11 → Bannissements pour la liste,
+  la recherche et le déban, même sur un joueur hors ligne), ce que txAdmin ne sait pas faire. Le staff n'est jamais banni automatiquement :
+  il est signalé. Et l'arrivée en bus dépose enfin devant la mairie, itinéraire tracé vers Max « le Guide ».
