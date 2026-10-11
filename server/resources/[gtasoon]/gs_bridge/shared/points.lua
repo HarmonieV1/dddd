@@ -47,6 +47,14 @@ do
 
     if type(Config) == 'table' then walk(Config, 'Config', nil, 0, {}) end
 
+    -- V12.5 · Côté serveur : on dit à gs_bridge quelles positions déplacées ont VRAIMENT été appliquées au chargement.
+    -- Sert à confirmer au staff, quelques secondes après « Placer ce point ici », que le déplacement a pris.
+    if IsDuplicityVersion() then
+        local applied = {}
+        for _, f in ipairs(found) do if f.moved then applied[f.key] = { x = f.coords.x, y = f.coords.y, z = f.coords.z } end end
+        TriggerEvent('gs_bridge:server:pointsLoaded', res, applied)
+    end
+
     if not IsDuplicityVersion() and #found > 0 then
         CreateThread(function()
             Wait(500)

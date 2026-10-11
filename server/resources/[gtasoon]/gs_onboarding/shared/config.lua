@@ -27,7 +27,6 @@ Config.Arrival = {
     enabled = true, bus = 'bus', driver = 's_m_m_gentransport', seat = 1, speed = 13.0, seconds = 28, leaveAfter = 6,
     from = vec3(-790.0, -300.0, 36.5),               -- Rockford Hills, quelques rues avant la mairie
     stop = vec4(-548.0, -200.5, 37.7, 30.0),         -- trottoir de la mairie (le perso est posé ici en descendant)
-    guide = vec3(-536.9, -218.4, 37.65),             -- Max « le Guide » : itinéraire tracé à la descente (gs_quests)
 }
 
 -- Liste blanche : active seulement si la convar `gs_whitelist` vaut "true" (cfg/prod.cfg). Candidature sur Discord,

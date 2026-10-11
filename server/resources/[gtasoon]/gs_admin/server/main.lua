@@ -425,12 +425,29 @@ Actions.power = { level = 1, duty = true, run = function(src, _, data)
 end }
 
 -- Points déplaçables de toutes nos ressources (gs_bridge/shared/points.lua) : posé à la position du staff.
+-- V12.5 · Confirmation quelques secondes plus tard : la ressource a-t-elle VRAIMENT redémarré avec la nouvelle position ?
+local function confirmPoint(src, key, res, c)
+    local since = GetGameTimer()
+    SetTimeout(6000, function()
+        local okC, state = pcall(function() return exports.gs_bridge:CheckPoint(key, c, since) end)
+        if not okC then return end
+        if state == 'ok' then
+            notify(src, ('✅ Vérifié : %s a redémarré avec la nouvelle position.'):format(res), 'success')
+        elseif state == 'pas_relance' then
+            notify(src, ('⚠️ %s n\'a pas redémarré. Console serveur : « restart %s », puis vérifie à nouveau.'):format(res, res), 'error')
+        else
+            notify(src, ('⚠️ %s a redémarré mais sans la nouvelle position : préviens le développeur (clé %s).'):format(res, key), 'error')
+        end
+    end)
+end
+
 Actions.movepoint = { level = 3, duty = true, run = function(src, _, data)
     local ped = GetPlayerPed(src)
     local c = GetEntityCoords(ped)
     local ok, res = exports.gs_bridge:SetPoint(data.key, vector4(c.x, c.y, c.z, GetEntityHeading(ped)))
     need(ok, res)
-    return ('Point déplacé (%s relancé)'):format(res)
+    confirmPoint(src, data.key, res, c)
+    return ('Point déplacé, %s redémarre (confirmation dans quelques secondes)'):format(res)
 end }
 
 Actions.resetpoint = { level = 3, duty = true, run = function(_, _, data)

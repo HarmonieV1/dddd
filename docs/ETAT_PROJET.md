@@ -23,7 +23,7 @@ bus d'arrivée corrigé ».
 ## 2. Versions : interne vs publique (important, piège classique)
 
 Depuis la V11.3, il y a **deux numéros de version différents**, volontairement :
-- `gs_version` (convar, `server.cfg.example`) = **V12.5** → version technique interne, vue par le staff (F11, console,
+- `gs_version` (convar, `server.cfg.example`) = **V12.6** → version technique interne, vue par le staff (F11, console,
   METTRE-A-JOUR). Continue d'avancer à chaque mise à jour (V11.2, V11.3...).
 - `gs_public_version` (convar) = **« V4 · bêta »** → version vue par les **joueurs** (écran de chargement, statut
   Discord, Gazette). Le site affiche son propre journal (V1 à V4, V5 « classé confidentiel »).
@@ -228,6 +228,24 @@ Résumé très condensé (le détail complet est dans `docs/ROADMAP.md`, `docs/F
   ne remplace pas le curseur), profondeur CSS `animation-timeline: view()` (captures, mock, carte, chiffres), intro
   façon chargement de mission (Entrée / clic pour passer). Tout coupé par `prefers-reduced-motion`, souris seulement
   sur ordinateur. Une seule boucle rAF qui s'endort quand rien ne bouge. Vérifié dans le navigateur : 0 erreur.
+
+- **V12.6** (11/10/2026) — passe de correctifs (fin du développement de fonctionnalités) :
+  - **Déplacer un point (F11) — 3 causes trouvées et corrigées** :
+    1. `gs_markers` ne nettoyait pas les marqueurs d'une ressource qui redémarre : 6 ressources (magasins `gs_economy`,
+       fourrière, justice, civil, lieux du staff, recherchés) gardaient leur **ancien point actif à l'ancien endroit**.
+       Désormais chaque marqueur retient sa ressource et disparaît avec elle.
+    2. `gs_quests` chargeait `points.lua` AVANT `quests.lua` : aucun personnage (Max, Big Sal, la Voix…) n'était
+       déplaçable. Ordre corrigé + `Config.Characters`.
+    3. La cabine de la Voix était ré-aimantée à 55 m vers la cabine d'origine. Placée par le staff → calage 8 m seulement.
+  - **Preuve en jeu** : 6 s après « Placer ce point ici », le staff reçoit « ✅ Vérifié : <ressource> a redémarré avec la
+    nouvelle position », ou un avertissement précis (pas redémarrée / redémarrée sans la position). Événement serveur
+    local `gs_bridge:server:pointsLoaded` + export `CheckPoint`.
+  - **Cabines** (demande du 04/10 : « pas contre des cabines ou téléphones muraux, aucune cohérence RP ») : interaction
+    posée sur la cabine elle-même (plus de décalage dans le mur), avertissement console si aucune cabine n'est trouvée.
+  - Arrivée en bus : GPS vers la position RÉELLE de Max (suit ses déplacements), doublon F11 supprimé.
+  - Recette (`ROADLINE_Backtest_complet.pdf`) : session 1b (12 tests V12.4 → V12.6), 77 tests dont 31 bloquants ; flèches
+    « → » enfin lisibles (Helvetica ne les avait pas).
+  - Tests : +11 (scénario cabine / Max / confirmation), 2674 Lua, 65 bot Discord.
 
 - **V12.5** (11/10/2026) — bot Discord réparé (retours du backtest) :
   - **Cause commune** de 3 symptômes : `gs_discord_guild` vide ou faux sur le VPS (l'outil le présentait comme facultatif).

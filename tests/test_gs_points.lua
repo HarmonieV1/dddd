@@ -80,6 +80,46 @@ check('réactivation', enable('gs_harvest:Config.Activities.fishing.spots.1') an
 c = loadConfig('gs_harvest', {})
 check('point réactivé : position d\'origine', c.Activities.fishing.spots[1].x == -1850.3)
 
+-- V12.5 · Scénario signalé en jeu : « je déplace la cabine (ou Max), rien ne bouge » -------------------------------
+-- 1. Les personnages de quête sont recensés (quests.lua est maintenant chargé AVANT points.lua)
+local loadedEvents = {}
+AddEventHandler('gs_bridge:server:pointsLoaded', function(res, applied) loadedEvents[#loadedEvents + 1] = { res = res, applied = applied } end)
+local function loadQuests(overrides)
+    GlobalState.gsPoints = overrides
+    GetCurrentResourceName = function() return 'gs_quests' end
+    Config = {}
+    dofile(R .. 'gs_quests/shared/config.lua')
+    dofile(R .. 'gs_quests/shared/quests.lua')
+    dofile(R .. 'gs_bridge/shared/points.lua')
+end
+local manifest = io.open(R .. 'gs_quests/fxmanifest.lua'):read('a')
+check('gs_quests : quests.lua chargé avant points.lua', manifest:find("'shared/quests.lua', '@gs_bridge/shared/points.lua'", 1, true) ~= nil)
+loadQuests({})
+check('personnages exposés dans Config (déplaçables au F11)', Config.Characters == Characters and Characters.voice and Characters.guide)
+local VOICE = 'gs_quests:Config.Characters.voice.coords'
+loadQuests({ [VOICE] = { x = 250.5, y = -880.25, z = 30.5, w = 90.0 } })
+check('cabine de la Voix déplacée par le staff : appliquée', Characters.voice.coords.x == 250.5 and Characters.voice.coords.w == 90.0)
+check('les autres personnages ne bougent pas', Characters.guide.coords.x == -536.9)
+check('calage court quand le staff a placé la cabine (son choix respecté)', Config.PhoneSnapNear and Config.PhoneSnapNear <= 10.0)
+-- 2. La ressource annonce ce qu'elle a vraiment appliqué, gs_bridge confirme au staff
+local last = loadedEvents[#loadedEvents]
+check('chargement annoncé avec la position appliquée', last and last.res == 'gs_quests' and last.applied[VOICE] and last.applied[VOICE].x == 250.5)
+local checkPoint = getExport('gs_bridge', 'CheckPoint')
+W.now = W.now + 10000
+local since = GetGameTimer() - 1
+check('pas encore redémarrée : signalé', checkPoint(VOICE, vec3(250.5, -880.25, 30.5), since + 5) == 'pas_relance')
+TriggerEvent('gs_bridge:server:pointsLoaded', 'gs_quests', { [VOICE] = { x = 250.5, y = -880.25, z = 30.5 } })
+-- parseKey exige la ressource démarrée
+GetResourceState = function() return 'started' end
+check('redémarrée avec la nouvelle position : confirmé', checkPoint(VOICE, vec3(250.5, -880.25, 30.5), since) == 'ok')
+TriggerEvent('gs_bridge:server:pointsLoaded', 'gs_quests', {})
+check('redémarrée SANS la position : signalé', checkPoint(VOICE, vec3(250.5, -880.25, 30.5), since) == 'ancienne_position')
+-- 3. L'arrivée en bus ne déclare plus Max une seconde fois (doublon au F11)
+GetCurrentResourceName = function() return 'gs_onboarding' end
+Config = {}
+dofile(R .. 'gs_onboarding/shared/config.lua')
+check('arrivée : plus de doublon de Max dans Config', Config.Arrival and Config.Arrival.guide == nil)
+
 type = rawtype
 io.write(('\n%d réussis, %d échoués\n'):format(passed, failed))
 os.exit(failed == 0 and 0 or 1)

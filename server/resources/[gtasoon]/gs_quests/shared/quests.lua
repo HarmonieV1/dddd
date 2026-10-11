@@ -21,6 +21,9 @@ Characters = {
     -- phone = true : l'interaction se pose sur la VRAIE cabine / le téléphone mural le plus proche (dans PhoneSnap m)
     voice = { name = 'La Voix (cabine téléphonique)', model = nil, phone = true, coords = vec4(196.6, -937.1, 30.7, 0.0) },
 }
+-- V12.5 · Même table vue depuis Config : le staff peut déplacer chaque personnage au F11 (« Déplacer un point »), et le
+-- déplacement s'applique ici (gs_bridge/shared/points.lua modifie la table en place, donc Characters aussi).
+Config.Characters = Characters
 
 Quests = {
     -- Tout le monde ----------------------------------------------------------------------------------------------

@@ -997,7 +997,8 @@ end
 -- V11.6 : « Retirer du jeu » (super-admin, réversible) en plus de déplacer / remettre à l'origine.
 local POINT_RES = { gs_harvest = 'Récolte', gs_jobs = 'Métiers', gs_gangs = 'Gangs', gs_economy = 'Magasins', gs_bank = 'Banques', gs_drugs = 'Drogue',
     gs_heists = 'Braquages', gs_rental = 'Locations', gs_gigs = 'Petits boulots', gs_races = 'Courses', gs_blackmarket = 'Marché noir', gs_police = 'Police',
-    gs_hideouts = 'Planques', gs_casino = 'Casino', gs_driving = 'Auto-école', gs_cctv = 'Caméras', gs_nightcity = 'Ville de nuit', gs_world = 'Monde' }
+    gs_hideouts = 'Planques', gs_casino = 'Casino', gs_driving = 'Auto-école', gs_cctv = 'Caméras', gs_nightcity = 'Ville de nuit', gs_world = 'Monde',
+    gs_quests = 'Quêtes (personnages, cabine)', gs_interiors = 'Portes d\'intérieurs', gs_auction = 'Fourrière', gs_onboarding = 'Arrivée' }
 local function pointsAllMenu(filter)
     local me = GetEntityCoords(PlayerPedId())
     local all = exports.gs_bridge:NearbyPoints(me, 300.0)

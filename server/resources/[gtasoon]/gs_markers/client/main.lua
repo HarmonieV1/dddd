@@ -19,8 +19,11 @@ local RING_ALPHA, RING_SIZE, MAX_DIST, LABEL_DIST = 70, 0.85, 15.0, 4.0
 local points = {}      -- [id] = { coords, style, label, drawDist }
 local nearby = {}      -- liste des points proches (recalculée toutes les 500 ms)
 
+local owners = {}      -- V12.5 · [id] = ressource qui a posé le point (nettoyé à son arrêt, voir plus bas)
+
 local function add(id, def)
     if type(id) ~= 'string' or type(def) ~= 'table' or not def.coords then return false end
+    owners[id] = GetInvokingResource()
     points[id] = {
         coords = vec3(def.coords.x, def.coords.y, def.coords.z),
         style = STYLES[def.style] or STYLES.entry,
@@ -38,12 +41,21 @@ local function add(id, def)
     return true
 end
 
-local function remove(id) points[id] = nil end
+local function remove(id) points[id] = nil owners[id] = nil end
 
 --- Supprime tous les points dont l'id commence par `prefix` (ex : 'gs_rental:').
 local function removePrefix(prefix)
-    for id in pairs(points) do if id:sub(1, #prefix) == prefix then points[id] = nil end end
+    for id in pairs(points) do if id:sub(1, #prefix) == prefix then points[id] = nil owners[id] = nil end end
 end
+
+-- V12.5 · Une ressource qui s'arrête (ou redémarre après « Déplacer un point ») perd TOUS ses points, même si elle oublie
+-- de les retirer. Avant : magasins, fourrière, justice… gardaient leur ancien point actif à l'ancien endroit.
+AddEventHandler('onClientResourceStop', function(res)
+    for id, owner in pairs(owners) do
+        if owner == res then points[id] = nil owners[id] = nil end
+    end
+    nearby = {} -- pas d'attente des 500 ms : plus aucun [E] sur un point retiré
+end)
 
 exports('Add', add)
 exports('Remove', remove)

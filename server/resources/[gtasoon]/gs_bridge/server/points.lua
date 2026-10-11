@@ -94,6 +94,26 @@ local function EnablePoint(key)
     return true, res
 end
 
+-- V12.5 · Ce que chaque ressource a réellement appliqué à son dernier chargement (événement LOCAL serveur : AddEventHandler,
+-- jamais RegisterNetEvent, un client ne peut pas l'envoyer).
+local loaded = {} -- [ressource] = { at = horodatage, applied = { [clé] = { x, y, z } } }
+AddEventHandler('gs_bridge:server:pointsLoaded', function(res, applied)
+    if type(res) == 'string' and type(applied) == 'table' then loaded[res] = { at = GetGameTimer(), applied = applied } end
+end)
+
+--- Le point `key` est-il chargé à la position `c` (à 0,5 m près) par une ressource (re)démarrée après `since` ? [API]
+--- Retourne 'ok' | 'pas_relance' (la ressource n'a pas redémarré) | 'ancienne_position' (redémarrée sans le déplacement).
+local function CheckPoint(key, c, since)
+    local res = parseKey(key)
+    if not res then return 'pas_relance' end
+    local l = loaded[res]
+    if not l or l.at < since then return 'pas_relance' end
+    local a = l.applied[key]
+    if not a or #(vector3(a.x, a.y, a.z) - vector3(c.x, c.y, c.z)) > 0.5 then return 'ancienne_position' end
+    return 'ok'
+end
+
+exports('CheckPoint', CheckPoint)
 exports('SetPoint', SetPoint)
 exports('ResetPoint', ResetPoint)
 exports('DisablePoint', DisablePoint)

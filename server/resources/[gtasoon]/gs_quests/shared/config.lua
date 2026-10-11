@@ -72,3 +72,4 @@ Config.Packages = {
 }
 
 Config.PhoneSnap = 60.0   -- V9 : rayon où chercher la vraie cabine / le téléphone mural autour d'un personnage « téléphone »
+Config.PhoneSnapNear = 8.0 -- V12.5 : rayon de calage quand le STAFF a placé le point (son choix est respecté)

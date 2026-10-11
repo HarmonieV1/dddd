@@ -97,9 +97,12 @@ function GSArrival(done)
     SetEntityHeading(ped, A.stop.w)
     FreezeEntityPosition(ped, false)
     DoScreenFadeIn(500)
-    -- Max « le Guide » est à ~20 m : on trace l'itinéraire, sinon le nouveau ne sait pas où aller
-    if A.guide then
-        SetNewWaypoint(A.guide.x, A.guide.y)
+    -- Max « le Guide » est à ~20 m : on trace l'itinéraire, sinon le nouveau ne sait pas où aller. Position lue chez
+    -- gs_quests (déplacements du staff compris) ; hors de Config ici pour ne pas apparaître deux fois au F11.
+    local okG2, max = pcall(function() return exports.gs_bridge:FindPoint('gs_quests:Config.Characters.guide.coords') end)
+    local guide = okG2 and max or vec3(-536.9, -218.4, 37.65)
+    if guide then
+        SetNewWaypoint(guide.x, guide.y)
         lib.notify({ title = 'Bienvenue à Los Santos', description = 'Max « le Guide » t\'attend devant la mairie.', type = 'inform', duration = 8000 })
     end
     SetTimeout(A.leaveAfter * 1000, function()

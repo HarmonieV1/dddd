@@ -363,13 +363,26 @@ local function nearestPhone(c, radius)
     return best
 end
 
+--- V12.5 : point posé par le staff (F11 → Déplacer un point) → on respecte SON choix : calage seulement sur la cabine
+--- collée à lui (PhoneSnapNear). Avant, l'aimant de 55 m le ramenait à la cabine d'origine : « rien ne bouge ».
+local function staffPlaced(id)
+    return (GlobalState.gsPoints or {})[('%s:Config.Characters.%s.coords'):format(GetCurrentResourceName(), id)] ~= nil
+end
+
 local function phoneZone(id, ch)
-    local placed, zone
+    local placed, zone, warned
     while true do
         local c = vec3(ch.coords.x, ch.coords.y, ch.coords.z)
         if not placed and #(GetEntityCoords(cache.ped) - c) < 120.0 then
-            local obj = nearestPhone(c, (Config.PhoneSnap or 60.0) - 5.0)
-            local at = obj and GetOffsetFromEntityInWorldCoords(obj, 0.0, -0.6, 0.0) or c
+            local radius = staffPlaced(id) and (Config.PhoneSnapNear or 8.0) or ((Config.PhoneSnap or 60.0) - 5.0)
+            local obj = nearestPhone(c, radius)
+            -- Sur la cabine elle-même (centre de l'objet) : jamais dans le mur d'un téléphone mural, jamais dans le vide
+            local at = obj and GetEntityCoords(obj) or c
+            if not obj and not warned then
+                warned = true
+                print(('[gs_quests] %s : aucune cabine ni téléphone mural à moins de %d m de %.1f, %.1f. '
+                    .. 'Staff : F11 → Déplacer un point, place-toi contre une cabine.'):format(ch.name, math.floor(radius), c.x, c.y))
+            end
             Markers:Add('gs_quests:talk:' .. id, { coords = at, style = 'hidden', ring = false, distance = 6.0, reach = 2.0,
                 event = 'gs_quests:client:talk', args = { id }, prompt = 'Décrocher le téléphone' })
             zone = exports.ox_target:addSphereZone({ coords = at + vec3(0.0, 0.0, 0.6), radius = 1.2, options = { {

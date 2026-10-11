@@ -1,4 +1,4 @@
-# Génère docs/pdf/ROADLINE_Backtest_complet.pdf : TOUT ce qui reste à tester en jeu (V5 → V12.3, sans ce que le backtest du 09/10 a couvert), rangé en sessions de
+# Génère docs/pdf/ROADLINE_Backtest_complet.pdf : TOUT ce qui reste à tester en jeu (V5 → V12.5, sans ce que le backtest du 09/10 a couvert), rangé en sessions de
 # jeu (dans l'ordre le plus efficace), avec qui il faut (Seul / 2 / 3+ / Staff) et la priorité (★★★ = bloquant à l'ouverture).
 import sys
 sys.path.insert(0, 'tools')
@@ -7,9 +7,9 @@ from pdf import H1, H2, P, SMALL, VERSION, footer, A4, mm, colors, SimpleDocTemp
 # (test, qui, priorité)
 SESSIONS = [
     ('0 · Avant de commencer (5 min)', [
-        ('METTRE-A-JOUR.bat : version V12.3 affichée, « Base de données sauvegardée », « Sauvegardes programmées » ; METTRE-A-JOUR-OVH puis GERER-OVH → 1 : « Version RoadLine : V12.3 »', 'Staff', 3),
+        ('METTRE-A-JOUR.bat : version V12.6 affichée, « Base de données sauvegardée », « Sauvegardes programmées » ; METTRE-A-JOUR-OVH puis GERER-OVH → 1 : « Version RoadLine : V12.6 »', 'Staff', 3),
         ('Fenêtre du serveur : aucune ligne ROUGE au démarrage ; F8 en jeu : aucune erreur rouge ; GERER-OVH → 3 : aucune erreur de script', 'Seul', 3),
-        ('VIDER-CACHE-FIVEM.bat si tu vois encore un ancien menu (F11 doit afficher « RoadLine V12.3 ») ; bio du bot : X/48 ; site : « En ce moment en ville » 0/48', 'Seul', 2),
+        ('VIDER-CACHE-FIVEM.bat si tu vois encore un ancien menu (F11 doit afficher « RoadLine V12.6 ») ; bio du bot : X/48 ; site : « En ce moment en ville » 0/48', 'Seul', 2),
     ]),
     ('1 · À re-vérifier après correction — ton retour du 09/10 (30 min)', [
         ('Nouveau joueur : un seul personnage ; fondateur, super-admins et VIP (F11 → Joueurs → VIP) : deux ; plus de choix du lieu ; déco / reco = même endroit', '2', 3),
@@ -27,7 +27,21 @@ SESSIONS = [
         ('/porter (ou W → Moi → Porter un objet) : carton, caisse, pizza… puis « Poser » ; F11 → Déplacer / retirer un point : filtre par ressource, retirer puis réactiver', 'Staff', 2),
         ('Ambulance : réanimer, soigner, réapparition à l\'hôpital ; banque : virement, retrait, dépôt ; le log (GERER-OVH → 3) doit rester sans erreur', '2', 3),
     ]),
-    ('2 · Jamais testé — nouveautés V11.4 → V12.3 (45 min)', [
+    ('1b · Corrigé le 11/10 — V12.4 à V12.6 (30 min) : à valider en priorité', [
+        ('Bus d\'arrivée (nouveau perso) : posé SUR le trottoir devant la mairie, plus de chute sous la map, GPS tracé vers Max « le Guide », notification d\'accueil', 'Seul', 3),
+        ('Déplacer un point (F11 → Monde et lieux → Déplacer / retirer un point, en mode staff) : une CAMÉRA → placer ici → quelques secondes après : « Vérifié : gs_cctv a redémarré avec la nouvelle position » ; le boîtier est sur le mur près de toi ; l\'ancien endroit n\'est plus interactif', 'Staff', 3),
+        ('Même test avec un MAGASIN (filtre « Magasins ») et avec Max (filtre « Quêtes ») : déplacés, confirmés, ancien point inactif. Avec un compte fondateur ET un super-admin', 'Staff', 3),
+        ('Cabine de la Voix : F11 → Déplacer un point → filtre « Quêtes » → colle-toi à une VRAIE cabine (ou un téléphone mural) → placer ici. [E] / Alt « Décrocher » sur la cabine elle-même, jamais dans le vide. F8 : aucun message « aucune cabine »', 'Staff', 3),
+        ('Quête de la Voix jusqu\'à l\'étape « Rappelle la Voix depuis la cabine » : le téléphone se décroche à la cabine déplacée', 'Seul', 2),
+        ('Ban F11 (super-admin) : Joueurs → Bannir (3 jours, motif) → double confirmation, déconnecté avec le motif, ligne dans #sanctions ; il se reconnecte → refusé avec motif + date de fin + lien Discord', '2', 3),
+        ('F11 → Bannissements : il est dans la liste (fin, motif, staff), recherche par pseudo puis par licence ; cliquer → Débannir → il revient tout de suite', '2', 3),
+        ('Un modo (niveau 2) ne voit ni « Bannir » ni « Bannissements » ; bannir un staff de rang égal ou supérieur est refusé', '2', 2),
+        ('Discord, APRÈS METTRE-A-JOUR-OVH + redémarrage : console « Discord RoadLine détecté » ou GERER-OVH → diagnostic « gs_discord_guild réglé » ; /help = liste des commandes (plus le site) ; /ip = adresse + connect F8', 'Staff', 3),
+        ('Discord : /annonce texte titre mention:@everyone → publiée dans #annonces ; avec en_jeu → aussi en ville ; un membre simple → « Réservé au staff » ; /ticket sujet → fil privé ouvert', 'Staff', 3),
+        ('Anti-triche : pendant le backtest, set gs_honeypot "log" dans secrets.cfg ; console serveur sans erreur gs_security ; aucun joueur honnête signalé « PIÈGE » de toute la session', 'Staff', 2),
+        ('IMPORTER-MODS avec une map protégée (escrow, .fxap) achetée sur la boutique officielle → installée (avertissement dans RAPPORT-MODS.txt) ; METTRE-A-JOUR-OVH → elle est bien sur le VPS', 'Staff', 2),
+    ]),
+    ('2 · Jamais testé — nouveautés V11.4 à V12.3 (45 min)', [
         ('Discord : /ticket sujet → fil privé dans #tickets (joueur + rôle staff), /fermer ; /aide ; commande staff refusée sans rôle staff / admin, acceptée avec', 'Staff', 3),
         ('Discord : /joueurs, /geler, /degeler, /avertir, /message, /annonce, /expulser, /isoler id minutes motif, /liberer, /reanimer → effet en jeu, #sanctions, journal F11', 'Staff', 3),
         ('Appli staff (https://…/gs_admin/) : Isoler (minutes), Libérer, Réanimer, puis l\'onglet Tickets', 'Staff', 2),
@@ -103,6 +117,12 @@ except Exception:
     pass
 if SYM == 'Helvetica':
     STARS = {3: '***', 2: '**', 1: '*'}
+# V12.5 : texte des tests dans la même police que les symboles. Helvetica n'a pas la flèche « → », omniprésente dans la
+# recette (« F11 → Joueurs → Bannir ») : elle sortait en carré noir ou disparaissait.
+from reportlab.lib.styles import ParagraphStyle
+TP = ParagraphStyle('tp', parent=P, fontName=SYM) if SYM != 'Helvetica' else P
+if SYM == 'Helvetica':
+    SESSIONS = [(ti, [(x.replace('→', '>'), q, pr) for x, q, pr in r]) for ti, r in SESSIONS]
 
 
 def build():
@@ -116,7 +136,7 @@ def build():
          Paragraph('Pour chaque problème : capture d\'écran + F11 → Copier mes coordonnées + ce que tu as fait juste avant. Envoie-moi la liste, je corrige en une fois.', SMALL),
          Spacer(1, 4)]
     for title, rows in SESSIONS:
-        data = [['', 'Test', 'Qui', 'Priorité']] + [['☐' if SYM != 'Helvetica' else '[ ]', Paragraph(t, P), q, STARS[p]] for t, q, p in rows]
+        data = [['', 'Test', 'Qui', 'Priorité']] + [['☐' if SYM != 'Helvetica' else '[ ]', Paragraph(t, TP), q, STARS[p]] for t, q, p in rows]
         tbl = Table(data, colWidths=[8 * mm, 140 * mm, 16 * mm, 20 * mm], repeatRows=1)
         tbl.setStyle(TableStyle([
             ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#2a1440')), ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
