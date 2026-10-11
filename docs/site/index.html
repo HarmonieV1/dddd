@@ -296,7 +296,7 @@
   .pillar li b { font-size: .98rem; }
   .pillar li span { color: var(--muted); font-size: .88rem; line-height: 1.45; }
   .live-map { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 22px; margin-top: 26px; align-items: start; }
-  @media (max-width: 860px) { .live-map { grid-template-columns: 1fr; } }
+  @media (max-width: 860px) { .live-map { grid-template-columns: minmax(0, 1fr); } }
   .map-box { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 14px; position: relative; }
   .map-box svg { width: 100%; height: auto; display: block; }
   .map-box svg { border-radius: 12px; background: #1aa3d1; }
@@ -617,6 +617,11 @@ body.has-glow .reticle { opacity: 1; }
 .sound { width: 38px; height: 38px; margin-right: 8px; border-radius: 999px; border: 1px solid var(--line); background: rgba(24, 14, 44, .6); color: var(--text); cursor: pointer; font-size: 1rem; line-height: 1; transition: border-color .25s, box-shadow .25s; }
 .sound:hover, .sound[aria-pressed="true"] { border-color: var(--pink); box-shadow: var(--glow-pink); }
 @media (max-width: 600px) { .sound { width: 34px; height: 34px; margin-right: 6px; } }
+/* V12.9 : avec le bouton son, la barre dépassait de 21 px à 390 px (bouton menu à moitié hors de l'écran) */
+@media (max-width: 480px) { .nav-right { gap: 8px; } .sound { margin-right: 0; } .nav-right .btn { padding: 9px 12px; } }
+@media (max-width: 380px) { .logo { font-size: 1.15rem; } footer .logo { white-space: normal; } nav .wrap { padding: 0 14px; gap: 8px; }
+  .nav-right .btn { padding: 8px 10px; font-size: .85rem; } .burger { width: 38px; } }
+@media (max-width: 340px) { .sound { display: none; } .three { grid-template-columns: minmax(0, 1fr); } }
 /* Intro : sous-titre défilant façon chargement de mission */
 .intro-sub { margin-top: 14px; min-height: 1.2em; color: #c79bff; font-size: .78rem; letter-spacing: .14em; text-transform: uppercase; }
 .intro-sub b { font-weight: 800; color: var(--white); }

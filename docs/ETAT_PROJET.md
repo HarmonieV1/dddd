@@ -276,6 +276,10 @@ Résumé très condensé (le détail complet est dans `docs/ROADMAP.md`, `docs/F
     les 3 événements `gs_social:client:*` écoutés aussi par `gs_phone` = voulu (fil social affiché dans le téléphone).
   - Sécurité revérifiée présente : `honeypot.lua` chargé, retouches Qbox `qbx_vehiclekeys` / `qbx_police` (`/911p`),
     déban F11, verrou Discord (`resolveGuild`, `NOT_HERE`), `/policeia` réservé `group.admin`.
+  - **Site corrigé sur téléphone** : le bouton son ajouté en V13 poussait le bouton menu (☰) à moitié hors de l'écran
+    (barre 21 px trop large à 390 px). Barre resserrée sous 480 px, logo réduit sous 380 px, son masqué sous 340 px ;
+    logo du pied de page et grilles « En direct » / trois colonnes qui débordaient déjà à 320-360 px corrigés.
+    Vérifié dans Chromium de 320 à 1440 px : plus de défilement horizontal, 0 erreur JavaScript.
   - Recette : session **1d** (5 tests : police IA seule en ville, `/policeia`, bus, bienvenue Discord, site V13).
     `docs/ALERTES.md` : plancher de signalement quand aucun policier n'est en service.
   - Suite complète verte : 2 688 tests Lua, 70 tests bot Discord. PDF régénérés, zips de livraison refaits.
