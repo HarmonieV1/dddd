@@ -8,7 +8,7 @@ from reportlab.lib.units import mm
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, PageBreak, KeepTogether
 from reportlab.graphics.shapes import Drawing, Rect, Circle, String, Line
 
-VERSION = 'V12.12'
+VERSION = 'V12.13'
 NEON = colors.HexColor('#28E0FF')
 DARK = colors.HexColor('#0F091C')
 PINK = colors.HexColor('#FF2E88')
@@ -161,7 +161,7 @@ def guide(points):
     s += [Paragraph('2. Touches', H2), table(KEYS, [38 * mm, 78 * mm, 64 * mm])]
     s += [Paragraph('3. Commandes utiles', H2), table(COMMANDS, [60 * mm, 120 * mm])]
 
-    s += [PageBreak(), Paragraph('★ V12.4 → V12.12 · Sécurité, fiabilité, mappings', H2)]
+    s += [PageBreak(), Paragraph('★ V12.4 → V12.13 · Sécurité, fiabilité, mappings', H2)]
     s += bullets([
         "<b>Pièges anti-triche</b> : 27 faux événements que seuls les menus de triche déclenchent → bannissement définitif automatique, staff jamais banni.",
         "<b>Bannissements en jeu</b> (super-admin) : F11 → Joueurs → Bannir (durée, motif) et F11 → Bannissements (liste, débannir même hors ligne) ; "
@@ -172,7 +172,7 @@ def guide(points):
         "<b>Alertes police cohérentes</b> (docs/ALERTES.md) : un seul central, 25 types de crimes, chasse légale sans alerte, vols de voiture au central, "
         "/911p réservé au staff, shérif inclus ; seul en ville, un crime sérieux est signalé au moins 6 fois sur 10 (police IA, /policeia pour le staff).",
         "<b>Mappings</b> : F11 → Monde et lieux → Mappings installés (emplacement lu dans les fichiers de chaque map, téléportation, blips staff), "
-        "conflits entre maps et modèles trop lourds signalés en console ; fusion des fichiers d'occlusion en conflit (zz_fusion_occlusion).",
+        "conflits entre maps et modèles trop lourds signalés en console ; conflits d'occlusion <b>fusionnés automatiquement</b> au démarrage (gsa_zz_fusion_occlusion).",
         "<b>Commissariat de Mission Row agrandi</b> : salles d'interrogatoire, de briefing et réserve au sous-sol, portes réservées à la police.",
         "<b>Site V13</b> : météo et heure de la ville en direct, son en option, affichage corrigé sur téléphone.",
     ])

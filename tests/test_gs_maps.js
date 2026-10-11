@@ -101,6 +101,43 @@ const fx = mk('gsa_zz_fusion_occlusion', { 'stream/cs1_occl_10.ymap': ymap([], 3
 rc = M.scanAll([h1, h2, fx]).conflicts;
 check('ressource de fusion : conflit marqué résolu', rc.length === 1 && rc[0].resolved === 'gsa_zz_fusion_occlusion');
 check('la fusion n\'est pas comptée comme une map en conflit', !rc[0].resources.includes('gsa_zz_fusion_occlusion'));
+
+// 7. Fusion automatique des conflits d'occlusion (V12.13)
+function occl(boxes) { // fichier d'occlusion fabriqué : CMapData + boîtes (format Meta du jeu), sans modèle
+  const d = Buffer.alloc(0x1000);
+  d.writeUInt32LE(0x50524430, 0x10); d.writeInt32LE(1, 0x1c); d.writeBigUInt64LE(BigInt(0x50000000 + 0x100), 0x30); d.writeInt16LE(2, 0x4c);
+  [[0xd3593fa6, 512, 0x200], [0x3a282e1d, boxes.length * 16, 0x400]].forEach(([h, l, o], i) => {
+    d.writeUInt32LE(h, 0x100 + i * 16); d.writeInt32LE(l, 0x104 + i * 16); d.writeBigUInt64LE(BigInt(0x50000000 + o), 0x108 + i * 16); });
+  d.writeUInt32LE(boxes.length ? 2 : 0, 0x200 + 128); d.writeUInt16LE(boxes.length, 0x200 + 136); d.writeUInt16LE(boxes.length, 0x200 + 138);
+  boxes.forEach((b, i) => { for (let j = 0; j < 8; j++) d.writeInt16LE(b * 10 + j, 0x400 + i * 16 + j * 2); });
+  const h = Buffer.alloc(16); h.write('RSC7', 0, 'latin1'); h.writeUInt32LE(2, 4); h.writeUInt32LE(0x90000001, 8); h.writeUInt32LE(0x20000000, 12);
+  return Buffer.concat([h, zlib.deflateRawSync(d)]);
+}
+const boxCount = (raw) => { const d = zlib.inflateRawSync(raw.subarray(16)); return d.readUInt16LE(0x200 + 136); };
+const liq = mk('gsa_cfx_draft_pb_liquor_pack', { 'stream/vanilla/cs1_occl_10.ymap': occl([1, 2, 3, 4, 5, 6]) });   // a retiré 7, 8
+const wil = mk('gsa_mlo_willies_supermarket', { 'stream/cs1_occl_10.ymap': occl([1, 2, 3, 4, 7, 8]) });           // a retiré 5, 6
+const fusDir = path.join(tmp, 'gsa_zz_fusion_occlusion');
+fs.mkdirSync(fusDir, { recursive: true });
+const raw2 = (list) => list.map((r) => M.scanResource(r.name, r.dir));
+let w = M.applyFusions(raw2([liq, wil]), fusDir);
+const fused = fs.readFileSync(path.join(fusDir, 'stream', 'cs1_occl_10.ymap'));
+check('conflit d\'occlusion : fusion écrite', w.length === 1 && w[0].how.startsWith('fusion'));
+check('fusion = boîtes présentes dans les deux versions (1 à 4)', boxCount(fused) === 4);
+check('fxmanifest de la fusion écrit', fs.readFileSync(path.join(fusDir, 'fxmanifest.lua'), 'utf8').includes("this_is_a_map 'yes'"));
+check('2e démarrage : rien à réécrire', M.applyFusions(raw2([liq, wil]), fusDir).length === 0);
+const fus = { name: 'gsa_zz_fusion_occlusion', dir: fusDir };
+const after = M.scanAll([liq, wil, fus]);
+check('conflit marqué résolu par la fusion', after.conflicts.length === 1 && after.conflicts[0].resolved === 'gsa_zz_fusion_occlusion');
+check('la fusion n\'apparaît pas dans la liste des maps', !after.maps.some((m) => m.name === 'gsa_zz_fusion_occlusion'));
+check('conflit déjà résolu : pas de nouvelle écriture', M.applyFusions(raw2([liq, wil, fus]), fusDir).length === 0);
+// Version illisible : on garde la version préférée (magasin d'alcool)
+const fusDir2 = path.join(tmp, 'fusion2');
+const bad = mk('gsa_aaa_map_abimee', { 'stream/cs1_occl_10.ymap': Buffer.from('RSC7 abîmé') });
+w = M.applyFusions(raw2([bad, liq]), fusDir2);
+check('fusion impossible : version du magasin d\'alcool gardée', w.length === 1 && w[0].how.includes('gsa_cfx_draft_pb_liquor_pack')
+  && fs.readFileSync(path.join(fusDir2, 'stream', 'cs1_occl_10.ymap')).equals(fs.readFileSync(path.join(liq.dir, 'stream/vanilla/cs1_occl_10.ymap'))));
+const idA = mk('gsa_x_id', { 'stream/hw1_rd_01.ymap': ymap([[1, 2000, 30]]) }), idB = mk('gsa_y_id', { 'stream/hw1_rd_01.ymap': ymap([[5, 2000, 30]]) });
+check('conflit qui n\'est pas de l\'occlusion : pas fusionné automatiquement', M.applyFusions(raw2([idA, idB]), path.join(tmp, 'fusion3')).length === 0);
 fs.rmSync(tmp, { recursive: true, force: true });
 
 console.log(`lecteur de maps : ${passed} réussis, ${failed} échoués`);

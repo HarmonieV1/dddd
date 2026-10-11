@@ -174,10 +174,115 @@ function scanAll(list) {
   const maps = list.map((r) => scanResource(r.name, r.dir));
   const conflicts = conflictsOf(maps);
   maps.sort((a, b) => a.label.localeCompare(b.label));
-  return { maps: maps.map(({ streamed, ...m }) => m), conflicts };
+  // La ressource de fusion n'est pas une map à visiter : elle sert seulement à résoudre les conflits
+  return { maps: maps.filter((m) => !/^gsa_zz_fusion/.test(m.name)).map(({ streamed, ...m }) => m), conflicts };
 }
 
-if (typeof module !== 'undefined' && module.exports) module.exports = { inflateRsc7, entitiesOf, memoryMB, pagesSize, isVanillaName, placesOf, scanResource, conflictsOf, scanAll, labelOf }; // tests Node seulement
+// ---- V12.13 · Fusion automatique des conflits d'OCCLUSION (même algorithme que tools/maps/fusion_occlusion.py) ----------
+// Un fichier *_occl_*.ymap liste ce que le jeu peut cacher derrière les murs. Chaque MLO en retire ce qui ferait disparaître son
+// intérieur ; si deux maps livrent le même fichier, une seule version compte. Fusion = occluders présents dans TOUTES les
+// versions (jeu − retraits de A − retraits de B). Écrite dans la ressource gsa_zz_fusion_occlusion, lancée après les maps.
+const META_BASE = 0x50000000, CMAPDATA = 0xd3593fa6, BOX_OFF = 128, MODEL_OFF = 144, BOX_SIZE = 16, MODEL_SIZE = 64;
+const PREFER = ['gsa_cfx_draft_pb_liquor_pack']; // si une fusion échoue : version gardée en priorité (choix du 12/10)
+
+function readMeta(raw) {
+  const data = inflateRsc7(raw);
+  if (!data || data.length < 0x50 || data.readUInt32LE(0x10) !== 0x50524430) return null;
+  const blocksPtr = Number(data.readBigUInt64LE(0x30)) - META_BASE, count = data.readInt16LE(0x4c);
+  const blocks = [];
+  for (let i = 0; i < count; i++) {
+    const o = blocksPtr + i * 16;
+    if (o < 0 || o + 16 > data.length) return null;
+    blocks.push({ hash: data.readUInt32LE(o), len: data.readInt32LE(o + 4), off: Number(data.readBigUInt64LE(o + 8)) - META_BASE });
+  }
+  const root = data.readInt32LE(0x1c);
+  if (!blocks[root - 1] || blocks[root - 1].hash !== CMAPDATA) return null;
+  const cmap = blocks[root - 1].off;
+  const arr = (field) => {
+    const p = data.readUInt32LE(cmap + field), n = data.readUInt16LE(cmap + field + 8);
+    if (!p || !n || !blocks[(p & 0xfff) - 1]) return { off: null, n: 0 };
+    return { off: blocks[(p & 0xfff) - 1].off + (p >>> 12), n };
+  };
+  const boxes = () => { const a = arr(BOX_OFF); const o = []; for (let i = 0; i < a.n; i++) o.push(data.subarray(a.off + i * BOX_SIZE, a.off + (i + 1) * BOX_SIZE)); return o; };
+  const models = () => {
+    const a = arr(MODEL_OFF); const o = [];
+    for (let i = 0; i < a.n; i++) {
+      const s = data.subarray(a.off + i * MODEL_SIZE, a.off + (i + 1) * MODEL_SIZE);
+      const size = s.readUInt32LE(32), vp = s.readUInt32LE(40);
+      let verts = Buffer.alloc(0);
+      if (vp && blocks[(vp & 0xfff) - 1]) { const st = blocks[(vp & 0xfff) - 1].off + (vp >>> 12); verts = data.subarray(st, st + size); }
+      o.push({ s, key: Buffer.concat([s.subarray(0, 40), s.subarray(48), verts]).toString('hex') });
+    }
+    return o;
+  };
+  const keep = (bx, md) => {
+    for (const [field, items, size] of [[BOX_OFF, bx, BOX_SIZE], [MODEL_OFF, md, MODEL_SIZE]]) {
+      const a = arr(field);
+      if (a.off === null) continue;
+      const blob = Buffer.concat([...items.map((x) => Buffer.from(x)), Buffer.alloc(a.n * size - items.length * size)]);
+      blob.copy(data, a.off);
+      const p = data.readUInt32LE(cmap + field);
+      data.writeUInt32LE(items.length ? p : 0, cmap + field);
+      data.writeUInt16LE(items.length, cmap + field + 8); data.writeUInt16LE(items.length, cmap + field + 10);
+    }
+  };
+  return { head: raw.subarray(0, 16), data, boxes, models, keep };
+}
+
+/** Fusionne plusieurs versions d'un fichier d'occlusion (Buffers) ; null si l'une n'est pas lisible. La 1re sert de base. */
+function mergeOcclusion(raws) {
+  const ys = raws.map(readMeta);
+  if (ys.length < 2 || ys.some((y) => !y)) return null;
+  const count = (list) => list.reduce((m, k) => m.set(k, (m.get(k) || 0) + 1), new Map());
+  const inter = (a, b) => { const r = new Map(); for (const [k, v] of a) if (b.has(k)) r.set(k, Math.min(v, b.get(k))); return r; };
+  let cb = count(ys[0].boxes().map((b) => b.toString('hex')));
+  let cm = count(ys[0].models().map((m) => m.key));
+  for (const y of ys.slice(1)) { cb = inter(cb, count(y.boxes().map((b) => b.toString('hex')))); cm = inter(cm, count(y.models().map((m) => m.key))); }
+  const boxes = [], models = [];
+  for (const b of ys[0].boxes()) { const k = b.toString('hex'); if (cb.get(k) > 0) { boxes.push(Buffer.from(b)); cb.set(k, cb.get(k) - 1); } }
+  for (const m of ys[0].models()) { if (cm.get(m.key) > 0) { models.push(Buffer.from(m.s)); cm.set(m.key, cm.get(m.key) - 1); } }
+  ys[0].keep(boxes, models);
+  return { bytes: Buffer.concat([ys[0].head, zlib.deflateRawSync(ys[0].data, { level: 9 })]), boxes: boxes.length, models: models.length };
+}
+
+const FUSION_MANIFEST = "-- Fusion automatique des fichiers d'occlusion en conflit entre maps (gs_admin/server/maps.js).\n" +
+  "-- Lancée APRÈS les maps (dev.cfg / prod.cfg), donc prioritaire. Contenu régénéré à chaque démarrage si besoin.\n" +
+  "fx_version 'cerulean'\ngame 'gta5'\nauthor 'RoadLine'\nlua54 'yes'\nthis_is_a_map 'yes'\n";
+
+/** Écrit les fusions des conflits d'occlusion non résolus dans `fusionDir`. `maps` = résultat de scanResource (avec streamed).
+ *  Renvoie la liste des fichiers écrits ou modifiés (vide = rien à faire). Si une fusion échoue : version préférée (PREFER). */
+function applyFusions(maps, fusionDir) {
+  const written = [];
+  for (const c of conflictsOf(maps)) {
+    if (c.resolved || !/_occl_/.test(c.file)) continue;
+    const owners = maps.filter((m) => c.resources.includes(m.name));
+    const paths = owners.map((m) => (m.streamed.find((s) => s.file === c.file) || {}).path).filter(Boolean);
+    let raws = [];
+    try { raws = paths.map((p) => fs.readFileSync(p)); } catch (e) { continue; }
+    const merged = mergeOcclusion(raws);
+    let out = merged && merged.bytes;
+    let how = merged ? `fusion (${merged.boxes} boîtes, ${merged.models} modèles)` : '';
+    if (!out) {
+      const pick = owners.find((m) => PREFER.includes(m.name)) || owners.slice().sort((a, b) => a.name.localeCompare(b.name))[0];
+      out = fs.readFileSync(pick.streamed.find((s) => s.file === c.file).path);
+      how = `version de ${pick.name} gardée (fusion impossible)`;
+    }
+    const dest = path.join(fusionDir, 'stream', c.file);
+    let same = false;
+    try { same = fs.readFileSync(dest).equals(out); } catch (e) { same = false; }
+    if (same) continue;
+    fs.mkdirSync(path.dirname(dest), { recursive: true });
+    fs.writeFileSync(dest, out);
+    written.push({ file: c.file, resources: c.resources, how });
+  }
+  if (written.length) {
+    const mf = path.join(fusionDir, 'fxmanifest.lua');
+    try { if (fs.readFileSync(mf, 'utf8') !== FUSION_MANIFEST) throw new Error('différent'); } catch (e) { fs.writeFileSync(mf, FUSION_MANIFEST); }
+  }
+  return written;
+}
+
+if (typeof module !== 'undefined' && module.exports) module.exports = { inflateRsc7, entitiesOf, memoryMB, pagesSize, isVanillaName, placesOf, scanResource, conflictsOf, scanAll, labelOf, mergeOcclusion, applyFusions }; // tests Node seulement
 
 if (typeof GetCurrentResourceName === 'function') {
   const mapResources = () => {
@@ -202,8 +307,23 @@ if (typeof GetCurrentResourceName === 'function') {
     return cache;
   };
   exports('MapScan', scan);
-  // Au démarrage : une ligne en console, et les conflits en clair (à corriger avant qu'un joueur tombe dans un trou)
+  // V12.13 : conflits d'occlusion fusionnés tout seuls dans gsa_zz_fusion_occlusion, puis relance de cette ressource pour
+  // qu'elle passe APRÈS toutes les maps (la dernière lancée l'emporte). Aucun fichier à envoyer, rien à faire à la main.
+  const FUSION_RES = 'gsa_zz_fusion_occlusion';
+  const fuse = () => {
+    const dir = GetResourcePath(FUSION_RES);
+    if (!dir) { console.log(`^3[gs_admin] Ressource ${FUSION_RES} absente : conflits d'occlusion non fusionnés (METTRE-A-JOUR)^7`); return; }
+    const list = mapResources().filter((r) => r.name !== FUSION_RES);
+    let written = [];
+    try { written = applyFusions(list.map((r) => scanResource(r.name, r.dir)), dir); } catch (e) { console.log(`^1[gs_admin] Fusion des maps impossible : ${e.message}^7`); }
+    for (const w of written) console.log(`^2[gs_admin] ${w.file} (${w.resources.join(' + ')}) : ${w.how}^7`);
+    let has = false;
+    try { has = fs.readdirSync(path.join(dir, 'stream')).length > 0; } catch (e) { has = false; }
+    if (has) { StopResource(FUSION_RES); StartResource(FUSION_RES); cache = null; }
+  };
+  // Au démarrage : fusion, puis une ligne en console et les conflits en clair (à corriger avant qu'un joueur tombe dans un trou)
   setTimeout(() => {
+    fuse();
     const r = scan();
     const placed = r.maps.filter((m) => m.places.length).length;
     const open = r.conflicts.filter((c) => !c.resolved);

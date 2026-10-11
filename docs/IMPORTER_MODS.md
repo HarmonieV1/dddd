@@ -42,10 +42,11 @@ Console au démarrage : `[gs_admin] Mappings : N installé(s), N situé(s), aucu
 s'affiche correctement (trous, murs invisibles, textures qui clignotent). Le menu et la console donnent le fichier et
 les deux maps. Deux copies **identiques** du même fichier ne comptent pas (aucun effet).
 **Conflit d'occlusion** (`*_occl_*.ymap`, le cas le plus courant : chaque MLO retire du jeu ce qui cacherait son intérieur) :
-envoie-moi ce fichier depuis le dossier de **chacune** des deux maps ; je les fusionne (`tools/maps/fusion_occlusion.py` :
-on garde ce qui est présent dans toutes les versions) et je te renvoie `zz_fusion_occlusion.zip` à mettre dans
-`mods-a-trier` puis IMPORTER-MODS. Son nom `gsa_zz_…` le fait démarrer après les maps (addons.cfg est trié par ordre
-alphabétique) : c'est sa version qui compte, et F11 / la console affichent « conflit résolu » en vert. Autre type de conflit :
+**réglé tout seul depuis la V12.13**. 15 s après le démarrage, `gs_admin` fusionne les versions (on garde ce qui est présent
+dans toutes, donc les deux intérieurs s'affichent), écrit le résultat dans la ressource `gsa_zz_fusion_occlusion` et la
+relance pour qu'elle passe après toutes les maps. Console : ligne verte « fusion », puis « Conflit résolu ». Fusion
+impossible (fichier abîmé) : la version du magasin d'alcool de Paleto est gardée (choix du 12/10). Rien à envoyer.
+Outil hors serveur, même algorithme : `tools/maps/fusion_occlusion.py`. Autre type de conflit :
 en garder une (mettre un `#` devant l'autre dans `cfg\addons.cfg`).
 Map sans lieu dans la liste : soit un **habillage** d'objets du jeu (ex. `hp_fleeca` retexture les 6 agences Fleeca, normal),
 soit une map **vide** (aucun fichier de jeu, ex. `moto_free_shell`), à supprimer.

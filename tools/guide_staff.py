@@ -101,7 +101,7 @@ def build():
             [38 * G.mm, 120 * G.mm, 22 * G.mm], font=8.2)]
     s += [Paragraph('Un point mal placé (transformateur, ring, vendeur, PNJ…) : F11 → Monde et lieux → <b>Déplacer / retirer un point</b> (filtre par ressource ; '
                     'super-admin : retirer du jeu, réversible). Points de métier : menu dédié. Tout est gardé aux mises à jour.', SMALL)]
-    s += [Paragraph('6. Nouveautés V11.4 → V12.12 pour le staff', H2)]
+    s += [Paragraph('6. Nouveautés V11.4 → V12.13 pour le staff', H2)]
     s += [t([['Quoi', 'Comment'],
              ['VIP (2 personnages)', 'F11 → Joueurs → le joueur → VIP (fondateur). Tout le monde a 1 personnage ; staff super-admin+ et VIP en ont 2.'],
              ['Mapping', 'F11 → Monde et lieux → Mapping : catalogue par catégorie (mobilier, chantier, éclairage, végétation, stands, plage, police), placement à la souris, retrait d\'objets de la map.'],
@@ -114,7 +114,7 @@ def build():
              ['Tickets Discord', '/ticket ouvre un fil privé dans #tickets (joueur + rôle staff) ; /fermer le clôt. Candidatures du site : webhook #candidatures.'],
              ['Isolement à distance', 'Bot : /isoler id minutes motif · /liberer id · /reanimer id. Appli staff : boutons Isoler / Libérer / Réanimer. Publié dans #sanctions, journalisé.'],
              ['Déplacer un point', 'F11 → Monde et lieux → Déplacer / retirer un point : 6 s après « Placer ce point ici », message « Vérifié : la ressource a redémarré avec la nouvelle position » (sinon un avertissement précis).'],
-             ['Mappings : conflits', 'Console au démarrage : rouge = deux maps remplacent le même fichier (envoyer les deux fichiers à Claude, qui les fusionne) ; jaune = modèle trop lourd en mémoire (> 16 Mo) ; vert = conflit résolu.'],
+             ['Mappings : conflits', 'Console au démarrage : les conflits d\'occlusion (*_occl_*) sont fusionnés tout seuls (vert = résolu). Rouge = autre conflit : à signaler à Claude ou garder une des deux maps. Jaune = modèle trop lourd en mémoire (> 16 Mo).'],
              ['Alertes police', 'Toutes les alertes passent par le central (docs/ALERTES.md) : tirs, armes blanches, vols de voiture, braquages… Chasseur avec permis en zone de chasse : pas d\'alerte. /911p réservé au staff.'],
              ['Police IA', 'Seul en ville : un crime sérieux est signalé au moins 6 fois sur 10. <b>/policeia 1-5</b> (admin) la déclenche sur toi pour la tester.'],
              ['Mission Row agrandi', 'Sous-sol (interrogatoire, briefing, réserve) : 3 portes réservées à la police, actives seulement si la map mrpd_etendu tourne.'],

@@ -7,9 +7,9 @@ from pdf import H1, H2, P, SMALL, VERSION, footer, A4, mm, colors, SimpleDocTemp
 # (test, qui, priorité)
 SESSIONS = [
     ('0 · Avant de commencer (5 min)', [
-        ('METTRE-A-JOUR.bat : version V12.12 affichée, « Base de données sauvegardée », « Sauvegardes programmées » ; METTRE-A-JOUR-OVH puis GERER-OVH → 1 : « Version RoadLine : V12.12 »', 'Staff', 3),
+        ('METTRE-A-JOUR.bat : version V12.13 affichée, « Base de données sauvegardée », « Sauvegardes programmées » ; METTRE-A-JOUR-OVH puis GERER-OVH → 1 : « Version RoadLine : V12.13 »', 'Staff', 3),
         ('Fenêtre du serveur : aucune ligne ROUGE au démarrage (sauf un conflit de maps déjà connu) ; F8 en jeu : aucune erreur rouge ; GERER-OVH → 3 : aucune erreur de script', 'Seul', 3),
-        ('VIDER-CACHE-FIVEM.bat si tu vois un ancien menu (F11 doit afficher « RoadLine V12.12 ») ; pendant le backtest : set gs_honeypot "log" dans secrets.cfg (piège = simple signalement)', 'Staff', 2),
+        ('VIDER-CACHE-FIVEM.bat si tu vois un ancien menu (F11 doit afficher « RoadLine V12.13 ») ; pendant le backtest : set gs_honeypot "log" dans secrets.cfg (piège = simple signalement)', 'Staff', 2),
     ]),
     ('1 · Arrivée et personnage (15 min) — corrigé après tes retours', [
         ('Nouveau joueur : un seul personnage ; fondateur, super-admins et VIP (F11 → Joueurs → VIP) : deux ; plus de choix du lieu ; déco / reco = même endroit', '2', 3),
@@ -50,7 +50,7 @@ SESSIONS = [
         ('Mission Row agrandi installé : policier en service au sous-sol → 3 portes (interrogatoire, briefing, réserve) ; un civil ne les voit pas', '2', 2),
     ]),
     ('6 · Mappings (25 min, en mode staff)', [
-        ('Après import de zz_fusion_occlusion : console « Conflit résolu : cs1_occl_10.ymap » en vert ; Paleto : magasin d\'alcool et Willie\'s sans clignotement ni mur invisible, de dehors et de dedans', 'Staff', 3),
+        ('Au démarrage (rien à importer) : console en vert « cs1_occl_10.ymap (… + …) : fusion » puis « Conflit résolu » ; F11 → Mappings : « Conflits entre maps : tous résolus » ; Paleto : magasin d\'alcool et Willie\'s sans clignotement ni mur invisible, de dehors et de dedans', 'Staff', 3),
         ('F11 → Monde et lieux → Mappings installés : chaque map a un quartier ; clic → téléporté DEDANS (pas sur le toit) ; « Afficher leurs blips » → visibles chez toi seulement', 'Staff', 3),
         ('Pillbox : prise de service EMS, direction, pharmacie, armurerie, vestiaire, garage, chirurgien, pharmacie publique → chaque [E] dans une pièce, pas dans un mur', 'Staff', 3),
         ('Fleeca Legion Square (les 6 agences rhabillées) : banque, braquage du guichet, du coffre, gros coup en duo → points accessibles, porte du coffre cohérente', '2', 3),

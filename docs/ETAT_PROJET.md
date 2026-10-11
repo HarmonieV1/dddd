@@ -1,4 +1,4 @@
-# État du projet RoadLine RP — récapitulatif complet (à jour au 12/10/2026, V12.12)
+# État du projet RoadLine RP — récapitulatif complet (à jour au 12/10/2026, V12.13)
 
 Ce document sert de **point de sauvegarde** : si une conversation avec Claude est perdue, compressée ou doit reprendre
 ailleurs, tout ce qu'il faut savoir est ici. Il est versionné avec le code (`git log` en garde aussi l'historique).
@@ -47,7 +47,7 @@ exclusifs (« ce que tu ne trouveras nulle part ailleurs »).
 - `feature/phase1-bridge`
 - `claude/gta-rp-architecture-stack-pbvdxz`
 
-**Dernier commit poussé** : « V12.12 : fusion des conflits d'occlusion » (hash exact :
+**Dernier commit poussé** : « V12.13 : conflits d'occlusion fusionnés automatiquement » (hash exact :
 `git log -1 origin/feature/phase1-bridge`). Les deux branches pointent sur le même commit.
 
 **Deux sessions Claude en parallèle** (poste Windows et session web) : elles ne se voient pas. Toujours synchroniser
@@ -57,7 +57,7 @@ par un colis (zip de l'installation ou de la session) + ce fichier, et comparer 
 ## 2. Versions : interne vs publique (important, piège classique)
 
 Depuis la V11.3, il y a **deux numéros de version différents**, volontairement :
-- `gs_version` (convar, `server.cfg.example`) = **V12.12** → version technique interne, vue par le staff (F11, console,
+- `gs_version` (convar, `server.cfg.example`) = **V12.13** → version technique interne, vue par le staff (F11, console,
   METTRE-A-JOUR). Continue d'avancer à chaque mise à jour (V11.2, V11.3...).
 - `gs_public_version` (convar) = **« V4 · bêta »** → version vue par les **joueurs** (écran de chargement, statut
   Discord, Gazette). Le site affiche son propre journal (V1 à V4, V5 « classé confidentiel »).
@@ -262,6 +262,14 @@ Résumé très condensé (le détail complet est dans `docs/ROADMAP.md`, `docs/F
   ne remplace pas le curseur), profondeur CSS `animation-timeline: view()` (captures, mock, carte, chiffres), intro
   façon chargement de mission (Entrée / clic pour passer). Tout coupé par `prefers-reduced-motion`, souris seulement
   sur ordinateur. Une seule boucle rAF qui s'endort quand rien ne bouge. Vérifié dans le navigateur : 0 erreur.
+
+- **V12.13** (12/10/2026) — **conflits de maps réglés une fois pour toutes** (demande : « règle le conflit… garder de préférence
+  le liquor ») : `maps.js` contient maintenant la fusion d'occlusion (même algorithme que l'outil Python, résultat identique
+  au bit près vérifié sur le vrai fichier). 15 s après le démarrage : conflits `*_occl_*` fusionnés dans
+  `[gtasoon]/gsa_zz_fusion_occlusion` (livrée vide, `ensure` en fin de resources.cfg), puis Stop/StartResource de cette
+  ressource pour qu'elle passe après toutes les maps (la dernière lancée l'emporte). Idempotent (rien réécrit si identique).
+  Fusion impossible → version préférée gardée (`PREFER` = `gsa_cfx_draft_pb_liquor_pack`). Plus besoin du fichier de Willie's.
+  La ressource de fusion n'apparaît pas dans la liste F11. Tests : `test_gs_maps.js` 53 (dont 9 fusion, mutation vérifiée).
 
 - **Documentation à jour (12/10/2026, V12.12)** : guide du joueur (secours et urgences, appli Urgences, /911p staff, alertes :
   chasse légale, vols de voiture, police IA seul en ville, shérif ; Discord /aide /ip /ticket ; /retoucheperso ; nouveaux lieux),
