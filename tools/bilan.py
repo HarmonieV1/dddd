@@ -58,9 +58,29 @@ HISTORY = [
     ['V11.2', "La ville se raconte : les jurés de Los Santos (5 citoyens tirés au sort votent le verdict), la Gazette du dimanche "
               "(publiée seule sur Discord, le site et en jeu), black-out de quartier (transformateurs à saboter ou réparer), écran de "
               "chargement complet (accueil personnalisé, nuit, bandeau Weazel), vraie carte de Los Santos sur le site, adresse IP affichée"],
+    ['V11.3 – V11.6', "Concession remise à plat (600 véhicules, salle Luxe, aéroport civil), IP masquée jusqu'à l'ouverture, règlement Discord, "
+                      "guide du staff ; bot Discord sécurisé avec tickets ; retours du backtest du 09/10 (1 perso, VIP, arrivée en bus, téléphone "
+                      "bloqué menotté, permis et PPA en cartes, armes dans le dos, F11 par catégories, mapping et retrait de points en jeu)"],
+    ['V12.0 – V12.3', "La ville se souvient : « En ce moment en ville » sur le site, candidature en 3 questions, mémoire des lieux et « Les échos », "
+                      "véhicules disparus, faux papiers, témoin protégé, guerre de l'information des gangs ; 48 places ; couche cinéma du site ; "
+                      "modération complète depuis Discord et l'appli staff ; audit statique (0 bug, 0 doublon)"],
+    ['V12.4 – V12.7', "Sécurité et fiabilité : 27 pièges anti-triche, bannissements posés et levés en jeu, bus d'arrivée réparé, bot Discord "
+                      "réparé (/help, /ip, /annonce, détection du Discord), déplacement des points vérifié en jeu, audit des alertes police "
+                      "(chasse légale, intitulés justes, vols de voiture et /911p via le central)"],
+    ['V12.8 – V12.9', "Synchronisation des deux sessions de travail : bienvenue Discord, police IA quand on est seul en ville, bus encore plus "
+                      "robuste, site V13 (météo et heure de la ville en direct), catalogues véhicules et armes ; contrôle des doublons (aucun)"],
 ]
 
 FEATURES = [
+    ('★ V11.3 → V12.9 : la ville se souvient, sécurité, prêt pour l\'ouverture', [
+        "Mémoire des lieux : 3 événements au même endroit et les passants en parlent, la radio le rappelle, plaque au 10e ; la nuit, « Les échos » rejouent ce qui s'y est passé.",
+        "Véhicules disparus qui refont surface (casse, garage louche, enchères), faux papiers démasqués au commissariat, témoin protégé, guerre de l'information des gangs.",
+        "Arrivée en bus à la mairie pour chaque nouveau personnage, Max « le Guide » à deux pas ; 1 personnage par joueur (2 pour le staff et les VIP).",
+        "Police : un seul central pour toutes les alertes (25 types de crimes), shérif inclus, police IA quand aucun policier n'est en service.",
+        "Sécurité : 27 pièges anti-triche (bannissement automatique, staff jamais banni), bannissements posés et levés depuis F11, verrous du bot Discord.",
+        "Discord : statut en direct, tickets privés, modération et annonces depuis Discord, /help, /ip, message de bienvenue.",
+        "Site : « En ce moment en ville », candidature en 3 questions, Gazette, carte en direct, météo et heure de la ville, IP masquée jusqu'au 20/10.",
+    ]),
     ('★ V10.1 : justice, presse et staff mobile', [
         "Caméras de surveillance (20) : la police consulte les passages de véhicules ; les gangs les aveuglent à la bombe de peinture.",
         "Mandat de perquisition (/mandat) : trop d'allées et venues dans une planque = signalement des voisins, le juge (ou le juge de permanence) signe, la police ouvre le coffre sur place.",
@@ -142,30 +162,29 @@ FEATURES = [
         'Déplacer n\'importe quel point en jeu (sauvegardé), décor (/builder), lieux publics (boutiques, parkings), gangs et garages, journal de toutes les actions.',
         'Outils Windows en un double-clic : INSTALLER, METTRE-A-JOUR, IMPORTER-MODS (marques refusées), NETTOYER-MARQUES, REPARER-*, VIDER-CACHE, '
         'SAUVEGARDER-BDD, RESTAURER-BDD, CONFIGURER-DISCORD, INVITER-AMIS, PREPARER-HEBERGEUR.',
-        'Qualité : 61 ressources maison, plus de 2 300 vérifications automatiques à chaque envoi (GitHub), linters de config, de liaisons et de performance.',
+        'Qualité : 66 ressources maison, plus de 2 750 vérifications automatiques à chaque envoi (GitHub), linters de config, de liaisons, de crimes, de pièges et de performance.',
     ]),
 ]
 
 STATE = [
     ['Domaine', 'État', 'Ce qu\'il reste'],
-    ['Code et contenu', 'V10 complète, tests verts', 'Ton test en jeu des V9 + V10, recalage des points estimés (outil Déplacer un point), lieux du ring à vérifier'],
-    ['Hébergement', 'Bloqué : offre sans base SQL', 'Base MySQL (support Sentrohost, offre avec base, ou VPS Linux + installateur), puis PREPARER-HEBERGEUR'],
-    ['Beta test', 'Toi seul en local', 'Ouvrir aux beta-testeurs une fois hébergé (8 places en profil dev)'],
-    ['Communauté', 'Discord fait, bot prêt', 'Salons #statut / #annonces + CONFIGURER-DISCORD.bat (webhooks, bot, rôles de métier)'],
-    ['Image', 'Site fait (Discord branché)', 'Logo officiel (96x96 + site + écran de chargement), photos en jeu, bande-annonce'],
-    ['Lancement public', 'À préparer', 'Profil prod (48 places), staff recruté et formé, règlement final, Tebex (optionnel) ; sauvegardes et anti-triche : faits'],
+    ['Code et contenu', 'V12.9 complète, 2 750+ tests verts', 'Corrections issues des retours des bêta-testeurs et de la fiche de recette'],
+    ['Hébergement', 'VPS OVH en service (txAdmin, profil privé)', 'Passer en profil public le jour J (code cfx.re), surveiller la charge'],
+    ['Bêta test', 'Bêta fermée en cours', 'Fiche « Backtest complet » : sessions 1b, 1c, 1d en priorité, puis 2 à 6'],
+    ['Communauté', 'Discord + bot connectés', 'Webhooks #logs-staff et #sanctions, salon de bienvenue, rôles staff'],
+    ['Mappings', 'Sélection faite (20 gratuits + 10 payants)', 'Import à vérifier (RAPPORT-MODS.txt), puis blips, portes et points branchés'],
+    ['Image', 'Site V13 en ligne, promotion lancée', 'Photos en jeu, bande-annonce, logo 96x96'],
+    ['Lancement public', 'Prévu le 20/10/2026 à 21 h', 'Staff formé (guide du staff), règlement publié, profil public'],
 ]
 
 TO_OPEN = [
-    '<b>Hébergeur avec base de données</b> : demander au support Sentrohost d\'ajouter une base MySQL / MariaDB, ou passer sur une offre qui en a une, '
-    'ou louer un VPS Linux (on écrira l\'installateur Linux). Sans base, Qbox ne démarre pas.',
-    '<b>Valider la V9 et la V10 en jeu</b> avec la fiche « Reste à tester » ; me renvoyer les points encore mal placés et les erreurs F8.',
-    '<b>Clé de licence</b> Cfx (keymaster) pour l\'hébergeur, sv_hostname / projet / tags, logo 96x96 (load_server_icon).',
-    '<b>Discord</b> : webhooks (staff, sanctions publiques, annonces, social) dans secrets.cfg ; rôles staff = rangs en jeu ; salon candidatures si liste blanche.',
-    '<b>Staff</b> : nommer 2-3 modos, leur donner le rang en jeu (F11 → Joueurs → Rang), leur faire lire docs/ADMIN.md.',
-    '<b>Sauvegardes</b> : SAUVEGARDER-BDD.bat → programmer toutes les 6 h (PC) ; chez un hébergeur Linux : scripts/linux/roadline-bdd.sh programmer.',
-    '<b>Test de charge</b> à 6-8 joueurs (FPS, resmon, ping) avant de monter en places ; puis profil prod.',
-    '<b>Règlement final</b> (RP, sanctions, boutique zéro P2W) publié sur le Discord et le site.',
+    '<b>Recette en jeu</b> avec <b>ROADLINE_Backtest_complet.pdf</b> (sessions 1b, 1c, 1d d\'abord) et les retours des bêta-testeurs ; me renvoyer les erreurs F8 et les points mal placés.',
+    '<b>Mappings</b> : IMPORTER-MODS puis envoyer RAPPORT-MODS.txt et cfg/addons.cfg pour vérification (poids, doublons, chiffrement) et branchement des blips, portes et points.',
+    '<b>Discord</b> : webhooks #logs-staff et #sanctions, salon de bienvenue (option « Server Members Intent » du portail), CONFIGURER-DISCORD puis GERER-OVH → 12.',
+    '<b>Staff</b> : rangs donnés en jeu (F11 → Joueurs → Rang), guide du staff lu, une session de recette « Staff » (sessions 4-5 de la fiche).',
+    '<b>Test de charge</b> avec le plus de bêta-testeurs possible (FPS, resmon, ping) avant le jour J.',
+    '<b>Jour J</b> : profil public (GERER-OVH), code cfx.re sur le site et le Discord, IP démasquée automatiquement par le site.',
+    '<b>Après l\'ouverture</b> : entityLockdown strict, audit des ~300 points d\'entrée réseau, refonte des cabines téléphoniques.',
 ]
 
 IDEAS = [
@@ -187,14 +206,14 @@ def bilan():
     d = doc(f'docs/pdf/ROADLINE_Bilan_{VERSION}.pdf', f'RoadLine RP · Bilan complet {VERSION}')
     s = [Paragraph('RoadLine RP · Bilan complet', H1),
          Paragraph(f'De la création de la base à la {VERSION} : tout ce qui existe en jeu, où on en est, ce qu\'il reste pour ouvrir, '
-                   'et 10 idées signature pour la suite. Serveur FiveM RP français, Free Access, zéro pay-to-win (Qbox, ox_lib, ox_inventory, pma-voice).', P),
+                   'et des idées signature pour la suite. Serveur FiveM RP français, Free Access, zéro pay-to-win (Qbox, ox_lib, ox_inventory, pma-voice).', P),
          Paragraph('1. Historique', H2), table(HISTORY, [24 * mm, 156 * mm])]
     s += [PageBreak(), Paragraph('2. Tout ce qu\'il y a en jeu', H2)]
     for title, items in FEATURES:
         s += [KeepTogether([Paragraph(title, H3)] + bullets(items))]
     s += [PageBreak(), Paragraph('3. Où on en est', H2), table(STATE, [32 * mm, 45 * mm, 103 * mm]),
           Paragraph('4. Ce qu\'il reste pour ouvrir le serveur', H2)] + bullets(TO_OPEN)
-    s += [PageBreak(), Paragraph('5. Idées pour la suite (V11 et après)', H2),
+    s += [PageBreak(), Paragraph('5. Idées pour la suite (après l\'ouverture)', H2),
           Paragraph('Dans l\'esprit de « Los Santos réactif » : des systèmes qui se branchent sur ce qui existe déjà et que peu de serveurs proposent.', P)]
     for i, (t, txt) in enumerate(IDEAS, 1):
         s += [KeepTogether([Paragraph(f'{i}. {t}', H3), Paragraph(txt, P)])]
@@ -303,10 +322,10 @@ RETEST = [
 def reste():
     d = doc('docs/pdf/ROADLINE_Reste_a_tester.pdf', 'RoadLine RP · Reste à tester')
     s = [Paragraph('RoadLine RP · Reste à tester', H1),
-         Paragraph(f'Chaque retour de ton beta test et chaque nouveauté, ce qui a été fait (jusqu\'en {VERSION}), et comment le vérifier. Coche ce qui est bon ; '
+         Paragraph('Historique (retours du beta test V7 à V10). La fiche à jour est <b>ROADLINE_Backtest_complet.pdf</b>. Coche ce qui est bon ; '
                    'pour le reste : capture + coordonnées (F11 → Monde et lieux → Copier mes coordonnées), ou déplace le point en jeu.', P)]
     for title, rows in RETEST:
-        data = [['OK', 'Ton retour', f'Fait en {VERSION}', 'À vérifier en jeu']] + [['[  ]', a, b, c] for a, b, c in rows]
+        data = [['OK', 'Ton retour', 'Corrigé', 'À vérifier en jeu']] + [['[  ]', a, b, c] for a, b, c in rows]
         s += [Paragraph(title, H2), table(data, [9 * mm, 58 * mm, 60 * mm, 53 * mm], font=8)]
     s += [Paragraph('Points estimés à confirmer en jeu', H2)] + bullets([
         'Bahama Mamas (intérieur du mod) : comptoir, préparation, réserve, DJ.',

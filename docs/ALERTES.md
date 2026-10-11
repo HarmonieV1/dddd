@@ -1,6 +1,6 @@
 # Alertes et notifications — qui est prévenu de quoi
 
-Référence vérifiée le 11/10/2026 (V12.7). Sert au staff pour comprendre ce que voit un policier ou un EMS, et à
+Référence vérifiée le 11/10/2026 (V12.9). Sert au staff pour comprendre ce que voit un policier ou un EMS, et à
 vérifier la cohérence RP. Garde-fou automatique : `tests/check_crimes.py` (aucun type de crime inconnu, donc aucune
 alerte perdue sans message).
 
@@ -16,6 +16,10 @@ Tout crime passe par `exports.gs_wanted:ReportCrime(src, type, coords, opts)`. L
 - **Alarme silencieuse** (braquages) : certain et précis.
 - **Destinataires** : policiers en service (**LSPD et shérif**, via `countsAs = 'police'`), et les membres d'un gang
   qui a piraté le scanner. Moins de 1 policier joueur en service → **police IA** (étoiles du jeu, patrouilles).
+- **Seul en ville (aucun policier joueur en service)** : un crime sérieux (gravité ≥ 20 : explosion, braquages,
+  bijouterie, banque, contrat en duo, sabotage, blanchiment) est signalé **au moins 6 fois sur 10**, même sans témoin
+  (`Config.NpcPolice.floor`). Les petits délits (vente de drogue, vol de voiture, course…) restent discrets.
+  Le staff teste la police IA sur lui avec `/policeia [1-5]` (admin).
 
 ### Alertes systématiques (même sans témoin)
 

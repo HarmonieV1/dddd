@@ -1,4 +1,4 @@
-# État du projet RoadLine RP — récapitulatif complet (à jour au 09/10/2026)
+# État du projet RoadLine RP — récapitulatif complet (à jour au 11/10/2026, V12.9)
 
 Ce document sert de **point de sauvegarde** : si une conversation avec Claude est perdue, compressée ou doit reprendre
 ailleurs, tout ce qu'il faut savoir est ici. Il est versionné avec le code (`git log` en garde aussi l'historique).
@@ -6,10 +6,40 @@ En bas de ce fichier : un **prompt prêt à coller** dans une nouvelle conversat
 
 ---
 
+## 0. Où on en est (11/10/2026) — récapitulatif global
+
+**Phase** : bêta fermée en cours (des testeurs sont en ville et d'autres arrivent cette semaine), ouverture officielle le
+**20/10/2026 à 21 h**. Décision du 11/10 : pas de gel des nouveautés, mais désormais **surtout du correctif, de la
+configuration et de l'optimisation** ; l'utilisateur se consacre à la promotion.
+
+**Le serveur en chiffres** : 66 ressources maison, ~34 systèmes exclusifs (« signatures »), 2 688 tests Lua + 70 tests du
+bot Discord, tous verts ; 27 pièges anti-triche ; 25 types de crimes reliés au central police ; budget de performance
+tenu (135 boucles client, 6 permanentes par image).
+
+| Domaine | État |
+|---|---|
+| Base Qbox/ox, installation PC + VPS (scripts .bat) | ✅ Stable, mises à jour en un clic, sauvegardes BDD programmées |
+| Gameplay (métiers, économie, illégal, police, EMS, justice) | ✅ Complet, cohérence des alertes auditée (V12.7) |
+| Signatures (ville qui se souvient, rumeurs, Gazette, black-out, échos…) | ✅ Livrées, à éprouver avec du monde |
+| Sécurité (anti-triche, pots de miel, bans F11, verrous Discord) | ✅ En place ; `entityLockdown strict` après l'ouverture |
+| Staff (F11, appli web, txAdmin, bot Discord) | ✅ Complet ; déplacement des points réparé et vérifié en jeu |
+| Bot Discord (statut, tickets, modération, annonces, bienvenue) | ✅ À valider sur le VPS (fiche de recette 1b et 1d) |
+| Site (Netlify) | ✅ V13 : météo et heure de la ville en direct, son opt-in, IP masquée jusqu'au 20/10 |
+| Arrivée en bus | ✅ Réparée (sol chargé avant le bus, dépose au sol réel, secours si bloqué) |
+| Mappings / MLO | ⏳ Sélection faite (`docs/SELECTION_MAPPINGS.md`), **import non vérifiable d'ici** : il faut `RAPPORT-MODS.txt` + `cfg/addons.cfg` |
+| Cabines téléphoniques (refonte « vraies cabines de la map ») | ⏳ À discuter |
+| Recette en jeu | ⏳ Fiche `ROADLINE_Backtest_complet.pdf` (sessions 0 → 6, dont 1b / 1c / 1d prioritaires) |
+
+**Avant l'ouverture, dans l'ordre** : 1) retours des bêta-testeurs + fiche de recette → corrections ; 2) mappings
+importés, vérifiés, optimisés, blips / portes / points branchés ; 3) Discord finalisé (webhooks #logs-staff et
+#sanctions, bienvenue) ; 4) passage du profil privé au public (code cfx.re) le jour J.
+
+---
+
 ## 1. Identité du projet
 
 **RoadLine RP** : serveur FiveM GTA RP **100 % français**, bâti sur **Qbox/ox** (qbx_core, ox_inventory, ox_lib,
-ox_target...). Dépôt : `harmoniev1/dddd`. Ressources maison dans `server/resources/[gtasoon]/gs_*` (65 ressources).
+ox_target...). Dépôt : `harmoniev1/dddd`. Ressources maison dans `server/resources/[gtasoon]/gs_*` (66 ressources).
 Positionnement : **Free Access, zéro pay-to-win**, une ville qui vit même sans les joueurs, beaucoup de systèmes
 exclusifs (« ce que tu ne trouveras nulle part ailleurs »).
 
@@ -17,13 +47,17 @@ exclusifs (« ce que tu ne trouveras nulle part ailleurs »).
 - `feature/phase1-bridge`
 - `claude/gta-rp-architecture-stack-pbvdxz`
 
-**Dernier commit poussé** : `68d70b6` — « V12.4 : pots de miel anti-triche, bannissements posés et levés en jeu,
-bus d'arrivée corrigé ».
+**Dernier commit poussé** : « V12.9 : synchronisation globale des deux sessions » (hash exact :
+`git log -1 origin/feature/phase1-bridge`). Les deux branches pointent sur le même commit.
+
+**Deux sessions Claude en parallèle** (poste Windows et session web) : elles ne se voient pas. Toujours synchroniser
+par un colis (zip de l'installation ou de la session) + ce fichier, et comparer les arbres en ignorant les fins de ligne
+(CRLF) avant de fusionner. La V12.9 est le point de rencontre commun : toute nouvelle session repart de là.
 
 ## 2. Versions : interne vs publique (important, piège classique)
 
 Depuis la V11.3, il y a **deux numéros de version différents**, volontairement :
-- `gs_version` (convar, `server.cfg.example`) = **V12.8** → version technique interne, vue par le staff (F11, console,
+- `gs_version` (convar, `server.cfg.example`) = **V12.9** → version technique interne, vue par le staff (F11, console,
   METTRE-A-JOUR). Continue d'avancer à chaque mise à jour (V11.2, V11.3...).
 - `gs_public_version` (convar) = **« V4 · bêta »** → version vue par les **joueurs** (écran de chargement, statut
   Discord, Gazette). Le site affiche son propre journal (V1 à V4, V5 « classé confidentiel »).
@@ -69,7 +103,7 @@ Tout est scripté, zéro mot de passe affiché en clair :
 — elle n'existe pas tant que le serveur n'est pas passé en public au moins une fois. Résolu en utilisant l'IP directe
 en attendant.
 
-## 5. Ce qui a été livré, dans l'ordre (V1 → V11.5)
+## 5. Ce qui a été livré, dans l'ordre (V1 → V12.9)
 
 Résumé très condensé (le détail complet est dans `docs/ROADMAP.md`, `docs/FEATURES.md`, `tools/bilan.py`) :
 - **V1-V2** : la rue et les métiers de base, la ville a une mémoire (témoins, preuves, carnet véhicule).
@@ -229,6 +263,23 @@ Résumé très condensé (le détail complet est dans `docs/ROADMAP.md`, `docs/F
   façon chargement de mission (Entrée / clic pour passer). Tout coupé par `prefers-reduced-motion`, souris seulement
   sur ordinateur. Une seule boucle rAF qui s'endort quand rien ne bouge. Vérifié dans le navigateur : 0 erreur.
 
+- **V12.9** (11/10/2026, session web) — **synchronisation globale des deux sessions** (point de rencontre commun) :
+  - La session Windows (V12.8) était partie du commit V12.7 : tout le travail de la session web (pots de miel, bans F11,
+    bot V12.5, déplacement des points, alertes V12.7, `check_crimes.py`) y était déjà. 25 changements réels repris
+    (bienvenue Discord, plancher police IA + `/policeia`, bus d'arrivée encore plus robuste, site V13, catalogues xlsx,
+    57 propositions, docs Discord / véhicules), 18 fichiers qui ne différaient que par les fins de ligne gardés tels quels.
+  - Corrigé à la fusion : `configurer-discord.ps1` contenait un retour chariot isolé qui collait l'écriture de
+    `secrets.cfg` derrière le bloc « bienvenue » (le fichier n'était enregistré que si l'on réglait la bienvenue).
+  - **Contrôle des doublons** (script de session, lecture seule) : aucune commande en double, aucun callback enregistré
+    deux fois, aucun export déclaré deux fois, aucune clé en double dans un tableau Lua (3 alertes = faux positifs :
+    affectations multiples `ok, msg = …`), aucun fichier en double dans les fxmanifest (`ui_page` + `files` = normal) ;
+    les 3 événements `gs_social:client:*` écoutés aussi par `gs_phone` = voulu (fil social affiché dans le téléphone).
+  - Sécurité revérifiée présente : `honeypot.lua` chargé, retouches Qbox `qbx_vehiclekeys` / `qbx_police` (`/911p`),
+    déban F11, verrou Discord (`resolveGuild`, `NOT_HERE`), `/policeia` réservé `group.admin`.
+  - Recette : session **1d** (5 tests : police IA seule en ville, `/policeia`, bus, bienvenue Discord, site V13).
+    `docs/ALERTES.md` : plancher de signalement quand aucun policier n'est en service.
+  - Suite complète verte : 2 688 tests Lua, 70 tests bot Discord. PDF régénérés, zips de livraison refaits.
+
 - **V12.8** (11/10/2026, poste Windows) — **fusion des deux sessions** (locale V12.3b → V12.4 et distante V12.4 → V12.7, base commune
   V11.3) : 19 fichiers en conflit résolus à la main, les deux côtés conservés. Depuis la session locale : site V13 (SMS espacés, météo
   et heure de la ville en direct, son opt-in, Bowlby One, fluidité), police IA seule en ville (plancher de signalement + `/policeia`),
@@ -358,23 +409,25 @@ Résumé très condensé (le détail complet est dans `docs/ROADMAP.md`, `docs/F
 
 ## 6. Décisions en attente / pas encore faites
 
-- **À faire par l'utilisateur pour la V11.4** : créer les webhooks `#logs-staff` et `#sanctions`, le salon `#tickets`,
-  relancer CONFIGURER-DISCORD (identifiants + réautoriser le bot), puis GERER-OVH → 12.
-- **V11.5 à vérifier en jeu** (backtest) : positions des caméras accrochées (sinon ajuster `heading` / `Config.Mount`),
-  trajet du bus (`Config.Arrival.from` / `stop`), offsets des armes dans le dos (`Config.Back.slots`), PNJ acheteurs
-  (`heading`), lisibilité des images du menu F11.
-- **Backtest** : le food truck (corrigé en V11.5) et tout le retour du 09/10 sont à re-vérifier en jeu avec la nouvelle fiche
-  (`ROADLINE_Backtest_complet.pdf`, session 1), puis les nouveautés V11.4 → V12.3 (session 2). Retours attendus avant la
-  prochaine vague de corrections.
-- **Site** : photos des encadrés à fournir par l'utilisateur (galerie), bande-annonce pas encore tournée ; police Pricedown à
-  déposer dans `docs/site/fonts/` si voulue à l'identique (Bowlby One sinon).
-- **Idées retenues pour plus tard** (demande du 10/10) : missions et contacts depuis les **vraies cabines téléphoniques** de la
-  map (plus de points / blips posés), **arracher un distributeur** avec un câble et une voiture puis l'ouvrir au calme ; les
-  57 propositions (signatures, modes, embellissement, gains rapides bêta) et les 12 questions de vision sont dans
-  `docs/PROPOSITIONS.md` (à trier par l'utilisateur). **Ouverture bêta officieuse prévue dans quelques jours** (mi-octobre),
-  officielle le 20/10/2026.
-- Le guide du joueur (PDF) n'a volontairement **pas été mis en ligne sur le site** : l'utilisateur veut en reprendre
-  le design lui-même avant publication.
+- **Mappings** (demande du 11/10) : sélection de 20 gratuits + 10 payants dans `docs/SELECTION_MAPPINGS.md`. Les mods
+  importés vivent sur le PC (`server-data/resources/[addons]`) et ne sont pas dans le dépôt : pour vérifier l'import,
+  le poids, les doublons, puis brancher **blips, portes (`gs_interiors`) et points**, il faut `RAPPORT-MODS.txt` et
+  `cfg/addons.cfg` (écrits par IMPORTER-MODS). Vérification rapide côté utilisateur : console du serveur au démarrage
+  (aucun « Couldn't find resource », aucun avertissement de taille), puis F11 → TP sur le lieu.
+- **Recette en jeu** : fiche `ROADLINE_Backtest_complet.pdf`, sessions **1b, 1c, 1d** en priorité, puis 2 à 6.
+  Retours des bêta-testeurs attendus cette semaine → vague de corrections.
+- **Discord** : créer les webhooks `#logs-staff` et `#sanctions`, le salon de bienvenue (et activer « Server Members
+  Intent » dans le portail développeur si on veut le message de bienvenue), relancer CONFIGURER-DISCORD, puis GERER-OVH → 12.
+- **Cabines téléphoniques** : refonte à discuter (missions et contacts depuis les vraies cabines de la map, plus de
+  points posés).
+- **Après l'ouverture** : `entityLockdown strict` (4 créations d'entités à passer côté serveur, chemin écrit dans
+  `server/cfg/prod.cfg`), audit des ~300 points d'entrée réseau, mentor automatique, « 30 premières minutes ».
+- **bob74_ipl** : 12 portes recommandées dans `docs/BOB74_IPL.md`, rien de branché tant que l'utilisateur n'a pas choisi.
+- **Idées retenues pour plus tard** : arracher un distributeur (câble + voiture) ; les 57 propositions de
+  `docs/PROPOSITIONS.md` (à trier par l'utilisateur).
+- **Site** : photos des encadrés et bande-annonce à fournir ; police Pricedown à déposer dans `docs/site/fonts/` si voulue.
+- Le guide du joueur (PDF) n'est volontairement **pas en ligne sur le site** : l'utilisateur veut en reprendre le design
+  lui-même avant publication.
 
 ## 7. Règles permanentes à respecter (rappel, ne jamais oublier)
 
@@ -384,7 +437,7 @@ Résumé très condensé (le détail complet est dans `docs/ROADMAP.md`, `docs/F
   passe VPS, clés API...). Les outils Windows masquent la saisie et écrivent dans `secrets.cfg` (jamais poussé).
 - **Demander avant de supprimer quoi que ce soit.**
 - Toujours pousser sur les **deux branches** (`feature/phase1-bridge` et `claude/gta-rp-architecture-stack-pbvdxz`).
-- Zips de livraison : `livraison/ROADLINE-V11-installation.zip` (via `git archive --format=zip --prefix=gtasoon/`)
+- Zips de livraison : `livraison/ROADLINE-V12-installation.zip` (via `git archive --format=zip --prefix=gtasoon/ HEAD`)
   et `livraison/ROADLINE-site.zip` (contenu de `docs/site/`, doit inclure `img/`).
 - Toujours faire tourner `bash tests/run.sh` avant de pousser (hook pre-push de toute façon bloquant).
 - Attribution des commits : trailers `Co-Authored-By` et `Claude-Session` donnés par le système à chaque session
@@ -419,7 +472,9 @@ source de vérité pour le contexte, puis continue le travail à partir de la se
 Règles permanentes à ne jamais oublier : jamais de vraie marque (risque de ban Cfx.re), jamais de mot de passe
 ou secret en clair, toujours demander avant de supprimer quoi que ce soit, tout en français, faire tourner
 bash tests/run.sh avant de pousser, pousser sur les deux branches, régénérer les zips de livraison
-(livraison/ROADLINE-V11-installation.zip et livraison/ROADLINE-site.zip) après un changement livrable.
+(livraison/ROADLINE-V12-installation.zip et livraison/ROADLINE-site.zip) après un changement livrable.
+Si une autre session Claude a travaillé en parallèle : comparer son colis au dépôt (en ignorant les fins de
+ligne CRLF), fusionner sans rien perdre, vérifier les doublons, puis repartir de la version commune.
 
 Contexte serveur : VPS OVH 57.129.170.173 (Ubuntu 24.04, mode txAdmin, profil privé pour l'instant), ouverture
 officielle prévue le 20/10/2026 21h (Paris), version interne gs_version actuelle (voir server/server.cfg.example),

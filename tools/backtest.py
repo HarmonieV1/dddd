@@ -1,4 +1,4 @@
-# Génère docs/pdf/ROADLINE_Backtest_complet.pdf : TOUT ce qui reste à tester en jeu (V5 → V12.5, sans ce que le backtest du 09/10 a couvert), rangé en sessions de
+# Génère docs/pdf/ROADLINE_Backtest_complet.pdf : TOUT ce qui reste à tester en jeu (V5 → V12.9, sans ce que le backtest du 09/10 a couvert), rangé en sessions de
 # jeu (dans l'ordre le plus efficace), avec qui il faut (Seul / 2 / 3+ / Staff) et la priorité (★★★ = bloquant à l'ouverture).
 import sys
 sys.path.insert(0, 'tools')
@@ -7,9 +7,9 @@ from pdf import H1, H2, P, SMALL, VERSION, footer, A4, mm, colors, SimpleDocTemp
 # (test, qui, priorité)
 SESSIONS = [
     ('0 · Avant de commencer (5 min)', [
-        ('METTRE-A-JOUR.bat : version V12.7 affichée, « Base de données sauvegardée », « Sauvegardes programmées » ; METTRE-A-JOUR-OVH puis GERER-OVH → 1 : « Version RoadLine : V12.7 »', 'Staff', 3),
+        ('METTRE-A-JOUR.bat : version V12.9 affichée, « Base de données sauvegardée », « Sauvegardes programmées » ; METTRE-A-JOUR-OVH puis GERER-OVH → 1 : « Version RoadLine : V12.9 »', 'Staff', 3),
         ('Fenêtre du serveur : aucune ligne ROUGE au démarrage ; F8 en jeu : aucune erreur rouge ; GERER-OVH → 3 : aucune erreur de script', 'Seul', 3),
-        ('VIDER-CACHE-FIVEM.bat si tu vois encore un ancien menu (F11 doit afficher « RoadLine V12.7 ») ; bio du bot : X/48 ; site : « En ce moment en ville » 0/48', 'Seul', 2),
+        ('VIDER-CACHE-FIVEM.bat si tu vois encore un ancien menu (F11 doit afficher « RoadLine V12.9 ») ; bio du bot : X/48 ; site : « En ce moment en ville » 0/48', 'Seul', 2),
     ]),
     ('1 · À re-vérifier après correction — ton retour du 09/10 (30 min)', [
         ('Nouveau joueur : un seul personnage ; fondateur, super-admins et VIP (F11 → Joueurs → VIP) : deux ; plus de choix du lieu ; déco / reco = même endroit', '2', 3),
@@ -50,6 +50,13 @@ SESSIONS = [
         ('Braquer la caisse d\'un commerce (vêtements, coiffeur, bar avec doublure) : « Braquage de commerce » ; une vraie supérette 24/7 : « Braquage de supérette »', '2', 2),
         ('Civil : /911p refusé (« pas la permission ») ; l\'appli Urgences du téléphone fonctionne et arrive au policier', '2', 3),
         ('À terre avec un EMS en service : « [G] Demander de l\'aide » → l\'EMS reçoit l\'alerte + GPS ; sans EMS en service : « [G] Appeler les secours » (secouriste IA)', '2', 3),
+    ]),
+    ('1d · Apports de la session Windows — V12.8 / V12.9 (15 min)', [
+        ('Seul en ville (aucun policier joueur en service) : braquer la caisse d\'un commerce (pistolet) → la police IA réagit au moins 6 fois sur 10 (étoiles + patrouilles) ; vendre de la drogue ou voler une voiture → le plus souvent rien', 'Seul', 3),
+        ('/policeia 2 (admin) → 2 étoiles et des patrouilles sur toi ; un joueur simple : commande refusée', 'Staff', 2),
+        ('Bus d\'arrivée (nouveau perso) : écran noir court, le bus part d\'une route chargée, jamais sous la map ; bloqué 6 s → dépose directe devant la mairie', 'Seul', 3),
+        ('Discord : un compte de test rejoint le Discord → message de bienvenue dans le salon réglé (CONFIGURER-DISCORD) ; sans l\'option « Server Members » du portail Discord → console : bienvenue coupée, le bot reste connecté', 'Staff', 2),
+        ('Site : météo et heure de la ville en direct, bouton son (coupé par défaut), fluide sur téléphone', 'Seul', 1),
     ]),
     ('2 · Jamais testé — nouveautés V11.4 à V12.3 (45 min)', [
         ('Discord : /ticket sujet → fil privé dans #tickets (joueur + rôle staff), /fermer ; /aide ; commande staff refusée sans rôle staff / admin, acceptée avec', 'Staff', 3),
