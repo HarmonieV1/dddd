@@ -38,5 +38,7 @@ done
 # Bot Discord intégré au serveur (gs_discord/server/bot.js) : syntaxe, trames, vraie connexion WebSocket locale, logique
 if command -v node >/dev/null; then
     node --check "server/resources/[gtasoon]/gs_discord/server/bot.js" && node tests/test_discord_bot.js
+    # Lecteur de maps (gs_admin/server/maps.js, F11 → Mappings installés) : emplacement lu dans les .ymap, conflits entre maps
+    node --check "server/resources/[gtasoon]/gs_admin/server/maps.js" && node tests/test_gs_maps.js
 fi
 for s in scripts/linux/*.sh; do bash -n "$s" || exit 1; done && echo "Scripts Linux OK (sauvegardes, installation OVH, commande roadline)"

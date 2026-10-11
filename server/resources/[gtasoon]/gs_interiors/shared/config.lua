@@ -20,4 +20,13 @@ Config.Doors = {
       outside = vec4(342.9, -2045.1, 21.6, 230.0), inside = vec4(997.0, -3200.7, -36.39, 270.0) },
     { id = 'lab_madrazo', label = 'Entrepôt du cartel (Madrazo)', access = { gang = 'madrazo' }, lab = 'weed',
       outside = vec4(1399.5, 1137.6, 114.33, 90.0), inside = vec4(1138.1, -3198.2, -39.67, 0.0) },
+    -- V12.10 · Commissariat de Mission Row agrandi (map « mrpd_etendu », gratuite, PR3NTISS) : 3 salles au sous-sol, réservées
+    -- à la police. Remplace le script « teleport » fourni avec la map (boucle toutes les 2 ms, textes en anglais).
+    -- `requires` : portes invisibles et fermées tant que la map n'est pas démarrée.
+    { id = 'mrpd_interro', label = 'Salle d\'interrogatoire (sous-sol)', access = { job = 'police' }, requires = 'gsa_mrpd_etendu',
+      outside = vec4(452.13, -984.54, 26.67, 0.0), inside = vec4(442.14, -997.4, 4.8, 0.0) },
+    { id = 'mrpd_briefing', label = 'Salle de briefing (sous-sol)', access = { job = 'police' }, requires = 'gsa_mrpd_etendu',
+      outside = vec4(446.8, -986.37, 26.67, 0.0), inside = vec4(442.12, -986.69, 4.8, 0.0) },
+    { id = 'mrpd_reserve', label = 'Réserve (sous-sol)', access = { job = 'police' }, requires = 'gsa_mrpd_etendu',
+      outside = vec4(456.76, -985.94, 26.67, 0.0), inside = vec4(456.37, -1000.73, 4.8, 0.0) },
 }

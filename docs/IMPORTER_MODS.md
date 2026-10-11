@@ -32,12 +32,24 @@ Contrôles : textures > 16 Mo (disparition de textures / crash), mod > 150 Mo, n
 À la fin : `RAPPORT-MODS.txt` s'ouvre → copie-colle-le moi : je branche les véhicules (concession, garages), les maps
 (coords, blips, portes) et je relis les scripts.
 
+## Où sont mes maps ? (F11, V12.10)
+Plus besoin de connaître les coordonnées : au démarrage, le serveur lit les fichiers `.ymap` de chaque map installée
+(ressource `gsa_*` ou marquée `this_is_a_map`) et en déduit son emplacement. En jeu, en mode staff :
+**F11 → Monde et lieux → Mappings installés** → chaque map avec son quartier → clic = téléportation dedans (au sol de
+l'intérieur, pas sur le toit). « Afficher leurs blips sur ma carte » : blips visibles par toi seul pour faire le tour.
+Console au démarrage : `[gs_admin] Mappings : N installé(s), N situé(s), aucun conflit`.
+**Conflit** = deux maps qui remplacent le même fichier du jeu (`.ymap`, `.ybn`, `.ytyp`) : une seule des deux
+s'affiche correctement (trous, murs invisibles, textures qui clignotent). Le menu et la console donnent le fichier et
+les deux maps : en garder une (mettre un `#` devant l'autre dans `cfg\addons.cfg`).
+Map sans lieu dans la liste = vide ou incomplète (aucun `.ymap`), à supprimer.
+
 ## Outils liés
 - `VIDER-CACHE-FIVEM.bat` : après un changement de mods ou un crash « Streamer crashed » — ferme FiveM, vide cache,
   server-cache, server-cache-priv (garde cache\game) et le cache du serveur s'il est arrêté.
 - Vêtements convertis (désactivés au départ dans cfg\addons.cfg) : en boutique, à la FIN des listes (numéros les plus
   hauts) — femme : Cheveux (6 coiffures).
-- `NETTOYER-MARQUES.bat` : supprime de ton PC les mods de marques réelles déjà installés (et leurs archives).
+- `NETTOYER-MARQUES.bat` : supprime de ton PC les mods de marques réelles déjà installés, leurs archives et leurs
+  copies dans `mods-tri` (marque dans le nom du mod OU dans le nom d'un de ses fichiers, comme l'importeur).
 
 ## Marques réelles : refusées
 Voitures, vêtements, boutiques et polices de marques ou d'organisations réelles sont **refusés** par l'importeur (liste

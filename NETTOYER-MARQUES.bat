@@ -32,7 +32,8 @@ $src = Join-Path $Root 'mods-a-trier'
 if (Test-Path -LiteralPath $src) { $archives = @(Get-ChildItem -LiteralPath $src -File -Recurse | Where-Object { Is-Brand $_.BaseName }) }
 $sorted = @()
 $out = Join-Path $Root 'mods-tri'
-if (Test-Path -LiteralPath $out) { $sorted = @(Get-ChildItem -LiteralPath $out -Directory | ForEach-Object { Get-ChildItem -LiteralPath $_.FullName -Directory } | Where-Object { Is-Brand $_.Name }) }
+# Meme regle que l'importeur : marque dans le NOM du mod, ou dans le nom d'un de ses FICHIERS (ex. mp_male_the_goat)
+if (Test-Path -LiteralPath $out) { $sorted = @(Get-ChildItem -LiteralPath $out -Directory | ForEach-Object { Get-ChildItem -LiteralPath $_.FullName -Directory } | Where-Object { (Is-Brand $_.Name) -or (@(Get-ChildItem -LiteralPath $_.FullName -Recurse -File -Force -ErrorAction SilentlyContinue | Where-Object { $_.Name.ToLower() -match $BrandStrong } | Select-Object -First 1).Count -gt 0) }) }
 
 if (($dirs.Count + $archives.Count + $sorted.Count) -eq 0) { Say '  Aucun mod de marque trouve : tout est deja propre.' 'Green'; if ($env:GTASOON_MARQUES_AUTO) { return } }
 else {

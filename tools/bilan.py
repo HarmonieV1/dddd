@@ -67,8 +67,10 @@ HISTORY = [
     ['V12.4 – V12.7', "Sécurité et fiabilité : 27 pièges anti-triche, bannissements posés et levés en jeu, bus d'arrivée réparé, bot Discord "
                       "réparé (/help, /ip, /annonce, détection du Discord), déplacement des points vérifié en jeu, audit des alertes police "
                       "(chasse légale, intitulés justes, vols de voiture et /911p via le central)"],
-    ['V12.8 – V12.9', "Synchronisation des deux sessions de travail : bienvenue Discord, police IA quand on est seul en ville, bus encore plus "
-                      "robuste, site V13 (météo et heure de la ville en direct), catalogues véhicules et armes ; contrôle des doublons (aucun)"],
+    ['V12.8 – V12.10', "Synchronisation des deux sessions de travail : bienvenue Discord, police IA quand on est seul en ville, bus encore plus "
+                      "robuste, site V13 (météo et heure de la ville en direct), catalogues véhicules et armes ; contrôle des doublons (aucun) ; "
+                      "14 maps importées, F11 « Mappings installés » (emplacement lu dans les fichiers, téléportation, conflits entre maps), "
+                      "sous-sol du commissariat de Mission Row (police)"],
 ]
 
 FEATURES = [
@@ -172,14 +174,14 @@ STATE = [
     ['Hébergement', 'VPS OVH en service (txAdmin, profil privé)', 'Passer en profil public le jour J (code cfx.re), surveiller la charge'],
     ['Bêta test', 'Bêta fermée en cours', 'Fiche « Backtest complet » : sessions 1b, 1c, 1d en priorité, puis 2 à 6'],
     ['Communauté', 'Discord + bot connectés', 'Webhooks #logs-staff et #sanctions, salon de bienvenue, rôles staff'],
-    ['Mappings', 'Sélection faite (20 gratuits + 10 payants)', 'Import à vérifier (RAPPORT-MODS.txt), puis blips, portes et points branchés'],
+    ['Mappings', '14 maps importées, F11 « Mappings installés »', 'Faire le tour en jeu (F11), recaler nos points, décider des blips joueurs'],
     ['Image', 'Site V13 en ligne, promotion lancée', 'Photos en jeu, bande-annonce, logo 96x96'],
     ['Lancement public', 'Prévu le 20/10/2026 à 21 h', 'Staff formé (guide du staff), règlement publié, profil public'],
 ]
 
 TO_OPEN = [
     '<b>Recette en jeu</b> avec <b>ROADLINE_Backtest_complet.pdf</b> (sessions 1b, 1c, 1d d\'abord) et les retours des bêta-testeurs ; me renvoyer les erreurs F8 et les points mal placés.',
-    '<b>Mappings</b> : IMPORTER-MODS puis envoyer RAPPORT-MODS.txt et cfg/addons.cfg pour vérification (poids, doublons, chiffrement) et branchement des blips, portes et points.',
+    '<b>Mappings</b> : F11 → Monde et lieux → Mappings installés : faire le tour de chaque map, recaler nos points (Déplacer un point), me dire quels lieux doivent avoir un blip et une fonction.',
     '<b>Discord</b> : webhooks #logs-staff et #sanctions, salon de bienvenue (option « Server Members Intent » du portail), CONFIGURER-DISCORD puis GERER-OVH → 12.',
     '<b>Staff</b> : rangs donnés en jeu (F11 → Joueurs → Rang), guide du staff lu, une session de recette « Staff » (sessions 4-5 de la fiche).',
     '<b>Test de charge</b> avec le plus de bêta-testeurs possible (FPS, resmon, ping) avant le jour J.',

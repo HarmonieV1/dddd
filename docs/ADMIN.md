@@ -23,7 +23,8 @@
 ## Menu staff rapide (F11) — V7
 
 V7 : 5 catégories — **Joueurs**, **Moi** (pouvoirs, persos GTA, animaux, métier / gang de test, argent et items super-admin),
-**Véhicules**, **Monde et lieux** (lieux publics, **Déplacer un point**, points de métier, gangs, décor, coordonnées),
+**Véhicules**, **Monde et lieux** (lieux publics, **Déplacer un point**, points de métier, gangs, décor, **Mappings installés**
+(V12.10 : chaque map ajoutée avec son quartier, téléportation, blips staff, conflits entre maps), coordonnées),
 **Événements** (événements en un clic + bonus serveur double XP / soirée chanceuse + effets sur soi). Ancienne description :
 
 ## Menu staff rapide (F11) — V2

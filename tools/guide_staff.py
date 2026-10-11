@@ -98,6 +98,7 @@ def build():
     s += [t([['Quoi', 'Comment'],
              ['VIP (2 personnages)', 'F11 → Joueurs → le joueur → VIP (fondateur). Tout le monde a 1 personnage ; staff super-admin+ et VIP en ont 2.'],
              ['Mapping', 'F11 → Monde et lieux → Mapping : catalogue par catégorie (mobilier, chantier, éclairage, végétation, stands, plage, police), placement à la souris, retrait d\'objets de la map.'],
+             ['Mappings installés', 'F11 → Monde et lieux → Mappings installés : chaque map ajoutée avec son quartier (lu dans ses fichiers), clic = téléportation dedans, blips pour soi, conflits entre deux maps signalés.'],
              ['Items et véhicules', 'F11 → Items : par catégorie avec image + recherche (munitions enfin donnables). Véhicules : catalogue Qbox par catégorie.'],
              ['Permis et PPA', 'F4 → Contrôle d\'identité → Permis : délivrer / rendre / retirer le permis de conduire (motif au casier), port d\'arme (carte PPA remise ou reprise), chasse.'],
              ['Faux papiers', 'Un contrôle F4 loin du commissariat affiche la fausse identité (« contrôle visuel »). Au commissariat, le scanner démasque : casier automatique.'],

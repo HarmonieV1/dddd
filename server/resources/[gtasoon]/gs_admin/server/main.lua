@@ -701,6 +701,14 @@ lib.callback.register('gs_admin:items', function(src)
     return Bridge:ListItems()
 end)
 
+--- V12.10 · Mappings installés : emplacement lu dans les fichiers de chaque map par server/maps.js, + conflits entre maps.
+lib.callback.register('gs_admin:mappings', function(src)
+    if not staffGuard(src, 'mappings', 4, 10000) or Admin.level(src) < 3 then return nil end
+    local ok, res = pcall(function() return exports[GetCurrentResourceName()]:MapScan() end)
+    if not ok or type(res) ~= 'table' then return { maps = {}, conflicts = {}, error = tostring(res) } end
+    return res
+end)
+
 --- Véhicules ajoutés par IMPORTER-MODS (bloc « GTA SOON ADDONS » du catalogue Qbox) + véhicules de service ajoutés
 --- aux garages des métiers : pour les retrouver sans connaître leur nom de spawn.
 lib.callback.register('gs_admin:addonVehicles', function(src)

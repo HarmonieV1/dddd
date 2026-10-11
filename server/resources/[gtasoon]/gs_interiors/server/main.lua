@@ -7,6 +7,8 @@ Interiors = {}
 local function door(id) for _, d in ipairs(Config.Doors) do if d.id == id then return d end end end
 
 function Interiors.allowed(src, d)
+    -- Porte vers une map ajoutée : fermée tant que la map n'est pas installée et démarrée (sinon arrivée dans le vide)
+    if d.requires and GetResourceState(d.requires) ~= 'started' then return false end
     local a = d.access or {}
     if a.public then return true end
     if a.gang then

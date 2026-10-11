@@ -164,31 +164,47 @@ local function groundZ(ent, x, y)
     end
 end
 
-local function teleportToMarker()
-    local blip = GetFirstBlipInfoId(8)
-    if not DoesBlipExist(blip) then return notify(false, 'Pose d\'abord un marqueur sur la carte.') end
+--- Téléportation au sol en (x, y). `zHint` (intérieur d'une map, sous-sol) : on cherche d'abord le sol à cette hauteur,
+--- sinon on arriverait sur le toit du bâtiment ; à défaut, sol le plus haut comme pour le marqueur.
+local function teleportTo(x, y, zHint)
     if not grant('tpm') then return end
-    local c = GetBlipInfoIdCoord(blip)
     local ped = PlayerPedId()
     local veh = GetVehiclePedIsIn(ped, false)
     local ent = veh ~= 0 and veh or ped
     DoScreenFadeOut(250)
     while not IsScreenFadedOut() do Wait(0) end
     FreezeEntityPosition(ent, true)
-    SetEntityCoordsNoOffset(ent, c.x, c.y, 800.0, false, false, false)
-    local z = groundZ(ent, c.x, c.y)
+    local z
+    if zHint then
+        SetEntityCoordsNoOffset(ent, x, y, zHint + 1.0, false, false, false)
+        local t = GetGameTimer() + 2500
+        repeat RequestCollisionAtCoord(x, y, zHint) Wait(0) until HasCollisionLoadedAroundEntity(ent) or GetGameTimer() > t
+        local found, gz = GetGroundZFor_3dCoord(x, y, zHint + 3.0, false)
+        if found and math.abs(gz - zHint) < 15.0 then z = gz end
+    end
+    if not z then
+        SetEntityCoordsNoOffset(ent, x, y, 800.0, false, false, false)
+        z = groundZ(ent, x, y)
+    end
     if z then
-        SetEntityCoordsNoOffset(ent, c.x, c.y, z + 0.5, false, false, false)
+        SetEntityCoordsNoOffset(ent, x, y, z + 0.5, false, false, false)
     else
         -- Sol introuvable : téléport du jeu, qui cherche lui-même la terre ferme
         FreezeEntityPosition(ent, false)
-        StartPlayerTeleport(PlayerId(), c.x, c.y, 100.0, GetEntityHeading(ent), veh ~= 0, true, false)
+        StartPlayerTeleport(PlayerId(), x, y, 100.0, GetEntityHeading(ent), veh ~= 0, true, false)
         local t = GetGameTimer() + 8000
         while IsPlayerTeleportActive() and GetGameTimer() < t do Wait(0) end
     end
     FreezeEntityPosition(ent, false)
     DoScreenFadeIn(250)
     notify(true, 'Téléporté.')
+end
+
+local function teleportToMarker()
+    local blip = GetFirstBlipInfoId(8)
+    if not DoesBlipExist(blip) then return notify(false, 'Pose d\'abord un marqueur sur la carte.') end
+    local c = GetBlipInfoIdCoord(blip)
+    teleportTo(c.x, c.y)
 end
 
 -- Spectate ----------------------------------------------------------------------------------------------------
@@ -342,6 +358,13 @@ local function addonVehiclesMenu()
     end
     lib.registerContext({ id = 'gs_staff_addonveh', title = 'Véhicules ajoutés (' .. #list .. ')', menu = 'gs_staff_quick', options = options })
     lib.showContext('gs_staff_addonveh')
+end
+
+-- V12.10 · blips des mappings (staff, locaux, le temps d'un tour de la carte)
+local mapBlips = {}
+local function clearMapBlips()
+    for _, b in ipairs(mapBlips) do RemoveBlip(b) end
+    mapBlips = {}
 end
 
 -- Menus cliquables (souris) : chaque option porte sa propre action, aucune correspondance par position.
@@ -907,6 +930,49 @@ local function mainMenu()
         show('gs_staff_veh', 'Véhicules', o, 'gs_staff_quick')
     end
 
+    -- V12.10 · Mappings installés : où est chaque map ajoutée (lu dans ses fichiers), y aller, la voir sur la carte
+    local function mappingsMenu(r)
+        r = r or lib.callback.await('gs_admin:mappings', false)
+        if not r then return end
+        local o = {}
+        if r.error then o[#o + 1] = { title = 'Lecture des maps impossible', icon = 'triangle-exclamation', disabled = true, description = r.error } end
+        o[#o + 1] = { title = #mapBlips > 0 and 'Masquer leurs blips' or 'Afficher leurs blips sur ma carte', icon = 'location-dot',
+            description = 'Visibles par toi seul, le temps de faire le tour', onSelect = function()
+                if #mapBlips > 0 then clearMapBlips() else
+                    for _, m in ipairs(r.maps) do
+                        for _, p in ipairs(m.places) do
+                            local b = AddBlipForCoord(p.x, p.y, p.z)
+                            SetBlipSprite(b, 472) SetBlipColour(b, 27) SetBlipScale(b, 0.85)
+                            BeginTextCommandSetBlipName('STRING') AddTextComponentSubstringPlayerName('Map · ' .. m.label) EndTextCommandSetBlipName(b)
+                            mapBlips[#mapBlips + 1] = b
+                        end
+                    end
+                end
+                mappingsMenu(r) -- même liste, sans redemander au serveur
+            end }
+        if #r.conflicts > 0 then
+            local c = {}
+            for _, x in ipairs(r.conflicts) do
+                c[#c + 1] = { title = x.file, icon = 'triangle-exclamation', iconColor = '#ff6b6b', disabled = true,
+                    description = 'Remplacé par ' .. table.concat(x.resources, ' ET ') .. ' : une seule des deux s\'affichera correctement' }
+            end
+            o[#o + 1] = { title = ('%d conflit(s) entre maps'):format(#r.conflicts), icon = 'triangle-exclamation', iconColor = '#ff6b6b', arrow = true,
+                description = 'Deux maps remplacent le même fichier du jeu : en garder une', onSelect = function() show('gs_staff_maps_conf', 'Conflits entre maps', c, 'gs_staff_maps') end }
+        end
+        for _, m in ipairs(r.maps) do
+            if #m.places == 0 then
+                o[#o + 1] = { title = m.label, icon = 'circle-question', disabled = true,
+                    description = m.name .. (m.ymaps == 0 and ' · aucun fichier de map (.ymap) : vide ou incomplète' or ' · emplacement introuvable') }
+            end
+            for i, p in ipairs(m.places) do
+                local zone = GetLabelText(GetNameOfZone(p.x, p.y, p.z))
+                o[#o + 1] = { title = m.label .. (#m.places > 1 and (' · lieu %d'):format(i) or ''), icon = 'map-pin', arrow = true,
+                    description = ('%s · %s · %.0f, %.0f, %.0f'):format(zone, m.name, p.x, p.y, p.z), onSelect = function() teleportTo(p.x, p.y, p.z) end }
+            end
+        end
+        show('gs_staff_maps', ('Mappings installés (%d)'):format(#r.maps), o, 'gs_staff_world')
+    end
+
     local function worldMenu()
         local o = {}
         local function a(minLvl, opt) if lvl >= minLvl then o[#o + 1] = opt end end
@@ -931,6 +997,8 @@ local function mainMenu()
         a(3, { title = 'Gangs (création, QG, garage)', icon = 'people-group', arrow = true, onSelect = gangAdminMenu })
         a(4, { title = 'Mapping : objets du décor', icon = 'cube', arrow = true, description = 'Catalogue par catégorie, placer, modifier, retirer de la map (/builder)',
             onSelect = function() exports.gs_builder:Open('gs_staff_world') end })
+        a(3, { title = 'Mappings installés', icon = 'map', arrow = true, description = 'Où est chaque map ajoutée : y aller, la voir sur la carte, conflits',
+            onSelect = function() mappingsMenu() end })
         a(1, { title = 'Copier mes coordonnées', icon = 'crosshairs', description = 'vec4 dans le presse-papiers', onSelect = function()
             local ped = PlayerPedId()
             local c = GetEntityCoords(ped)
@@ -1087,5 +1155,5 @@ for id, sc in pairs(SHORTCUTS) do
 end
 
 AddEventHandler('onResourceStop', function(res)
-    if res == GetCurrentResourceName() then powersOff() end
+    if res == GetCurrentResourceName() then powersOff() clearMapBlips() end
 end)

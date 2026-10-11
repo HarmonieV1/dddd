@@ -1,4 +1,4 @@
-# État du projet RoadLine RP — récapitulatif complet (à jour au 11/10/2026, V12.9)
+# État du projet RoadLine RP — récapitulatif complet (à jour au 12/10/2026, V12.10)
 
 Ce document sert de **point de sauvegarde** : si une conversation avec Claude est perdue, compressée ou doit reprendre
 ailleurs, tout ce qu'il faut savoir est ici. Il est versionné avec le code (`git log` en garde aussi l'historique).
@@ -26,7 +26,7 @@ tenu (135 boucles client, 6 permanentes par image).
 | Bot Discord (statut, tickets, modération, annonces, bienvenue) | ✅ À valider sur le VPS (fiche de recette 1b et 1d) |
 | Site (Netlify) | ✅ V13 : météo et heure de la ville en direct, son opt-in, IP masquée jusqu'au 20/10 |
 | Arrivée en bus | ✅ Réparée (sol chargé avant le bus, dépose au sol réel, secours si bloqué) |
-| Mappings / MLO | ⏳ Sélection faite (`docs/SELECTION_MAPPINGS.md`), **import non vérifiable d'ici** : il faut `RAPPORT-MODS.txt` + `cfg/addons.cfg` |
+| Mappings / MLO | ✅ 14 maps importées (rapport du 12/10), F11 « Mappings installés » ; ⏳ tour en jeu, points à recaler, blips joueurs à décider |
 | Cabines téléphoniques (refonte « vraies cabines de la map ») | ⏳ À discuter |
 | Recette en jeu | ⏳ Fiche `ROADLINE_Backtest_complet.pdf` (sessions 0 → 6, dont 1b / 1c / 1d prioritaires) |
 
@@ -47,7 +47,7 @@ exclusifs (« ce que tu ne trouveras nulle part ailleurs »).
 - `feature/phase1-bridge`
 - `claude/gta-rp-architecture-stack-pbvdxz`
 
-**Dernier commit poussé** : « V12.9 : synchronisation globale des deux sessions » (hash exact :
+**Dernier commit poussé** : « V12.10 : mappings situés dans F11 » (hash exact :
 `git log -1 origin/feature/phase1-bridge`). Les deux branches pointent sur le même commit.
 
 **Deux sessions Claude en parallèle** (poste Windows et session web) : elles ne se voient pas. Toujours synchroniser
@@ -57,7 +57,7 @@ par un colis (zip de l'installation ou de la session) + ce fichier, et comparer 
 ## 2. Versions : interne vs publique (important, piège classique)
 
 Depuis la V11.3, il y a **deux numéros de version différents**, volontairement :
-- `gs_version` (convar, `server.cfg.example`) = **V12.9** → version technique interne, vue par le staff (F11, console,
+- `gs_version` (convar, `server.cfg.example`) = **V12.10** → version technique interne, vue par le staff (F11, console,
   METTRE-A-JOUR). Continue d'avancer à chaque mise à jour (V11.2, V11.3...).
 - `gs_public_version` (convar) = **« V4 · bêta »** → version vue par les **joueurs** (écran de chargement, statut
   Discord, Gazette). Le site affiche son propre journal (V1 à V4, V5 « classé confidentiel »).
@@ -263,6 +263,25 @@ Résumé très condensé (le détail complet est dans `docs/ROADMAP.md`, `docs/F
   façon chargement de mission (Entrée / clic pour passer). Tout coupé par `prefers-reduced-motion`, souris seulement
   sur ordinateur. Une seule boucle rAF qui s'endort quand rien ne bouge. Vérifié dans le navigateur : 0 erreur.
 
+- **V12.10** (12/10/2026) — **les mappings se retrouvent tout seuls** :
+  - Rapport IMPORTER-MODS du 12/10 : 14 maps installées (dont 3 protégées, achetées avec la clé Cfx du serveur), 3 vêtements,
+    28 refusés (25 marques réelles), 2 scripts à relire (`burgershot`, Mission Row), 3 vêtements solo à convertir.
+  - **F11 → Monde et lieux → Mappings installés** (`gs_admin/server/maps.js`, Node, lecture seule) : le serveur lit les `.ymap` de
+    chaque map (`gsa_*` ou `this_is_a_map`), repère les objets posés (position + rotation de norme 1 + échelles) et en déduit le
+    lieu ; priorité au fichier qui porte le nom de la map (le bâtiment, pas son garage), fichiers du jeu remplacés ignorés.
+    Téléportation au sol de l'intérieur (pas sur le toit), blips pour soi, et **conflits** : même `.ymap` / `.ybn` / `.ytyp`
+    remplacé par deux maps (une seule s'affiche). Ligne de synthèse en console au démarrage. Testé sur les 5 maps reçues :
+    atelier TM (927, -1564), magasin d'alcool de Paleto (-161, 6325), commissariat de Vinewood (574, -11), sous-sol de Mission
+    Row (444, -1000). `tests/test_gs_maps.js` (32 tests, mutations vérifiées).
+  - **Mission Row agrandi** : le script `teleport` fourni (boucle toutes les 2 ms, anglais, `__resource.lua`) est remplacé par
+    3 portes `gs_interiors` réservées à la police ; nouveau champ `requires` : porte fermée et invisible tant que la map
+    (`gsa_mrpd_etendu`, livrée reconditionnée sans script) n'est pas démarrée, sortie toujours possible.
+    `tests/test_gs_interiors.lua` (11 tests).
+  - `NETTOYER-MARQUES.bat` : les copies triées (`mods-tri`) sont aussi reconnues par le nom de leurs fichiers, comme l'importeur
+    (`mp_male_the_goat` lui échappait).
+  - `moto_free_shell` : ne contient qu'une licence, aucune map.
+  - Recette : session **1e** (5 tests). Doc : `IMPORTER_MODS.md` (« Où sont mes maps ? »), `ADMIN.md`, guide du staff.
+
 - **V12.9** (11/10/2026, session web) — **synchronisation globale des deux sessions** (point de rencontre commun) :
   - La session Windows (V12.8) était partie du commit V12.7 : tout le travail de la session web (pots de miel, bans F11,
     bot V12.5, déplacement des points, alertes V12.7, `check_crimes.py`) y était déjà. 25 changements réels repris
@@ -413,11 +432,10 @@ Résumé très condensé (le détail complet est dans `docs/ROADMAP.md`, `docs/F
 
 ## 6. Décisions en attente / pas encore faites
 
-- **Mappings** (demande du 11/10) : sélection de 20 gratuits + 10 payants dans `docs/SELECTION_MAPPINGS.md`. Les mods
-  importés vivent sur le PC (`server-data/resources/[addons]`) et ne sont pas dans le dépôt : pour vérifier l'import,
-  le poids, les doublons, puis brancher **blips, portes (`gs_interiors`) et points**, il faut `RAPPORT-MODS.txt` et
-  `cfg/addons.cfg` (écrits par IMPORTER-MODS). Vérification rapide côté utilisateur : console du serveur au démarrage
-  (aucun « Couldn't find resource », aucun avertissement de taille), puis F11 → TP sur le lieu.
+- **Mappings** : 14 maps importées. L'utilisateur fait le tour avec F11 → Mappings installés, recale nos points là où un MLO
+  remplace un lieu existant (Pillbox, Fleeca, Pops Pills, Bahama Mamas, Willie's) et dit quels nouveaux lieux doivent
+  avoir un blip et une fonction (atelier TM, magasin d'alcool de Paleto, commissariat de Vinewood, gym, bureau, garage
+  clandestin, village abandonné…). `burgershot` (trop lourd pour le chat) : envoyer seulement ses scripts, sans `stream`.
 - **Recette en jeu** : fiche `ROADLINE_Backtest_complet.pdf`, sessions **1b, 1c, 1d** en priorité, puis 2 à 6.
   Retours des bêta-testeurs attendus cette semaine → vague de corrections.
 - **Discord** : créer les webhooks `#logs-staff` et `#sanctions`, le salon de bienvenue (et activer « Server Members
