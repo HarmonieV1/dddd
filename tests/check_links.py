@@ -22,6 +22,11 @@ def strip_comments(text):
 res_files = {r.name: sorted(r.rglob("*.lua")) for r in ROOT.iterdir() if (r / "fxmanifest.lua").exists()}
 
 net = {"server": set(), "client": set()}     # RegisterNetEvent par côté
+# Événements serveur déclarés en JavaScript (onNet dans server/*.js, ex. gs_admin/server/maps.js)
+for r in ROOT.iterdir():
+    for js in (r / "server").glob("*.js") if (r / "fxmanifest.lua").exists() else []:
+        for m in re.finditer(r"onNet\('([^']+)'", js.read_text(encoding="utf-8")):
+            net["server"].add(m.group(1))
 local = {"server": set(), "client": set()}   # AddEventHandler par côté
 callbacks, exports_def = set(), defaultdict(set)
 uses = []                                     # (kind, name, file, line)
