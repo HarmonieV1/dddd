@@ -24,6 +24,7 @@ maj() { # archive envoyée par METTRE-A-JOUR-OVH.bat
   local old="$BASE/anciens/gtasoon-$(date +%Y%m%d_%H%M%S)"
   [ -d "$DATA/resources/[gtasoon]" ] && mv "$DATA/resources/[gtasoon]" "$old"
   rsync -a "$st/gtasoon/" "$DATA/resources/[gtasoon]/"
+  mkdir -p "$DATA/resources/[gtasoon]/gsa_zz_fusion_occlusion/stream" # fusions de maps écrites par gs_admin (FiveM ne crée pas ce dossier)
   [ -d "$st/extra" ] && rsync -a "$st/extra/" "$DATA/"
   for f in "$st"/cfg/*.cfg; do
     [ -e "$f" ] || continue

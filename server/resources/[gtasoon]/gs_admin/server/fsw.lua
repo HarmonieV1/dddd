@@ -60,7 +60,7 @@ local function fsWrite(p, b64)
         if dir then mkdirs(dir) end
         f = io.open(p, 'wb')
     end
-    if not f then return false, 'impossible d\'ouvrir ' .. tostring(p) end
+    if not f then return false, 'impossible d\'ouvrir ' .. tostring(p) .. ' (dossier absent ? relance METTRE-A-JOUR, qui le crée)' end
     f:write(b64dec(b64 or '')); f:close()
     return true
 end

@@ -284,6 +284,10 @@ function New-UnixZip($folder, $zip) {
             $rel = $f.FullName.Substring($root.Length + 1).Replace('\', '/')
             [void][IO.Compression.ZipFileExtensions]::CreateEntryFromFile($archive, $f.FullName, $rel, 'Optimal')
         }
+        # Dossiers vides gardés (ex. gsa_zz_fusion_occlusion\stream, où gs_admin écrit les fusions de maps)
+        foreach ($d in Get-ChildItem -LiteralPath $root -Recurse -Directory -Force | Where-Object { -not (Get-ChildItem -LiteralPath $_.FullName -Force | Select-Object -First 1) }) {
+            [void]$archive.CreateEntry($d.FullName.Substring($root.Length + 1).Replace('\', '/') + '/')
+        }
     } finally { $archive.Dispose() }
 }
 

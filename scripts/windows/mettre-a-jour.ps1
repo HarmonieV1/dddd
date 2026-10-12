@@ -95,6 +95,8 @@ Say "  Version installée : $oldVer  →  nouvelle : $newVer" 'Green'
 if ($oldVer -eq $newVer) { Say "  (même version : si tu attendais du nouveau, vérifie que tu as extrait le DERNIER zip)" 'Yellow' }
 if (Test-Path -LiteralPath $Ours) { [IO.Directory]::Delete($Ours, $true) } # retire aussi les fichiers supprimés
 Copy-Item -LiteralPath (Join-Path $Repo 'server\resources\[gtasoon]') -Destination $Res -Recurse -Force
+# Dossier où gs_admin écrit les fusions de maps (vide dans le zip, donc absent ; FiveM ne sait pas le créer)
+[void][IO.Directory]::CreateDirectory((Join-Path $Ours 'gsa_zz_fusion_occlusion\stream'))
 # [addons] (tes véhicules / mods) : copié seulement s'il n'existe pas encore, jamais écrasé
 if (-not (Test-Path -LiteralPath (Join-Path $Res '[addons]'))) { Copy-Item -LiteralPath (Join-Path $Repo 'server\resources\[addons]') -Destination $Res -Recurse -Force }
 Get-ChildItem -LiteralPath (Join-Path $Repo 'server\cfg') -File | Where-Object { $_.Name -ne 'secrets.cfg' } |
