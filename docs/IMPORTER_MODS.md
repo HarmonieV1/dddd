@@ -55,6 +55,7 @@ Rapport : « INSTALLÉ (nom_du_script, avec gsa_map) » ou « il lui manque … 
 - Script payant seul, sans map correspondante : rangé dans **scripts-a-verifier**, pas installé (dis-moi si tu le veux).
   Script compagnon d'une map installée : installé avec elle (V12.31, voir plus haut).
 - **Maps retirées / remises** : `RETIRED_MAPS` (maps.js) les supprime au démarrage et les note dans `mods-retires.txt` ;
+  depuis la V12.34, IMPORTER-MODS lit aussi `RETIRED_MAPS` : jamais réinstallées, même supprimées à la main avant le redémarrage ;
   `$Restored` (importer-mods.ps1) les en sort pour qu'elles reviennent depuis leur archive. 12/10 : villa moderne 01
   retirée, **villa bunker remise**.
 - **Archive incomplète** (« Unexpected end of archive » à la décompression) : depuis la V12.27, le pack n'est PAS installé et

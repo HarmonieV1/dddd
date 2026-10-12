@@ -486,6 +486,7 @@ foreach ($p in $packages) {
 }
 # V12.16 : mods retirés par le staff (F11 → Supprimer définitivement les maps) : jamais réinstallés, même depuis une archive groupée
 $RetiredFile = Join-Path $Root 'mods-retires.txt'
+$Retired = @()
 if (Test-Path -LiteralPath $RetiredFile) {
     $Retired = @(Get-Content -LiteralPath $RetiredFile | ForEach-Object { $_.Trim().ToLower() } | Where-Object { $_ -and -not $_.StartsWith('#') })
     # V12.31 : maps remises en service après un retrait (12/10 : on garde la villa bunker, c'est la villa 01 qui part) :
@@ -497,9 +498,19 @@ if (Test-Path -LiteralPath $RetiredFile) {
         [IO.File]::WriteAllLines($RetiredFile, $kept, (New-Object Text.UTF8Encoding $false))
         Say "  Remis en service (retiré de mods-retires.txt) : $($Restored -join ', ')" 'Green'
     }
-    foreach ($r in $results) {
-        if ($Retired -contains $r.name) { $r.install = $false; $r.type = 'rejete'; [void]$r.issues.Add('retiré par le staff (mods-retires.txt) : jamais réinstallé ; enlever sa ligne du fichier pour le permettre') }
-    }
+}
+# V12.34 : maps retirées par décision (RETIRED_MAPS de gs_admin/server/maps.js) refusées DÈS l'import, même si le serveur
+# n'a pas encore redémarré pour les noter dans mods-retires.txt (dossiers supprimés à la main puis METTRE-A-JOUR : avant,
+# l'import les réinstallait depuis mods-a-trier, avec leur script compagnon, jusqu'au prochain démarrage du serveur).
+foreach ($mj in @((Join-Path $PSScriptRoot '..\..\server\resources\[gtasoon]\gs_admin\server\maps.js'), (Join-Path $Data 'resources\[gtasoon]\gs_admin\server\maps.js'))) {
+    if (-not (Test-Path -LiteralPath $mj)) { continue }
+    $block = [regex]::Match((Get-Content -LiteralPath $mj -Raw), '(?s)const RETIRED_MAPS = \[(.*?)\];').Groups[1].Value
+    $Retired += @([regex]::Matches($block, "'gsa_([a-z0-9_]+)'") | ForEach-Object { $_.Groups[1].Value })
+    break
+}
+$Retired = @($Retired | Sort-Object -Unique)
+foreach ($r in $results) {
+    if ($Retired -contains $r.name) { $r.install = $false; $r.type = 'rejete'; [void]$r.issues.Add('retiré par le staff (mods-retires.txt / RETIRED_MAPS) : jamais réinstallé') }
 }
 
 # 2b. V12.31 · Scripts COMPAGNONS des maps payantes. Un pack (laser game, villa bunker, auto-tamponneuses…) livre souvent la
@@ -592,6 +603,7 @@ if ($canInstall) {
         # V12.31 : scripts compagnons (nom d'origine), gardés tant que leur dossier existe
         ($_ -match '^#?\s*ensure\s+(\S+)' -and (Test-Path -LiteralPath (Join-Path $Addons $Matches[1]))) }) }
     $names = @($installed) + @($keep | ForEach-Object { (($_ -replace '^#?\s*ensure\s+', '').Trim() -split '\s+')[0] }) | Sort-Object -Unique
+    $names = @($names | Where-Object { $Retired -notcontains ($_ -replace '^gsa_', '') }) # V12.34 : lignes des maps retirées enlevées
     $notes = @()
     if (Test-Path -LiteralPath $previous) { $notes = @(Get-Content -LiteralPath $previous | Where-Object { $_ -match '^## gsa_\S+ : désactivé' } | ForEach-Object { ($_ -split '\s+')[1] }) }
     $risks = @{}

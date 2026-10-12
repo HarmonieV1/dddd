@@ -1,4 +1,4 @@
-# État du projet RoadLine RP — récapitulatif complet (à jour au 12/10/2026, V12.31)
+# État du projet RoadLine RP — récapitulatif complet (à jour au 12/10/2026, V12.34)
 
 Ce document sert de **point de sauvegarde** : si une conversation avec Claude est perdue, compressée ou doit reprendre
 ailleurs, tout ce qu'il faut savoir est ici. Il est versionné avec le code (`git log` en garde aussi l'historique).
@@ -54,7 +54,7 @@ exclusifs (« ce que tu ne trouveras nulle part ailleurs »).
 - `feature/phase1-bridge`
 - `claude/gta-rp-architecture-stack-pbvdxz`
 
-**Dernier commit poussé** : « V12.31 : scripts compagnons des maps, villa bunker remise » (hash exact :
+**Dernier commit poussé** : « V12.34 : maps retirées jamais réimportées » (hash exact :
 `git log -1 origin/feature/phase1-bridge`). Les deux branches pointent sur le même commit.
 
 **Deux sessions Claude en parallèle** (poste Windows et session web) : elles ne se voient pas. Toujours synchroniser
@@ -64,7 +64,7 @@ par un colis (zip de l'installation ou de la session) + ce fichier, et comparer 
 ## 2. Versions : interne vs publique (important, piège classique)
 
 Depuis la V11.3, il y a **deux numéros de version différents**, volontairement :
-- `gs_version` (convar, `server.cfg.example`) = **V12.33** → version technique interne, vue par le staff (F11, console,
+- `gs_version` (convar, `server.cfg.example`) = **V12.34** → version technique interne, vue par le staff (F11, console,
   METTRE-A-JOUR). Continue d'avancer à chaque mise à jour (V11.2, V11.3...).
 - `gs_public_version` (convar) = **« V4 · bêta »** → version vue par les **joueurs** (écran de chargement, statut
   Discord, Gazette). Le site affiche son propre journal (V1 à V4, V5 « classé confidentiel »).
@@ -270,6 +270,12 @@ Résumé très condensé (le détail complet est dans `docs/ROADMAP.md`, `docs/F
   ne remplace pas le curseur), profondeur CSS `animation-timeline: view()` (captures, mock, carte, chiffres), intro
   façon chargement de mission (Entrée / clic pour passer). Tout coupé par `prefers-reduced-motion`, souris seulement
   sur ordinateur. Une seule boucle rAF qui s'endort quand rien ne bouge. Vérifié dans le navigateur : 0 erreur.
+
+- **V12.34** (12/10/2026) — « j'ai supprimé les maps dans [addons], j'ai peur que METTRE-A-JOUR recharge tout » : c'était
+  le cas. L'importeur (relancé par METTRE-A-JOUR dès qu'il change) réinstallait depuis mods-a-trier toute map absente de
+  mods-retires.txt, et le serveur ne l'y note qu'à son démarrage. Maintenant IMPORTER-MODS lit aussi `RETIRED_MAPS` dans
+  gs_admin/server/maps.js : une map retirée n'est jamais réinstallée (ni son script compagnon), et sa ligne de addons.cfg
+  est enlevée. Test de bout en bout : 9/9. V12.33 (poste Windows) intégrée dans git juste avant (elle n'y était pas).
 
 - **V12.33** (12/10/2026, poste Windows) — reprise depuis le zip « installation (18) » (= V12.29 de la session distante, contenu
   dans V12.31) : **fusion V12.32** de la session distante V12.9 → V12.31 avec la V12.8 locale (13 conflits : versions, PDF,

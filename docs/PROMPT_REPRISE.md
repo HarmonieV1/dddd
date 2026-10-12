@@ -1,6 +1,6 @@
 # Prompt de reprise — RoadLine RP (à coller dans une nouvelle session Claude)
 
-> Copie tout ce qui est sous la ligne ci-dessous dans ta deuxième session. Mis à jour le 12/10/2026 (V12.31).
+> Copie tout ce qui est sous la ligne ci-dessous dans ta deuxième session. Mis à jour le 12/10/2026 (V12.34).
 
 ---
 
@@ -13,7 +13,7 @@ l'optimisation.
 1. Lis **`docs/ETAT_PROJET.md`** en entier (récap complet, historique V12.x, décisions) puis `docs/MLO.md` et
    `docs/IMPORTER_MODS.md` (maps payantes, scripts compagnons, diagnostic).
 2. Vérifie que tu es à jour : `git fetch origin && git log -1 origin/feature/phase1-bridge` doit montrer
-   « V12.31 : scripts compagnons des maps… » (ou plus récent).
+   « V12.34 : maps retirées jamais réimportées » (ou plus récent).
 
 ## Règles permanentes (à respecter sans exception)
 - **Tout en français** (code commenté, messages en jeu, docs, réponses).
@@ -55,12 +55,15 @@ l'optimisation.
 F1 téléphone, F2 inventaire, F3 progression, F4 intervention (police / EMS), F5 emotes, F6 métiers, F7 duo, F9 gang,
 F10/F11 staff, I aide, K inventaire proche, W radial, H mains en l'air, L verrouiller, B ceinture, **U garde-robe**.
 
-## État au 12/10/2026 (V12.31)
+## État au 12/10/2026 (V12.34)
 - Récents : clés de véhicule en objet (`gs_carkey`), vêtements et tenues en objets + garde-robe (U), apparition fiable
   dans les véhicules, blips publics des maps, contrôle « chez moi » des maps (F11), scripts compagnons des maps payantes
   installés par IMPORTER-MODS, intégrité des maps vérifiée au démarrage, outil REPARER-FIVEM.bat, site de doc HTML.
-- Maps : villa moderne 01 **retirée** (12/10), **villa bunker remise** ; retirées aussi : Willie's, alcool Paleto,
-  Moreo Gym, casse, Benny's original, Digital Den, Shadow Complex. Désactivées (archives coupées, à retélécharger) :
+- Maps : villa moderne 01 **retirée** (12/10), **villa bunker remise** ; retirées aussi : laser game, karting (+ DLC),
+  plasmatron (V12.33), Willie's, alcool Paleto, Moreo Gym, casse, Benny's original, Digital Den, Shadow Complex.
+  `RETIRED_MAPS` (maps.js) = source unique : le serveur les supprime au démarrage, IMPORTER-MODS ne les réinstalle jamais.
+- Deux sessions Claude (web + poste Windows) : la V12.33 du poste Windows a été intégrée dans git à la main. Toujours
+  pousser sur GitHub pour que l'autre session reparte de la même base. Désactivées (archives coupées, à retélécharger) :
   beach party, soccer / soccer_cloth, plasmatron.
 
 ## En attente (à reprendre avec moi)
