@@ -280,6 +280,11 @@ Résumé très condensé (le détail complet est dans `docs/ROADMAP.md`, `docs/F
   - **Faux positif « marque réelle »** : `golf` (la VW) attrapait « mini**golf** » → `(?<!mini)golf` (importeur et
     NETTOYER-MARQUES, listes identiques).
   - METTRE-A-JOUR-OVH : copie avec `-Force` (fichiers cachés compris).
+  - FXServer récent : écriture disque interdite au JavaScript (« --allow-fs-write ») → maps.js écrit via `gs_admin/server/fsw.lua`
+    (réservé à gs_admin, sous le dossier parent de server-data, chemins `//` acceptés). Fusion et boutons F11 réparés.
+  - **Choix du 12/10** (`RETIRED_MAPS`, maps.js) : retirées au démarrage (PC et VPS) puis notées dans mods-retires.txt, archives
+    gardées : Willie's, magasin d'alcool de Paleto, Moreo Gym, casse (anciennes gratuites), Benny's original (gardé : noir et
+    blanc), villa bunker (gardé : villa 01), Digital Den (gardé : prison), Shadow Complex (gardé : plasmakart).
   - Archives tronquées au téléchargement (« Unexpected end of archive ») : patoche_beach_party, patoche_plasmatron,
     patoche_soccer, patoche_soccer_cloth → à retélécharger depuis le portail Cfx.
 

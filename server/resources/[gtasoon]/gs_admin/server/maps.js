@@ -336,11 +336,11 @@ function cleanName(file) {
  *  resources/[addons] (gsa_* avec .ymap / .ytyp / .ybn) : vêtements et véhicules intacts. Pour chacune : dossier effacé,
  *  ligne retirée de cfg/addons.cfg, copie de mods-tri/maps et archive de mods-a-trier effacées, nom ajouté à
  *  mods-retires.txt (IMPORTER-MODS ne la réinstallera jamais, même depuis une archive groupée). */
-function deleteMapsOnDisk(serverData, root) {
+function deleteMapsOnDisk(serverData, root, opts = {}) {
   const addons = path.join(serverData, 'resources', '[addons]');
   const done = { maps: [], errors: [] };
   let dirs = [];
-  try { dirs = fs.readdirSync(addons, { withFileTypes: true }).filter((d) => d.isDirectory() && /^gsa_[a-z0-9_]+$/.test(d.name)); } catch (e) { return done; }
+  try { dirs = fs.readdirSync(addons, { withFileTypes: true }).filter((d) => d.isDirectory() && /^gsa_[a-z0-9_]+$/.test(d.name) && (!opts.only || opts.only.includes(d.name))); } catch (e) { return done; }
   const maps = dirs.map((d) => scanResource(d.name, path.join(addons, d.name))).filter((m) => m.ymaps > 0 || m.streamed.length > 0);
   if (!maps.length) return done;
   const names = maps.map((m) => m.name);
@@ -360,7 +360,7 @@ function deleteMapsOnDisk(serverData, root) {
   } catch (e) { /* pas de addons.cfg (VPS sans mods) */ }
   const shorts = names.map((n) => n.replace(/^gsa_/, ''));
   for (const s of shorts) { try { removeTree(path.join(root, 'mods-tri', 'maps', s)); } catch (e) { /* rien */ } }
-  try {
+  if (!opts.keepArchives) try {
     for (const f of fs.readdirSync(path.join(root, 'mods-a-trier'))) {
       if (shorts.includes(cleanName(f))) { try { removeTree(path.join(root, 'mods-a-trier', f)); } catch (e) { /* rien */ } }
     }
@@ -375,6 +375,17 @@ function deleteMapsOnDisk(serverData, root) {
   } catch (e) { done.errors.push(`mods-retires.txt : ${e.message}`); }
   return done;
 }
+
+/** V12.18 · Maps retirées sur décision du 12/10 (doublons entre packs et anciennes maps gratuites). Supprimées au démarrage
+ *  du PC comme du VPS (dossier, ligne de addons.cfg, copie mods-tri), notées dans mods-retires.txt (jamais réimportées) ;
+ *  les archives de mods-a-trier sont gardées (packs payants : retéléchargeables, mais autant ne rien perdre). */
+const RETIRED_MAPS = [
+  'gsa_mlo_willies_supermarket', 'gsa_cfx_draft_pb_liquor_pack', 'gsa_moreo_gym', 'gsa_nelegalnyjj_avtoservis_i_avtorazborka',
+  'gsa_sub_patoche_benny_original_pack', // gardé : Benny's noir et blanc
+  'gsa_patoche_villa_bunker_pack',       // gardé : sub_patoche_villa_01 (même villa)
+  'gsa_sub_patoche_digitalden',          // gardé : prison (même occlusion du centre-ville)
+  'gsa_patoche_shadow_complex_pack',     // gardé : plasmakart
+];
 
 const FUSION_MANIFEST = "-- Fusion automatique des fichiers d'occlusion en conflit entre maps (gs_admin/server/maps.js).\n" +
   "-- Lancée APRÈS les maps (dev.cfg / prod.cfg), donc prioritaire. Contenu régénéré à chaque démarrage si besoin.\n" +
@@ -412,7 +423,7 @@ function applyFusions(maps, fusionDir) {
   return written;
 }
 
-if (typeof module !== 'undefined' && module.exports) module.exports = { cleanName, deleteMapsOnDisk, pruneFusions, disableInCfg, inflateRsc7, entitiesOf, memoryMB, memorySplit, pagesSize, isVanillaName, placesOf, scanResource, conflictsOf, scanAll, labelOf, mergeOcclusion, applyFusions, _setLuaFs: (f) => { luaFs = f; } }; // tests Node seulement
+if (typeof module !== 'undefined' && module.exports) module.exports = { cleanName, deleteMapsOnDisk, pruneFusions, disableInCfg, inflateRsc7, entitiesOf, memoryMB, memorySplit, pagesSize, isVanillaName, placesOf, scanResource, conflictsOf, scanAll, labelOf, mergeOcclusion, applyFusions, RETIRED_MAPS, _setLuaFs: (f) => { luaFs = f; } }; // tests Node seulement
 
 if (typeof GetCurrentResourceName === 'function') {
   const self = GetCurrentResourceName();
@@ -491,6 +502,18 @@ if (typeof GetCurrentResourceName === 'function') {
     try { has = fs.readdirSync(path.join(dir, 'stream')).length > 0; } catch (e) { has = false; }
     if (has) { StopResource(FUSION_RES); StartResource(FUSION_RES); cache = null; }
   };
+  // V12.18 · Maps retirées par décision (RETIRED_MAPS) : arrêtées puis supprimées, avant la fusion (qui ne les voit plus)
+  setTimeout(() => {
+    const present = RETIRED_MAPS.filter((n) => GetResourceState(n) !== 'missing');
+    if (!present.length) return;
+    for (const n of present) if (GetResourceState(n) === 'started') StopResource(n);
+    const serverData = path.resolve(GetResourcePath(self), '..', '..', '..');
+    let done = { maps: [], errors: [] };
+    try { done = deleteMapsOnDisk(serverData, path.resolve(serverData, '..'), { only: present, keepArchives: true }); } catch (e) { done.errors.push(e.message); }
+    cache = null;
+    if (done.maps.length) console.log(`^2[gs_admin] Maps retirées (décision du 12/10) : ${done.maps.join(', ')}^7`);
+    for (const e of done.errors) console.log(`^1[gs_admin] Retrait de map impossible : ${e}^7`);
+  }, 8000);
   // Au démarrage : fusion, puis une ligne en console et les conflits en clair (à corriger avant qu'un joueur tombe dans un trou)
   setTimeout(() => {
     fuse();

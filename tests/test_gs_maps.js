@@ -180,6 +180,18 @@ check('archive groupée gardée (protégée par mods-retires.txt)', fs.existsSyn
 const ret = fs.readFileSync(path.join(R9, 'mods-retires.txt'), 'utf8');
 check('mods-retires.txt : anciens + nouveaux noms', ret.includes('ancienne_map') && ret.includes('tm_workshop_pack') && ret.includes('hp_fleeca_main'));
 check('2e passage : rien à supprimer', M.deleteMapsOnDisk(SD, R9).maps.length === 0);
+// V12.18 : suppression ciblée (RETIRED_MAPS) : seulement les maps nommées, archives gardées
+{
+  const R2 = path.join(tmp, 'G2'), S2 = path.join(R2, 'server-data'), A2 = path.join(S2, 'resources', '[addons]');
+  put(path.join(A2, 'gsa_moreo_gym', 'stream', 'gym.ymap'), ymap([[0, 0, 0]]));
+  put(path.join(A2, 'gsa_patoche_ammu', 'stream', 'ammu.ymap'), ymap([[1, 1, 1]]));
+  put(path.join(S2, 'cfg', 'addons.cfg'), 'ensure gsa_moreo_gym\r\nensure gsa_patoche_ammu\r\n');
+  put(path.join(R2, 'mods-a-trier', 'moreo_gym.rar'), 'rar');
+  const d2 = M.deleteMapsOnDisk(S2, R2, { only: ['gsa_moreo_gym'], keepArchives: true });
+  check('retrait ciblé : la map nommée seulement', d2.maps.join() === 'gsa_moreo_gym' && fs.existsSync(path.join(A2, 'gsa_patoche_ammu')) && !fs.existsSync(path.join(A2, 'gsa_moreo_gym')));
+  check('retrait ciblé : archive gardée, nom dans mods-retires.txt', fs.existsSync(path.join(R2, 'mods-a-trier', 'moreo_gym.rar')) && fs.readFileSync(path.join(R2, 'mods-retires.txt'), 'utf8').includes('moreo_gym'));
+  check('liste des maps retirées : 8 noms gsa_', M.RETIRED_MAPS.length === 8 && M.RETIRED_MAPS.every((n) => /^gsa_[a-z0-9_]+$/.test(n)));
+}
 // V12.18 : FXServer récent = écriture interdite au JavaScript (« Use --allow-fs-write ») → repli par Lua (server/fsw.lua)
 {
   const orig = { w: fs.writeFileSync, u: fs.unlinkSync, r: fs.rmSync };
