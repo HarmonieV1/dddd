@@ -64,7 +64,7 @@ par un colis (zip de l'installation ou de la session) + ce fichier, et comparer 
 ## 2. Versions : interne vs publique (important, piège classique)
 
 Depuis la V11.3, il y a **deux numéros de version différents**, volontairement :
-- `gs_version` (convar, `server.cfg.example`) = **V12.34** → version technique interne, vue par le staff (F11, console,
+- `gs_version` (convar, `server.cfg.example`) = **V12.35** → version technique interne, vue par le staff (F11, console,
   METTRE-A-JOUR). Continue d'avancer à chaque mise à jour (V11.2, V11.3...).
 - `gs_public_version` (convar) = **« V4 · bêta »** → version vue par les **joueurs** (écran de chargement, statut
   Discord, Gazette). Le site affiche son propre journal (V1 à V4, V5 « classé confidentiel »).
@@ -103,6 +103,7 @@ Tout est scripté, zéro mot de passe affiché en clair :
 - `GERER-OVH.bat` (menu à 22 options : état/diagnostic, console, erreurs, marche/arrêt, public/privé, sauvegardes,
   mode simple/txAdmin, retour arrière, Discord, codes staff, adresse https...)
 - `CONFIGURER-DISCORD.bat` (jeton bot, webhooks, adresse de connexion — voir piège ci-dessous)
+- `POUSSER-GITHUB.bat` (V12.34 : envoyer les commits du PC sur GitHub après les tests, récupérer ceux de l'autre session ; `docs/GITHUB.md`)
 - `PREPARER-OVH.bat`, `CAPTURER-ERREURS.bat`, `SAUVEGARDER-BDD.bat` / `RESTAURER-BDD.bat`, `IMPORTER-MODS.bat`,
   `DEVENIR-ADMIN.bat`, `PUBLIER-SITE.bat`, `REPARER-FIVEM.bat` (erreur 506 / déconnexions Rockstar, côté joueur),
   `VIDER-CACHE-FIVEM.bat`, `NETTOYER-MARQUES.bat`
@@ -270,6 +271,15 @@ Résumé très condensé (le détail complet est dans `docs/ROADMAP.md`, `docs/F
   ne remplace pas le curseur), profondeur CSS `animation-timeline: view()` (captures, mock, carte, chiffres), intro
   façon chargement de mission (Entrée / clic pour passer). Tout coupé par `prefers-reduced-motion`, souris seulement
   sur ordinateur. Une seule boucle rAF qui s'endort quand rien ne bouge. Vérifié dans le navigateur : 0 erreur.
+
+- **V12.35** (12/10/2026, poste Windows) — synchronisation GitHub sans commande à retenir (`docs/GITHUB.md`) :
+  - **`POUSSER-GITHUB.bat`** (racine du clone, `scripts/windows/pousser-github.ps1`) : trouve Git, lit GitHub, propose de
+    committer ce qui traîne, récupère l'avancée de l'autre session si c'est une avance rapide, s'arrête si les deux côtés ont
+    avancé (jamais de force : fusion par Claude), lance `tests/run.sh` si les outils sont là, pousse les deux branches ;
+    identification GitHub dans le navigateur à la première fois (Git Credential Manager).
+  - **Paquet de commits** `livraison/ROADLINE-commits.bundle` + `scripts/linux/recevoir-bundle.sh` : les commits du PC avec
+    leur historique pour la session distante (vérifie, fusionne, teste, pousse). Fin des commits « Synchronisation » géants.
+  - Rappel : la villa 01 et les maps plasma sont retirées au démarrage ; le fondateur supprime à la main les mappings en trop.
 
 - **V12.34** (12/10/2026) — « j'ai supprimé les maps dans [addons], j'ai peur que METTRE-A-JOUR recharge tout » : c'était
   le cas. L'importeur (relancé par METTRE-A-JOUR dès qu'il change) réinstallait depuis mods-a-trier toute map absente de

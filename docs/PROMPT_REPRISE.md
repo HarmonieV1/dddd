@@ -21,6 +21,8 @@ l'optimisation.
 - **Demande-moi avant de supprimer quoi que ce soit** (fichier, map, PDF, ressource).
 - **Aucune vraie marque** (voitures, mode, police réelle) : risque de bannissement Cfx.re. Seulement le « lore GTA ».
 - Lance **`bash tests/run.sh`** avant chaque push (un hook pre-push le fait aussi) : tout doit être vert.
+- Si l'utilisateur t'envoie `ROADLINE-commits.bundle` (commits du PC Windows) : `bash scripts/linux/recevoir-bundle.sh ROADLINE-commits.bundle`
+  (vérifie, fusionne, teste, pousse). Sur le PC Windows, c'est `POUSSER-GITHUB.bat` (voir `docs/GITHUB.md`).
 - Pousse sur **les deux branches** :
   `for b in feature/phase1-bridge claude/gta-rp-architecture-stack-pbvdxz; do git push origin "feature/phase1-bridge:$b"; done`
 - Version : `gs_version` dans `server/server.cfg.example` et `VERSION` dans `tools/pdf.py` (+ `tools/backtest.py`,
