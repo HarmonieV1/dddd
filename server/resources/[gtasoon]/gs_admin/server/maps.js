@@ -427,7 +427,13 @@ if (typeof module !== 'undefined' && module.exports) module.exports = { cleanNam
 
 if (typeof GetCurrentResourceName === 'function') {
   const self = GetCurrentResourceName();
-  const viaLua = (ev, ...args) => { let r; emit(ev, ...args, (ok) => { r = ok; }); if (r === undefined) throw new Error(`${ev} sans réponse (server/fsw.lua chargé ?)`); return r; };
+  const viaLua = (ev, ...args) => {
+    let r, why;
+    emit(ev, ...args, (ok, err) => { r = ok; why = err; });
+    if (r === undefined) throw new Error(`${ev} sans réponse (erreur au chargement de server/fsw.lua ? voir la console au démarrage)`);
+    if (!r && why) throw new Error(`${ev} : ${why}`);
+    return r;
+  };
   luaFs = { write: (p, b64) => viaLua('gs_admin:fsWrite', p, b64), remove: (p) => viaLua('gs_admin:fsRemove', p) };
   const mapResources = () => {
     const out = [];
