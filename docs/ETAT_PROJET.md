@@ -1,4 +1,4 @@
-# État du projet RoadLine RP — récapitulatif complet (à jour au 12/10/2026, V12.17)
+# État du projet RoadLine RP — récapitulatif complet (à jour au 12/10/2026, V12.18)
 
 Ce document sert de **point de sauvegarde** : si une conversation avec Claude est perdue, compressée ou doit reprendre
 ailleurs, tout ce qu'il faut savoir est ici. Il est versionné avec le code (`git log` en garde aussi l'historique).
@@ -47,7 +47,7 @@ exclusifs (« ce que tu ne trouveras nulle part ailleurs »).
 - `feature/phase1-bridge`
 - `claude/gta-rp-architecture-stack-pbvdxz`
 
-**Dernier commit poussé** : « V12.17 : maps supprimées définitivement, réapparition [E] » (hash exact :
+**Dernier commit poussé** : « V12.18 : maps payantes (escrow), optimiseur de textures réparé » (hash exact :
 `git log -1 origin/feature/phase1-bridge`). Les deux branches pointent sur le même commit.
 
 **Deux sessions Claude en parallèle** (poste Windows et session web) : elles ne se voient pas. Toujours synchroniser
@@ -57,7 +57,7 @@ par un colis (zip de l'installation ou de la session) + ce fichier, et comparer 
 ## 2. Versions : interne vs publique (important, piège classique)
 
 Depuis la V11.3, il y a **deux numéros de version différents**, volontairement :
-- `gs_version` (convar, `server.cfg.example`) = **V12.17** → version technique interne, vue par le staff (F11, console,
+- `gs_version` (convar, `server.cfg.example`) = **V12.18** → version technique interne, vue par le staff (F11, console,
   METTRE-A-JOUR). Continue d'avancer à chaque mise à jour (V11.2, V11.3...).
 - `gs_public_version` (convar) = **« V4 · bêta »** → version vue par les **joueurs** (écran de chargement, statut
   Discord, Gazette). Le site affiche son propre journal (V1 à V4, V5 « classé confidentiel »).
@@ -262,6 +262,26 @@ Résumé très condensé (le détail complet est dans `docs/ROADMAP.md`, `docs/F
   ne remplace pas le curseur), profondeur CSS `animation-timeline: view()` (captures, mock, carte, chiffres), intro
   façon chargement de mission (Entrée / clic pour passer). Tout coupé par `prefers-reduced-motion`, souris seulement
   sur ordinateur. Une seule boucle rAF qui s'endort quand rien ne bouge. Vérifié dans le navigateur : 0 erreur.
+
+- **V12.18** (12/10/2026) — « j'ai acheté de vrais mappings (packs Patoche), depuis FiveM crashe, rien n'apparaît » :
+  - **Crash au lancement = erreur FiveM 506** (« Failure connecting to the Rockstar Games Launcher »), côté PC du joueur,
+    avant toute connexion au serveur : launcher Rockstar en « mode Steam » (titre Steam inconnu), jeton expiré, dossier
+    Documents Rockstar dans OneDrive. Rien à voir avec les maps ni le serveur (le .dmp ne contient que le launcher).
+  - **Optimiseur de textures réparé** : le commit « fins de ligne CRLF normalisées » (b63e354) avait retiré des octets aux
+    4 DLL de `tools/textures` (« Le module était censé contenir un manifeste de l'assembly »). DLL restaurées depuis 90e4dc9,
+    `.gitattributes` : `*.dll`, images, `.ytd/.ydr/.yft/.ymap/.ybn/.ytyp`, zip, polices et sons en `binary` (seules ces 4 DLL
+    étaient touchées : 211 images vérifiées).
+  - **Packs payants (escrow Cfx `.fxap`)** dans IMPORTER-MODS : un pack protégé qui contient des fichiers du jeu (map,
+    véhicule, vêtement) est installé même s'il embarque un petit script chiffré (avant : Shadow Complex, circuit, tenues
+    soccer… refusés comme « script chiffré »). Fichiers jamais modifiés (pas d'optimisation de textures sur un pack protégé).
+    Script payant seul : rangé dans scripts-a-verifier (plus « rejeté »), pas installé automatiquement. Script multi-framework
+    (ESX + QBCore / Qbox) : plus classé « ESX ». Lignes « illisibles » d'un fichier chiffré : plus prises pour de
+    l'obfuscation. Véhicule d'un pack protégé (auto-tamponneuse…) : pas ajouté à la concession.
+  - **Faux positif « marque réelle »** : `golf` (la VW) attrapait « mini**golf** » → `(?<!mini)golf` (importeur et
+    NETTOYER-MARQUES, listes identiques).
+  - METTRE-A-JOUR-OVH : copie avec `-Force` (fichiers cachés compris).
+  - Archives tronquées au téléchargement (« Unexpected end of archive ») : patoche_beach_party, patoche_plasmatron,
+    patoche_soccer, patoche_soccer_cloth → à retélécharger depuis le portail Cfx.
 
 - **V12.17** (12/10/2026) — « retire-les totalement de ma base, en priorité » + « le E pour réapparaître ne marche pas » :
   - **Suppression définitive des maps** (F11, super-admin / fondateur, taper SUPPRIMER, journalisé `deleteallmaps`) :

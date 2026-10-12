@@ -18,6 +18,25 @@ for v in BrandBlock BrandStrong; do
     [ -n "$a" ] && [ "$a" = "$b" ] || { echo "ERREUR : \$$v différent entre importer-mods.ps1 et NETTOYER-MARQUES.bat"; exit 1; }
 done
 echo "Marques OK"
+# DLL de l'optimiseur de textures : un vrai fichier Windows (signature « PE » intacte). Une conversion de fins de ligne
+# les avait abîmées (V12.17 : « Le module était censé contenir un manifeste de l'assembly »).
+python3 - <<'EOF'
+import glob, struct, sys
+for f in sorted(glob.glob('tools/textures/*.dll')):
+    b = open(f, 'rb').read()
+    pe = struct.unpack_from('<I', b, 0x3c)[0] if len(b) > 0x40 else 0
+    if b[:2] != b'MZ' or b[pe:pe + 4] != b'PE\0\0':
+        sys.exit('ERREUR : ' + f + ' abîmée (fins de ligne ?) : la restaurer et la garder en « binary » dans .gitattributes')
+print('DLL textures OK')
+EOF
+# Faux positif « minigolf » (V12.18) : la marque Golf ne doit pas attraper une map de minigolf
+python3 - <<'EOF'
+import re, sys
+line = [l for l in open('scripts/windows/importer-mods.ps1', encoding='utf-8-sig') if l.startswith('$BrandBlock = ')][0]
+block = re.compile(line.split("'")[1])
+if block.search('patoche_minigolf_pacific') or not block.search('vw_golf_gti'):
+    sys.exit('ERREUR : $BrandBlock (golf / minigolf)')
+EOF
 # Correctifs Qbox (outils-communs.ps1) : jamais d'apostrophe doublée dans une chaîne Lua écrite par un correctif
 # (dans une chaîne PowerShell entre "…", '' reste '' et casse le fichier Lua — bug qbx_garages de la V7)
 python3 - <<'PYEOF'

@@ -41,7 +41,7 @@ foreach ($f in Get-ChildItem -LiteralPath $Res -Recurse -File -Force | Where-Obj
     $rel = $f.FullName.Substring($Data.Length + 1)
     $dest = Join-Path (Join-Path $Stage 'extra') $rel
     [void][IO.Directory]::CreateDirectory((Split-Path $dest))
-    Copy-Item -LiteralPath $f.FullName -Destination $dest
+    Copy-Item -LiteralPath $f.FullName -Destination $dest -Force   # -Force : fichiers cachés compris (.fxap des maps payantes)
     $n++
 }
 [void][IO.Directory]::CreateDirectory((Join-Path $Stage 'cfg'))

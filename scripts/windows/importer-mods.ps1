@@ -269,7 +269,7 @@ function Slim-Tuning($root) {
 }
 # Marques réelles (voitures sous licence, mode, police réelle) : refusées, risque de retrait du serveur par Cfx.re /
 # Rockstar. On garde le contenu « lore GTA » (marques inventées du jeu) ou sans marque.
-$BrandBlock = 'lamborghini|ferrari|porsche|mercedes|maybach|amg|audi|etron|bmw|dodge|chrysler|jeep|ford|mustang|chevrolet|chevy|corvette|cadillac|volkswagen|golf|toyota|lexus|nissan|honda|mazda|subaru|mitsubishi|bugatti|mclaren|tesla|bentley|rolls|aston|jaguar|land.?rover|range.?rover|maserati|alfa|fiat|peugeot|renault|citroen|koenigsegg|pagani|rimac|gucci|versace|nike|adidas|jordan|supreme|balenciaga|louis.?vuitton|dior|chanel|prada|rolex|north.?face|dallas|nypd|lapd|lspd_real|rhgs|roadtrip_vetements_homme'
+$BrandBlock = 'lamborghini|ferrari|porsche|mercedes|maybach|amg|audi|etron|bmw|dodge|chrysler|jeep|ford|mustang|chevrolet|chevy|corvette|cadillac|volkswagen|(?<!mini)golf|toyota|lexus|nissan|honda|mazda|subaru|mitsubishi|bugatti|mclaren|tesla|bentley|rolls|aston|jaguar|land.?rover|range.?rover|maserati|alfa|fiat|peugeot|renault|citroen|koenigsegg|pagani|rimac|gucci|versace|nike|adidas|jordan|supreme|balenciaga|louis.?vuitton|dior|chanel|prada|rolex|north.?face|dallas|nypd|lapd|lspd_real|rhgs|roadtrip_vetements_homme'
 # Fichiers à l'intérieur d'un pack : marques sans ambiguïté seulement (un « golf_course.ytd » de map n'est pas une Golf)
 $BrandStrong = 'lamborghini|ferrari|porsche|mercedes|maybach|bugatti|mclaren|koenigsegg|gucci|versace|balenciaga|louis.?vuitton|rolex|dallas'
 function Test-Brand($name, [switch]$File) { return ($name.ToLower() -match $(if ($File) { $BrandStrong } else { $BrandBlock })) }
@@ -283,7 +283,7 @@ function Analyze($pkg) {
     $all = @(Get-ChildItem -LiteralPath $pkg.FullName -Recurse -File -Force)
     $brandHit = (Test-Brand $pkg.Name) -or @($all | Where-Object { Test-Brand $_.Name -File } | Select-Object -First 1).Count -gt 0
     $r = [ordered]@{ name = (Clean-Name $pkg.Name); source = $pkg.Name; type = 'rejete'; sizeMB = MB (($all | Measure-Object Length -Sum).Sum)
-        issues = New-Object System.Collections.ArrayList; notes = $pre; root = $pkg.FullName; models = @(); install = $false; risk = $null }
+        issues = New-Object System.Collections.ArrayList; notes = $pre; root = $pkg.FullName; models = @(); install = $false; risk = $null; escrow = $false }
     $ext = { param($e) @($all | Where-Object { $_.Extension -ieq $e }) }
     $manifest = $all | Where-Object { $_.Name -ieq 'fxmanifest.lua' -or $_.Name -ieq '__resource.lua' } | Select-Object -First 1
     $lua = @($all | Where-Object { $_.Extension -ieq '.lua' -and $_.Name -notmatch '^(fxmanifest|__resource)\.lua$' })
@@ -291,11 +291,14 @@ function Analyze($pkg) {
     foreach ($b in $big) { [void]$r.issues.Add("fichier trop lourd $($b.Name) ($(MB $b.Length) Mo > 16 Mo) : textures qui disparaissent / crash, à optimiser") }
     if ($r.sizeMB -gt 150) { [void]$r.issues.Add("mod très lourd ($($r.sizeMB) Mo) : temps de chargement et mémoire des joueurs") }
     # V12.5 : escrow Cfx (.fxap). Une MAP achetée sur la boutique officielle du créateur (Gabz, UncleJust…) est presque
-    # toujours protégée ainsi : elle est installée, avec un avertissement. Un SCRIPT chiffré reste refusé (illisible).
+    # toujours protégée ainsi : elle est installée, avec un avertissement. Un SCRIPT chiffré seul n'est pas installé (illisible).
     $fxap = @($all | Where-Object { $_.Name -ieq '.fxap' -or $_.Extension -ieq '.fxap' }).Count -gt 0
-    $escrowMap = $fxap -and @($all | Where-Object { $_.Extension -match '^\.(ymap|ytyp|ybn)$' }).Count -gt 0 -and @($all | Where-Object { $_.Extension -ieq '.yft' }).Count -eq 0
-    if ($escrowMap) { [void]$r.notes.Add('map protégée (escrow Cfx) : ne fonctionne QUE si elle a été achetée avec le compte Cfx.re lié à la clé du serveur. Achat sur la boutique officielle du créateur uniquement') }
-    elseif ($fxap) { [void]$r.issues.Add('script chiffré (escrow Tebex) : ne marche que pour le compte qui l''a acheté') }
+    # V12.18 : un pack payant protégé qui contient des fichiers du jeu (map, véhicule, vêtement) est installé même s'il
+    # embarque un petit script chiffré (portes, ascenseurs, IPL) : avant, ces packs (Shadow Complex, circuit…) étaient refusés.
+    $escrowMap = $fxap -and @($all | Where-Object { $_.Extension -match '^\.(ymap|ytyp|ybn|yft|ydd|ydr)$' }).Count -gt 0
+    $r.escrow = $fxap
+    if ($escrowMap) { [void]$r.notes.Add('pack protégé (escrow Cfx) : ne fonctionne QUE s''il a été acheté avec le compte Cfx.re lié à la clé du serveur. Fichiers gardés tels quels (jamais modifiés)') }
+    elseif ($fxap) { [void]$r.notes.Add('script payant chiffré (escrow) : illisible, donc pas installé automatiquement. Marche seulement avec le compte Cfx.re de la clé du serveur et le bon framework (Qbox / QBCore)') }
     if (@($all | Where-Object { $_.Extension -match '^\.(oiv|asi|dll)$' -or $_.Name -match 'reshade|visualsettings|timecycle' }).Count -gt 0) {
         [void]$r.notes.Add('contient un mod graphique / solo (oiv, asi, reshade) : inutile côté serveur')
     }
@@ -311,11 +314,15 @@ function Analyze($pkg) {
         if ($lua.Count -gt 0 -and -not $escrowMap) {
             $r.type = 'script'
             $code = ($lua | ForEach-Object { Get-Content -LiteralPath $_.FullName -Raw -ErrorAction SilentlyContinue }) -join "`n"
-            if ($code -match 'es_extended|ESX\.') { [void]$r.issues.Add('script ESX : incompatible avec notre base Qbox (à réécrire)') }
-            if ($code -match "qb-core|QBCore") { [void]$r.notes.Add('script QBCore : souvent compatible Qbox, à tester') }
-            if (($code -split "`n" | Where-Object { $_.Length -gt 5000 }).Count -gt 0) { [void]$r.issues.Add('code obfusqué (lignes illisibles) : risque sécurité, refusé') }
+            # Script compatible plusieurs frameworks (Config.Framework = 'esx' / 'qb') : pas un script ESX seul
+            $qb = $code -match "qb-core|QBCore|qbx_core|qbx"
+            if ($code -match 'es_extended|ESX\.' -and -not $qb) { [void]$r.issues.Add('script ESX : incompatible avec notre base Qbox (à réécrire)') }
+            if ($qb) { [void]$r.notes.Add('script QBCore / Qbox : souvent compatible, à tester') }
+            # Fichiers chiffrés par Cfx (escrow) : illisibles par nature, ce n'est pas de l'obfuscation
+            if (-not $fxap -and ($code -split "`n" | Where-Object { $_.Length -gt 5000 }).Count -gt 0) { [void]$r.issues.Add('code obfusqué (lignes illisibles) : risque sécurité, refusé') }
             [void]$r.notes.Add('script : je le relis avant installation (sécurité, performance, doublons avec nos gs_*)')
-        } elseif (@($all | Where-Object { $_.Extension -match '^\.(yft)$' }).Count -gt 0 -or $r.models.Count -gt 0) { $r.type = 'vehicule'; $r.install = $true }
+        } elseif ($escrowMap -and $r.models.Count -eq 0 -and @($all | Where-Object { $_.Extension -match '^\.(ymap|ytyp|ybn)$' }).Count -gt 0) { $r.type = 'map'; $r.install = $true }
+        elseif (@($all | Where-Object { $_.Extension -match '^\.(yft)$' }).Count -gt 0 -or $r.models.Count -gt 0) { $r.type = 'vehicule'; $r.install = $true }
         elseif (@($all | Where-Object { $_.Extension -match '^\.(ymap|ytyp|ybn)$' }).Count -gt 0) { $r.type = 'map'; $r.install = $true }
         else { $r.type = 'vetement'; $r.install = $true }
     } else {
@@ -410,7 +417,7 @@ function Get-Oversized($dir) {
 }
 
 function Optimize-Textures($dir, $r) {
-    if (-not $TexReady) { return }
+    if (-not $TexReady -or $r.escrow) { return }   # pack protégé (escrow) : fichiers chiffrés, on n'y touche jamais
     # Seulement les fichiers au-dessus de la limite FiveM : ceux qui marchent déjà ne sont pas touchés
     foreach ($f in @(Get-ChildItem -LiteralPath $dir -Recurse -File -Filter '*.ytd' | Where-Object { $m = Get-RscMemory $_.FullName; $m -and $m.phys -gt $OversizedMB * 1MB })) {
         try {
@@ -517,6 +524,8 @@ $sources = @()
 if ($canInstall) {
     $active = @(Get-Content -LiteralPath (Join-Path $Data 'cfg\addons.cfg') | Where-Object { $_ -match '^\s*ensure\s+gsa_' } | ForEach-Object { (($_ -replace '^\s*ensure\s+', '').Trim() -split '\s+')[0] })
     foreach ($dir in @(Get-ChildItem -LiteralPath $Addons -Directory -Filter 'gsa_*' | Where-Object { $active -contains $_.Name })) {
+        # Véhicule d'un pack payant protégé (auto-tamponneuse, kart…) : fait pour son script, pas pour la concession
+        if (Test-Path -LiteralPath (Join-Path $dir.FullName '.fxap')) { continue }
         $sources += [pscustomobject]@{ name = $dir.Name.Substring(4); root = $dir.FullName }
     }
 }

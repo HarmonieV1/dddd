@@ -13,3 +13,22 @@ scripts/hooks/* text eol=lf
 *.html text eol=lf
 *.css text eol=lf
 *.yml text eol=lf
+*.dll binary
+*.exe binary
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.webp binary
+*.ico binary
+*.zip binary
+*.ytd binary
+*.ydr binary
+*.yft binary
+*.ymap binary
+*.ybn binary
+*.ytyp binary
+*.ttf binary
+*.woff binary
+*.woff2 binary
+*.ogg binary
+*.mp3 binary

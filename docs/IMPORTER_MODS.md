@@ -12,7 +12,19 @@ contrôle et le range dans `C:\GTASOON\mods-tri\` :
   (jamais écrasé par METTRE-A-JOUR ; mets un `#` devant une ligne pour couper un mod) ;
 - **a-convertir** : mods « solo » (dlc.rpf, vêtements qui remplacent ceux du jeu) ;
 - **scripts-a-verifier** : scripts, jamais installés sans relecture ;
-- **rejetes** : scripts chiffrés (escrow), ESX, code obfusqué, packs graphiques (reshade, oiv), **marques réelles**.
+- **rejetes** : scripts ESX seuls, code obfusqué, packs graphiques (reshade, oiv), **marques réelles**.
+
+## Packs payants protégés (escrow Cfx, fichier `.fxap`) — V12.18
+- Ils ne marchent **que** s'ils ont été achetés avec le compte Cfx.re (keymaster) **lié à la clé de licence du serveur**.
+  Sinon la console du serveur affiche « You lack the required entitlement » et la map n'apparaît pas.
+- Télécharge-les depuis le portail Cfx (Granted Assets) et **vérifie que le zip s'ouvre** : « Unexpected end of archive »
+  dans la console d'IMPORTER-MODS = téléchargement coupé → à retélécharger.
+- Map / véhicule / vêtement protégé : installé tel quel (rien n'est modifié, pas d'optimisation de textures), même avec
+  un petit script chiffré dedans (portes, ascenseurs).
+- Script payant seul (mini-jeu, auto-tamponneuses…) : rangé dans **scripts-a-verifier**, pas installé automatiquement
+  (illisible, et il faut le bon framework : Qbox / QBCore, pas ESX seul). Dis-moi lesquels tu veux, je les branche.
+- Console du serveur après installation : « Failed to verify protected resource » = fichier `.fxap` manquant (zip mal
+  extrait ou mal envoyé) → réimporter le zip d'origine.
 
 Mods « solo » (dlc.rpf faits avec OpenIV) : ouverts automatiquement (archives non chiffrées), sans OpenIV.
 Mods livrés avec un dossier « FiveM » : c'est cette version qui est installée.
