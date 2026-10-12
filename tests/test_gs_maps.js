@@ -68,7 +68,7 @@ check('map lue depuis son dossier', by.gsa_atelier.places.length === 1 && by.gsa
 check('conflit : même fichier du jeu remplacé par deux maps', r.conflicts.length === 1 && r.conflicts[0].file === 'id1_occl_02.ymap'
   && r.conflicts[0].resources.includes('gsa_atelier') && r.conflicts[0].resources.includes('gsa_autre'));
 check('_manifest.ymf (nom commun à toutes les maps) : pas un conflit', !r.conflicts.some((x) => x.file.endsWith('.ymf')));
-check('map vide : signalée sans lieu', by.gsa_vide.places.length === 0 && by.gsa_vide.ymaps === 0);
+check('ressource vide (aucun fichier de map) : pas dans la liste', by.gsa_vide === undefined);
 check('fichier abîmé : compté illisible, rien ne plante', by.gsa_casse.unreadable === 1 && by.gsa_casse.places.length === 0);
 check('liste brute des fichiers non envoyée au menu', r.maps.every((m) => m.streamed === undefined));
 check('maps triées par nom', r.maps.map((m) => m.label).join() === [...r.maps.map((m) => m.label)].sort((x, y) => x.localeCompare(y)).join());
@@ -80,14 +80,20 @@ check('taille : 2 pages de rang 4 de 0x2000 = 0x20000', M.pagesSize((2 << 17) | 
 const gym = rsc(0xa3020003, 0x52020188); // en-tête réel de moreo_gym_shell.ydr (26,5 Mo en mémoire graphique)
 check('modèle lourd : ~26,5 Mo en mémoire', Math.abs(M.memoryMB(gym) - 26.5) < 0.3);
 check('pas un RSC7 : 0', M.memoryMB(Buffer.from('PK\u0003\u0004xxxxxxxxxxxx')) === 0);
-const e = mk('gsa_lourde', { 'stream/shell.ydr': Buffer.concat([gym, Buffer.alloc(64)]), 'stream/petit.ytd': Buffer.concat([rsc(0, (1 << 17) | 2), Buffer.alloc(64)]),
+const huge = rsc(0, (32 << 17) | 8); // 64 Mo de mémoire graphique : au-delà de la limite FiveM (48 Mo)
+check('64 Mo graphiques lus dans l\'en-tête', Math.abs(M.memorySplit(huge).phys - 64) < 0.01 && M.memorySplit(huge).virt === 0);
+const e = mk('gsa_lourde', { 'stream/shell.ydr': Buffer.concat([huge, Buffer.alloc(64)]), 'stream/gym.ydr': Buffer.concat([gym, Buffer.alloc(64)]), 'stream/petit.ytd': Buffer.concat([rsc(0, (1 << 17) | 2), Buffer.alloc(64)]),
   'stream/lieu.ymap': ymap([[-451.5, -33.3, 48.9]]) });
 const f = mk('gsa_habillage', { 'stream/v_ilev_gb_vauldr.ydr': Buffer.concat([rsc(0, (1 << 17) | 2), Buffer.alloc(32)]), 'stream/v_int_10.ytyp': 'x' });
 const r2 = Object.fromEntries(M.scanAll([e, f]).maps.map((m) => [m.name, m]));
-check('modèle de plus de 16 Mo en mémoire signalé', r2.gsa_lourde.heavy.length === 1 && r2.gsa_lourde.heavy[0].file === 'shell.ydr' && r2.gsa_lourde.heavy[0].mb > 26);
+check('modèle au-delà de 48 Mo graphiques signalé', r2.gsa_lourde.heavy.some((h) => h.file === 'shell.ydr' && h.mb === 64));
+check('gym (26,5 Mo, sous la limite FiveM) : pas signalé', !r2.gsa_lourde.heavy.some((h) => h.file === 'gym.ydr'));
 check('petite texture : pas signalée', !r2.gsa_lourde.heavy.some((h) => h.file === 'petit.ytd'));
 check('habillage sans .ymap (Fleeca) : fichiers du jeu comptés, pas « vide »', r2.gsa_habillage.ymaps === 0 && r2.gsa_habillage.assets === 2);
-check('map vide : 0 fichier de jeu', by.gsa_vide.assets === 0);
+const cloth = mk('gsa_bikini', { 'stream/mp_f_freemode_01_mp_f_bikini^jbib_000_u.ydd': 'x', 'stream/mp_f_freemode_01_mp_f_bikini^jbib_diff_000_a_uni.ytd': 'x', 'stream/mp_f_bikini.ymt': 'x' });
+const veh = mk('gsa_voiture', { 'stream/maverick2.yft': 'x', 'stream/maverick2.ytd': 'x', 'data/vehicles.meta': 'x' });
+const rc2 = M.scanAll([cloth, veh, a]);
+check('vêtements et véhicules importés : pas dans la liste des maps', rc2.maps.length === 1 && rc2.maps[0].name === 'gsa_atelier');
 
 // 6. Copies identiques : pas un conflit ; fusion : conflit résolu
 const g1 = mk('gsa_copie_a', { 'stream/cs1_occl_10.ymap': ymap([], 64) });

@@ -2,7 +2,7 @@
 -- (F11 → « Lieux publics »), sauvegardés en BDD. Coords [À VÉRIFIER] : à recaler en jeu si besoin (supprimer + reposer).
 Config = {}
 
-Config.StaffLevel = 3            -- niveau staff gs_admin requis pour poser / retirer (3 = admin)
+Config.StaffLevel = 4            -- niveau staff gs_admin requis pour poser / retirer (4 = super-admin ; V12.14 : Monde et lieux réservé super-admin / fondateur)
 Config.MaxDistance = 6.0         -- « retirer le lieu le plus proche » : à moins de 6 m
 
 Config.Kinds = {

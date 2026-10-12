@@ -14,7 +14,9 @@ const STREAM_CHECK = ['.ymap', '.ybn', '.ytyp'];   // fichiers dont le doublon c
 const MAX_FILE = 32 * 1024 * 1024;
 const CLUSTER = 200.0;                              // deux lieux à moins de 200 m = le même endroit
 const HEAVY = ['.ydr', '.ytd', '.ydd', '.yft'];      // modèles et textures : taille en mémoire lue dans l'en-tête
-const HEAVY_MB = 16;                                 // au-delà, FiveM prévient : textures ou modèles qui ne s'affichent pas
+// Seuils du message « Oversized assets » de FiveM (mêmes que IMPORTER-MODS) : 48 Mo de mémoire graphique ou 64 Mo de mémoire
+// système. V12.14 : la V12.11 signalait dès 16 Mo (ancienne limite), ce qui alertait à tort sur des modèles acceptés par le jeu.
+const HEAVY_PHYS_MB = 48, HEAVY_VIRT_MB = 64;
 
 /** Un .ymap est une ressource RSC7 : en-tête de 16 octets puis données compressées (deflate brut). */
 function inflateRsc7(buf) {
@@ -35,6 +37,12 @@ function pagesSize(flags) {
 function memoryMB(head) {
   if (!head || head.length < 16 || head.toString('latin1', 0, 4) !== 'RSC7') return 0;
   return Math.max(pagesSize(head.readUInt32LE(8)), pagesSize(head.readUInt32LE(12))) / 1048576;
+}
+
+/** Mémoire système (virt) et graphique (phys), en Mo. */
+function memorySplit(head) {
+  if (!head || head.length < 16 || head.toString('latin1', 0, 4) !== 'RSC7') return { virt: 0, phys: 0 };
+  return { virt: pagesSize(head.readUInt32LE(8)) / 1048576, phys: pagesSize(head.readUInt32LE(12)) / 1048576 };
 }
 
 /** Positions des objets posés par la map. Un CEntityDef = position (3 flottants), puis 16 octets plus loin une rotation
@@ -118,8 +126,8 @@ function scanResource(name, dir) {
     if (HEAVY.includes(ext)) {
       let head = null;
       try { const fd = fs.openSync(f, 'r'); head = Buffer.alloc(16); fs.readSync(fd, head, 0, 16, 0); fs.closeSync(fd); } catch (e) { head = null; }
-      const mb = memoryMB(head);
-      if (mb > HEAVY_MB) heavy.push({ file: path.basename(f), mb: Math.round(mb * 10) / 10 });
+      const m = memorySplit(head);
+      if (m.phys > HEAVY_PHYS_MB || m.virt > HEAVY_VIRT_MB) heavy.push({ file: path.basename(f), mb: Math.round(Math.max(m.phys, m.virt) * 10) / 10 });
     }
     if (ext !== '.ymap') continue;
     let buf = null;
@@ -175,7 +183,9 @@ function scanAll(list) {
   const conflicts = conflictsOf(maps);
   maps.sort((a, b) => a.label.localeCompare(b.label));
   // La ressource de fusion n'est pas une map à visiter : elle sert seulement à résoudre les conflits
-  return { maps: maps.filter((m) => !/^gsa_zz_fusion/.test(m.name)).map(({ streamed, ...m }) => m), conflicts };
+  // V12.14 : seulement les vraies maps. Les vêtements et véhicules importés (gsa_*) n'ont ni .ymap ni .ytyp ni .ybn.
+  const isMap = (m) => !/^gsa_zz_fusion/.test(m.name) && (m.ymaps > 0 || m.streamed.length > 0);
+  return { maps: maps.filter(isMap).map(({ streamed, ...m }) => m), conflicts };
 }
 
 // ---- V12.13 · Fusion automatique des conflits d'OCCLUSION (même algorithme que tools/maps/fusion_occlusion.py) ----------
@@ -282,7 +292,7 @@ function applyFusions(maps, fusionDir) {
   return written;
 }
 
-if (typeof module !== 'undefined' && module.exports) module.exports = { inflateRsc7, entitiesOf, memoryMB, pagesSize, isVanillaName, placesOf, scanResource, conflictsOf, scanAll, labelOf, mergeOcclusion, applyFusions }; // tests Node seulement
+if (typeof module !== 'undefined' && module.exports) module.exports = { inflateRsc7, entitiesOf, memoryMB, memorySplit, pagesSize, isVanillaName, placesOf, scanResource, conflictsOf, scanAll, labelOf, mergeOcclusion, applyFusions }; // tests Node seulement
 
 if (typeof GetCurrentResourceName === 'function') {
   const mapResources = () => {
@@ -329,7 +339,7 @@ if (typeof GetCurrentResourceName === 'function') {
     const open = r.conflicts.filter((c) => !c.resolved);
     console.log(`[gs_admin] Mappings : ${r.maps.length} installé(s), ${placed} situé(s) (F11 → Monde et lieux → Mappings installés)` +
       (open.length ? `, ^1${open.length} CONFLIT(S)^7` : ', aucun conflit') + (r.conflicts.length - open.length ? `, ${r.conflicts.length - open.length} résolu(s) par fusion` : ''));
-    for (const m of r.maps) for (const h of m.heavy) console.log(`^3[gs_admin] Map ${m.name} : ${h.file} prend ${h.mb} Mo en mémoire (limite conseillée 16 Mo) : textures ou murs qui peuvent ne pas s'afficher chez certains joueurs^7`);
+    for (const m of r.maps) for (const h of m.heavy) console.log(`^3[gs_admin] Map ${m.name} : ${h.file} prend ${h.mb} Mo en mémoire (au-delà de la limite FiveM : 48 Mo graphique / 64 Mo système) : textures ou murs qui peuvent ne pas s'afficher^7`);
     for (const c of r.conflicts) {
       if (c.resolved) console.log(`^2[gs_admin] Conflit résolu : ${c.file} (${c.resources.join(' + ')}) fusionné par ${c.resolved}^7`);
       else console.log(`^1[gs_admin] Conflit de maps : ${c.file} est remplacé par ${c.resources.join(' ET ')} (une seule des deux s'affichera correctement)^7`);

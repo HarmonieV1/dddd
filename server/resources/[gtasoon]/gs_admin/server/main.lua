@@ -441,7 +441,7 @@ local function confirmPoint(src, key, res, c)
     end)
 end
 
-Actions.movepoint = { level = 3, duty = true, run = function(src, _, data)
+Actions.movepoint = { level = 4, duty = true, run = function(src, _, data)
     local ped = GetPlayerPed(src)
     local c = GetEntityCoords(ped)
     local ok, res = exports.gs_bridge:SetPoint(data.key, vector4(c.x, c.y, c.z, GetEntityHeading(ped)))
@@ -450,7 +450,7 @@ Actions.movepoint = { level = 3, duty = true, run = function(src, _, data)
     return ('Point déplacé, %s redémarre (confirmation dans quelques secondes)'):format(res)
 end }
 
-Actions.resetpoint = { level = 3, duty = true, run = function(_, _, data)
+Actions.resetpoint = { level = 4, duty = true, run = function(_, _, data)
     local ok, res = exports.gs_bridge:ResetPoint(data.key)
     need(ok, res)
     return ('Point remis à l\'origine (%s relancé)'):format(res)
@@ -489,7 +489,7 @@ Actions.setgang = { level = 3, target = true, run = function(_, target, data)
     return gang and ('Gang %s grade %s'):format(gang, data.grade or 0) or 'Retiré de son gang'
 end }
 
-Actions.jobpoint = { level = 3, duty = true, run = function(src, _, data)
+Actions.jobpoint = { level = 4, duty = true, run = function(src, _, data)
     local ped = GetPlayerPed(src)
     local veh = GetVehiclePedIsIn(ped, false)
     local ent = (data.kind == 'garage_spawn' and veh ~= 0) and veh or ped
@@ -500,14 +500,14 @@ Actions.jobpoint = { level = 3, duty = true, run = function(src, _, data)
     return ('Point %s %s #%s placé ici'):format(data.job, data.kind, data.idx)
 end }
 
-Actions.creategang = { level = 3, duty = true, run = function(_, _, data)
+Actions.creategang = { level = 4, duty = true, run = function(_, _, data)
     need(started('gs_gangs'), 'gs_gangs non démarré.')
     local ok, err = exports.gs_gangs:AdminCreateGang(tostring(data.name or ''):lower(), Security:Sanitize(data.label, 50), tonumber(data.color))
     need(ok, tostring(err))
     return ('Gang %s créé : place sa planque et son garage'):format(data.name)
 end }
 
-Actions.gangplace = { level = 3, duty = true, run = function(src, _, data)
+Actions.gangplace = { level = 4, duty = true, run = function(src, _, data)
     need(started('gs_gangs'), 'gs_gangs non démarré.')
     local ped = GetPlayerPed(src)
     local veh = GetVehiclePedIsIn(ped, false)
@@ -703,7 +703,7 @@ end)
 
 --- V12.10 · Mappings installés : emplacement lu dans les fichiers de chaque map par server/maps.js, + conflits entre maps.
 lib.callback.register('gs_admin:mappings', function(src)
-    if not staffGuard(src, 'mappings', 4, 10000) or Admin.level(src) < 3 then return nil end
+    if not staffGuard(src, 'mappings', 4, 10000) or Admin.level(src) < 4 then return nil end -- Monde et lieux : super-admin et fondateur
     local ok, res = pcall(function() return exports[GetCurrentResourceName()]:MapScan() end)
     if not ok or type(res) ~= 'table' then return { maps = {}, conflicts = {}, error = tostring(res) } end
     return res

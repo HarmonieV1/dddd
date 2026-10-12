@@ -1,4 +1,4 @@
-# État du projet RoadLine RP — récapitulatif complet (à jour au 12/10/2026, V12.13)
+# État du projet RoadLine RP — récapitulatif complet (à jour au 12/10/2026, V12.14)
 
 Ce document sert de **point de sauvegarde** : si une conversation avec Claude est perdue, compressée ou doit reprendre
 ailleurs, tout ce qu'il faut savoir est ici. Il est versionné avec le code (`git log` en garde aussi l'historique).
@@ -47,7 +47,7 @@ exclusifs (« ce que tu ne trouveras nulle part ailleurs »).
 - `feature/phase1-bridge`
 - `claude/gta-rp-architecture-stack-pbvdxz`
 
-**Dernier commit poussé** : « V12.13 : conflits d'occlusion fusionnés automatiquement » (hash exact :
+**Dernier commit poussé** : « V12.14 : Monde et lieux super-admin, liste des maps nettoyée » (hash exact :
 `git log -1 origin/feature/phase1-bridge`). Les deux branches pointent sur le même commit.
 
 **Deux sessions Claude en parallèle** (poste Windows et session web) : elles ne se voient pas. Toujours synchroniser
@@ -57,7 +57,7 @@ par un colis (zip de l'installation ou de la session) + ce fichier, et comparer 
 ## 2. Versions : interne vs publique (important, piège classique)
 
 Depuis la V11.3, il y a **deux numéros de version différents**, volontairement :
-- `gs_version` (convar, `server.cfg.example`) = **V12.13** → version technique interne, vue par le staff (F11, console,
+- `gs_version` (convar, `server.cfg.example`) = **V12.14** → version technique interne, vue par le staff (F11, console,
   METTRE-A-JOUR). Continue d'avancer à chaque mise à jour (V11.2, V11.3...).
 - `gs_public_version` (convar) = **« V4 · bêta »** → version vue par les **joueurs** (écran de chargement, statut
   Discord, Gazette). Le site affiche son propre journal (V1 à V4, V5 « classé confidentiel »).
@@ -262,6 +262,17 @@ Résumé très condensé (le détail complet est dans `docs/ROADMAP.md`, `docs/F
   ne remplace pas le curseur), profondeur CSS `animation-timeline: view()` (captures, mock, carte, chiffres), intro
   façon chargement de mission (Entrée / clic pour passer). Tout coupé par `prefers-reduced-motion`, souris seulement
   sur ordinateur. Une seule boucle rAF qui s'endort quand rien ne bouge. Vérifié dans le navigateur : 0 erreur.
+
+- **V12.14** (12/10/2026) — retours en jeu sur F11 → Mappings installés (16 entrées) :
+  - **Monde et lieux réservé super-admin (4) et fondateur** : entrée F11, toutes les options, et côté serveur `movepoint`,
+    `resetpoint`, `jobpoint`, `creategang`, `gangplace`, `gs_admin:mappings`, `gs_places` (StaffLevel 4) ; `gs_builder` déjà
+    par ACE super-admin. `setgang` (rang d'un joueur, menu Joueurs) reste admin.
+  - Vêtements importés (bikinis, robe d'été) n'apparaissent plus comme « habillage » : seules les ressources avec .ymap /
+    .ytyp / .ybn sont des maps (13 maps). Quartier « NULL » (pack Redline, hors zone nommée) → code de zone ou « Hors quartier ».
+  - **Erreur corrigée** : la V12.11 signalait les modèles dès 16 Mo ; la limite FiveM (et de l'importeur) est 48 Mo graphique /
+    64 Mo système. Redline (45,3 Mo), Willie's (38 Mo) et le gym (26,5 Mo) sont sous la limite : plus d'avertissement.
+  - Rien de définitivement irréparable dans les maps installées : Bahama Mamas et Fleeca sont des habillages d'intérieurs du jeu
+    (pas de lieu propre, normal). Tests : `test_gs_maps.js` 55 (mutation vérifiée).
 
 - **V12.13** (12/10/2026) — **conflits de maps réglés une fois pour toutes** (demande : « règle le conflit… garder de préférence
   le liquor ») : `maps.js` contient maintenant la fusion d'occlusion (même algorithme que l'outil Python, résultat identique

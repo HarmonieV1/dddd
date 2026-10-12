@@ -50,9 +50,10 @@ Outil hors serveur, même algorithme : `tools/maps/fusion_occlusion.py`. Autre t
 en garder une (mettre un `#` devant l'autre dans `cfg\addons.cfg`).
 Map sans lieu dans la liste : soit un **habillage** d'objets du jeu (ex. `hp_fleeca` retexture les 6 agences Fleeca, normal),
 soit une map **vide** (aucun fichier de jeu, ex. `moto_free_shell`), à supprimer.
-**Modèle trop lourd** (V12.11) : la mémoire réelle de chaque modèle / texture est lue dans son en-tête. Au-delà de 16 Mo,
-FiveM prévient que l'objet peut ne pas s'afficher (murs ou textures invisibles chez les PC modestes) : signalé dans le
-menu et en console en jaune. Le poids du fichier ne suffit pas (le gym Moreo : 15,3 Mo sur le disque, 26,5 Mo en mémoire).
+**Modèle trop lourd** : la mémoire réelle de chaque modèle / texture est lue dans son en-tête. Signalé (menu, console en jaune)
+seulement au-delà de la limite de FiveM, la même que l'importeur : **48 Mo de mémoire graphique ou 64 Mo de mémoire système**
+(V12.14 ; la V12.11 alertait à tort dès 16 Mo). Seuls les vrais fichiers de map comptent : vêtements et véhicules importés
+n'apparaissent pas dans la liste. **Monde et lieux est réservé au super-admin et au fondateur.**
 
 ## Outils liés
 - `VIDER-CACHE-FIVEM.bat` : après un changement de mods ou un crash « Streamer crashed » — ferme FiveM, vide cache,

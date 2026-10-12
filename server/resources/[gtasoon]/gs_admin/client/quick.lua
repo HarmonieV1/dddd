@@ -970,7 +970,7 @@ local function mainMenu()
         for _, m in ipairs(r.maps) do
             for _, h in ipairs(m.heavy or {}) do
                 o[#o + 1] = { title = ('%s : modèle trop lourd'):format(m.label), icon = 'weight-hanging', iconColor = '#ffb020', disabled = true,
-                    description = ('%s prend %.1f Mo en mémoire (16 conseillés) : textures ou murs qui peuvent ne pas s\'afficher'):format(h.file, h.mb) }
+                    description = ('%s prend %.1f Mo en mémoire (limite FiveM : 48 Mo) : textures ou murs qui peuvent ne pas s\'afficher'):format(h.file, h.mb) }
             end
             if #m.places == 0 then
                 local why = ' · emplacement introuvable'
@@ -981,7 +981,9 @@ local function mainMenu()
                 o[#o + 1] = { title = m.label, icon = 'circle-question', disabled = true, description = m.name .. why }
             end
             for i, p in ipairs(m.places) do
-                local zone = GetLabelText(GetNameOfZone(p.x, p.y, p.z))
+                local code = GetNameOfZone(p.x, p.y, p.z)
+                local zone = GetLabelText(code)
+                if not zone or zone == 'NULL' or zone == '' then zone = (code and code ~= '' and code ~= 'NULL') and code or 'Hors quartier' end
                 o[#o + 1] = { title = m.label .. (#m.places > 1 and (' · lieu %d'):format(i) or ''), icon = 'map-pin', arrow = true,
                     description = ('%s · %s · %.0f, %.0f, %.0f'):format(zone, m.name, p.x, p.y, p.z), onSelect = function() teleportTo(p.x, p.y, p.z) end }
             end
@@ -992,7 +994,7 @@ local function mainMenu()
     local function worldMenu()
         local o = {}
         local function a(minLvl, opt) if lvl >= minLvl then o[#o + 1] = opt end end
-        a(3, { title = 'Lieux publics (boutique, parking)', icon = 'shop', arrow = true, description = 'Poser une boutique de vêtements ou un parking ici',
+        a(4, { title = 'Lieux publics (boutique, parking)', icon = 'shop', arrow = true, description = 'Poser une boutique de vêtements ou un parking ici',
             onSelect = function()
                 local function place(kind, prompt)
                     local r = input(prompt, { { type = 'input', label = 'Nom affiché', required = true, max = 40 } })
@@ -1006,16 +1008,16 @@ local function mainMenu()
                     { title = 'Retirer le lieu le plus proche', icon = 'trash', onSelect = function() notify(lib.callback.await('gs_places:delete', false)) end },
                 }, 'gs_staff_world')
             end })
-        a(3, { title = 'Déplacer / retirer un point (récolte, gangs, magasins…)', icon = 'location-crosshairs', arrow = true,
+        a(4, { title = 'Déplacer / retirer un point (récolte, gangs, magasins…)', icon = 'location-crosshairs', arrow = true,
             description = 'Point mal placé ? Mets-toi au bon endroit et choisis-le. Super-admin : retirer du jeu', onSelect = function() TriggerEvent('gs_bridge:client:pointsMenu') end })
-        a(3, { title = 'Points de métier (placer ici)', icon = 'briefcase', arrow = true,
+        a(4, { title = 'Points de métier (placer ici)', icon = 'briefcase', arrow = true,
             description = 'Service, coffre, armurerie, direction, garage', onSelect = pointsMenu })
-        a(3, { title = 'Gangs (création, QG, garage)', icon = 'people-group', arrow = true, onSelect = gangAdminMenu })
+        a(4, { title = 'Gangs (création, QG, garage)', icon = 'people-group', arrow = true, onSelect = gangAdminMenu })
         a(4, { title = 'Mapping : objets du décor', icon = 'cube', arrow = true, description = 'Catalogue par catégorie, placer, modifier, retirer de la map (/builder)',
             onSelect = function() exports.gs_builder:Open('gs_staff_world') end })
-        a(3, { title = 'Mappings installés', icon = 'map', arrow = true, description = 'Où est chaque map ajoutée : y aller, la voir sur la carte, conflits',
+        a(4, { title = 'Mappings installés', icon = 'map', arrow = true, description = 'Où est chaque map ajoutée : y aller, la voir sur la carte, conflits',
             onSelect = function() mappingsMenu() end })
-        a(1, { title = 'Copier mes coordonnées', icon = 'crosshairs', description = 'vec4 dans le presse-papiers', onSelect = function()
+        a(4, { title = 'Copier mes coordonnées', icon = 'crosshairs', description = 'vec4 dans le presse-papiers', onSelect = function()
             local ped = PlayerPedId()
             local c = GetEntityCoords(ped)
             lib.setClipboard(('vec4(%.2f, %.2f, %.2f, %.1f)'):format(c.x, c.y, c.z, GetEntityHeading(ped)))
@@ -1040,7 +1042,8 @@ local function mainMenu()
         add(1, { title = 'Joueurs', icon = 'users', arrow = true, description = 'Triés par distance, recherche par nom ou ID', onSelect = function() playersMenu() end })
         add(1, { title = 'Moi', icon = 'user-gear', arrow = true, description = 'Vol libre, invisible, TP, peds et animaux…', onSelect = meMenu })
         add(2, { title = 'Véhicules', icon = 'car', arrow = true, description = 'Faire apparaître, mods, réparer, supprimer', onSelect = vehMenu })
-        add(1, { title = 'Monde et lieux', icon = 'map-location-dot', arrow = true, description = 'Lieux publics, points, gangs, décor', onSelect = worldMenu })
+        -- V12.14 : Monde et lieux réservé aux super-admins et au fondateur (serveur : actions et callbacks au niveau 4)
+        add(4, { title = 'Monde et lieux', icon = 'map-location-dot', arrow = true, description = 'Lieux publics, points, gangs, décor', onSelect = worldMenu })
         add(3, { title = 'Événements', icon = 'champagne-glasses', arrow = true, description = 'Événements en un clic, bonus serveur, effets', onSelect = eventsMenu })
         add(1, { title = 'Anti-triche', icon = 'user-shield', arrow = true, description = 'Dernières alertes (aucune sanction automatique)', onSelect = function()
             local list = lib.callback.await('gs_admin:acAlerts', false) or {}
