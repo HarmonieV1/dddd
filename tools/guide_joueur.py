@@ -254,6 +254,7 @@ def build():
     s += [Paragraph('Secours et urgences', H3)]
     s += [table([['Situation', 'Ce que tu fais'],
                  ['Tu es à terre', '<b>[G]</b> : « Demander de l\'aide » si un ambulancier est en service (il reçoit ta position), sinon « Appeler les secours » : un secouriste arrive et te réanime (payant).'],
+                 ['Tu es mort', 'Maintiens <b>[E]</b> 2 secondes : tu te réveilles à l\'hôpital le plus proche (500 $, gratuit si tu n\'as rien).'],
                  ['Témoin d\'un accident ou d\'un crime', 'Téléphone → appli <b>Urgences</b> : police, ambulance ou dépanneuse, avec ta position.'],
                  ['Menotté ou à terre', 'Le téléphone est bloqué : c\'est voulu (pas d\'appel à l\'aide en pleine arrestation). /911p est réservé au staff.']],
                 [45 * mm, 135 * mm])]

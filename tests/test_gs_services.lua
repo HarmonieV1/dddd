@@ -51,5 +51,28 @@ advance(Config.Medic.seconds * 1000)
 ok, msg = cb('gs_services:medicDone', 1); step()
 check('sans argent : soigné gratuitement, pas de dette', ok and msg:find('gratuitement') and W.players[1].money.bank == 10)
 
+-- V12.16 · Réapparition de secours (Qbox n'a rien fait après [E])
+local tpTo
+function SetEntityCoords(ped, x, y, z) tpTo = vec3(x, y, z) W.players[ped - 1000].pos = vec3(x, y, z) end
+join(2, 'CID2', 'Mort', vec3(1800.0, 3650.0, 34.0))
+W.pstate[2] = { ['qbx_medical:deathState'] = 2 }
+advance(31000)
+ok, msg = cb('gs_services:respawn', 2)
+check('à terre (pas mort) : pas de réapparition', not ok and msg == nil)
+W.pstate[2]['qbx_medical:deathState'] = 3
+W.players[2].money.bank = 2000
+advance(31000)
+ok, msg = cb('gs_services:respawn', 2)
+check('mort + [E] sans effet : relevé', ok and W.players[2].revived == true)
+check('hôpital le plus proche (Sandy Shores)', tpTo and math.abs(tpTo.x - 1839.6) < 0.1 and msg:find('Sandy Shores'))
+check('mêmes frais que Qbox', W.players[2].money.bank == 2000 - Config.Respawn.fee)
+join(3, 'CID3', 'Fauché', vec3(300.0, -600.0, 43.0))
+W.pstate[3] = { ['qbx_medical:deathState'] = 3 }
+W.players[3].money.bank, W.players[3].money.cash = 0, 0
+ok, msg = cb('gs_services:respawn', 3)
+check('sans argent : relevé gratuitement, à Pillbox', ok and msg:find('gratuitement') and msg:find('Pillbox'))
+ok = cb('gs_services:respawn', 3); ok = cb('gs_services:respawn', 3)
+check('anti-abus : 2 appels max / 30 s', ok == false)
+
 io.write(('\n%d réussis, %d échoués\n'):format(passed, failed))
 os.exit(failed == 0 and 0 or 1)

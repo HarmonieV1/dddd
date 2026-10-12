@@ -7,9 +7,9 @@ from pdf import H1, H2, P, SMALL, VERSION, footer, A4, mm, colors, SimpleDocTemp
 # (test, qui, priorité)
 SESSIONS = [
     ('0 · Avant de commencer (5 min)', [
-        ('METTRE-A-JOUR.bat : version V12.16 affichée, « Base de données sauvegardée », « Sauvegardes programmées » ; METTRE-A-JOUR-OVH puis GERER-OVH → 1 : « Version RoadLine : V12.16 »', 'Staff', 3),
+        ('METTRE-A-JOUR.bat : version V12.17 affichée, « Base de données sauvegardée », « Sauvegardes programmées » ; METTRE-A-JOUR-OVH puis GERER-OVH → 1 : « Version RoadLine : V12.17 »', 'Staff', 3),
         ('Fenêtre du serveur : aucune ligne ROUGE au démarrage (sauf un conflit de maps déjà connu) ; F8 en jeu : aucune erreur rouge ; GERER-OVH → 3 : aucune erreur de script', 'Seul', 3),
-        ('VIDER-CACHE-FIVEM.bat si tu vois un ancien menu (F11 doit afficher « RoadLine V12.16 ») ; pendant le backtest : set gs_honeypot "log" dans secrets.cfg (piège = simple signalement)', 'Staff', 2),
+        ('VIDER-CACHE-FIVEM.bat si tu vois un ancien menu (F11 doit afficher « RoadLine V12.17 ») ; pendant le backtest : set gs_honeypot "log" dans secrets.cfg (piège = simple signalement)', 'Staff', 2),
     ]),
     ('1 · Arrivée et personnage (15 min) — corrigé après tes retours', [
         ('Nouveau joueur : un seul personnage ; fondateur, super-admins et VIP (F11 → Joueurs → VIP) : deux ; plus de choix du lieu ; déco / reco = même endroit', '2', 3),
@@ -21,6 +21,7 @@ SESSIONS = [
         ('Prise de service par le téléphone (Emplois) ou /service, de n\'importe où avec un téléphone ; sans téléphone : au point de service', 'Seul', 3),
         ('Permis : plus de points ; police F4 → Contrôle d\'identité → Permis : retirer (motif au casier) → carte reprise, /permis refuse ; rendre → carte rendue', '2', 3),
         ('PPA : achat au comptoir Ammu-Nation → carte dans le sac ; police : délivrer / retirer → carte remise / reprise ; achat raté = plafond du jour non consommé', '2', 3),
+        ('Mort (sans EMS) : maintenir [E] 2 s → réapparition à l\'hôpital ; si rien ne se passe, 6 s plus tard : « Soigné à l\'hôpital de … » (devant Pillbox, Sandy ou Paleto, 500 $)', 'Seul', 3),
         ('Ambulance : réanimer, soigner, réapparition à l\'hôpital ; banque : virement, retrait, dépôt ; GERER-OVH → 3 sans erreur', '2', 3),
         ('Nourriture : sandwich frais périmé en 2 jours (barre dans l\'inventaire), chips / donut 7 jours, boissons jamais ; food truck de Legion Square (nuit) derrière le vendeur', 'Seul', 1),
     ]),
@@ -50,7 +51,7 @@ SESSIONS = [
         ('Police F4 : menottes, fouille, amende, casier, plaque, radar, fourrière, garde à vue, /droits, K9 ; scientifique : douilles / sang / empreintes, scellé, labo, fichier', '2', 3),
     ]),
     ('6 · Mappings (10 min, en mode staff) — toutes retirées le 12/10', [
-        ('F11 → Monde et lieux → Mappings installés → « Retirer TOUTES les maps » (sur le PC) : confirmation, liste vide ; redémarrage : elles ne reviennent pas ; console sans erreur ; METTRE-A-JOUR-OVH puis même vérification sur le VPS', 'Staff', 3),
+        ('F11 → Monde et lieux → Mappings installés → « Supprimer définitivement toutes les maps » (taper SUPPRIMER), sur le PC PUIS sur le VPS : dossiers gsa_ des maps effacés de resources\\[addons], vêtements gardés ; redémarrage : liste vide ; IMPORTER-MODS ne les réinstalle pas', 'Staff', 3),
         ('Hôpital Pillbox, Fleeca, Pop\'s Pills, Bahama Mamas : nos points (soins, braquage, pharmacie, bar) accessibles sans les maps', 'Staff', 3),
         ('NETTOYER-MARQUES.bat : liste les mods de marque (dont mp_male_the_goat), supprime après « O », le reste intact', 'Staff', 2),
         ('Pack acheté (plus tard) : IMPORTER-MODS puis F11 → Mappings installés : chaque map a un quartier, aucune ligne rouge (conflit) ni jaune (poids) en console', 'Staff', 2),

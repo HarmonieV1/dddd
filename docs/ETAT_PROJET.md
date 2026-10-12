@@ -1,4 +1,4 @@
-# État du projet RoadLine RP — récapitulatif complet (à jour au 12/10/2026, V12.16)
+# État du projet RoadLine RP — récapitulatif complet (à jour au 12/10/2026, V12.17)
 
 Ce document sert de **point de sauvegarde** : si une conversation avec Claude est perdue, compressée ou doit reprendre
 ailleurs, tout ce qu'il faut savoir est ici. Il est versionné avec le code (`git log` en garde aussi l'historique).
@@ -47,7 +47,7 @@ exclusifs (« ce que tu ne trouveras nulle part ailleurs »).
 - `feature/phase1-bridge`
 - `claude/gta-rp-architecture-stack-pbvdxz`
 
-**Dernier commit poussé** : « V12.16 : retirer toutes les maps » (hash exact :
+**Dernier commit poussé** : « V12.17 : maps supprimées définitivement, réapparition [E] » (hash exact :
 `git log -1 origin/feature/phase1-bridge`). Les deux branches pointent sur le même commit.
 
 **Deux sessions Claude en parallèle** (poste Windows et session web) : elles ne se voient pas. Toujours synchroniser
@@ -57,7 +57,7 @@ par un colis (zip de l'installation ou de la session) + ce fichier, et comparer 
 ## 2. Versions : interne vs publique (important, piège classique)
 
 Depuis la V11.3, il y a **deux numéros de version différents**, volontairement :
-- `gs_version` (convar, `server.cfg.example`) = **V12.16** → version technique interne, vue par le staff (F11, console,
+- `gs_version` (convar, `server.cfg.example`) = **V12.17** → version technique interne, vue par le staff (F11, console,
   METTRE-A-JOUR). Continue d'avancer à chaque mise à jour (V11.2, V11.3...).
 - `gs_public_version` (convar) = **« V4 · bêta »** → version vue par les **joueurs** (écran de chargement, statut
   Discord, Gazette). Le site affiche son propre journal (V1 à V4, V5 « classé confidentiel »).
@@ -262,6 +262,18 @@ Résumé très condensé (le détail complet est dans `docs/ROADMAP.md`, `docs/F
   ne remplace pas le curseur), profondeur CSS `animation-timeline: view()` (captures, mock, carte, chiffres), intro
   façon chargement de mission (Entrée / clic pour passer). Tout coupé par `prefers-reduced-motion`, souris seulement
   sur ordinateur. Une seule boucle rAF qui s'endort quand rien ne bouge. Vérifié dans le navigateur : 0 erreur.
+
+- **V12.17** (12/10/2026) — « retire-les totalement de ma base, en priorité » + « le E pour réapparaître ne marche pas » :
+  - **Suppression définitive des maps** (F11, super-admin / fondateur, taper SUPPRIMER, journalisé `deleteallmaps`) :
+    `deleteMapsOnDisk` (maps.js) efface les dossiers `[addons]/gsa_*` des vraies maps (.ymap/.ytyp/.ybn ; vêtements gardés),
+    retire leurs lignes de `addons.cfg` (CRLF gardés), efface `mods-tri/maps/<nom>` et l'archive `mods-a-trier` de même nom
+    (`cleanName` = Clean-Name de l'importeur), et ajoute les noms à `mods-retires.txt` ; IMPORTER-MODS les rejette
+    (« retiré par le staff ») même dans une archive groupée. À faire sur le PC puis sur le VPS (même bouton).
+  - **Réapparition [E]** : `qbx_medical` lit E une fois par seconde et appelle le serveur ; `qbx_ambulancejob` exige un lit
+    libre (sinon « beds taken », rien ne se passe) et peut laisser `allowRespawn = false` après un passage au lit. Filet de
+    sécurité `gs_services` : E maintenu 2 s → `AllowRespawn()` ; toujours mort 6 s après → `gs_services:respawn` (mort
+    confirmé par le statebag, hors prison, 2 / 30 s) : téléporté devant l'hôpital le plus proche (Pillbox, Sandy, Paleto),
+    500 $ (gratuit sans argent), réanimé. Tests : `test_gs_services.lua` 17, `test_gs_maps.js` 70.
 
 - **V12.16** (12/10/2026) — décision de l'utilisateur : **retirer tous les mappings** (« tous bug : certains inexistants, d'autres
   font crash, je vais acheter un pack »). F11 → Mappings installés → **« Retirer TOUTES les maps »** (super-admin / fondateur,

@@ -428,6 +428,14 @@ function Optimize-Textures($dir, $r) {
 Say "[2/3] Analyse et tri" 'Cyan'
 $results = @()
 foreach ($p in $packages) { try { $results += Analyze $p } catch { Say "  $($p.Name) : analyse impossible ($($_.Exception.Message))" 'Yellow' } }
+# V12.16 : mods retirés par le staff (F11 → Supprimer définitivement les maps) : jamais réinstallés, même depuis une archive groupée
+$RetiredFile = Join-Path $Root 'mods-retires.txt'
+if (Test-Path -LiteralPath $RetiredFile) {
+    $Retired = @(Get-Content -LiteralPath $RetiredFile | ForEach-Object { $_.Trim().ToLower() } | Where-Object { $_ -and -not $_.StartsWith('#') })
+    foreach ($r in $results) {
+        if ($Retired -contains $r.name) { $r.install = $false; $r.type = 'rejete'; [void]$r.issues.Add('retiré par le staff (mods-retires.txt) : jamais réinstallé ; enlever sa ligne du fichier pour le permettre') }
+    }
+}
 
 # 3. Rangement + installation des bons ---------------------------------------------------------------------------------
 Say "[3/3] Rangement dans $Out et installation dans resources\[addons]" 'Cyan'

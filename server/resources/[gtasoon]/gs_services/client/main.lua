@@ -95,3 +95,30 @@ RegisterNetEvent('gs_services:client:medicSent', function(seconds)
     lib.notify({ title = 'Secours', description = 'Un secouriste envoyé par les EMS arrive.', type = 'inform', icon = 'truck-medical' })
     CreateThread(function() medicScene(seconds) busy = false end)
 end)
+
+-- V12.16 · Filet de sécurité de la réapparition : [E] maintenu `hold` s alors qu'on est mort. On lève d'abord un éventuel
+-- blocage resté côté Qbox (AllowRespawn), puis, si on est toujours mort `wait` s plus tard, le serveur prend le relais.
+local function isDead() return LocalPlayer.state['qbx_medical:deathState'] == 3 end -- [API] 3 = mort
+CreateThread(function()
+    while true do
+        if isDead() then
+            local held = 0
+            while isDead() do
+                if IsControlPressed(0, 38) or IsDisabledControlPressed(0, 38) then held = held + 1 else held = 0 end
+                if held >= Config.Respawn.hold * 4 then
+                    pcall(function() exports.qbx_medical:AllowRespawn() end) -- [API]
+                    local t = GetGameTimer() + Config.Respawn.wait * 1000
+                    while isDead() and GetGameTimer() < t do Wait(250) end
+                    if isDead() then
+                        local ok, msg = lib.callback.await('gs_services:respawn', false)
+                        if msg then lib.notify({ title = 'Hôpital', description = msg, type = ok and 'success' or 'error' }) end
+                        Wait(5000)
+                    end
+                    held = 0
+                end
+                Wait(250)
+            end
+        end
+        Wait(1000)
+    end
+end)

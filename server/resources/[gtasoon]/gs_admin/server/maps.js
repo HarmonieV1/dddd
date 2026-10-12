@@ -299,6 +299,60 @@ function disableInCfg(cfgFile, name, note) {
   return true;
 }
 
+/** Nom donné par IMPORTER-MODS à une archive (même règle que Clean-Name dans importer-mods.ps1). */
+function cleanName(file) {
+  let n = path.basename(file).replace(/\.[^.]+$/, '');
+  n = n.replace(/^[0-9a-f]{6}-/, '').replace(/_\d{9,}_\d+$/, '');
+  n = n.replace(/[^A-Za-z0-9]+/g, '_').replace(/^_+|_+$/g, '').toLowerCase();
+  if (n.length > 40) n = n.slice(0, 40).replace(/_+$/, '');
+  return n || 'mod';
+}
+
+/** V12.16 · Supprime DÉFINITIVEMENT toutes les maps du disque (demande du 12/10 : « retire-les totalement de ma base »).
+ *  serverData = dossier server-data ; root = dossier parent (C:\GTASOON sur le PC). Seules les vraies maps de
+ *  resources/[addons] (gsa_* avec .ymap / .ytyp / .ybn) : vêtements et véhicules intacts. Pour chacune : dossier effacé,
+ *  ligne retirée de cfg/addons.cfg, copie de mods-tri/maps et archive de mods-a-trier effacées, nom ajouté à
+ *  mods-retires.txt (IMPORTER-MODS ne la réinstallera jamais, même depuis une archive groupée). */
+function deleteMapsOnDisk(serverData, root) {
+  const addons = path.join(serverData, 'resources', '[addons]');
+  const done = { maps: [], errors: [] };
+  let dirs = [];
+  try { dirs = fs.readdirSync(addons, { withFileTypes: true }).filter((d) => d.isDirectory() && /^gsa_[a-z0-9_]+$/.test(d.name)); } catch (e) { return done; }
+  const maps = dirs.map((d) => scanResource(d.name, path.join(addons, d.name))).filter((m) => m.ymaps > 0 || m.streamed.length > 0);
+  if (!maps.length) return done;
+  const names = maps.map((m) => m.name);
+  for (const m of maps) {
+    try { fs.rmSync(path.join(addons, m.name), { recursive: true, force: true }); done.maps.push(m.name); } catch (e) { done.errors.push(`${m.name} : ${e.message}`); }
+  }
+  // cfg/addons.cfg : lignes de ces maps retirées (actives ou déjà commentées)
+  const cfgFile = path.join(serverData, 'cfg', 'addons.cfg');
+  try {
+    const text = fs.readFileSync(cfgFile, 'utf8');
+    const eol = text.includes('\r\n') ? '\r\n' : '\n';
+    const kept = text.split(/\r?\n/).filter((line) => {
+      const m = line.match(/^\s*#?\s*ensure\s+(\S+)/);
+      return !(m && names.includes(m[1]));
+    });
+    fs.writeFileSync(cfgFile, kept.join(eol));
+  } catch (e) { /* pas de addons.cfg (VPS sans mods) */ }
+  const shorts = names.map((n) => n.replace(/^gsa_/, ''));
+  for (const s of shorts) { try { fs.rmSync(path.join(root, 'mods-tri', 'maps', s), { recursive: true, force: true }); } catch (e) { /* rien */ } }
+  try {
+    for (const f of fs.readdirSync(path.join(root, 'mods-a-trier'))) {
+      if (shorts.includes(cleanName(f))) { try { fs.rmSync(path.join(root, 'mods-a-trier', f), { recursive: true, force: true }); } catch (e) { /* rien */ } }
+    }
+  } catch (e) { /* pas de mods-a-trier (VPS) */ }
+  try {
+    const list = path.join(root, 'mods-retires.txt');
+    let old = [];
+    try { old = fs.readFileSync(list, 'utf8').split(/\r?\n/).map((x) => x.trim()).filter(Boolean); } catch (e) { old = []; }
+    const all = [...new Set([...old, ...shorts])];
+    fs.writeFileSync(list, '# Mods retirés par le staff (F11) : IMPORTER-MODS ne les réinstalle jamais. Enlever une ligne pour le permettre.\r\n'
+      + all.filter((x) => !x.startsWith('#')).join('\r\n') + '\r\n');
+  } catch (e) { done.errors.push(`mods-retires.txt : ${e.message}`); }
+  return done;
+}
+
 const FUSION_MANIFEST = "-- Fusion automatique des fichiers d'occlusion en conflit entre maps (gs_admin/server/maps.js).\n" +
   "-- Lancée APRÈS les maps (dev.cfg / prod.cfg), donc prioritaire. Contenu régénéré à chaque démarrage si besoin.\n" +
   "fx_version 'cerulean'\ngame 'gta5'\nauthor 'RoadLine'\nlua54 'yes'\nthis_is_a_map 'yes'\n";
@@ -336,7 +390,7 @@ function applyFusions(maps, fusionDir) {
   return written;
 }
 
-if (typeof module !== 'undefined' && module.exports) module.exports = { pruneFusions, disableInCfg, inflateRsc7, entitiesOf, memoryMB, memorySplit, pagesSize, isVanillaName, placesOf, scanResource, conflictsOf, scanAll, labelOf, mergeOcclusion, applyFusions }; // tests Node seulement
+if (typeof module !== 'undefined' && module.exports) module.exports = { cleanName, deleteMapsOnDisk, pruneFusions, disableInCfg, inflateRsc7, entitiesOf, memoryMB, memorySplit, pagesSize, isVanillaName, placesOf, scanResource, conflictsOf, scanAll, labelOf, mergeOcclusion, applyFusions }; // tests Node seulement
 
 if (typeof GetCurrentResourceName === 'function') {
   const mapResources = () => {
@@ -372,6 +426,18 @@ if (typeof GetCurrentResourceName === 'function') {
     StopResource(name);
     cache = null;
     return { ok: true, msg: inCfg ? 'Map retirée : arrêtée, et plus chargée aux prochains démarrages.' : 'Map arrêtée. Ligne introuvable dans cfg/addons.cfg : mets un # devant à la main.' };
+  });
+  // V12.16 · Supprimer définitivement toutes les maps du disque (dossiers, lignes de addons.cfg, copies, archives)
+  exports('DeleteAllMaps', () => {
+    const serverData = path.resolve(GetResourcePath(GetCurrentResourceName()), '..', '..', '..');
+    const addons = path.join(serverData, 'resources', '[addons]');
+    try { for (const d of fs.readdirSync(addons)) if (/^gsa_/.test(d) && GetResourceState(d) === 'started') {
+      const m = scanResource(d, path.join(addons, d)); if (m.ymaps > 0 || m.streamed.length > 0) StopResource(d); } } catch (e) { /* rien */ }
+    const done = deleteMapsOnDisk(serverData, path.resolve(serverData, '..'));
+    cache = null;
+    return { ok: done.maps.length > 0, msg: done.maps.length
+      ? `${done.maps.length} map(s) supprimée(s) définitivement${done.errors.length ? ` (${done.errors.length} erreur(s) : ${done.errors[0]})` : ''}. Redémarre le serveur.`
+      : 'Aucune map trouvée dans resources/[addons].' };
   });
   // V12.16 · Retirer TOUTES les maps d'un coup (les vêtements et véhicules importés ne sont pas des maps : non touchés)
   exports('DisableAllMaps', (who) => {

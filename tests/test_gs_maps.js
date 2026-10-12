@@ -157,6 +157,29 @@ check('retrait : déjà retirée → rien', !M.disableInCfg(cfgF, 'gsa_energy_re
 check('retrait : nom invalide refusé', !M.disableInCfg(cfgF, 'gs_admin', 'x') && !M.disableInCfg(cfgF, 'gsa_x\nensure y', 'x'));
 check('fusion encore utile : gardée', M.pruneFusions(raw2([liq, wil]), fusDir).length === 0 && fs.existsSync(path.join(fusDir, 'stream', 'cs1_occl_10.ymap')));
 check('une des deux maps retirée : fusion supprimée', M.pruneFusions(raw2([wil]), fusDir).join() === 'cs1_occl_10.ymap' && !fs.existsSync(path.join(fusDir, 'stream', 'cs1_occl_10.ymap')));
+
+// 9. Suppression définitive des maps (V12.16)
+check('nom d\'archive comme IMPORTER-MODS', M.cleanName('a1b2c3-TM_Workshop.pack.zip') === 'tm_workshop_pack' && M.cleanName('Moreo Gym (v2).rar') === 'moreo_gym_v2');
+const R9 = path.join(tmp, 'GTASOON'), SD = path.join(R9, 'server-data'), AD = path.join(SD, 'resources', '[addons]');
+const put = (p, c) => { fs.mkdirSync(path.dirname(p), { recursive: true }); fs.writeFileSync(p, c); };
+put(path.join(AD, 'gsa_tm_workshop_pack', 'stream', 'TM_Workshop.ymap'), ymap([[927.2, -1563.9, 34.2]]));
+put(path.join(AD, 'gsa_hp_fleeca_main', 'stream', 'v_int_10.ytyp'), 'x');
+put(path.join(AD, 'gsa_raduzhnoe_bikini', 'stream', 'mp_f_freemode_01^jbib_000_u.ydd'), 'x');
+put(path.join(SD, 'cfg', 'addons.cfg'), '## Mods\r\nensure gsa_tm_workshop_pack\r\n# ensure gsa_hp_fleeca_main   # retirée\r\nensure gsa_raduzhnoe_bikini\r\n');
+put(path.join(R9, 'mods-tri', 'maps', 'tm_workshop_pack', 'fxmanifest.lua'), 'x');
+put(path.join(R9, 'mods-a-trier', 'a1b2c3-TM_Workshop.pack.zip'), 'zip');
+put(path.join(R9, 'mods-a-trier', 'pack_drive_complet.zip'), 'zip');
+put(path.join(R9, 'mods-retires.txt'), '# en-tête\r\nancienne_map\r\n');
+const del = M.deleteMapsOnDisk(SD, R9);
+check('les 2 maps supprimées (dont l\'habillage Fleeca)', del.maps.length === 2 && !fs.existsSync(path.join(AD, 'gsa_tm_workshop_pack')) && !fs.existsSync(path.join(AD, 'gsa_hp_fleeca_main')));
+check('vêtements intacts', fs.existsSync(path.join(AD, 'gsa_raduzhnoe_bikini')));
+const cfg9 = fs.readFileSync(path.join(SD, 'cfg', 'addons.cfg'), 'utf8');
+check('addons.cfg : lignes des maps retirées, vêtements gardés, CRLF gardés', !cfg9.includes('tm_workshop') && !cfg9.includes('fleeca') && cfg9.includes('ensure gsa_raduzhnoe_bikini') && cfg9.includes('\r\n'));
+check('copie de mods-tri et archive de la map effacées', !fs.existsSync(path.join(R9, 'mods-tri', 'maps', 'tm_workshop_pack')) && !fs.existsSync(path.join(R9, 'mods-a-trier', 'a1b2c3-TM_Workshop.pack.zip')));
+check('archive groupée gardée (protégée par mods-retires.txt)', fs.existsSync(path.join(R9, 'mods-a-trier', 'pack_drive_complet.zip')));
+const ret = fs.readFileSync(path.join(R9, 'mods-retires.txt'), 'utf8');
+check('mods-retires.txt : anciens + nouveaux noms', ret.includes('ancienne_map') && ret.includes('tm_workshop_pack') && ret.includes('hp_fleeca_main'));
+check('2e passage : rien à supprimer', M.deleteMapsOnDisk(SD, R9).maps.length === 0);
 fs.rmSync(tmp, { recursive: true, force: true });
 
 console.log(`lecteur de maps : ${passed} réussis, ${failed} échoués`);

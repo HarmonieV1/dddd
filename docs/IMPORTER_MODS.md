@@ -57,6 +57,10 @@ n'apparaissent pas dans la liste. **Monde et lieux est réservé au super-admin 
 **Retirer une map** (V12.15) : F11 → Mappings installés → la map → « Retirer cette map » : arrêtée tout de suite, sa ligne de
 `cfg\addons.cfg` passe en commentaire (plus chargée, IMPORTER-MODS respecte le #). Pour la remettre : enlever le #.
 Une fusion d'occlusion devenue inutile (une des deux maps retirée) est supprimée au démarrage suivant.
+**Supprimer définitivement** (V12.17) : F11 → Mappings installés → « Supprimer définitivement toutes les maps » (taper
+SUPPRIMER) : dossiers `[addons]\gsa_*` des maps, leurs lignes de `addons.cfg`, leurs copies dans `mods-tri\maps` et leurs
+archives dans `mods-a-trier` effacés ; noms ajoutés à `C:\GTASOON\mods-retires.txt`, que IMPORTER-MODS respecte (jamais
+réinstallés, même depuis une archive groupée ; enlever une ligne pour le permettre). Vêtements et véhicules non touchés.
 
 ## Outils liés
 - `VIDER-CACHE-FIVEM.bat` : après un changement de mods ou un crash « Streamer crashed » — ferme FiveM, vide cache,

@@ -55,4 +55,32 @@ lib.callback.register('gs_services:sendMedic', function(src, target)
     return true, 'Secouriste envoyé.'
 end)
 
+--- V12.16 · Réapparition de secours : le joueur est MORT (pas seulement à terre), a maintenu [E], et Qbox n'a rien fait.
+--- Relevé devant l'hôpital le plus proche, mêmes frais. En prison : laissé à Qbox (hôpital de la prison).
+lib.callback.register('gs_services:respawn', function(src)
+    if not Security:RateLimit(src, 'gs_services:respawn', 2, 30000) then return false, 'Doucement.' end
+    if Player(src).state['qbx_medical:deathState'] ~= 3 then return false, nil end -- [API] qbx_medical : 3 = mort
+    local jailed = false
+    if GetResourceState('qbx_core') == 'started' then
+        pcall(function() local p = exports.qbx_core:GetPlayer(src) jailed = p and (p.PlayerData.metadata.injail or 0) > 0 end) -- [API]
+    end
+    if jailed then return false, nil end
+    local ped = GetPlayerPed(src)
+    local pos = GetEntityCoords(ped)
+    local best, bestD
+    for _, h in ipairs(Config.Respawn.hospitals) do
+        local d = #(pos - vec3(h.coords.x, h.coords.y, h.coords.z))
+        if not bestD or d < bestD then best, bestD = h, d end
+    end
+    local fee, paid = Config.Respawn.fee, 'gratuitement (tu n\'avais rien sur toi)'
+    if Bridge:RemoveMoney(src, 'bank', fee, 'réapparition hôpital') or Bridge:RemoveMoney(src, 'cash', fee, 'réapparition hôpital') then
+        paid = ('pour %d $'):format(fee)
+    end
+    -- D'abord à l'hôpital, puis relevé sur place (la réanimation se fait là où se trouve le corps)
+    SetEntityCoords(ped, best.coords.x, best.coords.y, best.coords.z, false, false, false, false)
+    SetEntityHeading(ped, best.coords.w)
+    SetTimeout(800, function() Bridge:Revive(src) end)
+    return true, ('Soigné à l\'hôpital de %s %s.'):format(best.label, paid)
+end)
+
 AddEventHandler('gs_bridge:server:playerUnloaded', function(src) Services.pending[src], Services.last[src] = nil, nil end)

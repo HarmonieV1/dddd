@@ -956,6 +956,14 @@ local function mainMenu()
         if not r then return end
         local o = {}
         if r.error then o[#o + 1] = { title = 'Lecture des maps impossible', icon = 'triangle-exclamation', disabled = true, description = r.error } end
+        o[#o + 1] = { title = 'Supprimer définitivement toutes les maps', icon = 'dumpster-fire', iconColor = '#ff4d6d',
+            description = 'Efface leurs dossiers, leurs lignes de addons.cfg et leurs archives : elles ne reviendront jamais. Vêtements non touchés',
+            onSelect = function()
+                local r2 = input('Suppression définitive', { { type = 'input', label = 'Tape SUPPRIMER pour confirmer (irréversible)', required = true } })
+                if not r2 or r2[1] ~= 'SUPPRIMER' then return notify(false, 'Annulé : rien n\'a été supprimé.') end
+                notify(lib.callback.await('gs_admin:deleteAllMaps', false, 'SUPPRIMER'))
+                clearMapBlips()
+            end }
         if #r.maps > 0 then
             o[#o + 1] = { title = 'Retirer TOUTES les maps', icon = 'trash-can', iconColor = '#ff6b6b',
                 description = 'Arrêtées et plus chargées (lignes commentées dans cfg/addons.cfg, réversible). Vêtements non touchés',
