@@ -1,4 +1,4 @@
-# État du projet RoadLine RP — récapitulatif complet (à jour au 12/10/2026, V12.28)
+# État du projet RoadLine RP — récapitulatif complet (à jour au 12/10/2026, V12.29)
 
 Ce document sert de **point de sauvegarde** : si une conversation avec Claude est perdue, compressée ou doit reprendre
 ailleurs, tout ce qu'il faut savoir est ici. Il est versionné avec le code (`git log` en garde aussi l'historique).
@@ -54,7 +54,7 @@ exclusifs (« ce que tu ne trouveras nulle part ailleurs »).
 - `feature/phase1-bridge`
 - `claude/gta-rp-architecture-stack-pbvdxz`
 
-**Dernier commit poussé** : « V12.28 : maps aux fichiers abîmés arrêtées automatiquement au démarrage » (hash exact :
+**Dernier commit poussé** : « V12.29 : blips publics des mappings » (hash exact :
 `git log -1 origin/feature/phase1-bridge`). Les deux branches pointent sur le même commit.
 
 **Deux sessions Claude en parallèle** (poste Windows et session web) : elles ne se voient pas. Toujours synchroniser
@@ -64,7 +64,7 @@ par un colis (zip de l'installation ou de la session) + ce fichier, et comparer 
 ## 2. Versions : interne vs publique (important, piège classique)
 
 Depuis la V11.3, il y a **deux numéros de version différents**, volontairement :
-- `gs_version` (convar, `server.cfg.example`) = **V12.28** → version technique interne, vue par le staff (F11, console,
+- `gs_version` (convar, `server.cfg.example`) = **V12.29** → version technique interne, vue par le staff (F11, console,
   METTRE-A-JOUR). Continue d'avancer à chaque mise à jour (V11.2, V11.3...).
 - `gs_public_version` (convar) = **« V4 · bêta »** → version vue par les **joueurs** (écran de chargement, statut
   Discord, Gazette). Le site affiche son propre journal (V1 à V4, V5 « classé confidentiel »).
@@ -270,6 +270,11 @@ Résumé très condensé (le détail complet est dans `docs/ROADMAP.md`, `docs/F
   ne remplace pas le curseur), profondeur CSS `animation-timeline: view()` (captures, mock, carte, chiffres), intro
   façon chargement de mission (Entrée / clic pour passer). Tout coupé par `prefers-reduced-motion`, souris seulement
   sur ordinateur. Une seule boucle rAF qui s'endort quand rien ne bouge. Vérifié dans le navigateur : 0 erreur.
+
+- **V12.29** (12/10/2026) — « blips publics avec nom pour chaque mapping » : `PUBLIC` dans maps.js (nom, icône, couleur, ou
+  false pour les lieux secrets : gang 2, garage clandestin, labo, villa 01, panneaux, extensions DLC, sous-sol MRPD) ;
+  `client/mapblips.lua` les affiche (courte portée) à tous les joueurs, liste renvoyée à tous quand une map est arrêtée.
+  Noms nettoyés (« patoche », « sub », « pack » retirés). Procédure « réparer un pack abîmé » dans IMPORTER_MODS.md.
 
 - **V12.28** (12/10/2026) — « fais-le toi-même » : contrôle d'intégrité automatique au démarrage (gs_admin/maps.js, 20 s après,
   en arrière-plan) de TOUS les fichiers du jeu des maps démarrées. Un fichier tronqué (flux compressé interrompu : erreur zlib

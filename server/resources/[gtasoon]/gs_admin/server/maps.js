@@ -209,8 +209,53 @@ const LABELS = {
 
 function labelOf(name) {
   if (LABELS[name]) return LABELS[name];
-  const s = name.replace(/^gsa_/, '').replace(/_v\d+(_\d+)?$/, '').replace(/[_\-]+/g, ' ').trim();
+  if (PUBLIC[name] && PUBLIC[name].label) return PUBLIC[name].label;
+  const s = name.replace(/^gsa_/, '').replace(/_v\d+(_\d+)?$/, '').replace(/(^|_)(sub|patoche|pack|mlo|cfx|draft)(?=_|$)/g, '_')
+    .replace(/[_\-]+/g, ' ').trim() || name.replace(/^gsa_/, '');
   return s.charAt(0).toUpperCase() + s.slice(1);
+}
+
+// V12.29 · Blips PUBLICS des mappings (tous les joueurs) : nom et icône. false = pas de blip (lieu secret ou partout sur la
+// carte : QG de gang, labo, garage clandestin, villa privée, panneaux). Map inconnue ici : blip avec son nom nettoyé.
+const PUBLIC = {
+  gsa_es_billboard_map_pack: false,
+  gsa_patoche_ammu: { label: 'Ammu-Nation', sprite: 110, color: 1 },
+  gsa_patoche_ammu2: { label: 'Ammu-Nation', sprite: 110, color: 1 },
+  gsa_patoche_beach_party_pack: { label: 'Beach party', sprite: 93, color: 27 },
+  gsa_patoche_billiard_pack: { label: 'Salle de billard', sprite: 93, color: 5 },
+  gsa_patoche_bumpercar_del_perro: { label: 'Auto-tamponneuses', sprite: 38, color: 27 },
+  gsa_patoche_bumpercar_pacific: { label: 'Auto-tamponneuses', sprite: 38, color: 27 },
+  gsa_patoche_cardealer_pack: { label: 'Concession automobile', sprite: 225, color: 3 },
+  gsa_patoche_casino_pack: { label: 'Casino', sprite: 679, color: 5 },
+  gsa_patoche_gang_2_pack: false,
+  gsa_patoche_hideout_mechanic_pack: false,
+  gsa_patoche_petshop_pack: { label: 'Animalerie', sprite: 52, color: 2 },
+  gsa_patoche_plasmagame_pack: { label: 'Laser game', sprite: 38, color: 7 },
+  gsa_patoche_plasmagame_dlc_pack: false, // extension du laser game (même endroit)
+  gsa_patoche_plasmakart_pack: { label: 'Karting', sprite: 38, color: 46 },
+  gsa_patoche_plasmakart_dlc_pack: false,
+  gsa_patoche_soccer_pack: { label: 'Terrain de foot', sprite: 38, color: 2 },
+  gsa_patoche_stock_pack: { label: 'Entrepôt', sprite: 357, color: 0 },
+  gsa_patoche_tabac_pack: { label: 'Bureau de tabac', sprite: 52, color: 0 },
+  gsa_patoche_tacos_pack: { label: 'Tacos', sprite: 93, color: 17 },
+  gsa_sub_patoche_benny_bw_pack: { label: 'Benny\'s', sprite: 72, color: 0 },
+  gsa_sub_patoche_prison_pack: { label: 'Prison de Bolingbroke', sprite: 188, color: 1 },
+  gsa_sub_patoche_storage_pack: { label: 'Box de stockage', sprite: 357, color: 0 },
+  gsa_sub_patoche_villa_01_pack: false,
+  gsa_sub_patoche_weed_pack: false,
+  gsa_mrpd_etendu: false, // sous-sol du commissariat : le commissariat a déjà son blip
+};
+
+/** Blips publics : un par map située, sauf celles marquées false. */
+function publicBlips(maps) {
+  const out = [];
+  for (const m of maps) {
+    const cfg = PUBLIC[m.name];
+    if (cfg === false || !m.places || !m.places.length) continue;
+    const p = m.places[0];
+    out.push({ label: String((cfg && cfg.label) || m.label).slice(0, 40), sprite: (cfg && cfg.sprite) || 1, color: (cfg && cfg.color) || 0, x: p.x, y: p.y, z: p.z });
+  }
+  return out;
 }
 
 const FUSION = /^gsa_zz_fusion/; // ressource de fusion (tools/maps/fusion_occlusion.py), démarrée après les maps
@@ -455,7 +500,7 @@ function applyFusions(maps, fusionDir) {
   return written;
 }
 
-if (typeof module !== 'undefined' && module.exports) module.exports = { cleanName, deleteMapsOnDisk, pruneFusions, disableInCfg, inflateRsc7, entitiesOf, memoryMB, memorySplit, pagesSize, isVanillaName, placesOf, scanResource, conflictsOf, scanAll, labelOf, mergeOcclusion, applyFusions, RETIRED_MAPS, activeEnsures, rscTruncated, truncatedFiles, _setLuaFs: (f) => { luaFs = f; } }; // tests Node seulement
+if (typeof module !== 'undefined' && module.exports) module.exports = { cleanName, deleteMapsOnDisk, pruneFusions, disableInCfg, inflateRsc7, entitiesOf, memoryMB, memorySplit, pagesSize, isVanillaName, placesOf, scanResource, conflictsOf, scanAll, labelOf, mergeOcclusion, applyFusions, RETIRED_MAPS, activeEnsures, publicBlips, PUBLIC, rscTruncated, truncatedFiles, _setLuaFs: (f) => { luaFs = f; } }; // tests Node seulement
 
 if (typeof GetCurrentResourceName === 'function') {
   const self = GetCurrentResourceName();
@@ -565,6 +610,18 @@ if (typeof GetCurrentResourceName === 'function') {
     if (done.maps.length) console.log(`^2[gs_admin] Maps retirées (décision du 12/10) : ${done.maps.join(', ')}^7`);
     for (const e of done.errors) console.log(`^1[gs_admin] Retrait de map impossible : ${e}^7`);
   }, 8000);
+  // V12.29 · Blips publics : envoyés à chaque joueur qui les demande (client/mapblips.lua), et à tous quand la liste change
+  const lastAsk = new Map();
+  onNet('gs_admin:mapBlips:get', () => {
+    const src = global.source;
+    const now = Date.now();
+    if (now - (lastAsk.get(src) || 0) < 10000) return;
+    lastAsk.set(src, now);
+    emitNet('gs_admin:mapBlips', src, publicBlips(scan().maps));
+  });
+  on('playerDropped', () => lastAsk.delete(global.source));
+  const broadcastBlips = () => emitNet('gs_admin:mapBlips', -1, publicBlips(scan().maps));
+
   // V12.27 · Contrôle d'intégrité de toutes les maps démarrées (en arrière-plan) : un fichier tronqué = la map est ARRÊTÉE
   // tout de suite (sinon chaque joueur qui passe à côté plante). Rien n'est écrit sur le disque : au prochain démarrage,
   // elle est revérifiée ; si l'archive a été retéléchargée et réimportée, elle repart toute seule.
@@ -583,6 +640,7 @@ if (typeof GetCurrentResourceName === 'function') {
       }
     }
     cache = null;
+    broadcastBlips();
     console.log(`[gs_admin] Intégrité des maps : ${checked} vérifiée(s), ${stopped.length ? `^1${stopped.length} arrêtée(s) (fichiers abîmés)^7` : '^2aucun fichier abîmé^7'}`);
   }, 20000);
   // Au démarrage : fusion, puis une ligne en console et les conflits en clair (à corriger avant qu'un joueur tombe dans un trou)

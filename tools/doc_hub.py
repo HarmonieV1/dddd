@@ -40,7 +40,7 @@ PRIORITIES = [
         'Démarrage du serveur : aucune ligne rouge « Map activée mais NON démarrée » (sinon : licence Cfx du pack ou fichier .fxap)',
         'Tour en jeu des 40 maps (F11 → Mappings installés → Y aller) : entrer dans chaque intérieur, noter celles qui chargent sans fin',
         'Dernier conflit de maps (concession + gang 2) : « résolu par fusion » au démarrage (V12.24)',
-        'Version V12.28+ sur le PC ET sur le VPS (console : [RoadLine RP] version …)',
+        'Version V12.29+ sur le PC ET sur le VPS (console : [RoadLine RP] version …)',
     ]),
     ('Priorité haute (cette semaine)', [
         'Backtest complet : les 56 tests de l\'onglet Backtest, en commençant par les ★★★',

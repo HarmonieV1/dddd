@@ -14,6 +14,16 @@ contrôle et le range dans `C:\GTASOON\mods-tri\` :
 - **scripts-a-verifier** : scripts, jamais installés sans relecture ;
 - **rejetes** : scripts ESX seuls, code obfusqué, packs graphiques (reshade, oiv), **marques réelles**.
 
+## Réparer un pack abîmé (« Map ARRÊTÉE … fichier abîmé », « Invalid fixup », « Unexpected end of archive »)
+1. portal.cfx.re → **Granted Assets** → retélécharger le pack (le zip complet, sans l'ouvrir).
+2. Le mettre dans `C:\GTASOON\mods-a-trier` en **remplaçant** l'ancien (même nom, pas de « (1) »).
+3. Double-clic **IMPORTER-MODS.bat** : le rapport doit dire « INSTALLÉ » et la console aucune ligne rouge « ARCHIVE INCOMPLÈTE ».
+4. **METTRE-A-JOUR-OVH.bat**, puis redémarrer. Console ~20 s après : « Intégrité des maps : … aucun fichier abîmé ».
+
+## Blips des maps sur la carte (V12.29)
+Tous les joueurs voient un blip nommé par lieu (`PUBLIC` dans gs_admin/server/maps.js : nom, icône, couleur ; `false` = pas
+de blip pour les lieux secrets : QG de gang, labo, garage clandestin, villa privée). Une map arrêtée perd son blip.
+
 ## Packs payants protégés (escrow Cfx, fichier `.fxap`) — V12.18
 - Ils ne marchent **que** s'ils ont été achetés avec le compte Cfx.re (keymaster) **lié à la clé de licence du serveur**.
   Sinon la console du serveur affiche « You lack the required entitlement » et la map n'apparaît pas.

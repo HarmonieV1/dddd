@@ -211,6 +211,16 @@ const pendingTrunc = (async () => {
   check('dossier : seul le fichier coupé est listé', bad.length === 1 && bad[0].endsWith('patoche_beach_guard.ydr'));
   fs.rmSync(td, { recursive: true, force: true });
 })();
+// V12.29 : blips publics des mappings
+check('nom propre d\'un pack payant', M.labelOf('gsa_sub_patoche_benny_bw_pack') === 'Benny\'s' && M.labelOf('gsa_patoche_new_bowling_pack') === 'New bowling');
+const pb = M.publicBlips([
+  { name: 'gsa_patoche_casino_pack', label: 'Casino', places: [{ x: 1, y: 2, z: 3 }] },
+  { name: 'gsa_patoche_gang_2_pack', label: 'Gang 2', places: [{ x: 4, y: 5, z: 6 }] },
+  { name: 'gsa_patoche_inconnu_pack', label: 'Inconnu', places: [{ x: 7, y: 8, z: 9 }] },
+  { name: 'gsa_sans_lieu', label: 'Sans lieu', places: [] },
+]);
+check('blips : casino avec son icône, QG de gang caché, map inconnue avec son nom, sans lieu ignorée',
+  pb.length === 2 && pb[0].label === 'Casino' && pb[0].sprite === 679 && pb[1].label === 'Inconnu' && pb[1].sprite === 1);
 // V12.18 : FXServer récent = écriture interdite au JavaScript (« Use --allow-fs-write ») → repli par Lua (server/fsw.lua)
 {
   const orig = { w: fs.writeFileSync, u: fs.unlinkSync, r: fs.rmSync };
