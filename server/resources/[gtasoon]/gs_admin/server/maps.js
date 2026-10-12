@@ -21,7 +21,10 @@ const HEAVY_PHYS_MB = 48, HEAVY_VIRT_MB = 64;
 // V12.18 · Écritures disque. Les FXServer récents bloquent fs.write* / fs.rm* en JavaScript (« Use --allow-fs-write ») :
 // on essaie Node, et sinon on passe par server/fsw.lua (Lua n'est pas concerné). Les tests Node utilisent fs directement.
 const denied = (e) => e && (e.code === 'ERR_ACCESS_DENIED' || /allow-fs-write|restricted/i.test(String(e.message)));
-let luaFs = null; // { write(path, base64), remove(path) } branché au démarrage dans FiveM
+let luaFs = null;
+// V12.24 : FXServer n'autorise une ressource à écrire que dans SON dossier → la ressource de fusion écrit elle-même
+// (gsa_zz_fusion_occlusion/server.lua, événement gsa_fusion:save). null = tests Node (écriture directe).
+let fusionSave = null; // { write(path, base64), remove(path) } branché au démarrage dans FiveM
 function writeFile(p, data) {
   const buf = Buffer.isBuffer(data) ? data : Buffer.from(String(data), 'utf8');
   try { fs.mkdirSync(path.dirname(p), { recursive: true }); fs.writeFileSync(p, buf); return; } catch (e) { if (!luaFs || !denied(e)) throw e; }
@@ -389,7 +392,8 @@ const RETIRED_MAPS = [
 
 const FUSION_MANIFEST = "-- Fusion automatique des fichiers d'occlusion en conflit entre maps (gs_admin/server/maps.js).\n" +
   "-- Lancée APRÈS les maps (dev.cfg / prod.cfg), donc prioritaire. Contenu régénéré à chaque démarrage si besoin.\n" +
-  "fx_version 'cerulean'\ngame 'gta5'\nauthor 'RoadLine'\nlua54 'yes'\nthis_is_a_map 'yes'\n";
+  "fx_version 'cerulean'\ngame 'gta5'\nauthor 'RoadLine'\nlua54 'yes'\nthis_is_a_map 'yes'\n" +
+  "server_script 'server.lua' -- écrit les fusions dans son propre dossier (seul endroit où FXServer l'autorise)\n";
 
 /** Écrit les fusions des conflits d'occlusion non résolus dans `fusionDir`. `maps` = résultat de scanResource (avec streamed).
  *  Renvoie la liste des fichiers écrits ou modifiés (vide = rien à faire). Si une fusion échoue : version préférée (PREFER). */
@@ -413,7 +417,7 @@ function applyFusions(maps, fusionDir) {
     let same = false;
     try { same = fs.readFileSync(dest).equals(out); } catch (e) { same = false; }
     if (same) continue;
-    writeFile(dest, out);
+    if (fusionSave) fusionSave(c.file, out); else writeFile(dest, out);
     written.push({ file: c.file, resources: c.resources, how });
   }
   if (written.length) {
@@ -435,6 +439,10 @@ if (typeof GetCurrentResourceName === 'function') {
     return r;
   };
   luaFs = { write: (p, b64) => viaLua('gs_admin:fsWrite', p, b64), remove: (p) => viaLua('gs_admin:fsRemove', p) };
+  fusionSave = (file, buf) => {
+    if (GetResourceState('gsa_zz_fusion_occlusion') !== 'started') StartResource('gsa_zz_fusion_occlusion');
+    viaLua('gsa_fusion:save', file, buf.toString('base64'));
+  };
   const mapResources = () => {
     const out = [];
     for (let i = 0; i < GetNumResources(); i++) {

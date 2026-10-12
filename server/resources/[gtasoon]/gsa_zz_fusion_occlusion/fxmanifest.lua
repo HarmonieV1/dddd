@@ -5,3 +5,4 @@ game 'gta5'
 author 'RoadLine'
 lua54 'yes'
 this_is_a_map 'yes'
+server_script 'server.lua' -- écrit les fusions dans son propre dossier (seul endroit où FXServer l'autorise)
