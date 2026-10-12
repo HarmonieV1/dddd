@@ -277,7 +277,15 @@ GSPolice = GSPolice or {}
 
 function GSPolice.openMenu()
     local job = myJob()
-    if not job then return notify(false, 'Réservé à la police et aux EMS en service.') end
+    if not job then
+        -- V12.33 : le message dit la vraie raison (avant : « Réservé… » même pour un policier simplement hors service)
+        local j = Bridge:GetJob()
+        if not j then return notify(false, 'Personnage pas encore chargé : réessaie dans un instant.') end
+        if (Config.PoliceJobs[j.name] or j.name == Config.EmsJob) and not j.onduty then
+            return notify(false, ('Tu es %s mais HORS service : prends ton service (F6, téléphone ou /service) puis F4.'):format(j.label or j.name))
+        end
+        return notify(false, 'Réservé à la police et aux EMS en service.')
+    end
     lib.registerContext({ id = 'gs_police_menu', title = job == 'police' and 'Intervention LSPD' or 'Intervention EMS',
         options = job == 'police' and policeOptions() or emsOptions() })
     lib.showContext('gs_police_menu')
@@ -285,7 +293,9 @@ end
 
 RegisterCommand('intervention', function()
     if lib.getOpenContextMenu() then return lib.hideContext() end -- même touche = fermer
-    if IsNuiFocused() then return end -- V11.5 : jamais pendant une saisie ou une autre interface
+    if IsNuiFocused() then -- V11.5 : jamais pendant une saisie ou une autre interface. V12.33 : on le dit (avant : muet)
+        return notify(false, 'Une interface est ouverte (garde-robe, téléphone, inventaire…) : ferme-la (Échap) puis F4.')
+    end
     GSPolice.openMenu()
 end, false)
 RegisterKeyMapping('intervention', 'Menu intervention (police / EMS)', 'keyboard', Config.Key)

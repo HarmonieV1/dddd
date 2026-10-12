@@ -205,7 +205,8 @@ check('2e passage : rien à supprimer', M.deleteMapsOnDisk(SD, R9).maps.length =
   const d2 = M.deleteMapsOnDisk(S2, R2, { only: ['gsa_moreo_gym'], keepArchives: true });
   check('retrait ciblé : la map nommée seulement', d2.maps.join() === 'gsa_moreo_gym' && fs.existsSync(path.join(A2, 'gsa_patoche_ammu')) && !fs.existsSync(path.join(A2, 'gsa_moreo_gym')));
   check('retrait ciblé : archive gardée, nom dans mods-retires.txt', fs.existsSync(path.join(R2, 'mods-a-trier', 'moreo_gym.rar')) && fs.readFileSync(path.join(R2, 'mods-retires.txt'), 'utf8').includes('moreo_gym'));
-  check('liste des maps retirées : 8 noms gsa_', M.RETIRED_MAPS.length === 8 && M.RETIRED_MAPS.every((n) => /^gsa_[a-z0-9_]+$/.test(n)));
+  check('liste des maps retirées : 14 noms gsa_ (V12.33 : plasma retirés)', M.RETIRED_MAPS.length === 14 && M.RETIRED_MAPS.every((n) => /^gsa_[a-z0-9_]+$/.test(n))
+    && ['gsa_patoche_plasmagame_pack', 'gsa_patoche_plasmakart_pack', 'gsa_patoche_plasmatron_pack'].every((n) => M.RETIRED_MAPS.includes(n)));
 }
 check('lignes ensure actives seulement', JSON.stringify(M.activeEnsures('## titre\r\nensure gsa_a\r\n# ensure gsa_b\r\n  ensure gsa_c  # note\r\n')) === '["gsa_a","gsa_c"]');
 // V12.27 : fichier tronqué (téléchargement coupé) détecté, fichier entier ou chiffré jamais signalé

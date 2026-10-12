@@ -6,6 +6,7 @@ local W = Config.Wardrobe
 local SLOT = {}
 for _, s in ipairs(W.slots) do SLOT[s.key] = s end
 local open, cam, view = false, nil, 'body'
+local nuiReady = false -- V12.33 : l'interface a confirmé l'ouverture (sinon on referme : jamais de focus bloqué)
 
 local function modelKey(ped) return GetEntityModel(ped) == GetHashKey('mp_f_freemode_01') and 'f' or 'm' end
 local function isFreemode(ped) local m = GetEntityModel(ped) return m == GetHashKey('mp_m_freemode_01') or m == GetHashKey('mp_f_freemode_01') end
@@ -110,6 +111,7 @@ end
 local function openWardrobe()
     if open then return close() end
     if IsControlPressed(0, 36) or IsDisabledControlPressed(0, 36) then return end -- Ctrl + U = vol libre du staff, pas la garde-robe
+    if IsNuiFocused() then return end -- V12.33 : une autre interface est ouverte (téléphone, inventaire…)
     local ped = cache.ped
     if cache.vehicle then return lib.notify({ description = 'Descends du véhicule.', type = 'error' }) end
     if not isFreemode(ped) then return lib.notify({ description = 'Garde-robe réservée aux personnages créés (pas aux personnages spéciaux).', type = 'error' }) end
@@ -119,8 +121,16 @@ local function openWardrobe()
     ClearPedTasks(ped)
     FreezeEntityPosition(ped, true)
     placeCam()
+    nuiReady = false
     SendNUIMessage({ action = 'open', data = state() })
     SetNuiFocus(true, true)
+    -- V12.33 : si l'interface ne confirme pas en 3 s (page non chargée, cache abîmé), on referme : F4 et les autres touches restent libres
+    SetTimeout(3000, function()
+        if open and not nuiReady then
+            close()
+            lib.notify({ description = 'Garde-robe indisponible (interface non chargée) : lance VIDER-CACHE-FIVEM.bat puis reconnecte-toi.', type = 'error', duration = 8000 })
+        end
+    end)
     -- Sécurité : si le joueur tombe, meurt ou est menotté pendant la garde-robe, on ferme.
     CreateThread(function()
         while open do
@@ -136,6 +146,7 @@ exports('OpenWardrobe', openWardrobe)
 
 -- Écran → jeu --------------------------------------------------------------------------------------------------------
 RegisterNUICallback('close', function(_, cb) close() cb(1) end)
+RegisterNUICallback('ready', function(_, cb) nuiReady = true cb(1) end) -- V12.33
 
 RegisterNUICallback('rotate', function(d, cb)
     local ped = cache.ped

@@ -64,7 +64,7 @@ par un colis (zip de l'installation ou de la session) + ce fichier, et comparer 
 ## 2. Versions : interne vs publique (important, piège classique)
 
 Depuis la V11.3, il y a **deux numéros de version différents**, volontairement :
-- `gs_version` (convar, `server.cfg.example`) = **V12.31** → version technique interne, vue par le staff (F11, console,
+- `gs_version` (convar, `server.cfg.example`) = **V12.33** → version technique interne, vue par le staff (F11, console,
   METTRE-A-JOUR). Continue d'avancer à chaque mise à jour (V11.2, V11.3...).
 - `gs_public_version` (convar) = **« V4 · bêta »** → version vue par les **joueurs** (écran de chargement, statut
   Discord, Gazette). Le site affiche son propre journal (V1 à V4, V5 « classé confidentiel »).
@@ -270,6 +270,21 @@ Résumé très condensé (le détail complet est dans `docs/ROADMAP.md`, `docs/F
   ne remplace pas le curseur), profondeur CSS `animation-timeline: view()` (captures, mock, carte, chiffres), intro
   façon chargement de mission (Entrée / clic pour passer). Tout coupé par `prefers-reduced-motion`, souris seulement
   sur ordinateur. Une seule boucle rAF qui s'endort quand rien ne bouge. Vérifié dans le navigateur : 0 erreur.
+
+- **V12.33** (12/10/2026, poste Windows) — reprise depuis le zip « installation (18) » (= V12.29 de la session distante, contenu
+  dans V12.31) : **fusion V12.32** de la session distante V12.9 → V12.31 avec la V12.8 locale (13 conflits : versions, PDF,
+  CSV identique, site = couche V12.9 ajoutée, CONFIGURER-DISCORD = bienvenue gardée), suite verte, puis :
+  - **Maps plasma retirées** (demande du 12/10) : laser game, karting (+ DLC) et plasmatron dans `RETIRED_MAPS` (supprimées au
+    démarrage, jamais réimportées) ; villa moderne 01 déjà retirée et villa bunker gardée depuis la V12.31. Test 92/92.
+  - **F4 police / EMS** : la touche ne restait plus muette : si une interface est ouverte (garde-robe, téléphone, inventaire)
+    elle le dit ; si le joueur est police / EMS mais hors service, elle le dit ; si le personnage n'est pas chargé, elle le dit.
+    **Garde-robe (U)** : l'interface doit confirmer l'ouverture en 3 s (`ready`), sinon elle se referme seule : plus aucun
+    focus NUI bloqué qui empêchait F4 ; refus d'ouvrir si une autre interface a déjà le focus.
+  - **Cayo Perico** : l'avion **atterrit** (approche 4 s train sorti, toucher des roues 60 m avant le comptoir, roulage 45 m
+    freiné) au lieu de disparaître en plein vol ; à l'arrivée le joueur reste figé jusqu'à ce que **le sol soit chargé** sous
+    ses pieds, puis est posé au niveau réel du sol (avant : 1,5 s d'attente aveugle → il traversait la carte).
+  - `/optin` : vérifié dans le dépôt (V12.15 : ACE `admin` pour `group.admin` dans permissions.cfg) ; à tester en jeu avec un
+    compte dans `group.admin` (secrets.cfg).
 
 - **V12.31** (12/10/2026) — « des scripts ne démarrent pas alors que les mappings sont là ; retire la villa moderne 01,
   on garde le bunker » :
@@ -653,6 +668,23 @@ Résumé très condensé (le détail complet est dans `docs/ROADMAP.md`, `docs/F
 - **Site** : photos des encadrés et bande-annonce à fournir ; police Pricedown à déposer dans `docs/site/fonts/` si voulue.
 - Le guide du joueur (PDF) n'est volontairement **pas en ligne sur le site** : l'utilisateur veut en reprendre le design
   lui-même avant publication.
+- **À faire par l'utilisateur pour la V11.4** : créer les webhooks `#logs-staff` et `#sanctions`, le salon `#tickets`,
+  relancer CONFIGURER-DISCORD (identifiants + réautoriser le bot), puis GERER-OVH → 12.
+- **V11.5 à vérifier en jeu** (backtest) : positions des caméras accrochées (sinon ajuster `heading` / `Config.Mount`),
+  trajet du bus (`Config.Arrival.from` / `stop`), offsets des armes dans le dos (`Config.Back.slots`), PNJ acheteurs
+  (`heading`), lisibilité des images du menu F11.
+- **Backtest** : le food truck (corrigé en V11.5) et tout le retour du 09/10 sont à re-vérifier en jeu avec la nouvelle fiche
+  (`ROADLINE_Backtest_complet.pdf`, session 1), puis les nouveautés V11.4 → V12.3 (session 2). Retours attendus avant la
+  prochaine vague de corrections.
+- **Site** : photos des encadrés à fournir par l'utilisateur (galerie), bande-annonce pas encore tournée ; police Pricedown à
+  déposer dans `docs/site/fonts/` si voulue à l'identique (Bowlby One sinon).
+- **Idées retenues pour plus tard** (demande du 10/10) : missions et contacts depuis les **vraies cabines téléphoniques** de la
+  map (plus de points / blips posés), **arracher un distributeur** avec un câble et une voiture puis l'ouvrir au calme ; les
+  57 propositions (signatures, modes, embellissement, gains rapides bêta) et les 12 questions de vision sont dans
+  `docs/PROPOSITIONS.md` (à trier par l'utilisateur). **Ouverture bêta officieuse prévue dans quelques jours** (mi-octobre),
+  officielle le 20/10/2026.
+- Le guide du joueur (PDF) n'a volontairement **pas été mis en ligne sur le site** : l'utilisateur veut en reprendre
+  le design lui-même avant publication.
 
 ## 7. Règles permanentes à respecter (rappel, ne jamais oublier)
 

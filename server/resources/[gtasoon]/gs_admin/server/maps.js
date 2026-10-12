@@ -496,7 +496,10 @@ const RETIRED_MAPS = [
   'gsa_sub_patoche_benny_original_pack', // gardé : Benny's noir et blanc
   'gsa_sub_patoche_villa_01_pack',       // V12.31 : gardé la villa bunker (même villa) ; remise par IMPORTER-MODS
   'gsa_sub_patoche_digitalden',          // gardé : prison (même occlusion du centre-ville)
-  'gsa_patoche_shadow_complex_pack',     // gardé : plasmakart
+  'gsa_patoche_shadow_complex_pack',
+  // V12.33 (12/10) : plus de laser game, de karting ni de plasmatron (activités dont RoadLine n'a pas les scripts, décor seul)
+  'gsa_patoche_plasmagame_pack', 'gsa_patoche_plasmagame_dlc_pack', 'gsa_patoche_plasmakart_pack', 'gsa_patoche_plasmakart_dlc_pack',
+  'gsa_patoche_plasmatron_pack', 'gsa_patoche_plasmatron', // archive coupée le 12/10 : jamais réinstallée, quel que soit son nom
 ];
 
 const FUSION_MANIFEST = "-- Fusion automatique des fichiers d'occlusion en conflit entre maps (gs_admin/server/maps.js).\n" +

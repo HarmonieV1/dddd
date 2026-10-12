@@ -21,7 +21,9 @@ Config.Island = {
         mainland = { counter = vec3(-1037.8, -2737.8, 20.17), arrival = vec4(-1042.1, -2745.3, 21.36, 330.0), label = 'Vol pour Cayo Perico' },
         island = { counter = vec3(4494.3, -4525.3, 4.41), arrival = vec4(4500.8, -4522.0, 4.41, 20.0), label = 'Vol retour pour Los Santos' },
         -- Petit film du vol (avion au-dessus de l'océan) ; [Espace] = transfert rapide. false = simple fondu au noir.
-        cinematic = { enabled = true, seconds = 10, model = 'luxor', from = vec3(-1300.0, -3400.0, 420.0), to = vec3(4300.0, -4650.0, 380.0) },
+        cinematic = { enabled = true, seconds = 10, model = 'luxor', from = vec3(-1300.0, -3400.0, 420.0), to = vec3(4300.0, -4650.0, 380.0),
+            -- V12.33 : l'avion atterrit près du comptoir d'arrivée (toucher des roues `before` m avant, roulage de `roll` m) au lieu de disparaître
+            landing = { approachSeconds = 4, rollSeconds = 2.5, before = 60.0, roll = 45.0, wheelHeight = 1.2 } },
     },
     -- Soirée DJ sur la plage (lancée par le staff : F11 → Événements → Soirée plage Cayo) : sono, lumières, danseurs,
     -- musique des enceintes de l'île. Coords à caler en jeu.

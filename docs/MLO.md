@@ -176,8 +176,8 @@ Une quarantaine de packs escrow (achat Cfx.re lié à la clé du serveur), surto
 | Prison de Bolingbroke | `gsa_sub_patoche_prison_pack` | gardée à la place de Digital Den (même occlusion) ; coords de cellule à confirmer en jeu |
 | Benny's noir et blanc | `gsa_sub_patoche_benny_bw_pack` | gardé à la place du Benny's original |
 | Villa bunker | `gsa_patoche_villa_bunker_pack` | **V12.31 : gardée**, la villa moderne 01 est retirée (même villa) |
-| Karting | `gsa_patoche_plasmakart_pack` (+ DLC) | gardé à la place de Shadow Complex ; activité = script compagnon |
-| Laser game | `gsa_patoche_plasmagame_pack` (+ DLC) | activité = script compagnon (blip « (bientôt) » sans lui) |
+| Karting | `gsa_patoche_plasmakart_pack` (+ DLC) | **retiré le 12/10** (V12.33, demande du fondateur) |
+| Laser game | `gsa_patoche_plasmagame_pack` (+ DLC) | **retiré le 12/10** (V12.33, demande du fondateur) |
 | Auto-tamponneuses Del Perro / Pacific | `gsa_patoche_bumpercar_*` | activité = script compagnon |
 | Casino, concession, Ammu-Nation ×2, tabac, tacos, animalerie, billard, entrepôt, box de stockage | `gsa_patoche_*` | casino / concession / Ammu-Nation : doublons avec nos points sur les lieux du jeu, choix « nouveau / ancien » en attente |
 | QG gang 2, garage clandestin, labo weed, panneaux | `gsa_patoche_*` | sans blip (lieux secrets) |

@@ -105,7 +105,7 @@ button.close{background:rgba(255,92,92,.15);border-color:rgba(255,92,92,.4)}
   }
   window.addEventListener('message', function (e) {
     var m = e.data || {};
-    if (m.action === 'open') { render(m.data); show(true); }
+    if (m.action === 'open') { render(m.data); show(true); post('ready'); }
     else if (m.action === 'state') render(m.data);
     else if (m.action === 'close') show(false);
   });

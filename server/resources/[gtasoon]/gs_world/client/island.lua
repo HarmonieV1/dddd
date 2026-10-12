@@ -24,13 +24,20 @@ CreateThread(function()
     end
 end)
 
--- Film du vol : avion local au-dessus de l'océan, caméra qui le suit ; [Espace] ou [Retour] = transfert rapide.
-local function flightFilm(toIsland)
+-- Film du vol : avion local au-dessus de l'océan, caméra qui le suit, puis APPROCHE, ATTERRISSAGE et ROULAGE près du comptoir
+-- d'arrivée (V12.33 : avant, l'avion disparaissait en plein vol). [Espace] ou [Retour] pendant la croisière = transfert rapide.
+local function flightFilm(toIsland, arrival)
     local c = I.flight.cinematic
+    local L = c.landing or {}
     local from, to = toIsland and c.from or c.to, toIsland and c.to or c.from
     local hash = GetHashKey(c.model)
     lib.requestModel(hash, 5000)
     local heading = GetHeadingFromVector_2d(to.x - from.x, to.y - from.y)
+    local flat = vec3(to.x - from.x, to.y - from.y, 0.0)
+    local dir = flat / #flat
+    local ground = arrival.z + (L.wheelHeight or 1.2)
+    local touch = vec3(arrival.x, arrival.y, ground) - dir * (L.before or 60.0) -- toucher des roues, avant le comptoir
+    local stop = touch + dir * (L.roll or 45.0)                                   -- fin du roulage, à côté du comptoir
     local plane = CreateVehicle(hash, from.x, from.y, from.z, heading, false, false)
     SetModelAsNoLongerNeeded(hash)
     SetEntityCollision(plane, false, false)
@@ -39,23 +46,38 @@ local function flightFilm(toIsland)
     local cam = CreateCam('DEFAULT_SCRIPTED_CAMERA', true)
     RenderScriptCams(true, false, 0, true, true)
     DoScreenFadeIn(800)
-    local start, total = GetGameTimer(), c.seconds * 1000
-    -- par frame : seulement pendant le film du vol (quelques secondes)
-    while true do
-        local k = math.min(1.0, (GetGameTimer() - start) / total)
-        local p = from + (to - from) * k
-        SetEntityCoordsNoOffset(plane, p.x, p.y, p.z, false, false, false)
-        SetEntityHeading(plane, heading)
-        SetFocusPosAndVel(p.x, p.y, p.z, 0.0, 0.0, 0.0)
-        local side = GetOffsetFromEntityInWorldCoords(plane, -28.0 + 20.0 * k, -30.0, 6.0)
-        SetCamCoord(cam, side.x, side.y, side.z)
-        PointCamAtEntity(cam, plane, 0.0, 0.0, 0.0, true)
-        SetTextFont(4) SetTextScale(0.0, 0.5) SetTextCentre(true) SetTextOutline() SetTextColour(255, 255, 255, 220)
-        BeginTextCommandDisplayText('STRING')
-        AddTextComponentSubstringPlayerName(toIsland and 'Vol LSIA → Cayo Perico · [Espace] arriver' or 'Vol Cayo Perico → LSIA · [Espace] arriver')
-        EndTextCommandDisplayText(0.5, 0.9)
-        if k >= 1.0 or IsControlJustPressed(0, 22) or IsControlJustPressed(0, 194) then break end
-        Wait(0)
+    local label = toIsland and 'Vol LSIA → Cayo Perico' or 'Vol Cayo Perico → LSIA'
+    local phases = {
+        { a = from, b = to, ms = c.seconds * 1000, kind = 'cruise', text = label .. ' · [Espace] arriver' },
+        { a = to, b = touch, ms = (L.approachSeconds or 4) * 1000, kind = 'approach', text = 'Approche finale' },
+        { a = touch, b = stop, ms = (L.rollSeconds or 2.5) * 1000, kind = 'roll', text = 'Atterrissage' },
+    }
+    local skipped = false
+    for _, ph in ipairs(phases) do
+        if ph.kind == 'approach' then SetVehicleLandingGear(plane, 0) end -- train sorti pour l'approche
+        local start = GetGameTimer()
+        -- par frame : seulement pendant le film du vol (une quinzaine de secondes, une fois par trajet)
+        while true do
+            local k = math.min(1.0, (GetGameTimer() - start) / ph.ms)
+            local e = k
+            if ph.kind == 'approach' then e = 1 - (1 - k) ^ 2 elseif ph.kind == 'roll' then e = 1 - (1 - k) ^ 3 end -- freinage
+            local p = ph.a + (ph.b - ph.a) * e
+            SetEntityCoordsNoOffset(plane, p.x, p.y, p.z, false, false, false)
+            SetEntityRotation(plane, ph.kind == 'approach' and -4.0 * (1 - k) or 0.0, 0.0, heading, 2, true)
+            SetFocusPosAndVel(p.x, p.y, p.z, 0.0, 0.0, 0.0)
+            local side = ph.kind == 'cruise' and GetOffsetFromEntityInWorldCoords(plane, -28.0 + 20.0 * k, -30.0, 6.0)
+                or GetOffsetFromEntityInWorldCoords(plane, -14.0, -26.0, 5.0)
+            SetCamCoord(cam, side.x, side.y, side.z)
+            PointCamAtEntity(cam, plane, 0.0, 0.0, 0.0, true)
+            SetTextFont(4) SetTextScale(0.0, 0.5) SetTextCentre(true) SetTextOutline() SetTextColour(255, 255, 255, 220)
+            BeginTextCommandDisplayText('STRING')
+            AddTextComponentSubstringPlayerName(ph.text)
+            EndTextCommandDisplayText(0.5, 0.9)
+            if ph.kind == 'cruise' and (IsControlJustPressed(0, 22) or IsControlJustPressed(0, 194)) then skipped = true break end
+            if k >= 1.0 then break end
+            Wait(0)
+        end
+        if skipped then break end
     end
     DoScreenFadeOut(500)
     while not IsScreenFadedOut() do Wait(0) end
@@ -63,8 +85,25 @@ local function flightFilm(toIsland)
     DestroyCam(cam, false)
     ClearFocus()
     DeleteEntity(plane)
-    local t = GetGameTimer() + 1500 -- dernier chargement autour du joueur
-    while GetGameTimer() < t do Wait(100) end
+end
+
+--- V12.33 · Le joueur ne reprend la main que le sol chargé sous ses pieds, posé au niveau réel du sol (avant : 1,5 s d'attente
+--- aveugle à l'arrivée, le monde pas encore chargé autour de lui, et il traversait la carte).
+local function settleAt(arrival)
+    local ped = cache.ped
+    FreezeEntityPosition(ped, true)
+    RequestCollisionAtCoord(arrival.x, arrival.y, arrival.z)
+    NewLoadSceneStartSphere(arrival.x, arrival.y, arrival.z, 80.0, 0)
+    local t = GetGameTimer() + 8000
+    while not HasCollisionLoadedAroundEntity(ped) and GetGameTimer() < t do
+        RequestCollisionAtCoord(arrival.x, arrival.y, arrival.z)
+        Wait(50)
+    end
+    NewLoadSceneStop()
+    local ok, gz = GetGroundZFor_3dCoord(arrival.x, arrival.y, arrival.z + 5.0, false)
+    SetEntityCoords(ped, arrival.x, arrival.y, (ok and gz or arrival.z) + 1.0, false, false, false, false)
+    SetEntityHeading(ped, arrival.w)
+    FreezeEntityPosition(ped, false)
 end
 
 -- Soirée plage (GlobalState.gsCayoParty posé par le staff) : décor, danseurs et musique créés localement, seulement
@@ -118,16 +157,15 @@ AddEventHandler('gs_world:client:fly', function(side)
     local f = I.flight
     local alert = lib.alertDialog({ header = f[side].label, content = f.price > 0 and ('Billet : %d $ (banque). On y va ?'):format(f.price) or 'Vol gratuit. On y va ?', centered = true, cancel = true })
     if alert ~= 'confirm' then return end
+    local dest = f[side == 'mainland' and 'island' or 'mainland'].arrival
     DoScreenFadeOut(600)
     while not IsScreenFadedOut() do Wait(0) end
+    FreezeEntityPosition(cache.ped, true) -- V12.33 : figé le temps du film (le serveur nous a déjà posés à l'arrivée, monde pas encore chargé)
     local ok, msg = lib.callback.await('gs_world:fly', false, side)
     if ok and f.cinematic and f.cinematic.enabled then
-        flightFilm(side == 'mainland')   -- l'île se charge pendant le film
-    elseif ok then
-        -- laisser l'île se charger (ou se décharger) avant de rendre l'image
-        local t = GetGameTimer() + 4000
-        while GetGameTimer() < t do Wait(100) end
+        flightFilm(side == 'mainland', dest) -- l'île se charge pendant le film
     end
+    if ok then settleAt(dest) else FreezeEntityPosition(cache.ped, false) end
     DoScreenFadeIn(800)
     if msg then lib.notify({ description = msg, type = ok and 'success' or 'error' }) end
     if ok then TriggerEvent('gs_world:client:landed', side) end
