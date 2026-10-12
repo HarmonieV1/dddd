@@ -7,9 +7,9 @@ from pdf import H1, H2, P, SMALL, VERSION, footer, A4, mm, colors, SimpleDocTemp
 # (test, qui, priorité)
 SESSIONS = [
     ('0 · Avant de commencer (5 min)', [
-        ('METTRE-A-JOUR.bat : version V12.29 affichée, « Base de données sauvegardée », « Sauvegardes programmées » ; METTRE-A-JOUR-OVH puis GERER-OVH → 1 : « Version RoadLine : V12.29 »', 'Staff', 3),
+        ('METTRE-A-JOUR.bat : version V12.30 affichée, « Base de données sauvegardée », « Sauvegardes programmées » ; METTRE-A-JOUR-OVH puis GERER-OVH → 1 : « Version RoadLine : V12.30 »', 'Staff', 3),
         ('Fenêtre du serveur : aucune ligne ROUGE au démarrage (sauf un conflit de maps déjà connu) ; F8 en jeu : aucune erreur rouge ; GERER-OVH → 3 : aucune erreur de script', 'Seul', 3),
-        ('VIDER-CACHE-FIVEM.bat si tu vois un ancien menu (F11 doit afficher « RoadLine V12.29 ») ; pendant le backtest : set gs_honeypot "log" dans secrets.cfg (piège = simple signalement)', 'Staff', 2),
+        ('VIDER-CACHE-FIVEM.bat si tu vois un ancien menu (F11 doit afficher « RoadLine V12.30 ») ; pendant le backtest : set gs_honeypot "log" dans secrets.cfg (piège = simple signalement)', 'Staff', 2),
     ]),
     ('1 · Arrivée et personnage (15 min) — corrigé après tes retours', [
         ('Nouveau joueur : un seul personnage ; fondateur, super-admins et VIP (F11 → Joueurs → VIP) : deux ; plus de choix du lieu ; déco / reco = même endroit', '2', 3),
@@ -22,6 +22,7 @@ SESSIONS = [
         ('Garde-robe (U) : personnage au centre, 13 emplacements ; retirer le haut (les bras suivent), le chapeau, les chaussures → objets Vêtement ; les remettre depuis le sac ; tourner ← → ; vues Visage / Jambes ; Échap', 'Seul', 3),
         ('Vêtement : double-clic dans l\'inventaire = enfilé, l\'ancien revient dans le sac ; un vêtement femme refusé sur un homme ; sac plein = rien perdu', 'Seul', 2),
         ('Carte (joueur, pas staff) : blips nommés des lieux (Casino, Karting, Benny\'s, Prison, Ammu-Nation…) ; aucun blip sur les lieux secrets (QG de gang, labo, garage clandestin)', 'Seul', 2),
+        ('Staff F11 → Mappings installés → « Contrôler les maps chez moi » : chaque map « bâtiment chargé » (sinon la raison) ; même résultat dans la console du serveur ; laser game sans son script : « décor seul » et blip « (bientôt) »', 'Seul', 2),
         ('Boutique de vêtements : « Enregistrer la tenue » → un objet Tenue arrive aussi dans le sac ; /tenue plie la tenue portée', 'Seul', 2),
     ]),
     ('2 · Téléphone, métiers, papiers (20 min) — corrigé après tes retours', [

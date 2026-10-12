@@ -709,6 +709,25 @@ lib.callback.register('gs_admin:mappings', function(src)
     return res
 end)
 
+--- V12.30 · Résultat du contrôle « chez moi » (F11 → Mappings installés → Contrôler) recopié dans la console du serveur :
+--- une map démarrée côté serveur mais invisible chez le joueur n'y laissait aucune trace.
+local CHECK_COLOR = { ok = '^2', na = '^3', missing = '^1', partial = '^1', unreadable = '^1' }
+lib.callback.register('gs_admin:mapCheckReport', function(src, list)
+    if not staffGuard(src, 'mapcheck', 3, 30000) or Admin.level(src) < 4 or type(list) ~= 'table' then return false end
+    local bad = 0
+    for i, c in ipairs(list) do
+        if i > 80 or type(c) ~= 'table' then break end
+        local name = tostring(c.name or ''):match('^gsa_[%w_]+$')
+        local v = CHECK_COLOR[c.v] and c.v or nil
+        if name and v then
+            if v ~= 'ok' and v ~= 'na' then bad = bad + 1 end
+            print(('%s[gs_admin] Contrôle map (%s) %s : %s^7'):format(CHECK_COLOR[v], GetPlayerName(src) or src, name, Security:Sanitize(tostring(c.msg or ''), 220)))
+        end
+    end
+    print(('[gs_admin] Contrôle des maps chez %s : %s'):format(GetPlayerName(src) or src, bad > 0 and ('^1%d map(s) invisible(s) chez le joueur^7'):format(bad) or '^2toutes chargées^7'))
+    return true
+end)
+
 --- V12.15 · Retirer une map (F11 → Mappings installés) : super-admin et fondateur, journalisé. Arrêt immédiat + ligne
 --- commentée dans cfg/addons.cfg (server/maps.js) : réversible en retirant le #.
 lib.callback.register('gs_admin:disableMap', function(src, name)

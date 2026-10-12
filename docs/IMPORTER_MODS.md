@@ -23,6 +23,16 @@ contrôle et le range dans `C:\GTASOON\mods-tri\` :
 ## Blips des maps sur la carte (V12.29)
 Tous les joueurs voient un blip nommé par lieu (`PUBLIC` dans gs_admin/server/maps.js : nom, icône, couleur ; `false` = pas
 de blip pour les lieux secrets : QG de gang, labo, garage clandestin, villa privée). Une map arrêtée perd son blip.
+Une map d'activité sans son script (laser game, karting, auto-tamponneuses, foot, billard) a un blip « (bientôt) ».
+
+## Bâtiment invisible, ou aucun point pour jouer (V12.30)
+- **Pas de point pour jouer** : laser game, karting, auto-tamponneuses, foot, billard sont des **scripts vendus à part** par
+  l'auteur. La map seule = le décor. Console du serveur : « DÉCOR SEUL ». Les scripts sont dans
+  `C:\GTASOON\mods-tri\scripts-a-verifier` : dis-moi lesquels tu veux, je les relis et je les branche (Qbox / QBCore).
+- **Bâtiment invisible** sans erreur dans la console : en jeu, **F11 → Monde et lieux → Mappings installés → Contrôler les
+  maps chez moi**. Pour chaque map : « bâtiment chargé », « aucun modèle reçu » (fichiers absents → réimporter ; ou cache →
+  VIDER-CACHE-FIVEM), « reçus mais illisibles » (licence Cfx : pack acheté avec un autre compte que celui de la clé du
+  serveur, ou fichier abîmé → retélécharger), « pack incomplet ». Le résultat est aussi écrit dans la console du serveur.
 
 ## Packs payants protégés (escrow Cfx, fichier `.fxap`) — V12.18
 - Ils ne marchent **que** s'ils ont été achetés avec le compte Cfx.re (keymaster) **lié à la clé de licence du serveur**.

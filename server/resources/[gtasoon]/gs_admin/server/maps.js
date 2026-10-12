@@ -108,9 +108,19 @@ function entitiesOf(data) {
     if (!(nq > 0.98 && nq < 1.02)) continue;
     const sxy = data.readFloatLE(p + 32), sz = data.readFloatLE(p + 36);
     if (!(sxy > 0.05 && sxy < 20 && sz > 0.05 && sz < 20)) continue;
-    out.push([x, y, z]);
+    out.push([x, y, z, p >= 24 ? data.readInt32LE(p - 24) : 0]); // CEntityDef : archetypeName 24 octets avant la position
   }
   return out;
+}
+
+/** Hash Jenkins du jeu (GetHashKey), en entier signé comme côté Lua. */
+function joaat(str) {
+  let h = 0;
+  for (const c of Buffer.from(String(str).toLowerCase(), 'utf8')) {
+    h = (h + c) >>> 0; h = (h + (h << 10)) >>> 0; h = (h ^ (h >>> 6)) >>> 0;
+  }
+  h = (h + (h << 3)) >>> 0; h = (h ^ (h >>> 11)) >>> 0; h = (h + (h << 15)) >>> 0;
+  return h | 0;
 }
 
 /** Fichier du jeu de base remplacé par la map (routes, occlusion, lumières : id1_occl_02, hei_hw1_rd_critical_1…) :
@@ -166,12 +176,13 @@ function walk(dir, out = []) {
 /** Lit une ressource map : ses lieux et les fichiers du jeu qu'elle remplace. */
 function scanResource(name, dir) {
   const files = walk(dir);
-  const ymaps = [], streamed = [], heavy = [];
+  const ymaps = [], streamed = [], heavy = [], own = new Set();
   let unreadable = 0, assets = 0;
   for (const f of files) {
     const ext = path.extname(f).toLowerCase();
     if (STREAM_CHECK.includes(ext)) streamed.push({ file: path.basename(f).toLowerCase(), path: f });
     if (HEAVY.includes(ext) || STREAM_CHECK.includes(ext)) assets++;
+    if (ext === '.ydr' || ext === '.yft') own.add(joaat(path.basename(f, path.extname(f))));
     if (HEAVY.includes(ext)) {
       let head = null;
       try { const fd = fs.openSync(f, 'r'); head = Buffer.alloc(16); fs.readSync(fd, head, 0, 16, 0); fs.closeSync(fd); } catch (e) { head = null; }
@@ -186,7 +197,11 @@ function scanResource(name, dir) {
     ymaps.push({ file: path.basename(f), entities: entitiesOf(data) });
   }
   heavy.sort((a, b) => b.mb - a.mb);
-  return { name, label: labelOf(name), places: placesOf(ymaps, name), ymaps: ymaps.length, unreadable, assets, heavy, streamed };
+  // V12.30 · Modèles PROPRES à la map posés par ses .ymap (nom d'objet = nom d'un de ses .ydr / .yft) : le client vérifie
+  // qu'il les a bien et qu'il arrive à les charger (F11 → Mappings installés → Contrôler). Sans eux : bâtiment invisible.
+  const models = [];
+  for (const y of ymaps) for (const e of y.entities) if (own.has(e[3]) && !models.includes(e[3]) && models.length < 200) models.push(e[3]);
+  return { name, label: labelOf(name), places: placesOf(ymaps, name), ymaps: ymaps.length, unreadable, assets, heavy, streamed, models, ownModels: own.size };
 }
 
 // V12.15 : vrais noms des maps installées (menu F11 et blips), au lieu du nom de fichier du mod
@@ -253,9 +268,30 @@ function publicBlips(maps) {
     const cfg = PUBLIC[m.name];
     if (cfg === false || !m.places || !m.places.length) continue;
     const p = m.places[0];
-    out.push({ label: String((cfg && cfg.label) || m.label).slice(0, 40), sprite: (cfg && cfg.sprite) || 1, color: (cfg && cfg.color) || 0, x: p.x, y: p.y, z: p.z });
+    const soon = m.activity && !m.activity.script ? ' (bientôt)' : ''; // activité sans son script : pas encore jouable
+    out.push({ label: String((cfg && cfg.label) || m.label).slice(0, 40 - soon.length) + soon, sprite: (cfg && cfg.sprite) || 1, color: (cfg && cfg.color) || 0, x: p.x, y: p.y, z: p.z });
   }
   return out;
+}
+
+// V12.30 · Maps d'ACTIVITÉ : le bâtiment seul n'a aucun point d'interaction. Le jeu (laser game, karting…) est un SCRIPT
+// vendu à part par l'auteur (rangé dans mods-tri\scripts-a-verifier par IMPORTER-MODS, jamais installé sans relecture).
+// Clé = mot cherché dans le nom des ressources démarrées (patoche_plasmagame_script…) ; sans script : décor seul.
+const ACTIVITY = {
+  gsa_patoche_plasmagame_pack: { what: 'laser game', token: 'plasmagame' },
+  gsa_patoche_plasmakart_pack: { what: 'karting', token: 'plasmakart' },
+  gsa_patoche_bumpercar_del_perro: { what: 'auto-tamponneuses', token: 'bumpercar' },
+  gsa_patoche_bumpercar_pacific: { what: 'auto-tamponneuses', token: 'bumpercar' },
+  gsa_patoche_soccer_pack: { what: 'football', token: 'soccer' },
+  gsa_patoche_billiard_pack: { what: 'billard', token: 'billiard' },
+};
+
+/** Script d'activité démarré pour une map (`started` = noms des ressources démarrées), ou null. */
+function activityOf(name, started) {
+  const a = ACTIVITY[name];
+  if (!a) return undefined;
+  const script = started.find((r) => !/^gsa_/.test(r) && r.toLowerCase().includes(a.token)) || null;
+  return { what: a.what, script };
 }
 
 const FUSION = /^gsa_zz_fusion/; // ressource de fusion (tools/maps/fusion_occlusion.py), démarrée après les maps
@@ -500,7 +536,7 @@ function applyFusions(maps, fusionDir) {
   return written;
 }
 
-if (typeof module !== 'undefined' && module.exports) module.exports = { cleanName, deleteMapsOnDisk, pruneFusions, disableInCfg, inflateRsc7, entitiesOf, memoryMB, memorySplit, pagesSize, isVanillaName, placesOf, scanResource, conflictsOf, scanAll, labelOf, mergeOcclusion, applyFusions, RETIRED_MAPS, activeEnsures, publicBlips, PUBLIC, rscTruncated, truncatedFiles, _setLuaFs: (f) => { luaFs = f; } }; // tests Node seulement
+if (typeof module !== 'undefined' && module.exports) module.exports = { cleanName, deleteMapsOnDisk, pruneFusions, disableInCfg, inflateRsc7, entitiesOf, memoryMB, memorySplit, pagesSize, isVanillaName, placesOf, scanResource, conflictsOf, scanAll, labelOf, mergeOcclusion, applyFusions, RETIRED_MAPS, activeEnsures, publicBlips, PUBLIC, joaat, ACTIVITY, activityOf, rscTruncated, truncatedFiles, _setLuaFs: (f) => { luaFs = f; } }; // tests Node seulement
 
 if (typeof GetCurrentResourceName === 'function') {
   const self = GetCurrentResourceName();
@@ -533,6 +569,9 @@ if (typeof GetCurrentResourceName === 'function') {
     const key = list.map((r) => r.name).sort().join(',');
     if (!cache || key !== cacheKey) {
       try { cache = scanAll(list); } catch (e) { cache = { maps: [], conflicts: [], error: String(e && e.message || e) }; }
+      const started = [];
+      for (let i = 0; i < GetNumResources(); i++) { const n = GetResourceByFindIndex(i); if (n && GetResourceState(n) === 'started') started.push(n); }
+      for (const m of cache.maps) m.activity = activityOf(m.name, started);
       cacheKey = key;
     }
     return cache;
@@ -655,6 +694,7 @@ if (typeof GetCurrentResourceName === 'function') {
     // Cause habituelle d'une map payante : licence (achetée avec un autre compte Cfx que celui de la clé du serveur) ou
     // fichier .fxap manquant ; la vraie raison est écrite plus haut dans la console (« entitlement », « protected »…).
     for (const n of notStartedMaps()) console.log(`^1[gs_admin] Map activée mais NON démarrée : ${n.name} (état : ${n.state}). En jeu : bâtiment absent ou chargement sans fin. Cherche « ${n.name} » plus haut dans la console (licence Cfx « entitlement », fichier « protected resource » manquant)^7`);
+    for (const m of r.maps) if (m.activity && !m.activity.script) console.log(`^3[gs_admin] Map ${m.name} : DÉCOR SEUL. L'activité (${m.activity.what}) est un script vendu à part (aucune ressource « *${ACTIVITY[m.name].token}* » démarrée) : pas de point pour jouer. Il est dans C:\\GTASOON\\mods-tri\\scripts-a-verifier : à relire avant de l'installer. Blip affiché « (bientôt) »^7`);
     for (const m of r.maps) for (const h of m.heavy) console.log(`^3[gs_admin] Map ${m.name} : ${h.file} prend ${h.mb} Mo en mémoire (au-delà de la limite FiveM : 48 Mo graphique / 64 Mo système) : textures ou murs qui peuvent ne pas s'afficher^7`);
     for (const c of r.conflicts) {
       if (c.resolved) console.log(`^2[gs_admin] Conflit résolu : ${c.file} (${c.resources.join(' + ')}) fusionné par ${c.resolved}^7`);

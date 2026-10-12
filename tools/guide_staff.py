@@ -101,7 +101,7 @@ def build():
             [38 * G.mm, 120 * G.mm, 22 * G.mm], font=8.2)]
     s += [Paragraph('Un point mal placé (transformateur, ring, vendeur, PNJ…) : F11 → Monde et lieux → <b>Déplacer / retirer un point</b> (filtre par ressource ; '
                     'super-admin : retirer du jeu, réversible). Points de métier : menu dédié. Tout est gardé aux mises à jour.', SMALL)]
-    s += [Paragraph('6. Nouveautés V11.4 → V12.29 pour le staff', H2)]
+    s += [Paragraph('6. Nouveautés V11.4 → V12.30 pour le staff', H2)]
     s += [t([['Quoi', 'Comment'],
              ['VIP (2 personnages)', 'F11 → Joueurs → le joueur → VIP (fondateur). Tout le monde a 1 personnage ; staff super-admin+ et VIP en ont 2.'],
              ['Mapping', 'F11 → Monde et lieux → Mapping : catalogue par catégorie (mobilier, chantier, éclairage, végétation, stands, plage, police), placement à la souris, retrait d\'objets de la map.'],
@@ -115,6 +115,7 @@ def build():
              ['Isolement à distance', 'Bot : /isoler id minutes motif · /liberer id · /reanimer id. Appli staff : boutons Isoler / Libérer / Réanimer. Publié dans #sanctions, journalisé.'],
              ['Déplacer un point', 'F11 → Monde et lieux → Déplacer / retirer un point : 6 s après « Placer ce point ici », message « Vérifié : la ressource a redémarré avec la nouvelle position » (sinon un avertissement précis).'],
              ['Mappings : conflits', 'Console au démarrage : les conflits d\'occlusion (*_occl_*) sont fusionnés tout seuls (vert = résolu). Rouge = autre conflit : à signaler à Claude ou garder une des deux maps. Jaune = modèle au-delà de la limite FiveM (48 Mo graphique / 64 Mo système).'],
+             ['Contrôler les maps', 'F11 → Mappings installés → « Contrôler les maps chez moi » : bâtiment chargé, aucun modèle reçu (réimporter / VIDER-CACHE-FIVEM), reçus mais illisibles (licence Cfx du pack ou fichier abîmé), pack incomplet. Copie dans la console du serveur. Activité sans son script (laser game, karting…) : « décor seul ».'],
              ['Supprimer les maps', 'F11 → Mappings installés → « Supprimer définitivement toutes les maps » (taper SUPPRIMER) : dossiers, lignes de addons.cfg, copies et archives effacés, noms dans mods-retires.txt (jamais réinstallés). Sur le PC ET sur le VPS.'],
              ['Retirer une map', 'F11 → Monde et lieux → Mappings installés → « Retirer TOUTES les maps » ou la map → Retirer cette map : arrêtée et plus chargée (ligne commentée dans cfg/addons.cfg, réversible). À faire sur le serveur du PC, puis METTRE-A-JOUR-OVH.'],
              ['/optin (Qbox)', 'Bascule le « service admin » de Qbox, exigé par ses commandes (/tp, clés de véhicule…). Fonctionne pour admin et plus depuis la V12.15.'],

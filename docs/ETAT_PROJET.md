@@ -1,4 +1,4 @@
-# État du projet RoadLine RP — récapitulatif complet (à jour au 12/10/2026, V12.29)
+# État du projet RoadLine RP — récapitulatif complet (à jour au 12/10/2026, V12.30)
 
 Ce document sert de **point de sauvegarde** : si une conversation avec Claude est perdue, compressée ou doit reprendre
 ailleurs, tout ce qu'il faut savoir est ici. Il est versionné avec le code (`git log` en garde aussi l'historique).
@@ -54,7 +54,7 @@ exclusifs (« ce que tu ne trouveras nulle part ailleurs »).
 - `feature/phase1-bridge`
 - `claude/gta-rp-architecture-stack-pbvdxz`
 
-**Dernier commit poussé** : « V12.29 : blips publics des mappings » (hash exact :
+**Dernier commit poussé** : « V12.30 : contrôle des maps chez le joueur » (hash exact :
 `git log -1 origin/feature/phase1-bridge`). Les deux branches pointent sur le même commit.
 
 **Deux sessions Claude en parallèle** (poste Windows et session web) : elles ne se voient pas. Toujours synchroniser
@@ -64,7 +64,7 @@ par un colis (zip de l'installation ou de la session) + ce fichier, et comparer 
 ## 2. Versions : interne vs publique (important, piège classique)
 
 Depuis la V11.3, il y a **deux numéros de version différents**, volontairement :
-- `gs_version` (convar, `server.cfg.example`) = **V12.29** → version technique interne, vue par le staff (F11, console,
+- `gs_version` (convar, `server.cfg.example`) = **V12.30** → version technique interne, vue par le staff (F11, console,
   METTRE-A-JOUR). Continue d'avancer à chaque mise à jour (V11.2, V11.3...).
 - `gs_public_version` (convar) = **« V4 · bêta »** → version vue par les **joueurs** (écran de chargement, statut
   Discord, Gazette). Le site affiche son propre journal (V1 à V4, V5 « classé confidentiel »).
@@ -270,6 +270,19 @@ Résumé très condensé (le détail complet est dans `docs/ROADMAP.md`, `docs/F
   ne remplace pas le curseur), profondeur CSS `animation-timeline: view()` (captures, mock, carte, chiffres), intro
   façon chargement de mission (Entrée / clic pour passer). Tout coupé par `prefers-reduced-motion`, souris seulement
   sur ordinateur. Une seule boucle rAF qui s'endort quand rien ne bouge. Vérifié dans le navigateur : 0 erreur.
+
+- **V12.30** (12/10/2026) — « je vois le blip du laser game mais pas le bâtiment, et aucun point pour tester l'activité ;
+  rien dans la console » :
+  - **Activités = scripts vendus à part.** Laser game, karting, auto-tamponneuses, foot, billard : la map n'est que le décor,
+    le jeu est un script de l'auteur, rangé dans `mods-tri\scripts-a-verifier` et jamais installé (RoadLine n'a pas de script
+    pour ces activités). `ACTIVITY` (maps.js) : sans ressource démarrée qui porte le mot-clé (plasmagame, plasmakart,
+    bumpercar, soccer, billiard), console « DÉCOR SEUL », blip public « (bientôt) », ligne « Activité : … décor seul » dans F11.
+  - **F11 → Mappings installés → « Contrôler les maps chez moi »** : pour chaque map, les modèles qui lui sont propres (posés
+    par ses .ymap ET livrés en .ydr/.yft, lus à 24 octets de la position dans CEntityDef, hash `joaat`) sont cherchés chez
+    le joueur (`IsModelInCdimage`) puis 4 sont chargés pour de vrai (`RequestModel`, 12 s max, relâchés). Verdicts : chargé /
+    aucun modèle reçu (fichiers absents, cache) / reçus mais illisibles (licence Cfx de la map ou fichier abîmé) / pack
+    incomplet / non testable d'ici. Résultat recopié dans la console du serveur (`gs_admin:mapCheckReport`, super-admin).
+  - Tests : 8 de plus dans test_gs_maps.js (91).
 
 - **V12.29** (12/10/2026) — « blips publics avec nom pour chaque mapping » : `PUBLIC` dans maps.js (nom, icône, couleur, ou
   false pour les lieux secrets : gang 2, garage clandestin, labo, villa 01, panneaux, extensions DLC, sous-sol MRPD) ;

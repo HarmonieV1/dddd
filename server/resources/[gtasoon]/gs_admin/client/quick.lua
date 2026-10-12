@@ -946,8 +946,79 @@ local function mainMenu()
                 clearMapBlips()
                 mappingsMenu()
             end }
+        if m.activity then
+            opts[#opts + 1] = { title = m.activity.script and ('Activité : %s'):format(m.activity.what) or ('Activité : %s — décor seul'):format(m.activity.what),
+                icon = m.activity.script and 'gamepad' or 'ban', iconColor = m.activity.script and '#5aff8c' or '#ffb020', disabled = true,
+                description = m.activity.script and ('Script démarré : %s'):format(m.activity.script)
+                    or 'Le jeu est un script vendu à part par l\'auteur (pas de point pour jouer sans lui) : dans C:\\GTASOON\\mods-tri\\scripts-a-verifier' }
+        end
         opts[#opts + 1] = { title = m.name, icon = 'file', disabled = true, description = 'Nom de la ressource (cfg/addons.cfg)' }
         show('gs_staff_map_one', m.label, opts, 'gs_staff_maps')
+    end
+
+    -- V12.30 · Contrôle « chez moi » : la map est démarrée sur le serveur, mais ses modèles arrivent-ils jusqu'au joueur, et
+    -- se chargent-ils ? (un bâtiment invisible ne laisse aucune erreur dans la console). Modèles = ceux de la map posés par
+    -- ses .ymap (server/maps.js). Quelques-uns sont chargés pour de vrai puis relâchés.
+    local function checkMaps(maps)
+        local res = {}
+        for _, m in ipairs(maps) do
+            local c = { name = m.name, label = m.label, total = #(m.models or {}), present = 0, tried = 0, loaded = 0, sample = {} }
+            for _, h in ipairs(m.models or {}) do
+                if IsModelInCdimage(h) then
+                    c.present = c.present + 1
+                    if #c.sample < 4 then c.sample[#c.sample + 1] = h; RequestModel(h) end
+                end
+            end
+            res[#res + 1] = c
+        end
+        local deadline = GetGameTimer() + 12000
+        repeat
+            local waiting = false
+            for _, c in ipairs(res) do for _, h in ipairs(c.sample) do if not HasModelLoaded(h) then waiting = true end end end
+            if not waiting then break end
+            Wait(250)
+        until GetGameTimer() > deadline
+        for _, c in ipairs(res) do
+            for _, h in ipairs(c.sample) do
+                c.tried = c.tried + 1
+                if HasModelLoaded(h) then c.loaded = c.loaded + 1 end
+                SetModelAsNoLongerNeeded(h)
+            end
+            c.sample = nil
+            if c.total == 0 then
+                c.v, c.msg = 'na', 'non testable d\'ici (ses objets ne portent pas le nom de ses fichiers) : « Y aller » pour vérifier sur place'
+            elseif c.present == 0 then
+                c.v, c.msg = 'missing', ('aucun de ses %d modèles n\'arrive chez le joueur : fichiers absents de la ressource ou cache FiveM (VIDER-CACHE-FIVEM)'):format(c.total)
+            elseif c.loaded < c.tried then
+                c.v, c.msg = 'unreadable', ('modèles reçus mais impossibles à charger (%d/%d) : licence Cfx de la map (achetée avec un autre compte que celui de la clé du serveur) ou fichier abîmé → bâtiment invisible'):format(c.loaded, c.tried)
+            elseif c.present < c.total then
+                c.v, c.msg = 'partial', ('%d modèles sur %d reçus : pack incomplet, des morceaux du bâtiment manquent'):format(c.present, c.total)
+            else
+                c.v, c.msg = 'ok', ('bâtiment chargé (%d modèles)'):format(c.total)
+            end
+        end
+        return res
+    end
+
+    local function checkMenu(maps)
+        notify(true, 'Contrôle des maps en cours (quelques secondes)…')
+        local res = checkMaps(maps)
+        lib.callback.await('gs_admin:mapCheckReport', false, res) -- recopié dans la console du serveur
+        local byName = {}
+        for _, m in ipairs(maps) do byName[m.name] = m end
+        local ICON = { ok = { 'circle-check', '#5aff8c' }, na = { 'circle-question', '#ffb020' }, missing = { 'circle-xmark', '#ff6b6b' }, partial = { 'triangle-exclamation', '#ff6b6b' }, unreadable = { 'lock', '#ff6b6b' } }
+        local o, bad = {}, 0
+        table.sort(res, function(a, b) return (a.v == 'ok' and 1 or 0) < (b.v == 'ok' and 1 or 0) end)
+        for _, c in ipairs(res) do
+            if c.v ~= 'ok' and c.v ~= 'na' then bad = bad + 1 end
+            local m, desc = byName[c.name], c.msg
+            if m and m.activity and not m.activity.script then desc = desc .. (' · activité (%s) : script pas installé, décor seul'):format(m.activity.what) end
+            local p = m and m.places and m.places[1]
+            o[#o + 1] = { title = c.label, icon = ICON[c.v][1], iconColor = ICON[c.v][2], description = desc, arrow = p ~= nil,
+                disabled = p == nil, onSelect = p and function() mapActions(m, p) end or nil }
+        end
+        notify(bad == 0, bad == 0 and 'Toutes les maps testables sont chargées chez toi.' or ('%d map(s) invisible(s) chez toi : détail dans la liste et dans la console du serveur.'):format(bad))
+        show('gs_staff_maps_check', ('Contrôle chez moi (%d)'):format(#res), o, 'gs_staff_maps')
     end
 
     -- V12.10 · Mappings installés : où est chaque map ajoutée (lu dans ses fichiers), y aller, la voir sur la carte
@@ -974,6 +1045,11 @@ local function mainMenu()
                     notify(lib.callback.await('gs_admin:disableAllMaps', false))
                     clearMapBlips()
                 end }
+        end
+        if #r.maps > 0 then
+            o[#o + 1] = { title = 'Contrôler les maps chez moi', icon = 'stethoscope', iconColor = '#5ab4ff', arrow = true,
+                description = 'Bâtiment visible ou pas, sans bouger : modèles reçus, chargés, licence, activité. Résultat aussi dans la console du serveur',
+                onSelect = function() checkMenu(r.maps) end }
         end
         o[#o + 1] = { title = #mapBlips > 0 and 'Masquer leurs blips' or 'Afficher leurs blips sur ma carte', icon = 'location-dot',
             description = 'Visibles par toi seul, le temps de faire le tour', onSelect = function()

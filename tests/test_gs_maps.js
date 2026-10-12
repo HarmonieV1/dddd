@@ -13,9 +13,9 @@ const check = (name, cond) => { if (cond) passed++; else { failed++; console.err
 function ymap(objects, noise = 64) {
   const body = Buffer.alloc(noise + objects.length * 128 + noise);
   for (let i = 0; i < noise; i += 4) body.writeFloatLE(Math.sin(i) * 3e6, i); // nombres qui ne ressemblent à rien
-  objects.forEach(([x, y, z], i) => {
+  objects.forEach(([x, y, z, model], i) => {
     const p = noise + i * 128;
-    body.writeUInt32LE(0xdeadbeef, p); // nom du modèle (hash)
+    body.writeInt32LE(model ? M.joaat(model) : 0xdeadbeef | 0, p + 8); // CEntityDef.archetypeName (nom du modèle, hash)
     body.writeFloatLE(x, p + 32); body.writeFloatLE(y, p + 36); body.writeFloatLE(z, p + 40);
     body.writeFloatLE(0, p + 48); body.writeFloatLE(0, p + 52); body.writeFloatLE(0.7071, p + 56); body.writeFloatLE(0.7071, p + 60);
     body.writeFloatLE(1, p + 64); body.writeFloatLE(1, p + 68);
@@ -72,6 +72,19 @@ check('_manifest.ymf (nom commun à toutes les maps) : pas un conflit', !r.confl
 check('ressource vide (aucun fichier de map) : pas dans la liste', by.gsa_vide === undefined);
 check('fichier abîmé : compté illisible, rien ne plante', by.gsa_casse.unreadable === 1 && by.gsa_casse.places.length === 0);
 check('liste brute des fichiers non envoyée au menu', r.maps.every((m) => m.streamed === undefined));
+// V12.30 : modèles propres à la map (posés par ses .ymap ET livrés en .ydr/.yft) → contrôle « chez moi » côté client
+check('hash du jeu (GetHashKey)', M.joaat('adder') === (0xB779A091 | 0) && M.joaat('ADDER') === M.joaat('adder'));
+check('nom du modèle lu à côté de la position', M.entitiesOf(M.inflateRsc7(ymap([[927.2, -1563.9, 34.2, 'pg_shell']])))[0][3] === M.joaat('pg_shell'));
+{
+  const g = mk('gsa_patoche_plasmagame_pack', { 'stream/plasmagame.ymap': ymap([[300, 200, 100, 'pg_shell'], [301, 201, 100, 'pg_shell'], [302, 202, 100, 'prop_chair_01a']]),
+    'stream/pg_shell.ydr': Buffer.from('RSC7'), 'stream/pg_bar.ydr': Buffer.from('RSC7') });
+  const sg = M.scanResource(g.name, g.dir);
+  check('modèles propres : seulement ceux de la map posés par ses .ymap, sans doublon', sg.models.length === 1 && sg.models[0] === M.joaat('pg_shell') && sg.ownModels === 2);
+  check('objet du jeu de base (prop_chair_01a) : pas testé', !sg.models.includes(M.joaat('prop_chair_01a')));
+}
+check('activité sans script : décor seul', JSON.stringify(M.activityOf('gsa_patoche_plasmagame_pack', ['gs_admin', 'gsa_patoche_plasmagame_pack'])) === JSON.stringify({ what: 'laser game', script: null }));
+check('activité avec son script', M.activityOf('gsa_patoche_plasmagame_pack', ['patoche_plasmagame_script']).script === 'patoche_plasmagame_script');
+check('map sans activité : rien', M.activityOf('gsa_patoche_casino_pack', []) === undefined);
 check('maps triées par nom', r.maps.map((m) => m.label).join() === [...r.maps.map((m) => m.label)].sort((x, y) => x.localeCompare(y)).join());
 
 // 5. Mémoire des modèles (en-tête RSC7) : le poids du fichier ne suffit pas
@@ -221,6 +234,11 @@ const pb = M.publicBlips([
 ]);
 check('blips : casino avec son icône, QG de gang caché, map inconnue avec son nom, sans lieu ignorée',
   pb.length === 2 && pb[0].label === 'Casino' && pb[0].sprite === 679 && pb[1].label === 'Inconnu' && pb[1].sprite === 1);
+const pb2 = M.publicBlips([
+  { name: 'gsa_patoche_plasmagame_pack', label: 'Plasmagame', places: [{ x: 1, y: 2, z: 3 }], activity: { what: 'laser game', script: null } },
+  { name: 'gsa_patoche_plasmakart_pack', label: 'Plasmakart', places: [{ x: 1, y: 2, z: 3 }], activity: { what: 'karting', script: 'patoche_plasmakart' } },
+]);
+check('blip d\'une activité sans son script : « (bientôt) »', pb2[0].label === 'Laser game (bientôt)' && pb2[1].label === 'Karting');
 // V12.18 : FXServer récent = écriture interdite au JavaScript (« Use --allow-fs-write ») → repli par Lua (server/fsw.lua)
 {
   const orig = { w: fs.writeFileSync, u: fs.unlinkSync, r: fs.rmSync };
