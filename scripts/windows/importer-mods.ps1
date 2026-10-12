@@ -117,6 +117,21 @@ function Expand-Package($file, $dest) {
     }
     Remove-Item -LiteralPath $dest -Recurse -Force -ErrorAction SilentlyContinue
     Expand-One $file $dest
+    # V12.18 : pack payant livré en plusieurs dossiers-ressources (map + dépendance…) dans un seul zip : un mod par
+    # dossier (sinon seul le premier fxmanifest était installé, les autres oubliés)
+    $mans = @(Get-ChildItem -LiteralPath $dest -Recurse -File -Force | Where-Object { $_.Name -ieq 'fxmanifest.lua' -or $_.Name -ieq '__resource.lua' } | ForEach-Object { $_.DirectoryName } | Sort-Object -Unique)
+    $tops = @($mans | Where-Object { $d = $_; -not @($mans | Where-Object { $_ -ne $d -and $d.StartsWith($_ + '\') }).Count })
+    if ($tops.Count -ge 2) {
+        $list = @()
+        foreach ($t in $tops) {
+            $sub = Join-Path $Work (Clean-Name (Split-Path $t -Leaf))
+            if (Test-Path -LiteralPath $sub) { $sub = $sub + '_' + (Clean-Name (Split-Path $dest -Leaf)) }
+            Move-Item -LiteralPath $t -Destination $sub -Force
+            $list += Get-Item -LiteralPath $sub
+        }
+        Remove-Item -LiteralPath $dest -Recurse -Force -ErrorAction SilentlyContinue
+        return $list
+    }
     return @(Get-Item -LiteralPath $dest)
 }
 Say "`n[1/3] Décompression de $($archives.Count) archive(s)" 'Cyan'
