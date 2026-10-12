@@ -427,7 +427,8 @@ if (typeof module !== 'undefined' && module.exports) module.exports = { cleanNam
 
 if (typeof GetCurrentResourceName === 'function') {
   const self = GetCurrentResourceName();
-  luaFs = { write: (p, b64) => exports[self].FsWrite(p, b64), remove: (p) => exports[self].FsRemove(p) };
+  const viaLua = (ev, ...args) => { let r; emit(ev, ...args, (ok) => { r = ok; }); if (r === undefined) throw new Error(`${ev} sans réponse (server/fsw.lua chargé ?)`); return r; };
+  luaFs = { write: (p, b64) => viaLua('gs_admin:fsWrite', p, b64), remove: (p) => viaLua('gs_admin:fsRemove', p) };
   const mapResources = () => {
     const out = [];
     for (let i = 0; i < GetNumResources(); i++) {

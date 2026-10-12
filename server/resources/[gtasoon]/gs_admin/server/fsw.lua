@@ -7,7 +7,8 @@ local ROOT = norm(GetResourcePath(GetCurrentResourceName())):gsub('/+$', '')
 for _ = 1, 4 do ROOT = ROOT:match('^(.*)/[^/]+$') or ROOT end -- …/resources/[gtasoon]/gs_admin → dossier parent de server-data
 
 local function allowed(p)
-    if GetInvokingResource() ~= GetCurrentResourceName() then return false end
+    local by = GetInvokingResource()
+    if by and by ~= GetCurrentResourceName() then return false end -- seulement gs_admin (ou le serveur lui-même)
     local n = norm(p)
     return n:sub(1, #ROOT + 1) == ROOT .. '/' and not n:find('/%.%./') and not n:find('[\r\n"]')
 end
@@ -32,7 +33,7 @@ local function mkdirs(dir)
     if isWin then os.execute('mkdir "' .. dir:gsub('/', '\\') .. '" 2>nul') else os.execute('mkdir -p "' .. dir .. '"') end
 end
 
-exports('FsWrite', function(p, b64)
+local function fsWrite(p, b64)
     if not allowed(p) then return false end
     local f = io.open(p, 'wb')
     if not f then
@@ -43,11 +44,17 @@ exports('FsWrite', function(p, b64)
     if not f then return false end
     f:write(b64dec(b64 or '')); f:close()
     return true
-end)
+end
 
-exports('FsRemove', function(p) -- fichier, ou dossier vide
+local function fsRemove(p) -- fichier, ou dossier vide
     if not allowed(p) then return false end
     if os.remove(p) then return true end
     if isWin then os.execute('rmdir "' .. tostring(p):gsub('/', '\\') .. '" 2>nul') end
     return true
-end)
+end
+
+-- Événements LOCAUX au serveur (pas RegisterNetEvent : aucun joueur ne peut les déclencher). Un export appelé depuis le
+-- JavaScript de la même ressource n'existe pas (« No such export ») ; l'événement local est synchrone, la réponse revient
+-- par la fonction cb.
+AddEventHandler('gs_admin:fsWrite', function(p, b64, cb) local ok = fsWrite(p, b64); if cb then cb(ok) end end)
+AddEventHandler('gs_admin:fsRemove', function(p, cb) local ok = fsRemove(p); if cb then cb(ok) end end)
