@@ -293,6 +293,11 @@ Résumé très condensé (le détail complet est dans `docs/ROADMAP.md`, `docs/F
   - **Choix du 12/10** (`RETIRED_MAPS`, maps.js) : retirées au démarrage (PC et VPS) puis notées dans mods-retires.txt, archives
     gardées : Willie's, magasin d'alcool de Paleto, Moreo Gym, casse (anciennes gratuites), Benny's original (gardé : noir et
     blanc), villa bunker (gardé : villa 01), Digital Den (gardé : prison), Shadow Complex (gardé : plasmakart).
+  - **REPARER-FIVEM.bat** (racine, autonome, administrateur) : erreur FiveM 506 / déconnexions Rockstar côté joueur. Ferme
+    FiveM/GTA/Rockstar, décoche « exécuter en administrateur » (FiveM et launcher doivent avoir les mêmes droits : launcher
+    « Could not do OpenProcess on parent process »), supprime `%LOCALAPPDATA%\DigitalEntitlements`, vide le cache FiveM
+    (cache\game gardé), garde le dossier Rockstar de OneDrive sur le PC (attrib +P), resynchronise l'heure, signale un
+    `IVPath` Steam alors que GTA vient du launcher Rockstar (corrigé si accord). Transmissible aux joueurs.
   - Archives tronquées au téléchargement (« Unexpected end of archive ») : patoche_beach_party, patoche_plasmatron,
     patoche_soccer, patoche_soccer_cloth → à retélécharger depuis le portail Cfx.
 
