@@ -56,7 +56,7 @@ lib.callback.register('gs_jobs:garage:spawn', function(src, garageIndex, vehicle
     state:set('gsJob', job.name, true)
     state:set('gsOwner', GSJ.cid(src), true)
     Bridge:GiveVehicleKeys(src, veh)
-    TaskWarpPedIntoVehicle(GetPlayerPed(src), veh, -1)
+    Bridge:WarpIntoVehicle(src, veh) -- V12.26 : fiable (avant : un seul essai, souvent ignoré)
     DB.audit('vehicle_out', job.name, GSJ.cid(src), nil, nil, vdef.model)
     return true, L('vehicle_out')
 end)

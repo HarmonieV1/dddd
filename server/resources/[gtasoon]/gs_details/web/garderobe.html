@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Garde-robe</title>
+<style>
+:root{--panel:rgba(14,16,22,.78);--panel2:rgba(255,255,255,.06);--line:rgba(255,255,255,.10);--text:#eef0f4;--muted:#9aa1ad;--accent:#a855f7;--ok:#3ecf8e;--bad:#ff5c5c}
+*{box-sizing:border-box;margin:0;padding:0;user-select:none}
+html,body{width:100%;height:100%;overflow:hidden;background:transparent;font:14px/1.35 'Segoe UI',system-ui,sans-serif;color:var(--text)}
+#app{display:none;position:fixed;inset:0;grid-template-columns:minmax(260px,24vw) 104px 1fr 104px;gap:14px;padding:3vh 2.4vw 13vh;
+  background:linear-gradient(90deg,rgba(0,0,0,.55) 0,rgba(0,0,0,.15) 34%,rgba(0,0,0,0) 50%,rgba(0,0,0,.15) 66%,rgba(0,0,0,.45) 100%)}
+#app.on{display:grid}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;backdrop-filter:blur(6px);padding:14px;overflow:hidden;display:flex;flex-direction:column;min-height:0}
+h1{font-size:15px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:2px}
+h1 b{color:var(--text)}
+.sub{color:var(--muted);font-size:12px;margin-bottom:10px}
+h2{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:12px 0 6px}
+.scroll{overflow:auto;min-height:0;flex:1;padding-right:4px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(78px,1fr));gap:8px}
+.cell{position:relative;background:var(--panel2);border:1px solid var(--line);border-radius:10px;height:86px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;transition:.12s}
+.cell:hover{border-color:var(--accent);background:rgba(168,85,247,.14)}
+.cell img{width:42px;height:42px;object-fit:contain}
+.cell span{font-size:11px;text-align:center;margin-top:4px;padding:0 4px;line-height:1.15;max-height:26px;overflow:hidden}
+.cell.no{opacity:.4;cursor:not-allowed}
+.outfit{display:flex;align-items:center;gap:10px;background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:8px 10px;margin-bottom:6px;cursor:pointer}
+.outfit:hover{border-color:var(--accent)}
+.outfit img{width:30px;height:30px}
+.empty{color:var(--muted);font-size:12px;padding:8px 2px}
+.col{display:flex;flex-direction:column;gap:9px;justify-content:center}
+.slot{position:relative;width:100%;height:min(104px,calc((100vh - 16vh - 54px) / 7));flex:none;background:var(--panel);border:1px solid var(--line);border-radius:12px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:.12s}
+.slot{flex-direction:column}.slot img{width:50%;height:50%;object-fit:contain;filter:grayscale(1);opacity:.28}
+.slot em{font-style:normal;font-size:10px;color:var(--muted);margin-top:3px;max-width:92%;text-align:center;line-height:1.1;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}.slot.worn em{color:var(--text)}
+.slot.worn{border-color:rgba(168,85,247,.55);box-shadow:inset 0 0 0 1px rgba(168,85,247,.25)}
+.slot.worn img{filter:none;opacity:1}
+.slot:hover{border-color:var(--accent)}
+.slot .tip{position:absolute;top:50%;transform:translateY(-50%);white-space:nowrap;background:#000c;border:1px solid var(--line);border-radius:8px;padding:6px 9px;font-size:12px;pointer-events:none;opacity:0;transition:.12s;z-index:3}
+.col.left .tip{left:calc(100% + 8px)}.col.right .tip{right:calc(100% + 8px)}
+.slot:hover .tip{opacity:1}
+.tip small{display:block;color:var(--muted)}
+.dot{position:absolute;top:6px;right:6px;width:8px;height:8px;border-radius:50%;background:var(--ok);display:none}
+.slot.worn .dot{display:block}
+#bar{position:fixed;left:50%;bottom:3.2vh;transform:translateX(-50%);display:none;gap:8px;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:8px;backdrop-filter:blur(6px)}
+#bar.on{display:flex}
+button{cursor:pointer;border:1px solid var(--line);background:var(--panel2);color:var(--text);border-radius:9px;padding:9px 13px;font:inherit;font-size:13px;white-space:nowrap}
+button:hover{border-color:var(--accent)}
+button.on{background:var(--accent);border-color:var(--accent)}
+button.close{background:rgba(255,92,92,.15);border-color:rgba(255,92,92,.4)}
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="panel">
+    <h1>Garde-robe · <b id="name"></b></h1>
+    <div class="sub">Clic sur une pièce portée : elle va dans ton sac. Clic sur un vêtement du sac : tu l'enfiles. ← → : tourner · Échap : fermer.</div>
+    <div class="scroll">
+      <h2>Vêtements dans ton sac</h2><div class="grid" id="pieces"></div>
+      <h2>Tenues complètes</h2><div id="outfits"></div>
+    </div>
+  </div>
+  <div class="col left" id="left"></div>
+  <div></div>
+  <div class="col right" id="right"></div>
+</div>
+<div id="bar">
+  <button data-rot="-1" title="Tourner">⟲</button><button data-rot="1" title="Tourner">⟳</button>
+  <button data-view="body" class="on">Corps</button><button data-view="face">Visage</button><button data-view="legs">Jambes</button>
+  <button data-act="fold" title="Copie de ta tenue actuelle en objet Tenue">Copier ma tenue</button>
+  <button data-act="close" class="close">Fermer (Échap)</button>
+</div>
+<script>
+(function () {
+  'use strict';
+  var RES = typeof GetParentResourceName === 'function' ? GetParentResourceName() : 'gs_details';
+  // En jeu : images d'ox_inventory ; ouvert hors du jeu (aperçu, tests) : celles du dépôt
+  var IMG = location.protocol === 'file:' ? '../../../../overrides/ox_inventory/web/images/' : 'nui://ox_inventory/web/images/';
+  var busy = false, data = null;
+  function post(name, body) {
+    return fetch('https://' + RES + '/' + name, { method: 'POST', headers: { 'Content-Type': 'application/json; charset=UTF-8' }, body: JSON.stringify(body || {}) }).catch(function () {});
+  }
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+  function act(name, body) { if (busy) return; busy = true; post(name, body).then(function () { busy = false; }); setTimeout(function () { busy = false; }, 1500); }
+
+  function render(d) {
+    data = d;
+    document.getElementById('name').textContent = d.name || '';
+    ['left', 'right'].forEach(function (side) {
+      document.getElementById(side).innerHTML = d.slots.filter(function (s) { return s.side === side; }).map(function (s) {
+        return '<div class="slot' + (s.worn ? ' worn' : '') + '" data-take="' + esc(s.key) + '"><img src="' + IMG + esc(s.image) + '.png" alt=""><em>' + esc(s.label.split(' /')[0]) + '</em><i class="dot"></i>' +
+          '<div class="tip">' + esc(s.label) + '<small>' + (s.worn ? 'Porté · ' + esc(s.detail) + ' · clic : retirer' : 'Rien') + '</small></div></div>';
+      }).join('');
+    });
+    var p = d.bag.pieces || [], o = d.bag.outfits || [];
+    document.getElementById('pieces').innerHTML = p.length ? p.map(function (x) {
+      return '<div class="cell' + (x.fits ? '' : ' no') + '" data-wear="' + x.slot + '" data-key="' + esc(x.key) + '" title="' + esc(x.label) + ' · modèle ' + x.d + ', coloris ' + x.t + (x.fits ? '' : ' (pas à ta taille)') + '">' +
+        '<img src="' + IMG + esc(x.image) + '.png" alt=""><span>' + esc(x.label) + '</span></div>';
+    }).join('') : '<div class="empty">Aucun vêtement. Clique sur une pièce portée pour la retirer dans ton sac.</div>';
+    document.getElementById('outfits').innerHTML = o.length ? o.map(function (x) {
+      return '<div class="outfit' + (x.fits ? '' : ' no') + '" data-outfit="' + x.slot + '"><img src="' + IMG + 'outfit.png" alt=""><span>' + esc(x.label) + (x.fits ? '' : ' (pas à ta taille)') + '</span></div>';
+    }).join('') : '<div class="empty">Aucune tenue. « Copier ma tenue » en crée une.</div>';
+    Array.prototype.forEach.call(document.querySelectorAll('[data-view]'), function (b) { b.classList.toggle('on', b.dataset.view === d.view); });
+  }
+  function show(on) {
+    document.getElementById('app').classList.toggle('on', on);
+    document.getElementById('bar').classList.toggle('on', on);
+  }
+  window.addEventListener('message', function (e) {
+    var m = e.data || {};
+    if (m.action === 'open') { render(m.data); show(true); }
+    else if (m.action === 'state') render(m.data);
+    else if (m.action === 'close') show(false);
+  });
+  document.addEventListener('click', function (e) {
+    var t = e.target.closest('[data-take],[data-wear],[data-outfit],[data-rot],[data-view],[data-act]');
+    if (!t) return;
+    if (t.dataset.take) { var s = data && data.slots.filter(function (x) { return x.key === t.dataset.take; })[0]; if (s && s.worn) act('takeOff', { key: t.dataset.take }); }
+    else if (t.dataset.wear) { if (!t.classList.contains('no')) act('wear', { slot: +t.dataset.wear, key: t.dataset.key }); }
+    else if (t.dataset.outfit) { if (!t.classList.contains('no')) act('wearOutfit', { slot: +t.dataset.outfit }); }
+    else if (t.dataset.rot) post('rotate', { dir: +t.dataset.rot });
+    else if (t.dataset.view) post('view', { view: t.dataset.view }).then(function () { if (data) { data.view = t.dataset.view; render(data); } });
+    else if (t.dataset.act === 'fold') act('fold');
+    else if (t.dataset.act === 'close') post('close');
+  });
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' || e.key === 'Backspace') post('close');
+    else if (e.key === 'ArrowLeft' || e.key === 'q' || e.key === 'a') post('rotate', { dir: -1 });
+    else if (e.key === 'ArrowRight' || e.key === 'd') post('rotate', { dir: 1 });
+  });
+})();
+</script>
+</body>
+</html>

@@ -138,5 +138,42 @@ end)
 exports('GetJob', GetJob)
 exports('GetStatus', GetStatus)
 exports('IsLoggedIn', function() return playerData.citizenid ~= nil end)
+--- V12.26 · Prénom Nom du personnage (affichage : garde-robe…). nil si pas encore chargé.
+exports('GetCharName', function()
+    local c = playerData.charinfo
+    if not c or not c.firstname then return nil end
+    return ('%s %s'):format(c.firstname, c.lastname or '')
+end)
 exports('GetItemCount', function(item) return exports.ox_inventory:Search('count', item) or 0 end) -- [API]
 exports('OpenStash', function(id) exports.ox_inventory:openInventory('stash', id) end) -- [API]
+
+-- V12.26 · Secours de SpawnVehicle (serveur) : le joueur n'a pas pu être assis au volant à temps → on l'y place ici.
+-- Envoyé uniquement par le serveur ; véhicule proche seulement (jamais de téléportation lointaine).
+RegisterNetEvent('gs_bridge:client:warpInto', function(netId)
+    if type(netId) ~= 'number' then return end
+    local t = GetGameTimer() + 5000
+    while not NetworkDoesEntityExistWithNetworkId(netId) and GetGameTimer() < t do Wait(50) end
+    local veh = NetworkDoesEntityExistWithNetworkId(netId) and NetToVeh(netId) or 0
+    if veh == 0 or not DoesEntityExist(veh) then return end
+    local ped = PlayerPedId()
+    if #(GetEntityCoords(veh) - GetEntityCoords(ped)) > 15.0 or GetVehiclePedIsIn(ped, false) == veh then return end
+    SetPedIntoVehicle(ped, veh, -1)
+end)
+
+-- V12.26 · Clé-objet utilisée (gs_bridge/server/carkeys.lua) : petit geste de télécommande, phares et bip.
+RegisterNetEvent('gs_bridge:client:carKeyUsed', function(netId, locked)
+    local ped = PlayerPedId()
+    if not IsPedInAnyVehicle(ped, false) then
+        RequestAnimDict('anim@mp_player_intmenu@key_fob@')
+        local t = GetGameTimer() + 1000
+        while not HasAnimDictLoaded('anim@mp_player_intmenu@key_fob@') and GetGameTimer() < t do Wait(0) end
+        TaskPlayAnim(ped, 'anim@mp_player_intmenu@key_fob@', 'fob_click', 3.0, 3.0, 800, 48, 0, false, false, false)
+        RemoveAnimDict('anim@mp_player_intmenu@key_fob@')
+    end
+    local veh = NetworkDoesEntityExistWithNetworkId(netId) and NetToVeh(netId) or 0
+    if veh == 0 then return end
+    PlaySoundFromEntity(-1, locked and 'Remote_Control_Close' or 'Remote_Control_Open', veh, 'PI_Menu_Sounds', true, 0)
+    SetVehicleLights(veh, 2)
+    Wait(250) SetVehicleLights(veh, 0) Wait(150) SetVehicleLights(veh, 2) Wait(250)
+    SetVehicleLights(veh, 0)
+end)

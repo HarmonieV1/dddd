@@ -34,3 +34,26 @@ Config.Kits = {
     clean = { duration = 5000 },
     range = 3.5,
 }
+
+-- V12.26 · Garde-robe (touche U ou /garderobe) : chaque pièce portée peut être retirée et devient un objet « Vêtement »
+-- (gs_cloth), à enfiler d'un double-clic dans l'inventaire ou depuis la garde-robe ; la pièce remplacée revient dans le sac.
+-- kind = 'c' composant / 'p' accessoire (prop) ; arms = le haut emporte les bras assortis (sinon ils ne collent plus).
+-- side = colonne autour du personnage. none = valeur « rien porté » par modèle (m = homme, f = femme).
+Config.Wardrobe = {
+    key = 'U',
+    slots = {
+        { key = 'hat',      kind = 'p', id = 0,  label = 'Chapeau',            image = 'cloth_hat',      side = 'left' },
+        { key = 'glasses',  kind = 'p', id = 1,  label = 'Lunettes',           image = 'cloth_glasses',  side = 'left' },
+        { key = 'ears',     kind = 'p', id = 2,  label = 'Boucles d\'oreilles', image = 'cloth_ears',     side = 'left' },
+        { key = 'mask',     kind = 'c', id = 1,  label = 'Masque',             image = 'cloth_mask',     side = 'left', none = { m = 0, f = 0 } },
+        { key = 'chain',    kind = 'c', id = 7,  label = 'Collier / cravate',  image = 'cloth_chain',    side = 'left', none = { m = 0, f = 0 } },
+        { key = 'watch',    kind = 'p', id = 6,  label = 'Montre',             image = 'cloth_watch',    side = 'left' },
+        { key = 'bracelet', kind = 'p', id = 7,  label = 'Bracelet',           image = 'cloth_bracelet', side = 'left' },
+        { key = 'top',      kind = 'c', id = 11, label = 'Haut / veste',       image = 'cloth_top',      side = 'right', none = { m = 15, f = 15 }, arms = { m = 15, f = 15 } },
+        { key = 'shirt',    kind = 'c', id = 8,  label = 'T-shirt / dessous',  image = 'cloth_shirt',    side = 'right', none = { m = 15, f = 14 } },
+        { key = 'vest',     kind = 'c', id = 9,  label = 'Gilet',              image = 'cloth_vest',     side = 'right', none = { m = 0, f = 0 } },
+        { key = 'bag',      kind = 'c', id = 5,  label = 'Sac',                image = 'cloth_bag',      side = 'right', none = { m = 0, f = 0 } },
+        { key = 'legs',     kind = 'c', id = 4,  label = 'Pantalon / jupe',    image = 'cloth_legs',     side = 'right', none = { m = 61, f = 14 } },
+        { key = 'shoes',    kind = 'c', id = 6,  label = 'Chaussures',         image = 'cloth_shoes',    side = 'right', none = { m = 34, f = 35 } },
+    },
+}

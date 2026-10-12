@@ -19,6 +19,7 @@ local KEYS = [[
 | **H** | Mains en l'air · en voiture : démarrer sans clé |
 | **L** | Verrouiller / déverrouiller son véhicule |
 | **B** | Ceinture |
+| **U** | Garde-robe : retirer / enfiler chaque vêtement (objets du sac) · **/tenue** plier sa tenue |
 | **Ctrl gauche** | S'accroupir |
 | **I** | Cette aide |
 

@@ -36,6 +36,8 @@ local function fold()
     lib.notify({ description = msg, type = ok and 'success' or 'error' })
 end
 exports('FoldOutfit', fold)
+exports('CurrentOutfit', current) -- V12.26 : garde-robe
+exports('ApplyOutfit', apply)
 --- V10.2 : copie de la tenue portée en objet (sans l'enlever), ex. après un achat en boutique
 exports('CopyOutfit', function(name)
     local ok = lib.callback.await('gs_details:foldOutfit', false, tostring(name or 'Tenue'), current())
@@ -61,3 +63,5 @@ exports('wearOutfit', function(data, slot)
             type = ok and 'success' or 'error' })
     end)
 end)
+
+RegisterCommand('tenue', fold, false) -- V12.26 : « Plier ma tenue » aussi en commande

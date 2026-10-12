@@ -180,6 +180,7 @@ provide('gs_bridge', {
     SetGang = function(src, name, grade) W.players[src].gang = { name = name, grade = grade } return true end,
     GiveVehicle = function(src, model) if model == "casse" then return false end W.players[src].vehicles = (W.players[src].vehicles or 0) + 1 return true end,
     GiveVehicleKeys = function() return true end,
+    WarpIntoVehicle = function(src, veh) if W.entities[veh] then W.entities[veh].driver = src end return true end,
     Notify = function(src, msg, t) W.notes[src] = { msg = msg, type = t } end,
     GetGender = function(src) return W.players[src] and (W.players[src].gender or 'male') end,
     GetCharInfo = function(src) local p = W.players[src] if not p then return nil end local f, l = p.name:match('^(%S+)%s*(.*)$') return { firstname = f, lastname = l, birthdate = '1990-01-01', nationality = 'USA' } end,

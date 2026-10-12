@@ -36,6 +36,7 @@ local function toggleMask()
 end
 
 lib.registerRadial({ id = 'gs_me_clothes', items = {
+    { label = 'Garde-robe (U)', icon = 'shirt', onSelect = function() exports.gs_details:OpenWardrobe() end },
     { label = 'Plier ma tenue (objet)', icon = 'shirt', onSelect = function() exports.gs_details:FoldOutfit() end },
     { label = 'Chapeau', icon = 'hat-cowboy', onSelect = function() toggleProp(0, 'chapeau') end },
     { label = 'Lunettes', icon = 'glasses', onSelect = function() toggleProp(1, 'lunettes') end },

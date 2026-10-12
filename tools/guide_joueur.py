@@ -231,6 +231,7 @@ def build():
             ['E', 'Action sur un point [E]'],
             ['N · ²', 'Parler · portée de la voix (chuchoter, normal, crier)'],
             ['H · L · B', 'Mains en l\'air · verrouiller le véhicule · ceinture'],
+            ['U', 'Garde-robe : ton personnage en grand, retirer / enfiler chaque vêtement (objets du sac)'],
             ['I', 'Aide des touches en jeu']]
     s += [table(keys, [40 * mm, 140 * mm])]
     s += [Paragraph('Les commandes utiles', H3)]
@@ -248,6 +249,7 @@ def build():
             ['/porter', 'Porter un carton, une caisse, une pizza… (aussi W → Moi → Porter)'],
             ['/permis', 'Ton permis est-il valide ?'],
             ['/retoucheperso', 'Retoucher ton apparence une fois après la création (visage, coiffure)'],
+            ['/garderobe · /tenue', 'Ouvrir la garde-robe (U) · plier ta tenue en objet Tenue'],
             ['/jury', 'Rouvrir ta convocation de juré'],
             ['/report', 'Prévenir le staff']]
     s += [table(cmds, [40 * mm, 140 * mm])]
@@ -309,7 +311,7 @@ def build():
     s += steps(['Va à la concession avec ton <b>permis</b>. Regarde les modèles exposés ou ouvre le catalogue au comptoir (Alt).',
                 '<b>Essai gratuit</b> : quelques minutes au volant, puis la voiture revient seule.',
                 'Paie comptant (banque) ou à <b>crédit</b> : 10 % d\'apport minimum, jusqu\'à 24 échéances, au bureau des financements.',
-                'La voiture arrive à ton nom avec ses clés. Range-la dans un <b>parking public</b> (garages sur la carte).',
+                'La voiture arrive à ton nom avec ses clés, et une <b>clé dans ton sac</b> (double-clic près de la voiture : verrouiller ; la donner = prêter la voiture). Range-la dans un <b>parking public</b> (garages sur la carte).',
                 'Un <b>vendeur de la concession</b> (joueur) peut te conseiller, faire une reprise ou une remise : c\'est son métier.'])
     s += [Paragraph('Après l\'achat', H3)]
     s += [table([['Service', 'Prix', 'Détail'],
@@ -485,7 +487,14 @@ def build():
                   'Stands de tir (Pillbox, Cypress Flats) : tu peux t\'entraîner sans être signalé.'])
     s += [Paragraph('Vêtements, coiffeur, tatoueur', H3)]
     s += [Paragraph('Boutiques de vêtements, coiffeurs (menu de barbier : coupe, couleur, barbe, sourcils, maquillage — 150 $) et tatoueurs sont sur la carte. '
-                    'Une tenue achetée devient un <b>objet Tenue</b> dans l\'inventaire : tu t\'habilles où tu veux (menu W → Moi).', P)]
+                    'Une tenue achetée ou <b>enregistrée en boutique</b> devient un <b>objet Tenue</b> dans l\'inventaire : tu t\'habilles où tu veux (double-clic).', P)]
+    s += [Paragraph('La garde-robe (touche U)', H3)]
+    s += bullets(['Ton personnage en grand au centre, tes vêtements tout autour : chapeau, lunettes, boucles d\'oreilles, masque, collier, montre, '
+                  'bracelet, haut, t-shirt, gilet, sac, pantalon, chaussures. ← → pour le faire tourner, vues Corps / Visage / Jambes.',
+                  'Clic sur une pièce portée : elle part dans ton sac en <b>objet Vêtement</b>. Clic sur un vêtement ou une tenue du sac : tu l\'enfiles, '
+                  'la pièce remplacée revient dans le sac.',
+                  'Les vêtements s\'échangent, se donnent, se rangent dans un coffre comme n\'importe quel objet (double-clic dans l\'inventaire = l\'enfiler).',
+                  'Coiffure, visage et tatouages ne bougent jamais : c\'est le coiffeur et le tatoueur.'])
 
     # ---- 9. Activités ----
     s += chapter(9, 'Activités et loisirs', 'Pas besoin de métier pour gagner de l\'argent ou de l\'XP : la ville propose toujours quelque chose. '

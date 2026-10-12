@@ -267,6 +267,27 @@ local function RegisterStash(id, label, slots, weight, groups, coords)
 end
 
 --- Liste triée { name, label } de tous les items ox_inventory (menus staff). [API]
+--- V12.26 · Cases du sac contenant `item` : { { slot, label, metadata } } (garde-robe : vêtements et tenues).
+local function ListSlots(src, item)
+    local out = {}
+    if not IsLoaded(src) or type(item) ~= 'string' then return out end
+    local ok, slots = pcall(function() return OX:Search(src, 'slots', item) end)
+    for _, s in pairs(ok and slots or {}) do
+        out[#out + 1] = { slot = s.slot, label = s.metadata and s.metadata.label or s.label, metadata = s.metadata or {} }
+    end
+    table.sort(out, function(a, b) return a.slot < b.slot end)
+    return out
+end
+
+--- V12.26 · Retire l'objet `item` de la case `slot` (un seul) et renvoie ses métadonnées, ou nil si la case ne le contient pas.
+local function TakeSlot(src, item, slot)
+    if not IsLoaded(src) or type(item) ~= 'string' or not positiveInt(slot) then return nil end
+    local s = OX:GetSlot(src, slot)
+    if not s or s.name ~= item then return nil end
+    if not OX:RemoveItem(src, item, 1, nil, slot) then return nil end
+    return s.metadata or {}
+end
+
 local function ListItems()
     local list = {}
     local ok, items = pcall(function() return OX:Items() end)
@@ -297,6 +318,25 @@ end
 
 local VEHICLE_TYPES = { automobile = true, bike = true, boat = true, heli = true, plane = true, submarine = true, trailer = true, train = true }
 
+--- V12.26 · Assied le joueur au volant de façon fiable. Un seul TaskWarpPedIntoVehicle, envoyé avant que le jeu du joueur
+--- connaisse le véhicule, était ignoré : la voiture apparaissait SUR le joueur. On attend que l'entité existe vraiment,
+--- on réessaie jusqu'à ce que le joueur soit au volant (3 s max), puis secours côté client.
+local function WarpIntoVehicle(src, veh)
+    if not veh or veh == 0 or not DoesEntityExist(veh) then return false end
+    local ped, t = GetPlayerPed(src), GetGameTimer() + 3000
+    -- même méthode que qbx_core (qbx.spawnVehicle) : plaque lue = entité créée dans le jeu, puis SetPedIntoVehicle
+    while GetVehicleNumberPlateText(veh) == '' and GetGameTimer() < t do Wait(0) end
+    t = GetGameTimer() + 3000
+    repeat
+        SetPedIntoVehicle(ped, veh, -1)
+        Wait(100)
+    until GetVehiclePedIsIn(ped, false) == veh or GetGameTimer() > t or not DoesEntityExist(veh)
+    if not DoesEntityExist(veh) then return false end
+    if GetVehiclePedIsIn(ped, false) == veh then return true end
+    TriggerClientEvent('gs_bridge:client:warpInto', src, NetworkGetNetworkIdFromEntity(veh))
+    return true
+end
+
 --- Véhicule temporaire (location, quête, staff) créé côté serveur, clés données, joueur placé dedans si warp.
 --- Retourne l'entité (0 si échec). La plaque est `plate` (8 caractères max).
 local function SpawnVehicle(src, model, vtype, coords, heading, plate, warp)
@@ -308,8 +348,8 @@ local function SpawnVehicle(src, model, vtype, coords, heading, plate, warp)
         if GetGameTimer() > deadline then return 0 end
         Wait(0)
     end
+    if warp then WarpIntoVehicle(src, veh) end -- avant la plaque : WarpIntoVehicle attend la plaque d'origine (= véhicule prêt)
     if plate then SetVehicleNumberPlateText(veh, plate:sub(1, 8)) end
-    if warp then TaskWarpPedIntoVehicle(GetPlayerPed(src), veh, -1) end
     GiveVehicleKeys(src, veh)
     return veh
 end
@@ -373,8 +413,11 @@ exports('SetLicence', SetLicence)
 exports('GetVehicleOwner', GetVehicleOwner)
 exports('GetVehiclePrice', GetVehiclePrice)
 exports('ListItems', ListItems)
+exports('ListSlots', ListSlots)
+exports('TakeSlot', TakeSlot)
 exports('CreateDrop', CreateDrop)
 exports('SpawnVehicle', SpawnVehicle)
+exports('WarpIntoVehicle', WarpIntoVehicle)
 exports('GetJob', GetJob)
 exports('IsOnDuty', IsOnDuty)
 exports('SetJob', SetJob)

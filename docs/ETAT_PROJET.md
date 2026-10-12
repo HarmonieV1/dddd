@@ -1,4 +1,4 @@
-# État du projet RoadLine RP — récapitulatif complet (à jour au 12/10/2026, V12.25)
+# État du projet RoadLine RP — récapitulatif complet (à jour au 12/10/2026, V12.26)
 
 Ce document sert de **point de sauvegarde** : si une conversation avec Claude est perdue, compressée ou doit reprendre
 ailleurs, tout ce qu'il faut savoir est ici. Il est versionné avec le code (`git log` en garde aussi l'historique).
@@ -54,7 +54,7 @@ exclusifs (« ce que tu ne trouveras nulle part ailleurs »).
 - `feature/phase1-bridge`
 - `claude/gta-rp-architecture-stack-pbvdxz`
 
-**Dernier commit poussé** : « V12.25 : diagnostic des maps, site de la documentation » (hash exact :
+**Dernier commit poussé** : « V12.26 : véhicule au volant, clés et vêtements en objets, garde-robe » (hash exact :
 `git log -1 origin/feature/phase1-bridge`). Les deux branches pointent sur le même commit.
 
 **Deux sessions Claude en parallèle** (poste Windows et session web) : elles ne se voient pas. Toujours synchroniser
@@ -64,7 +64,7 @@ par un colis (zip de l'installation ou de la session) + ce fichier, et comparer 
 ## 2. Versions : interne vs publique (important, piège classique)
 
 Depuis la V11.3, il y a **deux numéros de version différents**, volontairement :
-- `gs_version` (convar, `server.cfg.example`) = **V12.25** → version technique interne, vue par le staff (F11, console,
+- `gs_version` (convar, `server.cfg.example`) = **V12.26** → version technique interne, vue par le staff (F11, console,
   METTRE-A-JOUR). Continue d'avancer à chaque mise à jour (V11.2, V11.3...).
 - `gs_public_version` (convar) = **« V4 · bêta »** → version vue par les **joueurs** (écran de chargement, statut
   Discord, Gazette). Le site affiche son propre journal (V1 à V4, V5 « classé confidentiel »).
@@ -270,6 +270,25 @@ Résumé très condensé (le détail complet est dans `docs/ROADMAP.md`, `docs/F
   ne remplace pas le curseur), profondeur CSS `animation-timeline: view()` (captures, mock, carte, chiffres), intro
   façon chargement de mission (Entrée / clic pour passer). Tout coupé par `prefers-reduced-motion`, souris seulement
   sur ordinateur. Une seule boucle rAF qui s'endort quand rien ne bouge. Vérifié dans le navigateur : 0 erreur.
+
+- **V12.26** (12/10/2026) — retours en jeu : « la voiture nous tombe dessus », « les clés ne sont pas des objets », « nos tenues
+  en objets, la personnalisation comme sur ces captures (perso en 3D, vêtements autour) » :
+  - **Apparition dans le véhicule** : `Bridge:WarpIntoVehicle` (gs_bridge) = méthode de qbx_core : attendre que la plaque soit lue
+    (véhicule créé chez le joueur), `SetPedIntoVehicle` répété 3 s, secours client `gs_bridge:client:warpInto` (véhicule à moins de
+    15 m). Utilisé par `SpawnVehicle` (staff, location, quêtes, courses, gangs, auto-école) et le garage des métiers.
+  - **Clés en objet** `gs_carkey` (gs_bridge/server/carkeys.lua) : à chaque clé donnée par qbx_vehiclekeys (état `keysList` du
+    joueur : garage, concession, location, métier, staff, vol réussi), une « Clé — Marque Modèle » avec la plaque ; une par plaque,
+    jamais recréée si donnée / jetée (mémoire par personnage). Double-clic à moins de 25 m : verrouille / déverrouille (SetLockState,
+    bip + phares) et donne l'accès à qui la tient (prêter sa voiture = donner la clé). Test `test_gs_carkeys.lua` (10).
+  - **Tenues** : « Enregistrer la tenue » dans la boutique (illenium-appearance) crée aussi un objet Tenue ; `/tenue` = plier.
+  - **Garde-robe** (touche **U** — K est l'inventaire proche ; Ctrl+U reste le vol libre du staff —, `/garderobe`, menu radial
+    Vêtements) : personnage en grand (caméra fixe, il tourne avec ← →, vues Corps / Visage / Jambes), 13 emplacements autour
+    (chapeau, lunettes, boucles, masque, collier, montre, bracelet, haut + bras, t-shirt, gilet, sac, pantalon, chaussures). Clic sur
+    une pièce portée → objet `gs_cloth` (image par type) ; clic sur un vêtement / une tenue du sac → enfilé, l'ancienne pièce revient
+    dans le sac (place vérifiée avant, taille homme / femme vérifiée AVANT de retirer l'objet). Double-clic dans l'inventaire =
+    enfiler. Valeurs « rien porté » dans `Config.Wardrobe` (gs_details). Bridge : `ListSlots`, `TakeSlot`. Test
+    `test_gs_outfits.lua` (18), écran testé dans Chromium (1920 et 1280, 0 erreur).
+  - Pas encore : vignettes photo de chaque coupe / vêtement dans le magasin (capture automatique de milliers d'images, à part).
 
 - **V12.25** (12/10/2026) — « refais le tour des mappings, mets la doc à jour, fais-moi un site de la doc » :
   - Console au démarrage : `Map activée mais NON démarrée : … (état …)` pour chaque map active dans addons.cfg qui ne tourne

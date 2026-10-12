@@ -21,6 +21,8 @@ def icon(emoji, path):
 OURS = {  # nos objets sans image propre
     'advancedkit': '🧰', 'scrapmetal': '🔩', 'weed': '🌿', 'paperbag': '🛍️', 'trash_chips': '🍟', 'donut': '🍩',
     'cigarettes_redwood': '🚬', 'spraycan': '🎨', 'huntingknife': '🔪', 'burger': '🍔', 'fries': '🍟',
+    # V12.26 : clé de véhicule, pièces de vêtements (garde-robe)
+    'gs_carkey': '🔑', 'cloth_hat': '🧢', 'cloth_mask': '🎭', 'cloth_glasses': '🕶️', 'cloth_ears': '💎', 'cloth_watch': '⌚', 'cloth_bracelet': '🔗', 'cloth_top': '🧥', 'cloth_shirt': '👕', 'cloth_legs': '👖', 'cloth_shoes': '👟', 'cloth_bag': '🎒', 'cloth_vest': '🦺', 'cloth_chain': '📿', 'cloth_decals': '🏷️',
 }
 BASE = {
     'black_money': '💵', 'money': '💶', 'sprunk': '🥤', 'water': '💧', 'mustard': '🌭', 'bandage': '🩹', 'parachute': '🪂',
