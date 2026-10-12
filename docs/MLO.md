@@ -165,7 +165,7 @@ a presque toujours un fil sur forum.cfx.re avec le lien de **sa** boutique. C'es
 
 ## 6. Ce que RoadLine a déjà, et ce qui manque vraiment
 
-### Maps payantes installées (12/10/2026, V12.31)
+### Maps payantes installées (12/10/2026, V12.34)
 
 Une quarantaine de packs escrow (achat Cfx.re lié à la clé du serveur), surtout Patoche, vérifiés à chaque démarrage
 (intégrité des fichiers, conflits d'occlusion fusionnés dans `gsa_zz_fusion_occlusion`). Blips publics : `PUBLIC` dans
@@ -182,10 +182,14 @@ Une quarantaine de packs escrow (achat Cfx.re lié à la clé du serveur), surto
 | Casino, concession, Ammu-Nation ×2, tabac, tacos, animalerie, billard, entrepôt, box de stockage | `gsa_patoche_*` | casino / concession / Ammu-Nation : doublons avec nos points sur les lieux du jeu, choix « nouveau / ancien » en attente |
 | QG gang 2, garage clandestin, labo weed, panneaux | `gsa_patoche_*` | sans blip (lieux secrets) |
 
-Retirées (`RETIRED_MAPS`, supprimées au démarrage, archives gardées) : supermarché Willie's, magasin d'alcool de
-Paleto, Moreo Gym, casse, Benny's original, villa moderne 01, Digital Den, Shadow Complex.
+Retirées (`RETIRED_MAPS` dans `gs_admin/server/maps.js` = **liste unique**) : supermarché Willie's, magasin d'alcool
+de Paleto, Moreo Gym, casse, Benny's original, villa moderne 01, Digital Den, Shadow Complex, laser game (+ DLC), karting
+(+ DLC), plasmatron. Le serveur les supprime au démarrage (archives gardées dans mods-a-trier) et, depuis la V12.34,
+IMPORTER-MODS ne les réinstalle jamais (même supprimées à la main avant un redémarrage) et enlève leurs lignes de
+addons.cfg. Pour en retirer une autre : l'ajouter à `RETIRED_MAPS` ; pour en remettre une : `$Restored` dans
+importer-mods.ps1.
 Désactivées tant que l'archive n'est pas retéléchargée (téléchargement coupé, V12.27) : beach party, terrain de foot
-(soccer, soccer_cloth), plasmatron.
+(soccer, soccer_cloth).
 
 ### Lieux du jeu de base (audit du 11/10/2026)
 
@@ -208,7 +212,7 @@ et seulement une fois que le serveur tourne et que le RP correspondant existe vr
 
 La sélection de MLO à consulter (20 gratuits, 10 payants) est dans `docs/SELECTION_MAPPINGS.md`.
 
-## 7. Une map ne marche pas : diagnostic (V12.27 → V12.31)
+## 7. Une map ne marche pas : diagnostic (V12.27 → V12.34)
 
 | Symptôme | Où regarder | Cause / remède |
 |---|---|---|
@@ -218,6 +222,7 @@ La sélection de MLO à consulter (20 gratuits, 10 payants) est dans `docs/SELEC
 | Map visible mais aucun point pour jouer | console : « DÉCOR SEUL » ; F11 : « Activité : … décor seul » | script compagnon absent : il doit être dans le zip du pack ; sinon le télécharger chez le vendeur |
 | Script installé mais pas lancé | console : « Script de map activé mais NON démarré » | licence, dépendance manquante, ou script qui refuse d'être renommé (remonter dans la console) |
 | Deux maps au même endroit | console : « CONFLIT » | fusion automatique ; sinon en garder une (`RETIRED_MAPS`) |
+| Map supprimée qui revient après METTRE-A-JOUR | `RAPPORT-MODS.txt` | corrigé en V12.34 : elle doit être dans `RETIRED_MAPS` (ou `mods-retires.txt`) |
 
 ## 8. Après le téléchargement
 

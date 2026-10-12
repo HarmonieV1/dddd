@@ -80,4 +80,18 @@ F10/F11 staff, I aide, K inventaire proche, W radial, H mains en l'air, L verrou
 7. Après l'ouverture : entityLockdown strict, audit des ~300 points d'entrée réseau, refonte des cabines téléphoniques,
    miniatures du menu d'apparence, mises à jour ox_lib / ox_inventory / oxmysql.
 
+## Ce qu'a fait la session web le 12/10 (V12.17 → V12.34), en bref
+- Maps payantes (escrow) : import réparé, archives coupées refusées (7-Zip ≥ 2), intégrité vérifiée au démarrage, fusion
+  d'occlusion écrite par `gsa_zz_fusion_occlusion` (seul dossier autorisé), blips publics, contrôle « chez moi » (F11),
+  scripts compagnons installés avec leur map, maps retirées jamais réimportées (V12.34).
+- Joueurs : apparition dans le véhicule fiable, clés en objet, vêtements / tenues en objets, garde-robe (U).
+- Outils : REPARER-FIVEM.bat (erreurs FiveM / Rockstar côté joueur), site de doc HTML (`livraison/ROADLINE-Documentation.html`).
+- La V12.33 du poste Windows (maps plasma retirées, F4 qui explique ses refus, garde-robe sans focus bloqué, atterrissage
+  à Cayo) est intégrée dans git.
+
+## Si tu n'as pas accès au dépôt git
+Le paquet de transfert contient `ROADLINE-V12-installation.zip` (= le dépôt en V12.34, sans secrets), `ETAT_PROJET.md`,
+`MLO.md`, `IMPORTER_MODS.md` et le site de doc. Travaille dans ce zip et, à la fin, renvoie-moi un zip complet + la liste
+des fichiers modifiés pour que l'autre session les reprenne.
+
 Commence par me dire ce que tu as compris de l'état du projet en 5 lignes, puis attends ma demande.
