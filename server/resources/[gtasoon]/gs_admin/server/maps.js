@@ -18,6 +18,29 @@ const HEAVY = ['.ydr', '.ytd', '.ydd', '.yft'];      // modèles et textures : t
 // système. V12.14 : la V12.11 signalait dès 16 Mo (ancienne limite), ce qui alertait à tort sur des modèles acceptés par le jeu.
 const HEAVY_PHYS_MB = 48, HEAVY_VIRT_MB = 64;
 
+// V12.18 · Écritures disque. Les FXServer récents bloquent fs.write* / fs.rm* en JavaScript (« Use --allow-fs-write ») :
+// on essaie Node, et sinon on passe par server/fsw.lua (Lua n'est pas concerné). Les tests Node utilisent fs directement.
+const denied = (e) => e && (e.code === 'ERR_ACCESS_DENIED' || /allow-fs-write|restricted/i.test(String(e.message)));
+let luaFs = null; // { write(path, base64), remove(path) } branché au démarrage dans FiveM
+function writeFile(p, data) {
+  const buf = Buffer.isBuffer(data) ? data : Buffer.from(String(data), 'utf8');
+  try { fs.mkdirSync(path.dirname(p), { recursive: true }); fs.writeFileSync(p, buf); return; } catch (e) { if (!luaFs || !denied(e)) throw e; }
+  if (!luaFs.write(p, buf.toString('base64'))) throw new Error(`écriture refusée : ${p}`);
+}
+function removeFile(p) {
+  try { fs.unlinkSync(p); return; } catch (e) { if (!luaFs || !denied(e)) throw e; }
+  if (!fs.existsSync(p)) return;
+  luaFs.remove(p);
+  if (fs.existsSync(p)) throw new Error(`suppression refusée : ${p}`);
+}
+function removeTree(p) {
+  try { fs.rmSync(p, { recursive: true, force: true }); return; } catch (e) { if (!luaFs || !denied(e)) throw e; }
+  let st; try { st = fs.statSync(p); } catch (e) { return; }
+  if (st.isDirectory()) for (const f of fs.readdirSync(p)) removeTree(path.join(p, f));
+  luaFs.remove(p);
+  if (fs.existsSync(p)) throw new Error(`suppression refusée : ${p}`);
+}
+
 /** Un .ymap est une ressource RSC7 : en-tête de 16 octets puis données compressées (deflate brut). */
 function inflateRsc7(buf) {
   if (!buf || buf.length < 20 || buf.toString('latin1', 0, 4) !== 'RSC7') return null;
@@ -282,7 +305,7 @@ function pruneFusions(maps, fusionDir) {
   try { files = fs.readdirSync(path.join(fusionDir, 'stream')); } catch (e) { files = []; }
   for (const f of files) {
     if (wanted.has(f.toLowerCase())) continue;
-    try { fs.unlinkSync(path.join(fusionDir, 'stream', f)); removed.push(f); } catch (e) { /* verrouillé : au prochain démarrage */ }
+    try { removeFile(path.join(fusionDir, 'stream', f)); removed.push(f); } catch (e) { /* verrouillé : au prochain démarrage */ }
   }
   return removed;
 }
@@ -295,7 +318,7 @@ function disableInCfg(cfgFile, name, note) {
   try { text = fs.readFileSync(cfgFile, 'utf8'); } catch (e) { return false; }
   const re = new RegExp('^[ \\t]*ensure[ \\t]+' + name + '([ \\t][^\\r\\n]*)?(?=\\r?$)', 'm');
   if (!re.test(text)) return false;
-  fs.writeFileSync(cfgFile, text.replace(re, `# ensure ${name}   # ${note}`));
+  writeFile(cfgFile, text.replace(re, `# ensure ${name}   # ${note}`));
   return true;
 }
 
@@ -322,7 +345,7 @@ function deleteMapsOnDisk(serverData, root) {
   if (!maps.length) return done;
   const names = maps.map((m) => m.name);
   for (const m of maps) {
-    try { fs.rmSync(path.join(addons, m.name), { recursive: true, force: true }); done.maps.push(m.name); } catch (e) { done.errors.push(`${m.name} : ${e.message}`); }
+    try { removeTree(path.join(addons, m.name)); done.maps.push(m.name); } catch (e) { done.errors.push(`${m.name} : ${e.message}`); }
   }
   // cfg/addons.cfg : lignes de ces maps retirées (actives ou déjà commentées)
   const cfgFile = path.join(serverData, 'cfg', 'addons.cfg');
@@ -333,13 +356,13 @@ function deleteMapsOnDisk(serverData, root) {
       const m = line.match(/^\s*#?\s*ensure\s+(\S+)/);
       return !(m && names.includes(m[1]));
     });
-    fs.writeFileSync(cfgFile, kept.join(eol));
+    writeFile(cfgFile, kept.join(eol));
   } catch (e) { /* pas de addons.cfg (VPS sans mods) */ }
   const shorts = names.map((n) => n.replace(/^gsa_/, ''));
-  for (const s of shorts) { try { fs.rmSync(path.join(root, 'mods-tri', 'maps', s), { recursive: true, force: true }); } catch (e) { /* rien */ } }
+  for (const s of shorts) { try { removeTree(path.join(root, 'mods-tri', 'maps', s)); } catch (e) { /* rien */ } }
   try {
     for (const f of fs.readdirSync(path.join(root, 'mods-a-trier'))) {
-      if (shorts.includes(cleanName(f))) { try { fs.rmSync(path.join(root, 'mods-a-trier', f), { recursive: true, force: true }); } catch (e) { /* rien */ } }
+      if (shorts.includes(cleanName(f))) { try { removeTree(path.join(root, 'mods-a-trier', f)); } catch (e) { /* rien */ } }
     }
   } catch (e) { /* pas de mods-a-trier (VPS) */ }
   try {
@@ -347,7 +370,7 @@ function deleteMapsOnDisk(serverData, root) {
     let old = [];
     try { old = fs.readFileSync(list, 'utf8').split(/\r?\n/).map((x) => x.trim()).filter(Boolean); } catch (e) { old = []; }
     const all = [...new Set([...old, ...shorts])];
-    fs.writeFileSync(list, '# Mods retirés par le staff (F11) : IMPORTER-MODS ne les réinstalle jamais. Enlever une ligne pour le permettre.\r\n'
+    writeFile(list, '# Mods retirés par le staff (F11) : IMPORTER-MODS ne les réinstalle jamais. Enlever une ligne pour le permettre.\r\n'
       + all.filter((x) => !x.startsWith('#')).join('\r\n') + '\r\n');
   } catch (e) { done.errors.push(`mods-retires.txt : ${e.message}`); }
   return done;
@@ -379,20 +402,21 @@ function applyFusions(maps, fusionDir) {
     let same = false;
     try { same = fs.readFileSync(dest).equals(out); } catch (e) { same = false; }
     if (same) continue;
-    fs.mkdirSync(path.dirname(dest), { recursive: true });
-    fs.writeFileSync(dest, out);
+    writeFile(dest, out);
     written.push({ file: c.file, resources: c.resources, how });
   }
   if (written.length) {
     const mf = path.join(fusionDir, 'fxmanifest.lua');
-    try { if (fs.readFileSync(mf, 'utf8') !== FUSION_MANIFEST) throw new Error('différent'); } catch (e) { fs.writeFileSync(mf, FUSION_MANIFEST); }
+    try { if (fs.readFileSync(mf, 'utf8') !== FUSION_MANIFEST) throw new Error('différent'); } catch (e) { writeFile(mf, FUSION_MANIFEST); }
   }
   return written;
 }
 
-if (typeof module !== 'undefined' && module.exports) module.exports = { cleanName, deleteMapsOnDisk, pruneFusions, disableInCfg, inflateRsc7, entitiesOf, memoryMB, memorySplit, pagesSize, isVanillaName, placesOf, scanResource, conflictsOf, scanAll, labelOf, mergeOcclusion, applyFusions }; // tests Node seulement
+if (typeof module !== 'undefined' && module.exports) module.exports = { cleanName, deleteMapsOnDisk, pruneFusions, disableInCfg, inflateRsc7, entitiesOf, memoryMB, memorySplit, pagesSize, isVanillaName, placesOf, scanResource, conflictsOf, scanAll, labelOf, mergeOcclusion, applyFusions, _setLuaFs: (f) => { luaFs = f; } }; // tests Node seulement
 
 if (typeof GetCurrentResourceName === 'function') {
+  const self = GetCurrentResourceName();
+  luaFs = { write: (p, b64) => exports[self].FsWrite(p, b64), remove: (p) => exports[self].FsRemove(p) };
   const mapResources = () => {
     const out = [];
     for (let i = 0; i < GetNumResources(); i++) {

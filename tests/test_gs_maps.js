@@ -180,6 +180,24 @@ check('archive groupée gardée (protégée par mods-retires.txt)', fs.existsSyn
 const ret = fs.readFileSync(path.join(R9, 'mods-retires.txt'), 'utf8');
 check('mods-retires.txt : anciens + nouveaux noms', ret.includes('ancienne_map') && ret.includes('tm_workshop_pack') && ret.includes('hp_fleeca_main'));
 check('2e passage : rien à supprimer', M.deleteMapsOnDisk(SD, R9).maps.length === 0);
+// V12.18 : FXServer récent = écriture interdite au JavaScript (« Use --allow-fs-write ») → repli par Lua (server/fsw.lua)
+{
+  const orig = { w: fs.writeFileSync, u: fs.unlinkSync, r: fs.rmSync };
+  const deny = () => { const e = new Error('Access to this API has been restricted. Use --allow-fs-write to manage permissions.'); e.code = 'ERR_ACCESS_DENIED'; throw e; };
+  const calls = [];
+  M._setLuaFs({ write: (p, b64) => { calls.push('w'); orig.w(p, Buffer.from(b64, 'base64')); return true; },
+    remove: (p) => { calls.push('r'); try { orig.r(p, { recursive: false }); } catch (e) { try { fs.rmdirSync(p); } catch (e2) { /* rien */ } } return true; } });
+  const cfgD = path.join(tmp, 'deny', 'addons.cfg');
+  put(cfgD, 'ensure gsa_a\r\nensure gsa_b\r\n');
+  put(path.join(tmp, 'deny', 'fus', 'stream', 'old_occl_01.ymap'), Buffer.from([0, 1, 2, 255]));
+  fs.writeFileSync = deny; fs.unlinkSync = deny; fs.rmSync = deny;
+  let ok1, threw = null;
+  try { ok1 = M.disableInCfg(cfgD, 'gsa_a', 'test'); M.pruneFusions([], path.join(tmp, 'deny', 'fus')); } catch (e) { threw = e; }
+  Object.assign(fs, { writeFileSync: orig.w, unlinkSync: orig.u, rmSync: orig.r });
+  M._setLuaFs(null);
+  check('écriture refusée à Node : passe par Lua', !threw && ok1 && fs.readFileSync(cfgD, 'utf8').startsWith('# ensure gsa_a') && calls.includes('w'));
+  check('suppression refusée à Node : passe par Lua', !fs.existsSync(path.join(tmp, 'deny', 'fus', 'stream', 'old_occl_01.ymap')) && calls.includes('r'));
+}
 fs.rmSync(tmp, { recursive: true, force: true });
 
 console.log(`lecteur de maps : ${passed} réussis, ${failed} échoués`);
