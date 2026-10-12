@@ -455,6 +455,7 @@ check('liste des bannis : modo refusé', cb('gs_admin:bans', 2, '') == nil)
 local list = cb('gs_admin:bans', 1, '')
 check('liste des bannis : super-admin', type(list) == 'table' and #list == 1 and list[1].license == 'license:9')
 check('liste des bannis : recherche par pseudo', #cb('gs_admin:bans', 1, 'Isolé') == 1 and #cb('gs_admin:bans', 1, 'Zorro') == 0)
+check('V12.35 liste des bannis : date formatée par le serveur (pas de os.date côté client)', list[1] and type(list[1].when) == 'string' and (list[1].when == 'définitif' or list[1].when:find('jusqu', 1, true)))
 advance(4 * 86400 * 1000)
 check('peine écoulée : bannissement effacé tout seul', getBan('license:9') == nil and W.bans['license:9'] == nil)
 

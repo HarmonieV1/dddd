@@ -763,7 +763,7 @@ local function bansMenu(search)
         end } }
     for i = 1, #list do
         local b = list[i]
-        local when = b.until_ts == 0 and 'définitif' or ('jusqu\'au ' .. os.date('%d/%m/%Y %H:%M', b.until_ts))
+        local when = b.when or (b.until_ts == 0 and 'définitif' or 'à durée') -- V12.35 : texte formaté par le serveur (pas de os.date côté client)
         options[#options + 1] = { title = b.name, icon = 'user-lock', iconColor = '#ff4d6d', arrow = true,
             description = ('%s · %s · par %s'):format(when, b.reason or '—', b.staff or '?'),
             onSelect = function()
