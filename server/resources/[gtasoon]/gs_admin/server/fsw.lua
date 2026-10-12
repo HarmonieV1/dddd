@@ -2,7 +2,7 @@
 -- le disque (« Access to this API has been restricted. Use --allow-fs-write ») : fusion des maps, « Retirer cette map »
 -- et suppression passent donc par ici. Réservé à gs_admin, et seulement sous le dossier qui contient server-data.
 local isWin = package.config:sub(1, 1) == '\\'
-local function norm(p) p = tostring(p or ''):gsub('\\', '/'); return isWin and p:lower() or p end
+local function norm(p) p = tostring(p or ''):gsub('\\', '/'):gsub('/+', '/'); return isWin and p:lower() or p end
 local ROOT = norm(GetResourcePath(GetCurrentResourceName())):gsub('/+$', '')
 for _ = 1, 4 do ROOT = ROOT:match('^(.*)/[^/]+$') or ROOT end -- …/resources/[gtasoon]/gs_admin → dossier parent de server-data
 
