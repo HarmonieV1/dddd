@@ -193,6 +193,24 @@ check('2e passage : rien à supprimer', M.deleteMapsOnDisk(SD, R9).maps.length =
   check('liste des maps retirées : 8 noms gsa_', M.RETIRED_MAPS.length === 8 && M.RETIRED_MAPS.every((n) => /^gsa_[a-z0-9_]+$/.test(n)));
 }
 check('lignes ensure actives seulement', JSON.stringify(M.activeEnsures('## titre\r\nensure gsa_a\r\n# ensure gsa_b\r\n  ensure gsa_c  # note\r\n')) === '["gsa_a","gsa_c"]');
+// V12.27 : fichier tronqué (téléchargement coupé) détecté, fichier entier ou chiffré jamais signalé
+const pendingTrunc = (async () => {
+  const good = Buffer.concat([Buffer.from('RSC7'), Buffer.alloc(12), zlib.deflateRawSync(Buffer.alloc(200000, 7))]);
+  const cut = good.subarray(0, Math.floor(good.length / 2));
+  const junk = Buffer.concat([Buffer.from('RSC7'), Buffer.alloc(12), Buffer.from([0xff, 0xff, 0xff, 0xff, 0x13, 0x37, 0x42, 0x99])]);
+  check('fichier entier : sain', (await M.rscTruncated(good)) === false);
+  check('fichier coupé en deux : abîmé', (await M.rscTruncated(cut)) === true);
+  check('contenu illisible (chiffré, autre format) : jamais déclaré abîmé', (await M.rscTruncated(junk)) === false);
+  check('pas un RSC7 : ignoré', (await M.rscTruncated(Buffer.from('hello world, not a resource'))) === false);
+  const td = fs.mkdtempSync(path.join(os.tmpdir(), 'trunc-'));
+  fs.mkdirSync(path.join(td, 'stream'));
+  fs.writeFileSync(path.join(td, 'stream', 'ok.ydr'), good);
+  fs.writeFileSync(path.join(td, 'stream', 'patoche_beach_guard.ydr'), cut);
+  fs.writeFileSync(path.join(td, 'stream', 'notes.txt'), cut);
+  const bad = await M.truncatedFiles(td);
+  check('dossier : seul le fichier coupé est listé', bad.length === 1 && bad[0].endsWith('patoche_beach_guard.ydr'));
+  fs.rmSync(td, { recursive: true, force: true });
+})();
 // V12.18 : FXServer récent = écriture interdite au JavaScript (« Use --allow-fs-write ») → repli par Lua (server/fsw.lua)
 {
   const orig = { w: fs.writeFileSync, u: fs.unlinkSync, r: fs.rmSync };
@@ -213,5 +231,7 @@ check('lignes ensure actives seulement', JSON.stringify(M.activeEnsures('## titr
 }
 fs.rmSync(tmp, { recursive: true, force: true });
 
-console.log(`lecteur de maps : ${passed} réussis, ${failed} échoués`);
-if (failed) process.exit(1);
+pendingTrunc.then(() => {
+  console.log(`lecteur de maps : ${passed} réussis, ${failed} échoués`);
+  if (failed) process.exit(1);
+});

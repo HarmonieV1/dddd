@@ -50,6 +50,29 @@ function inflateRsc7(buf) {
   try { return zlib.inflateRawSync(buf.subarray(16)); } catch (e) { return null; }
 }
 
+/** V12.27 · Fichier du jeu TRONQUÉ (téléchargement coupé) ? Un tel fichier fait planter chaque joueur qui le charge
+ *  (« Invalid fixup, address is neither virtual nor physical (in xxx.ydr) »). Seul signe retenu, sans faux positif : le
+ *  flux compressé s'arrête avant sa fin (erreur zlib « unexpected end of file »). Un fichier chiffré ou d'un autre format
+ *  n'est jamais déclaré abîmé. Asynchrone (décompression hors du fil du serveur). Renvoie true / false. */
+const STREAM_EXT = /\.(ydr|ydd|yft|ytd|ybn|ymap|ytyp)$/i;
+function rscTruncated(buf) {
+  return new Promise((resolve) => {
+    if (!buf || buf.length < 20 || buf.toString('latin1', 0, 4) !== 'RSC7') return resolve(false);
+    zlib.inflateRaw(buf.subarray(16), (err) => resolve(!!err && (err.code === 'Z_BUF_ERROR' || /unexpected end/i.test(String(err.message)))));
+  });
+}
+
+/** Fichiers tronqués d'un dossier de ressource (liste de chemins relatifs). Un fichier à la fois (mémoire). */
+async function truncatedFiles(dir) {
+  const bad = [];
+  for (const f of walk(dir).filter((x) => STREAM_EXT.test(x))) {
+    let buf;
+    try { buf = await fs.promises.readFile(f); } catch (e) { continue; }
+    if (await rscTruncated(buf)) bad.push(path.relative(dir, f));
+  }
+  return bad;
+}
+
 /** Taille en mémoire d'un bloc RSC7 (formule des « page flags » du format de ressource du jeu). */
 function pagesSize(flags) {
   const s = (((flags >>> 27) & 1) << 0) + (((flags >>> 26) & 1) << 1) + (((flags >>> 25) & 1) << 2) + (((flags >>> 24) & 1) << 3)
@@ -432,7 +455,7 @@ function applyFusions(maps, fusionDir) {
   return written;
 }
 
-if (typeof module !== 'undefined' && module.exports) module.exports = { cleanName, deleteMapsOnDisk, pruneFusions, disableInCfg, inflateRsc7, entitiesOf, memoryMB, memorySplit, pagesSize, isVanillaName, placesOf, scanResource, conflictsOf, scanAll, labelOf, mergeOcclusion, applyFusions, RETIRED_MAPS, activeEnsures, _setLuaFs: (f) => { luaFs = f; } }; // tests Node seulement
+if (typeof module !== 'undefined' && module.exports) module.exports = { cleanName, deleteMapsOnDisk, pruneFusions, disableInCfg, inflateRsc7, entitiesOf, memoryMB, memorySplit, pagesSize, isVanillaName, placesOf, scanResource, conflictsOf, scanAll, labelOf, mergeOcclusion, applyFusions, RETIRED_MAPS, activeEnsures, rscTruncated, truncatedFiles, _setLuaFs: (f) => { luaFs = f; } }; // tests Node seulement
 
 if (typeof GetCurrentResourceName === 'function') {
   const self = GetCurrentResourceName();
@@ -542,6 +565,26 @@ if (typeof GetCurrentResourceName === 'function') {
     if (done.maps.length) console.log(`^2[gs_admin] Maps retirées (décision du 12/10) : ${done.maps.join(', ')}^7`);
     for (const e of done.errors) console.log(`^1[gs_admin] Retrait de map impossible : ${e}^7`);
   }, 8000);
+  // V12.27 · Contrôle d'intégrité de toutes les maps démarrées (en arrière-plan) : un fichier tronqué = la map est ARRÊTÉE
+  // tout de suite (sinon chaque joueur qui passe à côté plante). Rien n'est écrit sur le disque : au prochain démarrage,
+  // elle est revérifiée ; si l'archive a été retéléchargée et réimportée, elle repart toute seule.
+  setTimeout(async () => {
+    let checked = 0;
+    const stopped = [];
+    for (const r of mapResources()) {
+      if (/^gsa_zz_fusion/.test(r.name)) continue;
+      let bad = [];
+      try { bad = await truncatedFiles(r.dir); } catch (e) { continue; }
+      checked++;
+      if (bad.length && GetResourceState(r.name) === 'started') {
+        StopResource(r.name);
+        stopped.push(r.name);
+        console.log(`^1[gs_admin] Map ARRÊTÉE : ${r.name} — fichier abîmé (téléchargement incomplet) : ${bad.slice(0, 3).join(', ')}${bad.length > 3 ? ` (+${bad.length - 3})` : ''}. Elle ferait planter les joueurs. Retélécharge le pack, remplace l'archive dans C:\\GTASOON\\mods-a-trier, relance IMPORTER-MODS puis METTRE-A-JOUR-OVH.^7`);
+      }
+    }
+    cache = null;
+    console.log(`[gs_admin] Intégrité des maps : ${checked} vérifiée(s), ${stopped.length ? `^1${stopped.length} arrêtée(s) (fichiers abîmés)^7` : '^2aucun fichier abîmé^7'}`);
+  }, 20000);
   // Au démarrage : fusion, puis une ligne en console et les conflits en clair (à corriger avant qu'un joueur tombe dans un trou)
   setTimeout(() => {
     fuse();
