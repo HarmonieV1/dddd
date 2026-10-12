@@ -637,7 +637,7 @@ def build():
     s += [table([['Étape', 'Ce qui se passe'],
                  ['Contrôle', 'Identité (contrôle visuel ; au commissariat, le scanner démasque les faux papiers), fouille, retrait de permis, amende (/factures). Refuser d\'obtempérer est un délit.'],
                  ['Témoin protégé', 'En garde à vue, /droits → <b>dénoncer un gang</b> : peine divisée par deux. Le gang apprend que « quelqu\'un a parlé », jamais qui ; la police te protège 7 jours (lieu sûr sur le GPS). Si tu tombes pendant ce temps, le gang est dans le viseur.'],
-                 ['Garde à vue', 'Jusqu\'à 30 min à Mission Row (salle d\'interrogatoire au sous-sol). /droits : avocat, silence, aveux (peine réduite de 30 %).'],
+                 ['Garde à vue', 'Jusqu\'à 30 min à Mission Row. /droits : avocat, silence, aveux (peine réduite de 30 %).'],
                  ['Procès', 'Devant un juge, avec avocat. Pour un vrai procès, le juge peut convoquer un <b>jury de 5 citoyens</b> tirés au sort : '
                   'le verdict suit leur vote (les jurés touchent 100 $).'],
                  ['Prison', 'Bolingbroke, jusqu\'à 60 min. Petits boulots pour réduire la peine, cantine payée en tickets, évasion possible la nuit, à plusieurs.']],
@@ -664,8 +664,6 @@ def build():
                  ['Météo', 'Canicule, tempête, brouillard : prix, refus de vente, butins et visibilité changent.'],
                  ['Presse', 'Brèves Weazel automatiques, Direct pendant les grosses poursuites, Radio Los Santos en voiture, '
                   'et la <b>Gazette du dimanche</b> à 20 h (site, Discord, /gazette).'],
-                 ['Nouveaux lieux', 'Intérieurs refaits ou ajoutés : hôpital Pillbox, agences Fleeca, Bahama Mamas, pharmacie Pop\'s Pills, supermarché Willie\'s, '
-                  'commissariat de Mission Row agrandi, commissariat de Vinewood, salle de sport, atelier de La Mesa, magasin d\'alcool de Paleto.'],
                  ['Le site', 'Carte en direct de la vraie Los Santos : tension des quartiers, rendez-vous, légendes, les 24 dernières heures rejouées, « En ce moment en ville », et une candidature en trois questions.']],
                 [32 * mm, 148 * mm], font=8.3)]
     s += [Paragraph('Le calendrier', H3)]

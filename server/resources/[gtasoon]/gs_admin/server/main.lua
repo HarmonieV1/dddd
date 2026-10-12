@@ -720,6 +720,15 @@ lib.callback.register('gs_admin:disableMap', function(src, name)
     return res.ok, res.msg
 end)
 
+--- V12.16 · Retirer toutes les maps d'un coup (super-admin et fondateur, journalisé)
+lib.callback.register('gs_admin:disableAllMaps', function(src)
+    if not staffGuard(src, 'disableallmaps', 2, 30000) or Admin.level(src) < 4 then return false, 'Réservé au super-admin et au fondateur.' end
+    local ok, res = pcall(function() return exports[GetCurrentResourceName()]:DisableAllMaps(GetPlayerName(src)) end)
+    if not ok or type(res) ~= 'table' then return false, 'Retrait impossible : ' .. tostring(res) end
+    if res.ok then Store.log(label(src), 'disableallmaps', 'toutes', res.msg) end
+    return res.ok, res.msg
+end)
+
 --- Véhicules ajoutés par IMPORTER-MODS (bloc « GTA SOON ADDONS » du catalogue Qbox) + véhicules de service ajoutés
 --- aux garages des métiers : pour les retrouver sans connaître leur nom de spawn.
 lib.callback.register('gs_admin:addonVehicles', function(src)

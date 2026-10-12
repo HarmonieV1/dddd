@@ -956,6 +956,17 @@ local function mainMenu()
         if not r then return end
         local o = {}
         if r.error then o[#o + 1] = { title = 'Lecture des maps impossible', icon = 'triangle-exclamation', disabled = true, description = r.error } end
+        if #r.maps > 0 then
+            o[#o + 1] = { title = 'Retirer TOUTES les maps', icon = 'trash-can', iconColor = '#ff6b6b',
+                description = 'Arrêtées et plus chargées (lignes commentées dans cfg/addons.cfg, réversible). Vêtements non touchés',
+                onSelect = function()
+                    local c = lib.alertDialog({ header = ('Retirer les %d maps ?'):format(#r.maps), centered = true, cancel = true,
+                        content = 'Toutes les maps ajoutées seront arrêtées et ne seront plus chargées.\n\nÀ faire sur le serveur du PC, puis METTRE-A-JOUR-OVH.' })
+                    if c ~= 'confirm' then return end
+                    notify(lib.callback.await('gs_admin:disableAllMaps', false))
+                    clearMapBlips()
+                end }
+        end
         o[#o + 1] = { title = #mapBlips > 0 and 'Masquer leurs blips' or 'Afficher leurs blips sur ma carte', icon = 'location-dot',
             description = 'Visibles par toi seul, le temps de faire le tour', onSelect = function()
                 if #mapBlips > 0 then clearMapBlips() else

@@ -373,6 +373,19 @@ if (typeof GetCurrentResourceName === 'function') {
     cache = null;
     return { ok: true, msg: inCfg ? 'Map retirée : arrêtée, et plus chargée aux prochains démarrages.' : 'Map arrêtée. Ligne introuvable dans cfg/addons.cfg : mets un # devant à la main.' };
   });
+  // V12.16 · Retirer TOUTES les maps d'un coup (les vêtements et véhicules importés ne sont pas des maps : non touchés)
+  exports('DisableAllMaps', (who) => {
+    const names = scan().maps.map((m) => m.name).filter((n) => /^gsa_[a-z0-9_]+$/.test(n));
+    const day = new Date().toISOString().slice(0, 10);
+    let inCfg = 0;
+    for (const name of names) {
+      const cfgFile = path.resolve(GetResourcePath(name), '..', '..', '..', 'cfg', 'addons.cfg');
+      if (disableInCfg(cfgFile, name, `toutes les maps retirées en jeu (F11) par ${String(who || 'staff').replace(/[^\w .-]/g, '')} le ${day}`)) inCfg++;
+      StopResource(name);
+    }
+    cache = null;
+    return { ok: names.length > 0, msg: names.length ? `${names.length} map(s) retirée(s) (${inCfg} désactivée(s) dans cfg/addons.cfg).` : 'Aucune map installée.' };
+  });
   // V12.13 : conflits d'occlusion fusionnés tout seuls dans gsa_zz_fusion_occlusion, puis relance de cette ressource pour
   // qu'elle passe APRÈS toutes les maps (la dernière lancée l'emporte). Aucun fichier à envoyer, rien à faire à la main.
   const FUSION_RES = 'gsa_zz_fusion_occlusion';

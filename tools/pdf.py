@@ -8,7 +8,7 @@ from reportlab.lib.units import mm
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, PageBreak, KeepTogether
 from reportlab.graphics.shapes import Drawing, Rect, Circle, String, Line
 
-VERSION = 'V12.15'
+VERSION = 'V12.16'
 NEON = colors.HexColor('#28E0FF')
 DARK = colors.HexColor('#0F091C')
 PINK = colors.HexColor('#FF2E88')
@@ -173,7 +173,6 @@ def guide(points):
         "/911p réservé au staff, shérif inclus ; seul en ville, un crime sérieux est signalé au moins 6 fois sur 10 (police IA, /policeia pour le staff).",
         "<b>Mappings</b> : F11 → Monde et lieux → Mappings installés (emplacement lu dans les fichiers de chaque map, téléportation, blips staff), "
         "conflits entre maps et modèles trop lourds signalés en console ; conflits d'occlusion <b>fusionnés automatiquement</b> au démarrage (gsa_zz_fusion_occlusion).",
-        "<b>Commissariat de Mission Row agrandi</b> : salles d'interrogatoire, de briefing et réserve au sous-sol, portes réservées à la police.",
         "<b>Site V13</b> : météo et heure de la ville en direct, son en option, affichage corrigé sur téléphone.",
     ])
     s += [PageBreak(), Paragraph('★ V12 · La ville se souvient', H2)]
@@ -397,9 +396,8 @@ def guide(points):
     s += [Paragraph('8. Mods importés (Drive)', H2)]
     s += bullets([
         'Marques réelles (voitures, mode, police) refusées par l\'importeur : risque de retrait du serveur par Cfx.re / Rockstar. Préférer des versions « lore GTA ».',
-        'Maps (14) : pharmacie du centre, garage clandestin, supermarché Willie\'s, club Bahamas Mamas, bureau d\'entreprise, village abandonné, '
-        'hôpital Pillbox, agences Fleeca, salle de sport, atelier TM, magasin d\'alcool de Paleto, commissariat de Vinewood, pack Redline ; '
-        '+ sous-sol de Mission Row (mrpd_etendu). Emplacements, conflits et poids : F11 → Monde et lieux → Mappings installés.',
+        'Maps : toutes retirées le 12/10 (bugs, maps absentes, crashs) en attendant un pack acheté. Pour vérifier un nouveau pack : '
+        'F11 → Monde et lieux → Mappings installés (emplacement, conflits, poids, retrait en un clic).',
         'Vêtements : bikini (haut + bas), robe d\'été, 6 coiffures femme.',
         'NETTOYER-MARQUES.bat : supprime les mods de marques réelles (nom du mod ou de ses fichiers) et leurs copies.',
     ])
@@ -546,14 +544,7 @@ MLO = [
     ['Garage clandestin + casse', '-59.97, -1211.09, 30.0', 'fichier « lisez-moi » du mod'],
     ['Bureau d\'entreprise', '~ -643, -490, 34', 'estimé depuis les fichiers de la map'],
     ['Club Bahamas Mamas', '~ -1388, -586, 30', 'emplacement du club du jeu'],
-    ['Hôpital Pillbox (intérieur)', '327.7, -580.6, 60.6', 'lu dans la map (F11 → Mappings installés)'],
-    ['Atelier mécanique (TM, protégée)', '927.2, -1563.9, 34.2', 'lu dans la map'],
-    ['Magasin d\'alcool de Paleto (protégée)', '-161.5, 6325.4, 31.0', 'lu dans la map'],
-    ['Commissariat de Vinewood', '574.2, -10.6, 87.7', 'lu dans la map'],
-    ['Salle de sport (Moreo)', '-453.7, -10.9, 48.9', 'lisez-moi du mod (26,5 Mo en mémoire : à surveiller)'],
-    ['Commissariat de Mission Row agrandi', '444.0, -1000.2, 5.1 (sous-sol)', 'lu dans la map, 3 portes police'],
-    ['Agences Fleeca (habillage, les 6)', '— (pas de lieu propre)', 'remplace les modèles du jeu'],
-    ['Supermarché Willie\'s, village abandonné, pack Redline', 'F11 → Mappings installés', 'emplacement lu automatiquement en jeu'],
+    ['(12/10/2026) toutes les maps ajoutées sont retirées', 'en attente d\'un pack acheté', 'F11 → Mappings installés pour le vérifier'],
 ]
 
 
