@@ -278,6 +278,8 @@ Résumé très condensé (le détail complet est dans `docs/ROADMAP.md`, `docs/F
   - **Site de la documentation** `docs/hub/index.html` (tools/doc_hub.py) : 30 documents en 5 catégories, recherche,
     backtest (56) et priorités (19) à cocher avec notes, export / import / rapport / impression, clair-sombre, mobile.
     Testé dans Chromium (0 erreur, cases gardées après rechargement, pas de débordement à 375 px).
+  - Le site inclut aussi le **texte des 3 guides PDF** (joueur, RoadLine avec lieux et points, staff), repris des mêmes
+    données que les PDF (capture des éléments reportlab, rien n'est recopié à la main) : consultables et cherchables.
   - Vérification globale : 2 882 tests verts, budget de performance tenu (67 ressources, 136 threads client).
 
 - **V12.18** (12/10/2026) — « j'ai acheté de vrais mappings (packs Patoche), depuis FiveM crashe, rien n'apparaît » :

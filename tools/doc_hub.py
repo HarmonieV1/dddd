@@ -63,6 +63,82 @@ PRIORITIES = [
 ]
 
 
+GUIDES = [
+    ('GUIDE_JOUEUR', 'Guide du joueur', 'guide_joueur', lambda m: m.build()),
+    ('GUIDE_ROADLINE', 'Guide RoadLine (lieux, points, carte)', 'pdf', lambda m: m.guide(__import__('json').load(open('tools/points.json', encoding='utf-8')))),
+    ('GUIDE_STAFF', 'Guide du staff', 'guide_staff', lambda m: m.build()),
+]
+
+
+def _markup(t):
+    """Balises reportlab → markdown simple."""
+    t = re.sub(r'<br\s*/?>', ' ', str(t))
+    t = re.sub(r'</?b>', '**', t)
+    t = re.sub(r'</?i>', '*', t)
+    t = re.sub(r'<[^>]+>', '', t)
+    t = html.unescape(t).replace('\n', ' ')
+    return re.sub(r'\s+', ' ', t).replace('****', '').strip()
+
+
+def _flow_md(f, out):
+    from reportlab.platypus import Paragraph, Table
+    if isinstance(f, (list, tuple)):
+        for x in f:
+            _flow_md(x, out)
+    elif isinstance(f, Paragraph):
+        txt = _markup(f.text)
+        if not txt:
+            return
+        name = getattr(f.style, 'name', '')
+        if name == 'h1': out.append('\n# ' + txt.replace('**', ''))
+        elif name == 'h2': out.append('\n## ' + txt.replace('**', ''))
+        elif name == 'h3': out.append('\n### ' + txt.replace('**', ''))
+        elif name == 'k': out.append('\n**' + txt.replace('**', '') + '**')
+        elif name in ('tip', 'warn'): out.append('\n> ' + txt)
+        elif txt.startswith('• '): out.append('- ' + txt[2:])
+        else: out.append('\n' + txt)
+    elif isinstance(f, Table):
+        rows = [[_markup(c.text if isinstance(c, Paragraph) else ' '.join(_markup(x.text) for x in c if isinstance(x, Paragraph)) if isinstance(c, (list, tuple)) else c).replace('|', '/') for c in r] for r in f._cellvalues]
+        rows = [r for r in rows if any(r)]
+        if rows:
+            out.append('')
+            out.append('| ' + ' | '.join(rows[0]) + ' |')
+            out.append('|' + '---|' * len(rows[0]))
+            out += ['| ' + ' | '.join(r) + ' |' for r in rows[1:]]
+            out.append('')
+    else:
+        for attr in ('_content', '_flowables'):
+            if isinstance(getattr(f, attr, None), (list, tuple)):
+                _flow_md(getattr(f, attr), out)
+
+
+def guides_md():
+    """Texte des guides PDF, pris dans les MÊMES données que les PDF (rien n'est réécrit à la main)."""
+    import importlib
+    from reportlab.platypus import doctemplate
+    sys.path.insert(0, os.path.join(ROOT, 'tools'))
+    cwd = os.getcwd()
+    os.chdir(ROOT)
+    captured = []
+    real = doctemplate.BaseDocTemplate.build
+    doctemplate.BaseDocTemplate.build = lambda self, flowables, *a, **k: captured.append(list(flowables))
+    out = {}
+    try:
+        import contextlib, io
+        for key, _, mod, run in GUIDES:
+            captured.clear()
+            with contextlib.redirect_stdout(io.StringIO()):
+                run(importlib.import_module(mod))
+            if captured:
+                lines = []
+                _flow_md(captured[-1], lines)
+                out[key] = '\n'.join(lines).strip() + '\n'
+    finally:
+        doctemplate.BaseDocTemplate.build = real
+        os.chdir(cwd)
+    return out
+
+
 def backtest_sessions():
     tree = ast.parse(open(os.path.join(ROOT, 'tools', 'backtest.py'), encoding='utf-8').read())
     for node in tree.body:
@@ -78,9 +154,17 @@ def version():
 
 def build():
     docs, missing = {}, []
+    guides = guides_md()
+    CATEGORIES.insert(1, ('Guides', 'Le contenu des guides PDF, consultable et cherchable : quoi, où, comment', [(k, t) for k, t, _, _ in GUIDES if k in guides]))
+    for _, _, items in CATEGORIES:
+        for key, _ in items:
+            if key in guides:
+                docs[key] = guides[key]
     for _, _, items in CATEGORIES:
         for key, _ in items:
             p = os.path.join(DOCS, key + '.md')
+            if key in docs:
+                continue
             if os.path.isfile(p):
                 docs[key] = open(p, encoding='utf-8').read()
             else:
