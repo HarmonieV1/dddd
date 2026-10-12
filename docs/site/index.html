@@ -21,6 +21,28 @@
   - police « mission réussie » de GTA V : place pricedown.woff2 (ou .ttf) dans un dossier fonts/ (sinon Anton est utilisée)
 -->
 <script>document.documentElement.classList.add('js')</script>
+<!-- V12.35 · Mode léger : les effets plein écran (aurore floutée, grain, pluie, brouillard, flous d'arrière-plan) coûtent la
+     moitié de la fluidité. Coupés d'office sur téléphone et petite machine, ou si le site tourne à moins de 35 images/s
+     quelques secondes après l'ouverture. Forcer : ?lite (léger) ou ?full (tous les effets). -->
+<script>(function () {
+  var h = document.documentElement, q = location.search, n = navigator;
+  if (/[?&]full\b/.test(q)) return;
+  var weak = (n.deviceMemory && n.deviceMemory <= 4) || (n.hardwareConcurrency && n.hardwareConcurrency <= 4) ||
+    (window.matchMedia && matchMedia('(pointer: coarse)').matches);
+  if (/[?&]lite\b/.test(q) || weak) { h.classList.add('lite'); return; }
+  addEventListener('load', function () {
+    setTimeout(function () {
+      var frames = 0, t0 = 0;
+      requestAnimationFrame(function f(t) {
+        if (!t0) t0 = t;
+        frames++;
+        if (t - t0 < 1500) requestAnimationFrame(f);
+        else if (frames / ((t - t0) / 1000) < 35) h.classList.add('lite');
+      });
+    }, 2500);
+  });
+})();</script>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Anton&family=Bowlby+One&family=Inter:wght@400;500;700;800&family=Old+Standard+TT:ital,wght@0,400;0,700;1,400&family=UnifrakturMaguntia&display=swap" rel="stylesheet">
 <style>
@@ -633,6 +655,12 @@ body.has-glow .reticle { opacity: 1; }
   .w-in > span { transform: none !important; opacity: 1 !important; }
   section > .wrap, .stats, .band > * { transform: none !important; }
 }
+</style>
+<style>
+  /* V12.35 · Mode léger (voir le script en haut de page) */
+  html.lite .aurora, html.lite .grain, html.lite .rain, html.lite .fog, html.lite .snow { display: none !important; }
+  html.lite *, html.lite *::before, html.lite *::after { backdrop-filter: none !important; -webkit-backdrop-filter: none !important; }
+  html.lite nav { background: rgba(7, 4, 13, .95); }
 </style>
 </head>
 <body>

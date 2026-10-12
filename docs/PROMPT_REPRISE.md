@@ -1,6 +1,6 @@
 # Prompt de reprise — RoadLine RP (à coller dans une nouvelle session Claude)
 
-> Copie tout ce qui est sous la ligne ci-dessous dans ta deuxième session. Mis à jour le 12/10/2026 (V12.34).
+> Copie tout ce qui est sous la ligne ci-dessous dans ta deuxième session. Mis à jour le 12/10/2026 (V12.35).
 
 ---
 
@@ -10,10 +10,10 @@ ox_lib, ox_inventory, ox_target, oxmysql, illenium-appearance, qbx_vehiclekeys, 
 l'optimisation.
 
 ## Avant toute chose
-1. Lis **`docs/ETAT_PROJET.md`** en entier (récap complet, historique V12.x, décisions) puis `docs/MLO.md` et
+1. Lis **`docs/AUDIT_V12_35.md`** (état et risques au 12/10), puis **`docs/ETAT_PROJET.md`** en entier (récap complet, historique V12.x, décisions) puis `docs/MLO.md` et
    `docs/IMPORTER_MODS.md` (maps payantes, scripts compagnons, diagnostic).
 2. Vérifie que tu es à jour : `git fetch origin && git log -1 origin/feature/phase1-bridge` doit montrer
-   « V12.34 : maps retirées jamais réimportées » (ou plus récent).
+   « V12.35 : site en mode léger, audit global » (ou plus récent).
 
 ## Règles permanentes (à respecter sans exception)
 - **Tout en français** (code commenté, messages en jeu, docs, réponses).
@@ -55,7 +55,7 @@ l'optimisation.
 F1 téléphone, F2 inventaire, F3 progression, F4 intervention (police / EMS), F5 emotes, F6 métiers, F7 duo, F9 gang,
 F10/F11 staff, I aide, K inventaire proche, W radial, H mains en l'air, L verrouiller, B ceinture, **U garde-robe**.
 
-## État au 12/10/2026 (V12.34)
+## État au 12/10/2026 (V12.35)
 - Récents : clés de véhicule en objet (`gs_carkey`), vêtements et tenues en objets + garde-robe (U), apparition fiable
   dans les véhicules, blips publics des maps, contrôle « chez moi » des maps (F11), scripts compagnons des maps payantes
   installés par IMPORTER-MODS, intégrité des maps vérifiée au démarrage, outil REPARER-FIVEM.bat, site de doc HTML.
@@ -83,7 +83,7 @@ F10/F11 staff, I aide, K inventaire proche, W radial, H mains en l'air, L verrou
 ## Ce qu'a fait la session web le 12/10 (V12.17 → V12.34), en bref
 - Maps payantes (escrow) : import réparé, archives coupées refusées (7-Zip ≥ 2), intégrité vérifiée au démarrage, fusion
   d'occlusion écrite par `gsa_zz_fusion_occlusion` (seul dossier autorisé), blips publics, contrôle « chez moi » (F11),
-  scripts compagnons installés avec leur map, maps retirées jamais réimportées (V12.34).
+  scripts compagnons installés avec leur map, maps retirées jamais réimportées (V12.35).
 - Joueurs : apparition dans le véhicule fiable, clés en objet, vêtements / tenues en objets, garde-robe (U).
 - Outils : REPARER-FIVEM.bat (erreurs FiveM / Rockstar côté joueur), site de doc HTML (`livraison/ROADLINE-Documentation.html`).
 - La V12.33 du poste Windows (maps plasma retirées, F4 qui explique ses refus, garde-robe sans focus bloqué, atterrissage
