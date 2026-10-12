@@ -1,4 +1,4 @@
-# État du projet RoadLine RP — récapitulatif complet (à jour au 12/10/2026, V12.24)
+# État du projet RoadLine RP — récapitulatif complet (à jour au 12/10/2026, V12.25)
 
 Ce document sert de **point de sauvegarde** : si une conversation avec Claude est perdue, compressée ou doit reprendre
 ailleurs, tout ce qu'il faut savoir est ici. Il est versionné avec le code (`git log` en garde aussi l'historique).
@@ -6,15 +6,19 @@ En bas de ce fichier : un **prompt prêt à coller** dans une nouvelle conversat
 
 ---
 
-## 0. Où on en est (11/10/2026) — récapitulatif global
+## 0. Où on en est (12/10/2026, V12.25) — récapitulatif global
 
 **Phase** : bêta fermée en cours (des testeurs sont en ville et d'autres arrivent cette semaine), ouverture officielle le
 **20/10/2026 à 21 h**. Décision du 11/10 : pas de gel des nouveautés, mais désormais **surtout du correctif, de la
 configuration et de l'optimisation** ; l'utilisateur se consacre à la promotion.
 
-**Le serveur en chiffres** : 66 ressources maison, ~34 systèmes exclusifs (« signatures »), 2 688 tests Lua + 70 tests du
-bot Discord, tous verts ; 27 pièges anti-triche ; 25 types de crimes reliés au central police ; budget de performance
-tenu (135 boucles client, 6 permanentes par image).
+**Le serveur en chiffres** : 66 ressources maison, ~34 systèmes exclusifs (« signatures »), 40 mappings payants installés,
+2 882 tests automatiques, tous verts ; 27 pièges anti-triche ; 25 types de crimes reliés au central police ; budget de performance
+tenu (136 boucles client, 6 permanentes par image).
+
+**Documentation** : `docs/hub/index.html` (double-clic) = toute la doc en un site hors ligne, par catégories, recherche,
+backtest et priorités à cocher (sauvegardés dans le navigateur, export / import .json, rapport texte, impression).
+Régénéré par `python3 tools/doc_hub.py` (aussi lancé par tests/run.sh). Les priorités cochables sont dans `PRIORITIES`.
 
 | Domaine | État |
 |---|---|
@@ -26,13 +30,16 @@ tenu (135 boucles client, 6 permanentes par image).
 | Bot Discord (statut, tickets, modération, annonces, bienvenue) | ✅ À valider sur le VPS (fiche de recette 1b et 1d) |
 | Site (Netlify) | ✅ V13 : météo et heure de la ville en direct, son opt-in, IP masquée jusqu'au 20/10 |
 | Arrivée en bus | ✅ Réparée (sol chargé avant le bus, dépose au sol réel, secours si bloqué) |
-| Mappings / MLO | ⏳ **Toutes retirées le 12/10** (maps absentes, crashs) ; l'utilisateur va acheter un pack. Outils prêts : F11 « Mappings installés » (emplacement, conflits, poids, fusion d'occlusion, retrait) |
+| Mappings / MLO | ⏳ **40 maps payantes (packs Patoche, escrow)** installées le 12/10, doublons retirés (`RETIRED_MAPS`). Reste : tour en jeu de chaque intérieur (certains « chargent sans fin » : la console signale en rouge les maps activées mais non démarrées = licence Cfx ou .fxap), dernier conflit concession + gang 2 (fusion V12.24 à confirmer) |
+| Crash FiveM du fondateur (erreur 506) | ⏳ Côté PC (launcher Rockstar / droits admin / OneDrive) : `REPARER-FIVEM.bat` livré, à lancer |
 | Cabines téléphoniques (refonte « vraies cabines de la map ») | ⏳ À discuter |
 | Recette en jeu | ⏳ Fiche `ROADLINE_Backtest_complet.pdf` (sessions 0 → 6, dont 1b / 1c / 1d prioritaires) |
 
-**Avant l'ouverture, dans l'ordre** : 1) retours des bêta-testeurs + fiche de recette → corrections ; 2) mappings
-importés, vérifiés, optimisés, blips / portes / points branchés ; 3) Discord finalisé (webhooks #logs-staff et
-#sanctions, bienvenue) ; 4) passage du profil privé au public (code cfx.re) le jour J.
+**Avant l'ouverture, dans l'ordre** (cochable dans `docs/hub/index.html` → Priorités) : 1) FiveM réparé sur le PC du
+fondateur (REPARER-FIVEM) ; 2) tour en jeu des 40 maps, désactiver celles qui chargent sans fin ; 3) backtest (56 tests,
+★★★ d'abord) → corrections ; 4) vêtements / coiffures en plus (packs FiveM ready, sans marque) ; 5) Discord finalisé ;
+6) annonce de recrutement ; 7) passage du profil privé au public (code cfx.re) le jour J. **Pas de nouveau gros système
+avant l'ouverture** : correctifs, configuration, optimisation.
 
 ---
 
@@ -47,7 +54,7 @@ exclusifs (« ce que tu ne trouveras nulle part ailleurs »).
 - `feature/phase1-bridge`
 - `claude/gta-rp-architecture-stack-pbvdxz`
 
-**Dernier commit poussé** : « V12.24 : la ressource de fusion écrit elle-même ses fichiers » (hash exact :
+**Dernier commit poussé** : « V12.25 : diagnostic des maps, site de la documentation » (hash exact :
 `git log -1 origin/feature/phase1-bridge`). Les deux branches pointent sur le même commit.
 
 **Deux sessions Claude en parallèle** (poste Windows et session web) : elles ne se voient pas. Toujours synchroniser
@@ -57,7 +64,7 @@ par un colis (zip de l'installation ou de la session) + ce fichier, et comparer 
 ## 2. Versions : interne vs publique (important, piège classique)
 
 Depuis la V11.3, il y a **deux numéros de version différents**, volontairement :
-- `gs_version` (convar, `server.cfg.example`) = **V12.24** → version technique interne, vue par le staff (F11, console,
+- `gs_version` (convar, `server.cfg.example`) = **V12.25** → version technique interne, vue par le staff (F11, console,
   METTRE-A-JOUR). Continue d'avancer à chaque mise à jour (V11.2, V11.3...).
 - `gs_public_version` (convar) = **« V4 · bêta »** → version vue par les **joueurs** (écran de chargement, statut
   Discord, Gazette). Le site affiche son propre journal (V1 à V4, V5 « classé confidentiel »).
@@ -97,7 +104,8 @@ Tout est scripté, zéro mot de passe affiché en clair :
   mode simple/txAdmin, retour arrière, Discord, codes staff, adresse https...)
 - `CONFIGURER-DISCORD.bat` (jeton bot, webhooks, adresse de connexion — voir piège ci-dessous)
 - `PREPARER-OVH.bat`, `CAPTURER-ERREURS.bat`, `SAUVEGARDER-BDD.bat` / `RESTAURER-BDD.bat`, `IMPORTER-MODS.bat`,
-  `DEVENIR-ADMIN.bat`, `PUBLIER-SITE.bat`
+  `DEVENIR-ADMIN.bat`, `PUBLIER-SITE.bat`, `REPARER-FIVEM.bat` (erreur 506 / déconnexions Rockstar, côté joueur),
+  `VIDER-CACHE-FIVEM.bat`, `NETTOYER-MARQUES.bat`
 
 **Piège vécu cette session** : l'utilisateur a demandé « c'est quoi mon adresse cfx » en croyant qu'elle existait déjà
 — elle n'existe pas tant que le serveur n'est pas passé en public au moins une fois. Résolu en utilisant l'IP directe
@@ -262,6 +270,15 @@ Résumé très condensé (le détail complet est dans `docs/ROADMAP.md`, `docs/F
   ne remplace pas le curseur), profondeur CSS `animation-timeline: view()` (captures, mock, carte, chiffres), intro
   façon chargement de mission (Entrée / clic pour passer). Tout coupé par `prefers-reduced-motion`, souris seulement
   sur ordinateur. Une seule boucle rAF qui s'endort quand rien ne bouge. Vérifié dans le navigateur : 0 erreur.
+
+- **V12.25** (12/10/2026) — « refais le tour des mappings, mets la doc à jour, fais-moi un site de la doc » :
+  - Console au démarrage : `Map activée mais NON démarrée : … (état …)` pour chaque map active dans addons.cfg qui ne tourne
+    pas (en jeu : bâtiment absent / chargement sans fin ; cause : licence Cfx du pack, .fxap manquant). Test `activeEnsures`.
+  - Téléportation F11 vérifiée : toujours bornée (2,5 s + 3 s + 8 s max), elle ne peut pas causer un chargement infini.
+  - **Site de la documentation** `docs/hub/index.html` (tools/doc_hub.py) : 30 documents en 5 catégories, recherche,
+    backtest (56) et priorités (19) à cocher avec notes, export / import / rapport / impression, clair-sombre, mobile.
+    Testé dans Chromium (0 erreur, cases gardées après rechargement, pas de débordement à 375 px).
+  - Vérification globale : 2 882 tests verts, budget de performance tenu (67 ressources, 136 threads client).
 
 - **V12.18** (12/10/2026) — « j'ai acheté de vrais mappings (packs Patoche), depuis FiveM crashe, rien n'apparaît » :
   - **Crash au lancement = erreur FiveM 506** (« Failure connecting to the Rockstar Games Launcher »), côté PC du joueur,

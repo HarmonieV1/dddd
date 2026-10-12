@@ -334,6 +334,11 @@ function cleanName(file) {
   return n || 'mod';
 }
 
+/** Ressources activées (lignes « ensure x » non commentées) d'un fichier cfg. */
+function activeEnsures(text) {
+  return String(text).split(/\r?\n/).map((l) => l.match(/^\s*ensure\s+(\S+)/)).filter(Boolean).map((x) => x[1]);
+}
+
 /** V12.16 · Supprime DÉFINITIVEMENT toutes les maps du disque (demande du 12/10 : « retire-les totalement de ma base »).
  *  serverData = dossier server-data ; root = dossier parent (C:\GTASOON sur le PC). Seules les vraies maps de
  *  resources/[addons] (gsa_* avec .ymap / .ytyp / .ybn) : vêtements et véhicules intacts. Pour chacune : dossier effacé,
@@ -427,7 +432,7 @@ function applyFusions(maps, fusionDir) {
   return written;
 }
 
-if (typeof module !== 'undefined' && module.exports) module.exports = { cleanName, deleteMapsOnDisk, pruneFusions, disableInCfg, inflateRsc7, entitiesOf, memoryMB, memorySplit, pagesSize, isVanillaName, placesOf, scanResource, conflictsOf, scanAll, labelOf, mergeOcclusion, applyFusions, RETIRED_MAPS, _setLuaFs: (f) => { luaFs = f; } }; // tests Node seulement
+if (typeof module !== 'undefined' && module.exports) module.exports = { cleanName, deleteMapsOnDisk, pruneFusions, disableInCfg, inflateRsc7, entitiesOf, memoryMB, memorySplit, pagesSize, isVanillaName, placesOf, scanResource, conflictsOf, scanAll, labelOf, mergeOcclusion, applyFusions, RETIRED_MAPS, activeEnsures, _setLuaFs: (f) => { luaFs = f; } }; // tests Node seulement
 
 if (typeof GetCurrentResourceName === 'function') {
   const self = GetCurrentResourceName();
@@ -517,6 +522,14 @@ if (typeof GetCurrentResourceName === 'function') {
     try { has = fs.readdirSync(path.join(dir, 'stream')).length > 0; } catch (e) { has = false; }
     if (has) { StopResource(FUSION_RES); StartResource(FUSION_RES); cache = null; }
   };
+  const notStartedMaps = () => {
+    const cfgFile = path.resolve(GetResourcePath(self), '..', '..', '..', 'cfg', 'addons.cfg');
+    let text = '';
+    try { text = fs.readFileSync(cfgFile, 'utf8'); } catch (e) { return []; }
+    return activeEnsures(text).filter((n) => /^gsa_/.test(n) && !RETIRED_MAPS.includes(n))
+      .map((name) => ({ name, state: GetResourceState(name) })).filter((x) => x.state !== 'started')
+      .filter((x) => { const d = GetResourcePath(x.name); if (!d) return x.state === 'missing'; try { const s = scanResource(x.name, d); return s.ymaps > 0 || s.streamed.length > 0; } catch (e) { return true; } });
+  };
   // V12.18 · Maps retirées par décision (RETIRED_MAPS) : arrêtées puis supprimées, avant la fusion (qui ne les voit plus)
   setTimeout(() => {
     const present = RETIRED_MAPS.filter((n) => GetResourceState(n) !== 'missing');
@@ -537,6 +550,10 @@ if (typeof GetCurrentResourceName === 'function') {
     const open = r.conflicts.filter((c) => !c.resolved);
     console.log(`[gs_admin] Mappings : ${r.maps.length} installé(s), ${placed} situé(s) (F11 → Monde et lieux → Mappings installés)` +
       (open.length ? `, ^1${open.length} CONFLIT(S)^7` : ', aucun conflit') + (r.conflicts.length - open.length ? `, ${r.conflicts.length - open.length} résolu(s) par fusion` : ''));
+    // V12.25 · Maps activées dans cfg/addons.cfg mais NON démarrées : en jeu = bâtiment absent ou chargement sans fin.
+    // Cause habituelle d'une map payante : licence (achetée avec un autre compte Cfx que celui de la clé du serveur) ou
+    // fichier .fxap manquant ; la vraie raison est écrite plus haut dans la console (« entitlement », « protected »…).
+    for (const n of notStartedMaps()) console.log(`^1[gs_admin] Map activée mais NON démarrée : ${n.name} (état : ${n.state}). En jeu : bâtiment absent ou chargement sans fin. Cherche « ${n.name} » plus haut dans la console (licence Cfx « entitlement », fichier « protected resource » manquant)^7`);
     for (const m of r.maps) for (const h of m.heavy) console.log(`^3[gs_admin] Map ${m.name} : ${h.file} prend ${h.mb} Mo en mémoire (au-delà de la limite FiveM : 48 Mo graphique / 64 Mo système) : textures ou murs qui peuvent ne pas s'afficher^7`);
     for (const c of r.conflicts) {
       if (c.resolved) console.log(`^2[gs_admin] Conflit résolu : ${c.file} (${c.resources.join(' + ')}) fusionné par ${c.resolved}^7`);

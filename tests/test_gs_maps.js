@@ -192,6 +192,7 @@ check('2e passage : rien à supprimer', M.deleteMapsOnDisk(SD, R9).maps.length =
   check('retrait ciblé : archive gardée, nom dans mods-retires.txt', fs.existsSync(path.join(R2, 'mods-a-trier', 'moreo_gym.rar')) && fs.readFileSync(path.join(R2, 'mods-retires.txt'), 'utf8').includes('moreo_gym'));
   check('liste des maps retirées : 8 noms gsa_', M.RETIRED_MAPS.length === 8 && M.RETIRED_MAPS.every((n) => /^gsa_[a-z0-9_]+$/.test(n)));
 }
+check('lignes ensure actives seulement', JSON.stringify(M.activeEnsures('## titre\r\nensure gsa_a\r\n# ensure gsa_b\r\n  ensure gsa_c  # note\r\n')) === '["gsa_a","gsa_c"]');
 // V12.18 : FXServer récent = écriture interdite au JavaScript (« Use --allow-fs-write ») → repli par Lua (server/fsw.lua)
 {
   const orig = { w: fs.writeFileSync, u: fs.unlinkSync, r: fs.rmSync };

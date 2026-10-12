@@ -18,6 +18,8 @@ for v in BrandBlock BrandStrong; do
     [ -n "$a" ] && [ "$a" = "$b" ] || { echo "ERREUR : \$$v différent entre importer-mods.ps1 et NETTOYER-MARQUES.bat"; exit 1; }
 done
 echo "Marques OK"
+# Site de documentation (docs/hub/index.html) : régénéré à chaque passage, doit se construire sans document manquant
+python3 -B tools/doc_hub.py
 # DLL de l'optimiseur de textures : un vrai fichier Windows (signature « PE » intacte). Une conversion de fins de ligne
 # les avait abîmées (V12.17 : « Le module était censé contenir un manifeste de l'assembly »).
 python3 - <<'EOF'
