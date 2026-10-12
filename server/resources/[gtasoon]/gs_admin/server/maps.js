@@ -256,7 +256,7 @@ const PUBLIC = {
   gsa_sub_patoche_benny_bw_pack: { label: 'Benny\'s', sprite: 72, color: 0 },
   gsa_sub_patoche_prison_pack: { label: 'Prison de Bolingbroke', sprite: 188, color: 1 },
   gsa_sub_patoche_storage_pack: { label: 'Box de stockage', sprite: 357, color: 0 },
-  gsa_sub_patoche_villa_01_pack: false,
+  gsa_patoche_villa_bunker_pack: false, // villa privée (V12.31 : gardée à la place de la villa 01)
   gsa_sub_patoche_weed_pack: false,
   gsa_mrpd_etendu: false, // sous-sol du commissariat : le commissariat a déjà son blip
 };
@@ -494,7 +494,7 @@ function deleteMapsOnDisk(serverData, root, opts = {}) {
 const RETIRED_MAPS = [
   'gsa_mlo_willies_supermarket', 'gsa_cfx_draft_pb_liquor_pack', 'gsa_moreo_gym', 'gsa_nelegalnyjj_avtoservis_i_avtorazborka',
   'gsa_sub_patoche_benny_original_pack', // gardé : Benny's noir et blanc
-  'gsa_patoche_villa_bunker_pack',       // gardé : sub_patoche_villa_01 (même villa)
+  'gsa_sub_patoche_villa_01_pack',       // V12.31 : gardé la villa bunker (même villa) ; remise par IMPORTER-MODS
   'gsa_sub_patoche_digitalden',          // gardé : prison (même occlusion du centre-ville)
   'gsa_patoche_shadow_complex_pack',     // gardé : plasmakart
 ];
@@ -637,6 +637,13 @@ if (typeof GetCurrentResourceName === 'function') {
       .map((name) => ({ name, state: GetResourceState(name) })).filter((x) => x.state !== 'started')
       .filter((x) => { const d = GetResourcePath(x.name); if (!d) return x.state === 'missing'; try { const s = scanResource(x.name, d); return s.ymaps > 0 || s.streamed.length > 0; } catch (e) { return true; } });
   };
+  // V12.31 · Scripts compagnons des maps (installés sous leur nom d'origine par IMPORTER-MODS) activés mais pas démarrés
+  const notStartedScripts = () => {
+    const cfgFile = path.resolve(GetResourcePath(self), '..', '..', '..', 'cfg', 'addons.cfg');
+    let text = '';
+    try { text = fs.readFileSync(cfgFile, 'utf8'); } catch (e) { return []; }
+    return activeEnsures(text).filter((n) => !/^gsa_/.test(n)).map((name) => ({ name, state: GetResourceState(name) })).filter((x) => x.state !== 'started');
+  };
   // V12.18 · Maps retirées par décision (RETIRED_MAPS) : arrêtées puis supprimées, avant la fusion (qui ne les voit plus)
   setTimeout(() => {
     const present = RETIRED_MAPS.filter((n) => GetResourceState(n) !== 'missing');
@@ -694,6 +701,7 @@ if (typeof GetCurrentResourceName === 'function') {
     // Cause habituelle d'une map payante : licence (achetée avec un autre compte Cfx que celui de la clé du serveur) ou
     // fichier .fxap manquant ; la vraie raison est écrite plus haut dans la console (« entitlement », « protected »…).
     for (const n of notStartedMaps()) console.log(`^1[gs_admin] Map activée mais NON démarrée : ${n.name} (état : ${n.state}). En jeu : bâtiment absent ou chargement sans fin. Cherche « ${n.name} » plus haut dans la console (licence Cfx « entitlement », fichier « protected resource » manquant)^7`);
+    for (const n of notStartedScripts()) console.log(`^1[gs_admin] Script de map activé mais NON démarré : ${n.name} (état : ${n.state}). Cherche « ${n.name} » plus haut dans la console : licence Cfx (« entitlement »), dépendance manquante (« dependency »), ou script qui refuse d'être renommé^7`);
     for (const m of r.maps) if (m.activity && !m.activity.script) console.log(`^3[gs_admin] Map ${m.name} : DÉCOR SEUL. L'activité (${m.activity.what}) est un script vendu à part (aucune ressource « *${ACTIVITY[m.name].token}* » démarrée) : pas de point pour jouer. Il est dans C:\\GTASOON\\mods-tri\\scripts-a-verifier : à relire avant de l'installer. Blip affiché « (bientôt) »^7`);
     for (const m of r.maps) for (const h of m.heavy) console.log(`^3[gs_admin] Map ${m.name} : ${h.file} prend ${h.mb} Mo en mémoire (au-delà de la limite FiveM : 48 Mo graphique / 64 Mo système) : textures ou murs qui peuvent ne pas s'afficher^7`);
     for (const c of r.conflicts) {

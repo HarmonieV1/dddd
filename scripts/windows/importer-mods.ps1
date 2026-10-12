@@ -315,7 +315,7 @@ function Analyze($pkg) {
     $all = @(Get-ChildItem -LiteralPath $pkg.FullName -Recurse -File -Force)
     $brandHit = (Test-Brand $pkg.Name) -or @($all | Where-Object { Test-Brand $_.Name -File } | Select-Object -First 1).Count -gt 0
     $r = [ordered]@{ name = (Clean-Name $pkg.Name); source = $pkg.Name; type = 'rejete'; sizeMB = MB (($all | Measure-Object Length -Sum).Sum)
-        issues = New-Object System.Collections.ArrayList; notes = $pre; root = $pkg.FullName; models = @(); install = $false; risk = $null; escrow = $false; broken = $null }
+        issues = New-Object System.Collections.ArrayList; notes = $pre; root = $pkg.FullName; models = @(); install = $false; risk = $null; escrow = $false; broken = $null; deps = @(); resName = $null; companion = $null }
     $ext = { param($e) @($all | Where-Object { $_.Extension -ieq $e }) }
     $manifest = $all | Where-Object { $_.Name -ieq 'fxmanifest.lua' -or $_.Name -ieq '__resource.lua' } | Select-Object -First 1
     $lua = @($all | Where-Object { $_.Extension -ieq '.lua' -and $_.Name -notmatch '^(fxmanifest|__resource)\.lua$' })
@@ -343,6 +343,14 @@ function Analyze($pkg) {
     }
     if ($manifest) {
         $r.root = $manifest.DirectoryName
+        # V12.31 : dépendances déclarées (dependency 'x' / dependencies { 'a', 'b' }) ; « /onesync », « /server:… » = réglages
+        $mtext = Get-Content -LiteralPath $manifest.FullName -Raw -ErrorAction SilentlyContinue
+        if ($mtext) {
+            $blocks = @([regex]::Matches($mtext, '(?s)dependencies\s*\{(.*?)\}') | ForEach-Object { $_.Groups[1].Value }) +
+                @([regex]::Matches($mtext, 'dependency\s*\(?\s*[''"][^''"]+[''"]') | ForEach-Object { $_.Value })
+            $r.deps = @($blocks | ForEach-Object { [regex]::Matches($_, '[''"]([^''"]+)[''"]') | ForEach-Object { $_.Groups[1].Value.Trim() } } |
+                Where-Object { $_ -and -not $_.StartsWith('/') } | Sort-Object -Unique)
+        }
         if ($lua.Count -gt 0 -and -not $escrowMap) {
             $r.type = 'script'
             $code = ($lua | ForEach-Object { Get-Content -LiteralPath $_.FullName -Raw -ErrorAction SilentlyContinue }) -join "`n"
@@ -480,9 +488,62 @@ foreach ($p in $packages) {
 $RetiredFile = Join-Path $Root 'mods-retires.txt'
 if (Test-Path -LiteralPath $RetiredFile) {
     $Retired = @(Get-Content -LiteralPath $RetiredFile | ForEach-Object { $_.Trim().ToLower() } | Where-Object { $_ -and -not $_.StartsWith('#') })
+    # V12.31 : maps remises en service après un retrait (12/10 : on garde la villa bunker, c'est la villa 01 qui part) :
+    # sorties de mods-retires.txt pour être réinstallées depuis leur archive, gardée dans mods-a-trier.
+    $Restored = @('patoche_villa_bunker_pack')
+    if (@($Retired | Where-Object { $Restored -contains $_ }).Count -gt 0) {
+        $Retired = @($Retired | Where-Object { $Restored -notcontains $_ })
+        $kept = @(Get-Content -LiteralPath $RetiredFile | Where-Object { $Restored -notcontains $_.Trim().ToLower() })
+        [IO.File]::WriteAllLines($RetiredFile, $kept, (New-Object Text.UTF8Encoding $false))
+        Say "  Remis en service (retiré de mods-retires.txt) : $($Restored -join ', ')" 'Green'
+    }
     foreach ($r in $results) {
         if ($Retired -contains $r.name) { $r.install = $false; $r.type = 'rejete'; [void]$r.issues.Add('retiré par le staff (mods-retires.txt) : jamais réinstallé ; enlever sa ligne du fichier pour le permettre') }
     }
+}
+
+# 2b. V12.31 · Scripts COMPAGNONS des maps payantes. Un pack (laser game, villa bunker, auto-tamponneuses…) livre souvent la
+#     map et son script dans deux dossiers : la map était installée, le script rangé dans scripts-a-verifier → « les maps
+#     sont là mais les scripts ne démarrent pas ». Un script chiffré (escrow, même vendeur) dont le nom correspond à une map
+#     installée est installé avec elle, sous son NOM D'ORIGINE (ses exports et dépendances l'appellent par ce nom), si :
+#     pas ESX seul (déjà refusé plus haut) et toutes ses dépendances présentes sur le serveur (ou dans le même import).
+#     Un script lisible (non chiffré) reste à relire avant installation, comme avant.
+$Provides = @{ 'qb-core' = 'qbx_core'; 'qb-target' = 'ox_target'; 'qtarget' = 'ox_target'; 'mysql-async' = 'oxmysql'; 'ghmattimysql' = 'oxmysql' }
+$Generic = 'patoche', 'script', 'scripts', 'pack', 'client', 'server', 'fivem', 'resource', 'escrow', 'master', 'release', 'version', 'final', 'update'
+$haveRes = @{}
+if (Test-Path -LiteralPath (Join-Path $Data 'resources')) {
+    foreach ($m in @(Get-ChildItem -LiteralPath (Join-Path $Data 'resources') -Recurse -File -Include 'fxmanifest.lua', '__resource.lua' -ErrorAction SilentlyContinue)) { $haveRes[$m.Directory.Name.ToLower()] = $true }
+}
+$mapNames = @($results | Where-Object { $_.install -and $_.type -eq 'map' } | ForEach-Object { $_.name })
+if (Test-Path -LiteralPath $Addons) { $mapNames += @(Get-ChildItem -LiteralPath $Addons -Directory -Filter 'gsa_*' | ForEach-Object { $_.Name.Substring(4) }) }
+if ($Retired) { $mapNames = @($mapNames | Where-Object { $Retired -notcontains $_ }) }
+$scriptPool = @{}
+foreach ($r in $results) {
+    if ($r.type -ne 'script' -or -not $r.escrow) { continue }
+    $r.resName = ((Split-Path $r.root -Leaf) -replace '[^A-Za-z0-9_\-]', '_')
+    $scriptPool[$r.resName.ToLower()] = $r
+}
+function Test-Dep($d) {
+    $d = $d.ToLower()
+    return $haveRes[$d] -or ($Provides.ContainsKey($d) -and $haveRes[$Provides[$d]]) -or $scriptPool.ContainsKey($d)
+}
+foreach ($r in @($scriptPool.Values)) {
+    $tokens = @("$($r.name)_$($r.resName)".ToLower() -split '[_\-]' | Where-Object { $_.Length -ge 5 -and $Generic -notcontains $_ } | Sort-Object -Unique) # nom de l'archive + nom du dossier
+    $map = $mapNames | Where-Object { $n = $_; @($tokens | Where-Object { $n -match [regex]::Escape($_) }).Count -gt 0 } | Select-Object -First 1
+    if (-not $map) { [void]$r.notes.Add('script payant seul : aucune map installée ne lui correspond, pas installé (dis-moi si tu le veux)'); continue }
+    $missing = @($r.deps | Where-Object { -not (Test-Dep $_) })
+    if ($missing.Count -gt 0) { [void]$r.issues.Add("script de la map gsa_$map pas installé : il lui manque $($missing -join ', ') sur le serveur"); continue }
+    $r.install = $true; $r.companion = "gsa_$map"
+    [void]$r.notes.Add("script compagnon de la map gsa_$map : installé sous son nom d'origine $($r.resName). Marche seulement si map ET script ont été achetés avec le compte Cfx.re de la clé du serveur")
+    foreach ($d in $r.deps) {
+        $dep = $scriptPool[$d.ToLower()]
+        if ($dep -and -not $dep.install) { $dep.install = $true; $dep.companion = $r.resName; [void]$dep.notes.Add("installé : dépendance de $($r.resName)") }
+    }
+}
+# Installés : les notes « pas installé / je le relis / aucune map » ne valent plus pour eux
+foreach ($r in @($scriptPool.Values | Where-Object { $_.install })) {
+    $old = @($r.notes | Where-Object { $_ -match 'pas installé automatiquement|je le relis|aucune map installée' })
+    foreach ($o in $old) { $r.notes.Remove($o) }
 }
 
 # 3. Rangement + installation des bons ---------------------------------------------------------------------------------
@@ -505,7 +566,7 @@ foreach ($r in $results) {
         if ($r.risk) { [void]$r.issues.Add("désactivé par sécurité ($($r.risk)) : pour tester, retire le # de sa ligne dans cfg\addons.cfg") }
     }
     if ($r.install -and $canInstall) {
-        $name = 'gsa_' + $r.name
+        $name = if ($r.resName -and $r.companion) { $r.resName } else { 'gsa_' + $r.name } # script compagnon : nom d'origine
         $dest = Join-Path $Addons $name
         try {
             if (Test-Path -LiteralPath $dest) { Remove-Item -LiteralPath $dest -Recurse -Force }
@@ -527,7 +588,9 @@ if ($canInstall) {
         '## « désactivé par sécurité » = pas encore testé en jeu : retire le # pour l''essayer, ton choix est gardé.')
     $previous = Join-Path $Data 'cfg\addons.cfg'
     $keep = @()
-    if (Test-Path -LiteralPath $previous) { $keep = @(Get-Content -LiteralPath $previous | Where-Object { $_ -match '^#?\s*ensure gsa_' }) }
+    if (Test-Path -LiteralPath $previous) { $keep = @(Get-Content -LiteralPath $previous | Where-Object { $_ -match '^#?\s*ensure gsa_' -or
+        # V12.31 : scripts compagnons (nom d'origine), gardés tant que leur dossier existe
+        ($_ -match '^#?\s*ensure\s+(\S+)' -and (Test-Path -LiteralPath (Join-Path $Addons $Matches[1]))) }) }
     $names = @($installed) + @($keep | ForEach-Object { (($_ -replace '^#?\s*ensure\s+', '').Trim() -split '\s+')[0] }) | Sort-Object -Unique
     $notes = @()
     if (Test-Path -LiteralPath $previous) { $notes = @(Get-Content -LiteralPath $previous | Where-Object { $_ -match '^## gsa_\S+ : désactivé' } | ForEach-Object { ($_ -split '\s+')[1] }) }
@@ -623,7 +686,7 @@ $lines = @("RAPPORT IMPORTER-MODS · $(Get-Date -Format 'dd/MM/yyyy HH:mm') · $
 foreach ($grp in ($results | Group-Object type | Sort-Object Name)) {
     $lines += "=== $($Cats[$grp.Name].ToUpper()) ($($grp.Count))"
     foreach ($r in $grp.Group) {
-        $lines += ("- {0} [{1} Mo]{2}{3}" -f $r.name, $r.sizeMB, $(if ($r.install -and $canInstall) { ' → INSTALLÉ (gsa_' + $r.name + ')' } else { '' }),
+        $lines += ("- {0} [{1} Mo]{2}{3}" -f $r.name, $r.sizeMB, $(if ($r.install -and $canInstall) { ' → INSTALLÉ (' + $(if ($r.companion) { $r.resName + ', avec ' + $r.companion } else { 'gsa_' + $r.name }) + ')' } else { '' }),
             $(if ($r.models.Count) { ' · spawn : ' + ($r.models -join ', ') } else { '' }))
         foreach ($i in $r.issues) { $lines += "    ! $i" }
         foreach ($n in $r.notes) { $lines += "    · $n" }

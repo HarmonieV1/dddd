@@ -1,4 +1,4 @@
-# État du projet RoadLine RP — récapitulatif complet (à jour au 12/10/2026, V12.30)
+# État du projet RoadLine RP — récapitulatif complet (à jour au 12/10/2026, V12.31)
 
 Ce document sert de **point de sauvegarde** : si une conversation avec Claude est perdue, compressée ou doit reprendre
 ailleurs, tout ce qu'il faut savoir est ici. Il est versionné avec le code (`git log` en garde aussi l'historique).
@@ -54,7 +54,7 @@ exclusifs (« ce que tu ne trouveras nulle part ailleurs »).
 - `feature/phase1-bridge`
 - `claude/gta-rp-architecture-stack-pbvdxz`
 
-**Dernier commit poussé** : « V12.30 : contrôle des maps chez le joueur » (hash exact :
+**Dernier commit poussé** : « V12.31 : scripts compagnons des maps, villa bunker remise » (hash exact :
 `git log -1 origin/feature/phase1-bridge`). Les deux branches pointent sur le même commit.
 
 **Deux sessions Claude en parallèle** (poste Windows et session web) : elles ne se voient pas. Toujours synchroniser
@@ -64,7 +64,7 @@ par un colis (zip de l'installation ou de la session) + ce fichier, et comparer 
 ## 2. Versions : interne vs publique (important, piège classique)
 
 Depuis la V11.3, il y a **deux numéros de version différents**, volontairement :
-- `gs_version` (convar, `server.cfg.example`) = **V12.30** → version technique interne, vue par le staff (F11, console,
+- `gs_version` (convar, `server.cfg.example`) = **V12.31** → version technique interne, vue par le staff (F11, console,
   METTRE-A-JOUR). Continue d'avancer à chaque mise à jour (V11.2, V11.3...).
 - `gs_public_version` (convar) = **« V4 · bêta »** → version vue par les **joueurs** (écran de chargement, statut
   Discord, Gazette). Le site affiche son propre journal (V1 à V4, V5 « classé confidentiel »).
@@ -270,6 +270,18 @@ Résumé très condensé (le détail complet est dans `docs/ROADMAP.md`, `docs/F
   ne remplace pas le curseur), profondeur CSS `animation-timeline: view()` (captures, mock, carte, chiffres), intro
   façon chargement de mission (Entrée / clic pour passer). Tout coupé par `prefers-reduced-motion`, souris seulement
   sur ordinateur. Une seule boucle rAF qui s'endort quand rien ne bouge. Vérifié dans le navigateur : 0 erreur.
+
+- **V12.31** (12/10/2026) — « des scripts ne démarrent pas alors que les mappings sont là ; retire la villa moderne 01,
+  on garde le bunker » :
+  - **Scripts compagnons** (importer-mods.ps1, étape 2b) : un script escrow dont le nom partage un mot (≥ 5 lettres, hors
+    patoche / script / pack…) avec une map installée est installé avec elle, sous son nom d'origine, si ses dépendances
+    (`dependency` / `dependencies` du fxmanifest, « /onesync » ignoré) sont présentes (`$Provides` : qb-core → qbx_core,
+    qb-target / qtarget → ox_target, mysql-async → oxmysql) ou dans le même import (installées aussi). addons.cfg garde
+    leurs lignes tant que leur dossier existe. Testé de bout en bout avec PowerShell 7 (faux packs map + script + lib).
+  - Console du serveur : « Script de map activé mais NON démarré » (licence, dépendance, renommage).
+  - Villa moderne 01 → `RETIRED_MAPS` ; villa bunker sortie de `RETIRED_MAPS` et de `mods-retires.txt` (`$Restored`),
+    réinstallée depuis son archive gardée dans mods-a-trier, sans blip public (villa privée).
+  - docs/MLO.md : état des maps payantes au 12/10, règles escrow mises à jour, tableau de diagnostic.
 
 - **V12.30** (12/10/2026) — « je vois le blip du laser game mais pas le bâtiment, et aucun point pour tester l'activité ;
   rien dans la console » :

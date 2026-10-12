@@ -30,7 +30,8 @@ CATEGORIES = [
         ('BOB74_IPL', 'Intérieurs du jeu (IPL)'), ('VEHICULES_ADDON', 'Véhicules ajoutés'), ('PHOTOS', 'Photos et captures')]),
     ('Technique', 'Serveur, installation, hébergement', [
         ('INSTALL', 'Installation'), ('OVH', 'VPS OVH'), ('PERFORMANCE', 'Performance'), ('ARCHITECTURE', 'Architecture'),
-        ('V1_RESOURCES', 'Ressources V1'), ('AGENTS', 'Règles pour les agents (Claude)')]),
+        ('V1_RESOURCES', 'Ressources V1'), ('AGENTS', 'Règles pour les agents (Claude)'),
+        ('PROMPT_REPRISE', 'Reprendre dans une autre session (Claude)')]),
 ]
 
 # Priorités jusqu'à l'ouverture (20/10/2026) : cochables dans le site. À tenir à jour ici.
@@ -40,7 +41,7 @@ PRIORITIES = [
         'Démarrage du serveur : aucune ligne rouge « Map activée mais NON démarrée » (sinon : licence Cfx du pack ou fichier .fxap)',
         'Tour en jeu des 40 maps (F11 → Mappings installés → Y aller) : entrer dans chaque intérieur, noter celles qui chargent sans fin',
         'Dernier conflit de maps (concession + gang 2) : « résolu par fusion » au démarrage (V12.24)',
-        'Version V12.30+ sur le PC ET sur le VPS (console : [RoadLine RP] version …)',
+        'Version V12.31+ sur le PC ET sur le VPS (console : [RoadLine RP] version …)',
     ]),
     ('Priorité haute (cette semaine)', [
         'Backtest complet : les 56 tests de l\'onglet Backtest, en commençant par les ★★★',

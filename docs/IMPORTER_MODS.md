@@ -26,9 +26,20 @@ de blip pour les lieux secrets : QG de gang, labo, garage clandestin, villa priv
 Une map d'activité sans son script (laser game, karting, auto-tamponneuses, foot, billard) a un blip « (bientôt) ».
 
 ## Bâtiment invisible, ou aucun point pour jouer (V12.30)
-- **Pas de point pour jouer** : laser game, karting, auto-tamponneuses, foot, billard sont des **scripts vendus à part** par
-  l'auteur. La map seule = le décor. Console du serveur : « DÉCOR SEUL ». Les scripts sont dans
-  `C:\GTASOON\mods-tri\scripts-a-verifier` : dis-moi lesquels tu veux, je les relis et je les branche (Qbox / QBCore).
+- **Pas de point pour jouer** : laser game, karting, auto-tamponneuses, foot, billard sont des **scripts** de l'auteur.
+  La map seule = le décor. Console du serveur : « DÉCOR SEUL ». Depuis la V12.31, le script livré dans le même pack est
+  installé avec sa map (voir « Scripts compagnons » ci-dessous).
+
+## Scripts compagnons des maps payantes (V12.31)
+Avant : la map s'installait, son script partait dans `scripts-a-verifier` → « les maps sont là mais les scripts ne
+démarrent pas ». Maintenant, un script **chiffré (escrow)** dont le nom correspond à une map installée (même mot :
+plasmagame, bumpercar, villa_bunker…) est installé avec elle :
+- sous son **nom d'origine** (pas de préfixe `gsa_`) : ses exports et ses dépendances l'appellent par ce nom ;
+- seulement si **toutes ses dépendances** sont sur le serveur (`qb-core` = qbx_core, `qb-target` / `qtarget` = ox_target,
+  `mysql-async` = oxmysql) ou dans le même import (une librairie du vendeur est alors installée aussi) ;
+- jamais s'il est ESX seul. Un script lisible (non chiffré) reste à relire avant installation.
+Rapport : « INSTALLÉ (nom_du_script, avec gsa_map) » ou « il lui manque … sur le serveur ». Console du serveur :
+« Script de map activé mais NON démarré » si la licence, une dépendance ou le renommage bloque.
 - **Bâtiment invisible** sans erreur dans la console : en jeu, **F11 → Monde et lieux → Mappings installés → Contrôler les
   maps chez moi**. Pour chaque map : « bâtiment chargé », « aucun modèle reçu » (fichiers absents → réimporter ; ou cache →
   VIDER-CACHE-FIVEM), « reçus mais illisibles » (licence Cfx : pack acheté avec un autre compte que celui de la clé du
@@ -41,8 +52,11 @@ Une map d'activité sans son script (laser game, karting, auto-tamponneuses, foo
   dans la console d'IMPORTER-MODS = téléchargement coupé → à retélécharger.
 - Map / véhicule / vêtement protégé : installé tel quel (rien n'est modifié, pas d'optimisation de textures), même avec
   un petit script chiffré dedans (portes, ascenseurs).
-- Script payant seul (mini-jeu, auto-tamponneuses…) : rangé dans **scripts-a-verifier**, pas installé automatiquement
-  (illisible, et il faut le bon framework : Qbox / QBCore, pas ESX seul). Dis-moi lesquels tu veux, je les branche.
+- Script payant seul, sans map correspondante : rangé dans **scripts-a-verifier**, pas installé (dis-moi si tu le veux).
+  Script compagnon d'une map installée : installé avec elle (V12.31, voir plus haut).
+- **Maps retirées / remises** : `RETIRED_MAPS` (maps.js) les supprime au démarrage et les note dans `mods-retires.txt` ;
+  `$Restored` (importer-mods.ps1) les en sort pour qu'elles reviennent depuis leur archive. 12/10 : villa moderne 01
+  retirée, **villa bunker remise**.
 - **Archive incomplète** (« Unexpected end of archive » à la décompression) : depuis la V12.27, le pack n'est PAS installé et
   s'il l'était déjà, il est désactivé dans `cfg\addons.cfg`. Un fichier tronqué fait planter chaque joueur qui le charge
   (« Invalid fixup, address is neither virtual nor physical (in xxx.ydr) »). Retélécharger, puis relancer IMPORTER-MODS.

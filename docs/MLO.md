@@ -71,10 +71,13 @@ Deux cas très différents, à ne pas confondre :
 | Cas | Verdict |
 |---|---|
 | **Map** protégée par l'**escrow officiel Cfx** (fichier `.fxap`), achetée sur la boutique **officielle** du créateur | ✅ normal : Gabz, UncleJust et la plupart des créateurs payants protègent leurs maps ainsi. **Condition** : l'acheter avec le compte Cfx.re lié à la clé de licence du serveur, sinon elle ne se charge pas |
-| **Script** chiffré (Lua illisible, escrow ou obfusqué) | ❌ on ne peut ni le relire, ni le corriger, ni savoir ce qu'il envoie |
+| **Script compagnon** chiffré (escrow `.fxap`) livré avec une map du même vendeur (laser game, villa bunker…) | ✅ depuis la V12.31 : installé avec sa map, sous son **nom d'origine**, si toutes ses dépendances sont sur le serveur et s'il n'est pas ESX seul |
+| **Script** chiffré seul (aucune map installée ne lui correspond) | ⏸ rangé dans `scripts-a-verifier`, installé seulement sur demande |
+| **Script** obfusqué hors escrow (lignes illisibles) | ❌ refusé : on ne peut ni le relire, ni savoir ce qu'il envoie |
 
-`IMPORTER-MODS.bat` applique cette règle depuis la V12.5 : une map escrow est installée avec un avertissement dans
-le rapport, un script chiffré part dans `rejetes`. (Avant, toute map escrow était refusée à tort.)
+`IMPORTER-MODS.bat` applique ces règles : une map escrow est installée avec un avertissement dans le rapport (V12.5) ;
+son script compagnon aussi (V12.31). Avant, le script restait dans `scripts-a-verifier` : la map était là, mais le jeu
+(laser game, auto-tamponneuses…) ne démarrait jamais.
 
 ### Contrôle 5 — Performance, en jeu
 
@@ -112,7 +115,10 @@ Pour couper un mod sans le supprimer : mettre un `#` devant sa ligne dans `cfg\a
 - **Un MLO avec des PNJ, des portes à serrure ou des coffres** : les PNJ et les points viennent de nos
   ressources (`gs_markers`, `gs_places`, `ox_doorlock`), jamais du pack.
 - **Un MLO « pour ESX »** : les fichiers de map sont réutilisables, les scripts livrés avec ne le sont pas.
-  L'importeur met les scripts dans `scripts-a-verifier`.
+  L'importeur refuse un script ESX seul.
+- **Un script compagnon dont une dépendance manque** (ex. `pma-voice`, une librairie du vendeur pas téléchargée) :
+  pas installé, le rapport dit « il lui manque … ». Télécharger la dépendance chez le vendeur, la poser dans
+  `mods-a-trier`, relancer IMPORTER-MODS.
 
 ---
 
@@ -159,7 +165,29 @@ a presque toujours un fil sur forum.cfx.re avec le lien de **sa** boutique. C'es
 
 ## 6. Ce que RoadLine a déjà, et ce qui manque vraiment
 
-Fait au 11/10/2026.
+### Maps payantes installées (12/10/2026, V12.31)
+
+Une quarantaine de packs escrow (achat Cfx.re lié à la clé du serveur), surtout Patoche, vérifiés à chaque démarrage
+(intégrité des fichiers, conflits d'occlusion fusionnés dans `gsa_zz_fusion_occlusion`). Blips publics : `PUBLIC` dans
+`gs_admin/server/maps.js`.
+
+| Lieu | Ressource | Remarque |
+|---|---|---|
+| Prison de Bolingbroke | `gsa_sub_patoche_prison_pack` | gardée à la place de Digital Den (même occlusion) ; coords de cellule à confirmer en jeu |
+| Benny's noir et blanc | `gsa_sub_patoche_benny_bw_pack` | gardé à la place du Benny's original |
+| Villa bunker | `gsa_patoche_villa_bunker_pack` | **V12.31 : gardée**, la villa moderne 01 est retirée (même villa) |
+| Karting | `gsa_patoche_plasmakart_pack` (+ DLC) | gardé à la place de Shadow Complex ; activité = script compagnon |
+| Laser game | `gsa_patoche_plasmagame_pack` (+ DLC) | activité = script compagnon (blip « (bientôt) » sans lui) |
+| Auto-tamponneuses Del Perro / Pacific | `gsa_patoche_bumpercar_*` | activité = script compagnon |
+| Casino, concession, Ammu-Nation ×2, tabac, tacos, animalerie, billard, entrepôt, box de stockage | `gsa_patoche_*` | casino / concession / Ammu-Nation : doublons avec nos points sur les lieux du jeu, choix « nouveau / ancien » en attente |
+| QG gang 2, garage clandestin, labo weed, panneaux | `gsa_patoche_*` | sans blip (lieux secrets) |
+
+Retirées (`RETIRED_MAPS`, supprimées au démarrage, archives gardées) : supermarché Willie's, magasin d'alcool de
+Paleto, Moreo Gym, casse, Benny's original, villa moderne 01, Digital Den, Shadow Complex.
+Désactivées tant que l'archive n'est pas retéléchargée (téléchargement coupé, V12.27) : beach party, terrain de foot
+(soccer, soccer_cloth), plasmatron.
+
+### Lieux du jeu de base (audit du 11/10/2026)
 
 | Lieu | État |
 |---|---|
@@ -180,7 +208,18 @@ et seulement une fois que le serveur tourne et que le RP correspondant existe vr
 
 La sélection de MLO à consulter (20 gratuits, 10 payants) est dans `docs/SELECTION_MAPPINGS.md`.
 
-## 7. Après le téléchargement
+## 7. Une map ne marche pas : diagnostic (V12.27 → V12.31)
+
+| Symptôme | Où regarder | Cause / remède |
+|---|---|---|
+| Crash « Invalid fixup … (in xxx.ydr) » | console : « Map ARRÊTÉE … fichier abîmé » | archive coupée : retélécharger, IMPORTER-MODS |
+| Bâtiment absent, chargement sans fin | console : « Map activée mais NON démarrée » | licence Cfx (« entitlement ») ou `.fxap` manquant |
+| Bâtiment invisible, console muette | **F11 → Mappings installés → Contrôler les maps chez moi** | « aucun modèle reçu » (cache : VIDER-CACHE-FIVEM), « illisibles » (licence / fichier abîmé), « pack incomplet » |
+| Map visible mais aucun point pour jouer | console : « DÉCOR SEUL » ; F11 : « Activité : … décor seul » | script compagnon absent : il doit être dans le zip du pack ; sinon le télécharger chez le vendeur |
+| Script installé mais pas lancé | console : « Script de map activé mais NON démarré » | licence, dépendance manquante, ou script qui refuse d'être renommé (remonter dans la console) |
+| Deux maps au même endroit | console : « CONFLIT » | fusion automatique ; sinon en garder une (`RETIRED_MAPS`) |
+
+## 8. Après le téléchargement
 
 1. Tout dans `C:\GTASOON\mods-a-trier` (zips tels quels, même imbriqués).
 2. **IMPORTER-MODS.bat** → contrôle, installation dans `resources\[addons]\gsa_<nom>`, ligne dans `cfg\addons.cfg`.

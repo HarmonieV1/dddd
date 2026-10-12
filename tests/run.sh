@@ -64,4 +64,6 @@ if command -v node >/dev/null; then
     # Lecteur de maps (gs_admin/server/maps.js, F11 → Mappings installés) : emplacement lu dans les .ymap, conflits entre maps
     node --check "server/resources/[gtasoon]/gs_admin/server/maps.js" && node tests/test_gs_maps.js
 fi
+# IMPORTER-MODS de bout en bout (scripts compagnons des maps payantes, V12.31) : seulement si PowerShell 7 est installé
+bash tests/test_importer.sh
 for s in scripts/linux/*.sh; do bash -n "$s" || exit 1; done && echo "Scripts Linux OK (sauvegardes, installation OVH, commande roadline)"

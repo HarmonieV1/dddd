@@ -84,6 +84,8 @@ check('nom du modèle lu à côté de la position', M.entitiesOf(M.inflateRsc7(y
 }
 check('activité sans script : décor seul', JSON.stringify(M.activityOf('gsa_patoche_plasmagame_pack', ['gs_admin', 'gsa_patoche_plasmagame_pack'])) === JSON.stringify({ what: 'laser game', script: null }));
 check('activité avec son script', M.activityOf('gsa_patoche_plasmagame_pack', ['patoche_plasmagame_script']).script === 'patoche_plasmagame_script');
+check('12/10 : villa moderne 01 retirée, villa bunker gardée (sans blip public)', M.RETIRED_MAPS.includes('gsa_sub_patoche_villa_01_pack')
+  && !M.RETIRED_MAPS.includes('gsa_patoche_villa_bunker_pack') && M.PUBLIC.gsa_patoche_villa_bunker_pack === false);
 check('map sans activité : rien', M.activityOf('gsa_patoche_casino_pack', []) === undefined);
 check('maps triées par nom', r.maps.map((m) => m.label).join() === [...r.maps.map((m) => m.label)].sort((x, y) => x.localeCompare(y)).join());
 
