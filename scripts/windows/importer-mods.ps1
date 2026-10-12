@@ -87,21 +87,29 @@ function Clean-Name([string]$n) {
     if (-not $n) { $n = 'mod' }
     return $n
 }
+#--- V12.27 : 7-Zip en erreur (code 2 et plus : « Unexpected end of archive », données tronquées) = archive incomplète.
+#    Un fichier tronqué installé fait planter chaque joueur qui le charge (« Invalid fixup, address is neither virtual
+#    nor physical (in patoche_beach_guard.ydr) »). L'archive en cours est notée, ses mods refusés plus bas.
+$script:ArchiveBroken = $false
+function Invoke-7z([string[]]$a) {
+    & $7z @a | Out-Null
+    if ($LASTEXITCODE -ge 2) { $script:ArchiveBroken = $true }
+}
 #--- Décompresse une archive. Si elle contient elle-même des archives (zip du Drive = plusieurs mods), chacune
 #    devient un mod séparé. Retourne la liste des dossiers « mod ».
 function Expand-One($file, $dest) {
-    & $7z x $file "-o$dest" -y -bso0 -bsp0 | Out-Null
+    Invoke-7z @('x', $file, "-o$dest", '-y', '-bso0', '-bsp0')
     for ($depth = 0; $depth -lt 3; $depth++) { # archives dans l'archive d'un même mod (ex : pack de vêtements)
         $inner = @(Get-ChildItem -LiteralPath $dest -Recurse -File | Where-Object { $_.Extension -match '^\.(zip|rar|7z)$' })
         if ($inner.Count -eq 0) { break }
         foreach ($i in $inner) {
-            & $7z x $i.FullName ("-o" + (Join-Path $i.DirectoryName ([IO.Path]::GetFileNameWithoutExtension($i.Name)))) -y -bso0 -bsp0 | Out-Null
+            Invoke-7z @('x', $i.FullName, ("-o" + (Join-Path $i.DirectoryName ([IO.Path]::GetFileNameWithoutExtension($i.Name)))), '-y', '-bso0', '-bsp0')
             Remove-Item -LiteralPath $i.FullName -Force -ErrorAction SilentlyContinue
         }
     }
 }
 function Expand-Package($file, $dest) {
-    & $7z x $file "-o$dest" -y -bso0 -bsp0 | Out-Null
+    Invoke-7z @('x', $file, "-o$dest", '-y', '-bso0', '-bsp0')
     $inner = @(Get-ChildItem -LiteralPath $dest -Recurse -File | Where-Object { $_.Extension -match '^\.(zip|rar|7z)$' })
     $loose = @(Get-ChildItem -LiteralPath $dest -Recurse -File | Where-Object { $_.Extension -notmatch '^\.(zip|rar|7z|txt|url|html?|jpe?g|png|webp)$' })
     if ($inner.Count -ge 2 -and $loose.Count -eq 0) {
@@ -136,9 +144,18 @@ function Expand-Package($file, $dest) {
 }
 Say "`n[1/3] Décompression de $($archives.Count) archive(s)" 'Cyan'
 $packages = @()
+$BrokenPkg = @{} # [dossier du mod] = archive incomplète d'où il vient
 foreach ($a in $archives) {
     Say "  $($a.Name)"
-    try { $packages += Expand-Package $a.FullName (Join-Path $Work (Clean-Name $a.Name)) } catch { Say "    échec : $($_.Exception.Message)" 'Yellow' }
+    $script:ArchiveBroken = $false
+    try {
+        $got = @(Expand-Package $a.FullName (Join-Path $Work (Clean-Name $a.Name)))
+        $packages += $got
+        if ($script:ArchiveBroken) {
+            foreach ($g in $got) { $BrokenPkg[$g.FullName] = $a.Name }
+            Say "    ARCHIVE INCOMPLÈTE (téléchargement coupé) : pas installée. Retélécharge-la puis relance." 'Red'
+        }
+    } catch { Say "    échec : $($_.Exception.Message)" 'Yellow' }
 }
 
 # 1b. Archives dlc.rpf (mods « solo » faits avec OpenIV) : extraction directe si non chiffrées (format OPEN), sans
@@ -298,7 +315,7 @@ function Analyze($pkg) {
     $all = @(Get-ChildItem -LiteralPath $pkg.FullName -Recurse -File -Force)
     $brandHit = (Test-Brand $pkg.Name) -or @($all | Where-Object { Test-Brand $_.Name -File } | Select-Object -First 1).Count -gt 0
     $r = [ordered]@{ name = (Clean-Name $pkg.Name); source = $pkg.Name; type = 'rejete'; sizeMB = MB (($all | Measure-Object Length -Sum).Sum)
-        issues = New-Object System.Collections.ArrayList; notes = $pre; root = $pkg.FullName; models = @(); install = $false; risk = $null; escrow = $false }
+        issues = New-Object System.Collections.ArrayList; notes = $pre; root = $pkg.FullName; models = @(); install = $false; risk = $null; escrow = $false; broken = $null }
     $ext = { param($e) @($all | Where-Object { $_.Extension -ieq $e }) }
     $manifest = $all | Where-Object { $_.Name -ieq 'fxmanifest.lua' -or $_.Name -ieq '__resource.lua' } | Select-Object -First 1
     $lua = @($all | Where-Object { $_.Extension -ieq '.lua' -and $_.Name -notmatch '^(fxmanifest|__resource)\.lua$' })
@@ -449,7 +466,16 @@ function Optimize-Textures($dir, $r) {
 
 Say "[2/3] Analyse et tri" 'Cyan'
 $results = @()
-foreach ($p in $packages) { try { $results += Analyze $p } catch { Say "  $($p.Name) : analyse impossible ($($_.Exception.Message))" 'Yellow' } }
+foreach ($p in $packages) {
+    try {
+        $r = Analyze $p
+        if ($BrokenPkg[$p.FullName]) { # V12.27 : jamais installé, et désactivé s'il l'était déjà (voir addons.cfg plus bas)
+            $r.install = $false; $r.type = 'rejete'; $r.broken = $BrokenPkg[$p.FullName]
+            [void]$r.issues.Add("archive incomplète ($($r.broken)) : un fichier tronqué fait planter les joueurs. Retélécharge-la depuis la boutique (portail Cfx) puis relance IMPORTER-MODS")
+        }
+        $results += $r
+    } catch { Say "  $($p.Name) : analyse impossible ($($_.Exception.Message))" 'Yellow' }
+}
 # V12.16 : mods retirés par le staff (F11 → Supprimer définitivement les maps) : jamais réinstallés, même depuis une archive groupée
 $RetiredFile = Join-Path $Root 'mods-retires.txt'
 if (Test-Path -LiteralPath $RetiredFile) {
@@ -507,7 +533,14 @@ if ($canInstall) {
     if (Test-Path -LiteralPath $previous) { $notes = @(Get-Content -LiteralPath $previous | Where-Object { $_ -match '^## gsa_\S+ : désactivé' } | ForEach-Object { ($_ -split '\s+')[1] }) }
     $risks = @{}
     foreach ($r in $results) { if ($r.install -and $r.risk) { $risks['gsa_' + $r.name] = $r.risk } }
+    $forceOff = @{} # V12.27 : archive incomplète → désactivé d'office, même si le # avait été retiré
+    foreach ($r in $results) { if ($r.broken) { $forceOff['gsa_' + $r.name] = "archive incomplète $($r.broken), retélécharge-la puis relance IMPORTER-MODS" } }
     foreach ($n in $names) {
+        if ($forceOff.ContainsKey($n)) {
+            $cfg += "## $n : désactivé par sécurité ($($forceOff[$n]))"
+            $cfg += "# ensure $n"
+            continue
+        }
         $line = $keep | Where-Object { $_ -match ('^#?\s*ensure\s+' + [regex]::Escape($n) + '(\s|$)') } | Select-Object -First 1
         $wasOff = $line -and $line -match '^#'
         # Mod déjà désactivé par sécurité et dont le joueur a retiré le # : son choix est respecté

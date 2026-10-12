@@ -1,4 +1,4 @@
-# État du projet RoadLine RP — récapitulatif complet (à jour au 12/10/2026, V12.26)
+# État du projet RoadLine RP — récapitulatif complet (à jour au 12/10/2026, V12.27)
 
 Ce document sert de **point de sauvegarde** : si une conversation avec Claude est perdue, compressée ou doit reprendre
 ailleurs, tout ce qu'il faut savoir est ici. Il est versionné avec le code (`git log` en garde aussi l'historique).
@@ -54,7 +54,7 @@ exclusifs (« ce que tu ne trouveras nulle part ailleurs »).
 - `feature/phase1-bridge`
 - `claude/gta-rp-architecture-stack-pbvdxz`
 
-**Dernier commit poussé** : « V12.26 : véhicule au volant, clés et vêtements en objets, garde-robe » (hash exact :
+**Dernier commit poussé** : « V12.27 : archives incomplètes refusées et désactivées par l'importeur » (hash exact :
 `git log -1 origin/feature/phase1-bridge`). Les deux branches pointent sur le même commit.
 
 **Deux sessions Claude en parallèle** (poste Windows et session web) : elles ne se voient pas. Toujours synchroniser
@@ -64,7 +64,7 @@ par un colis (zip de l'installation ou de la session) + ce fichier, et comparer 
 ## 2. Versions : interne vs publique (important, piège classique)
 
 Depuis la V11.3, il y a **deux numéros de version différents**, volontairement :
-- `gs_version` (convar, `server.cfg.example`) = **V12.26** → version technique interne, vue par le staff (F11, console,
+- `gs_version` (convar, `server.cfg.example`) = **V12.27** → version technique interne, vue par le staff (F11, console,
   METTRE-A-JOUR). Continue d'avancer à chaque mise à jour (V11.2, V11.3...).
 - `gs_public_version` (convar) = **« V4 · bêta »** → version vue par les **joueurs** (écran de chargement, statut
   Discord, Gazette). Le site affiche son propre journal (V1 à V4, V5 « classé confidentiel »).
@@ -270,6 +270,13 @@ Résumé très condensé (le détail complet est dans `docs/ROADMAP.md`, `docs/F
   ne remplace pas le curseur), profondeur CSS `animation-timeline: view()` (captures, mock, carte, chiffres), intro
   façon chargement de mission (Entrée / clic pour passer). Tout coupé par `prefers-reduced-motion`, souris seulement
   sur ordinateur. Une seule boucle rAF qui s'endort quand rien ne bouge. Vérifié dans le navigateur : 0 erreur.
+
+- **V12.27** (12/10/2026) — crash joueur « Invalid fixup, address is neither virtual nor physical (in patoche_beach_guard.ydr) » :
+  fichier TRONQUÉ du pack patoche_beach_party (l'import avait signalé « Unexpected end of data » sur ce fichier, mais
+  l'importeur l'avait installé quand même). IMPORTER-MODS vérifie désormais le code de retour de 7-Zip (≥ 2 = archive
+  incomplète) : tous les mods de cette archive sont refusés (« archive incomplète… retélécharge-la ») et, s'ils étaient déjà
+  installés, leur ligne de addons.cfg est désactivée d'office (« ## … désactivé par sécurité »), réactivée toute seule au
+  prochain import réussi. Packs concernés au 12/10 : patoche_beach_party, patoche_soccer (installés), plasmatron, soccer_cloth.
 
 - **V12.26** (12/10/2026) — retours en jeu : « la voiture nous tombe dessus », « les clés ne sont pas des objets », « nos tenues
   en objets, la personnalisation comme sur ces captures (perso en 3D, vêtements autour) » :

@@ -23,6 +23,9 @@ contrôle et le range dans `C:\GTASOON\mods-tri\` :
   un petit script chiffré dedans (portes, ascenseurs).
 - Script payant seul (mini-jeu, auto-tamponneuses…) : rangé dans **scripts-a-verifier**, pas installé automatiquement
   (illisible, et il faut le bon framework : Qbox / QBCore, pas ESX seul). Dis-moi lesquels tu veux, je les branche.
+- **Archive incomplète** (« Unexpected end of archive » à la décompression) : depuis la V12.27, le pack n'est PAS installé et
+  s'il l'était déjà, il est désactivé dans `cfg\addons.cfg`. Un fichier tronqué fait planter chaque joueur qui le charge
+  (« Invalid fixup, address is neither virtual nor physical (in xxx.ydr) »). Retélécharger, puis relancer IMPORTER-MODS.
 - Console du serveur après installation : « Failed to verify protected resource » = fichier `.fxap` manquant (zip mal
   extrait ou mal envoyé) → réimporter le zip d'origine.
 
