@@ -1,4 +1,4 @@
-# État du projet RoadLine RP — récapitulatif complet (à jour au 12/10/2026, V12.22)
+# État du projet RoadLine RP — récapitulatif complet (à jour au 12/10/2026, V12.23)
 
 Ce document sert de **point de sauvegarde** : si une conversation avec Claude est perdue, compressée ou doit reprendre
 ailleurs, tout ce qu'il faut savoir est ici. Il est versionné avec le code (`git log` en garde aussi l'historique).
@@ -47,7 +47,7 @@ exclusifs (« ce que tu ne trouveras nulle part ailleurs »).
 - `feature/phase1-bridge`
 - `claude/gta-rp-architecture-stack-pbvdxz`
 
-**Dernier commit poussé** : « V12.22 : dossier des fusions de maps créé par les mises à jour » (hash exact :
+**Dernier commit poussé** : « V12.23 : fusion des maps écrite par SaveResourceFile (API FiveM) » (hash exact :
 `git log -1 origin/feature/phase1-bridge`). Les deux branches pointent sur le même commit.
 
 **Deux sessions Claude en parallèle** (poste Windows et session web) : elles ne se voient pas. Toujours synchroniser
@@ -57,7 +57,7 @@ par un colis (zip de l'installation ou de la session) + ce fichier, et comparer 
 ## 2. Versions : interne vs publique (important, piège classique)
 
 Depuis la V11.3, il y a **deux numéros de version différents**, volontairement :
-- `gs_version` (convar, `server.cfg.example`) = **V12.22** → version technique interne, vue par le staff (F11, console,
+- `gs_version` (convar, `server.cfg.example`) = **V12.23** → version technique interne, vue par le staff (F11, console,
   METTRE-A-JOUR). Continue d'avancer à chaque mise à jour (V11.2, V11.3...).
 - `gs_public_version` (convar) = **« V4 · bêta »** → version vue par les **joueurs** (écran de chargement, statut
   Discord, Gazette). Le site affiche son propre journal (V1 à V4, V5 « classé confidentiel »).
@@ -282,6 +282,11 @@ Résumé très condensé (le détail complet est dans `docs/ROADMAP.md`, `docs/F
   - METTRE-A-JOUR-OVH : copie avec `-Force` (fichiers cachés compris).
   - FXServer récent : écriture disque interdite au JavaScript (« --allow-fs-write ») → maps.js écrit via `gs_admin/server/fsw.lua`
     (réservé à gs_admin, sous le dossier parent de server-data, chemins `//` acceptés). Fusion et boutons F11 réparés.
+  - Écritures des maps (V12.19 → V12.23, testé sur le serveur) : Node bloqué (« --allow-fs-write »), export Lua introuvable
+    depuis le JS de la même ressource, `package` absent en Lua FiveM, `io.open` refusé même dans un dossier existant →
+    **`SaveResourceFile`** (API officielle FiveM) via un événement local `gs_admin:fsWrite`, io.open en secours. Le dossier
+    `gsa_zz_fusion_occlusion/stream` est créé par METTRE-A-JOUR / l'installeur / METTRE-A-JOUR-OVH (git ne garde pas les
+    dossiers vides, SaveResourceFile ne crée pas de dossier). Test : `tests/test_gs_fsw.lua`.
   - **Choix du 12/10** (`RETIRED_MAPS`, maps.js) : retirées au démarrage (PC et VPS) puis notées dans mods-retires.txt, archives
     gardées : Willie's, magasin d'alcool de Paleto, Moreo Gym, casse (anciennes gratuites), Benny's original (gardé : noir et
     blanc), villa bunker (gardé : villa 01), Digital Den (gardé : prison), Shadow Complex (gardé : plasmakart).

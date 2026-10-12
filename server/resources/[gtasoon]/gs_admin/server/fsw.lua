@@ -1,6 +1,7 @@
 -- gs_admin · V12.18 : écritures disque pour server/maps.js. Les FXServer récents interdisent au JavaScript d'écrire sur
 -- le disque (« Access to this API has been restricted. Use --allow-fs-write ») : fusion des maps, « Retirer cette map »
 -- et suppression passent donc par ici. Réservé à gs_admin, et seulement sous le dossier qui contient server-data.
+-- V12.23 : écriture par SaveResourceFile (API FiveM) d'abord, io.open ensuite.
 -- V12.21 : rien n'est calculé au chargement (une erreur ici empêchait tout le fichier de se charger) ; chaque demande
 -- répond (ok, message d'erreur) par la fonction cb.
 local SELF = GetCurrentResourceName()
@@ -51,17 +52,37 @@ local function mkdirs(dir)
     if isWin then os.execute('mkdir "' .. dir:gsub('/', '\\') .. '" 2>nul') else os.execute('mkdir -p "' .. dir .. '"') end
 end
 
+-- Ressource qui contient ce chemin → (nom, chemin relatif). SaveResourceFile est l'API officielle de FiveM pour écrire dans
+-- une ressource : elle passe quand io.open et le JavaScript sont bloqués (V12.23, constaté sur le serveur du 12/10).
+local function inResource(p)
+    local plain = tostring(p):gsub('\\', '/'):gsub('/+', '/')
+    local n = norm(p)
+    for i = 0, GetNumResources() - 1 do
+        local name = GetResourceByFindIndex(i)
+        local rp = name and GetResourcePath(name)
+        if rp and rp ~= '' then
+            rp = norm(rp):gsub('/+$', '')
+            if n:sub(1, #rp + 1) == rp .. '/' then return name, plain:sub(#rp + 2) end
+        end
+    end
+end
+
 local function fsWrite(p, b64)
     local ok, why = allowed(p)
     if not ok then return false, why end
+    local data = b64dec(b64 or '')
+    local res, rel = inResource(p)
+    if res and SaveResourceFile(res, rel, data, #data) then return true end
     local f = io.open(p, 'wb')
     if not f then
         local dir = tostring(p):match('^(.*)[/\\]')
         if dir then mkdirs(dir) end
         f = io.open(p, 'wb')
     end
-    if not f then return false, 'impossible d\'ouvrir ' .. tostring(p) .. ' (dossier absent ? relance METTRE-A-JOUR, qui le crée)' end
-    f:write(b64dec(b64 or '')); f:close()
+    if not f then
+        return false, ('écriture impossible : %s (%s)'):format(tostring(p), res and ('SaveResourceFile(' .. res .. ', ' .. rel .. ') refusé : dossier « stream » absent ? relance METTRE-A-JOUR') or 'hors des ressources, io.open refusé')
+    end
+    f:write(data); f:close()
     return true
 end
 
