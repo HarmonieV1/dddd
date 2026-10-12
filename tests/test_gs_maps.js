@@ -53,7 +53,8 @@ check('pack de deux magasins éloignés = deux lieux', pl.length === 2);
 pl = M.placesOf([road, { file: 'id1_occl_02.ymap', entities: [] }], 'gsa_routes');
 check('map qui ne fait que modifier le jeu : un lieu, le plus chargé', pl.length === 1 && pl[0].x > 500 && pl[0].x < 550);
 check('map sans objet : aucun lieu', M.placesOf([{ file: 'x.ymap', entities: [] }], 'gsa_x').length === 0);
-check('nom affiché', M.labelOf('gsa_moreo_gym') === 'Moreo gym');
+check('vrai nom affiché', M.labelOf('gsa_moreo_gym') === 'Salle de sport' && M.labelOf('gsa_pillbox_hospital_interior_master') === 'Hôpital Pillbox');
+check('map inconnue : nom lisible sans version', M.labelOf('gsa_nouvelle_map_v1_0') === 'Nouvelle map');
 
 // 4. Dossiers réels : lecture, conflits entre maps
 const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'gsmaps-'));
@@ -144,6 +145,18 @@ check('fusion impossible : version du magasin d\'alcool gardée', w.length === 1
   && fs.readFileSync(path.join(fusDir2, 'stream', 'cs1_occl_10.ymap')).equals(fs.readFileSync(path.join(liq.dir, 'stream/vanilla/cs1_occl_10.ymap'))));
 const idA = mk('gsa_x_id', { 'stream/hw1_rd_01.ymap': ymap([[1, 2000, 30]]) }), idB = mk('gsa_y_id', { 'stream/hw1_rd_01.ymap': ymap([[5, 2000, 30]]) });
 check('conflit qui n\'est pas de l\'occlusion : pas fusionné automatiquement', M.applyFusions(raw2([idA, idB]), path.join(tmp, 'fusion3')).length === 0);
+
+// 8. Retirer une map (V12.15) : ligne commentée dans addons.cfg, rien d'autre ; fusion devenue inutile supprimée
+const cfgF = path.join(tmp, 'addons.cfg');
+fs.writeFileSync(cfgF, '## Mods\r\nensure gsa_energy_redline_pack\r\nensure gsa_energy_redline_pack_b\r\n# ensure gsa_autre\r\nensure gsa_moreo_gym\r\n');
+check('retrait : map trouvée', M.disableInCfg(cfgF, 'gsa_energy_redline_pack', 'retirée en jeu'));
+const cfgT = fs.readFileSync(cfgF, 'utf8');
+check('retrait : seule sa ligne est commentée', cfgT.includes('# ensure gsa_energy_redline_pack   # retirée en jeu\r\n') && cfgT.includes('\r\nensure gsa_energy_redline_pack_b\r\n')
+  && cfgT.includes('\r\nensure gsa_moreo_gym\r\n') && cfgT.includes('# ensure gsa_autre'));
+check('retrait : déjà retirée → rien', !M.disableInCfg(cfgF, 'gsa_energy_redline_pack', 'x'));
+check('retrait : nom invalide refusé', !M.disableInCfg(cfgF, 'gs_admin', 'x') && !M.disableInCfg(cfgF, 'gsa_x\nensure y', 'x'));
+check('fusion encore utile : gardée', M.pruneFusions(raw2([liq, wil]), fusDir).length === 0 && fs.existsSync(path.join(fusDir, 'stream', 'cs1_occl_10.ymap')));
+check('une des deux maps retirée : fusion supprimée', M.pruneFusions(raw2([wil]), fusDir).join() === 'cs1_occl_10.ymap' && !fs.existsSync(path.join(fusDir, 'stream', 'cs1_occl_10.ymap')));
 fs.rmSync(tmp, { recursive: true, force: true });
 
 console.log(`lecteur de maps : ${passed} réussis, ${failed} échoués`);

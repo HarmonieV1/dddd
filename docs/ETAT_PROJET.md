@@ -1,4 +1,4 @@
-# État du projet RoadLine RP — récapitulatif complet (à jour au 12/10/2026, V12.14)
+# État du projet RoadLine RP — récapitulatif complet (à jour au 12/10/2026, V12.15)
 
 Ce document sert de **point de sauvegarde** : si une conversation avec Claude est perdue, compressée ou doit reprendre
 ailleurs, tout ce qu'il faut savoir est ici. Il est versionné avec le code (`git log` en garde aussi l'historique).
@@ -47,7 +47,7 @@ exclusifs (« ce que tu ne trouveras nulle part ailleurs »).
 - `feature/phase1-bridge`
 - `claude/gta-rp-architecture-stack-pbvdxz`
 
-**Dernier commit poussé** : « V12.14 : Monde et lieux super-admin, liste des maps nettoyée » (hash exact :
+**Dernier commit poussé** : « V12.15 : vrais noms des maps, retirer une map en jeu, /optin » (hash exact :
 `git log -1 origin/feature/phase1-bridge`). Les deux branches pointent sur le même commit.
 
 **Deux sessions Claude en parallèle** (poste Windows et session web) : elles ne se voient pas. Toujours synchroniser
@@ -57,7 +57,7 @@ par un colis (zip de l'installation ou de la session) + ce fichier, et comparer 
 ## 2. Versions : interne vs publique (important, piège classique)
 
 Depuis la V11.3, il y a **deux numéros de version différents**, volontairement :
-- `gs_version` (convar, `server.cfg.example`) = **V12.14** → version technique interne, vue par le staff (F11, console,
+- `gs_version` (convar, `server.cfg.example`) = **V12.15** → version technique interne, vue par le staff (F11, console,
   METTRE-A-JOUR). Continue d'avancer à chaque mise à jour (V11.2, V11.3...).
 - `gs_public_version` (convar) = **« V4 · bêta »** → version vue par les **joueurs** (écran de chargement, statut
   Discord, Gazette). Le site affiche son propre journal (V1 à V4, V5 « classé confidentiel »).
@@ -262,6 +262,18 @@ Résumé très condensé (le détail complet est dans `docs/ROADMAP.md`, `docs/F
   ne remplace pas le curseur), profondeur CSS `animation-timeline: view()` (captures, mock, carte, chiffres), intro
   façon chargement de mission (Entrée / clic pour passer). Tout coupé par `prefers-reduced-motion`, souris seulement
   sur ordinateur. Une seule boucle rAF qui s'endort quand rien ne bouge. Vérifié dans le navigateur : 0 erreur.
+
+- **V12.15** (12/10/2026) — retours en jeu :
+  - Blips et menu : **vrais noms** des 14 maps (`LABELS` dans maps.js), plus le nom de fichier du mod.
+  - **Retirer une map depuis F11** (super-admin / fondateur, journalisé `disablemap`) : StopResource + ligne de
+    `cfg/addons.cfg` commentée (seule cette ligne, CRLF gardés) ; fusion d'occlusion devenue inutile supprimée au démarrage
+    (`pruneFusions`, sinon elle masquerait la version de la map restante). Demande : retirer la map de Pyrite Avenue (Paleto),
+    « inexistante et hors de la carte » ; coordonnées envoyées (1166.97, -27648.08) = océan, x proche du pack Redline
+    (quartier « NULL » dans la liste) → l'utilisateur choisit lui-même dans F11 (magasin d'alcool de Paleto ou pack Redline).
+  - **/optin ne marchait pas** : `qbx_core` exige l'ACE `admin` (`IsPlayerAceAllowed(src, 'admin')`), absente de
+    permissions.cfg → `add_ace group.admin admin allow`. Sans ça, /optin ne faisait rien et les commandes Qbox répondaient
+    « not opted in ».
+  - Tests : `test_gs_maps.js` 62.
 
 - **V12.14** (12/10/2026) — retours en jeu sur F11 → Mappings installés (16 entrées) :
   - **Monde et lieux réservé super-admin (4) et fondateur** : entrée F11, toutes les options, et côté serveur `movepoint`,

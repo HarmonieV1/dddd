@@ -709,6 +709,17 @@ lib.callback.register('gs_admin:mappings', function(src)
     return res
 end)
 
+--- V12.15 · Retirer une map (F11 → Mappings installés) : super-admin et fondateur, journalisé. Arrêt immédiat + ligne
+--- commentée dans cfg/addons.cfg (server/maps.js) : réversible en retirant le #.
+lib.callback.register('gs_admin:disableMap', function(src, name)
+    if not staffGuard(src, 'disablemap', 3, 10000) or Admin.level(src) < 4 then return false, 'Réservé au super-admin et au fondateur.' end
+    if type(name) ~= 'string' or not name:match('^gsa_[%w_]+$') then return false, 'Map inconnue.' end
+    local ok, res = pcall(function() return exports[GetCurrentResourceName()]:DisableMap(name, GetPlayerName(src)) end)
+    if not ok or type(res) ~= 'table' then return false, 'Retrait impossible : ' .. tostring(res) end
+    if res.ok then Store.log(label(src), 'disablemap', name, name) end
+    return res.ok, res.msg
+end)
+
 --- Véhicules ajoutés par IMPORTER-MODS (bloc « GTA SOON ADDONS » du catalogue Qbox) + véhicules de service ajoutés
 --- aux garages des métiers : pour les retrouver sans connaître leur nom de spawn.
 lib.callback.register('gs_admin:addonVehicles', function(src)

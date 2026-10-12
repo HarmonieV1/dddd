@@ -54,6 +54,9 @@ soit une map **vide** (aucun fichier de jeu, ex. `moto_free_shell`), à supprime
 seulement au-delà de la limite de FiveM, la même que l'importeur : **48 Mo de mémoire graphique ou 64 Mo de mémoire système**
 (V12.14 ; la V12.11 alertait à tort dès 16 Mo). Seuls les vrais fichiers de map comptent : vêtements et véhicules importés
 n'apparaissent pas dans la liste. **Monde et lieux est réservé au super-admin et au fondateur.**
+**Retirer une map** (V12.15) : F11 → Mappings installés → la map → « Retirer cette map » : arrêtée tout de suite, sa ligne de
+`cfg\addons.cfg` passe en commentaire (plus chargée, IMPORTER-MODS respecte le #). Pour la remettre : enlever le #.
+Une fusion d'occlusion devenue inutile (une des deux maps retirée) est supprimée au démarrage suivant.
 
 ## Outils liés
 - `VIDER-CACHE-FIVEM.bat` : après un changement de mods ou un crash « Streamer crashed » — ferme FiveM, vide cache,

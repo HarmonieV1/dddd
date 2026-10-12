@@ -7,9 +7,9 @@ from pdf import H1, H2, P, SMALL, VERSION, footer, A4, mm, colors, SimpleDocTemp
 # (test, qui, priorité)
 SESSIONS = [
     ('0 · Avant de commencer (5 min)', [
-        ('METTRE-A-JOUR.bat : version V12.14 affichée, « Base de données sauvegardée », « Sauvegardes programmées » ; METTRE-A-JOUR-OVH puis GERER-OVH → 1 : « Version RoadLine : V12.14 »', 'Staff', 3),
+        ('METTRE-A-JOUR.bat : version V12.15 affichée, « Base de données sauvegardée », « Sauvegardes programmées » ; METTRE-A-JOUR-OVH puis GERER-OVH → 1 : « Version RoadLine : V12.15 »', 'Staff', 3),
         ('Fenêtre du serveur : aucune ligne ROUGE au démarrage (sauf un conflit de maps déjà connu) ; F8 en jeu : aucune erreur rouge ; GERER-OVH → 3 : aucune erreur de script', 'Seul', 3),
-        ('VIDER-CACHE-FIVEM.bat si tu vois un ancien menu (F11 doit afficher « RoadLine V12.14 ») ; pendant le backtest : set gs_honeypot "log" dans secrets.cfg (piège = simple signalement)', 'Staff', 2),
+        ('VIDER-CACHE-FIVEM.bat si tu vois un ancien menu (F11 doit afficher « RoadLine V12.15 ») ; pendant le backtest : set gs_honeypot "log" dans secrets.cfg (piège = simple signalement)', 'Staff', 2),
     ]),
     ('1 · Arrivée et personnage (15 min) — corrigé après tes retours', [
         ('Nouveau joueur : un seul personnage ; fondateur, super-admins et VIP (F11 → Joueurs → VIP) : deux ; plus de choix du lieu ; déco / reco = même endroit', '2', 3),
@@ -25,6 +25,7 @@ SESSIONS = [
         ('Nourriture : sandwich frais périmé en 2 jours (barre dans l\'inventaire), chips / donut 7 jours, boissons jamais ; food truck de Legion Square (nuit) derrière le vendeur', 'Seul', 1),
     ]),
     ('3 · Staff en jeu (20 min) — corrigé après tes retours', [
+        ('/optin (admin) : « service admin » basculé ; ensuite /tp, /addkeys… de Qbox acceptés (avant : « not opted in »)', 'Staff', 2),
         ('F11 : items par catégorie avec image + recherche (armes, munitions ammo-9…, accessoires en français), donner des munitions ; véhicules : catalogue par catégorie', 'Staff', 3),
         ('Déplacer un point (F11 → Monde et lieux) avec un compte fondateur ET un super-admin : une CAMÉRA, un MAGASIN, Max → « Vérifié : … a redémarré avec la nouvelle position », ancien point inactif', 'Staff', 3),
         ('Cabine de la Voix : la placer contre une VRAIE cabine ou un téléphone mural → [E] / Alt sur la cabine elle-même ; quête de la Voix jusqu\'à « Rappelle depuis la cabine » : ça décroche', 'Staff', 2),
@@ -51,7 +52,7 @@ SESSIONS = [
     ]),
     ('6 · Mappings (25 min, en mode staff)', [
         ('Au démarrage (rien à importer) : console en vert « cs1_occl_10.ymap (… + …) : fusion » puis « Conflit résolu » ; F11 → Mappings : « Conflits entre maps : tous résolus » ; Paleto : magasin d\'alcool et Willie\'s sans clignotement ni mur invisible, de dehors et de dedans', 'Staff', 3),
-        ('Monde et lieux (F11) : visible pour super-admin et fondateur seulement (un admin ne le voit pas) ; Mappings installés : 13 maps, aucun vêtement dans la liste, chaque map a un quartier ; clic → téléporté DEDANS (pas sur le toit) ; « Afficher leurs blips » → visibles chez toi seulement', 'Staff', 3),
+        ('Monde et lieux (F11) : visible pour super-admin et fondateur seulement (un admin ne le voit pas) ; Mappings installés : vrais noms (Hôpital Pillbox, Supermarché Willie\'s…), aucun vêtement, chaque map a un quartier ; une map → « Retirer cette map » (confirmation) : elle disparaît, ne revient pas au redémarrage ; clic → téléporté DEDANS (pas sur le toit) ; « Afficher leurs blips » → visibles chez toi seulement', 'Staff', 3),
         ('Pillbox : prise de service EMS, direction, pharmacie, armurerie, vestiaire, garage, chirurgien, pharmacie publique → chaque [E] dans une pièce, pas dans un mur', 'Staff', 3),
         ('Fleeca Legion Square (les 6 agences rhabillées) : banque, braquage du guichet, du coffre, gros coup en duo → points accessibles, porte du coffre cohérente', '2', 3),
         ('Pops Pills, Bahama Mamas, Willie\'s : nos points (pharmacie, bar, supérette) dans la map ; gym : murs, sol, miroirs visibles même sur un PC modeste', '2', 2),

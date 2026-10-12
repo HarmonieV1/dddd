@@ -930,8 +930,28 @@ local function mainMenu()
         show('gs_staff_veh', 'Véhicules', o, 'gs_staff_quick')
     end
 
+    -- V12.15 · Une map : y aller, ou la retirer définitivement (super-admin / fondateur ; réversible dans cfg/addons.cfg)
+    local mappingsMenu
+    local function mapActions(m, p)
+        local opts = {}
+        if p then opts[#opts + 1] = { title = 'Y aller', icon = 'location-arrow', description = ('%.0f, %.0f, %.0f'):format(p.x, p.y, p.z),
+            onSelect = function() teleportTo(p.x, p.y, p.z) end } end
+        opts[#opts + 1] = { title = 'Retirer cette map', icon = 'trash', iconColor = '#ff6b6b',
+            description = 'Arrêtée tout de suite et plus chargée aux redémarrages (réversible : enlever le # dans cfg/addons.cfg)',
+            onSelect = function()
+                local c = lib.alertDialog({ header = 'Retirer ' .. m.label .. ' ?', centered = true, cancel = true,
+                    content = ('La map **%s** (%s) sera arrêtée et ne sera plus chargée.\n\nÀ faire sur le serveur du PC, puis METTRE-A-JOUR-OVH.'):format(m.label, m.name) })
+                if c ~= 'confirm' then return end
+                notify(lib.callback.await('gs_admin:disableMap', false, m.name))
+                clearMapBlips()
+                mappingsMenu()
+            end }
+        opts[#opts + 1] = { title = m.name, icon = 'file', disabled = true, description = 'Nom de la ressource (cfg/addons.cfg)' }
+        show('gs_staff_map_one', m.label, opts, 'gs_staff_maps')
+    end
+
     -- V12.10 · Mappings installés : où est chaque map ajoutée (lu dans ses fichiers), y aller, la voir sur la carte
-    local function mappingsMenu(r)
+    function mappingsMenu(r)
         r = r or lib.callback.await('gs_admin:mappings', false)
         if not r then return end
         local o = {}
@@ -943,7 +963,7 @@ local function mainMenu()
                         for _, p in ipairs(m.places) do
                             local b = AddBlipForCoord(p.x, p.y, p.z)
                             SetBlipSprite(b, 472) SetBlipColour(b, 27) SetBlipScale(b, 0.85)
-                            BeginTextCommandSetBlipName('STRING') AddTextComponentSubstringPlayerName('Map · ' .. m.label) EndTextCommandSetBlipName(b)
+                            BeginTextCommandSetBlipName('STRING') AddTextComponentSubstringPlayerName(m.label) EndTextCommandSetBlipName(b)
                             mapBlips[#mapBlips + 1] = b
                         end
                     end
@@ -985,7 +1005,11 @@ local function mainMenu()
                 local zone = GetLabelText(code)
                 if not zone or zone == 'NULL' or zone == '' then zone = (code and code ~= '' and code ~= 'NULL') and code or 'Hors quartier' end
                 o[#o + 1] = { title = m.label .. (#m.places > 1 and (' · lieu %d'):format(i) or ''), icon = 'map-pin', arrow = true,
-                    description = ('%s · %s · %.0f, %.0f, %.0f'):format(zone, m.name, p.x, p.y, p.z), onSelect = function() teleportTo(p.x, p.y, p.z) end }
+                    description = ('%s · %.0f, %.0f, %.0f'):format(zone, p.x, p.y, p.z), onSelect = function() mapActions(m, p) end }
+            end
+            if #m.places == 0 then
+                o[#o].onSelect = function() mapActions(m, nil) end
+                o[#o].disabled, o[#o].arrow = false, true
             end
         end
         show('gs_staff_maps', ('Mappings installés (%d)'):format(#r.maps), o, 'gs_staff_world')

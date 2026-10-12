@@ -140,8 +140,27 @@ function scanResource(name, dir) {
   return { name, label: labelOf(name), places: placesOf(ymaps, name), ymaps: ymaps.length, unreadable, assets, heavy, streamed };
 }
 
+// V12.15 : vrais noms des maps installées (menu F11 et blips), au lieu du nom de fichier du mod
+const LABELS = {
+  gsa_apteka_pops_pills_v_dauntaune: "Pharmacie Pop's Pills",
+  gsa_bahamas_mamas_v1_0: 'Bahama Mamas',
+  gsa_biznes_ofis: "Bureau d'entreprise",
+  gsa_cfx_draft_pb_liquor_pack: "Magasin d'alcool de Paleto Bay",
+  gsa_energy_redline_pack: 'Pack Redline',
+  gsa_hp_fleeca_main: 'Banques Fleeca (rénovées)',
+  gsa_mlo_willies_supermarket: "Supermarché Willie's",
+  gsa_moreo_gym: 'Salle de sport',
+  gsa_nelegalnyjj_avtoservis_i_avtorazborka: 'Garage clandestin et casse',
+  gsa_pillbox_hospital_interior_master: 'Hôpital Pillbox',
+  gsa_tm_workshop_pack: 'Atelier mécanique de La Mesa',
+  gsa_zabroshennaja_derevnja_v1_0: 'Village abandonné',
+  gsa_zero_vinewoodfree: 'Commissariat de Vinewood',
+  gsa_mrpd_etendu: 'Commissariat de Mission Row (sous-sol)',
+};
+
 function labelOf(name) {
-  const s = name.replace(/^gsa_/, '').replace(/[_\-]+/g, ' ').trim();
+  if (LABELS[name]) return LABELS[name];
+  const s = name.replace(/^gsa_/, '').replace(/_v\d+(_\d+)?$/, '').replace(/[_\-]+/g, ' ').trim();
   return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
@@ -255,6 +274,31 @@ function mergeOcclusion(raws) {
   return { bytes: Buffer.concat([ys[0].head, zlib.deflateRawSync(ys[0].data, { level: 9 })]), boxes: boxes.length, models: models.length };
 }
 
+/** Fusions devenues inutiles (une des deux maps retirée) : leur fichier masquerait la version de la map restante. */
+function pruneFusions(maps, fusionDir) {
+  const wanted = new Set(conflictsOf(maps).filter((c) => /_occl_/.test(c.file)).map((c) => c.file));
+  const removed = [];
+  let files = [];
+  try { files = fs.readdirSync(path.join(fusionDir, 'stream')); } catch (e) { files = []; }
+  for (const f of files) {
+    if (wanted.has(f.toLowerCase())) continue;
+    try { fs.unlinkSync(path.join(fusionDir, 'stream', f)); removed.push(f); } catch (e) { /* verrouillé : au prochain démarrage */ }
+  }
+  return removed;
+}
+
+/** Retire une map : sa ligne de cfg/addons.cfg passe en commentaire (réversible : enlever le #). Renvoie true si trouvée.
+ *  Ne touche à aucune autre ligne. */
+function disableInCfg(cfgFile, name, note) {
+  if (!/^gsa_[a-z0-9_]+$/.test(name)) return false;
+  let text;
+  try { text = fs.readFileSync(cfgFile, 'utf8'); } catch (e) { return false; }
+  const re = new RegExp('^[ \\t]*ensure[ \\t]+' + name + '([ \\t][^\\r\\n]*)?(?=\\r?$)', 'm');
+  if (!re.test(text)) return false;
+  fs.writeFileSync(cfgFile, text.replace(re, `# ensure ${name}   # ${note}`));
+  return true;
+}
+
 const FUSION_MANIFEST = "-- Fusion automatique des fichiers d'occlusion en conflit entre maps (gs_admin/server/maps.js).\n" +
   "-- Lancée APRÈS les maps (dev.cfg / prod.cfg), donc prioritaire. Contenu régénéré à chaque démarrage si besoin.\n" +
   "fx_version 'cerulean'\ngame 'gta5'\nauthor 'RoadLine'\nlua54 'yes'\nthis_is_a_map 'yes'\n";
@@ -292,7 +336,7 @@ function applyFusions(maps, fusionDir) {
   return written;
 }
 
-if (typeof module !== 'undefined' && module.exports) module.exports = { inflateRsc7, entitiesOf, memoryMB, memorySplit, pagesSize, isVanillaName, placesOf, scanResource, conflictsOf, scanAll, labelOf, mergeOcclusion, applyFusions }; // tests Node seulement
+if (typeof module !== 'undefined' && module.exports) module.exports = { pruneFusions, disableInCfg, inflateRsc7, entitiesOf, memoryMB, memorySplit, pagesSize, isVanillaName, placesOf, scanResource, conflictsOf, scanAll, labelOf, mergeOcclusion, applyFusions }; // tests Node seulement
 
 if (typeof GetCurrentResourceName === 'function') {
   const mapResources = () => {
@@ -317,6 +361,18 @@ if (typeof GetCurrentResourceName === 'function') {
     return cache;
   };
   exports('MapScan', scan);
+  // V12.15 · Retirer une map depuis F11 (super-admin / fondateur, vérifié côté Lua) : arrêtée tout de suite, ligne commentée
+  // dans cfg/addons.cfg (server-data/cfg, à côté de resources/) → plus chargée aux démarrages suivants, réversible.
+  exports('DisableMap', (name, who) => {
+    const known = scan().maps.some((m) => m.name === name);
+    if (!known || !/^gsa_[a-z0-9_]+$/.test(name)) return { ok: false, msg: 'Map inconnue.' };
+    const cfgFile = path.resolve(GetResourcePath(name), '..', '..', '..', 'cfg', 'addons.cfg');
+    const day = new Date().toISOString().slice(0, 10);
+    const inCfg = disableInCfg(cfgFile, name, `retirée en jeu (F11) par ${String(who || 'staff').replace(/[^\w .-]/g, '')} le ${day}`);
+    StopResource(name);
+    cache = null;
+    return { ok: true, msg: inCfg ? 'Map retirée : arrêtée, et plus chargée aux prochains démarrages.' : 'Map arrêtée. Ligne introuvable dans cfg/addons.cfg : mets un # devant à la main.' };
+  });
   // V12.13 : conflits d'occlusion fusionnés tout seuls dans gsa_zz_fusion_occlusion, puis relance de cette ressource pour
   // qu'elle passe APRÈS toutes les maps (la dernière lancée l'emporte). Aucun fichier à envoyer, rien à faire à la main.
   const FUSION_RES = 'gsa_zz_fusion_occlusion';
@@ -327,6 +383,7 @@ if (typeof GetCurrentResourceName === 'function') {
     let written = [];
     try { written = applyFusions(list.map((r) => scanResource(r.name, r.dir)), dir); } catch (e) { console.log(`^1[gs_admin] Fusion des maps impossible : ${e.message}^7`); }
     for (const w of written) console.log(`^2[gs_admin] ${w.file} (${w.resources.join(' + ')}) : ${w.how}^7`);
+    try { for (const f of pruneFusions(list.map((r) => scanResource(r.name, r.dir)), dir)) console.log(`^2[gs_admin] Fusion ${f} retirée : plus de conflit^7`); } catch (e) { /* rien */ }
     let has = false;
     try { has = fs.readdirSync(path.join(dir, 'stream')).length > 0; } catch (e) { has = false; }
     if (has) { StopResource(FUSION_RES); StartResource(FUSION_RES); cache = null; }
