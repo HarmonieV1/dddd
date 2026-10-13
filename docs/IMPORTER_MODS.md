@@ -37,7 +37,9 @@ plasmagame, bumpercar, villa_bunker…) est installé avec elle :
 - sous son **nom d'origine** (pas de préfixe `gsa_`) : ses exports et ses dépendances l'appellent par ce nom ;
 - seulement si **toutes ses dépendances** sont sur le serveur (`qb-core` = qbx_core, `qb-target` / `qtarget` = ox_target,
   `mysql-async` = oxmysql) ou dans le même import (une librairie du vendeur est alors installée aussi) ;
-- jamais s'il est ESX seul. Un script lisible (non chiffré) reste à relire avant installation.
+- jamais s'il est ESX seul. Un script lisible (non chiffré) reste à relire avant installation ;
+- jamais si sa map est retirée (`RETIRED_MAPS` / `RETIRED_PATTERNS`, V12.36) ou si son propre nom contient un motif retiré
+  (`patoche_plasmagame_script`) : rapport « retiré par le staff », ligne de addons.cfg enlevée même si son dossier existe encore.
 Rapport : « INSTALLÉ (nom_du_script, avec gsa_map) » ou « il lui manque … sur le serveur ». Console du serveur :
 « Script de map activé mais NON démarré » si la licence, une dépendance ou le renommage bloque.
 - **Bâtiment invisible** sans erreur dans la console : en jeu, **F11 → Monde et lieux → Mappings installés → Contrôler les
@@ -54,10 +56,13 @@ Rapport : « INSTALLÉ (nom_du_script, avec gsa_map) » ou « il lui manque … 
   un petit script chiffré dedans (portes, ascenseurs).
 - Script payant seul, sans map correspondante : rangé dans **scripts-a-verifier**, pas installé (dis-moi si tu le veux).
   Script compagnon d'une map installée : installé avec elle (V12.31, voir plus haut).
-- **Maps retirées / remises** : `RETIRED_MAPS` (maps.js) les supprime au démarrage et les note dans `mods-retires.txt` ;
-  depuis la V12.34, IMPORTER-MODS lit aussi `RETIRED_MAPS` : jamais réinstallées, même supprimées à la main avant le redémarrage ;
-  `$Restored` (importer-mods.ps1) les en sort pour qu'elles reviennent depuis leur archive. 12/10 : villa moderne 01
-  retirée, **villa bunker remise**.
+- **Maps retirées / remises** : `RETIRED_MAPS` (noms exacts) et, depuis la V12.36, `RETIRED_PATTERNS` (motifs : `plasmagame`,
+  `plasmakart`, `plasmatron`, `villa_01`, `redline`, cherchés dans le nom de chaque ressource de `[addons]`) dans maps.js :
+  le serveur les supprime au démarrage (dossier, ligne de addons.cfg, script compagnon) et les note dans `mods-retires.txt` ;
+  IMPORTER-MODS lit les deux listes : jamais réinstallées (ni leur script compagnon), même supprimées à la main avant le
+  redémarrage, rapport « retiré par le staff (motif « redline », RETIRED_PATTERNS) ». Avant la V12.36, « plasmagamedlc2 » et
+  le pack Redline revenaient à chaque import : seuls les noms exacts étaient refusés. `$Restored` (importer-mods.ps1) sort
+  une map de `mods-retires.txt` pour qu'elle revienne depuis son archive. 12/10 : villa moderne 01 retirée, **villa bunker remise**.
 - **Archive incomplète** (« Unexpected end of archive » à la décompression) : depuis la V12.27, le pack n'est PAS installé et
   s'il l'était déjà, il est désactivé dans `cfg\addons.cfg`. Un fichier tronqué fait planter chaque joueur qui le charge
   (« Invalid fixup, address is neither virtual nor physical (in xxx.ydr) »). Retélécharger, puis relancer IMPORTER-MODS.
@@ -104,8 +109,14 @@ soit une map **vide** (aucun fichier de jeu, ex. `moto_free_shell`), à supprime
 seulement au-delà de la limite de FiveM, la même que l'importeur : **48 Mo de mémoire graphique ou 64 Mo de mémoire système**
 (V12.14 ; la V12.11 alertait à tort dès 16 Mo). Seuls les vrais fichiers de map comptent : vêtements et véhicules importés
 n'apparaissent pas dans la liste. **Monde et lieux est réservé au super-admin et au fondateur.**
-**Retirer une map** (V12.15) : F11 → Mappings installés → la map → « Retirer cette map » : arrêtée tout de suite, sa ligne de
-`cfg\addons.cfg` passe en commentaire (plus chargée, IMPORTER-MODS respecte le #). Pour la remettre : enlever le #.
+**Retirer une map** (V12.15, refait en V12.36) : F11 → Mappings installés → la map → « Retirer cette map » : arrêtée tout de
+suite, **dossier supprimé** de `resources\[addons]`, nom inscrit dans `C:\GTASOON\mods-retires.txt` (IMPORTER-MODS ne la
+réinstalle jamais), ligne **enlevée** de `cfg\addons.cfg` ; l'archive reste dans mods-a-trier. Avant la V12.36, le retrait
+arrêtait la ressource et commentait sa ligne, mais le dossier restait (et revenait à l'import) : d'où l'impression « on
+arrête juste la ressource ». Dossier verrouillé au moment du retrait : noté quand même, supprimé au démarrage suivant (le
+serveur applique `mods-retires.txt` à chaque démarrage). Pour la remettre : enlever son nom de `mods-retires.txt`, relancer
+IMPORTER-MODS. À faire sur le PC puis METTRE-A-JOUR-OVH (le VPS la supprime à son démarrage grâce à `mods-retires.txt`
+s'il l'a reçu, sinon refaire le retrait en F11 sur le VPS). « Retirer TOUTES les maps » reste réversible (lignes commentées).
 Une fusion d'occlusion devenue inutile (une des deux maps retirée) est supprimée au démarrage suivant.
 **Supprimer définitivement** (V12.17) : F11 → Mappings installés → « Supprimer définitivement toutes les maps » (taper
 SUPPRIMER) : dossiers `[addons]\gsa_*` des maps, leurs lignes de `addons.cfg`, leurs copies dans `mods-tri\maps` et leurs

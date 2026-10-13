@@ -74,6 +74,14 @@ check('annonce client', lastClientEvent('gs_quests:client:completed', 1).args[1]
 check('badge Premier contrat', Progress.players[1].badges.first_quest and lastClientEvent('gs_quests:client:badge', 1) ~= nil)
 ok = cb('gs_quests:start', 1, 'welcome'); step()
 check('pas deux fois', not ok)
+-- V12.36 : le permis est donné à tout le monde → plus d'étape « auto-école » ni « location en attendant le permis », outro sans « permis »
+local noLicence = not Q.welcome.outro:lower():find('permis', 1, true)
+for _, st in ipairs(Q.welcome.steps) do
+    local l = st.label:lower()
+    if l:find('permis', 1, true) or l:find('auto-école', 1, true) then noLicence = false end
+end
+check('V12.36 : « Ton premier jour » sans étape permis / auto-école (4 étapes, outro sans permis)', noLicence and #Q.welcome.steps == 4
+    and Q.welcome.steps[#Q.welcome.steps].type == 'talk')
 
 -- Genre
 s = cb('gs_quests:state', 1); step()

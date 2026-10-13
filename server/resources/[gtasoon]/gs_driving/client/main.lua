@@ -54,7 +54,11 @@ local function quiz()
     notify(lib.callback.await('gs_driving:theoryAnswer', false, answers))
 end
 
+-- V12.36 · Permis pour tous : l'auto-école est fermée (le serveur refuse aussi ; ce texte évite un aller-retour inutile)
+local CLOSED = 'L\'auto-école est fermée : tout le monde a son permis de conduire (seule la police le retire ou le rend).'
+
 AddEventHandler('gs_driving:client:desk', function()
+    if Config.FreeLicence then return notify(false, CLOSED) end
     local info = lib.callback.await('gs_driving:info', false)
     if not info then return notify(false, 'Accueil indisponible.') end
     local labels = { [0] = 'Aucun : commence par le code', [1] = 'Code obtenu : il reste la conduite', [2] = 'Permis obtenu' }
@@ -84,6 +88,7 @@ RegisterNetEvent('gs_driving:client:end', function(passed, why)
 end)
 
 RegisterCommand('moniteur', function()
+    if Config.FreeLicence then return notify(false, CLOSED) end -- V12.36
     local target = lib.getClosestPlayer(GetEntityCoords(cache.ped), 5.0, false)
     if not target then return notify(false, 'Aucun candidat à côté de toi.') end
     if lib.alertDialog({ header = 'Délivrer le permis ?', content = 'Le candidat a réussi l\'examen encadré.', centered = true, cancel = true }) == 'confirm' then
@@ -92,6 +97,7 @@ RegisterCommand('moniteur', function()
 end, false)
 
 CreateThread(function()
+    if Config.FreeLicence then return end -- V12.36 : plus de point ni de blip « Auto-école » (le permis est donné à tous)
     exports.gs_markers:Add('gs_driving:desk', { coords = Config.Desk, style = 'job', label = 'Auto-école', event = 'gs_driving:client:desk',
         prompt = 'Auto-école (code, examen)', distance = 20.0 })
     local b = AddBlipForCoord(Config.Desk.x, Config.Desk.y, Config.Desk.z)
@@ -110,7 +116,8 @@ RegisterCommand('permis', function()
     if not pts and valid then -- V11.5 : points désactivés, le permis est juste valide ou retiré
         return lib.notify({ title = 'Permis de conduire', description = 'Permis valide.', type = 'success', icon = 'id-card' })
     end
-    if not pts then return notify(false, 'Pas de permis de conduire valide. Direction l\'auto-école !') end
+    -- V12.36 : permis pour tous → « pas valide » veut dire retiré par la police (plus d'auto-école où le repasser)
+    if not pts then return notify(false, Config.FreeLicence and 'Permis de conduire retiré : seule la police peut te le rendre.' or 'Pas de permis de conduire valide. Direction l\'auto-école !') end
     lib.notify({ title = 'Permis de conduire', description = ('Solde : %d / %d points'):format(pts, max), type = pts > 6 and 'success' or 'warning',
         icon = 'id-card', duration = 7000 })
 end, false)

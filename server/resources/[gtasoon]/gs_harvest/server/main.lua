@@ -32,17 +32,17 @@ function Harvest.depleted(src, id)
     return out
 end
 
---- Tirage pondéré dans une table { { item, poids, { min, max } } } → item, quantité
+--- Tirage pondéré dans une table { { item, poids, { min, max } } } → item, quantité, entrée tirée (V12.36 : pour ses `finds`)
 function Harvest.roll(loot)
     local total = 0
     for _, l in ipairs(loot) do total = total + l[2] end
     local r = math.random() * total
     for _, l in ipairs(loot) do
         r = r - l[2]
-        if r < 0 then return l[1], math.random(l[3][1], l[3][2]) end
+        if r < 0 then return l[1], math.random(l[3][1], l[3][2]), l end
     end
     local l = loot[#loot]
-    return l[1], l[3][1]
+    return l[1], l[3][1], l
 end
 
 local function maybeBreak(src, tool)
@@ -75,15 +75,17 @@ lib.callback.register('gs_harvest:finish', function(src)
     local a = Config.Activities[p.id]
     if not atNode(src, a.spots[p.spot], Config.SpotRadius) then return false, 'Tu t\'es éloigné.' end
     if a.tool and Bridge:GetItemCount(src, a.tool) < 1 then return false, 'Tu n\'as plus ton outil.' end
-    local item, n = Harvest.roll(a.loot)
+    local item, n, entry = Harvest.roll(a.loot)
     if not Bridge:CanCarry(src, item, n) or not Bridge:AddItem(src, item, n) then return false, 'Tu ne peux plus rien porter.' end
     if GetResourceState('gs_quests') == 'started' then exports.gs_quests:Track(src, 'harvest') end
     local st = nodeState(src, p.id, p.spot)
     st.n = st.n + 1
     local depleted = st.n >= (a.perNode or 3)
     if depleted then st.til = os.time() + Config.Regrow end
-    local msg = ('+%d %s%s%s'):format(n, label(item), maybeBreak(src, a.tool),
-        depleted and ' · épuisé ici, passe au suivant' or '')
+    -- V12.36 : « trouvaille » (ce qu'on a concrètement récupéré, ex. « un alternateur ») et texte d'épuisement propres à l'activité
+    local find = entry and type(entry.finds) == 'table' and #entry.finds > 0 and entry.finds[math.random(#entry.finds)] or nil
+    local msg = ('+%d %s%s%s%s'):format(n, label(item), find and (' · ' .. find) or '', maybeBreak(src, a.tool),
+        depleted and (' · ' .. (a.depletedMsg or 'épuisé ici, passe au suivant')) or '')
     return true, msg, { node = p.spot, depleted = depleted, sell = a.sell }
 end)
 

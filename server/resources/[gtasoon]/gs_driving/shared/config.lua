@@ -1,8 +1,15 @@
--- [CONFIG] Auto-école. Coords à caler en jeu (F11 → Copier mes coordonnées).
+-- [CONFIG] Permis de conduire et auto-école. Coords à caler en jeu (F11 → Copier mes coordonnées).
 Config = {}
 
--- true : un nouveau personnage n'a PAS le permis (Qbox le donne par défaut). Les anciens personnages qui ont déjà
--- un véhicule à leur nom gardent leur permis (ils ne repassent pas l'examen).
+-- V12.36 · Permis pour tout le monde (demande du fondateur) : chaque personnage reçoit le permis à la connexion (drapeau Qbox
+-- + carte « Permis de conduire » dans le sac, remise une seule fois), l'auto-école ne propose plus ni code ni conduite (plus de
+-- point, de blip ni de menu), seule la police retire ou rend le permis (F4 → Contrôle d'identité → Permis).
+-- false : retour à l'ancien fonctionnement (auto-école obligatoire, voir RequireExam).
+Config.FreeLicence = true
+Config.CardDelay = 4000 -- ms après le chargement du personnage avant de remettre la carte (le sac ox_inventory doit être prêt)
+
+-- Ancien fonctionnement (FreeLicence = false). true : un nouveau personnage n'a PAS le permis (Qbox le donne par défaut).
+-- Les anciens personnages qui ont déjà un véhicule à leur nom gardent leur permis (ils ne repassent pas l'examen).
 Config.RequireExam = true
 
 Config.Desk = vec3(239.5, -1381.0, 33.7)       -- accueil de l'auto-école (code + inscription à la conduite)

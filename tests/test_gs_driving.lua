@@ -1,13 +1,19 @@
--- Tests gs_driving : permis retiré aux nouveaux (anciens avec véhicule conservés), code (tirage, correction serveur,
--- délai), conduite (points dans l'ordre, vitesse et dégâts relevés serveur, abandon), moniteur.
+-- Tests gs_driving. V12.36 · permis pour tous (Config.FreeLicence) : accordé au premier chargement (drapeau Qbox + carte, une
+-- seule carte même après rechargements, carte différée réessayée à la connexion suivante), auto-école / moniteur fermés,
+-- /permis, retrait par la police persistant à la reconnexion puis restitution, anciens dossiers, points à zéro.
+-- Ancien fonctionnement (FreeLicence = false) : permis retiré aux nouveaux (anciens avec véhicule conservés), code (tirage,
+-- correction serveur, délai), conduite (points dans l'ordre, vitesse et dégâts relevés serveur, abandon), moniteur, retrait /
+-- restitution V11.5, permis à points V8.
 dofile('tests/mock.lua')
 local R = 'server/resources/[gtasoon]/'
 loadResource('gs_security', { R .. 'gs_security/server/main.lua' })
 local duty = {}
 provide('gs_jobs', { IsOnDutyAs = function(src, job) return duty[src] == job end })
 loadResource('gs_driving', { R .. 'gs_driving/shared/config.lua' })
-local rows, vehicles = {}, { OLD = true }
+local rows, cards, vehicles, given = {}, {}, { OLD = true }, 0
 Store = { init = function() end, get = function(cid) return rows[cid] end, set = function(cid, s) rows[cid] = s end,
+    card = function(cid) return cards[cid] or 0 end,
+    setCard = function(cid, c) cards[cid] = c if c == 1 then given = given + 1 end end, -- given = cartes réellement remises
     hasVehicle = function(cid) return vehicles[cid] == true end }
 function GetVehicleBodyHealth(veh) return W.entities[veh] and (W.entities[veh].body or 1000.0) or 0 end
 function GetEntitySpeed(veh) return W.entities[veh] and (W.entities[veh].speed or 0.0) or 0 end
@@ -21,6 +27,93 @@ local function check(name, cond)
 end
 local function step() advance(11000) end
 
+-- V12.36 · Permis pour tout le monde (réglage par défaut) ------------------------------------------------------------
+check('permis pour tous activé par défaut', Config.FreeLicence == true)
+join(1, 'CID1', 'Nouveau', Config.Desk) -- join = chargement du personnage (gs_bridge:server:playerLoaded)
+check('premier chargement : permis accordé (fichier à 2, drapeau Qbox, carte remise)', rows.CID1 == 2 and W.players[1].licences.driver == true
+    and W.players[1].items.driver_license == 1 and cards.CID1 == 1 and given == 1)
+Driving.onLoaded(1) Driving.onLoaded(1)
+check('rechargements : jamais une deuxième carte', given == 1 and W.players[1].items.driver_license == 1 and rows.CID1 == 2)
+W.players[1].items.driver_license = nil
+Driving.onLoaded(1)
+check('carte perdue ou donnée : pas de nouvelle carte (remise une seule fois)', given == 1 and W.players[1].items.driver_license == nil)
+W.players[1].licences.driver = false
+Driving.onLoaded(1)
+check('drapeau Qbox perdu : remis au chargement, toujours sans 2e carte', W.players[1].licences.driver == true and given == 1)
+
+-- Carte différée (le sac n'est pas prêt pendant le chargement) : si la remise échoue, nouvel essai à la connexion suivante
+local pending
+SetTimeout = function(_, fn) pending = fn end
+join(2, 'CID2', 'Pressé', Config.Desk)
+check('chargement : permis tout de suite, carte différée', rows.CID2 == 2 and W.players[2].licences.driver == true
+    and W.players[2].items.driver_license == nil and pending ~= nil)
+W.players[2] = nil -- parti avant le délai
+pending()
+check('parti avant la remise : rien noté, la carte reste à remettre', (cards.CID2 or 0) == 0 and given == 1)
+SetTimeout = function(_, fn) fn() end
+join(2, 'CID2', 'Pressé', Config.Desk)
+check('reconnexion : la carte arrive, une seule', W.players[2].items.driver_license == 1 and cards.CID2 == 1 and given == 2)
+
+-- Auto-école fermée : code, conduite, accueil et moniteur refusés, rien payé
+W.players[1].money.bank = 5000
+local ok, msg = cb('gs_driving:theoryStart', 1); step()
+check('auto-école fermée : code refusé, rien payé', not ok and msg:find('fermée') and W.players[1].money.bank == 5000)
+ok, msg = cb('gs_driving:practicalStart', 1); step()
+check('auto-école fermée : conduite refusée, pas de véhicule d\'examen', not ok and msg:find('fermée') and Driving.exams[1] == nil)
+check('accueil : plus de menu', cb('gs_driving:info', 1) == nil) step()
+join(4, 'CID4', 'Moniteur', Config.Desk) duty[4] = Config.Job
+ok, msg = cb('gs_driving:grant', 4, 1); step()
+check('moniteur : ne délivre plus rien', not ok and msg:find('fermée'))
+
+-- /permis, retrait par la police (persistant à la reconnexion), restitution
+local _, _, valid = cb('gs_driving:points', 1); step()
+check('/permis : valide, pas de points', valid == true and Driving.points('CID1') == nil and Driving.removePoints(1, 3, 'x') == nil)
+W.players[1].items.driver_license = 1
+check('retrait par la police : statut « retiré », drapeau et carte repris', Driving.setLicence(1, false, 'Délit de fuite') == true
+    and rows.CID1 == 3 and W.players[1].licences.driver == false and W.players[1].items.driver_license == nil and cards.CID1 == 0
+    and W.notes[1].msg:find('décision de la police') and not W.notes[1].msg:find('auto%-école'))
+check('retrait deux fois : refusé', Driving.setLicence(1, false, 'x') == false)
+_, _, valid = cb('gs_driving:points', 1); step()
+check('/permis après retrait : pas valide', valid == false)
+local g = given -- cartes remises jusqu'ici (le moniteur a reçu la sienne en arrivant)
+TriggerEvent('gs_bridge:server:playerUnloaded', 1)
+join(1, 'CID1', 'Nouveau', Config.Desk)
+check('reconnexion après retrait : toujours retiré, aucune carte, pas de drapeau', rows.CID1 == 3 and not (W.players[1].licences or {}).driver
+    and W.players[1].items.driver_license == nil and given == g)
+W.players[1].licences = { driver = true } -- drapeau Qbox revenu par ailleurs : retiré prime
+Driving.onLoaded(1)
+check('retiré + drapeau Qbox présent : drapeau remis à faux', W.players[1].licences.driver == false and given == g)
+check('restitution par la police : permis, fichier à 2 et carte rendus', Driving.setLicence(1, true) == true and rows.CID1 == 2
+    and W.players[1].licences.driver == true and W.players[1].items.driver_license == 1 and cards.CID1 == 1 and given == g + 1)
+Driving.onLoaded(1)
+check('rechargement après restitution : toujours une seule carte', W.players[1].items.driver_license == 1 and given == g + 1)
+
+-- Anciens dossiers (avant V12.36) : code seulement ou rien → permis accordé
+rows.CID6 = 1 join(6, 'CID6', 'Code seulement', Config.Desk)
+check('ancien dossier « code obtenu » : permis accordé', rows.CID6 == 2 and W.players[6].licences.driver == true and W.players[6].items.driver_license == 1)
+rows.CID7 = 0 join(7, 'CID7', 'Jamais passé', Config.Desk)
+check('ancien dossier « rien » : permis accordé', rows.CID7 == 2 and W.players[7].licences.driver == true)
+
+-- Points réactivés + permis pour tous : solde nul = retiré (3), message « police », pas « auto-école »
+do
+    Config.Points.enabled = true
+    local pts = {}
+    Store.points = function(cid) local r = pts[cid] if not r then return nil end return r[1], r[2] end
+    Store.setPoints = function(cid, p, last) pts[cid] = { p, last } end
+    provide('gs_police', { AddRecord = function() return true end })
+    check('points : 12 au départ, -6', Driving.points('CID7') == 12 and Driving.removePoints(7, 6, 'Excès') == 6)
+    check('solde nul : permis retiré (statut 3), carte reprise, seule la police le rend', Driving.removePoints(7, 6, 'Fuite') == 0
+        and rows.CID7 == 3 and W.players[7].licences.driver == false and W.players[7].items.driver_license == nil
+        and W.notes[7].msg:find('police') and not W.notes[7].msg:find('auto%-école'))
+    Config.Points.enabled = false
+end
+
+-- Ancien fonctionnement : auto-école obligatoire (Config.FreeLicence = false) -----------------------------------------
+Config.FreeLicence = false
+rows, cards = {}, {}
+rows.CID8 = 3 join(8, 'CID8', 'Retiré avant', Config.Desk) W.players[8].licences = { driver = true } Driving.onLoaded(8)
+check('ancien mode : dossier « retiré » hérité = pas de permis', W.players[8].licences.driver == false)
+
 -- Connexion : ancien avec véhicule garde son permis, nouveau le perd
 join(1, 'CID1', 'Nouveau', Config.Desk) W.players[1].licences = { driver = true }
 join(2, 'OLD', 'Ancien', Config.Desk) W.players[2].licences = { driver = true }
@@ -30,7 +123,8 @@ check('ancien avec véhicule : permis conservé', W.players[2].licences.driver =
 
 -- Code
 W.players[1].money.bank = 5000
-local ok, qs = cb('gs_driving:theoryStart', 1); step()
+local qs
+ok, qs = cb('gs_driving:theoryStart', 1); step()
 if not ok then io.stderr:write(tostring(qs)..'\n') end
 check('code : questions sans les réponses', ok and #qs == Config.Theory.questions and qs[1].answer == nil and qs[1].options)
 local quiz = Driving.quiz[1]
@@ -79,7 +173,8 @@ for i = 2, #P.route do
     W.entities[e.veh].pos = P.route[i] tp(1, P.route[i])
     ok = cb('gs_driving:checkpoint', 1); step()
 end
-check('parcours fini : permis obtenu, véhicule rendu', Driving.exams[1] == nil and rows.CID1 == 2 and W.players[1].licences.driver == true and not W.entities[e.veh])
+check('parcours fini : permis obtenu, carte remise, véhicule rendu', Driving.exams[1] == nil and rows.CID1 == 2 and W.players[1].licences.driver == true
+    and W.players[1].items.driver_license == 1 and cards.CID1 == 1 and not W.entities[e.veh])
 
 -- Échec par fautes
 join(3, 'CID3', 'Chauffard', Config.Desk) W.players[3].money.bank = 5000
@@ -96,7 +191,7 @@ end
 check('trop de fautes : raté, véhicule rendu', Driving.exams[3] == nil and rows.CID3 == 1 and not W.entities[e3.veh])
 
 -- Moniteur
-join(4, 'CID4', 'Moniteur', Config.Desk)
+join(4, 'CID4', 'Moniteur', Config.Desk) duty[4] = nil
 ok = cb('gs_driving:grant', 4, 3); step()
 check('hors service : refusé', not ok)
 duty[4] = Config.Job
@@ -114,8 +209,9 @@ do
     check('points désactivés : pas de solde', Driving.points('OLD') == nil and Driving.removePoints(2, 3, 'x') == nil)
     local _, _, valid = cb('gs_driving:points', 2); step()
     check('/permis : permis valide sans points', valid == true)
-    check('retrait par la police : fichier à 0, permis et carte retirés', Driving.setLicence(2, false, 'Délit de fuite') == true
-        and rows.OLD == 0 and W.players[2].licences.driver == false and W.players[2].items.driver_license == nil)
+    check('retrait par la police : fichier à 0 (retour à l\'auto-école), permis et carte retirés', Driving.setLicence(2, false, 'Délit de fuite') == true
+        and rows.OLD == 0 and W.players[2].licences.driver == false and W.players[2].items.driver_license == nil
+        and W.notes[2].msg:find('auto%-école'))
     check('retrait sans permis : refusé', Driving.setLicence(2, false, 'x') == false)
     check('restitution : permis et carte rendus', Driving.setLicence(2, true) == true and rows.OLD == 2
         and W.players[2].licences.driver == true and W.players[2].items.driver_license == 1)

@@ -15,7 +15,7 @@ Guide = {
             { label = 'Ferraille', desc = 'Récupérer et revendre le métal', icon = 'recycle', point = 'gs_harvest:Config.Activities.scrapyard.spots' },
             { label = 'Chasse', desc = 'Permis de chasse obligatoire', icon = 'paw', point = 'gs_harvest:Config.Hunting.lodge' },
             { label = 'Revendre ma récolte', desc = 'Le marché le plus proche', icon = 'scale-balanced', point = 'gs_harvest:Config.Buyers' },
-            { label = 'Auto-école', desc = 'Code et permis de conduire', icon = 'car', point = 'gs_driving:Config.Desk' },
+            -- V12.36 : plus d'entrée « Auto-école » : le permis de conduire est donné à tout le monde (gs_driving, Config.FreeLicence)
         },
     },
     {
@@ -53,7 +53,7 @@ Guide = {
             { label = 'Contrats signés', desc = 'Prêt, salaire, location', icon = 'file-contract', cmd = 'contrat' },
             { label = 'Ambiance des quartiers', desc = 'Tension et standing de chaque quartier', icon = 'city', cmd = 'quartiers' },
             { label = 'Mes factures', desc = 'À payer', icon = 'receipt', cmd = 'factures' },
-            { label = 'Mon permis', desc = 'Points restants', icon = 'id-card', cmd = 'permis' },
+            { label = 'Mon permis', desc = 'Valide, ou retiré par la police', icon = 'id-card', cmd = 'permis' }, -- V12.36 : plus de points, permis pour tous
             { label = 'Histoire de ma voiture', desc = 'Au volant : km, accidents, propriétaires', icon = 'car-side', cmd = 'histoire' },
             { label = 'Réputation et saison', desc = 'Rue, légal, média · pass de saison', icon = 'star', cmd = 'reputation' },
         },

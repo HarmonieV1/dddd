@@ -657,7 +657,12 @@ lib.callback.register('gs_admin:bans', function(src, search)
     if not staffGuard(src, 'bans', 6, 10000) then return nil end
     if Admin.level(src) < 4 then return nil end
     local ok, list = pcall(function() return Store.bans(Security:Sanitize(search, 64), 25) end)
-    return ok and list or {}
+    if not ok or type(list) ~= 'table' then return {} end
+    -- V12.35 : la date est formatée ICI (os.date n'existe pas côté client : le menu plantait au premier ban à durée)
+    for _, b in ipairs(list) do
+        b.when = (tonumber(b.until_ts) or 0) == 0 and 'définitif' or ('jusqu\'au ' .. os.date('%d/%m/%Y %H:%M', b.until_ts))
+    end
+    return list
 end)
 
 lib.callback.register('gs_admin:open', function(src)

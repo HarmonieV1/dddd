@@ -275,6 +275,37 @@ GSJ.laundering[1].readyAt = os.time() - 1
 GSJ.launderTick()
 check('caisse créditée (-30 %)', Society.balance('mechanic') == before + 2100 and #GSJ.laundering == 0)
 
+-- V12.36 · PNJ aux points de métier (gs_markers) : config valide, index existants, jamais sur coffre / armurerie / vestiaire --
+local function validPed(p)
+    return type(p) == 'table' and type(p.model) == 'string' and p.model ~= '' and type(p.heading) == 'number'
+        and p.heading >= 0 and p.heading < 360 and (p.scenario == nil or (type(p.scenario) == 'string' and p.scenario ~= ''))
+end
+local PED_KINDS = { duty = true, boss = true, garage = true }
+local nPeds, badPeds, orphanPeds, badKinds = 0, 0, 0, 0
+for name, def in pairs(Jobs) do
+    for kind, list in pairs(def.peds) do
+        if not PED_KINDS[kind] then badKinds = badKinds + 1 end
+        for i, p in pairs(list) do
+            nPeds = nPeds + 1
+            if not validPed(p) then badPeds = badPeds + 1 end
+            if not (def.points[kind] and def.points[kind][i]) then orphanPeds = orphanPeds + 1 end
+        end
+    end
+end
+check('PNJ de métier : au moins vingt points habités', nPeds >= 20)
+check('PNJ de métier : modèle non vide, cap dans [0, 360[, scénario texte', badPeds == 0)
+check('PNJ de métier : chaque PNJ a son point (même index)', orphanPeds == 0)
+check('PNJ de métier : seulement accueil, direction, garage', badKinds == 0)
+check('PNJ de métier : chaque métier avec accueil / direction / garage en a au moins un', (function()
+    for _, def in pairs(Jobs) do
+        local p = def.points
+        local has = (p.duty and #p.duty > 0) or (p.boss and #p.boss > 0) or (p.garage and #p.garage > 0)
+        if has and next(def.peds) == nil then return false end
+    end
+    return true
+end)())
+check('PNJ du Pôle Emploi (agent d\'accueil)', validPed(Config.JobCenter.ped))
+
 print = io.write
 io.write(('\n%d réussis, %d échoués\n'):format(passed, failed))
 os.exit(failed == 0 and 0 or 1)

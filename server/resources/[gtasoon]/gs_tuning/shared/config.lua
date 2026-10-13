@@ -18,6 +18,13 @@ Config.Neon = {
     { label = 'Rouge', rgb = { 255, 30, 60 } }, { label = 'Bleu électrique', rgb = { 20, 80, 255 } }, { label = 'Blanc', rgb = { 255, 255, 255 } },
 }
 
+-- V12.36 · Personnalisation par le mécano en service (client/mechanic.lua + server/mechanic.lua) : distances et limites.
+Config.Mechanic = {
+    range = 8.0,        -- le mécano doit être à moins de X m du véhicule
+    ownerRange = 30.0,  -- le propriétaire doit être en ville et à moins de X m de son véhicule (c'est son accord)
+    maxJson = 16000,    -- taille max (caractères) des réglages envoyés par le client
+}
+
 -- Préfixes réservés (services, locations, plaques staff / métiers) et mots interdits
 Config.ReservedPrefixes = { 'LSPD', 'LSFD', 'EMS', 'GOV', 'STAFF', 'ADMIN', 'MOD', 'LOC', 'TAXI', 'POST', 'PROP', 'PDM', 'DYN8', 'TRUK', 'BUS', 'RTNRT' }
 Config.BannedWords = { 'NAZI', 'HITLER', 'SS', 'KKK', 'FUCK', 'PUTE', 'SALOP', 'NIQUE', 'NTM', 'FDP', 'PD', 'ENCUL', 'MERDE', 'CONNARD', 'BITE', 'CUL' }

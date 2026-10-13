@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 # IMPORTER-MODS de bout en bout (PowerShell 7 + 7-Zip requis, sinon ignoré) : faux pack payant « map + script + librairie »,
 # script dont une dépendance manque, map remise en service (mods-retires.txt). V12.31.
+# V12.36 : retraits par MOTIF (RETIRED_PATTERNS de maps.js) : plasmagame_dlc2 (nom absent de la liste exacte), pack Redline et le
+# script compagnon du laser game ne sont jamais installés, leurs lignes de addons.cfg sont enlevées.
 set -euo pipefail
 PWSH=${PWSH:-$(command -v pwsh || true)}
 SEVENZ=$(command -v 7z || true)
@@ -19,10 +21,16 @@ mk ps patoche_wipeout_script "fx_version 'cerulean'\ndependency 'pas_installee'\
 mk pl patoche_lonely_script "fx_version 'cerulean'\n"; head -c 99 /dev/urandom > "$B/pl/patoche_lonely_script/a.lua"
 # Map retirée par décision (RETIRED_MAPS de maps.js), supprimée à la main, serveur pas encore redémarré : jamais réinstallée
 mk pr patoche_plasmakart_map "fx_version 'cerulean'\nthis_is_a_map 'yes'\n"; mkdir -p "$B/pr/patoche_plasmakart_map/stream"; head -c 99 /dev/urandom > "$B/pr/patoche_plasmakart_map/stream/k.ymap"
+# V12.36 : retraits par MOTIF (aucun de ces noms n'est dans RETIRED_MAPS) : map DLC2 du laser game, son script compagnon, pack Redline
+mk pd patoche_plasmagame_dlc2_map "fx_version 'cerulean'\nthis_is_a_map 'yes'\n"; mkdir -p "$B/pd/patoche_plasmagame_dlc2_map/stream"; head -c 99 /dev/urandom > "$B/pd/patoche_plasmagame_dlc2_map/stream/d.ymap"
+mk pg patoche_plasmagame_script "fx_version 'cerulean'\n"; head -c 99 /dev/urandom > "$B/pg/patoche_plasmagame_script/a.lua"
+mk pe energy_redline_pack "fx_version 'cerulean'\nthis_is_a_map 'yes'\n"; mkdir -p "$B/pe/energy_redline_pack/stream"; head -c 99 /dev/urandom > "$B/pe/energy_redline_pack/stream/r.ymap"
+# Script compagnon déjà installé (dossier présent) : sa ligne de addons.cfg était gardée tant que le dossier existait
+mkdir -p "$R/server-data/resources/[addons]/patoche_plasmagame_script"; touch "$R/server-data/resources/[addons]/patoche_plasmagame_script/fxmanifest.lua"
 # Noms d'archives comme ceux du portail Cfx (le nom d'une map installée vient de son archive)
-for z in pr:patoche_plasmakart_pack pk:patoche_bowlinggame_pack pw:patoche_wipeout_pack ps:patoche_wipeout_script pl:patoche_lonely_script; do (cd "$B/${z%%:*}" && zip -qr "$R/mods-a-trier/${z#*:}.zip" .); done
+for z in pr:patoche_plasmakart_pack pk:patoche_bowlinggame_pack pw:patoche_wipeout_pack ps:patoche_wipeout_script pl:patoche_lonely_script pd:patoche_plasmagame_dlc2_pack pg:patoche_plasmagame_script pe:energy_redline_pack; do (cd "$B/${z%%:*}" && zip -qr "$R/mods-a-trier/${z#*:}.zip" .); done
 printf '# Mods retirés\npatoche_villa_bunker_pack\nmlo_willies_supermarket\n' > "$R/mods-retires.txt"
-printf 'ensure gsa_ancienne_map\nensure script_disparu\nensure gsa_patoche_plasmakart_pack\n' > "$R/server-data/cfg/addons.cfg"
+printf 'ensure gsa_ancienne_map\nensure script_disparu\nensure gsa_patoche_plasmakart_pack\nensure gsa_energy_redline_pack\nensure patoche_plasmagame_script\n' > "$R/server-data/cfg/addons.cfg"
 GTASOON_ROOT=$R GTASOON_TEST=1 GTASOON_7Z=$SEVENZ GTASOON_TEXOPT=0 "$PWSH" -NoProfile -File "$REPO/scripts/windows/importer-mods.ps1" > "$T/log.txt" 2>&1 || { cat "$T/log.txt"; exit 1; }
 CFG=$(cat "$R/server-data/cfg/addons.cfg"); REP=$(cat "$R/mods-tri/RAPPORT-MODS.txt")
 ok=0; ko=0
@@ -36,5 +44,10 @@ check 'pas de note contradictoire sur un script installé' '! grep -A3 "^- patoc
 check 'ancienne map gardée, ligne d un script disparu retirée' 'grep -q "^ensure gsa_ancienne_map$" <<<"$CFG" && ! grep -q "script_disparu" <<<"$CFG"'
 check 'villa bunker sortie de mods-retires.txt, le reste gardé' '! grep -q villa_bunker "$R/mods-retires.txt" && grep -q mlo_willies "$R/mods-retires.txt"'
 check 'map retirée (RETIRED_MAPS) jamais réinstallée, sa ligne de addons.cfg enlevée' '! grep -q plasmakart <<<"$CFG" && [ ! -d "$R/server-data/resources/[addons]/gsa_patoche_plasmakart_pack" ] && grep -q "RETIRED_MAPS" <<<"$REP"'
-echo "importeur (scripts compagnons) : $ok réussis, $ko échoués"
+# V12.36 : motifs
+check 'motif plasmagame : DLC2 du laser game jamais installé, raison « RETIRED_PATTERNS » dans le rapport' '! grep -q plasmagame_dlc2 <<<"$CFG" && [ ! -d "$R/server-data/resources/[addons]/gsa_patoche_plasmagame_dlc2_pack" ] && grep -q "RETIRED_PATTERNS" <<<"$REP"'
+check 'motif redline : pack Redline jamais installé, sa ligne de addons.cfg enlevée' '! grep -q redline <<<"$CFG" && [ ! -d "$R/server-data/resources/[addons]/gsa_energy_redline_pack" ]'
+check 'script compagnon du laser game : pas installé, sa ligne de addons.cfg enlevée malgré son dossier' '! grep -q patoche_plasmagame_script <<<"$CFG"'
+check 'les maps gardées ne sont pas touchées par les motifs' 'grep -q "^ensure gsa_patoche_bowlinggame_map$" <<<"$CFG" && grep -q "^ensure gsa_ancienne_map$" <<<"$CFG"'
+echo "importeur (scripts compagnons, retraits) : $ok réussis, $ko échoués"
 [ "$ko" -eq 0 ]

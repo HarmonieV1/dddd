@@ -1,6 +1,9 @@
 -- gs_tuning (client) : personnalisation complète par le mécano en service (LS Customs). Il vise le véhicule d'un client
 -- (Alt), aperçu en direct, puis « Valider » : enregistré sur le véhicule possédé (garage). « Annuler » remet tout comme avant.
 -- La facture se fait comme d'habitude (F6 → Facture).
+-- V12.36 · L'aperçu exige la main réseau sur le véhicule (client descendu, à côté) : chaque refus est expliqué, plus de
+-- silence. Les réglages validés sont appliqués par le jeu du propriétaire réseau sur ordre du serveur (gs_tuning:client:applyProps),
+-- comme qbx_core : la voiture dans la rue correspond à la base, et le rangement au garage garde la personnalisation.
 local Bridge = exports.gs_bridge
 local function notify(ok, msg) if msg then lib.notify({ description = msg, type = ok and 'success' or 'error' }) end end
 
@@ -17,16 +20,34 @@ local XENON = { { 'Blanc', -1 }, { 'Bleu', 1 }, { 'Bleu électrique', 2 }, { 'Ve
     { 'Or', 6 }, { 'Orange', 7 }, { 'Rouge', 8 }, { 'Rose', 9 }, { 'Violet', 11 } }
 
 local veh, original
+local job -- V12.36 : métier mis en cache (gs_bridge:client:jobUpdated) au lieu d'un appel d'export à chaque image en visée
+
+AddEventHandler('gs_bridge:client:jobUpdated', function(j) job = j end)
+AddEventHandler('gs_bridge:client:playerUnloaded', function() job = nil end)
 
 local function mechanicOnDuty()
-    local j = Bridge:GetJob()
-    return j and j.name == 'mechanic' and j.onduty
+    return job ~= nil and job.name == 'mechanic' and job.onduty == true
 end
 
 local function control()
     local t = GetGameTimer() + 1500
     while not NetworkHasControlOfEntity(veh) and GetGameTimer() < t do NetworkRequestControlOfEntity(veh) Wait(50) end
     return NetworkHasControlOfEntity(veh)
+end
+
+--- V12.36 · Main réseau sur le véhicule, sinon on dit pourquoi (avant : rien ne se passait, sans message).
+local function takeControl()
+    if not veh or not DoesEntityExist(veh) then
+        notify(false, 'Le véhicule n\'est plus là.')
+        return false
+    end
+    if GetPedInVehicleSeat(veh, -1) ~= 0 then
+        notify(false, 'Le client doit descendre du véhicule (personne au volant) pour que tu puisses travailler dessus.')
+        return false
+    end
+    if control() then return true end
+    notify(false, 'Impossible de prendre la main sur le véhicule : le client doit en descendre (personne à bord), rester à côté, puis réessaie.')
+    return false
 end
 
 local openMain
@@ -39,13 +60,14 @@ local function modLabel(modType, i)
 end
 
 local function modMenu(modType, title, parent)
+    SetVehicleModKit(veh, 0) -- V12.36 : sans kit déclaré, GetNumVehicleMods / GetVehicleMod répondent 0 (menu vide)
     local n = GetNumVehicleMods(veh, modType)
     local cur = GetVehicleMod(veh, modType)
     local options = {}
     for i = -1, n - 1 do
         options[#options + 1] = { title = modLabel(modType, i), icon = cur == i and 'check' or 'circle', iconColor = cur == i and '#5aff8c' or nil,
             onSelect = function()
-                if control() then SetVehicleModKit(veh, 0) SetVehicleMod(veh, modType, i, false) end
+                if takeControl() then SetVehicleModKit(veh, 0) SetVehicleMod(veh, modType, i, false) end
                 modMenu(modType, title, parent)
             end }
     end
@@ -57,13 +79,18 @@ local function listMenu(id, title, list, parent, apply, current)
     local options = {}
     for _, e in ipairs(list) do
         options[#options + 1] = { title = e[1], icon = current == e[2] and 'check' or 'circle', iconColor = current == e[2] and '#5aff8c' or nil,
-            onSelect = function() if control() then apply(e[2]) end listMenu(id, title, list, parent, apply, e[2]) end }
+            onSelect = function()
+                local done = takeControl()
+                if done then apply(e[2]) end
+                listMenu(id, title, list, parent, apply, done and e[2] or current)
+            end }
     end
     lib.registerContext({ id = id, title = title, menu = parent, options = options })
     lib.showContext(id)
 end
 
 local function categoryMenu(id, title, list)
+    SetVehicleModKit(veh, 0) -- V12.36 : idem, le kit doit être déclaré avant de lire les mods disponibles
     local options = {}
     for _, m in ipairs(list) do
         if GetNumVehicleMods(veh, m[1]) > 0 then
@@ -74,7 +101,7 @@ local function categoryMenu(id, title, list)
     if id == 'gs_meca_perf' then
         local on = IsToggleModOn(veh, 18)
         options[#options + 1] = { title = ('Turbo : %s'):format(on and 'oui' or 'non'), icon = 'wind',
-            onSelect = function() if control() then SetVehicleModKit(veh, 0) ToggleVehicleMod(veh, 18, not on) end categoryMenu(id, title, list) end }
+            onSelect = function() if takeControl() then SetVehicleModKit(veh, 0) ToggleVehicleMod(veh, 18, not on) end categoryMenu(id, title, list) end }
     end
     if #options == 0 then options[1] = { title = 'Rien de disponible sur ce modèle', readOnly = true } end
     lib.registerContext({ id = id, title = title, menu = 'gs_meca_main', options = options })
@@ -107,6 +134,7 @@ local function wheelsMenu()
 end
 
 local function save()
+    if not veh or not DoesEntityExist(veh) then return notify(false, 'Le véhicule n\'est plus là.') end
     local props = lib.getVehicleProperties(veh) -- [API] ox_lib
     local ok, msg = lib.callback.await('gs_tuning:mechanicSave', false, VehToNet(veh), props)
     notify(ok, msg)
@@ -114,7 +142,14 @@ local function save()
 end
 
 local function cancel()
-    if veh and original and DoesEntityExist(veh) and control() then lib.setVehicleProperties(veh, original) end -- [API] ox_lib
+    if veh and original and DoesEntityExist(veh) then
+        -- V12.36 : on dit si le retour à l'origine n'a pas pu se faire (avant : « annulées » même sans la main réseau)
+        if not control() then
+            veh, original = nil, nil
+            return notify(false, 'Impossible de remettre le véhicule d\'origine : le client doit en descendre et rester à côté.')
+        end
+        lib.setVehicleProperties(veh, original) -- [API] ox_lib
+    end
     veh, original = nil, nil
     notify(true, 'Modifications annulées.')
 end
@@ -137,14 +172,33 @@ openMain = function()
 end
 
 CreateThread(function()
+    job = Bridge:GetJob() -- V12.36 : valeur de départ (ressource relancée après un déplacement de point, par exemple)
     exports.ox_target:addGlobalVehicle({ { -- [API] ox_target
         name = 'gs_meca_custom', icon = 'fa-solid fa-paint-roller', label = 'Personnaliser (mécano)', distance = 3.0,
-        canInteract = function(ent) return not cache.vehicle and mechanicOnDuty() end,
+        canInteract = function() return not cache.vehicle and mechanicOnDuty() end,
         onSelect = function(data)
             local ok, msg = lib.callback.await('gs_tuning:mechanicCheck', false, VehToNet(data.entity))
             if not ok then return notify(false, msg) end
             if veh ~= data.entity then veh, original = data.entity, lib.getVehicleProperties(data.entity) end
+            -- V12.36 : sans la main réseau, aucun réglage ne s'appliquerait : on explique tout de suite au lieu d'ouvrir un menu muet
+            if not takeControl() then veh, original = nil, nil return end
+            SetVehicleModKit(veh, 0)
             openMain()
         end,
     } })
+end)
+
+-- V12.36 · Réglages validés, envoyés par le serveur au propriétaire réseau du véhicule (jamais par un autre joueur) :
+-- appliqués ici avec ox_lib, comme le fait qbx_core à la sortie du garage. Sans identité ni état (ni plein ni réparation).
+RegisterNetEvent('gs_tuning:client:applyProps', function(netId, props)
+    if type(netId) ~= 'number' or type(props) ~= 'table' then return end
+    local t = GetGameTimer() + 5000
+    while not NetworkDoesNetworkIdExist(netId) and GetGameTimer() < t do Wait(100) end
+    local v = NetworkDoesNetworkIdExist(netId) and NetToVeh(netId) or 0
+    if v == 0 or not DoesEntityExist(v) then return end
+    t = GetGameTimer() + 5000
+    while NetworkGetEntityOwner(v) ~= cache.playerId and GetGameTimer() < t do NetworkRequestControlOfEntity(v) Wait(100) end
+    if not DoesEntityExist(v) or NetworkGetEntityOwner(v) ~= cache.playerId then return end
+    props.plate, props.model = nil, nil
+    lib.setVehicleProperties(v, props) -- [API] ox_lib
 end)

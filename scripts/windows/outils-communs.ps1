@@ -132,6 +132,13 @@ $QboxPatches = @(
     @{ res = 'ox_lib'; dir = 'web\build\assets'; filter = '*.js'; why = 'menus ox_lib en noir néon'
        find = '(?i)\["#C1C2C5","#A6A7AB","#909296","#5c5f66","#373A40","#2C2E33","#25262b","#1A1B1E","#141517","#101113"\]'
        repl = '["#EDE4FF","#CBBBEA","#A493C7","#6F5E93","#3B2A5C","#2A1C45","#1E1433","#150D26","#0F091C","#0A0613"]' }
+    # V12.36 : ciblage (Alt) — ox_target 1.18.1 (client\main.lua:212) appelle HAS_ENTITY_CLEAR_LOS_TO_ENTITY (0xFCDFF7B72D23A1AC) sur le
+    # handle rendu par le rayon ; sur le build 3570 ce handle est parfois invalide et la native plante (« Error executing native » en F8
+    # à chaque Alt, ciblage figé jusqu'au prochain Alt ; même bug connu sur qb-target, issue 210). Protégé par pcall comme ox_target le
+    # fait déjà pour GetEntityType / GetEntityModel juste à côté : cible ignorée (0) si la native échoue, comportement identique sinon.
+    @{ res = 'ox_target'; file = 'client\main.lua'; why = 'ciblage (Alt) : plus de plantage de native sur le build 3570 (V12.36)'
+       find = 'entityHit = HasEntityClearLosToEntity\(entityHit, cache\.ped, 7\) and entityHit or 0'
+       repl = "local losOk, losClear = pcall(HasEntityClearLosToEntity, entityHit, cache.ped, 7) -- RoadLine V12.36 : la native plante sur le build 3570 (handle invalide), pcall comme GetEntityType`n                entityHit = losOk and losClear and entityHit or 0" }
 )
 
 function Find-Resource($Res, $name) {

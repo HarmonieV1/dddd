@@ -71,8 +71,18 @@ else {
     Say "$label ajouté au groupe god (admin complet)." 'Green'
 }
 
+# V12.36 · /optin (Qbox) exige l'ACE « admin » de cfg\permissions.cfg (posé par INSTALLER / METTRE-A-JOUR) : être dans
+# group.god ne suffit pas si ce fichier est ancien. On prévient tout de suite plutôt que de chercher en jeu.
+$perms = Join-Path $Data 'cfg\permissions.cfg'
+$permsOk = (Test-Path -LiteralPath $perms) -and ((Get-Content -LiteralPath $perms -Raw -Encoding UTF8) -match '(?m)^\s*add_ace\s+group\.admin\s+admin\s+allow')
+if (-not $permsOk) { Say "ATTENTION : cfg\permissions.cfg du PC est ancien ou absent : /optin et les commandes Qbox (/tp…) ne marcheront pas. Lance METTRE-A-JOUR.bat." 'Yellow' }
+
 Get-Process -Name FXServer -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
 Start-Sleep -Seconds 2
 Start-Process -FilePath (Join-Path $Data 'DEMARRER.bat') -WorkingDirectory $Data
 Say "`nServeur relancé. Reconnecte-toi (F8 → connect localhost) : F10 = panel staff, /builder = mapping." 'Cyan'
+# V12.36 · comment vérifier : la réponse de /optin dit où ça coince (textes français de server/locales-fr/qbx_core.json, fusionnés par METTRE-A-JOUR)
+Say "Test : en jeu, tape /optin → « Service staff : in. » = OK (un second /optin → « out. »). « Service staff : out. » à chaque fois = permissions.cfg ancien ;" 'Gray'
+Say "« Access denied for command optin » = pas dans le groupe (relance cet outil) ; rien du tout = personnage pas encore chargé." 'Gray'
+Say "Tu joues sur le VPS ? GERER-OVH.bat → 12 envoie ce secrets.cfg ; /optin y exige aussi un permissions.cfg à jour (METTRE-A-JOUR-OVH)." 'Yellow'
 Read-Host 'Entrée pour fermer'

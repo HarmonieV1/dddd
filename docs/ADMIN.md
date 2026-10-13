@@ -56,6 +56,12 @@ Vol libre : ZQSD, Espace/Ctrl pour monter/descendre, Shift vite, Alt lent. Spect
   Seul le fondateur voit cette ligne ; super-admin et admin ne peuvent promouvoir personne.
 - Hiérarchie : god (fondateur) > superadmin > admin > mod > helper (voir `cfg/permissions.cfg`).
 - Un rang écrit à la main dans `secrets.cfg` ne peut pas être retiré depuis le jeu : préfère le menu.
+- **`/optin` (service admin Qbox, V12.15 / V12.36)** : à taper une fois par personnage pour activer les commandes Qbox d'admin
+  (`/tp`, clés, etc.) ; c'est une bascule (un second `/optin` te remet « hors service »). Réponse attendue : « Service staff : in. »
+  (un second `/optin` → « Service staff : out. »). Si ça répond « Service staff : out. » à chaque fois, l'ACE `admin` manque sur le serveur qui tourne : `cfg/permissions.cfg`
+  ancien (VPS pas à jour → METTRE-A-JOUR-OVH, envoyé depuis la V12.36 ; ou METTRE-A-JOUR pas relancé sur le PC). Si ça répond
+  « Access denied » : tu n'es pas dans `group.admin` ou plus (DEVENIR-ADMIN.bat, puis GERER-OVH → 12). Les modérateurs et
+  helpers n'y ont pas droit, c'est voulu.
 
 ## Tests
 `tests/test_gs_admin.lua` (50 tests) : niveaux, anti-abus, motifs, plafonds, tickets, isolement persistant, publication des sanctions.
@@ -116,6 +122,7 @@ Placer n'importe quel objet du jeu, le déplacer, le tourner, le dupliquer, le s
 - **Rumeurs des joueurs** (`Config.Custom`) : au comptoir, « Raconter ma propre histoire » (100 $, une toutes les 2 h). Rien n'est public avant le staff : F11 → Événements → **Rumeurs des joueurs** → Valider (les barmans la racontent), Valider + brève Weazel, ou Écarter.
 - **Fil de la ville** (`gs_discord`, `Config.Digest`) : chaque soir à 23 h 30, un résumé court dans #annonces (crimes, arrestations, verdicts, faits divers, rumeur réalisée, légende, quartier chaud) ; rien à dire = rien posté. `enabled = false` pour couper.
 - **Alt (ox_target)** : appui simple (`setr ox_target:toggleHotkey 1` dans cfg/convars.cfg) ; mettre 0 pour revenir au maintien.
+  V12.36 : plus d'erreur « Error executing native 0xfcdff7b72d23a1ac » (HasEntityClearLosToEntity) au ciblage sur le build 3570 : la native est protégée par la retouche Qbox d'ox_target (METTRE-A-JOUR l'applique).
 
 ## V11 · Bêta ouverte
 - **Lieux de mémoire** (`gs_scars`, `Config.Plaques`) : `/plaque <texte>` pose une plaque là où tu es (admin et plus, 80 caractères) —

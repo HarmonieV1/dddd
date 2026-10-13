@@ -21,6 +21,8 @@ l'optimisation.
 - **Demande-moi avant de supprimer quoi que ce soit** (fichier, map, PDF, ressource).
 - **Aucune vraie marque** (voitures, mode, police réelle) : risque de bannissement Cfx.re. Seulement le « lore GTA ».
 - Lance **`bash tests/run.sh`** avant chaque push (un hook pre-push le fait aussi) : tout doit être vert.
+- Si l'utilisateur t'envoie `ROADLINE-commits.bundle` (commits du PC Windows) : `bash scripts/linux/recevoir-bundle.sh ROADLINE-commits.bundle`
+  (vérifie, fusionne, teste, pousse). Sur le PC Windows, c'est `POUSSER-GITHUB.bat` (voir `docs/GITHUB.md`).
 - Pousse sur **les deux branches** :
   `for b in feature/phase1-bridge claude/gta-rp-architecture-stack-pbvdxz; do git push origin "feature/phase1-bridge:$b"; done`
 - Version : `gs_version` dans `server/server.cfg.example` et `VERSION` dans `tools/pdf.py` (+ `tools/backtest.py`,
@@ -41,7 +43,7 @@ l'optimisation.
 - Sur le PC : `C:\GTASOON\` (server-data, `mods-a-trier` = archives à importer, `mods-tri` = tri + RAPPORT-MODS.txt,
   `mods-tri\scripts-a-verifier`, `mods-retires.txt`).
 - Lecteur de maps : `gs_admin/server/maps.js` (scan des .ymap, conflits d'occlusion fusionnés dans
-  `gsa_zz_fusion_occlusion`, `RETIRED_MAPS`, `PUBLIC` = blips publics, `ACTIVITY`, contrôle d'intégrité) ;
+  `gsa_zz_fusion_occlusion`, `RETIRED_MAPS` + `RETIRED_PATTERNS` (V12.36 : retrait par motif), `PUBLIC` = blips publics, `ACTIVITY`, contrôle d'intégrité) ;
   menu staff F11 → Monde et lieux → Mappings installés (`gs_admin/client/quick.lua`).
 
 ## Pièges FXServer déjà rencontrés (ne pas refaire)
@@ -61,7 +63,8 @@ F10/F11 staff, I aide, K inventaire proche, W radial, H mains en l'air, L verrou
   installés par IMPORTER-MODS, intégrité des maps vérifiée au démarrage, outil REPARER-FIVEM.bat, site de doc HTML.
 - Maps : villa moderne 01 **retirée** (12/10), **villa bunker remise** ; retirées aussi : laser game, karting (+ DLC),
   plasmatron (V12.33), Willie's, alcool Paleto, Moreo Gym, casse, Benny's original, Digital Den, Shadow Complex.
-  `RETIRED_MAPS` (maps.js) = source unique : le serveur les supprime au démarrage, IMPORTER-MODS ne les réinstalle jamais.
+  `RETIRED_MAPS` (noms exacts) + `RETIRED_PATTERNS` (motifs : plasmagame, plasmakart, plasmatron, villa_01, redline) dans maps.js = source
+  unique : le serveur les supprime au démarrage, le retrait F11 supprime aussi le dossier, IMPORTER-MODS ne les réinstalle jamais (V12.36).
 - Deux sessions Claude (web + poste Windows) : la V12.33 du poste Windows a été intégrée dans git à la main. Toujours
   pousser sur GitHub pour que l'autre session reparte de la même base. Désactivées (archives coupées, à retélécharger) :
   beach party, soccer / soccer_cloth, plasmatron.

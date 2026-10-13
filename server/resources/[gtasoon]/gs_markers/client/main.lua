@@ -1,7 +1,13 @@
 -- gs_markers (client) : tous les marqueurs GTA SOON dessinés par UN seul fil, même style discret.
 -- Les autres ressources déclarent leurs points : exports.gs_markers:Add(id, { coords, style, label?, icon?, distance?, height?,
---   event?, args?, prompt?, reach?, snap? }) : avec `event`, la touche [E] à moins de `reach` m déclenche l'event local (en plus d'ox_target).
+--   event?, args?, prompt?, reach?, snap?, ped? }) : avec `event`, la touche [E] à moins de `reach` m déclenche l'event local (en plus d'ox_target).
 -- Coût : un tri par distance toutes les 500 ms ; dessin à chaque frame seulement s'il y a un point à < 40 m.
+--
+-- V12.36 · `ped = { model, heading, scenario?, distance?, label?, icon?, options? }` : un PNJ sur le point (vendeur, agent d'accueil,
+-- contremaître…), invincible et figé, créé à l'approche (≤ 60 m) et retiré au loin (> 80 m) par UNE boucle lente commune à toutes
+-- les ressources. Il se tient `distance` m (1,2 par défaut) « derrière » le point dans la direction `heading` et regarde vers le point.
+-- Il porte l'interaction (ox_target) : `options` = options ox_target fournies par la ressource, sinon une option « [label] » qui
+-- déclenche le même `event` que la touche [E]. Le point reste déplaçable par le staff : le PNJ suit la position du point.
 
 -- V7 : style discret pour le RP. Plus de flèches ni d'icônes flottantes : un petit cercle au sol, peu opaque, visible
 -- seulement de près (15 m max), texte à moins de 4 m. Seuls les repères de quête gardent un symbole (losange, cône).
@@ -21,9 +27,81 @@ local nearby = {}      -- liste des points proches (recalculée toutes les 500 m
 
 local owners = {}      -- V12.5 · [id] = ressource qui a posé le point (nettoyé à son arrêt, voir plus bas)
 
+-- PNJ des points (V12.36) -----------------------------------------------------------------------------------------
+local PED_RANGE, PED_FORGET = 60.0, 80.0   -- créé en dessous, retiré au-dessus (marge pour ne pas clignoter à la limite)
+local peds = {}        -- [id] = { ent, grounded, target }
+
+--- Charge un modèle (sans ox_lib ici) ; false si le modèle n'existe pas ou met plus de 5 s.
+local function loadModel(hash)
+    if not IsModelInCdimage(hash) or not IsModelValid(hash) then return false end
+    RequestModel(hash)
+    local deadline = GetGameTimer() + 5000
+    while not HasModelLoaded(hash) do
+        if GetGameTimer() > deadline then return false end
+        Wait(10)
+    end
+    return true
+end
+
+--- Position du PNJ : `distance` m derrière le point dans la direction `heading` (il regarde donc vers le point), pieds au sol.
+--- Les points sont relevés à hauteur de joueur (≈ 1 m au-dessus du sol) : repli à c.z - 1 si le sol n'est pas encore chargé.
+local function pedPlace(p)
+    local d, c = p.ped, p.coords
+    local h = math.rad(d.heading or 0.0)
+    local dist = d.distance or 1.2
+    local x, y = c.x + math.sin(h) * dist, c.y - math.cos(h) * dist
+    local found, gz = GetGroundZFor_3dCoord(x, y, c.z + 1.0, false)
+    if found and math.abs((gz + 1.0) - c.z) < 6.0 then return x, y, gz, true end
+    return x, y, c.z - 1.0, false
+end
+
+local function despawnPed(id)
+    local e = peds[id]
+    if not e then return end
+    if e.target then exports.ox_target:removeLocalEntity(e.ent) end
+    if DoesEntityExist(e.ent) then DeletePed(e.ent) end
+    peds[id] = nil
+end
+
+local function spawnPed(id, p)
+    local d = p.ped
+    local hash = GetHashKey(d.model)
+    if not loadModel(hash) then
+        print(('[gs_markers] PNJ du point %s : modèle « %s » introuvable, ignoré'):format(id, tostring(d.model)))
+        p.pedFailed = true -- on n'essaie plus (sinon une tentative toutes les 2,5 s)
+        return
+    end
+    local x, y, z, grounded = pedPlace(p)
+    local ped = CreatePed(4, hash, x, y, z, d.heading or 0.0, false, true)
+    SetModelAsNoLongerNeeded(hash)
+    if not ped or ped == 0 then return end
+    SetEntityHeading(ped, d.heading or 0.0)
+    SetEntityInvincible(ped, true)
+    FreezeEntityPosition(ped, true)
+    SetBlockingOfNonTemporaryEvents(ped, true)
+    SetPedCanRagdoll(ped, false)
+    SetPedCanRagdollFromPlayerImpact(ped, false)
+    SetPedFleeAttributes(ped, 0, false)
+    SetPedDiesWhenInjured(ped, false)
+    if d.scenario then TaskStartScenarioInPlace(ped, d.scenario, 0, true) end
+    -- Le PNJ porte l'interaction : options ox_target de la ressource, sinon la même action que la touche [E]
+    local options = type(d.options) == 'table' and d.options or nil
+    if not options and p.event then
+        options = { {
+            name = 'gs_markers:ped:' .. id, icon = d.icon or 'fa-solid fa-comments', distance = 2.5,
+            label = d.label or p.prompt or p.label or 'Parler',
+            onSelect = function() TriggerEvent(p.event, table.unpack(p.args)) end,
+        } }
+    end
+    if options then exports.ox_target:addLocalEntity(ped, options) end
+    peds[id] = { ent = ped, grounded = grounded, target = options ~= nil }
+end
+
 local function add(id, def)
     if type(id) ~= 'string' or type(def) ~= 'table' or not def.coords then return false end
     owners[id] = GetInvokingResource()
+    local ped = def.ped
+    if type(ped) ~= 'table' or type(ped.model) ~= 'string' or ped.model == '' then ped = nil end
     points[id] = {
         coords = vec3(def.coords.x, def.coords.y, def.coords.z),
         style = STYLES[def.style] or STYLES.entry,
@@ -37,22 +115,24 @@ local function add(id, def)
         prompt = def.prompt or def.label,
         reach = def.reach or 1.8,
         snap = def.snap == true, -- hauteur recalée sur le sol à l'approche (points dehors à la hauteur approximative)
+        ped = ped, -- V12.36 : PNJ du point (voir en-tête)
     }
+    despawnPed(id) -- V12.36 : point redéclaré (ressource relancée, point déplacé) → le PNJ est recréé à la nouvelle position
     return true
 end
 
-local function remove(id) points[id] = nil owners[id] = nil end
+local function remove(id) points[id] = nil owners[id] = nil despawnPed(id) end
 
 --- Supprime tous les points dont l'id commence par `prefix` (ex : 'gs_rental:').
 local function removePrefix(prefix)
-    for id in pairs(points) do if id:sub(1, #prefix) == prefix then points[id] = nil owners[id] = nil end end
+    for id in pairs(points) do if id:sub(1, #prefix) == prefix then points[id] = nil owners[id] = nil despawnPed(id) end end
 end
 
 -- V12.5 · Une ressource qui s'arrête (ou redémarre après « Déplacer un point ») perd TOUS ses points, même si elle oublie
 -- de les retirer. Avant : magasins, fourrière, justice… gardaient leur ancien point actif à l'ancien endroit.
 AddEventHandler('onClientResourceStop', function(res)
     for id, owner in pairs(owners) do
-        if owner == res then points[id] = nil owners[id] = nil end
+        if owner == res then points[id] = nil owners[id] = nil despawnPed(id) end -- V12.36 : son PNJ part avec le point
     end
     nearby = {} -- pas d'attente des 500 ms : plus aucun [E] sur un point retiré
 end)
@@ -90,6 +170,35 @@ CreateThread(function()
         nearby = list
         Wait(500)
     end
+end)
+
+-- V12.36 · PNJ des points : UNE boucle lente pour toutes les ressources (jamais par image). Création à ≤ 60 m, retrait à > 80 m ;
+-- un PNJ posé avant que le sol soit chargé est recréé une fois, de près, à la bonne hauteur.
+CreateThread(function()
+    while true do
+        local me = GetEntityCoords(PlayerPedId())
+        for id, p in pairs(points) do
+            if p.ped and not p.pedFailed then
+                local d = #(me - p.coords)
+                local e = peds[id]
+                if not e then
+                    if d < PED_RANGE then spawnPed(id, p) end
+                elseif d > PED_FORGET then
+                    despawnPed(id)
+                elseif not e.grounded and d < 30.0 then
+                    local _, _, _, ok = pedPlace(p)
+                    if ok then despawnPed(id) spawnPed(id, p) end
+                end
+            end
+        end
+        for id in pairs(peds) do if not points[id] then despawnPed(id) end end -- point retiré sans passer par Remove
+        Wait(2500)
+    end
+end)
+
+AddEventHandler('onResourceStop', function(res)
+    if res ~= GetCurrentResourceName() then return end
+    for id in pairs(peds) do despawnPed(id) end -- V12.36 : aucun PNJ orphelin quand gs_markers redémarre
 end)
 
 CreateThread(function()
