@@ -64,7 +64,7 @@ par un colis (zip de l'installation ou de la session) + ce fichier, et comparer 
 ## 2. Versions : interne vs publique (important, piège classique)
 
 Depuis la V11.3, il y a **deux numéros de version différents**, volontairement :
-- `gs_version` (convar, `server.cfg.example`) = **V12.35** → version technique interne, vue par le staff (F11, console,
+- `gs_version` (convar, `server.cfg.example`) = **V12.36** → version technique interne, vue par le staff (F11, console,
   METTRE-A-JOUR). Continue d'avancer à chaque mise à jour (V11.2, V11.3...).
 - `gs_public_version` (convar) = **« V4 · bêta »** → version vue par les **joueurs** (écran de chargement, statut
   Discord, Gazette). Le site affiche son propre journal (V1 à V4, V5 « classé confidentiel »).
@@ -271,6 +271,36 @@ Résumé très condensé (le détail complet est dans `docs/ROADMAP.md`, `docs/F
   ne remplace pas le curseur), profondeur CSS `animation-timeline: view()` (captures, mock, carte, chiffres), intro
   façon chargement de mission (Entrée / clic pour passer). Tout coupé par `prefers-reduced-motion`, souris seulement
   sur ordinateur. Une seule boucle rAF qui s'endort quand rien ne bouge. Vérifié dans le navigateur : 0 erreur.
+
+- **V12.36** (13/10/2026, poste Windows, orchestration multi-agents + relecture) — corrections du 12/10 :
+  - **Maps vraiment supprimées** : le retrait F11 « Retirer cette map » arrête la ressource ET supprime son dossier, enlève sa ligne
+    d'addons.cfg et l'inscrit dans mods-retires.txt (avant : ligne commentée, dossier gardé, map réinstallée par IMPORTER-MODS).
+    Nouvelle liste `RETIRED_PATTERNS` (plasmagame, plasmakart, plasmatron, villa_01, redline) à côté de `RETIRED_MAPS` : appliquée
+    au démarrage (maps, scripts compagnons, addons.cfg, mods-retires.txt) et par l'importeur (`Test-Retired`, nom d'archive et de
+    ressource). Console : « Map retirée (motif « redline ») : … ». `RESTORED_MAPS` / `$Restored` vidés (migration villa bunker
+    terminée). Tests lecteur de maps 119/119.
+  - **/optin** : le code et l'ACE « admin » (V12.15) sont justes ; la cause est que `permissions.cfg` n'arrivait jamais sur le VPS
+    (exclu par METTRE-A-JOUR-OVH et par « roadline maj »). Désormais envoyé et installé (`permissions_maj`, staff ajouté à la main
+    conservé), et la commande roadline du VPS est poussée avant la mise à jour. Après /optin un admin garde /tp /tpm /car /dv ;
+    argent, métiers, gangs, personnages restent au fondateur (deny). check_cfg.py vérifie la chaîne d'ACE et la synchro VPS.
+    DEVENIR-ADMIN explique les réponses : « Service staff : in. » = OK ; « out. » à chaque fois = permissions.cfg ancien.
+  - **ox_target** : erreur « native 0xfcdff7b72d23a1ac » (HasEntityClearLosToEntity) à chaque Alt sur le build 3570 → retouche
+    Qbox d'ox_target 1.18.1 (pcall autour de l'appel, ligne 212), appliquée par METTRE-A-JOUR ; comportement de ciblage inchangé.
+  - **Mécano** : la personnalisation n'était jamais appliquée quand le client restait au volant (pas de main réseau, refus muet) et
+    n'était pas gardée au garage (qbx_garages relit les mods chez le client). gs_tuning fusionne les réglages dans la carte grise
+    (plaque, modèle, carburant, état gardés), les fait appliquer par le propriétaire réseau, exige le client descendu et à ≤ 30 m,
+    et chaque refus a son message. Tests 41/41.
+  - **Permis pour tout le monde** (`Config.FreeLicence`) : permis + carte accordés à la connexion (une seule carte), auto-école
+    fermée (points, blip, code, examen), retrait / rendu par la police conservé et persistant ; quête de Max sans étape permis ni
+    location (4 étapes) ; « Que faire ? », guide joueur, backtest à jour. Tests driving 57/57, quests 63/63.
+  - **Événements** : « Course à super vitesse » et « Concours de super saut » retirés de F11 → Événements.
+  - **Ferraille** : vraie scène (carcasses variées au sol, fouille accroupie puis dévissage clé en main, trouvailles décrites,
+    carcasse dépouillée visible puis repousse). **PNJ aux points** : champ générique `ped` de gs_markers (une boucle lente commune,
+    PNJ invincible qui porte l'interaction et suit le point déplacé) ; acheteurs et contremaîtres de gs_harvest, accueil /
+    direction / garage des 20 métiers (39 PNJ) et Pôle Emploi. Caps à caler en jeu. Tests harvest 265/265, jobs 93/93.
+  - 40 nouvelles propositions (n° 58 → 97) ajoutées à `docs/PROPOSITIONS.md`.
+  - À vérifier en jeu : voir la fiche de backtest (session « V12.36 ») : retrait d'une map depuis F11, /optin sur le VPS après
+    METTRE-A-JOUR-OVH, Alt sans erreur F8, mécano (client descendu), nouveau perso avec carte de permis, PNJ aux points, ferraille.
 
 - **V12.35** (12/10/2026, poste Windows) — synchronisation GitHub sans commande à retenir (`docs/GITHUB.md`) :
   - **`POUSSER-GITHUB.bat`** (racine du clone, `scripts/windows/pousser-github.ps1`) : trouve Git, lit GitHub, propose de

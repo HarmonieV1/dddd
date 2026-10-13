@@ -2,7 +2,7 @@
   ROADLINE - ENVOYER LA MISE À JOUR SUR LE VPS OVH (la base du VPS n'est JAMAIS touchée, juste sauvegardée avant).
   Ordre : 1) METTRE-A-JOUR.bat sur le PC (et un test rapide en local)  2) ce fichier.
   Envoie : RoadLine ([gtasoon] complet), les fichiers des autres ressources modifiés depuis le dernier envoi (réglages
-  Qbox, nouveaux mods), les cfg (jamais secrets.cfg ni permissions.cfg du VPS) ; puis « roadline maj » sur le VPS.
+  Qbox, nouveaux mods), les cfg, permissions.cfg compris (V12.36 : groupes et ACE Qbox, dont « admin » pour /optin ; jamais secrets.cfg du VPS) ; puis « roadline maj » sur le VPS.
   En cas de souci : « roadline retour » sur le VPS remet la version d'avant.
 #>
 $ErrorActionPreference = 'Stop'
@@ -31,6 +31,17 @@ Say "Version à envoyer : $ver" 'Cyan'
 $vps = Get-Vps
 Initialize-SshKey $vps # connexion sans mot de passe (clé), avant tout le reste
 
+# V12.36 · la commande « roadline » du VPS doit être celle de cette version (c'est elle qui installe permissions.cfg) :
+# on la pousse comme le fait GERER-OVH, avant la mise à jour.
+Say 'Mise à jour de la commande roadline sur le VPS…' 'DarkGray'
+$tmpOutils = Join-Path $env:TEMP 'roadline-outils'
+[void][IO.Directory]::CreateDirectory($tmpOutils)
+$outils = foreach ($f in 'roadline.sh', 'roadline-bdd.sh') { $d = Join-Path $tmpOutils $f; Copy-Unix (Join-Path $Repo "scripts\linux\$f") $d; $d }
+Send-Vps $vps $outils '/tmp/'
+Invoke-Vps $vps 'sudo install -m 755 /tmp/roadline.sh /tmp/roadline-bdd.sh /home/fivem/outils/ && sudo install -m 755 /home/fivem/outils/roadline.sh /usr/local/bin/roadline && rm -f /tmp/roadline.sh /tmp/roadline-bdd.sh'
+if ($LASTEXITCODE -ne 0) { Fail 'Impossible de mettre à jour la commande roadline sur le VPS (voir au-dessus).' }
+[IO.Directory]::Delete($tmpOutils, $true)
+
 Say '[1/3] Préparation' 'Cyan'
 if (Test-Path -LiteralPath $Stage) { [IO.Directory]::Delete($Stage, $true) }
 [void][IO.Directory]::CreateDirectory($Stage)
@@ -45,7 +56,7 @@ foreach ($f in Get-ChildItem -LiteralPath $Res -Recurse -File -Force | Where-Obj
     $n++
 }
 [void][IO.Directory]::CreateDirectory((Join-Path $Stage 'cfg'))
-Get-ChildItem -LiteralPath (Join-Path $Data 'cfg') -Filter *.cfg -File | Where-Object { $_.Name -notin 'secrets.cfg', 'permissions.cfg' } |
+Get-ChildItem -LiteralPath (Join-Path $Data 'cfg') -Filter *.cfg -File | Where-Object { $_.Name -ne 'secrets.cfg' } |
     ForEach-Object { Copy-Item -LiteralPath $_.FullName -Destination (Join-Path $Stage 'cfg') }
 Copy-Item -LiteralPath (Join-Path $Data 'server.cfg') -Destination (Join-Path $Stage 'server.cfg')
 $zip = Join-Path $Out 'roadline-maj.zip'

@@ -141,7 +141,8 @@ réparation de fortune (moteur 75 %), réparation avancée (complète), nettoyag
   Mûr : **n'importe qui peut récolter** (vol signalé à la police) ; le propriétaire arrache, la **police saisit** (+150 $).
   Ensuite : transformation (Sandy ou labo de gang ×2) et vente, comme avant. 6 plants max / perso, survivent au redémarrage.
 - **Labos / club-house** : le marqueur n'apparaît plus qu'aux membres autorisés (fini la « ferme de cannabis » au milieu de Grove).
-- **gs_harvest** (libre, sans embauche) : **pêche** (pontons), **mine** (carrière), **bûcheron** (Paleto), **ferme** (Grapeseed),
+- **gs_harvest** (libre, sans embauche ; V12.36 : ferraille en deux phases avec carcasses variées, clé à molette en main, trouvailles décrites,
+  carcasse dépouillée qui reste visible et repousse ; contremaître PNJ à chaque vestiaire) : **pêche** (pontons), **mine** (carrière), **bûcheron** (Paleto), **ferme** (Grapeseed),
   **chasse** (animaux créés par le serveur, dépeçage au couteau). Outils en quincaillerie, casse 3 %, acheteurs dédiés, défi du jour « récolte ».
 - **Nouveaux métiers gs_jobs** : **routier** (entrepôts, au km), **chauffeur de bus** (5 arrêts), **agent immobilier Dynasty 8** (whitelist).
 - **Logement : qbx_properties** (recipe Qbox, audité) : choix d'un **appartement de départ** au 1er perso, **achat / location** de biens créés
@@ -208,12 +209,13 @@ réparation de fortune (moteur 75 %), réparation avancée (complète), nettoyag
 ## V4 — ouverture, vie de la ville, signatures RoadLine
 **Arrivée des joueurs** : règlement à accepter à la 1re connexion (versionné, relu après chaque changement, `/regles`),
 liste blanche (`gs_whitelist "true"`, `/whitelist add <id | license>` par les modos, lien Discord aux refusés),
-quête guidée **« Ton premier jour »** (mairie, banque, Pôle Emploi, auto-école, location) proposée automatiquement.
+quête guidée **« Ton premier jour »** (mairie, banque, Pôle Emploi) proposée automatiquement.
 
 **Services publics et métiers** :
-- **Auto-école** (gs_driving) : un nouveau personnage n'a plus le permis. Code (QCM tiré et corrigé par le serveur, 8/10),
-  puis examen de conduite (parcours, 80 km/h, dégâts relevés sur le véhicule par le serveur, 3 fautes max). Métier **moniteur**
-  (`/moniteur`). Les anciens personnages qui ont déjà un véhicule gardent leur permis.
+- **Permis de conduire** (gs_driving, V12.36) : **tout le monde a son permis**, accordé à la connexion (drapeau Qbox + carte « Permis de
+  conduire » remise une seule fois). Plus d'auto-école (ni code ni examen ; `Config.FreeLicence = false` les rétablit). La police
+  **retire ou rend** le permis depuis le contrôle d'identité (F4, motif au casier, carte reprise) ; un permis retiré le reste à la
+  reconnexion. `/permis` : valide ou retiré.
 - **Justice** (gs_justice, `/tribunal`) : juge (ouvre une affaire, prévenu présent, avocat), verdicts appliqués (amende facturée,
   prison, casier, mandats clos), avocat qui consulte le casier **avec l'accord** de son client.
 - **Presse** : journalistes Weazel News, badge presse sur Vibe, **flash info** envoyé à toute la ville.
@@ -277,7 +279,7 @@ Traductions françaises manquantes des scripts Qbox ajoutées par METTRE-A-JOUR 
   **mécano : livraison de pièces** (tâche payée), **carnet de commandes** : `/depanneur` et `/taxi` pour les joueurs,
   `/commandes` pour les employés en service (prendre → GPS, clôturer → facture).
 - **Radio** : canal 11 « Urgences » (police, EMS, mécanos en service), « Qui est sur le canal ? ».
-- **Staff — événements en un clic** (F11, admin) : course à super vitesse, chute lunaire, concours de super saut,
+- **Staff — événements en un clic** (F11, admin) : chute lunaire (V12.36 : course à super vitesse et concours de super saut retirés),
   soirée boxe (armes rangées dans la zone), course de rue (inscription gratuite). Annonce + GPS à tous.
 - **gs_hideouts — planques de départ** : chambres de motel (Pink Cage, Sandy, Paleto) louées à la semaine (1 à 4),
   coffre perso, garde-robe, monde séparé par locataire. Pour un vrai logement : l'agent immobilier.
@@ -348,7 +350,7 @@ Traductions françaises manquantes des scripts Qbox ajoutées par METTRE-A-JOUR 
   création de perso : « Visage de base / Teint / Origines » ; commandes / masquées aux joueurs (liste dans `gs_onboarding/shared/commands.lua`).
 - **Points déplaçables en jeu** (`gs_bridge/shared/points.lua`) : toute position de `Config` de nos ressources se règle en jeu
   (F11 → Monde et lieux → Déplacer un point), sauvegardée (KVP), ressource relancée. Remise à l'origine possible.
-- **Récolte** (gs_harvest) : nœuds (arbres, rochers, tas, légumes) qui s'épuisent et repoussent, outil en main, vestiaire,
+- **Récolte** (gs_harvest) : nœuds (arbres, rochers, carcasses, légumes) qui s'épuisent et repoussent, outil en main, vestiaire, PNJ aux points (V12.36 : champ `ped` de gs_markers, aussi pour l'accueil, la direction et le garage de chaque métier et le Pôle Emploi),
   revente loin de la récolte (test automatique), un seul ferrailleur (Cypress Flats), permis et fusil de chasse à l'Ammu-Nation de Paleto.
 - **Lieux** : coiffeurs / tatoueurs / chirurgien / boutiques avec vendeur et [E] ; permis de port d'arme (Ammu-Nation) ;
   pharmacies accessibles ; Rob's Liquor en supérettes ; fourrière et garages en français ; plus de logo police en double ;
@@ -358,7 +360,8 @@ Traductions françaises manquantes des scripts Qbox ajoutées par METTRE-A-JOUR 
   téléphone → Inconnu (contact + contrats) ; gangs : Families, Ballas, Vagos, Lost MC + Cartel Madrazo, Triades.
 - **Monde** : roue du casino recollée, PNJ du casino ; Cayo : vol retour visible ; bandeau Weazel News ; secours IA envoyé par un EMS.
 - **Grandes nouveautés** : tenues en objets (gs_details), menu radial (W) « Moi », courses avec organisateur PNJ et voitures prêtées (gs_races),
-  personnalisation complète par le mécano (gs_tuning/client/mechanic.lua).
+  personnalisation complète par le mécano (gs_tuning/client/mechanic.lua) ; V12.36 : client descendu et à côté (moins de 30 m),
+  réglages appliqués par le jeu du propriétaire et gardés au garage, chaque refus a son message.
 
 ## V10.1 · Justice, presse et staff mobile
 - **gs_cctv** : caméras de surveillance (passages de véhicules, recherche de plaque au terminal police), aveuglées à la bombe de peinture.

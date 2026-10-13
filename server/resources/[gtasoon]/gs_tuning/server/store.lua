@@ -26,13 +26,23 @@ function Store.setNeon(id, cid, rgb)
         '$.neonEnabled', JSON_ARRAY(FALSE, FALSE, FALSE, FALSE)) WHERE id = ? AND citizenid = ?]], { id, cid }) > 0
 end
 
---- Véhicule possédé (n'importe quel propriétaire) par plaque → id, plaque en base, ou nil.
+--- Véhicule possédé (n'importe quel propriétaire) par plaque → id, plaque en base, citizenid du propriétaire ; ou nil.
+--- V12.36 : le citizenid sert à vérifier que le client est à côté (son accord) et à prévenir son jeu.
 function Store.byPlate(plate)
-    local row = MySQL.single.await('SELECT id, plate FROM player_vehicles WHERE UPPER(TRIM(plate)) = UPPER(TRIM(?)) LIMIT 1', { plate })
-    return row and row.id, row and row.plate
+    local row = MySQL.single.await('SELECT id, plate, citizenid FROM player_vehicles WHERE UPPER(TRIM(plate)) = UPPER(TRIM(?)) LIMIT 1', { plate })
+    return row and row.id, row and row.plate, row and row.citizenid
+end
+
+--- V12.36 · Réglages actuels du véhicule en base (format ox_lib) : table (vide si rien), nil si la ligne n'existe pas.
+function Store.getProps(id)
+    local row = MySQL.single.await('SELECT mods FROM player_vehicles WHERE id = ? LIMIT 1', { id })
+    if not row then return nil end
+    local ok, props = pcall(json.decode, row.mods or '{}')
+    return ok and type(props) == 'table' and props or {}
 end
 
 --- Remplace les réglages du véhicule (format ox_lib getVehicleProperties, comme qbx_vehicles).
+--- V12.36 : réussite = requête exécutée (des réglages identiques donnent 0 ligne modifiée, ce n'est pas une erreur).
 function Store.setProps(id, json)
-    return MySQL.update.await('UPDATE player_vehicles SET mods = ? WHERE id = ?', { json, id }) > 0
+    return MySQL.update.await('UPDATE player_vehicles SET mods = ? WHERE id = ?', { json, id }) ~= nil
 end

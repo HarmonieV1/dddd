@@ -76,14 +76,12 @@ Config.Peds = {
 }
 
 -- Événements staff en un clic (admin+, mode staff) : centrés sur TA position, annonce + GPS pour tout le monde,
--- effet appliqué aux joueurs dans le rayon pendant `minutes`. fx : fastrun, superjump, lowgravity, melee (boxe : armes rangées).
+-- effet appliqué aux joueurs dans le rayon pendant `minutes`. fx : lowgravity, melee (boxe : armes rangées).
+-- V12.36 : « Course à super vitesse » et « Concours de super saut » retirés (demande du fondateur) ; fastrun / superjump restent
+-- des pouvoirs du menu « Effets sur moi » du staff, plus des événements.
 Config.Events = {
-    speedrace = { label = 'Course à super vitesse', icon = 'person-running', fx = 'fastrun', radius = 250.0, minutes = 10,
-        text = 'Course à pied en super vitesse ! Rejoins le point GPS.' },
     moon = { label = 'Chute lunaire', icon = 'moon', fx = 'lowgravity', radius = 250.0, minutes = 10,
         text = 'Gravité lunaire activée : sautez du plus haut possible !' },
-    jump = { label = 'Concours de super saut', icon = 'arrow-up', fx = 'superjump', radius = 200.0, minutes = 10,
-        text = 'Concours de super saut : qui ira le plus haut ?' },
     boxing = { label = 'Soirée boxe', icon = 'hand-fist', fx = 'melee', radius = 30.0, minutes = 20,
         text = 'Soirée boxe : aux poings seulement, armes rangées automatiquement dans la zone.' },
     cayoparty = { label = 'Soirée DJ plage de Cayo Perico', icon = 'music', radius = 0.0, minutes = 60, party = true,

@@ -1,5 +1,7 @@
 -- Tests gs_harvest : récolte (outil, nœud, durée réelle, butin, casse d'outil, épuisement / repousse), chasse (gibier du serveur seulement,
 -- mort, couteau, distance), revente (acheteur, distance, tout l'inventaire concerné), repeuplement de la zone.
+-- V12.36 : ferraille (scène en phases valide, sans outil, pièces variées + trouvaille, carcasse dépouillée, repousse), PNJ des points
+-- (acheteurs, vestiaires : modèle, cap, scénario valides).
 dofile('tests/mock.lua')
 local R = 'server/resources/[gtasoon]/'
 loadResource('gs_security', { R .. 'gs_security/server/main.lua' })
@@ -144,6 +146,77 @@ ok = cb('gs_harvest:buyLicence', 1); step()
 check('permis acheté (banque)', ok and W.players[1].licences.hunting and W.players[1].money.bank == 1000 - H.licencePrice)
 ok = cb('gs_harvest:buyLicence', 1); step()
 check('déjà titulaire', not ok)
+
+-- V12.36 · Ferraille : vraie scène (config) ---------------------------------------------------------------------
+local scrap = Config.Activities.scrapyard
+check('ferraille : sans outil à acheter (la casse prête ses clés)', scrap.tool == nil)
+check('ferraille : les phases couvrent toute la durée fixée par le serveur', (function()
+    local s = 0
+    for _, ph in ipairs(scrap.phases) do s = s + ph.share end
+    return #scrap.phases >= 2 and math.abs(s - 1.0) < 0.001
+end)())
+check('ferraille : chaque phase a un texte français et une animation (dictionnaire + clip)', (function()
+    for _, ph in ipairs(scrap.phases) do
+        if type(ph.label) ~= 'string' or ph.label == '' or not ph.label:find('…') then return false end
+        if type(ph.anim) ~= 'table' or type(ph.anim.dict) ~= 'string' or ph.anim.dict == '' or type(ph.anim.clip) ~= 'string' or ph.anim.clip == '' then return false end
+    end
+    return true
+end)())
+check('ferraille : fouille accroupie puis dévissage à genoux, clé à molette en main', scrap.phases[1].label:find('Fouille') and scrap.phases[2].label:find('Dévissage')
+    and scrap.phases[2].handProp and scrap.phases[2].handProp.model == 'prop_tool_wrench' and scrap.phases[2].handProp.bone == 57005)
+check('ferraille : objets variés par nœud (carcasse, bloc moteur, tas) + repli', scrap.prop ~= nil and #scrap.props >= 3 and (function()
+    local carcass = false
+    for _, m in ipairs(scrap.props) do
+        if type(m) ~= 'string' or m == '' then return false end
+        if m:find('carwreck') then carcass = true end
+    end
+    return carcass
+end)())
+check('ferraille : la carcasse dépouillée reste visible (keepWhenDepleted)', scrap.keepWhenDepleted == true and scrap.depletedMsg:find('carcasse'))
+check('ferraille : chaque pièce a ses trouvailles (textes RP)', (function()
+    for _, l in ipairs(scrap.loot) do
+        if type(l.finds) ~= 'table' or #l.finds == 0 then return false end
+        for _, f in ipairs(l.finds) do if type(f) ~= 'string' or f == '' then return false end end
+    end
+    return true
+end)())
+
+-- V12.36 · Ferraille : récolte serveur (pièces variées, carcasse dépouillée au 3e passage, repousse) ------------------
+W.players[1].items.scrapmetal, W.players[1].items.copper = 0, 0
+tp(1, scrap.spots[1])
+ok, msg = cb('gs_harvest:begin', 1, 'scrapyard', 1)
+check('ferraille : début accepté sans outil, durée dans la plage', ok and msg >= scrap.duration[1] and msg <= scrap.duration[2])
+advance(scrap.duration[2])
+fixRandom(0.0)
+local okS, msgS, infoS = cb('gs_harvest:finish', 1); step()
+check('ferraille : tirage bas = ferraille + trouvaille décrite', okS and W.players[1].items.scrapmetal >= 2 and msgS:find('ferraille') and msgS:find(scrap.loot[1].finds[1], 1, true))
+check('ferraille : revente indiquée (ferrailleur)', infoS and infoS.sell and infoS.sell:find('Ferrailleur'))
+fixRandom(0.99)
+cb('gs_harvest:begin', 1, 'scrapyard', 1); advance(scrap.duration[2])
+okS, msgS = cb('gs_harvest:finish', 1); step()
+check('ferraille : tirage haut = cuivre (pièces variées)', okS and W.players[1].items.copper >= 1 and msgS:find('cuivre'))
+fixRandom(nil)
+cb('gs_harvest:begin', 1, 'scrapyard', 1); advance(scrap.duration[2])
+okS, msgS, infoS = cb('gs_harvest:finish', 1); step()
+check('ferraille : 3e passage = carcasse dépouillée (message RP, nœud signalé au client)', okS and infoS.depleted and infoS.node == 1 and msgS:find('carcasse'))
+ok, msg = cb('gs_harvest:begin', 1, 'scrapyard', 1); step()
+check('ferraille : carcasse dépouillée refusée', not ok and msg:find('Épuisé'))
+check('ferraille : liste des carcasses dépouillées', cb('gs_harvest:depleted', 1, 'scrapyard')[1] ~= nil)
+advance(Config.Regrow * 1000)
+ok = cb('gs_harvest:begin', 1, 'scrapyard', 1); step()
+check('ferraille : repousse après Config.Regrow', ok)
+Harvest.pending[1] = nil
+
+-- V12.36 · PNJ aux points (gs_markers) : acheteurs et vestiaires ------------------------------------------------------
+local function validPed(p)
+    return type(p) == 'table' and type(p.model) == 'string' and p.model ~= '' and type(p.heading) == 'number'
+        and p.heading >= 0 and p.heading < 360 and (p.scenario == nil or (type(p.scenario) == 'string' and p.scenario ~= ''))
+end
+for _, b in ipairs(Config.Buyers) do check('PNJ acheteur valide : ' .. b.label, validPed(b.ped)) end
+for id, a in pairs(Config.Activities) do
+    if a.outfit ~= false then check('PNJ du vestiaire valide : ' .. id, validPed(a.lockerPed)) end
+end
+check('portée des PNJ : générique dans gs_markers, plus de réglage propre à gs_harvest', Config.BuyerPedRange == nil)
 
 io.write(('\n%d réussis, %d échoués\n'):format(passed, failed))
 os.exit(failed == 0 and 0 or 1)

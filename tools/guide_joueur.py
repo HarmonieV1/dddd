@@ -178,7 +178,7 @@ def build():
                     'Les prix sont ceux <b>de base</b> : l\'économie de RoadLine est vivante, ils montent quand tout le monde achète la même '
                     'chose et redescendent quand ça se calme.', LEAD), Spacer(1, 8)]
     toc = [['', 'Chapitre', 'Ce que tu y trouves'],
-           ['1', 'Premiers pas', 'Arrivée, papiers, permis, téléphone, touches, commandes'],
+           ['1', 'Premiers pas', 'Arrivée, papiers, permis (acquis pour tous), téléphone, touches, commandes'],
            ['2', 'L\'argent', 'Banque, salaires, économie vivante, réputation, remises'],
            ['3', 'Véhicules', 'Concession, crédit, essais, assurance, tuning, location, fourrière (catalogue complet en annexe)'],
            ['4', 'Métiers libres', 'Routier, bus, taxi, livreur, éboueur : sans entretien, payés à la course'],
@@ -200,24 +200,24 @@ def build():
                   'Un souci ? <b>/report</b> en jeu : le staff le reçoit tout de suite.'])
 
     # ---- 1. Premiers pas ----
-    s += chapter(1, 'Premiers pas', 'Tu arrives en ville <b>en bus</b>, à l\'arrêt de la mairie (un seul personnage par joueur), sans voiture et sans permis. En une heure de jeu, tu peux avoir '
-                 'tes papiers, ton permis, un premier boulot et un scooter. Suis Max « le Guide » : il t\'attend devant la mairie.')
+    # V12.36 : permis pour tout le monde (plus d'auto-école, quête de Max sans étape permis)
+    s += chapter(1, 'Premiers pas', 'Tu arrives en ville <b>en bus</b>, à l\'arrêt de la mairie (un seul personnage par joueur), sans voiture mais '
+                 '<b>avec ton permis de conduire</b> : tout le monde l\'a. En une heure de jeu, tu peux avoir tes papiers, un premier boulot et un scooter. '
+                 'Suis Max « le Guide » : il t\'attend devant la mairie.')
     s += [Paragraph('Ton premier jour (quête de Max)', H3)]
     s += steps(['Parle à <b>Max « le Guide » Delgado</b> devant la mairie (Rockford Hills).',
                 '<b>Mairie</b> : papiers et état civil.',
                 '<b>Banque Fleeca de Legion Square</b> : ton compte. Les distributeurs sont partout en ville.',
                 '<b>Pôle Emploi</b> (centre-ville, près de Legion Square) : choisis un premier boulot (F6).',
-                '<b>Auto-école</b> (Strawberry) : passe ton permis.',
-                '<b>Location de la mairie</b> : un scooter en attendant.',
                 'Reviens voir Max : <b>300 XP et 500 $</b>.'])
-    s += [tip('L\'arrivée en bus ne se joue qu\'une fois par personnage (Espace pour la passer). À la descente, le GPS est déjà tracé vers Max.')]
+    s += [tip('L\'arrivée en bus ne se joue qu\'une fois par personnage (Espace pour la passer). À la descente, le GPS est déjà tracé vers Max. '
+              'Pas de voiture ? La <b>location de la mairie</b>, à deux pas de Max, prête vélos et scooters pour quelques dollars (chapitre 3).')]
     s += [Paragraph('Le permis de conduire', H3)]
     s += [table([['Étape', 'Prix', 'Comment'],
-                 ['Code', money(500), '10 questions tirées au hasard, 8 bonnes réponses pour réussir (nouvel essai 5 min après un échec).'],
-                 ['Conduite', money(1000), 'Parcours en ville avec la voiture-école : 80 km/h maximum, 3 fautes au plus (excès, accrochage).'],
-                 ['Retrait', 'Police', 'Pas de points : une infraction grave et la police te <b>retire le permis</b> (carte reprise, motif au casier). Pour le récupérer : l\'auto-école, ou décision de la police.']],
+                 ['Obtention', 'Gratuit', 'Tout le monde a son permis dès l\'arrivée : la carte <b>Permis de conduire</b> est dans ton sac (F2). Pas d\'auto-école, ni code ni examen.'],
+                 ['Retrait', 'Police', 'Pas de points : une infraction grave et la police te <b>retire le permis</b> (carte reprise, motif au casier). Seule la police peut te le rendre.'],
+                 ['Vérifier', '/permis', 'Te dit si ton permis est valide ou retiré.']],
                 [28 * mm, 22 * mm, 130 * mm])]
-    s += [tip('Un moniteur de l\'auto-école (joueur) peut aussi te faire passer un examen en RP.')]
     s += [Paragraph('Les touches', H3)]
     keys = [['Touche', 'À quoi ça sert'],
             ['F1', 'Téléphone : Que faire ?, messages, banque, factures, Vibe, Weazel, boulots, plans, ville…'],
@@ -298,7 +298,7 @@ def build():
               '(5 % de remise, jusqu\'à 25 %). Un braqueur à visage découvert est reconnu et se fait refuser au comptoir pendant 48 h.')]
 
     # ---- 3. Véhicules ----
-    s += chapter(3, 'Véhicules', 'Pas de voiture au départ : location, puis concession quand tu as le permis et les moyens. Chaque '
+    s += chapter(3, 'Véhicules', 'Pas de voiture au départ : location, puis concession quand tu as les moyens (le permis, tu l\'as déjà). Chaque '
                  'voiture a son carnet (kilomètres, accidents, propriétaires) : on sait ce qu\'on achète.')
     s += [table([['Boutique', 'Ce qu\'on y trouve', 'Nombre de modèles'],
                  [SHOP_FR['pdm'], 'Vélos, compactes, berlines, coupés, muscle cars, sportives classiques, SUV, tout-terrain, vans, motos, la <b>salle Luxe</b> '
@@ -308,7 +308,7 @@ def build():
                  [SHOP_FR['air'], 'ULM, avions de tourisme, hydravions, jets d\'affaires, hélicoptères civils', str(sum(len(v) for v in shops['air'].values()))]],
                 [55 * mm, 100 * mm, 25 * mm])]
     s += [Paragraph('Acheter une voiture, pas à pas', H3)]
-    s += steps(['Va à la concession avec ton <b>permis</b>. Regarde les modèles exposés ou ouvre le catalogue au comptoir (Alt).',
+    s += steps(['Va à la concession. Regarde les modèles exposés ou ouvre le catalogue au comptoir (Alt).',
                 '<b>Essai gratuit</b> : quelques minutes au volant, puis la voiture revient seule.',
                 'Paie comptant (banque) ou à <b>crédit</b> : 10 % d\'apport minimum, jusqu\'à 24 échéances, au bureau des financements.',
                 'La voiture arrive à ton nom avec ses clés, et une <b>clé dans ton sac</b> (double-clic près de la voiture : verrouiller ; la donner = prêter la voiture). Range-la dans un <b>parking public</b> (garages sur la carte).',
@@ -377,7 +377,7 @@ def build():
              'Réparer, pneus, remorquage (dépanneuse, plateau), commandes par téléphone, factures jusqu\'à 15 000 $, tuning complet.'],
             ['Concession PDM', 'Stagiaire 200 · Vendeur 300 · Chef des ventes 400 · Directeur 500', 'Vendre, reprendre, faire essayer (factures jusqu\'à 500 000 $).'],
             ['Dynasty 8 (immobilier)', 'Agent stagiaire 200 · Agent 300 · Directeur 450', 'Créer et vendre ou louer des logements.'],
-            ['Auto-école', 'Moniteur 250 · Directeur 400', 'Leçons de conduite, examens en RP, délivrer le permis.'],
+            ['Auto-école', 'Moniteur 250 · Directeur 400', 'Leçons et stages de conduite en RP (le permis est acquis pour tous : seule la police le retire ou le rend).'],
             ['Cabinet d\'avocats', 'Stagiaire 200 · Avocat 350 · Associé 500', 'Défendre en garde à vue et au tribunal, honoraires jusqu\'à 50 000 $.'],
             ['Tribunal', 'Juge 450 · Président 600', 'Procès, verdicts, mandats, jurys de citoyens, litiges de contrats.'],
             ['Weazel News', 'Pigiste 150 · Journaliste 280 · Rédacteur en chef 450',

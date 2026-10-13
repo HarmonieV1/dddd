@@ -1,5 +1,7 @@
 -- Zones ox_target (0 ms au repos : pas de boucle) + blips + marqueurs au sol pour SON métier.
 -- Les points déplacés par le staff (GlobalState.gsJobPoints) remplacent ceux de jobs.lua, zones reconstruites à chaud.
+-- V12.36 : PNJ aux points (Jobs[x].peds, Config.JobCenter.ped) portés par gs_markers (champ `ped` du point) : créés à l'approche,
+-- ils portent la même action que la zone, aux mêmes conditions, et suivent le point quand le staff le déplace.
 local zones, blips = {}, {}
 
 local function addZone(coords, option)
@@ -7,6 +9,22 @@ local function addZone(coords, option)
     zones[#zones + 1] = exports.ox_target:addSphereZone({
         coords = coords, radius = Config.ZoneRadius, debug = Config.Debug, options = { option },
     })
+end
+
+--- V12.36 · PNJ d'un point : même option ox_target que la zone (nom suffixé), placé juste hors de la zone (rayon + 0,5 m) pour que
+--- l'option n'apparaisse pas deux fois quand on vise le PNJ depuis le point. `def` = { model, heading, scenario } de la config.
+local function pedOf(def, option)
+    if type(def) ~= 'table' or type(def.model) ~= 'string' or def.model == '' then return nil end
+    return { model = def.model, heading = def.heading, scenario = def.scenario, distance = Config.ZoneRadius + 0.5,
+        options = { { name = option.name .. '_ped', icon = option.icon, label = option.label, distance = 2.5,
+                      canInteract = option.canInteract, onSelect = option.onSelect } } }
+end
+
+local function addPed(name, kind, i, coords, option)
+    local list = Jobs[name].peds and Jobs[name].peds[kind]
+    local ped = list and pedOf(list[i], option)
+    if not ped then return end
+    exports.gs_markers:Add(('gs_jobs:ped:%s:%s%d'):format(name, kind, i), { coords = coords, style = 'hidden', ped = ped })
 end
 
 local function addBlip(coords, b)
@@ -126,6 +144,7 @@ local function clear()
     for _, id in ipairs(zones) do exports.ox_target:removeZone(id) end
     for _, blip in ipairs(blips) do RemoveBlip(blip) end
     zones, blips = {}, {}
+    exports.gs_markers:RemovePrefix('gs_jobs:ped:') -- V12.36 : les PNJ sont recréés avec les points (déplacement par le staff)
 end
 
 local function build()
@@ -133,12 +152,14 @@ local function build()
     for name, def in pairs(Jobs) do
         local p = def.points
 
-        for _, coords in ipairs(p.duty or {}) do
-            addZone(coords, {
+        for i, coords in ipairs(p.duty or {}) do
+            local option = {
                 name = 'gs_duty_' .. name, icon = 'fa-solid fa-id-badge', label = L('zone_duty'),
                 canInteract = function() return GSJ.isJob(name) end,
                 onSelect = function() TriggerServerEvent('gs_jobs:server:toggleDuty') end,
-            })
+            }
+            addZone(coords, option)
+            addPed(name, 'duty', i, coords, option) -- V12.36 : agent d'accueil
         end
 
         for i, s in ipairs(p.stash or {}) do
@@ -165,32 +186,38 @@ local function build()
             })
         end
 
-        for _, coords in ipairs(p.boss or {}) do
-            addZone(coords, {
+        for i, coords in ipairs(p.boss or {}) do
+            local option = {
                 name = 'gs_boss_' .. name, icon = 'fa-solid fa-briefcase', label = L('zone_boss'),
                 canInteract = function() return GSJ.isBoss(name) end,
                 onSelect = function() GSJ.openBossMenu() end,
-            })
+            }
+            addZone(coords, option)
+            addPed(name, 'boss', i, coords, option) -- V12.36 : assistant de direction
         end
 
         for i, g in ipairs(p.garage or {}) do
-            addZone(g.coords, {
+            local option = {
                 name = ('gs_garage_%s_%d'):format(name, i), icon = 'fa-solid fa-car', label = L('zone_garage'),
                 canInteract = function() return GSJ.isOnDuty(name) end,
                 onSelect = function() GSJ.openGarageMenu(name, i) end,
-            })
+            }
+            addZone(g.coords, option)
+            addPed(name, 'garage', i, g.coords, option) -- V12.36 : responsable du parc
         end
 
         local anchor = (p.duty and p.duty[1]) or (p.garage and p.garage[1] and p.garage[1].coords)
         if def.blip and anchor then addBlip(anchor, def.blip) end
     end
 
-    addZone(Config.JobCenter.coords, {
+    local center = {
         name = 'gs_job_center', icon = 'fa-solid fa-building', label = L('zone_job_center'),
         onSelect = function() GSJ.openJobCenter() end,
-    })
+    }
+    addZone(Config.JobCenter.coords, center)
     addBlip(Config.JobCenter.coords, Config.JobCenter.blip)
-    exports.gs_markers:Add('gs_jobs:center', { coords = Config.JobCenter.coords, style = 'entry', label = 'Pôle Emploi' })
+    exports.gs_markers:Add('gs_jobs:center', { coords = Config.JobCenter.coords, style = 'entry', label = 'Pôle Emploi',
+        ped = pedOf(Config.JobCenter.ped, center) }) -- V12.36 : agent d'accueil du Pôle Emploi
     refreshMarkers()
 end
 

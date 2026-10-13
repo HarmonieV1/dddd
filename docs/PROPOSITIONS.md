@@ -104,3 +104,77 @@ rien qui casse l'existant, tests verts avant livraison.
 10. **Bêta** : remise à zéro (wipe) avant le 20/10 ou on garde les personnages ? Récompense des testeurs ?
 11. **Bande-annonce** : date de tournage ? Besoin de scènes préparées (PNJ, météo, nuit) par le staff ?
 12. **Public** : France seulement ? Âge minimum ?
+
+---
+
+# RoadLine RP · Propositions V13+ · série 2 (12/10/2026) — 40 idées nouvelles (n° 58 → 97)
+
+Suite directe de `docs/PROPOSITIONS.md` (n° 1 → 57) : aucune des idées ci-dessous n'y figure ni n'existe déjà dans la base
+(vérifié contre `docs/FEATURES.md`, `docs/ETAT_PROJET.md` § 5 et les descriptions des 66 ressources `gs_*`).
+Effort : ✚ = quelques heures · ✚✚ = 1 à 2 jours · ✚✚✚ = une semaine. « S'appuie sur » = système déjà en place.
+Règles de la maison : tout validé serveur, zéro pay-to-win, tout en français, aucune marque réelle, rien qui casse l'existant.
+
+## D1. Signatures — « la ville se souvient » (introuvables ailleurs)
+
+| # | Proposition | Effort | S'appuie sur |
+|---|---|---|---|
+| 58 | **Les témoins ont un visage** : le passant qui a signalé ton crime reste 24 h près des lieux ; la police l'interroge (détails, plaque partielle), toi tu peux l'intimider ou l'acheter : il « oublie » | ✚✚✚ | gs_wanted (témoins), gs_evidence, gs_stickup (peur) |
+| 59 | **Le droit à l'oubli** : 30 jours sans crime → demande à la mairie, le juge tranche : casier allégé, les passants et la radio ne parlent plus de toi, les plaques gardent « un inconnu » | ✚✚ | gs_justice, gs_memoire, gs_police (casier), gs_civil |
+| 60 | **Surnom de rue** : la ville baptise ceux qui répètent un schéma (même quartier, même crime) : « le Fantôme de Vespucci » dans le dispatch, à la radio, chez les passants ; indépendant des titres de niveau et des légendes de cavale | ✚✚ | gs_memoire, gs_wanted (dispatch), gs_lsradio |
+| 61 | **Pedigree des objets** : comme le carnet du véhicule, mais pour armes, bijoux et objets de valeur (« a servi au casse de Vangelico ») ; le labo le lit, le marché noir paie plus une pièce « à histoire », une arme vierge devient rare | ✚✚ | ox_inventory (metadata), gs_evidence, gs_blackmarket, gs_auction |
+| 62 | **Mes lieux** : appli du téléphone avec tes propres souvenirs (1re arrestation, 1re voiture, mariage, 1er coup) ; sur place la nuit, un écho de toi-même rejoue la scène | ✚✚ | gs_memoire (échos), gs_phone, gs_stats (bio) |
+| 63 | **Croix de bord de route** : un mort au volant hors ville laisse une croix et des fleurs 7 jours à l'endroit exact ; les PNJ ralentissent, Radio LS le rappelle. Aucune mort définitive requise | ✚ | gs_scars, gs_roadside, gs_lsradio |
+| 64 | **Jour pour jour** : 7 et 30 jours après un fait marquant, bougies sur les lieux, passants qui s'arrêtent une minute, brève Weazel « il y a un mois, ici… » | ✚ | gs_memoire, gs_scars, gs_social (@WeazelNews) |
+| 65 | **Si je ne reviens pas** : lettre écrite en jeu, remise à une personne ou publiée dans la Gazette seulement si tu n'es pas revenu depuis 14 jours ; annulable à chaque connexion | ✚ | gs_phone (messages), gs_stats (rétention), gs_city (gazette) |
+| 66 | **Avis de disparition** : 30 jours d'absence → la Gazette te déclare disparu, la police peut ouvrir un dossier, tes proches reçoivent un SMS ; à ton retour, brève « réapparu » et les passants s'étonnent | ✚ | gs_stats (rétention), gs_dossier, gs_city (gazette), gs_social |
+| 67 | **Le temps qui passe** : 1 mois réel = 1 an en ville : anniversaire fêté (SMS, petit bonus), cheveux qui grisonnent peu à peu, mention « ancien de la ville » au dossier et sur Vibe | ✚ | gs_stats, gs_dossier, gs_details (apparence) |
+
+## D2. Générales — confort, immersion, ville vivante, mapping léger sans asset
+
+| # | Proposition | Effort | S'appuie sur |
+|---|---|---|---|
+| 68 | **Objets trouvés** : tout objet laissé au sol plus d'1 h et le contenu des voitures saisies partent au guichet « Objets trouvés » de la mairie ; on réclame en décrivant, non réclamé 7 jours → enchères | ✚✚ | gs_civil, gs_auction, ox_inventory |
+| 69 | **Rencontres de trottoir** : version urbaine des rencontres de la route : touriste qui veut une photo, livreur qui a fait tomber ses colis, mamie à faire traverser, ado perdu ; petite réputation légale, parfois un piège | ✚✚ | gs_roadside, gs_reputation |
+| 70 | **Passagers qui parlent** : les clients PNJ du taxi et du bus commentent la ville pendant le trajet (mémoire des lieux, rumeurs, météo) et laissent un pourboire selon la conduite | ✚ | gs_jobs (taxi, bus), gs_memoire, gs_rumors |
+| 71 | **Routes en travaux** : 2 à 3 chantiers éphémères par jour (cônes, barrières, voie fermée 2 h) posés par le serveur sur de vraies routes, annoncés à la radio ; éboueurs et mécanos peuvent les lever plus tôt | ✚✚ | gs_world, gs_builder (objets), gs_lsradio |
+| 72 | **Enseigne allumée** : un commerce de joueur est visiblement ouvert ou fermé : néon, porte, barman PNJ seulement si ouvert ; horaires fixés par le patron et lus sur le téléphone (libre-service inchangé sinon) | ✚ | gs_business, gs_interiors, gs_phone |
+| 73 | **Dormir chez soi** : se coucher dans son lit (motel ou logement) donne « reposé » 2 h : endurance, faim et soif baissent moins vite ; 8 h hors ligne comptent comme une nuit | ✚ | gs_hideouts, qbx_properties, gs_hud |
+| 74 | **Courrier et colis** : boîte aux lettres par logement ; on envoie une lettre ou un petit colis à quelqu'un, un boulot « facteur » de l'appli le livre ; ouvrable seulement par le destinataire | ✚✚ | gs_gigs, qbx_properties, gs_hideouts |
+| 75 | **Météo et marées** : appli prévisions à 3 h (le serveur connaît déjà la suite), marées qui changent les prises de pêche et les créneaux de contrebande | ✚ | gs_phone, gs_weather, gs_harvest, gs_smuggling |
+| 76 | **S'asseoir partout** : n'importe quel banc ou chaise de la map (ox_target), caméra contemplative, endurance qui remonte ; à deux sur un banc, le temps de duo compte double et le lieu raconte son histoire | ✚ | gs_details, gs_duo, gs_memoire |
+| 77 | **Bande-son de quartier** : ambiance sonore native selon standing et tension : huppé = jazz lointain et oiseaux, chaud = sirènes au loin et chiens ; aucun fichier audio ajouté | ✚ | gs_city (standing, tension) |
+
+## D3. Illégal — gangs, trafics, braquages, prison, marché noir
+
+| # | Proposition | Effort | S'appuie sur |
+|---|---|---|---|
+| 78 | **Détournement de cargaison** : forcer un routier (joueur ou PNJ) à s'arrêter, décrocher la remorque, la livrer au receleur ; le routier peut payer une escorte, l'assureur rembourse une fois | ✚✚ | gs_jobs (routier), gs_wanted, gs_gangs (receleur), gs_insurance |
+| 79 | **Cambriolage de domicile** : crocheter un logement ou une chambre de motel dont l'occupant est absent, 3 min à l'intérieur, une part du coffre ; alarme possible, voisins témoins, assurance habitation | ✚✚✚ | qbx_properties, gs_hideouts, gs_wanted, gs_insurance |
+| 80 | **Faux billets** : presse dans le labo du gang, liasses dépensables chez les PNJ (détection 10 %, signalement), refusées au guichet qui prévient la police ; la masse de faux apparaît dans /economie | ✚✚ | gs_gangs (labos), gs_economy, gs_bank, gs_econstats |
+| 81 | **Skimmer de distributeur** : poser un lecteur (marché noir) sur un DAB 1 h : prélève un petit % des retraits et copie les cartes des joueurs passés ; la police le repère en inspectant le DAB, caméra à l'appui | ✚✚ | gs_bank, gs_blackmarket, gs_cctv |
+| 82 | **Désossage à la casse** : une voiture volée se démonte en pièces (moteur, portières, jantes) revendues aux mécanos ; la carcasse réapparaît au registre des disparus « retrouvée désossée » | ✚✚ | gs_gangs (receleur), gs_jobs (mécano), gs_insurance (registre) |
+| 83 | **Transfert de détenu** : mission police : convoyer un prisonnier du commissariat à la prison (fourgon, itinéraire) ; un gang prévenu peut tenter de le libérer en route, le libéré repart en cavale | ✚✚ | gs_police (prison), gs_gangs, gs_wanted (cavale) |
+| 84 | **Parloir et colis** : un proche visite un détenu (face à face, 10 min) et dépose un colis ; cigarettes et livres passent, un téléphone ou un crochet a 40 % d'être trouvé à la fouille (peine allongée) | ✚ | gs_police (prison vivante), gs_interiors |
+| 85 | **La cour et le caïd** : le détenu qui gagne le plus (combats, tickets) devient caïd de la semaine : fixe les prix du trafiquant, choisit les corvées ; les gardiens fouillent les cellules et saisissent | ✚✚ | gs_police (prison vivante), gs_fightclub (arbitrage) |
+| 86 | **Clientèle fidèle** : après 3 ventes, un PNJ devient un habitué qui t'appelle quand il veut sa dose (lieu, heure) ; prix fidélité, mais un habitué raté te lâche et un sur dix est un indic | ✚✚ | gs_drugs, gs_phone, gs_rumors |
+| 87 | **Vol de plaques** : dévisser la plaque d'une voiture garée (objet), la poser sur la tienne : caméras et radars accusent le vrai propriétaire, qui reçoit les amendes et porte plainte | ✚ | gs_cctv, gs_tuning (plaques), gs_police (dossiers) |
+
+## D4. Légal — métiers, commerces, services, justice, presse
+
+| # | Proposition | Effort | S'appuie sur |
+|---|---|---|---|
+| 88 | **Appel et jurisprudence** : chaque verdict nourrit la « peine habituelle » affichée au dossier pour ce crime ; un condamné fait appel une fois (autre juge, 24 h), le juge qui s'en écarte beaucoup motive | ✚✚ | gs_justice, gs_dossier |
+| 89 | **Police des polices** : un policier peut accepter un pot (perdre un scellé, clore un mandat) ; chaque anomalie va dans un registre caché que l'IGPN (juge + gradé) audite ; la presse peut révéler | ✚✚✚ | gs_police, gs_justice, gs_evidence, gs_dossier |
+| 90 | **Le notaire** : vente de véhicule ou de logement entre joueurs avec acte signé face à face, séquestre du paiement, taxe pour la mairie, historique du bien joint | ✚✚ | gs_accords, qbx_properties, qbx_garages, gs_civil |
+| 91 | **Convoyeurs de fonds** : la caisse des commerces se vide physiquement : un fourgon blindé (métier) la porte à la banque ; attaquable (nouveau braquage, 3 policiers requis), le patron choisit l'heure | ✚✚ | gs_jobs, gs_business, gs_heists, gs_wanted |
+| 92 | **Fonds de commerce à vendre** : locaux vacants listés chez l'agent immobilier (café, épicerie, atelier) ; l'acheteur choisit le type, le nom, la carte et les prix ; les commerces fixes restent | ✚✚✚ | gs_business, gs_jobs (agent immobilier), gs_economy |
+| 93 | **Intérim** : un patron sans employé publie un créneau d'1 h dans l'appli Boulots ; n'importe quel civil prend le poste (préparation, caisse, livraison), payé par la caisse du commerce | ✚✚ | gs_jobs (direction), gs_gigs, gs_business |
+| 94 | **Pigiste photo** : la rédaction achète les photos des joueurs (objet photo, 150 à 400 $ selon sujet et fraîcheur) pour illustrer la Gazette et les articles ; crédit photo au nom du perso | ✚ | gs_city (gazette), gs_evidence (photos), gs_phone |
+| 95 | **Diffamation et droit de réponse** : un citoyen nommé dans un article saisit le tribunal ; le juge ordonne un rectificatif (publié, relayé sur Vibe) et une amende à la rédaction | ✚ | gs_justice, gs_city (/journal), gs_social |
+| 96 | **Plaider-coupable** : en garde à vue, l'avocat négocie avec le gradé une peine réduite sans procès ; accepté = appliqué tout de suite, refusé = tribunal ; inscrit au dossier comme tel | ✚ | gs_justice, gs_police (garde à vue), gs_jobs (avocat) |
+| 97 | **Contrôle technique** : vignette 30 jours délivrée par un mécano (vérifications réelles : moteur, pneus, carrosserie) ; sans vignette, amende au contrôle et assurance qui ne couvre plus | ✚✚ | gs_jobs (mécano), gs_police (contrôle), gs_insurance |
+
+---
+À coller à la suite de la section B dans `C:\Users\STEPHANE\Desktop\Base STEVEN\roadline-repo\docs\PROPOSITIONS.md` (nouvelle section D),
+puis tri par le fondateur comme pour les 57 premières. Rappel du cap décidé le 11/10 : pas de nouveau gros système avant le 20/10 ;
+les ✚ (58 → 97 : 63, 64, 65, 66, 67, 70, 72, 73, 75, 76, 77, 84, 87, 94, 95, 96) sont les seuls candidats réalistes avant l'ouverture.

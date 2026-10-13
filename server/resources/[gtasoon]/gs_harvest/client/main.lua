@@ -1,14 +1,17 @@
--- gs_harvest (client) : nœuds de récolte (arbres, rochers, tas de ferraille, légumes posés au sol chez le joueur ;
+-- gs_harvest (client) : nœuds de récolte (arbres, rochers, carcasses, légumes posés au sol chez le joueur ;
 -- places de pêche), vestiaire (tenue de travail), acheteurs, dépeçage des animaux abattus (ox_target).
+-- V12.36 : les PNJ (acheteurs, contremaîtres des vestiaires) sont portés par gs_markers (champ `ped` du point), plus de boucle ici.
 local Bridge = exports.gs_bridge
 local function notify(ok, msg) if msg then lib.notify({ description = msg, type = ok and 'success' or 'error', duration = 6000 }) end end
 local busy = false
 local props = {}      -- ['id:i'] = entité locale
+local marked = {}     -- ['id:i'] = true quand le marqueur [E] du nœud est posé (V12.36)
 local ground = {}     -- ['id:i'] = vector3 recalé au sol
 local depleted = {}   -- ['id:i'] = GetGameTimer() de retour
 local inWorkOutfit = false
 
 local function key(id, i) return id .. ':' .. i end
+local function isDepleted(k) return depleted[k] ~= nil and depleted[k] > GetGameTimer() end
 
 --- Position du nœud recalée au sol (les points de la config ont une hauteur approximative)
 local function groundOf(c)
@@ -20,41 +23,86 @@ local function groundOf(c)
 end
 local grounded = {}   -- ['id:i'] = true quand la hauteur vient vraiment du sol (collision chargée)
 
-local function removeNode(k)
+--- V12.36 · Objet d'un nœud : `props` (liste, choix fixe par nœud pour que tout le monde voie le même objet) sinon `prop`.
+--- Un modèle absent du jeu retombe sur `prop`.
+local function nodeModel(a, i)
+    local list = a.props
+    if type(list) ~= 'table' or #list == 0 then return a.prop end
+    local name = list[((i - 1) % #list) + 1]
+    local hash = GetHashKey(name)
+    if IsModelInCdimage(hash) and IsModelValid(hash) then return name end
+    return a.prop
+end
+
+local function removeProp(k)
     if props[k] then
         exports.ox_target:removeLocalEntity(props[k])
         if DoesEntityExist(props[k]) then DeleteEntity(props[k]) end
         props[k] = nil
     end
-    exports.gs_markers:Remove('gs_harvest:n:' .. k)
 end
+
+local function removeMarker(k)
+    if marked[k] then exports.gs_markers:Remove('gs_harvest:n:' .. k) marked[k] = nil end
+end
+
+local function removeNode(k) removeProp(k) removeMarker(k) end
 
 local doHarvest
 
-local function addNode(id, i)
+--- Position au sol du nœud, calculée une fois (recalée de près si le sol n'était pas chargé, voir la boucle)
+local function nodeGround(id, i)
+    local k = key(id, i)
+    if not ground[k] then
+        local g, found = groundOf(Config.Activities[id].spots[i])
+        ground[k], grounded[k] = g, found
+    end
+    return ground[k]
+end
+
+local function addProp(id, i)
     local a, k = Config.Activities[id], key(id, i)
-    local g = ground[k]
-    if not g then
-        local found
-        g, found = groundOf(a.spots[i])
-        grounded[k] = found
-    end
-    ground[k] = g
-    if a.prop then
-        local hash = GetHashKey(a.prop)
-        if lib.requestModel(hash, 5000) then
-            local obj = CreateObject(hash, g.x, g.y, g.z, false, false, false)
-            PlaceObjectOnGroundProperly(obj)
-            FreezeEntityPosition(obj, true)
-            SetModelAsNoLongerNeeded(hash)
-            props[k] = obj
-            exports.ox_target:addLocalEntity(obj, { { name = 'gs_harvest_' .. k, icon = 'fa-solid fa-hand', label = a.verb, distance = 3.0,
-                onSelect = function() doHarvest(id, i) end } })
-        end
-    end
+    local g = nodeGround(id, i)
+    local hash = GetHashKey(nodeModel(a, i))
+    if not pcall(lib.requestModel, hash, 5000) then return end -- V12.36 : modèle absent → pas d'erreur de script, le nœud reste un simple point
+    local obj = CreateObject(hash, g.x, g.y, g.z, false, false, false)
+    SetEntityHeading(obj, (i * 73) % 360 + 0.0) -- V12.36 : cap propre à chaque nœud (des carcasses toutes orientées pareil, ça se voit)
+    PlaceObjectOnGroundProperly(obj)
+    FreezeEntityPosition(obj, true)
+    SetModelAsNoLongerNeeded(hash)
+    props[k] = obj
+    exports.ox_target:addLocalEntity(obj, { { name = 'gs_harvest_' .. k, icon = a.icon or 'fa-solid fa-hand', label = a.verb, distance = 3.0,
+        canInteract = function() return not isDepleted(k) end, -- V12.36 : nœud épuisé encore visible (carcasse) = plus rien à prendre
+        onSelect = function() doHarvest(id, i) end } })
+end
+
+local function addMarker(id, i)
+    local a, k = Config.Activities[id], key(id, i)
+    local g = nodeGround(id, i)
     exports.gs_markers:Add('gs_harvest:n:' .. k, { coords = g + vec3(0.0, 0.0, 1.0), style = a.prop and 'hidden' or 'job', label = a.label,
         event = 'gs_harvest:client:do', args = { id, i }, reach = 2.2,
         prompt = a.verb .. (a.tool and (' (' .. a.toolLabel .. ')') or '') })
+    marked[k] = true
+end
+
+--- V12.36 · Scène de récolte en une ou plusieurs phases (ferraille : fouiller la carcasse accroupi, puis dévisser à genoux, clé en
+--- main) : chaque phase a son animation, son outil en main et sa part (`share`) de la durée totale fixée par le serveur.
+local function playScene(a, total)
+    local phases = a.phases or { { label = a.verb .. '…', share = 1.0, anim = a.anim, scenario = a.scenario, handProp = a.handProp } }
+    for _, ph in ipairs(phases) do
+        -- pcall : un dictionnaire d'animation ou un objet absent du jeu annule la scène proprement au lieu de bloquer le joueur
+        local ok, done = pcall(lib.progressBar, { duration = math.floor(total * (ph.share or 1.0)), label = ph.label, canCancel = true,
+            anim = ph.scenario and { scenario = ph.scenario } or (ph.anim and { dict = ph.anim.dict, clip = ph.anim.clip, flag = ph.anim.flag or 1 }),
+            prop = ph.handProp, disable = { move = true, car = true, combat = true } })
+        ClearPedTasks(cache.ped)
+        if not ok then
+            print(('[gs_harvest] scène « %s » : animation ou objet indisponible (%s)'):format(ph.label, tostring(done)))
+            notify(false, 'Scène indisponible, réessaie.')
+            return false
+        end
+        if not done then return false end
+    end
+    return true
 end
 
 doHarvest = function(id, i)
@@ -65,10 +113,7 @@ doHarvest = function(id, i)
     busy = true
     local g = ground[key(id, i)]
     if g then TaskTurnPedToFaceCoord(cache.ped, g.x, g.y, g.z, 600) Wait(600) end
-    local done = lib.progressBar({ duration = res, label = a.verb .. '…', canCancel = true,
-        anim = a.scenario and { scenario = a.scenario } or (a.anim and { dict = a.anim.dict, clip = a.anim.clip, flag = 1 }),
-        prop = a.handProp, disable = { move = true, car = true, combat = true } })
-    ClearPedTasks(cache.ped)
+    local done = playScene(a, res)
     busy = false
     if not done then return TriggerServerEvent('gs_harvest:server:cancel') end
     local ok2, msg, info = lib.callback.await('gs_harvest:finish', false)
@@ -77,7 +122,7 @@ doHarvest = function(id, i)
         if info.depleted then
             local k = key(id, info.node)
             depleted[k] = GetGameTimer() + Config.Regrow * 1000
-            removeNode(k)
+            if a.keepWhenDepleted then removeMarker(k) else removeNode(k) end -- la carcasse dépouillée reste, seul [E] s'éteint
         end
         if info.sell then lib.notify({ description = 'Revente : ' .. info.sell .. ' (logo sur la carte)', type = 'inform', duration = 4000 }) end
     end
@@ -115,29 +160,33 @@ local function blip(c, b, label, short)
     blips[#blips + 1] = h
 end
 
--- Nœuds créés à l'approche, supprimés au loin ; ceux épuisés reviennent après Config.Regrow
+-- Nœuds créés à l'approche, supprimés au loin ; ceux épuisés reviennent après Config.Regrow.
+-- V12.36 : un nœud épuisé garde son objet si l'activité le demande (keepWhenDepleted : la carcasse dépouillée reste là),
+-- mais perd son [E] et sa cible jusqu'à la repousse.
 CreateThread(function()
     for id in pairs(Config.Activities) do
         for i, n in pairs(lib.callback.await('gs_harvest:depleted', false, id) or {}) do depleted[key(id, i)] = GetGameTimer() + n * 1000 end
     end
     while true do
         local me = GetEntityCoords(cache.ped)
-        local now = GetGameTimer()
         for id, a in pairs(Config.Activities) do
             for i, c in ipairs(a.spots) do
                 local k = key(id, i)
                 local near = #(vec2(me.x, me.y) - vec2(c.x, c.y)) < Config.PropRange
-                local gone = depleted[k] and depleted[k] > now
-                if near and not gone then
+                if near then
                     -- posé avant que le sol soit chargé : recalé une fois de près
-                    if (props[k] or ground[k]) and not grounded[k] and #(me - c) < 50.0 then
+                    if ground[k] and not grounded[k] and #(me - c) < 50.0 then
                         local g, found = groundOf(c)
-                        if found then removeNode(k) ground[k] = g grounded[k] = true addNode(id, i) end
+                        if found then removeNode(k) ground[k] = g grounded[k] = true end
                     end
-                    if not props[k] and not (not a.prop and ground[k]) then addNode(id, i) end
-                elseif props[k] or (not a.prop and ground[k]) then
+                    local gone = isDepleted(k)
+                    local wantProp = a.prop ~= nil and (not gone or a.keepWhenDepleted == true)
+                    if wantProp and not props[k] then addProp(id, i) end
+                    if not wantProp and props[k] then removeProp(k) end
+                    if not gone and not marked[k] then addMarker(id, i) end
+                    if gone and marked[k] then removeMarker(k) end
+                elseif props[k] or marked[k] then
                     removeNode(k)
-                    if not a.prop then ground[k] = nil grounded[k] = nil end
                 end
             end
         end
@@ -149,51 +198,19 @@ CreateThread(function()
     for id, a in pairs(Config.Activities) do
         blip(a.spots[1], a.blip, a.label)
         if a.outfit ~= false then
-            -- vestiaire à côté du premier nœud (recalé au sol à la création du point)
+            -- vestiaire à côté du premier nœud (recalé au sol à la création du point) ; V12.36 : contremaître (PNJ) au vestiaire
             local c = a.spots[1]
             exports.gs_markers:Add('gs_harvest:locker:' .. id, { coords = groundOf(c) + vec3(2.5, 2.5, 1.0), style = 'entry', label = 'Vestiaire',
-                event = 'gs_harvest:client:locker', prompt = 'Vestiaire (tenue de travail / civile)', reach = 1.8 })
+                event = 'gs_harvest:client:locker', prompt = 'Vestiaire (tenue de travail / civile)', reach = 1.8,
+                ped = a.lockerPed })
         end
     end
     for i, b in ipairs(Config.Buyers) do
         blip(b.coords, b.blip, b.label, false) -- acheteurs visibles de loin
+        -- V11.5 acheteur visible ; V12.36 : créé par gs_markers (ox_target « Vendre » sur le PNJ, en plus du [E])
         exports.gs_markers:Add('gs_harvest:buyer:' .. i, { coords = b.coords, style = 'shop', label = b.label,
-            event = 'gs_harvest:client:sell', args = { i }, prompt = 'Vendre · ' .. b.label })
-    end
-end)
-
--- V11.5 · Un acheteur visible à chaque point de vente (PNJ local, créé à l'approche) : plus de logo sans personne.
-local buyerPeds = {}
-local function spawnBuyer(i, b)
-    local hash = GetHashKey(b.ped)
-    if not IsModelInCdimage(hash) or not lib.requestModel(hash, 5000) then return end
-    local h = math.rad(b.heading or 0.0)
-    local at = groundOf(b.coords) + vec3(math.sin(h) * 1.2, -math.cos(h) * 1.2, 0.0) -- 1,2 m derrière le point, face au client
-    local ped = CreatePed(4, hash, at.x, at.y, at.z, b.heading or 0.0, false, true)
-    SetModelAsNoLongerNeeded(hash)
-    SetEntityHeading(ped, b.heading or 0.0)
-    SetBlockingOfNonTemporaryEvents(ped, true)
-    SetPedCanRagdollFromPlayerImpact(ped, false)
-    FreezeEntityPosition(ped, true)
-    SetEntityInvincible(ped, true)
-    TaskStartScenarioInPlace(ped, 'WORLD_HUMAN_CLIPBOARD', 0, true)
-    buyerPeds[i] = ped
-end
-
-CreateThread(function()
-    while true do
-        local me = GetEntityCoords(cache.ped)
-        for i, b in ipairs(Config.Buyers) do
-            if b.ped then
-                local d = #(me - b.coords)
-                if d < Config.BuyerPedRange and not buyerPeds[i] then spawnBuyer(i, b)
-                elseif d > Config.BuyerPedRange + 40.0 and buyerPeds[i] then
-                    if DoesEntityExist(buyerPeds[i]) then DeleteEntity(buyerPeds[i]) end
-                    buyerPeds[i] = nil
-                end
-            end
-        end
-        Wait(3000)
+            event = 'gs_harvest:client:sell', args = { i }, prompt = 'Vendre · ' .. b.label,
+            ped = b.ped and { model = b.ped.model, heading = b.ped.heading, scenario = b.ped.scenario, icon = 'fa-solid fa-sack-dollar' } or nil })
     end
 end)
 
@@ -220,8 +237,7 @@ end)
 
 AddEventHandler('onResourceStop', function(res)
     if res ~= GetCurrentResourceName() then return end
-    exports.gs_markers:RemovePrefix('gs_harvest:')
+    exports.gs_markers:RemovePrefix('gs_harvest:') -- retire aussi les PNJ des acheteurs / vestiaires (gs_markers)
     for k in pairs(props) do removeNode(k) end
     for _, b in ipairs(blips) do RemoveBlip(b) end
-    for i, p in pairs(buyerPeds) do if DoesEntityExist(p) then DeleteEntity(p) end buyerPeds[i] = nil end
 end)

@@ -930,17 +930,19 @@ local function mainMenu()
         show('gs_staff_veh', 'Véhicules', o, 'gs_staff_quick')
     end
 
-    -- V12.15 · Une map : y aller, ou la retirer définitivement (super-admin / fondateur ; réversible dans cfg/addons.cfg)
+    -- V12.15 · Une map : y aller, ou la retirer (super-admin / fondateur). V12.36 : le retrait supprime vraiment (avant : ressource
+    -- seulement arrêtée, ligne commentée, dossier gardé → réinstallée par IMPORTER-MODS) : arrêt + dossier effacé + mods-retires.txt
+    -- + ligne enlevée de cfg/addons.cfg (server/maps.js, comme RETIRED_MAPS au démarrage) ; l'archive reste dans mods-a-trier.
     local mappingsMenu
     local function mapActions(m, p)
         local opts = {}
         if p then opts[#opts + 1] = { title = 'Y aller', icon = 'location-arrow', description = ('%.0f, %.0f, %.0f'):format(p.x, p.y, p.z),
             onSelect = function() teleportTo(p.x, p.y, p.z) end } end
         opts[#opts + 1] = { title = 'Retirer cette map', icon = 'trash', iconColor = '#ff6b6b',
-            description = 'Arrêtée tout de suite et plus chargée aux redémarrages (réversible : enlever le # dans cfg/addons.cfg)',
+            description = 'Arrêtée, dossier supprimé du disque, notée dans mods-retires.txt (jamais réimportée), ligne enlevée de cfg/addons.cfg',
             onSelect = function()
                 local c = lib.alertDialog({ header = 'Retirer ' .. m.label .. ' ?', centered = true, cancel = true,
-                    content = ('La map **%s** (%s) sera arrêtée et ne sera plus chargée.\n\nÀ faire sur le serveur du PC, puis METTRE-A-JOUR-OVH.'):format(m.label, m.name) })
+                    content = ('La map **%s** (%s) sera arrêtée, son dossier supprimé du disque, son nom inscrit dans mods-retires.txt et sa ligne enlevée de cfg/addons.cfg.\nSon archive reste dans mods-a-trier : pour la remettre, enlever son nom de mods-retires.txt puis relancer IMPORTER-MODS.\n\nÀ faire sur le serveur du PC, puis METTRE-A-JOUR-OVH.'):format(m.label, m.name) })
                 if c ~= 'confirm' then return end
                 notify(lib.callback.await('gs_admin:disableMap', false, m.name))
                 clearMapBlips()
