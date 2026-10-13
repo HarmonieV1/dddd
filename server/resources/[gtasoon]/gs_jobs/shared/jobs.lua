@@ -484,10 +484,17 @@ Jobs = {
         peds = { garage = { { model = 's_m_y_garbage', heading = 270.0, scenario = 'WORLD_HUMAN_CLIPBOARD' } } }, -- V12.36 · chef d'équipe de la voirie
         vehicles = { { model = 'trash', label = 'Benne', minGrade = 0 } },
         mission = {
-            pool = 'shops', stops = 4, stepDuration = 4000, stepLabel = 'Vider les poubelles',
+            pool = 'shops', stops = 4, stepDuration = 2500, stepLabel = 'Ramasser le sac poubelle',
             payPerStop = { 120, 180 }, perKm = 0, completionBonus = 80,
-            anim = { dict = 'missfbi4prepp1', clip = '_bag_throw_garbage_man', flag = 48 },
-            prop = { model = 'prop_cs_rub_binbag_01', bone = 57005, pos = vec3(0.12, 0.0, -0.05), rot = vec3(220.0, 120.0, 0.0) },
+            -- V12.39 · le sac se porte jusqu'à l'arrière de la benne ([E] ou Alt sur le camion), la tournée est payée au dépôt
+            payAtDepot = true,
+            anim = { dict = 'anim@heists@narcotics@trash', clip = 'pickup', flag = 48 },
+            carry = {
+                label = 'Jeter le sac dans la benne', hint = 'Porte le sac à l\'arrière de la benne',
+                anim = { dict = 'anim@heists@narcotics@trash', clip = 'walk', flag = 49 },
+                throw = { dict = 'anim@heists@narcotics@trash', clip = 'throw_b', duration = 1300 },
+                prop = { model = 'hei_prop_heist_binbag', bone = 57005, pos = vec3(0.12, 0.0, 0.0), rot = vec3(25.0, 270.0, 180.0) },
+            },
         },
     },
 }

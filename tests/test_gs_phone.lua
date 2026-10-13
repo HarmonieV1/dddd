@@ -10,6 +10,7 @@ provide('gs_jobs', { GetOnDutyPlayers = function(job) return onDuty[job] or {} e
 loadResource('gs_security', { R .. 'gs_security/server/main.lua' })
 loadResource('gs_phone', { R .. 'gs_phone/shared/config.lua' })
 local numbers, contacts, messages, nextMsg = {}, {}, {}, 0
+pending = {}
 Store = {
     init = function() end,
     getNumber = function(cid) return numbers[cid] end,
@@ -23,6 +24,9 @@ Store = {
     messageById = function(id) return messages[id] end,
     thread = function(me, peer) local l = {} for _, m in pairs(messages) do if (m.sender == me and m.receiver == peer) or (m.sender == peer and m.receiver == me) then l[#l + 1] = { id = m.id, sender = m.sender, content = m.content } end end return l end,
     markRead = function(me, peer) for _, m in pairs(messages) do if m.receiver == me and m.sender == peer then m.is_read = 1 end end end,
+    ownerOf = function(n) for cid, v in pairs(numbers) do if v == n then return cid end end end,
+    addPending = function(cid, amount, sender) pending[#pending + 1] = { cid = cid, amount = amount, sender = sender } return true end,
+    takePending = function(cid) local out, keep = {}, {} for _, r in ipairs(pending) do if r.cid == cid then out[#out + 1] = r else keep[#keep + 1] = r end end pending = keep return out end,
 }
 loadResource('gs_phone', { R .. 'gs_phone/server/main.lua' })
 
@@ -138,6 +142,16 @@ check('pas de virement à soi-même', not ok)
 step()
 ok = cb('gs_phone:transfer', 1, '555-0000', 10)
 check('destinataire inconnu refusé', not ok and W.players[1].money.bank == 600)
+step()
+-- V12.39 · virement à un joueur déconnecté : débité tout de suite, versé à sa reconnexion, une seule fois
+TriggerEvent('gs_bridge:server:playerUnloaded', 2); W.players[2] = nil
+ok = cb('gs_phone:transfer', 1, n2, 100)
+check('virement hors ligne accepté et débité', ok and W.players[1].money.bank == 500 and #pending == 1)
+step()
+join(2, 'CID2', 'Vice Lucia', here); W.players[2].items.phone = 1
+check('virement versé à la reconnexion', W.players[2].money.bank == 100 and #pending == 0)
+TriggerEvent('gs_bridge:server:playerUnloaded', 2); join(2, 'CID2', 'Vice Lucia', here); W.players[2].items.phone = 1
+check('jamais versé deux fois (personnage rechargé : rien de plus)', W.players[2].money.bank == 0)
 step()
 
 -- Urgences ----------------------------------------------------------------------------------------------

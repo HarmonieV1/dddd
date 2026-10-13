@@ -35,7 +35,7 @@ lib.callback.register('gs_hideouts:rent', function(src, siteId, weeks)
     local base = (r and r.site == siteId and r.expires > now) and r.expires or now
     if base + weeks * WEEK > now + Config.MaxWeeks * WEEK then return false, ('%d semaines d\'avance maximum.'):format(Config.MaxWeeks) end
     local price = site.price * weeks
-    if not Bridge:RemoveMoney(src, 'bank', price, 'location ' .. site.label) then return false, ('Il te faut %d $ en banque.'):format(price) end
+    if not Bridge:Pay(src, price, 'location ' .. site.label, 'bank') then return false, ('Il te faut %d $ (carte ou espèces).'):format(price) end -- V12.39
     Store.set(cid, siteId, base + weeks * WEEK)
     return true, ('%s louée %d semaine(s) pour %d $.'):format(site.label, weeks, price)
 end)

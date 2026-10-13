@@ -50,7 +50,19 @@ function Phone.assign(src)
     return number
 end
 
-AddEventHandler('gs_bridge:server:playerLoaded', function(src) Phone.assign(src) end)
+AddEventHandler('gs_bridge:server:playerLoaded', function(src)
+    Phone.assign(src)
+    -- V12.39 · virements reçus pendant la déconnexion
+    local cid = Bridge:GetIdentifier(src)
+    if not cid then return end
+    for _, r in ipairs(Store.takePending(cid)) do
+        if Bridge:AddMoney(src, 'bank', r.amount, 'virement ' .. r.sender) then
+            Bridge:Notify(src, ('Virement reçu pendant ton absence : %d $ de %s'):format(r.amount, r.sender), 'success')
+        else
+            Store.addPending(cid, r.amount, r.sender) -- versement impossible : remis en attente
+        end
+    end
+end)
 
 -- Appels ---------------------------------------------------------------------------------------------
 
@@ -198,7 +210,21 @@ lib.callback.register('gs_phone:transfer', function(src, number, amount)
     if not Phone.validNumber(number) then return false, 'Numéro invalide.' end
     if not amount or amount ~= math.floor(amount) or amount < 1 or amount > Config.TransferMax then return false, 'Montant invalide.' end
     local target = Phone.owners[number]
-    if not target or target == src then return false, 'Destinataire injoignable (doit être en ville).' end
+    if target == src or number == Phone.numbers[src] then return false, 'Pas de virement à toi-même.' end
+    if not target then
+        -- V12.39 · destinataire déconnecté : débité maintenant, versé à sa prochaine connexion
+        local cid = Store.ownerOf(number)
+        if not cid then return false, 'Numéro inconnu.' end
+        if not Bridge:RemoveMoney(src, 'bank', amount, 'virement ' .. number) then return false, 'Solde insuffisant.' end
+        if not Store.addPending(cid, amount, Phone.numbers[src]) then
+            Bridge:AddMoney(src, 'bank', amount, 'remboursement virement')
+            return false, 'Virement échoué, remboursé.'
+        end
+        if amount >= 50000 then
+            Security:LogStaff(('[Téléphone] gros virement %d $ (en attente) : %s → %s'):format(amount, Phone.numbers[src], number))
+        end
+        return true, ('%d $ envoyés à %s (hors ligne : versés à sa prochaine connexion)'):format(amount, number)
+    end
     if not Bridge:RemoveMoney(src, 'bank', amount, 'virement ' .. number) then return false, 'Solde insuffisant.' end
     if not Bridge:AddMoney(target, 'bank', amount, 'virement ' .. Phone.numbers[src]) then
         Bridge:AddMoney(src, 'bank', amount, 'remboursement virement')

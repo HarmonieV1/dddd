@@ -44,9 +44,10 @@ lib.callback.register('gs_jobs:billing:pay', function(src, id)
     local ok, res = GSJ.withLock(cid, function()
         local bill = DB.getBill(billId, cid)
         if not bill then return false, 'bill_not_found' end
-        if not Bridge:RemoveMoney(src, 'bank', bill.amount, 'facture ' .. bill.job) then return false, 'not_enough_bank' end
+        local acc = Bridge:Pay(src, bill.amount, 'facture ' .. bill.job, 'bank') -- V12.39 : carte, sinon espèces
+        if not acc then return false, 'not_enough_bank' end
         if not DB.deleteBill(billId, cid) then
-            Bridge:AddMoney(src, 'bank', bill.amount, 'remboursement facture')
+            Bridge:AddMoney(src, acc, bill.amount, 'remboursement facture')
             return false, 'bill_not_found'
         end
         return true, bill

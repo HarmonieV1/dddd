@@ -1,4 +1,4 @@
-# État du projet RoadLine RP — récapitulatif complet (à jour au 13/10/2026, V12.38)
+# État du projet RoadLine RP — récapitulatif complet (à jour au 13/10/2026, V12.39)
 
 Ce document sert de **point de sauvegarde** : si une conversation avec Claude est perdue, compressée ou doit reprendre
 ailleurs, tout ce qu'il faut savoir est ici. Il est versionné avec le code (`git log` en garde aussi l'historique).
@@ -54,7 +54,7 @@ exclusifs (« ce que tu ne trouveras nulle part ailleurs »).
 - `feature/phase1-bridge`
 - `claude/gta-rp-architecture-stack-pbvdxz`
 
-**Dernier commit poussé** : « V12.38 : fusion des sessions Windows (V12.37) et web (V12.35) » (hash exact :
+**Dernier commit poussé** : « V12.39 : éboueurs (sac porté, payé au dépôt), bus, paiements, virements hors ligne » (hash exact :
 `git log -1 origin/feature/phase1-bridge`). Les deux branches pointent sur le même commit.
 
 **Deux sessions Claude en parallèle** (poste Windows et session web) : elles ne se voient pas. Toujours synchroniser
@@ -64,7 +64,7 @@ par un colis (zip de l'installation ou de la session) + ce fichier, et comparer 
 ## 2. Versions : interne vs publique (important, piège classique)
 
 Depuis la V11.3, il y a **deux numéros de version différents**, volontairement :
-- `gs_version` (convar, `server.cfg.example`) = **V12.38** → version technique interne, vue par le staff (F11, console,
+- `gs_version` (convar, `server.cfg.example`) = **V12.39** → version technique interne, vue par le staff (F11, console,
   METTRE-A-JOUR). Continue d'avancer à chaque mise à jour (V11.2, V11.3...).
 - `gs_public_version` (convar) = **« V4 · bêta »** → version vue par les **joueurs** (écran de chargement, statut
   Discord, Gazette). Le site affiche son propre journal (V1 à V4, V5 « classé confidentiel »).
@@ -271,6 +271,27 @@ Résumé très condensé (le détail complet est dans `docs/ROADMAP.md`, `docs/F
   ne remplace pas le curseur), profondeur CSS `animation-timeline: view()` (captures, mock, carte, chiffres), intro
   façon chargement de mission (Entrée / clic pour passer). Tout coupé par `prefers-reduced-motion`, souris seulement
   sur ordinateur. Une seule boucle rAF qui s'endort quand rien ne bouge. Vérifié dans le navigateur : 0 erreur.
+
+- **V12.39** (13/10/2026, session web) — retours du 13/10 au soir :
+  - **Éboueur** : le sac ne disparaît plus. [E] à la poubelle = « Ramasser le sac » (anim), le sac reste en main (marche
+    seulement : ni sprint, ni saut, ni arme, ni véhicule), [E] à l'arrière de la benne ou **Alt sur la benne** = « Jeter le sac »
+    (anim de lancer) ; rien n'est versé en route, **la tournée est payée au retour au dépôt** (marqueur « Rendre la tournée »).
+    Générique dans gs_jobs : `mission.carry` (objet porté jusqu'au véhicule de service) + `mission.payAtDepot` ; serveur :
+    `gs_jobs:mission:pickup` / `:step` (sac jeté à ≤ `depositRadius` 8 m de la benne, benne près de l'étape) / `:depot`,
+    anti-TP inchangé. Tests jobs 156/156 (+32).
+  - **Bus d'arrivée** (« on spawn sous la map ») : le perso n'était pas figé pendant le chargement du sol de la mairie → chute
+    à travers la carte. Figé jusqu'à lecture du sol (3 s d'essais, toit / vide ignorés), puis surveillé 8 s et reposé s'il passe
+    sous le trottoir.
+  - **Paiements** : `Bridge:Pay` (gs_bridge) = espèces d'abord, sinon carte (ou l'inverse). Les commerces légaux acceptaient déjà
+    les deux sauf : billet Cayo, location de motel / planque, factures des métiers, marché de nuit → convertis. Restent en
+    liquide par choix RP : marché noir, drogue, combats, courses, caisse de gang, indic, vendeurs de rue ; Ammu-Nation et
+    distributeurs = boutiques ox_inventory (espèces).
+  - **Virement par téléphone à un joueur déconnecté** (avant : refusé) : débité tout de suite, gardé dans `gs_phone_pending`,
+    versé à sa prochaine connexion (une seule fois, ligne supprimée avant versement). Tests phone 48/48.
+  - Réponses : F6 → vol libre = raccourci FiveM du compte (Paramètres → Raccourcis clavier → FiveM : « NoClip » txAdmin sur
+    F6), aucune ressource RoadLine ne met F6 en vol libre (le nôtre : Ctrl + U). Crash du 13/10 23:16 = **coupure réseau**
+    (« Server->client connection timed out », 31 s sans nouvelles du serveur) puis fermeture : à recouper avec la console
+    du serveur (txAdmin) à cette heure ; à part : `gsa_burrito3/handling.meta` illisible (véhicule importé).
 
 - **V12.38** (13/10/2026) — **fusion** de la session Windows (V12.35 → V12.37, paquet de commits) et de la session web
   (V12.35 : site en mode léger, audit `docs/AUDIT_V12_35.md`). Aucun conflit de code : seuls les numéros de version,

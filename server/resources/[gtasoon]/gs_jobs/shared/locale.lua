@@ -47,7 +47,7 @@ local strings = {
     fired = 'Employé licencié.',
     amount_invalid = 'Montant invalide.',
     not_enough_money = "Pas assez d'argent liquide.",
-    not_enough_bank = 'Solde bancaire insuffisant.',
+    not_enough_bank = 'Fonds insuffisants (ni en banque ni en espèces).',
     society_empty = 'Fonds de la caisse insuffisants.',
     deposit_ok = '%s $ déposés dans la caisse.',
     withdraw_ok = '%s $ retirés de la caisse.',
@@ -96,6 +96,12 @@ local strings = {
     mission_done = 'Mission terminée : %s $ gagnés.',
     mission_cancelled = 'Mission annulée.',
     mission_press = '[E] %s (%d/%d)',
+    mission_depot = 'Rendre la tournée au dépôt',
+    mission_go_depot = 'Tournée finie : retourne au dépôt pour être payé.',
+    mission_return = 'Dernier sac ! Retourne au dépôt pour toucher ta tournée (%s $).',
+    mission_step_pending = 'Sac dans la benne. Tournée : %s $ (payés au dépôt).',
+    mission_pick_first = 'Ramasse d\'abord le sac à la poubelle.',
+    mission_carrying = 'Tu portes déjà un sac : jette-le dans la benne.',
 
     -- Menus
     menu_title = 'Mes emplois',

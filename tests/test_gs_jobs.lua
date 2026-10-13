@@ -188,6 +188,56 @@ check('mission terminée', lastClientEvent('gs_jobs:client:missionEnd', 2).args[
 net('gs_jobs:server:toggleDuty', 2); step()
 check('fin de service = véhicule rendu', not DoesEntityExist(veh))
 
+-- V12.39 · Éboueur : sac porté de la poubelle à la benne, tournée payée au dépôt -------------------------------------
+tp(3, Config.JobCenter.coords)
+net('gs_jobs:server:joinPublic', 3, 'garbage'); step()
+net('gs_jobs:server:switch', 3, 'garbage'); step()
+net('gs_jobs:server:toggleDuty', 3); step()
+local GG = Jobs.garbage.points.garage[1]
+tp(3, GG.coords)
+ok, msg = cb('gs_jobs:garage:spawn', 3, 1, 1); step()
+local truck = GSJ.getJobVehicle(3)
+check('benne sortie', ok and truck ~= nil)
+ok = cb('gs_jobs:mission:start', 3); step()
+check('tournée lancée', ok)
+local gBank = W.players[3].money.bank
+local gTotal = lastClientEvent('gs_jobs:client:missionStep', 3).args[1].total
+check('étape avec sac à porter', lastClientEvent('gs_jobs:client:missionStep', 3).args[1].carry ~= nil)
+for i = 1, gTotal do
+    local s = lastClientEvent('gs_jobs:client:missionStep', 3).args[1]
+    advance(120000)
+    tp(3, s.coords); W.entities[truck].pos = s.coords + vec3(10.0, 0.0, 0.0)
+    ok, msg = cb('gs_jobs:mission:step', 3)
+    check('sac à ramasser avant la benne ' .. i, not ok and msg == L('mission_pick_first'))
+    advance(6000)
+    ok = cb('gs_jobs:mission:pickup', 3)
+    check('sac ramassé ' .. i, ok)
+    advance(6000)
+    ok, msg = cb('gs_jobs:mission:pickup', 3)
+    check('un seul sac à la fois ' .. i, not ok and msg == L('mission_carrying'))
+    advance(6000)
+    ok, msg = cb('gs_jobs:mission:step', 3)
+    check('sac jeté loin de la benne refusé ' .. i, not ok and msg == L('too_far'))
+    advance(6000)
+    tp(3, s.coords + vec3(8.0, 0.0, 0.0))
+    ok = cb('gs_jobs:mission:step', 3); step()
+    check('sac jeté dans la benne ' .. i, ok)
+    check('rien payé en route ' .. i, W.players[3].money.bank == gBank)
+end
+local dep = lastClientEvent('gs_jobs:client:missionStep', 3).args[1]
+check('retour au dépôt demandé', dep.kind == 'depot' and #(dep.coords - GG.coords) < 0.1)
+advance(6000)
+ok, msg = cb('gs_jobs:mission:depot', 3)
+check('dépôt : il faut y être', not ok and msg == L('too_far'))
+advance(120000)
+tp(3, GG.coords); W.entities[truck].pos = GG.coords + vec3(5.0, 0.0, 0.0)
+ok = cb('gs_jobs:mission:depot', 3); step()
+check('tournée payée au dépôt', ok and W.players[3].money.bank > gBank)
+check('tournée terminée', lastClientEvent('gs_jobs:client:missionEnd', 3).args[1] == 'done')
+ok = cb('gs_jobs:mission:depot', 3)
+check('pas de double paiement au dépôt', not ok)
+net('gs_jobs:server:toggleDuty', 3); step()
+
 -- Actions véhicule (mécano) -------------------------------------------------------------------------
 W.commands.gsjob(0, { action = 'add', target = 3, job = 'mechanic', grade = 1 })
 net('gs_jobs:server:switch', 3, 'mechanic'); step()

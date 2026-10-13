@@ -49,6 +49,7 @@ Config.Armory = {
 Config.Missions = {
     checkpointRadius = 6.0,
     vehicleRadius = 40.0,          -- le véhicule de service doit être à moins de X m de l'étape
+    depositRadius = 8.0,           -- V12.39 · objet porté (sac) : jeté à moins de X m du véhicule de service
     minStepDistance = 250.0,       -- distance min entre deux étapes
     maxSpeed = 75.0,               -- m/s crédibles entre deux étapes (~270 km/h), au-delà = TP suspect
     cooldown = 20,                 -- secondes entre deux missions

@@ -7,9 +7,9 @@ from pdf import H1, H2, P, SMALL, VERSION, footer, A4, mm, colors, SimpleDocTemp
 # (test, qui, priorité)
 SESSIONS = [
     ('0 · Avant de commencer (5 min)', [
-        ('METTRE-A-JOUR.bat : version V12.38 affichée, « Base de données sauvegardée », « Sauvegardes programmées » ; METTRE-A-JOUR-OVH puis GERER-OVH → 1 : « Version RoadLine : V12.38 »', 'Staff', 3),
+        ('METTRE-A-JOUR.bat : version V12.39 affichée, « Base de données sauvegardée », « Sauvegardes programmées » ; METTRE-A-JOUR-OVH puis GERER-OVH → 1 : « Version RoadLine : V12.39 »', 'Staff', 3),
         ('Fenêtre du serveur : aucune ligne ROUGE au démarrage (sauf un conflit de maps déjà connu) ; F8 en jeu : aucune erreur rouge ; GERER-OVH → 3 : aucune erreur de script', 'Seul', 3),
-        ('VIDER-CACHE-FIVEM.bat si tu vois un ancien menu (F11 doit afficher « RoadLine V12.38 ») ; pendant le backtest : set gs_honeypot "log" dans secrets.cfg (piège = simple signalement)', 'Staff', 2),
+        ('VIDER-CACHE-FIVEM.bat si tu vois un ancien menu (F11 doit afficher « RoadLine V12.39 ») ; pendant le backtest : set gs_honeypot "log" dans secrets.cfg (piège = simple signalement)', 'Staff', 2),
     ]),
     ('1 · Arrivée et personnage (15 min) — corrigé après tes retours', [
         ('Nouveau joueur : un seul personnage ; fondateur, super-admins et VIP (F11 → Joueurs → VIP) : deux ; plus de choix du lieu ; déco / reco = même endroit', '2', 3),
@@ -65,6 +65,12 @@ SESSIONS = [
         ('Hôpital Pillbox, Fleeca, Pop\'s Pills, Bahama Mamas : nos points (soins, braquage, pharmacie, bar) accessibles sans les maps', 'Staff', 3),
         ('NETTOYER-MARQUES.bat : liste les mods de marque (dont mp_male_the_goat), supprime après « O », le reste intact', 'Staff', 2),
         ('Pack acheté (plus tard) : IMPORTER-MODS puis F11 → Mappings installés : chaque map a un quartier, aucune ligne rouge (conflit) ni jaune (poids) en console', 'Staff', 2),
+    ]),
+    ('6c · V12.39 — éboueur, bus, paiements (15 min)', [
+        ('Éboueur : [E] à la poubelle → sac en main (marche seulement) ; [E] à l\'arrière de la benne ou Alt sur la benne → sac jeté ; rien payé en route ; après le dernier sac, retour au dépôt → tournée payée', 'Seul', 3),
+        ('Nouveau personnage : bus d\'arrivée → déposé DEVANT la mairie, sur le trottoir (jamais sous la carte), GPS vers Max', 'Seul', 3),
+        ('Payer en carte sans liquide : billet Cayo, motel, facture d\'un métier, marché de nuit, magasin ; payer en liquide sans banque : idem', 'Seul', 2),
+        ('Virement par téléphone à un joueur déconnecté : débité, « versés à sa prochaine connexion » ; il reconnecte → notification et argent reçu', '2', 2),
     ]),
     ('6b · V12.37 — corrections du 13/10 (30 min)', [
         ('Garage de métier : « Sortir » donne le véhicule à chaque fois (plus de « hors service » aléatoire) et UNE seule notification ; prise de service au PNJ : une seule interaction, un seul message', '2', 3),

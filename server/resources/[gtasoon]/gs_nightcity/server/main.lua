@@ -25,7 +25,7 @@ function NightCity.buy(src, market, item, qty)
     if not def then return false, 'Pas au menu.' end
     if not Bridge:CanCarry(src, item, qty) then return false, 'Ton sac est plein.' end
     local total = def.price * qty
-    if not Bridge:RemoveMoney(src, 'cash', total, 'marché de nuit') then return false, 'Ça se paie en liquide.' end
+    if not Bridge:Pay(src, total, 'marché de nuit') then return false, 'Pas assez d\'argent (espèces ou carte).' end -- V12.39
     Bridge:AddItem(src, item, qty)
     return true, ('Merci ! (%d $)'):format(total)
 end

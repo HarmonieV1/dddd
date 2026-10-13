@@ -26,6 +26,34 @@ function Store.init()
         KEY `idx_receiver` (`receiver`, `is_read`),
         KEY `idx_pair` (`sender`, `receiver`)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4]])
+    -- V12.39 · virements vers un joueur déconnecté : gardés ici, versés à sa prochaine connexion
+    MySQL.query.await([[CREATE TABLE IF NOT EXISTS `gs_phone_pending` (
+        `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+        `citizenid` VARCHAR(50) NOT NULL,
+        `amount` INT UNSIGNED NOT NULL,
+        `sender` VARCHAR(12) NOT NULL,
+        `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (`id`), KEY `idx_cid` (`citizenid`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4]])
+end
+
+--- Personnage propriétaire d'un numéro (même déconnecté), ou nil.
+function Store.ownerOf(number)
+    return MySQL.scalar.await('SELECT citizenid FROM gs_phone_numbers WHERE number = ?', { number })
+end
+
+function Store.addPending(cid, amount, sender)
+    return MySQL.insert.await('INSERT INTO gs_phone_pending (citizenid, amount, sender) VALUES (?, ?, ?)', { cid, amount, sender }) ~= nil
+end
+
+--- Virements en attente d'un personnage : chaque ligne n'est rendue qu'une fois (supprimée avant d'être versée).
+function Store.takePending(cid)
+    local rows = MySQL.query.await('SELECT id, amount, sender FROM gs_phone_pending WHERE citizenid = ?', { cid }) or {}
+    local out = {}
+    for _, r in ipairs(rows) do
+        if MySQL.update.await('DELETE FROM gs_phone_pending WHERE id = ?', { r.id }) > 0 then out[#out + 1] = r end
+    end
+    return out
 end
 
 function Store.getNumber(cid)

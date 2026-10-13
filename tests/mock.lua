@@ -6,6 +6,7 @@ local V = {}
 V.__index = V
 local function vec(x, y, z, w) return setmetatable({ x = x, y = y, z = z or 0.0, w = w }, V) end
 V.__sub = function(a, b) return vec(a.x - b.x, a.y - b.y, a.z - b.z) end
+V.__add = function(a, b) return vec(a.x + b.x, a.y + b.y, a.z + b.z) end
 V.__len = function(a) return math.sqrt(a.x ^ 2 + a.y ^ 2 + a.z ^ 2) end
 function vec2(x, y) return vec(x, y, 0.0) end
 function vec3(x, y, z) return vec(x, y, z) end
@@ -146,6 +147,15 @@ provide('gs_bridge', {
         if not p or not positiveInt(n) or p.money[acc] < n then return false end
         p.money[acc] = p.money[acc] - n
         return true
+    end,
+    Pay = function(src, n, reason, prefer)
+        local p = W.players[src]
+        if not p or not positiveInt(n) then return false end
+        local first = prefer == 'bank' and 'bank' or 'cash'
+        for _, acc in ipairs({ first, first == 'cash' and 'bank' or 'cash' }) do
+            if p.money[acc] >= n then p.money[acc] = p.money[acc] - n return acc end
+        end
+        return false
     end,
     GetItemCount = function(src, item) return W.players[src].items[item] or 0 end,
     ItemExists = function(item) return item ~= "introuvable" end,

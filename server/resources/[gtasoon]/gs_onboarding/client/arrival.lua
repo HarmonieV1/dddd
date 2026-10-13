@@ -35,14 +35,38 @@ local function waitGround(entity, x, y, z)
 end
 
 --- Pose le personnage sur le trottoir de la mairie, au niveau du sol réel (jamais sous la carte, jamais dans le vide).
+--- V12.39 (« on spawn sous la map, pas devant la mairie ») : le perso n'était PAS figé pendant le chargement du sol → il
+--- tombait à travers la carte avant que la collision existe. Il est maintenant figé jusqu'à ce que le sol soit lu (jusqu'à 3 s
+--- d'essais), puis surveillé 8 s : s'il passe sous le trottoir, il est reposé.
 local function placeAtStop(ped)
     local sx, sy, sz = A.stop.x, A.stop.y, A.stop.z
-    SetEntityCoords(ped, sx, sy, sz, false, false, false, false)
+    FreezeEntityPosition(ped, true)
+    SetEntityCoordsNoOffset(ped, sx, sy, sz + 1.0, false, false, false)
     waitGround(ped, sx, sy, sz)
-    local okG, gz = GetGroundZFor_3dCoord(sx, sy, sz + 3.0, false)
-    SetEntityCoords(ped, sx, sy, (okG and gz or sz) + 1.0, false, false, false, false) -- l'origine d'un ped est ~1 m au-dessus du sol
+    local gz
+    for _ = 1, 30 do
+        local okG, z = GetGroundZFor_3dCoord(sx, sy, sz + 5.0, false)
+        if okG and math.abs(z - sz) < 8.0 then gz = z break end -- un toit ou le vide ne comptent pas
+        RequestCollisionAtCoord(sx, sy, sz)
+        Wait(100)
+    end
+    local floor = gz or sz
+    SetEntityCoordsNoOffset(ped, sx, sy, floor + 1.0, false, false, false) -- l'origine d'un ped est ~1 m au-dessus du sol
     SetEntityHeading(ped, A.stop.w)
+    Wait(250)
     FreezeEntityPosition(ped, false)
+    CreateThread(function()
+        local t0 = GetGameTimer()
+        while GetGameTimer() - t0 < 8000 do
+            if GetEntityCoords(ped).z < floor - 4.0 then
+                FreezeEntityPosition(ped, true)
+                SetEntityCoordsNoOffset(ped, sx, sy, floor + 1.0, false, false, false)
+                Wait(500)
+                FreezeEntityPosition(ped, false)
+            end
+            Wait(250)
+        end
+    end)
 end
 
 --- Max « le Guide » est à ~20 m : on trace l'itinéraire, sinon le nouveau ne sait pas où aller. Position lue chez gs_quests

@@ -194,6 +194,17 @@ local function RemoveMoney(src, account, amount, reason)
     return p.Functions.RemoveMoney(account, amount, reason or 'gs_bridge') == true -- [API]
 end
 
+--- V12.39 · Paiement dans un commerce LÉGAL : espèces d'abord, sinon carte bancaire (ou l'inverse avec prefer = 'bank').
+--- Renvoie le compte utilisé ('cash' / 'bank') ou false si le joueur n'a assez ni en poche ni en banque.
+local function Pay(src, amount, reason, prefer)
+    if not positiveInt(amount) then return false end
+    local first = prefer == 'bank' and 'bank' or 'cash'
+    local second = first == 'cash' and 'bank' or 'cash'
+    if RemoveMoney(src, first, amount, reason) then return first end
+    if RemoveMoney(src, second, amount, reason) then return second end
+    return false
+end
+
 -- Inventaire ---------------------------------------------------------------------
 
 local function CanCarry(src, item, count)
@@ -429,6 +440,7 @@ exports('RegisterJobs', RegisterJobs)
 exports('GetMoney', GetMoney)
 exports('AddMoney', AddMoney)
 exports('RemoveMoney', RemoveMoney)
+exports('Pay', Pay)
 exports('CanCarry', CanCarry)
 exports('GetItemCount', GetItemCount)
 exports('ItemExists', ItemExists)

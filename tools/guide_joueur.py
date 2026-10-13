@@ -357,7 +357,7 @@ def build():
                  ['Chauffeur de bus', 'Dépôt de bus (Mission Row)', 'Bus', '5 arrêts', f'{rng(70, 110)} par arrêt + {money(40)}/km + {money(120)}'],
                  ['Taxi', 'Downtown Cab Co. (Mirror Park)', 'Taxi', 'Prendre et déposer un client', f'{money(140)}/km + {money(60)}'],
                  ['Livreur Post OP', 'Dépôt Post OP (port)', 'Fourgon', '3 colis chez les commerçants', f'{rng(180, 260)} par colis + {money(100)}'],
-                 ['Éboueur', 'Dépôt de la voirie (Strawberry)', 'Benne', '4 tournées de poubelles', f'{rng(120, 180)} par arrêt + {money(80)}']],
+                 ['Éboueur', 'Dépôt de la voirie (Strawberry)', 'Benne', '4 sacs : poubelle → benne ([E] ou Alt), payé au dépôt', f'{rng(120, 180)} par sac + {money(80)}, au dépôt']],
                 [26 * mm, 40 * mm, 18 * mm, 42 * mm, 54 * mm], font=8)]
     s += bullets(['20 secondes de pause entre deux missions ; le véhicule de service doit rester près de toi (40 m).',
                   'Chaque mission terminée : <b>25 XP</b> et +5 de réputation légale.',
