@@ -105,9 +105,67 @@ for f in tracked:
     except UnicodeDecodeError:
         pass
 
+# 4. V12.36 · ACE exigées par Qbox pour le service admin : qbx_core/server/functions.lua (IsOptin, ToggleOptin) fait
+#    IsPlayerAceAllowed(src, 'admin') et la commande /optin (ox_lib, restricted = 'group.admin') exige command.optin.
+#    Résolution comme FXServer : objet le plus précis d'abord (command.optin puis command), puis les parents du principal
+#    (add_principal enfant parent). Vérifié pour admin et au-dessus ; mod et helper ne doivent PAS l'avoir (moindre privilège).
+QBX_ACES = {"admin": "qbx_core IsOptin / ToggleOptin : IsPlayerAceAllowed(src, 'admin')",
+            "command.optin": "commande /optin (ox_lib restricted = 'group.admin', couverte par « command allow »)"}
+STAFF_WITH_ADMIN = ("group.admin", "group.superadmin", "group.god")
+STAFF_WITHOUT_ADMIN = ("group.helper", "group.mod")
+parents, aces = {}, {}
+for path, n, line in lines:
+    m = re.match(r"add_principal\s+(\S+)\s+(\S+)", line)
+    if m:
+        parents.setdefault(m.group(1), []).append(m.group(2))
+        continue
+    m = re.match(r"add_ace\s+(\S+)\s+(\S+)\s+(allow|deny)", line)
+    if m:
+        aces[(m.group(1), m.group(2))] = m.group(3)
+
+def ace_result(principal, obj, seen=None):
+    """allow / deny / None : l'ACE la plus précise du principal, sinon celle héritée de ses parents."""
+    if seen is None:
+        seen = set()
+    if principal in seen:
+        return None
+    seen.add(principal)
+    parts = obj.split(".")
+    for i in range(len(parts), 0, -1):
+        r = aces.get((principal, ".".join(parts[:i])))
+        if r:
+            return r
+    for parent in parents.get(principal, []):
+        r = ace_result(parent, obj, seen)
+        if r:
+            return r
+    return None
+
+for group in STAFF_WITH_ADMIN:
+    for obj, why in QBX_ACES.items():
+        if ace_result(group, obj) != "allow":
+            errors.append(f"permissions.cfg : {group} n'a pas l'ACE « {obj} » ({why}) : /optin ne fera rien pour ce groupe")
+for group in STAFF_WITHOUT_ADMIN:
+    if ace_result(group, "admin") == "allow":
+        errors.append(f"permissions.cfg : {group} a l'ACE « admin » (commandes Qbox /tp, /dv, /givemoney…) : réservée à admin et plus")
+
+# 5. V12.36 · Les ACE Qbox vivent dans permissions.cfg : le serveur réel (VPS) doit le recevoir à chaque mise à jour,
+#    et la commande « roadline » du VPS doit être poussée avant « roadline maj » (c'est elle qui installe le fichier).
+warnings = []
+_ovh = (ROOT / "scripts/windows/mettre-a-jour-ovh.ps1").read_text(encoding="utf-8")
+_sh = (ROOT / "scripts/linux/roadline.sh").read_text(encoding="utf-8")
+if "$_.Name -ne 'secrets.cfg'" not in _ovh or "'permissions.cfg'" in _ovh.split("Where-Object")[1].split("|")[0]:
+    errors.append("mettre-a-jour-ovh.ps1 : permissions.cfg doit être envoyé au VPS (seul secrets.cfg reste exclu)")
+if "/usr/local/bin/roadline" not in _ovh:
+    errors.append("mettre-a-jour-ovh.ps1 : la commande roadline du VPS doit être mise à jour avant « roadline maj »")
+if 'permissions.cfg) permissions_maj "$f"' not in _sh or "permissions_maj()" not in _sh:
+    errors.append("roadline.sh : « roadline maj » doit installer permissions.cfg via permissions_maj (staff ajouté à la main conservé)")
+
+for w in warnings:
+    print("  Attention : " + w)
 if errors:
     print("Config KO :")
     for e in errors:
         print("  - " + e)
     sys.exit(1)
-print(f"Config OK ({len(ensures)} ressources, {len(tracked)} fichiers scannés)")
+print(f"Config OK ({len(ensures)} ressources, {len(tracked)} fichiers scannés, ACE Qbox vérifiées pour {len(STAFF_WITH_ADMIN)} groupes)")

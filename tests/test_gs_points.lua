@@ -120,6 +120,82 @@ Config = {}
 dofile(R .. 'gs_onboarding/shared/config.lua')
 check('arrivée : plus de doublon de Max dans Config', Config.Arrival and Config.Arrival.guide == nil)
 
+-- V12.37 · Placement libre et PNJ / objets posés par le staff ----------------------------------------------------------
+-- 1. Pose vérifiée par le serveur (nombres, distance, cap normalisé)
+local cleanPose = getExport('gs_bridge', 'CleanPose')
+local me = vec3(100.0, 200.0, 30.0)
+local pose, perr = cleanPose({ x = 103, y = 204, z = 30.5, heading = 400 }, me, 60.0)
+check('pose propre : flottants, cap ramené dans [0, 360[', pose and pose.x == 103.0 and pose.z == 30.5 and pose.w == 40.0 and math.type(pose.x) == 'float')
+check('pose : `w` accepté à la place de `heading`, cap négatif normalisé', cleanPose({ x = 1, y = 2, z = 3, w = -90 }, nil).w == 270.0)
+pose, perr = cleanPose({ x = 100.0 + 61.0, y = 200.0, z = 30.0, heading = 0 }, me, 60.0)
+check('pose trop loin du staff refusée (message)', pose == nil and perr:find('Trop loin', 1, true))
+check('pose : sans `from`, pas de contrôle de distance', cleanPose({ x = 9000, y = 9000, z = 0, heading = 0 }, nil) ~= nil)
+check('pose : NaN refusé', cleanPose({ x = 0 / 0, y = 0, z = 0, heading = 0 }, nil) == nil)
+check('pose : valeur hors carte refusée', cleanPose({ x = 1e6, y = 0, z = 0, heading = 0 }, nil) == nil)
+check('pose : chaîne injectée refusée', cleanPose({ x = 'abc', y = 0, z = 0, heading = 0 }, nil) == nil)
+check('pose : pas une table refusée', cleanPose('x', nil) == nil)
+
+-- 2. Fonctions pures partagées (gs_bridge/shared/points.lua) : liaison d'un PNJ staff à un point de métier / gang
+check('cible d\'un point de métier : premier point sans index, les suivants numérotés',
+    GsPoints.pedTarget('police', 'duty', 1) == 'job:police:duty' and GsPoints.pedTarget('police', 'garage', 2) == 'job:police:garage2')
+local staffList = {
+    { id = 7, kind = 'ped', target = 'job:police:duty', model = 's_f_y_cop_01', scenario = 'WORLD_HUMAN_CLIPBOARD', x = 441.5, y = -982.0, z = 29.7, heading = 180.0 },
+    { id = 8, kind = 'prop', target = 'job:police:boss', model = 'prop_bench_01a', x = 1.0, y = 2.0, z = 3.0, heading = 0.0 },
+    { id = 9, kind = 'ped', target = 'gang:ballas', model = 'g_m_y_ballasout_01', x = 10.0, y = 20.0, z = 30.0, heading = 90.0 },
+}
+local cfgPed = { model = 's_m_y_cop_01', heading = 90.0, scenario = 'WORLD_HUMAN_STAND_MOBILE' }
+local resolved = GsPoints.pointPed(cfgPed, 'job:police:duty', staffList)
+check('PNJ staff relié à job:police:duty : remplace celui de la config (modèle, scénario, position absolue, id repris)',
+    resolved.model == 's_f_y_cop_01' and resolved.scenario == 'WORLD_HUMAN_CLIPBOARD' and resolved.staffId == 7
+    and resolved.at and resolved.at.x == 441.5 and resolved.at.heading == 180.0)
+check('PNJ staff : pas de PNJ dans la config → il s\'ajoute quand même', GsPoints.pointPed(nil, 'gang:ballas', staffList).staffId == 9)
+check('aucun PNJ staff pour ce point : PNJ de la config gardé', GsPoints.pointPed(cfgPed, 'job:police:garage', staffList) == cfgPed)
+check('un OBJET relié à un point ne remplace pas son PNJ', GsPoints.pointPed(cfgPed, 'job:police:boss', staffList) == cfgPed)
+check('liste absente (GlobalState vide) : config gardée', GsPoints.pointPed(cfgPed, 'job:police:duty', nil) == cfgPed and GsPoints.staffPed('x', nil) == nil)
+
+-- 3. Table SQL simulée (gs_staff_peds) : chargement, ajout, retrait, limite, publication GlobalState
+local rows, nextId, deleted = {}, 1, {}
+MySQL = {
+    query = { await = function(sql) if sql:find('^SELECT') then local l = {} for _, r in ipairs(rows) do l[#l + 1] = r end return l end return nil end },
+    insert = { await = function(_, p)
+        local r = { id = nextId, kind = p[1], target = p[2], model = p[3], scenario = p[4], x = p[5], y = p[6], z = p[7], heading = p[8], by = p[9], at = p[10] }
+        rows[#rows + 1] = r
+        nextId = nextId + 1
+        return r.id
+    end },
+    update = function(_, p) deleted[#deleted + 1] = p[1] for i = #rows, 1, -1 do if rows[i].id == p[1] then table.remove(rows, i) end end end,
+}
+rows[1] = { id = 1, kind = 'ped', target = 'libre', model = 'a_m_y_hipster_01', scenario = nil, x = 5, y = 6, z = 7, heading = 45, by = 'Alpha', at = 1 }
+nextId = 2
+StaffPeds.load()
+check('chargement au démarrage : ligne SQL publiée dans GlobalState.gsStaffPeds (flottants)', #GlobalState.gsStaffPeds == 1
+    and GlobalState.gsStaffPeds[1].model == 'a_m_y_hipster_01' and math.type(GlobalState.gsStaffPeds[1].x) == 'float')
+local addStaff, removeStaff, listStaff = getExport('gs_bridge', 'AddStaffPed'), getExport('gs_bridge', 'RemoveStaffPed'), getExport('gs_bridge', 'ListStaffPeds')
+local okA, idA = addStaff({ kind = 'ped', target = 'job:police:duty', model = 's_f_y_cop_01', scenario = 'WORLD_HUMAN_CLIPBOARD', x = 441.5, y = -982.0, z = 29.7, heading = 180, by = 'Alpha Boss [1]' })
+check('ajout d\'un PNJ : inséré en BDD, id rendu, publié', okA and idA == 2 and #rows == 2 and #GlobalState.gsStaffPeds == 2 and GlobalState.gsStaffPeds[2].id == 2)
+check('ajout : `at` horodaté, `by` gardé', GlobalState.gsStaffPeds[2].at == os.time() and GlobalState.gsStaffPeds[2].by == 'Alpha Boss [1]')
+local okB, msgB = addStaff({ kind = 'ped', target = 'job:police:duty', model = 's_m_y_cop_01', x = 441.5, y = -982.0, z = 29.7, heading = 0 })
+check('un seul PNJ staff par point de métier', not okB and msgB:find('déjà un PNJ', 1, true))
+check('un objet sur la même cible reste possible', addStaff({ kind = 'prop', target = 'job:police:duty', model = 'prop_bench_01a', x = 1, y = 2, z = 3, heading = 0 }))
+check('deux PNJ « libre » possibles', addStaff({ kind = 'ped', model = 'a_m_y_beach_01', x = 1, y = 2, z = 3, heading = 0 }) and GlobalState.gsStaffPeds[4].target == 'libre')
+check('type inconnu refusé', not addStaff({ kind = 'vehicle', model = 'sultan', x = 1, y = 2, z = 3, heading = 0 }))
+check('modèle injecté refusé', not addStaff({ kind = 'ped', model = "a'; DROP TABLE", x = 1, y = 2, z = 3, heading = 0 }))
+check('cible mal formée refusée', not addStaff({ kind = 'ped', target = 'job:police:duty; --', model = 'a_m_y_beach_01', x = 1, y = 2, z = 3, heading = 0 }))
+check('scénario mal formé refusé', not addStaff({ kind = 'ped', model = 'a_m_y_beach_01', scenario = 'walk()', x = 1, y = 2, z = 3, heading = 0 }))
+check('position invalide refusée', not addStaff({ kind = 'ped', model = 'a_m_y_beach_01', x = 'x', y = 2, z = 3, heading = 0 }))
+check('liste : copie triée par id', #listStaff() == 4 and listStaff()[1].id == 1)
+local okR, entry = removeStaff(2)
+check('retrait : ligne supprimée en BDD, entrée rendue, publication à jour', okR and entry.model == 's_f_y_cop_01' and deleted[1] == 2 and #rows == 3 and #GlobalState.gsStaffPeds == 3)
+check('retrait d\'une entrée inconnue refusé', not removeStaff(2) and not removeStaff('abc'))
+check('après retrait : le point de métier retrouve son PNJ de config', GsPoints.pointPed(cfgPed, 'job:police:duty', GlobalState.gsStaffPeds) == cfgPed)
+local n = 0
+while #GlobalState.gsStaffPeds < StaffPeds.max do
+    if not addStaff({ kind = 'prop', model = 'prop_cone', x = n, y = 0, z = 0, heading = 0 }) then break end
+    n = n + 1
+end
+local okL, msgL = addStaff({ kind = 'prop', model = 'prop_cone', x = 0, y = 0, z = 0, heading = 0 })
+check('limite de 200 entrées', StaffPeds.max == 200 and #GlobalState.gsStaffPeds == 200 and not okL and msgL:find('Limite', 1, true))
+
 type = rawtype
 io.write(('\n%d réussis, %d échoués\n'):format(passed, failed))
 os.exit(failed == 0 and 0 or 1)

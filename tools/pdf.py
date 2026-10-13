@@ -8,7 +8,7 @@ from reportlab.lib.units import mm
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, PageBreak, KeepTogether
 from reportlab.graphics.shapes import Drawing, Rect, Circle, String, Line
 
-VERSION = 'V12.35'
+VERSION = 'V12.38'
 NEON = colors.HexColor('#28E0FF')
 DARK = colors.HexColor('#0F091C')
 PINK = colors.HexColor('#FF2E88')
@@ -124,7 +124,7 @@ COMMANDS = [
     ['/factures · /reputation · /saison · /quartiers', 'factures · réputation · passe de saison · ambiance des quartiers'],
     ['/retoucheperso', 'retoucher son perso (une seule fois)'],
     ['/boutique', 'boutique cosmétique (réclamer ses achats)'],
-    ['/permis · /histoire', 'solde de points du permis · carnet du véhicule où tu es assis'],
+    ['/permis · /histoire', 'permis valide ou retiré par la police · carnet du véhicule où tu es assis'],
     ['/mentor · /rencontres · /rumeurs', 'parrainage · collection des rencontres de la route · où entendre les rumeurs'],
     ['/droits · /cinema · /ralenti', 'garde à vue (avocat, silence, aveux) · mode cinéma pour les clips · ralenti pendant le tournage'],
     ['/cavale · /livrer · /legendes', 'fugitifs recherchés (primes) · livrer un fugitif · panthéon des cavales'],
@@ -357,7 +357,7 @@ def guide(points):
         'rochers / tas par zone qui s\'épuisent et repoussent, vestiaire (tenue de travail), revente loin de la récolte (logos sur la carte).',
         '<b>Tenues en objets</b> : W → Moi → Vêtements → Plier ma tenue ; double-clic sur l\'objet pour l\'enfiler (échangeable, rangeable).',
         '<b>Armes légales</b> : permis de port d\'arme au comptoir Ammu-Nation (5 000 $, permis de conduire, casier propre).',
-        '<b>Permis de conduire</b> (auto-école : théorie + pratique), <b>justice</b> (tribunal, avocat, verdicts), '
+        '<b>Permis de conduire</b> (acquis pour tous à la connexion, retiré / rendu par la police), <b>justice</b> (tribunal, avocat, verdicts), '
         '<b>mairie</b> (mariage, divorce), <b>banque</b> (guichets, distributeurs, plafonds), <b>bourse de la ville</b>.',
         '<b>Location</b> : vélos, scooters, citadines ; <b>bateaux</b> à la marina de LS et à la jetée de Cayo.',
     ])
@@ -380,7 +380,7 @@ def guide(points):
         '<b>Courses de rue</b> : organisateur PNJ (Legion Square) : chrono solo ou course à mise, voiture prêtée ou la tienne, grille de départ.',
         '<b>Casino</b> (roue, loto, tickets ; barman, croupiers), <b>carnet de route</b> et <b>Weazel</b> (téléphone), <b>saisons</b> (paliers, titres).',
         '<b>Cayo Perico</b> en accès libre : vol gratuit animé depuis LSIA, <b>vol retour</b> au comptoir de la piste (pilote, logo avion).',
-        '<b>Événements staff en un clic</b> : course à super vitesse, chute lunaire, super saut, soirée boxe, course de rue gratuite, soirée plage Cayo.',
+        '<b>Événements staff en un clic</b> : chute lunaire, soirée boxe, course de rue gratuite, soirée plage Cayo, départ du road trip (V12.36 : super vitesse et super saut retirés).',
     ])
     s += [Paragraph('7. Staff', H2)]
     s += bullets([
@@ -459,7 +459,7 @@ TESTS = [
         '/histoire au volant de sa voiture : kilomètres, accidents, repeintes ; police : Vérifier une plaque → historique',
         'Prison : se faire incarcérer → boulots (peine réduite, tickets), cantine, trafiquant ; évasion à deux la nuit avec outils',
         '/meteoevent storm (staff) : routes fermées, interventions payées (mécano ou kit de réparation)',
-        '/mentor avec un perso niveau 5+ (disponible) et un nouveau (demande / accepter) ; /permis ; F4 → retirer des points',
+        '/mentor avec un perso niveau 5+ (disponible) et un nouveau (demande / accepter) ; /permis ; F4 → Permis : retirer / rendre',
         'Tatouages visibles (bras nus, visage) dans la description ; cachés avec masque / manches longues',
         'Fausse plaque (marché noir) : poser, braquer (pas de lien), Vérifier une plaque (police) → châssis différent ; la retirer',
         'Shérif : prendre le service à Sandy Shores / Paleto, F4 identique à la police',
@@ -485,7 +485,7 @@ TESTS = [
         'Chasse : permis au comptoir Ammu-Nation de Paleto ; viande et cuir à la boucherie de Paleto',
         'Dépôts bus / voirie / Post OP : « Prendre le poste ici » puis garage puis F6 → Mission',
         'Bars : Tequi-la-la, Vanilla Unicorn, Bahama Mamas (sans employé : barman PNJ, carte de base)',
-        'Mécano en service : Alt sur la voiture d\'un ami → Personnaliser → Valider ; la voiture ressort du garage personnalisée',
+        'Mécano en service : Alt sur la voiture d\'un ami (descendu, à côté) → Personnaliser → Valider ; la voiture ressort du garage personnalisée (V12.36)',
         'Tenue en objet : W → Moi → Vêtements → Plier ma tenue ; double-clic sur l\'objet ; retour civil sans perso chauve',
         'Marina : essai d\'un bateau → retour sur le ponton ; motel Pink Cage trouvé grâce au logo',
     ]),

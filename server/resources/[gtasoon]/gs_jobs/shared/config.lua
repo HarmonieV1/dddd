@@ -36,6 +36,16 @@ Config.Garage = {
     storeRadius = 25.0,            -- distance max du véhicule pour le ranger
 }
 
+-- V12.37 · Interactions aux points de métier (PNJ, zone ox_target, touche [E])
+Config.InteractLock = 1000         -- ms : verrou anti-double-clic côté client (une seule action de point par seconde)
+Config.DutyDebounce = 1500         -- ms : une 2e demande de prise / fin de service dans ce délai est ignorée (double déclenchement)
+Config.PedDistance = 2.0           -- m : le PNJ d'un point se tient à cette distance du point et porte seul l'interaction ox_target
+
+-- V12.37 · Équipement de service : prêté par l'armurerie, repris à la fin du service / changement de métier / déconnexion
+Config.Armory = {
+    restoreDelay = 5000,           -- ms après la connexion avant de reprendre l'équipement non rendu (l'inventaire se charge après le perso)
+}
+
 Config.Missions = {
     checkpointRadius = 6.0,
     vehicleRadius = 40.0,          -- le véhicule de service doit être à moins de X m de l'étape

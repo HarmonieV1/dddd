@@ -14,6 +14,15 @@ profil() { # prive | public
   echo "$1" > "$BASE/.profil"
 }
 
+permissions_maj() { # V12.36 : groupes et ACE (dont « admin » pour /optin) viennent du PC ; le staff ajouté à la main sur le VPS est conservé
+  local src="$1" dst="$DATA/cfg/permissions.cfg" keep=""
+  if [ -f "$dst" ]; then
+    keep=$(grep -E '^add_principal identifier[.]' "$dst" | while IFS= read -r l; do grep -qF -- "$l" "$src" || echo "$l"; done || true)
+    cp "$dst" "$BASE/anciens/permissions-$(date +%Y%m%d_%H%M%S).cfg" 2>/dev/null || true
+  fi
+  install -m 644 "$src" "$dst"
+  if [ -n "$keep" ]; then { echo ''; echo '## Staff ajouté sur le VPS (conservé par roadline maj)'; echo "$keep"; } >> "$dst"; fi
+}
 maj() { # archive envoyée par METTRE-A-JOUR-OVH.bat
   local zip="${1:?archive ?}" st; st=$(mktemp -d)
   [ -f "$zip" ] || { echo "Introuvable : $zip"; exit 1; }
@@ -25,10 +34,13 @@ maj() { # archive envoyée par METTRE-A-JOUR-OVH.bat
   [ -d "$DATA/resources/[gtasoon]" ] && mv "$DATA/resources/[gtasoon]" "$old"
   rsync -a "$st/gtasoon/" "$DATA/resources/[gtasoon]/"
   mkdir -p "$DATA/resources/[gtasoon]/gsa_zz_fusion_occlusion/stream" # fusions de maps écrites par gs_admin (FiveM ne crée pas ce dossier)
+  # V12.37 : points déplacés par le staff (fichier écrit par gs_bridge) : celui du PC arrive dans l'archive ; sinon on garde celui du VPS
+  local pts="gs_bridge/points-deplaces.json"
+  if [ ! -f "$DATA/resources/[gtasoon]/$pts" ] && [ -f "$old/$pts" ]; then cp "$old/$pts" "$DATA/resources/[gtasoon]/$pts"; fi
   [ -d "$st/extra" ] && rsync -a "$st/extra/" "$DATA/"
   for f in "$st"/cfg/*.cfg; do
     [ -e "$f" ] || continue
-    case "$(basename "$f")" in secrets.cfg|permissions.cfg) ;; *) install -m 644 "$f" "$DATA/cfg/" ;; esac
+    case "$(basename "$f")" in secrets.cfg) ;; permissions.cfg) permissions_maj "$f" ;; *) install -m 644 "$f" "$DATA/cfg/" ;; esac
   done
   [ -f "$st/server.cfg" ] && install -m 644 "$st/server.cfg" "$DATA/server.cfg" && profil "$(cat "$BASE/.profil" 2>/dev/null || echo prive)"
   reparer_objets || true

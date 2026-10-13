@@ -101,9 +101,103 @@ lib.callback.register('gs_jobs:armory', function(src, item)
     local a = armoryEntry(def, item)
     if not a or not (GSJ.armoryOk[job.name] or {})[item] then return false, 'Équipement indisponible.' end
     if job.grade < (a.minGrade or 0) then return false, 'Grade insuffisant.' end
-    local need = a.max - Bridge:GetItemCount(src, item)
+    local have = Bridge:GetItemCount(src, item)
+    local need = a.max - have
     if need <= 0 then return false, 'Tu es déjà équipé.' end
     if not Bridge:AddItem(src, item, need) then return false, 'Inventaire plein.' end
+    Armory.note(src, item, need, have) -- V12.37 : prêté, repris à la fin du service
     DB.audit('armory', job.name, GSJ.cid(src), nil, need, item)
     return true, ('+%d %s'):format(need, item)
 end)
+
+-- V12.37 · Équipement de service PRÊTÉ, pas donné ----------------------------------------------------------------------
+-- Retour du fondateur (13/10) : « quand on quitte le LSPD on peut garder toutes nos armes à patch ». Ce que l'armurerie
+-- fournit (quantités) est noté par joueur et repris à la fin du service (point, F6, téléphone, /service), au changement de
+-- métier, au licenciement / à la démission du métier actif et à la déconnexion (GSJ.endService → gs_jobs:internal:endService).
+-- Règles : le joueur garde tout ce qu'il possédait avant (on note la quantité qu'il avait à la 1re fourniture et on ne descend
+-- jamais en dessous) ; ce qui a été consommé (munitions tirées, gilet porté, pansements) n'est pas réclamé. Mémoire serveur +
+-- KVP par citizenid : déconnecté avant que le serveur ait pu reprendre (Qbox décharge le joueur avant nous), c'est repris à la
+-- connexion suivante, une fois l'inventaire chargé (Config.Armory.restoreDelay).
+Armory = { issued = {} } -- [src] = { [item] = { given = quantité fournie, base = quantité possédée avant la 1re fourniture } }
+
+local function armoryKvp(cid) return 'gs_jobs:armory:' .. cid end
+
+--- Sérialisation volontairement simple ("item=fourni/avant,…", triée) : lisible dans le KVP, sans json.
+function Armory.encode(t)
+    local parts = {}
+    for item, e in pairs(t or {}) do
+        if e.given > 0 then parts[#parts + 1] = ('%s=%d/%d'):format(item, e.given, e.base or 0) end
+    end
+    table.sort(parts)
+    return table.concat(parts, ',')
+end
+
+function Armory.decode(s)
+    local t = {}
+    if type(s) ~= 'string' then return t end
+    for item, given, base in s:gmatch('([^=,/]+)=(%d+)/(%d+)') do t[item] = { given = tonumber(given), base = tonumber(base) } end
+    return t
+end
+
+local function armoryPersist(src, cid)
+    cid = cid or Bridge:GetIdentifier(src)
+    if not cid then return end
+    local s = Armory.encode(Armory.issued[src])
+    if s == '' then DeleteResourceKvp(armoryKvp(cid)) else SetResourceKvp(armoryKvp(cid), s) end
+end
+
+--- Note une fourniture : `n` objets donnés, le joueur en avait `before`.
+function Armory.note(src, item, n, before)
+    local t = Armory.issued[src] or {}
+    local e = t[item]
+    if e then e.given = e.given + n else t[item] = { given = n, base = before or 0 } end
+    Armory.issued[src] = t
+    armoryPersist(src)
+end
+
+--- Reprend l'équipement fourni encore sur le joueur : au plus la quantité fournie, sans descendre sous ce qu'il avait avant.
+--- Retourne le nombre d'objets repris. Joueur déjà déchargé (déconnexion) : la mémoire part, le KVP reste → reconnexion.
+function Armory.takeBack(src)
+    local t = Armory.issued[src]
+    Armory.issued[src] = nil
+    if not t or next(t) == nil then return 0 end
+    if not Bridge:IsLoaded(src) then return 0 end
+    local cid = Bridge:GetIdentifier(src)
+    local taken, left, details = 0, {}, {}
+    for item, e in pairs(t) do
+        local take = math.min(e.given, Bridge:GetItemCount(src, item) - (e.base or 0))
+        if take > 0 then
+            if Bridge:RemoveItem(src, item, take) then
+                taken = taken + take
+                details[#details + 1] = ('%s x%d'):format(item, take)
+            else
+                left[item] = e -- retrait refusé par l'inventaire : on réessaiera (prochaine fin de service / connexion)
+            end
+        end
+    end
+    if next(left) ~= nil then Armory.issued[src] = left end
+    armoryPersist(src, cid)
+    if taken > 0 then
+        local job = Bridge:GetJob(src)
+        DB.audit('armory_return', job and job.name or nil, cid, nil, taken, table.concat(details, ', '):sub(1, 250))
+        GSJ.notify(src, L('armory_returned'), 'inform')
+    end
+    return taken
+end
+
+--- Connexion / redémarrage de gs_jobs : le joueur est remis hors service (GSJ.load) ; l'équipement noté en KVP est repris une
+--- fois l'inventaire chargé. S'il a repris son service entre-temps, tout sera rendu à sa prochaine fin de service.
+function Armory.restore(src)
+    local cid = Bridge:GetIdentifier(src)
+    if not cid then return end
+    local t = Armory.decode(GetResourceKvpString(armoryKvp(cid)))
+    if next(t) == nil then return end
+    Armory.issued[src] = t
+    SetTimeout(Config.Armory.restoreDelay, function()
+        local j = Bridge:GetJob(src)
+        if Bridge:GetIdentifier(src) == cid and not (j and j.onduty) then Armory.takeBack(src) end
+    end)
+end
+
+AddEventHandler('gs_jobs:internal:endService', function(src) Armory.takeBack(src) end)
+AddEventHandler('gs_bridge:server:playerLoaded', function(src) Armory.restore(src) end)

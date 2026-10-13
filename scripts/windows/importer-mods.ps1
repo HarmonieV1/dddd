@@ -491,7 +491,7 @@ if (Test-Path -LiteralPath $RetiredFile) {
     $Retired = @(Get-Content -LiteralPath $RetiredFile | ForEach-Object { $_.Trim().ToLower() } | Where-Object { $_ -and -not $_.StartsWith('#') })
     # V12.31 : maps remises en service après un retrait (12/10 : on garde la villa bunker, c'est la villa 01 qui part) :
     # sorties de mods-retires.txt pour être réinstallées depuis leur archive, gardée dans mods-a-trier.
-    $Restored = @('patoche_villa_bunker_pack')
+    $Restored = @() # V12.36 : migration V12.31 (villa bunker) terminée le 12/10 ; miroir de RESTORED_MAPS dans maps.js
     if (@($Retired | Where-Object { $Restored -contains $_ }).Count -gt 0) {
         $Retired = @($Retired | Where-Object { $Restored -notcontains $_ })
         $kept = @(Get-Content -LiteralPath $RetiredFile | Where-Object { $Restored -notcontains $_.Trim().ToLower() })
@@ -502,15 +502,32 @@ if (Test-Path -LiteralPath $RetiredFile) {
 # V12.34 : maps retirées par décision (RETIRED_MAPS de gs_admin/server/maps.js) refusées DÈS l'import, même si le serveur
 # n'a pas encore redémarré pour les noter dans mods-retires.txt (dossiers supprimés à la main puis METTRE-A-JOUR : avant,
 # l'import les réinstallait depuis mods-a-trier, avec leur script compagnon, jusqu'au prochain démarrage du serveur).
+# V12.36 : et par MOTIF (RETIRED_PATTERNS de maps.js : sous-chaînes en minuscules, plasmagame, redline…). Une archive ou une
+# ressource dont le nom contient un motif n'est jamais installée, son script compagnon non plus, et leurs lignes de addons.cfg
+# sont enlevées : plasmagame_dlc2 et le pack Redline revenaient à chaque import, seuls les noms exacts étant refusés.
+$RetiredPatterns = @()
 foreach ($mj in @((Join-Path $PSScriptRoot '..\..\server\resources\[gtasoon]\gs_admin\server\maps.js'), (Join-Path $Data 'resources\[gtasoon]\gs_admin\server\maps.js'))) {
     if (-not (Test-Path -LiteralPath $mj)) { continue }
-    $block = [regex]::Match((Get-Content -LiteralPath $mj -Raw), '(?s)const RETIRED_MAPS = \[(.*?)\];').Groups[1].Value
+    $mjText = Get-Content -LiteralPath $mj -Raw
+    $block = [regex]::Match($mjText, '(?s)const RETIRED_MAPS = \[(.*?)\];').Groups[1].Value
     $Retired += @([regex]::Matches($block, "'gsa_([a-z0-9_]+)'") | ForEach-Object { $_.Groups[1].Value })
+    $block = [regex]::Match($mjText, '(?s)const RETIRED_PATTERNS = \[(.*?)\];').Groups[1].Value
+    $RetiredPatterns = @([regex]::Matches($block, "'([a-z0-9_]+)'") | ForEach-Object { $_.Groups[1].Value })
     break
 }
 $Retired = @($Retired | Sort-Object -Unique)
+# Pourquoi un nom (archive, dossier de ressource, ligne de addons.cfg) est retiré : texte de la raison, ou $null s'il ne l'est pas
+function Test-Retired([string]$n) {
+    if (-not $n) { return $null }
+    $n = $n.ToLower()
+    if ($Retired -contains ($n -replace '^gsa_', '')) { return 'mods-retires.txt / RETIRED_MAPS' }
+    foreach ($p in $RetiredPatterns) { if ($n.Contains($p)) { return "motif « $p », RETIRED_PATTERNS" } }
+    return $null
+}
 foreach ($r in $results) {
-    if ($Retired -contains $r.name) { $r.install = $false; $r.type = 'rejete'; [void]$r.issues.Add('retiré par le staff (mods-retires.txt / RETIRED_MAPS) : jamais réinstallé') }
+    $hit = Test-Retired $r.name
+    if (-not $hit -and $r.root) { $hit = Test-Retired (Split-Path $r.root -Leaf) }   # dossier de la ressource dans un pack à plusieurs dossiers
+    if ($hit) { $r.install = $false; $r.type = 'rejete'; [void]$r.issues.Add("retiré par le staff ($hit) : jamais réinstallé") }
 }
 
 # 2b. V12.31 · Scripts COMPAGNONS des maps payantes. Un pack (laser game, villa bunker, auto-tamponneuses…) livre souvent la
@@ -527,7 +544,7 @@ if (Test-Path -LiteralPath (Join-Path $Data 'resources')) {
 }
 $mapNames = @($results | Where-Object { $_.install -and $_.type -eq 'map' } | ForEach-Object { $_.name })
 if (Test-Path -LiteralPath $Addons) { $mapNames += @(Get-ChildItem -LiteralPath $Addons -Directory -Filter 'gsa_*' | ForEach-Object { $_.Name.Substring(4) }) }
-if ($Retired) { $mapNames = @($mapNames | Where-Object { $Retired -notcontains $_ }) }
+$mapNames = @($mapNames | Where-Object { -not (Test-Retired $_) })   # V12.36 : une map retirée (nom ou motif) n'a plus de script compagnon
 $scriptPool = @{}
 foreach ($r in $results) {
     if ($r.type -ne 'script' -or -not $r.escrow) { continue }
@@ -603,7 +620,7 @@ if ($canInstall) {
         # V12.31 : scripts compagnons (nom d'origine), gardés tant que leur dossier existe
         ($_ -match '^#?\s*ensure\s+(\S+)' -and (Test-Path -LiteralPath (Join-Path $Addons $Matches[1]))) }) }
     $names = @($installed) + @($keep | ForEach-Object { (($_ -replace '^#?\s*ensure\s+', '').Trim() -split '\s+')[0] }) | Sort-Object -Unique
-    $names = @($names | Where-Object { $Retired -notcontains ($_ -replace '^gsa_', '') }) # V12.34 : lignes des maps retirées enlevées
+    $names = @($names | Where-Object { -not (Test-Retired $_) }) # V12.34 : lignes des maps retirées enlevées ; V12.36 : par motif aussi, scripts compagnons compris
     $notes = @()
     if (Test-Path -LiteralPath $previous) { $notes = @(Get-Content -LiteralPath $previous | Where-Object { $_ -match '^## gsa_\S+ : désactivé' } | ForEach-Object { ($_ -split '\s+')[1] }) }
     $risks = @{}

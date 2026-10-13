@@ -15,7 +15,8 @@ provide('gs_jobs', {
     AdminAddContract = function(_, job) if job == 'police' then return true end return false, 'invalid' end,
     AdminRemoveContract = function() return true end,
     AdminSetActive = function(src, job, grade) if job == 'police' then W.players[src].job = { name = job, grade = grade } return true end return false, 'invalid' end,
-    ListJobs = function() return { { name = 'police', label = 'LSPD', grades = { { grade = 0, label = 'Cadet' } } } } end,
+    ListJobs = function() return { { name = 'police', label = 'LSPD', grades = { { grade = 0, label = 'Cadet' } },
+        points = { { kind = 'duty', idx = 1, label = 'Prise de service' }, { kind = 'stash', idx = 1, label = 'Coffre' }, { kind = 'garage', idx = 1, label = 'Garage' } } } } end,
 })
 provide('gs_wanted', { GetHeat = function(s) return heat[s] or 0 end, ClearHeat = function(s) heat[s] = nil cleared[s] = true end })
 provide('gs_social', { GetHandle = function() return 'vice_lucia' end, Newsroom = function() return true end })
@@ -455,6 +456,7 @@ check('liste des bannis : modo refusé', cb('gs_admin:bans', 2, '') == nil)
 local list = cb('gs_admin:bans', 1, '')
 check('liste des bannis : super-admin', type(list) == 'table' and #list == 1 and list[1].license == 'license:9')
 check('liste des bannis : recherche par pseudo', #cb('gs_admin:bans', 1, 'Isolé') == 1 and #cb('gs_admin:bans', 1, 'Zorro') == 0)
+check('V12.35 liste des bannis : date formatée par le serveur (pas de os.date côté client)', list[1] and type(list[1].when) == 'string' and (list[1].when == 'définitif' or list[1].when:find('jusqu', 1, true)))
 advance(4 * 86400 * 1000)
 check('peine écoulée : bannissement effacé tout seul', getBan('license:9') == nil and W.bans['license:9'] == nil)
 
@@ -468,6 +470,92 @@ check('ban auto : joueur absent', not ok)
 ok = autoBan(4, 'Pot de miel : event appât déclenché', 0)
 check('ban auto : joueur banni définitivement et expulsé', ok and W.bans['license:4']
     and W.bans['license:4'].until_ts == 0 and (W.players[4].kicked or ''):find('triche', 1, true))
+
+-- V12.37 · Placement libre des points (pose vérifiée) et PNJ / objets posés par le staff (super-admin et fondateur) ---------
+function GetNumResources() return 0 end
+vector3, vector4 = vec3, vec4 -- en jeu ces constructeurs existent ; le mock ne fournit que vec3 / vec4
+function StopResource() end
+function StartResource() end
+local dbRows, dbNext = {}, 1
+MySQL = {
+    query = { await = function(sql) if sql:find('^SELECT') then return {} end return nil end },
+    insert = { await = function(_, p) local id = dbNext dbNext = id + 1 dbRows[id] = p return id end },
+    update = function(_, p) dbRows[p[1]] = nil end,
+}
+loadResource('gs_bridge', { R .. 'gs_bridge/server/points.lua' }) -- vrais exports (SetPoint, CleanPose, AddStaffPed…) ajoutés au gs_bridge simulé
+StaffPeds.load()
+function LoadResourceFile(res, path)
+    local f = io.open(R .. res .. '/' .. path)
+    if not f then return nil end
+    local s = f:read('a') f:close() return s
+end
+cb('gs_admin:toggleDuty', 1); step()
+local KEY = 'gs_harvest:Config.Buyers.1.coords'
+ok, msg = cb('gs_admin:action', 2, 'movepoint', nil, { key = KEY, pose = { x = 100.0, y = 100.0, z = 30.0, heading = 0 } }); step()
+check('placement libre : modo refusé', not ok and msg == 'Niveau insuffisant.')
+ok, msg = cb('gs_admin:action', 1, 'movepoint', nil, { key = KEY, pose = { x = 103.0, y = 101.0, z = 31.25, heading = 365 } }); step()
+check('placement libre : pose de l\'aperçu appliquée (hauteur, cap normalisé), sauvegardée et publiée', ok and GlobalState.gsPoints[KEY]
+    and GlobalState.gsPoints[KEY].x == 103.0 and GlobalState.gsPoints[KEY].z == 31.25 and GlobalState.gsPoints[KEY].w == 5.0)
+ok, msg = cb('gs_admin:action', 1, 'movepoint', nil, { key = KEY, pose = { x = 300.0, y = 100.0, z = 30.0, heading = 0 } }); step()
+check('placement libre : pose à plus de 60 m du staff refusée', not ok and msg:find('Trop loin', 1, true))
+ok = cb('gs_admin:action', 1, 'movepoint', nil, { key = KEY, pose = { x = 'x', y = 1, z = 1 } }); step()
+check('placement libre : pose invalide refusée', not ok)
+ok = cb('gs_admin:action', 1, 'movepoint', nil, { key = KEY }); step()
+check('sans pose : posé aux pieds du staff, orienté comme lui (comme avant)', ok and GlobalState.gsPoints[KEY].x == 100.0 and GlobalState.gsPoints[KEY].w == 90.0)
+
+local nearMe = { x = 102.0, y = 100.0, z = 29.0, heading = 180 }
+ok, msg = cb('gs_admin:action', 2, 'addstaffped', nil, { kind = 'ped', target = 'libre', model = 'a_m_y_hipster_01', pose = nearMe }); step()
+check('PNJ staff : modo refusé', not ok and msg == 'Niveau insuffisant.')
+ok, msg = cb('gs_admin:action', 1, 'addstaffped', nil, { kind = 'ped', target = 'job:police:duty', model = 's_f_y_cop_01', scenario = 'WORLD_HUMAN_CLIPBOARD', pose = nearMe }); step()
+check('PNJ staff relié à l\'accueil LSPD : ajouté, publié, journalisé', ok and #GlobalState.gsStaffPeds == 1 and GlobalState.gsStaffPeds[1].target == 'job:police:duty'
+    and GlobalState.gsStaffPeds[1].heading == 180.0 and GlobalState.gsStaffPeds[1].scenario == 'WORLD_HUMAN_CLIPBOARD' and Admin.logs[1].action == 'addstaffped')
+ok, msg = cb('gs_admin:action', 1, 'addstaffped', nil, { kind = 'ped', target = 'job:police:duty1', model = 's_m_y_cop_01', pose = nearMe }); step()
+check('un seul PNJ staff par point (job:police:duty1 = job:police:duty)', not ok and msg:find('déjà un PNJ', 1, true))
+ok, msg = cb('gs_admin:action', 1, 'addstaffped', nil, { kind = 'ped', target = 'job:police:stash', model = 's_m_y_cop_01', pose = nearMe }); step()
+check('rôle hors accueil / direction / garage refusé', not ok and msg:find('Rôle inconnu', 1, true))
+ok, msg = cb('gs_admin:action', 1, 'addstaffped', nil, { kind = 'ped', target = 'job:police:duty2', model = 's_m_y_cop_01', pose = nearMe }); step()
+check('point inexistant pour ce métier refusé', not ok and msg:find('pas ce point', 1, true))
+ok, msg = cb('gs_admin:action', 1, 'addstaffped', nil, { kind = 'ped', target = 'job:taxi:duty', model = 's_m_y_cop_01', pose = nearMe }); step()
+check('métier inconnu refusé', not ok and msg == 'Métier inconnu.')
+ok, msg = cb('gs_admin:action', 1, 'addstaffped', nil, { kind = 'ped', target = 'gang:zz', model = 'g_m_y_ballasout_01', pose = nearMe }); step()
+check('gang inconnu refusé', not ok and msg == 'Gang inconnu.')
+ok = cb('gs_admin:action', 1, 'addstaffped', nil, { kind = 'ped', target = 'gang:ballas', model = 'g_m_y_ballasout_01', scenario = 'WORLD_HUMAN_GUARD_STAND', pose = nearMe }); step()
+check('PNJ staff relié à un gang : ajouté', ok and #GlobalState.gsStaffPeds == 2 and GlobalState.gsStaffPeds[2].target == 'gang:ballas')
+ok, msg = cb('gs_admin:action', 1, 'addstaffped', nil, { kind = 'ped', target = 'libre', model = "s_m'; --", pose = nearMe }); step()
+check('modèle injecté refusé', not ok and msg:find('invalide', 1, true))
+ok, msg = cb('gs_admin:action', 1, 'addstaffped', nil, { kind = 'ped', target = 'libre', pose = nearMe }); step()
+check('modèle obligatoire', not ok and msg == 'Modèle obligatoire.')
+ok, msg = cb('gs_admin:action', 1, 'addstaffped', nil, { kind = 'ped', target = 'libre', model = 'a_m_y_beach_01', scenario = 'walk', pose = nearMe }); step()
+check('scénario hors WORLD_HUMAN_… refusé', not ok and msg == 'Scénario invalide.')
+ok, msg = cb('gs_admin:action', 1, 'addstaffped', nil, { kind = 'ped', target = 'libre', model = 'a_m_y_beach_01', pose = { x = 500.0, y = 500.0, z = 30.0, heading = 0 } }); step()
+check('PNJ à plus de 60 m du staff refusé', not ok and msg:find('Trop loin', 1, true))
+ok, msg = cb('gs_admin:action', 1, 'addstaffped', nil, { kind = 'car', target = 'libre', model = 'sultan', pose = nearMe }); step()
+check('type inconnu refusé', not ok and msg:find('Type invalide', 1, true))
+ok = cb('gs_admin:action', 1, 'addstaffped', nil, { kind = 'prop', target = 'job:police:duty', model = 'prop_bench_01a', pose = nearMe }); step()
+check('objet relié au même point que le PNJ : accepté (seuls les PNJ sont uniques par point)', ok and #GlobalState.gsStaffPeds == 3 and GlobalState.gsStaffPeds[3].kind == 'prop')
+check('cible : normalisation pure', Admin.staffTarget(nil) == 'libre' and Admin.staffTarget('') == 'libre'
+    and Admin.staffTarget('job:police:garage1', exports.gs_jobs:ListJobs()) == 'job:police:garage'
+    and Admin.staffTarget('gang:ballas', nil, { { name = 'ballas' } }) == 'gang:ballas' and Admin.staffTarget('nimporte') == nil
+    and Admin.staffTarget(('x'):rep(60)) == nil)
+
+check('catalogue d\'objets : modo refusé', cb('gs_admin:staffCatalog', 2) == nil); step()
+local cat = cb('gs_admin:staffCatalog', 1); step()
+local foundBench, foundApos = false, false
+for _, c in ipairs(cat or {}) do
+    for _, it in ipairs(c.items) do
+        if it.model == 'prop_bench_01a' then foundBench = true end
+        if it.label == 'Servante d\'atelier' then foundApos = true end
+    end
+end
+check('catalogue d\'objets lu dans gs_builder/shared/config.lua : catégories, modèles, apostrophes rétablies', type(cat) == 'table' and #cat >= 5 and foundBench and foundApos)
+check('catalogue : fonction pure, texte absent ou sans catalogue → vide', #Admin.parseCatalog(nil) == 0 and #Admin.parseCatalog('rien') == 0)
+
+ok = cb('gs_admin:action', 1, 'delstaffped', nil, { id = 999 }); step()
+check('retrait d\'une entrée inconnue refusé', not ok)
+ok = cb('gs_admin:action', 2, 'delstaffped', nil, { id = 1 }); step()
+check('retrait : modo refusé', not ok and #GlobalState.gsStaffPeds == 3)
+ok, msg = cb('gs_admin:action', 1, 'delstaffped', nil, { id = 1 }); step()
+check('retrait : supprimé, publié, message', ok and #GlobalState.gsStaffPeds == 2 and msg:find('retiré', 1, true) and dbRows[1] == nil)
 
 io.write(('\n%d réussis, %d échoués\n'):format(passed, failed))
 os.exit(failed == 0 and 0 or 1)

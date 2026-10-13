@@ -1,4 +1,5 @@
--- Tests gs_tuning : salon, conducteur, propriété, validation de plaque (format, réservés, interdits, unicité), paiement, néons.
+-- Tests gs_tuning : salon, conducteur, propriété, validation de plaque (format, réservés, interdits, unicité), paiement, néons,
+-- mécano (V12.36) : service, distances, client à côté, véhicule inconnu, fusion des réglages, application par le propriétaire réseau.
 dofile('tests/mock.lua')
 local R = 'server/resources/[gtasoon]/'
 loadResource('gs_security', { R .. 'gs_security/server/main.lua' })
@@ -76,30 +77,83 @@ W.entities[car].driver = 1 W.entities[car].plate = 'VICE 88'
 ok = cb('gs_tuning:plate', 1, 'NEO 01'); step()
 check('pas assez d\'argent', not ok and db[1].plate == 'VICE 88')
 
--- Mécano (V7) : personnalisation complète du véhicule d'un client, enregistrée en base, plaque intouchable
+-- Mécano (V7, V12.36) : personnalisation complète du véhicule d'un client, enregistrée en base, plaque intouchable,
+-- client à côté (son accord), réglages fusionnés (état du véhicule gardé), appliqués par le propriétaire réseau.
 local onduty = {}
 provide('gs_jobs', { IsOnDutyAs = function(src, job) return onduty[src] == job end })
 local saved = {}
-Store.byPlate = function(plate) for _, v in ipairs(db) do if norm(v.plate) == norm(plate) then return v.id, v.plate end end end
+local propsDb = { [2] = { model = 777, plate = 'ZZZ 999', fuelLevel = 42, lockState = 2, modEngine = -1, color1 = 0 }, [5] = { model = 1 } }
+db[#db + 1] = { id = 3, cid = 'CID5', plate = 'MEC 001' }   -- la voiture du mécano lui-même
+db[#db + 1] = { id = 4, cid = nil, plate = 'SOC 001' }      -- véhicule enregistré sans propriétaire (citizenid NULL)
+db[#db + 1] = { id = 5, cid = 'CID9', plate = 'OFF 001' }   -- propriétaire jamais connecté
+Store.byPlate = function(plate) for _, v in ipairs(db) do if norm(v.plate) == norm(plate) then return v.id, v.plate, v.cid end end end
+Store.getProps = function(id) return propsDb[id] end
 Store.setProps = function(id, json) saved[id] = json return true end
 loadResource('gs_tuning', { R .. 'gs_tuning/server/mechanic.lua' })
-json = { encode = function(t) return 'plate=' .. tostring(t.plate) .. ';engine=' .. tostring(t.modEngine) end }
+json = { encode = function(t) return ('plate=%s;engine=%s;fuel=%s;model=%s;lock=%s'):format(tostring(t.plate), tostring(t.modEngine), tostring(t.fuelLevel), tostring(t.model), tostring(t.lockState)) end }
 join(5, 'CID5', 'Mecano', vec3(0.0, 0.0, 0.0))
-local client = CreateVehicleServerSetter(0, 'automobile', 0, 0, 0)
-W.entities[client].plate = 'ZZZ 999'
+local client = CreateVehicleServerSetter(0, 'automobile', 0, 0, 0) -- la voiture du joueur 2 (CID2, encore au salon : loin)
+W.entities[client].plate, W.entities[client].model = 'ZZZ 999', 777
+W.players[2].vehicle = nil
 local okM, msgM = cb('gs_tuning:mechanicCheck', 5, client); step()
 check('mécano hors service : refusé', not okM and msgM:find('mécanos'))
 onduty[5] = 'mechanic'
-check('véhicule du client : accepté', cb('gs_tuning:mechanicCheck', 5, client)); step()
+local offline = CreateVehicleServerSetter(0, 'automobile', 0, 0, 0)
+W.entities[offline].plate, W.entities[offline].model = 'OFF 001', 1
+okM, msgM = cb('gs_tuning:mechanicCheck', 5, offline); step()
+check('V12.36 propriétaire hors ligne : refusé avec message', not okM and msgM:find('propriétaire'))
+okM, msgM = cb('gs_tuning:mechanicCheck', 5, client); step()
+check('V12.36 client trop loin de sa voiture : refusé avec message', not okM and msgM:find('client doit rester'))
+tp(2, vec3(3.0, 0.0, 0.0))
+check('véhicule du client (client à côté) : accepté', cb('gs_tuning:mechanicCheck', 5, client)); step()
 tp(5, vec3(50.0, 0.0, 0.0))
-check('trop loin du véhicule', not cb('gs_tuning:mechanicCheck', 5, client)); step()
+okM, msgM = cb('gs_tuning:mechanicCheck', 5, client); step()
+check('mécano trop loin du véhicule', not okM and msgM:find('Approche'))
 tp(5, vec3(0.0, 0.0, 0.0))
 local rental = CreateVehicleServerSetter(0, 'automobile', 0, 0, 0)
 W.entities[rental].plate = 'LOC 001'
-check('véhicule sans propriétaire : refusé', not cb('gs_tuning:mechanicCheck', 5, rental)); step()
-local okS = cb('gs_tuning:mechanicSave', 5, client, { plate = 'HACK', modEngine = 3 }); step()
-check('enregistré, plaque d\'origine gardée', okS and saved[2] == 'plate=' .. db[2].plate .. ';engine=3')
+okM, msgM = cb('gs_tuning:mechanicCheck', 5, rental); step()
+check('véhicule sans propriétaire : refusé avec message', not okM and msgM:find('personne'))
+local shared = CreateVehicleServerSetter(0, 'automobile', 0, 0, 0)
+W.entities[shared].plate = 'SOC 001'
+check('véhicule enregistré sans citizenid : refusé', not cb('gs_tuning:mechanicCheck', 5, shared)); step()
+check('véhicule inconnu (netId sans entité) : refusé', not cb('gs_tuning:mechanicCheck', 5, 99999)); step()
+local mine = CreateVehicleServerSetter(0, 'automobile', 0, 0, 0)
+W.entities[mine].plate, W.entities[mine].model = 'MEC 001', 555
+check('sa propre voiture : accepté sans autre client', cb('gs_tuning:mechanicCheck', 5, mine)); step()
+
+-- Enregistrement : fusion (état gardé), plaque d'origine, appliqué par le propriétaire réseau
+W.entities[client].owner = 2
+local okS, msgS = cb('gs_tuning:mechanicSave', 5, client, { plate = 'HACK', modEngine = 3, fuelLevel = 100, lockState = 1, model = 777 }); step()
+check("enregistré, plaque d'origine gardée", okS and saved[2] and saved[2]:find('plate=ZZZ 999') and saved[2]:find('engine=3'))
+check('V12.36 état du véhicule gardé depuis la base (carburant, verrou, modèle)', saved[2] and saved[2]:find('fuel=42') and saved[2]:find('lock=2') and saved[2]:find('model=777'))
+local ev = lastClientEvent('gs_tuning:client:applyProps', 2)
+check('V12.36 réglages envoyés au propriétaire réseau du véhicule', ev ~= nil and ev.args[1] == client)
+check('V12.36 réglages appliqués sans plaque, modèle ni état', ev and ev.args[2].modEngine == 3 and ev.args[2].plate == nil and ev.args[2].fuelLevel == nil and ev.args[2].lockState == nil)
+check('message de réussite avec la plaque', msgS and msgS:find('ZZZ 999'))
+W.entities[client].owner = nil
+cb('gs_tuning:mechanicSave', 5, client, { modEngine = 2 }); step()
+check('V12.36 sans propriétaire réseau connu : envoyé au mécano', lastClientEvent('gs_tuning:client:applyProps', 5) ~= nil)
+okS, msgS = cb('gs_tuning:mechanicSave', 5, client, { modEngine = 3, model = 1 }); step()
+check("V12.36 réglages d'un autre véhicule : refusés", not okS and msgS:find('viennent pas'))
+W.entities[client].model = 999
+okS, msgS = cb('gs_tuning:mechanicSave', 5, client, { modEngine = 3 }); step()
+check('V12.36 fausse plaque (modèle différent de la carte grise) : refusé', not okS and msgS:find('carte grise'))
+W.entities[client].model = 777
 check('réglages invalides refusés', not cb('gs_tuning:mechanicSave', 5, client, 'pas une table')); step()
+Store.setProps = function() return false end
+okS, msgS = cb('gs_tuning:mechanicSave', 5, client, { modEngine = 3 }); step()
+check("V12.36 erreur d'écriture : message clair", not okS and msgS:find('Erreur'))
+Store.setProps = function(id, json) saved[id] = json return true end
+propsDb[2] = nil
+okS, msgS = cb('gs_tuning:mechanicSave', 5, client, { modEngine = 3 }); step()
+check('V12.36 ligne disparue : refusé', not okS and msgS:find('plus enregistré'))
+propsDb[2] = {}
+okS = cb('gs_tuning:mechanicSave', 5, client, { modEngine = 4 }); step()
+check("V12.36 carte grise vide : modèle et plaque posés depuis l'entité", okS and saved[2]:find('model=777') and saved[2]:find('plate=ZZZ 999') and saved[2]:find('engine=4'))
+tp(2, vec3(100.0, 0.0, 0.0))
+okS, msgS = cb('gs_tuning:mechanicSave', 5, client, { modEngine = 3 }); step()
+check('V12.36 enregistrement refusé si le client est parti', not okS and msgS:find('client doit rester'))
 
 io.write(('\n%d réussis, %d échoués\n'):format(passed, failed))
 os.exit(failed == 0 and 0 or 1)

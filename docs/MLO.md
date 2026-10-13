@@ -177,17 +177,29 @@ Une quarantaine de packs escrow (achat Cfx.re lié à la clé du serveur), surto
 | Benny's noir et blanc | `gsa_sub_patoche_benny_bw_pack` | gardé à la place du Benny's original |
 | Villa bunker | `gsa_patoche_villa_bunker_pack` | **V12.31 : gardée**, la villa moderne 01 est retirée (même villa) |
 | Karting | `gsa_patoche_plasmakart_pack` (+ DLC) | **retiré le 12/10** (V12.33, demande du fondateur) |
-| Laser game | `gsa_patoche_plasmagame_pack` (+ DLC) | **retiré le 12/10** (V12.33, demande du fondateur) |
+| Laser game | `gsa_patoche_plasmagame_pack` (+ DLC, + DLC2) | **retiré le 12/10** (V12.33, demande du fondateur ; DLC2 par motif en V12.36) |
+| Pack Redline | `gsa_energy_redline_pack` | **retiré le 12/10** (V12.36, motif « redline », demande du fondateur) |
 | Auto-tamponneuses Del Perro / Pacific | `gsa_patoche_bumpercar_*` | activité = script compagnon |
 | Casino, concession, Ammu-Nation ×2, tabac, tacos, animalerie, billard, entrepôt, box de stockage | `gsa_patoche_*` | casino / concession / Ammu-Nation : doublons avec nos points sur les lieux du jeu, choix « nouveau / ancien » en attente |
 | QG gang 2, garage clandestin, labo weed, panneaux | `gsa_patoche_*` | sans blip (lieux secrets) |
 
-Retirées (`RETIRED_MAPS` dans `gs_admin/server/maps.js` = **liste unique**) : supermarché Willie's, magasin d'alcool
+Retirées, par **nom exact** (`RETIRED_MAPS` dans `gs_admin/server/maps.js`) : supermarché Willie's, magasin d'alcool
 de Paleto, Moreo Gym, casse, Benny's original, villa moderne 01, Digital Den, Shadow Complex, laser game (+ DLC), karting
-(+ DLC), plasmatron. Le serveur les supprime au démarrage (archives gardées dans mods-a-trier) et, depuis la V12.34,
-IMPORTER-MODS ne les réinstalle jamais (même supprimées à la main avant un redémarrage) et enlève leurs lignes de
-addons.cfg. Pour en retirer une autre : l'ajouter à `RETIRED_MAPS` ; pour en remettre une : `$Restored` dans
-importer-mods.ps1.
+(+ DLC), plasmatron. Retirées par **motif** (`RETIRED_PATTERNS`, V12.36 : sous-chaînes en minuscules cherchées dans le nom
+de chaque ressource de `resources\[addons]`) : `plasmagame`, `plasmakart`, `plasmatron`, `villa_01`, `redline` — donc aussi
+`plasmagame_dlc2`, le pack Redline (`gsa_energy_redline_pack`) et toute variante future de ces packs, ainsi que leurs
+scripts compagnons (`patoche_plasmagame_script`…). Avant la V12.36, seuls les noms exacts comptaient : « plasmagamedlc2 »
+et Redline restaient sur le disque et IMPORTER-MODS les réinstallait depuis mods-a-trier à chaque import.
+
+Ce que fait le serveur 8 s après le démarrage (PC et VPS), pour chaque ressource de `[addons]` retirée par nom, par motif
+ou inscrite dans `C:\GTASOON\mods-retires.txt` : arrêt, dossier supprimé, ligne enlevée de `cfg\addons.cfg`, nom noté dans
+`mods-retires.txt` ; archive gardée dans mods-a-trier (packs payants). Console : `Map retirée (motif « redline ») :
+gsa_energy_redline_pack supprimée`, `Script compagnon retiré (motif « plasmagame ») : patoche_plasmagame_script supprimé`.
+IMPORTER-MODS lit les deux listes dans maps.js : jamais réinstallées, lignes de addons.cfg enlevées, script compagnon refusé.
+Pour en retirer une autre : l'ajouter à `RETIRED_MAPS` (nom exact) ou à `RETIRED_PATTERNS` (motif, à choisir assez précis
+pour ne pas attraper une map gardée : vérifier `tests/test_gs_maps.js`). Pour en remettre une : l'enlever des deux listes
+et de `mods-retires.txt`, puis relancer IMPORTER-MODS (`RESTORED_MAPS` dans maps.js = `$Restored` de importer-mods.ps1
+protège la villa bunker d'un ancien mods-retires.txt).
 Désactivées tant que l'archive n'est pas retéléchargée (téléchargement coupé, V12.27) : beach party, terrain de foot
 (soccer, soccer_cloth).
 
@@ -221,8 +233,19 @@ La sélection de MLO à consulter (20 gratuits, 10 payants) est dans `docs/SELEC
 | Bâtiment invisible, console muette | **F11 → Mappings installés → Contrôler les maps chez moi** | « aucun modèle reçu » (cache : VIDER-CACHE-FIVEM), « illisibles » (licence / fichier abîmé), « pack incomplet » |
 | Map visible mais aucun point pour jouer | console : « DÉCOR SEUL » ; F11 : « Activité : … décor seul » | script compagnon absent : il doit être dans le zip du pack ; sinon le télécharger chez le vendeur |
 | Script installé mais pas lancé | console : « Script de map activé mais NON démarré » | licence, dépendance manquante, ou script qui refuse d'être renommé (remonter dans la console) |
-| Deux maps au même endroit | console : « CONFLIT » | fusion automatique ; sinon en garder une (`RETIRED_MAPS`) |
-| Map supprimée qui revient après METTRE-A-JOUR | `RAPPORT-MODS.txt` | corrigé en V12.34 : elle doit être dans `RETIRED_MAPS` (ou `mods-retires.txt`) |
+| Deux maps au même endroit | console : « CONFLIT » | fusion automatique ; sinon en garder une (`RETIRED_MAPS` / `RETIRED_PATTERNS`) |
+| Map supprimée qui revient après METTRE-A-JOUR | `RAPPORT-MODS.txt` | corrigé en V12.34 : elle doit être dans `RETIRED_MAPS`, `RETIRED_PATTERNS` (V12.36) ou `mods-retires.txt` |
+| Map « retirée » en F11 mais toujours là (collisions, dossier présent) | console : « Map retirée en jeu (F11…) » | corrigé en V12.36 : avant, F11 arrêtait la ressource et commentait sa ligne, le dossier restait ; maintenant dossier supprimé + mods-retires.txt + ligne enlevée |
+| Variante d'une map retirée encore présente (plasmagame_dlc2, redline…) | console au démarrage : « Map retirée (motif « … ») » | corrigé en V12.36 : retrait par motif, plus seulement par nom exact |
+
+## 7b. PNJ et objets du staff reliés aux métiers et aux gangs (V12.37)
+
+Quand un mapping (poste, planque, garage) ne colle pas aux PNJ et objets prévus par la config : **F11 → Monde et lieux → PNJ et
+objets** → « Ajouter un PNJ » (modèle, scénario, placement libre à l'aperçu : hauteur, rotation, pas fins) ou « Ajouter un objet »
+(catalogue gs_builder), puis **relier** l'entrée à un métier (`police`, `ambulance`…) ou à un gang (`gang:ballas`) : le point de
+métier ou la planque reprend ce PNJ (un seul PNJ staff par cible), un PNJ « libre » n'est que de l'ambiance. Retrait depuis la même
+liste. Stockage : table SQL `gs_staff_peds` (par serveur : à refaire sur le VPS, ou à poser directement dessus) ; les **points**
+déplacés, eux, voyagent du PC au VPS via `gs_bridge/points-deplaces.json` (V12.37).
 
 ## 8. Après le téléchargement
 

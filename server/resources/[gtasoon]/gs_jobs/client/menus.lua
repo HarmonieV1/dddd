@@ -28,7 +28,8 @@ function GSJ.openJobMenu()
 
     if def then
         -- V11.5 : pour tous les métiers, par téléphone (de n'importe où) ; sans téléphone, le point de service reste
-        local duty = { title = L('menu_duty'), icon = 'id-badge', onSelect = function() TriggerServerEvent('gs_jobs:server:toggleDuty', not def.dutyAnywhere) end }
+        -- V12.37 : GSJ.toggleDuty envoie l'état voulu (pas de rebascule sur un double déclenchement)
+        local duty = { title = L('menu_duty'), icon = 'id-badge', onSelect = function() GSJ.toggleDuty(not def.dutyAnywhere) end }
         if not def.dutyAnywhere then duty.description = 'Par téléphone, de n\'importe où' end
         options[#options + 1] = duty
         if def.mission and job.onduty then
@@ -83,7 +84,7 @@ RegisterKeyMapping('job', 'Menu emplois', 'keyboard', 'F6')
 -- V11.5 · /service : prise / fin de service par téléphone, touche à choisir dans Paramètres → Raccourcis → FiveM (aucune par défaut)
 RegisterCommand('service', function()
     if IsNuiFocused() or not GSJ.job then return end
-    TriggerServerEvent('gs_jobs:server:toggleDuty', true)
+    GSJ.toggleDuty(true) -- V12.37 : état voulu, métier relu à la source
 end, false)
 RegisterKeyMapping('service', 'Prise / fin de service (par téléphone)', 'keyboard', '')
 RegisterCommand('factures', function() GSJ.openBills() end, false)
@@ -108,16 +109,17 @@ end
 
 -- Garage ------------------------------------------------------------------------------
 
+-- V12.37 : le métier du point (`name`) est envoyé au serveur, qui répond avec le message exact si ce n'est pas le métier actif
 function GSJ.openGarageMenu(name, index)
     local def = Jobs[name]
     local options = {
         { title = L('garage_store'), icon = 'square-parking',
-          onSelect = function() GSJ.result(lib.callback.await('gs_jobs:garage:store', false, index)) end },
+          onSelect = function() GSJ.result(lib.callback.await('gs_jobs:garage:store', false, index, name)) end },
     }
     for i, v in ipairs(def.vehicles or {}) do
         if GSJ.job.grade >= (v.minGrade or 0) and (not v.addon or IsModelInCdimage(joaat(v.model))) then
             options[#options + 1] = { title = v.label, icon = 'car',
-                onSelect = function() GSJ.result(lib.callback.await('gs_jobs:garage:spawn', false, index, i)) end }
+                onSelect = function() GSJ.result(lib.callback.await('gs_jobs:garage:spawn', false, index, i, name)) end }
         end
     end
     show('gs_jobs_garage', L('zone_garage'), options)

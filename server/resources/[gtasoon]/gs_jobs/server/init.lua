@@ -13,7 +13,10 @@ CreateThread(function()
             end
         end
     end
-    for _, src in ipairs(Bridge:GetPlayers()) do GSJ.load(src) end
+    for _, src in ipairs(Bridge:GetPlayers()) do
+        GSJ.load(src)
+        Armory.restore(src) -- V12.37 : remis hors service → l'équipement de service noté en KVP est repris
+    end
     local n = 0
     for _ in pairs(Jobs) do n = n + 1 end
     print(('[gs_jobs] prêt : %d jobs chargés'):format(n))

@@ -7,9 +7,15 @@ Config.SeatbeltKey = 'B'
 Config.Ejection = { minDrop = 18.0 }  -- m/s perdus d'un coup sans ceinture = éjection (~65 km/h)
 
 -- V11.5 · Armes longues visibles dans le dos quand elles sont rangées (pistolets et armes blanches : jamais).
--- `slots` : jusqu'à `max` armes, 1re en travers du dos (droite), 2e à gauche. Offsets sur l'os SKEL_Spine3 (24818).
+-- `slots` : jusqu'à `max` armes, 1re en travers du dos (droite), 2e à gauche. Décalages (m) et rotations (°) sur l'os
+-- `bone` : 24818 = SKEL_Spine3 (défaut), 24816 = SKEL_Spine2 (un peu plus bas).
+-- V12.37 · Réglage en direct par le staff : /dosreglage (menu : ±1 cm, ±2°, bascule d'os, saisie exacte, « Copier le bloc »
+-- → coller ici à la place des lignes `bone` et `slots`). `refresh` (ms) : voisins rafraîchis toutes les `busy` ms quand
+-- quelqu'un autour porte une arme dans le dos, `idle` sinon ; `sweep` = balayage des objets orphelins. Pas de boucle par image.
 Config.Back = {
     bone = 24818, max = 2, range = 60.0,
+    refresh = { busy = 400, idle = 2000, sweep = 5000 }, -- V12.37
+    tune = { pos = 0.01, rot = 2.0 },                    -- V12.37 : pas du menu /dosreglage (1 cm, 2°)
     slots = {
         { x = 0.10, y = -0.15, z = -0.10, rx = 0.0, ry = 165.0, rz = 0.0 },
         { x = -0.10, y = -0.15, z = -0.10, rx = 0.0, ry = 195.0, rz = 0.0 },

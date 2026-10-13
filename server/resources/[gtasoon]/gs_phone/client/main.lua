@@ -165,7 +165,11 @@ RegisterNUICallback('payBill', function(b, cb)
 end)
 
 -- V11.5 : prise / fin de service depuis le téléphone, de n'importe où (on prévient son employeur)
-RegisterNUICallback('duty', function(_, cb) TriggerServerEvent('gs_jobs:server:toggleDuty', true) cb(true) end)
+RegisterNUICallback('duty', function(_, cb)
+    local j = exports.gs_bridge:GetJob() -- V12.37 : état voulu (comme F6 et /service), plus de bascule aveugle en double
+    TriggerServerEvent('gs_jobs:server:toggleDuty', true, j ~= nil and not j.onduty)
+    cb(true)
+end)
 -- Applis qui ouvrent un menu d'une autre ressource (le téléphone se range) : plus RP qu'une commande tapée
 local EXTERNAL = { jobs = 'job', carnet = 'carnet', journal = 'journal', orders = 'commandes' }
 RegisterNUICallback('openApp', function(b, cb)

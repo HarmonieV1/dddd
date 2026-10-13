@@ -43,15 +43,19 @@ function Storm.fix(src, id)
     id = tonumber(id)
     local idx = id and Storm.incidents[id]
     if not idx then return false, 'Déjà dégagé.' end
-    local c = S.spots[idx].coords
+    local sp = S.spots[idx]
+    local c = sp.coords
     local ped = GetPlayerPed(src)
-    if ped == 0 or #(GetEntityCoords(ped) - vec3(c.x, c.y, c.z)) > 8.0 then return false, 'Trop loin.' end
+    -- V12.37 : le véhicule en détresse est posé côté client sur la route la plus proche du point (≤ snapRadius m) : la distance
+    -- tolérée en tient compte ; un arbre reste au point configuré (fixRange seulement, le marqueur [E] porte à 6 m).
+    local maxDist = S.fixRange + (sp.kind == 'stranded' and S.snapRadius or 0.0)
+    if ped == 0 or #(GetEntityCoords(ped) - vec3(c.x, c.y, c.z)) > maxDist then return false, 'Trop loin.' end
     local mech = GetResourceState('gs_jobs') == 'started' and exports.gs_jobs:IsOnDutyAs(src, S.mechanicJob)
     if not mech and not Bridge:RemoveItem(src, S.repairItem, 1) then return false, 'Il faut être mécano en service ou avoir un kit de réparation.' end
     Storm.incidents[id] = nil
     publish()
     local amount = math.random(S.pay[1], S.pay[2])
-    Bridge:AddMoney(src, 'bank', amount)
+    Bridge:AddMoney(src, 'bank', amount, 'prime tempête') -- V12.37 : motif explicite (journal / anti-triche gs_security)
     return true, ('Intervention terminée : +%d $ (prime tempête)'):format(amount)
 end
 

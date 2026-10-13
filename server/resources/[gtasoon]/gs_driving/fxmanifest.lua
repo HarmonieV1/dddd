@@ -3,7 +3,7 @@ game 'gta5'
 lua54 'yes'
 
 name 'gs_driving'
-description 'Auto-école : code (QCM tiré et corrigé par le serveur) puis examen de conduite (parcours, vitesse et dégâts relevés par le serveur). Moniteurs joueurs.'
+description 'Permis de conduire : accordé à tout le monde à la connexion (carte remise une fois), retiré ou rendu par la police. Auto-école (code + conduite) gardée en option (Config.FreeLicence = false).'
 version '0.1.0'
 
 dependencies { 'oxmysql', 'ox_lib', 'gs_security', 'gs_bridge', 'gs_jobs', 'gs_markers' }

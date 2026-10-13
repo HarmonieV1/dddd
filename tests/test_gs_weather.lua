@@ -118,5 +118,49 @@ do
     check('fin de tempête : routes rouvertes', GlobalState.gsStorm == nil)
 end
 
+-- V12.37 · Interventions : choix sans doublon, distance tolérée (véhicule posé sur la route jusqu'à snapRadius m du point,
+-- arbre au point configuré), prime bornée, id inconnu / déjà dégagé refusés, réglages de streaming cohérents -------------------
+do
+    local S = Config.Storm
+    check('réglages : streamOut > streamIn > snapRadius, fixRange > portée du marqueur (6 m)',
+        S.streamOut > S.streamIn and S.streamIn > S.snapRadius and S.fixRange > 6.0 and type(S.strandedModel) == 'string')
+    local okLabels = true
+    for _, sp in ipairs(S.spots) do if type(sp.label) ~= 'string' or (sp.kind ~= 'tree' and sp.kind ~= 'stranded') then okLabels = false end end
+    check('chaque intervention a un label (menu staff des points) et un type connu', okLabels)
+    provide('gs_jobs', { IsOnDutyAs = function(src, job) return src == 51 and job == 'mechanic' end })
+    local okDistinct = true
+    for _ = 1, 50 do
+        Weather.startEvent('storm')
+        local seenR, seenS = {}, {}
+        for _, i in ipairs(Storm.roads) do if seenR[i] then okDistinct = false end seenR[i] = true end
+        for _, idx in pairs(Storm.incidents) do if seenS[idx] then okDistinct = false end seenS[idx] = true end
+    end
+    check('tirage : jamais deux fois la même route ni la même panne', okDistinct)
+    -- Une panne (véhicule) et un arbre imposés pour un test déterministe
+    local sIdx, tIdx
+    for i, sp in ipairs(S.spots) do
+        if sp.kind == 'stranded' and not sIdx then sIdx = i end
+        if sp.kind == 'tree' and not tIdx then tIdx = i end
+    end
+    Storm.incidents = { [1] = sIdx, [2] = tIdx }
+    local sc, tc = S.spots[sIdx].coords, S.spots[tIdx].coords
+    join(51, 'CID51', 'Dépanneur', vec3(sc.x + S.snapRadius + S.fixRange + 1.0, sc.y, sc.z))
+    local ok, msg = Storm.fix(51, 1)
+    check('véhicule : au-delà de snapRadius + fixRange refusé', not ok and msg == 'Trop loin.')
+    tp(51, vec3(sc.x + S.snapRadius + 4.0, sc.y, sc.z)) -- véhicule posé sur la route à 60 m du point, joueur à 4 m du véhicule
+    local before = W.players[51].money.bank
+    ok = Storm.fix(51, 1)
+    local gain = W.players[51].money.bank - before
+    check('véhicule : accepté jusqu\'à snapRadius + fixRange', ok == true)
+    check('prime dans les bornes pay', gain >= S.pay[1] and gain <= S.pay[2])
+    check('déjà dégagé refusé', not Storm.fix(51, 1) and not Storm.fix(51, 'abc') and not Storm.fix(51, nil))
+    tp(51, vec3(tc.x + S.fixRange + 1.0, tc.y, tc.z))
+    check('arbre : au-delà de fixRange refusé (pas de marge route)', not Storm.fix(51, 2))
+    tp(51, vec3(tc.x + 5.0, tc.y, tc.z))
+    check('arbre : accepté à 5 m', Storm.fix(51, 2) == true and GlobalState.gsStorm.incidents['2'] == nil)
+    Weather.endEvent(true)
+    check('fin de tempête : plus rien de publié', GlobalState.gsStorm == nil and next(Storm.incidents) == nil)
+end
+
 io.write(('\n%d réussis, %d échoués\n'):format(passed, failed))
 os.exit(failed == 0 and 0 or 1)

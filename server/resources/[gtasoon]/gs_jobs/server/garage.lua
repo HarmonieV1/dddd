@@ -1,9 +1,11 @@
 -- Véhicules de service : spawn SERVEUR (OneSync), un seul par joueur, supprimé en fin de service.
 local Vehicles = {} -- [src] = entity
+local Spawning = {} -- V12.37 · [src] = true le temps de la création (asynchrone) : un double clic ne sort pas deux véhicules
 
 local function deleteVehicle(src)
     local veh = Vehicles[src]
     Vehicles[src] = nil
+    Spawning[src] = nil -- V12.37
     if veh and DoesEntityExist(veh) then DeleteEntity(veh) end
 end
 
@@ -36,21 +38,38 @@ local function makePlate(prefix)
     return ('%s%0' .. (8 - #prefix) .. 'd'):format(prefix, math.random(0, 10 ^ (8 - #prefix) - 1))
 end
 
-lib.callback.register('gs_jobs:garage:spawn', function(src, garageIndex, vehicleIndex)
-    if not GSJ.guard(src, 'garage', 3, 10000) then return false, L('slow_down') end
+--- V12.37 · Métier actif + sa définition, ou nil + le message EXACT du refus (avant : « Tu dois être en service. » aussi bien
+--- sans métier actif qu'au garage d'un autre métier). `jobName` = métier du point visé par le client (optionnel).
+local function garageJob(src, jobName)
     local job, def = GSJ.activeJob(src)
-    if not def or not job.onduty then return false, L('not_on_duty') end
+    if not job or not def then return nil, L('no_active_job') end
+    if type(jobName) == 'string' and jobName ~= job.name then return nil, L('wrong_job_garage', GSJ.jobLabel(jobName)) end
+    if not job.onduty then return nil, L('not_on_duty') end
+    return job, def
+end
+
+-- V12.37 : rate-limit 5 / 10 s (avant 3, partagé sortir + ranger : la 4e action en 10 s répondait « Doucement »)
+lib.callback.register('gs_jobs:garage:spawn', function(src, garageIndex, vehicleIndex, jobName)
+    if not GSJ.guard(src, 'garage', 5, 10000) then return false, L('slow_down') end
+    local job, def = garageJob(src, jobName)
+    if not job then return false, def end -- def = message du refus
     local garage = def.points.garage and def.points.garage[garageIndex]
     local vdef = def.vehicles and def.vehicles[vehicleIndex]
     if not garage or not vdef then return false, L('invalid') end
     if job.grade < (vdef.minGrade or 0) then return false, L('grade_too_low') end
     if not Security:InRange(src, garage.coords, Config.ZoneRadius + Config.ServerTolerance) then return false, L('too_far') end
+    if Spawning[src] then return false, L('garage_busy') end -- V12.37 : sortie déjà en cours (double clic)
     if GSJ.getJobVehicle(src) then return false, L('vehicle_already_out') end
     if spawnBlocked(garage.spawn) then return false, L('spawn_blocked') end
 
+    Spawning[src] = true
     local veh = spawnVehicle(vdef.model, garage.spawn, vdef.type)
-    if not veh then return false, L('spawn_failed') end
+    if not veh then
+        Spawning[src] = nil
+        return false, L('spawn_failed')
+    end
     Vehicles[src] = veh
+    Spawning[src] = nil -- le véhicule est suivi : un 2e appel répond « déjà un véhicule sorti »
     SetVehicleNumberPlateText(veh, makePlate(def.platePrefix))
     local state = Entity(veh).state
     state:set('gsJob', job.name, true)
@@ -61,10 +80,11 @@ lib.callback.register('gs_jobs:garage:spawn', function(src, garageIndex, vehicle
     return true, L('vehicle_out')
 end)
 
-lib.callback.register('gs_jobs:garage:store', function(src, garageIndex)
-    if not GSJ.guard(src, 'garage', 3, 10000) then return false, L('slow_down') end
-    local _, def = GSJ.activeJob(src)
-    local garage = def and def.points.garage and def.points.garage[garageIndex]
+lib.callback.register('gs_jobs:garage:store', function(src, garageIndex, jobName)
+    if not GSJ.guard(src, 'garage', 5, 10000) then return false, L('slow_down') end
+    local job, def = garageJob(src, jobName) -- V12.37 : mêmes messages exacts qu'à la sortie
+    if not job then return false, def end -- def = message du refus
+    local garage = def.points.garage and def.points.garage[garageIndex]
     local veh = GSJ.getJobVehicle(src)
     if not garage then return false, L('invalid') end
     if not veh then return false, L('no_vehicle') end

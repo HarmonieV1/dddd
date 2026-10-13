@@ -64,5 +64,34 @@ veh = Rental.active[2] and Rental.active[2].veh
 TriggerEvent('gs_bridge:server:playerUnloaded', 2)
 check('déconnexion : véhicule retiré', veh and not W.entities[veh] and not Rental.active[2])
 
+-- V12.37 · Points de location : forme (label « Location… », coords + spawn à côté, kind vélo/voiture ou bateau), maillage
+-- « retour en ville » (≥ 11 points terrestres, 2 pontons, pas deux points à moins de 100 m), Sandy Shores sorti du poste de
+-- police, location possible sur un nouveau point (bateau refusé là) -------------------------------------------------------------
+do
+    local sheriffSandy = vec3(1853.0, 3686.0, 34.3) -- hall du poste du shérif de Sandy Shores (ancien emplacement du point)
+    local land, boats, okShape, okSpread = 0, 0, true, true
+    for i, p in ipairs(Config.Points) do
+        if type(p.label) ~= 'string' or not p.label:find('^Location') or not p.coords or not p.spawn or type(p.spawn.w) ~= 'number'
+            or (p.kind ~= nil and p.kind ~= 'boat') or #(p.spawn - p.coords) > 30.0 then okShape = false end
+        if p.kind == 'boat' then boats = boats + 1 else land = land + 1 end
+        for j = 1, i - 1 do if #(Config.Points[j].coords - p.coords) < 100.0 then okSpread = false end end
+    end
+    check('points : label « Location… », spawn à moins de 30 m du comptoir, kind vélo/voiture ou bateau', okShape)
+    check('points : au moins 11 points terrestres (retour en ville) et 2 pontons', land >= 11 and boats >= 2)
+    check('points : jamais deux points à moins de 100 m', okSpread)
+    local sandy
+    for _, p in ipairs(Config.Points) do if p.label:find('Sandy') then sandy = p end end
+    check('Sandy Shores : hors du poste de police (> 60 m du hall du shérif)', sandy ~= nil and #(sandy.coords - sheriffSandy) > 60.0)
+    local last = #Config.Points
+    check('dernier point : terrestre (les nouveaux points sont ajoutés en fin de liste)', Config.Points[last].kind == nil)
+    join(3, 'CID3', 'Voyageur', Config.Points[last].coords); W.players[3].money.cash = 100
+    ok = cb('gs_rental:rent', 3, last, 6); step()
+    check('nouveau point : bateau refusé sur un point terrestre', not ok)
+    ok = cb('gs_rental:rent', 3, last, 1); step()
+    check('nouveau point : vélo loué', ok == true and Rental.active[3] ~= nil and W.players[3].money.cash == 100 - Config.Vehicles[1].price)
+    TriggerEvent('gs_bridge:server:playerUnloaded', 3)
+    check('nouveau point : déconnexion nettoie', not Rental.active[3])
+end
+
 io.write(('\n%d réussis, %d échoués\n'):format(passed, failed))
 os.exit(failed == 0 and 0 or 1)

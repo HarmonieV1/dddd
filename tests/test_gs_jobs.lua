@@ -9,13 +9,15 @@ loadResource('gs_jobs', {
     R .. 'gs_jobs/server/core.lua',
 })
 mockDB()
+PointsStore = { init = function() end, all = function() return {} end, save = function() end } -- V12.37 : points.lua (armurerie) chargé
 loadResource('gs_jobs', {
     R .. 'gs_jobs/server/society.lua', R .. 'gs_jobs/server/members.lua', R .. 'gs_jobs/server/payroll.lua',
-    R .. 'gs_jobs/server/garage.lua', R .. 'gs_jobs/server/stash.lua', R .. 'gs_jobs/server/boss.lua',
+    R .. 'gs_jobs/server/garage.lua', R .. 'gs_jobs/server/stash.lua', R .. 'gs_jobs/server/points.lua', R .. 'gs_jobs/server/boss.lua',
     R .. 'gs_jobs/server/billing.lua', R .. 'gs_jobs/server/vehicle_actions.lua',
     R .. 'gs_jobs/server/missions.lua', R .. 'gs_jobs/server/admin.lua', R .. 'gs_jobs/server/orders.lua',
 })
 DB.init()
+GSJ.checkArmories()
 
 local passed, failed = 0, 0
 local function check(name, cond)
@@ -274,6 +276,155 @@ check('rien avant le délai', Society.balance('mechanic') == before)
 GSJ.laundering[1].readyAt = os.time() - 1
 GSJ.launderTick()
 check('caisse créditée (-30 %)', Society.balance('mechanic') == before + 2100 and #GSJ.laundering == 0)
+
+-- V12.36 · PNJ aux points de métier (gs_markers) : config valide, index existants, jamais sur coffre / armurerie / vestiaire --
+local function validPed(p)
+    return type(p) == 'table' and type(p.model) == 'string' and p.model ~= '' and type(p.heading) == 'number'
+        and p.heading >= 0 and p.heading < 360 and (p.scenario == nil or (type(p.scenario) == 'string' and p.scenario ~= ''))
+end
+local PED_KINDS = { duty = true, boss = true, garage = true }
+local nPeds, badPeds, orphanPeds, badKinds = 0, 0, 0, 0
+for name, def in pairs(Jobs) do
+    for kind, list in pairs(def.peds) do
+        if not PED_KINDS[kind] then badKinds = badKinds + 1 end
+        for i, p in pairs(list) do
+            nPeds = nPeds + 1
+            if not validPed(p) then badPeds = badPeds + 1 end
+            if not (def.points[kind] and def.points[kind][i]) then orphanPeds = orphanPeds + 1 end
+        end
+    end
+end
+check('PNJ de métier : au moins vingt points habités', nPeds >= 20)
+check('PNJ de métier : modèle non vide, cap dans [0, 360[, scénario texte', badPeds == 0)
+check('PNJ de métier : chaque PNJ a son point (même index)', orphanPeds == 0)
+check('PNJ de métier : seulement accueil, direction, garage', badKinds == 0)
+check('PNJ de métier : chaque métier avec accueil / direction / garage en a au moins un', (function()
+    for _, def in pairs(Jobs) do
+        local p = def.points
+        local has = (p.duty and #p.duty > 0) or (p.boss and #p.boss > 0) or (p.garage and #p.garage > 0)
+        if has and next(def.peds) == nil then return false end
+    end
+    return true
+end)())
+check('PNJ du Pôle Emploi (agent d\'accueil)', validPed(Config.JobCenter.ped))
+
+-- V12.37 · Garage : message exact pour chaque refus (avant : « Tu dois être en service. » dans tous les cas) -----------------
+local GP = Jobs.police.points.garage[1]
+join(40, 'CID40', 'Sans Metier', GP.coords)
+ok, msg = cb('gs_jobs:garage:spawn', 40, 1, 1, 'police'); step()
+check('V12.37 garage sans métier actif : message exact', not ok and msg == L('no_active_job'))
+W.commands.gsjob(0, { action = 'add', target = 40, job = 'police', grade = 1 })
+net('gs_jobs:server:switch', 40, 'police'); step()
+ok, msg = cb('gs_jobs:garage:spawn', 40, 1, 1, 'ambulance'); step()
+check('V12.37 garage d\'un autre métier : message exact', not ok and msg == L('wrong_job_garage', 'EMS'))
+ok, msg = cb('gs_jobs:garage:spawn', 40, 1, 1, 'police'); step()
+check('V12.37 garage hors service : « Tu dois être en service. »', not ok and msg == L('not_on_duty'))
+ok, msg = cb('gs_jobs:garage:store', 40, 1, 'police'); step()
+check('V12.37 ranger hors service : même message exact', not ok and msg == L('not_on_duty'))
+ok, msg = cb('gs_jobs:garage:spawn', 40, 1, 1); step()
+check('V12.37 ancien appel sans nom de métier : toujours accepté', not ok and msg == L('not_on_duty'))
+
+-- V12.37 · Prise de service : double déclenchement (PNJ + zone, [E] + clic) ne rebascule plus hors service ------------------
+tp(40, P.duty[1])
+net('gs_jobs:server:toggleDuty', 40, false, true)
+net('gs_jobs:server:toggleDuty', 40, false, true) -- même instant
+check('V12.37 double déclenchement : toujours en service', W.players[40].job.onduty == true)
+step()
+net('gs_jobs:server:toggleDuty', 40, false, true)
+check('V12.37 déjà en service : état inchangé, message exact', W.players[40].job.onduty == true and W.notes[40].msg == L('already_on_duty'))
+tp(40, GP.coords)
+check('V12.37 en service : le garage ne refuse plus', (cb('gs_jobs:garage:spawn', 40, 1, 1, 'police')) == true)
+step()
+W.players[40].items.phone = 1
+net('gs_jobs:server:toggleDuty', 40, true) -- appli téléphone (sans intention, loin du point) : bascule → hors service
+advance(500)
+net('gs_jobs:server:toggleDuty', 40, true) -- 2e bascule 0,5 s plus tard : ignorée
+check('V12.37 bascule rapprochée ignorée (anti-rebond)', W.players[40].job.onduty == false)
+check('V12.37 fin de service : véhicule rendu', GSJ.getJobVehicle(40) == nil)
+step()
+net('gs_jobs:server:toggleDuty', 40, true, false)
+check('V12.37 déjà hors service : message exact', W.players[40].job.onduty == false and W.notes[40].msg == L('already_off_duty'))
+
+-- V12.37 · Équipement de service : prêté, repris à la fin du service (seulement les quantités fournies) ----------------------
+join(41, 'CID41', 'Agent Equipe', P.armory[1])
+W.commands.gsjob(0, { action = 'add', target = 41, job = 'police', grade = 1 })
+net('gs_jobs:server:switch', 41, 'police'); step()
+W.players[41].items.handcuffs = 1      -- une paire à lui, d'avant
+W.players[41].items['ammo-9'] = 20     -- 20 balles à lui
+W.players[41].items.phone = 1
+net('gs_jobs:server:toggleDuty', 41, true, true); step() -- par téléphone
+check('V12.37 en service par téléphone', W.players[41].job.onduty == true)
+ok = cb('gs_jobs:armory', 41, 'handcuffs'); step()
+check('V12.37 menottes complétées : 1 fournie (il en avait 1)', ok and W.players[41].items.handcuffs == 2 and Armory.issued[41].handcuffs.given == 1 and Armory.issued[41].handcuffs.base == 1)
+cb('gs_jobs:armory', 41, 'WEAPON_PISTOL'); step()
+cb('gs_jobs:armory', 41, 'ammo-9'); step()
+check('V12.37 arme + 40 balles fournies', W.players[41].items.WEAPON_PISTOL == 1 and W.players[41].items['ammo-9'] == 60 and Armory.issued[41]['ammo-9'].given == 40)
+check('V12.37 suivi écrit en KVP (par citizenid)', W_KVP['gs_jobs:armory:CID41'] == 'WEAPON_PISTOL=1/0,ammo-9=40/20,handcuffs=1/1')
+W.players[41].items['ammo-9'] = 35 -- il a tiré 25 balles
+net('gs_jobs:server:toggleDuty', 41, true, false); step() -- fin de service par téléphone (/service)
+check('V12.37 fin de service : arme reprise', W.players[41].items.WEAPON_PISTOL == 0)
+check('V12.37 fin de service : la paire de menottes fournie reprise, la sienne reste', W.players[41].items.handcuffs == 1)
+check('V12.37 fin de service : munitions reprises sans toucher aux 20 à lui (35 → 20)', W.players[41].items['ammo-9'] == 20)
+check('V12.37 suivi remis à zéro (mémoire + KVP)', Armory.issued[41] == nil and W_KVP['gs_jobs:armory:CID41'] == nil)
+check('V12.37 audit du rendu', (function()
+    for i = #W.audit, 1, -1 do if W.audit[i].action == 'armory_return' then return W.audit[i].amount == 17 end end
+    return false
+end)())
+net('gs_jobs:server:toggleDuty', 41, true, false); step()
+check('V12.37 hors service sans équipement : rien repris, pas de message « rendu »', W.notes[41].msg == L('already_off_duty'))
+
+-- Changement de métier
+net('gs_jobs:server:toggleDuty', 41, true, true); step()
+cb('gs_jobs:armory', 41, 'WEAPON_PISTOL'); step()
+check('V12.37 arme refournie en service', W.players[41].items.WEAPON_PISTOL == 1)
+W.commands.gsjob(0, { action = 'add', target = 41, job = 'taxi', grade = 0 })
+net('gs_jobs:server:switch', 41, 'taxi'); step()
+check('V12.37 changement de métier : arme reprise', W.players[41].items.WEAPON_PISTOL == 0 and Armory.issued[41] == nil)
+
+-- Licenciement du métier actif
+net('gs_jobs:server:switch', 41, 'police'); step()
+net('gs_jobs:server:toggleDuty', 41, true, true); step()
+cb('gs_jobs:armory', 41, 'WEAPON_PISTOL'); step()
+cb('gs_jobs:armory', 41, 'radio'); step()
+check('V12.37 équipé avant licenciement', W.players[41].items.WEAPON_PISTOL == 1 and W.players[41].items.radio == 1)
+tp(1, P.boss[1])
+ok = cb('gs_jobs:boss:action', 1, 'fire', { cid = 'CID41' }); step()
+check('V12.37 licenciement : arme et radio reprises', ok and W.players[41].items.WEAPON_PISTOL == 0 and W.players[41].items.radio == 0)
+
+-- Déconnexion (le joueur est encore chargé quand gs_jobs passe)
+W.commands.gsjob(0, { action = 'add', target = 41, job = 'police', grade = 1 })
+net('gs_jobs:server:switch', 41, 'police'); step()
+net('gs_jobs:server:toggleDuty', 41, true, true); step()
+cb('gs_jobs:armory', 41, 'WEAPON_PISTOL'); step()
+TriggerEvent('gs_bridge:server:playerUnloaded', 41)
+check('V12.37 déconnexion : équipement repris + message « Équipement de service rendu »', W.players[41].items.WEAPON_PISTOL == 0 and W.notes[41].msg == L('armory_returned'))
+check('V12.37 déconnexion : KVP vide', W_KVP['gs_jobs:armory:CID41'] == nil)
+
+-- Déconnexion brutale : Qbox a déjà déchargé le joueur → repris à la reconnexion, une fois l'inventaire chargé
+join(42, 'CID42', 'Parti Vite', P.armory[1])
+W.commands.gsjob(0, { action = 'add', target = 42, job = 'police', grade = 1 })
+net('gs_jobs:server:switch', 42, 'police'); step()
+W.players[42].items.phone = 1
+net('gs_jobs:server:toggleDuty', 42, true, true); step()
+cb('gs_jobs:armory', 42, 'WEAPON_PISTOL'); step()
+cb('gs_jobs:armory', 42, 'ammo-9'); step()
+local bag = W.players[42].items
+W.players[42] = nil
+TriggerEvent('gs_bridge:server:playerUnloaded', 42)
+check('V12.37 déco brutale : suivi conservé en KVP, mémoire libérée', W_KVP['gs_jobs:armory:CID42'] == 'WEAPON_PISTOL=1/0,ammo-9=60/0' and Armory.issued[42] == nil)
+local deferred
+local realTimeout = SetTimeout
+SetTimeout = function(_, fn) deferred = fn end -- l'inventaire ox_inventory arrive après le personnage
+join(42, 'CID42', 'Parti Vite', far)
+SetTimeout = realTimeout
+W.players[42].items = bag
+check('V12.37 reconnexion : reprise différée, rien touché avant le chargement de l\'inventaire', bag.WEAPON_PISTOL == 1 and deferred ~= nil)
+deferred()
+check('V12.37 reconnexion : équipement repris, KVP effacé', bag.WEAPON_PISTOL == 0 and bag['ammo-9'] == 0 and W_KVP['gs_jobs:armory:CID42'] == nil)
+check('V12.37 encodage / décodage du suivi', (function()
+    local t = Armory.decode(Armory.encode({ ['ammo-9'] = { given = 40, base = 20 }, radio = { given = 1, base = 0 }, vide = { given = 0, base = 3 } }))
+    return t['ammo-9'].given == 40 and t['ammo-9'].base == 20 and t.radio.given == 1 and t.vide == nil and next(Armory.decode(nil)) == nil
+end)())
 
 print = io.write
 io.write(('\n%d réussis, %d échoués\n'):format(passed, failed))

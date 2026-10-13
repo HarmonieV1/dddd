@@ -1,4 +1,4 @@
-# État du projet RoadLine RP — récapitulatif complet (à jour au 12/10/2026, V12.35)
+# État du projet RoadLine RP — récapitulatif complet (à jour au 13/10/2026, V12.38)
 
 Ce document sert de **point de sauvegarde** : si une conversation avec Claude est perdue, compressée ou doit reprendre
 ailleurs, tout ce qu'il faut savoir est ici. Il est versionné avec le code (`git log` en garde aussi l'historique).
@@ -54,7 +54,7 @@ exclusifs (« ce que tu ne trouveras nulle part ailleurs »).
 - `feature/phase1-bridge`
 - `claude/gta-rp-architecture-stack-pbvdxz`
 
-**Dernier commit poussé** : « V12.35 : site en mode léger, audit global » (hash exact :
+**Dernier commit poussé** : « V12.38 : fusion des sessions Windows (V12.37) et web (V12.35) » (hash exact :
 `git log -1 origin/feature/phase1-bridge`). Les deux branches pointent sur le même commit.
 
 **Deux sessions Claude en parallèle** (poste Windows et session web) : elles ne se voient pas. Toujours synchroniser
@@ -64,7 +64,7 @@ par un colis (zip de l'installation ou de la session) + ce fichier, et comparer 
 ## 2. Versions : interne vs publique (important, piège classique)
 
 Depuis la V11.3, il y a **deux numéros de version différents**, volontairement :
-- `gs_version` (convar, `server.cfg.example`) = **V12.35** → version technique interne, vue par le staff (F11, console,
+- `gs_version` (convar, `server.cfg.example`) = **V12.38** → version technique interne, vue par le staff (F11, console,
   METTRE-A-JOUR). Continue d'avancer à chaque mise à jour (V11.2, V11.3...).
 - `gs_public_version` (convar) = **« V4 · bêta »** → version vue par les **joueurs** (écran de chargement, statut
   Discord, Gazette). Le site affiche son propre journal (V1 à V4, V5 « classé confidentiel »).
@@ -103,6 +103,7 @@ Tout est scripté, zéro mot de passe affiché en clair :
 - `GERER-OVH.bat` (menu à 22 options : état/diagnostic, console, erreurs, marche/arrêt, public/privé, sauvegardes,
   mode simple/txAdmin, retour arrière, Discord, codes staff, adresse https...)
 - `CONFIGURER-DISCORD.bat` (jeton bot, webhooks, adresse de connexion — voir piège ci-dessous)
+- `POUSSER-GITHUB.bat` (V12.34 : envoyer les commits du PC sur GitHub après les tests, récupérer ceux de l'autre session ; `docs/GITHUB.md`)
 - `PREPARER-OVH.bat`, `CAPTURER-ERREURS.bat`, `SAUVEGARDER-BDD.bat` / `RESTAURER-BDD.bat`, `IMPORTER-MODS.bat`,
   `DEVENIR-ADMIN.bat`, `PUBLIER-SITE.bat`, `REPARER-FIVEM.bat` (erreur 506 / déconnexions Rockstar, côté joueur),
   `VIDER-CACHE-FIVEM.bat`, `NETTOYER-MARQUES.bat`
@@ -271,7 +272,84 @@ Résumé très condensé (le détail complet est dans `docs/ROADMAP.md`, `docs/F
   façon chargement de mission (Entrée / clic pour passer). Tout coupé par `prefers-reduced-motion`, souris seulement
   sur ordinateur. Une seule boucle rAF qui s'endort quand rien ne bouge. Vérifié dans le navigateur : 0 erreur.
 
-- **V12.35** (12/10/2026) — « héberger le site sur le VPS ? il a l'air surchargé au chargement » + « audit global » :
+- **V12.38** (13/10/2026) — **fusion** de la session Windows (V12.35 → V12.37, paquet de commits) et de la session web
+  (V12.35 : site en mode léger, audit `docs/AUDIT_V12_35.md`). Aucun conflit de code : seuls les numéros de version,
+  cette page et les PDF (régénérés) se croisaient. Suite de tests verte après fusion.
+
+- **V12.37** (13/10/2026, poste Windows, 4 sous-agents relus + intégration) — retours du fondateur du 13/10 :
+  - **Garages de métier « hors service » 3 fois sur 4 + notifications en rafale** : au point de service, la V12.36 avait DEUX
+    interactions (zone + PNJ) pour une bascule aveugle → « Prise de service » puis « Fin de service », garage refusé. gs_jobs :
+    un point = une interaction (le PNJ porte l'option, [E] reste), verrou anti-double-clic 1 s, prise de service par **état voulu**
+    + anti-rebond 1,5 s (F6, /service, point, téléphone), messages exacts du garage (pas de métier actif / autre métier / hors
+    service) et verrou pendant la sortie. Retouche Qbox ajoutée (METTRE-A-JOUR) : service et garage de qbx_police / qbx_ambulancejob
+    neutralisés (même point que le nôtre à Mission Row ; motif absent = avertissement jaune). Tests jobs 124/124.
+  - **Quitter la LSPD en gardant les armes** : l'équipement de l'armurerie est **prêté** : quantités fournies notées, reprises à la
+    fin du service, au changement de métier, au licenciement / démission et à la déconnexion (reconnexion : 5 s après le chargement) ;
+    ce qu'on avait avant reste, ce qui a été consommé n'est pas réclamé ; audit `armory_return`.
+  - **Armes lourdes qui flottent dans le vide** : gs_details/holster.lua réécrit : objet gardé seulement s'il est encore accroché
+    au corps ACTUEL (mort, à terre, tenue / personnage changé, déconnexion, arme en main ou donnée → retiré dans la seconde),
+    modèle chargé avant création, attache vérifiée, balayage des orphelins 5 s, une seule boucle lente. **`/dosreglage`** (staff) :
+    position des armes dans le dos en direct (±1 cm, ±2°, os) + « Copier le bloc Config.Back ». Tests holster 74/74.
+  - **Dégâts adoucis** (demande : « pas trop réaliste ») : armes à feu −25 %, corps à corps −20 %, véhicules −30 %
+    (`DAMAGE` dans gs_details/client/health.lua, réappliqué toutes les 5 s).
+  - **PPA à 50 $ au Pôle Emploi / mairie** : retiré (retouche Qbox de qbx_cityhall) ; le vrai reste au comptoir Ammu-Nation (500 $).
+  - **Interventions de tempête dans le vide** : créées à l'approche (< 150 m) sur la route la plus proche (≤ 60 m, collision
+    attendue), blip et [E] sur la vraie position, retirées au-delà de 250 m ; console « aucune route à moins de 60 m » = point à
+    caler. **Location** : 13 comptoirs (Sandy sorti du poste du shérif, 6 ajoutés « à caler »). Tests weather 72/72, rental 23/23.
+  - **F11 → Déplacer un point : placement libre** (aperçu anneau + cap, réglages au clavier : hauteur, rotation, pas fins, comme
+    les props ; pose vérifiée côté serveur, ≤ 60 m du staff) ; **« PNJ et objets »** : poser un PNJ (modèle, scénario) ou un objet
+    (catalogue gs_builder) **relié à un métier ou un gang** (le point de métier / la planque le reprend ; un seul PNJ staff par
+    cible) ou libre (ambiance), retrait ; table SQL `gs_staff_peds`, GlobalState `gsStaffPeds`, créés à proximité par gs_markers.
+  - **Les points déplacés voyagent** : gs_bridge écrit aussi `gs_bridge/points-deplaces.json` (toutes les minutes, ou
+    `/pointsexport` console / ACE admin) ; METTRE-A-JOUR garde celui du PC, METTRE-A-JOUR-OVH l'emporte, le VPS l'importe au
+    démarrage (une fois par version du fichier, le PC est la référence, un serveur sans aucun point n'écrit jamais de fichier).
+    Réponse à la question du fondateur : les points calés en jeu sont gardés aux mises à jour ET, désormais, repris sur OVH.
+    Tests points_fichier 25/25.
+  - Réponses sans code : crochetage = mini-jeu ox_lib, appuyer sur la touche **chiffre affichée (1 à 4)** (guide joueur) ; F6
+    qui passe en vol libre = raccourci FiveM du compte (Paramètres → Raccourcis clavier → FiveM) ; jetons d'auto-tamponneuses =
+    script tiers, lignes de console à fournir ; preuves (douilles, scanner, empreintes) couvertes par les tests, à valider en jeu.
+  - À vérifier en jeu : fiche de backtest, session « 6b · V12.37 ».
+
+- **V12.36** (13/10/2026, poste Windows, orchestration multi-agents + relecture) — corrections du 12/10 :
+  - **Maps vraiment supprimées** : le retrait F11 « Retirer cette map » arrête la ressource ET supprime son dossier, enlève sa ligne
+    d'addons.cfg et l'inscrit dans mods-retires.txt (avant : ligne commentée, dossier gardé, map réinstallée par IMPORTER-MODS).
+    Nouvelle liste `RETIRED_PATTERNS` (plasmagame, plasmakart, plasmatron, villa_01, redline) à côté de `RETIRED_MAPS` : appliquée
+    au démarrage (maps, scripts compagnons, addons.cfg, mods-retires.txt) et par l'importeur (`Test-Retired`, nom d'archive et de
+    ressource). Console : « Map retirée (motif « redline ») : … ». `RESTORED_MAPS` / `$Restored` vidés (migration villa bunker
+    terminée). Tests lecteur de maps 119/119.
+  - **/optin** : le code et l'ACE « admin » (V12.15) sont justes ; la cause est que `permissions.cfg` n'arrivait jamais sur le VPS
+    (exclu par METTRE-A-JOUR-OVH et par « roadline maj »). Désormais envoyé et installé (`permissions_maj`, staff ajouté à la main
+    conservé), et la commande roadline du VPS est poussée avant la mise à jour. Après /optin un admin garde /tp /tpm /car /dv ;
+    argent, métiers, gangs, personnages restent au fondateur (deny). check_cfg.py vérifie la chaîne d'ACE et la synchro VPS.
+    DEVENIR-ADMIN explique les réponses : « Service staff : in. » = OK ; « out. » à chaque fois = permissions.cfg ancien.
+  - **ox_target** : erreur « native 0xfcdff7b72d23a1ac » (HasEntityClearLosToEntity) à chaque Alt sur le build 3570 → retouche
+    Qbox d'ox_target 1.18.1 (pcall autour de l'appel, ligne 212), appliquée par METTRE-A-JOUR ; comportement de ciblage inchangé.
+  - **Mécano** : la personnalisation n'était jamais appliquée quand le client restait au volant (pas de main réseau, refus muet) et
+    n'était pas gardée au garage (qbx_garages relit les mods chez le client). gs_tuning fusionne les réglages dans la carte grise
+    (plaque, modèle, carburant, état gardés), les fait appliquer par le propriétaire réseau, exige le client descendu et à ≤ 30 m,
+    et chaque refus a son message. Tests 41/41.
+  - **Permis pour tout le monde** (`Config.FreeLicence`) : permis + carte accordés à la connexion (une seule carte), auto-école
+    fermée (points, blip, code, examen), retrait / rendu par la police conservé et persistant ; quête de Max sans étape permis ni
+    location (4 étapes) ; « Que faire ? », guide joueur, backtest à jour. Tests driving 57/57, quests 63/63.
+  - **Événements** : « Course à super vitesse » et « Concours de super saut » retirés de F11 → Événements.
+  - **Ferraille** : vraie scène (carcasses variées au sol, fouille accroupie puis dévissage clé en main, trouvailles décrites,
+    carcasse dépouillée visible puis repousse). **PNJ aux points** : champ générique `ped` de gs_markers (une boucle lente commune,
+    PNJ invincible qui porte l'interaction et suit le point déplacé) ; acheteurs et contremaîtres de gs_harvest, accueil /
+    direction / garage des 20 métiers (39 PNJ) et Pôle Emploi. Caps à caler en jeu. Tests harvest 265/265, jobs 93/93.
+  - 40 nouvelles propositions (n° 58 → 97) ajoutées à `docs/PROPOSITIONS.md`.
+  - À vérifier en jeu : voir la fiche de backtest (session « V12.36 ») : retrait d'une map depuis F11, /optin sur le VPS après
+    METTRE-A-JOUR-OVH, Alt sans erreur F8, mécano (client descendu), nouveau perso avec carte de permis, PNJ aux points, ferraille.
+
+- **V12.35** (12/10/2026, poste Windows) — synchronisation GitHub sans commande à retenir (`docs/GITHUB.md`) :
+  - **`POUSSER-GITHUB.bat`** (racine du clone, `scripts/windows/pousser-github.ps1`) : trouve Git, lit GitHub, propose de
+    committer ce qui traîne, récupère l'avancée de l'autre session si c'est une avance rapide, s'arrête si les deux côtés ont
+    avancé (jamais de force : fusion par Claude), lance `tests/run.sh` si les outils sont là, pousse les deux branches ;
+    identification GitHub dans le navigateur à la première fois (Git Credential Manager).
+  - **Paquet de commits** `livraison/ROADLINE-commits.bundle` + `scripts/linux/recevoir-bundle.sh` : les commits du PC avec
+    leur historique pour la session distante (vérifie, fusionne, teste, pousse). Fin des commits « Synchronisation » géants.
+  - Rappel : la villa 01 et les maps plasma sont retirées au démarrage ; le fondateur supprime à la main les mappings en trop.
+
+- **V12.35 · session web** (12/10/2026, en parallèle de la V12.35 Windows) — « héberger le site sur le VPS ? il a l'air surchargé au chargement » + « audit global » :
   - Site : mesuré dans Chromium (défilement 4 s) : les effets plein écran (aurore floutée, grain, pluie, brouillard,
     backdrop-filter) divisent la fluidité par 2. **Mode léger automatique** (`html.lite`) : téléphone, ≤ 4 cœurs ou ≤ 4 Go,
     ou < 35 images/s après l'ouverture ; `?lite` / `?full` pour forcer. 0 erreur JS. Netlify gardé (CDN, ne charge pas le

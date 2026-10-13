@@ -97,6 +97,9 @@ if (Test-Path -LiteralPath $Ours) { [IO.Directory]::Delete($Ours, $true) } # ret
 Copy-Item -LiteralPath (Join-Path $Repo 'server\resources\[gtasoon]') -Destination $Res -Recurse -Force
 # Dossier où gs_admin écrit les fusions de maps (vide dans le zip, donc absent ; FiveM ne sait pas le créer)
 [void][IO.Directory]::CreateDirectory((Join-Path $Ours 'gsa_zz_fusion_occlusion\stream'))
+# V12.37 : les points déplacés en jeu par le staff (gs_bridge\points-deplaces.json, écrit par le serveur) sont gardés d'une version à l'autre
+$pts = Join-Path $stage 'resources\[gtasoon]\gs_bridge\points-deplaces.json'
+if (Test-Path -LiteralPath $pts) { Copy-Item -LiteralPath $pts -Destination (Join-Path $Ours 'gs_bridge\points-deplaces.json') -Force; Say '  Points déplacés par le staff conservés (gs_bridge\points-deplaces.json)' 'Green' }
 # [addons] (tes véhicules / mods) : copié seulement s'il n'existe pas encore, jamais écrasé
 if (-not (Test-Path -LiteralPath (Join-Path $Res '[addons]'))) { Copy-Item -LiteralPath (Join-Path $Repo 'server\resources\[addons]') -Destination $Res -Recurse -Force }
 Get-ChildItem -LiteralPath (Join-Path $Repo 'server\cfg') -File | Where-Object { $_.Name -ne 'secrets.cfg' } |

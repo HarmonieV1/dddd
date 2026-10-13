@@ -17,6 +17,22 @@ CreateThread(function()
     if GSJ.job then GSJ.memberships = lib.callback.await('gs_jobs:getMemberships', false) or {} end
 end)
 
+--- V12.37 · Relit le métier à la source (gs_bridge : copie client des données Qbox, mise à jour par les événements du
+--- framework) au moment de décider : jamais une valeur périmée entre deux `gs_bridge:client:jobUpdated`.
+function GSJ.refreshJob()
+    GSJ.job = Bridge:GetJob()
+    return GSJ.job
+end
+
+--- V12.37 · Demande de prise / fin de service. On envoie l'état VOULU (et pas « bascule ») : le serveur ne rebascule pas si
+--- c'est déjà le cas. Avant, un double déclenchement (PNJ + zone, [E] + clic) faisait « Prise de service » puis « Fin de
+--- service » à la suite, et le garage refusait ensuite (hors service). `remote` = par téléphone (de n'importe où).
+function GSJ.toggleDuty(remote)
+    local j = GSJ.refreshJob()
+    if not j then return end
+    TriggerServerEvent('gs_jobs:server:toggleDuty', remote == true, not j.onduty)
+end
+
 function GSJ.isJob(name, minGrade)
     local j = GSJ.job
     return j ~= nil and j.name == name and j.grade >= (minGrade or 0)

@@ -71,7 +71,8 @@ Le choix est retenu : les mises à jour ne le changent pas.
 
 > **PC = test, VPS = officiel.** METTRE-A-JOUR.bat ne change que le serveur du PC (ta base locale, tes essais). Rien ne part sur le VPS
 > tant que tu ne lances pas METTRE-A-JOUR-OVH.bat. Ce qui est envoyé : RoadLine, les autres ressources modifiées depuis le dernier envoi,
-> les `cfg`. Jamais la base, ni `secrets.cfg` / `permissions.cfg` (réglages du VPS : option 12 si tu veux les remplacer).
+> les `cfg`, `permissions.cfg` compris (V12.36 : groupes et ACE, dont « admin » pour /optin ; le staff ajouté à la main sur le VPS est conservé).
+> Jamais la base ni `secrets.cfg` (réglages du VPS : option 12 si tu veux les remplacer).
 
 1. Sur le PC : **METTRE-A-JOUR.bat** avec le nouveau zip, puis un test rapide en local.
 2. **METTRE-A-JOUR-OVH.bat**.
@@ -86,7 +87,7 @@ Sur le VPS, il :
 - arrête le serveur, installe la mise à jour et redémarre (environ 30 s de coupure) ;
 - garde les **3 versions précédentes**.
 
-**Jamais envoyés** : `secrets.cfg` et `permissions.cfg` (le staff et les clés du VPS restent ceux du VPS), ni la base.
+**Jamais envoyés** : `secrets.cfg` (clés et codes du VPS) et la base. `permissions.cfg` est envoyé depuis la V12.36 (structure des groupes et ACE) ; les lignes `add_principal identifier…` écrites à la main sur le VPS sont gardées à la fin du fichier.
 
 Si une mise à jour pose problème : `GERER-OVH.bat` → **Revenir à la version précédente** (10 secondes).
 
@@ -164,7 +165,7 @@ Toutes les actions sont journalisées (« Web · pseudo », « Discord · pseudo
 ## 6. Éditer un réglage sur le VPS
 
 Le plus simple : modifie les réglages sur le PC (CONFIGURER-DISCORD.bat, `cfg\secrets.cfg`), puis `GERER-OVH.bat` → **12**.
-Sinon, les fichiers à modifier sur le VPS sont `secrets.cfg` (codes, webhooks, jeton du bot) et `permissions.cfg` (staff). Utilise WinSCP ou FileZilla en SFTP, ou `sudo nano /home/fivem/server-data/cfg/secrets.cfg`, puis `GERER-OVH.bat` → **Redémarrer**.
+Sinon, le fichier à modifier sur le VPS est `secrets.cfg` (codes, webhooks, jeton du bot, et le staff : `add_principal identifier.license:… group.god`, posé par DEVENIR-ADMIN puis GERER-OVH → 12). `permissions.cfg` (groupes, ACE) vient du PC à chaque METTRE-A-JOUR-OVH. Utilise WinSCP ou FileZilla en SFTP, ou `sudo nano /home/fivem/server-data/cfg/secrets.cfg`, puis `GERER-OVH.bat` → **Redémarrer**.
 
 ## Dépannage
 
@@ -181,3 +182,10 @@ Sinon, les fichiers à modifier sur le VPS sont `secrets.cfg` (codes, webhooks, 
 | METTRE-A-JOUR-OVH annonce une ancienne version | Il propose de mettre le PC à jour d'abord : réponds O |
 | `items.lua … '}' expected near 'eau'` (inventaire, coffres, qbx_core en erreur) | Relance `GERER-OVH.bat` : il répare les fichiers d'objets tout seul et redémarre (ou `sudo roadline reparer-objets`) |
 | Une mise à jour casse quelque chose | `GERER-OVH.bat` → **Revenir à la version précédente**, puis **Console** pour voir l'erreur |
+
+## Points déplacés en jeu (V12.37)
+
+Les points déplacés depuis F11 sont gardés dans la mémoire du serveur (KVP) et survivent à « roadline maj ». Depuis la V12.37, gs_bridge
+les écrit aussi dans `resources/[gtasoon]/gs_bridge/points-deplaces.json` : METTRE-A-JOUR-OVH emporte celui du PC et le VPS l'importe au
+démarrage (une seule fois par version du fichier). Si l'archive n'en contient pas, le VPS garde le sien. Le PC est la référence : cale les
+points sur le PC (ou `/pointsexport` en console pour écrire le fichier tout de suite), puis METTRE-A-JOUR-OVH.

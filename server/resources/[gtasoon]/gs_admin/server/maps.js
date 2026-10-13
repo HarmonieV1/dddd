@@ -443,16 +443,35 @@ function activeEnsures(text) {
   return String(text).split(/\r?\n/).map((l) => l.match(/^\s*ensure\s+(\S+)/)).filter(Boolean).map((x) => x[1]);
 }
 
+/** Lignes « ensure x » (actives ou commentées) et notes « ## x : … » de ces ressources retirées de cfg/addons.cfg, le reste
+ *  intact (fins de ligne gardées). Rien si le fichier n'existe pas (VPS sans mods). V12.36 : factorisé (maps et scripts). */
+function removeCfgLines(cfgFile, names) {
+  if (!names.length) return;
+  try {
+    const text = fs.readFileSync(cfgFile, 'utf8');
+    const eol = text.includes('\r\n') ? '\r\n' : '\n';
+    const kept = text.split(/\r?\n/).filter((line) => {
+      const m = line.match(/^\s*#?\s*ensure\s+(\S+)/) || line.match(/^\s*##\s*(\S+)\s*:/);
+      return !(m && names.includes(m[1]));
+    });
+    writeFile(cfgFile, kept.join(eol));
+  } catch (e) { /* pas de addons.cfg (VPS sans mods) */ }
+}
+
 /** V12.16 · Supprime DÉFINITIVEMENT toutes les maps du disque (demande du 12/10 : « retire-les totalement de ma base »).
  *  serverData = dossier server-data ; root = dossier parent (C:\GTASOON sur le PC). Seules les vraies maps de
  *  resources/[addons] (gsa_* avec .ymap / .ytyp / .ybn) : vêtements et véhicules intacts. Pour chacune : dossier effacé,
  *  ligne retirée de cfg/addons.cfg, copie de mods-tri/maps et archive de mods-a-trier effacées, nom ajouté à
- *  mods-retires.txt (IMPORTER-MODS ne la réinstallera jamais, même depuis une archive groupée). */
+ *  mods-retires.txt (IMPORTER-MODS ne la réinstallera jamais, même depuis une archive groupée).
+ *  opts.only = noms exacts ; opts.filter(name) = prédicat (V12.36 : retrait par motif) ; opts.keepArchives = archives gardées. */
 function deleteMapsOnDisk(serverData, root, opts = {}) {
   const addons = path.join(serverData, 'resources', '[addons]');
   const done = { maps: [], errors: [] };
   let dirs = [];
-  try { dirs = fs.readdirSync(addons, { withFileTypes: true }).filter((d) => d.isDirectory() && /^gsa_[a-z0-9_]+$/.test(d.name) && (!opts.only || opts.only.includes(d.name))); } catch (e) { return done; }
+  try {
+    dirs = fs.readdirSync(addons, { withFileTypes: true }).filter((d) => d.isDirectory() && /^gsa_[a-z0-9_]+$/.test(d.name)
+      && (!opts.only || opts.only.includes(d.name)) && (!opts.filter || opts.filter(d.name)));
+  } catch (e) { return done; }
   const maps = dirs.map((d) => scanResource(d.name, path.join(addons, d.name))).filter((m) => m.ymaps > 0 || m.streamed.length > 0);
   if (!maps.length) return done;
   const names = maps.map((m) => m.name);
@@ -460,16 +479,7 @@ function deleteMapsOnDisk(serverData, root, opts = {}) {
     try { removeTree(path.join(addons, m.name)); done.maps.push(m.name); } catch (e) { done.errors.push(`${m.name} : ${e.message}`); }
   }
   // cfg/addons.cfg : lignes de ces maps retirées (actives ou déjà commentées)
-  const cfgFile = path.join(serverData, 'cfg', 'addons.cfg');
-  try {
-    const text = fs.readFileSync(cfgFile, 'utf8');
-    const eol = text.includes('\r\n') ? '\r\n' : '\n';
-    const kept = text.split(/\r?\n/).filter((line) => {
-      const m = line.match(/^\s*#?\s*ensure\s+(\S+)/);
-      return !(m && names.includes(m[1]));
-    });
-    writeFile(cfgFile, kept.join(eol));
-  } catch (e) { /* pas de addons.cfg (VPS sans mods) */ }
+  removeCfgLines(path.join(serverData, 'cfg', 'addons.cfg'), names);
   const shorts = names.map((n) => n.replace(/^gsa_/, ''));
   for (const s of shorts) { try { removeTree(path.join(root, 'mods-tri', 'maps', s)); } catch (e) { /* rien */ } }
   if (!opts.keepArchives) try {
@@ -501,6 +511,74 @@ const RETIRED_MAPS = [
   'gsa_patoche_plasmagame_pack', 'gsa_patoche_plasmagame_dlc_pack', 'gsa_patoche_plasmakart_pack', 'gsa_patoche_plasmakart_dlc_pack',
   'gsa_patoche_plasmatron_pack', 'gsa_patoche_plasmatron', // archive coupée le 12/10 : jamais réinstallée, quel que soit son nom
 ];
+
+// V12.36 · Retraits par MOTIF (sous-chaînes, minuscules) : « plasmagamedlc2 encore présent, redline à supprimer » — ces noms
+// n'étaient pas dans la liste exacte, donc jamais supprimés au démarrage et réinstallés par IMPORTER-MODS depuis mods-a-trier.
+// Toute ressource de resources/[addons] dont le nom contient un motif est arrêtée, supprimée, notée dans mods-retires.txt,
+// et son script compagnon (patoche_plasmagame_script…) avec elle. Lu aussi par importer-mods.ps1 (regex sur ce bloc : une
+// chaîne par motif, sur une seule ligne, sans guillemet dans les commentaires).
+const RETIRED_PATTERNS = ['plasmagame', 'plasmakart', 'plasmatron', 'villa_01', 'redline'];
+// Maps remises en service après un retrait (= $Restored de importer-mods.ps1) : jamais supprimées à cause de mods-retires.txt
+const RESTORED_MAPS = []; // V12.36 : migration V12.31 (villa bunker remise) terminée le 12/10 ; miroir de $Restored dans importer-mods.ps1
+
+/** V12.36 · Pourquoi une ressource est retirée : { by: 'nom' } (RETIRED_MAPS), { by: 'motif', pattern } (RETIRED_PATTERNS),
+ *  { by: 'liste' } (`listed` = noms de mods-retires.txt, sauf RESTORED_MAPS), ou null. */
+function retiredReason(name, listed = []) {
+  const n = String(name || '');
+  if (RETIRED_MAPS.includes(n)) return { by: 'nom' };
+  const low = n.toLowerCase();
+  const pattern = RETIRED_PATTERNS.find((p) => low.includes(p));
+  if (pattern) return { by: 'motif', pattern };
+  if (listed.includes(low) && !RESTORED_MAPS.includes(low)) return { by: 'liste' };
+  return null;
+}
+
+/** Texte de la raison pour la console : « motif « redline » », « mods-retires.txt », « décision du 12/10 ». */
+function retiredLabel(r) {
+  if (!r) return '';
+  if (r.by === 'motif') return `motif « ${r.pattern} »`;
+  if (r.by === 'liste') return 'mods-retires.txt';
+  return 'décision du 12/10';
+}
+
+/** Noms de ressources (gsa_ + nom court) inscrits dans root/mods-retires.txt ; [] si absent. */
+function readRetiredList(root) {
+  try {
+    return fs.readFileSync(path.join(root, 'mods-retires.txt'), 'utf8').split(/\r?\n/).map((x) => x.trim().toLowerCase())
+      .filter((x) => x && !x.startsWith('#')).map((x) => (x.startsWith('gsa_') ? x : 'gsa_' + x));
+  } catch (e) { return []; }
+}
+
+/** V12.36 · Scripts compagnons (ressources de resources/[addons] SANS préfixe gsa_ : patoche_plasmagame_script…) retirés
+ *  par motif (`why(name)` vrai) : dossier supprimé, ligne enlevée de cfg/addons.cfg. Jamais rien hors de [addons]. */
+function deleteCompanionsOnDisk(serverData, why) {
+  const addons = path.join(serverData, 'resources', '[addons]');
+  const done = { scripts: [], errors: [] };
+  let dirs = [];
+  try { dirs = fs.readdirSync(addons, { withFileTypes: true }).filter((d) => d.isDirectory() && /^[a-z0-9_\-]+$/i.test(d.name) && !/^gsa_/i.test(d.name) && why(d.name)); } catch (e) { return done; }
+  if (!dirs.length) return done;
+  for (const d of dirs) {
+    try { removeTree(path.join(addons, d.name)); done.scripts.push(d.name); } catch (e) { done.errors.push(`${d.name} : ${e.message}`); }
+  }
+  removeCfgLines(path.join(serverData, 'cfg', 'addons.cfg'), dirs.map((d) => d.name));
+  return done;
+}
+
+/** V12.36 · Retrait d'UNE map depuis F11 (« on arrête juste la ressource, on ne la supprime pas vraiment ») : dossier supprimé,
+ *  nom dans mods-retires.txt (jamais réimportée), ligne enlevée de cfg/addons.cfg ; archive gardée dans mods-a-trier. L'appelant
+ *  a arrêté la ressource avant. Renvoie { ok, msg, deleted }. Dossier verrouillé : noté quand même, supprimé au démarrage suivant
+ *  (le démarrage lit mods-retires.txt). Dossier introuvable dans [addons] : au moins la ligne de cfg passe en commentaire. */
+function retireMap(serverData, root, name, who) {
+  if (!/^gsa_[a-z0-9_]+$/.test(name)) return { ok: false, deleted: false, msg: 'Map inconnue.' };
+  let done = { maps: [], errors: [] };
+  try { done = deleteMapsOnDisk(serverData, root, { only: [name], keepArchives: true }); } catch (e) { done.errors.push(`${name} : ${e.message}`); }
+  if (done.maps.length) return { ok: true, deleted: true, msg: 'Map retirée : arrêtée, dossier supprimé, notée dans mods-retires.txt (jamais réimportée), ligne enlevée de cfg/addons.cfg. Archive gardée dans mods-a-trier.' };
+  if (done.errors.length) return { ok: true, deleted: false, msg: `Map arrêtée et notée dans mods-retires.txt, dossier pas encore supprimé (${done.errors[0]}) : il le sera au prochain démarrage.` };
+  const day = new Date().toISOString().slice(0, 10);
+  const inCfg = disableInCfg(path.join(serverData, 'cfg', 'addons.cfg'), name, `retirée en jeu (F11) par ${String(who || 'staff').replace(/[^\w .-]/g, '')} le ${day}`);
+  return { ok: true, deleted: false, msg: inCfg ? 'Map arrêtée et désactivée dans cfg/addons.cfg (dossier introuvable dans resources/[addons] : rien à supprimer).'
+    : 'Map arrêtée. Dossier introuvable dans resources/[addons] et ligne absente de cfg/addons.cfg : rien d\'autre à faire.' };
+}
 
 const FUSION_MANIFEST = "-- Fusion automatique des fichiers d'occlusion en conflit entre maps (gs_admin/server/maps.js).\n" +
   "-- Lancée APRÈS les maps (dev.cfg / prod.cfg), donc prioritaire. Contenu régénéré à chaque démarrage si besoin.\n" +
@@ -539,7 +617,7 @@ function applyFusions(maps, fusionDir) {
   return written;
 }
 
-if (typeof module !== 'undefined' && module.exports) module.exports = { cleanName, deleteMapsOnDisk, pruneFusions, disableInCfg, inflateRsc7, entitiesOf, memoryMB, memorySplit, pagesSize, isVanillaName, placesOf, scanResource, conflictsOf, scanAll, labelOf, mergeOcclusion, applyFusions, RETIRED_MAPS, activeEnsures, publicBlips, PUBLIC, joaat, ACTIVITY, activityOf, rscTruncated, truncatedFiles, _setLuaFs: (f) => { luaFs = f; } }; // tests Node seulement
+if (typeof module !== 'undefined' && module.exports) module.exports = { cleanName, deleteMapsOnDisk, pruneFusions, disableInCfg, inflateRsc7, entitiesOf, memoryMB, memorySplit, pagesSize, isVanillaName, placesOf, scanResource, conflictsOf, scanAll, labelOf, mergeOcclusion, applyFusions, RETIRED_MAPS, RETIRED_PATTERNS, RESTORED_MAPS, retiredReason, retiredLabel, readRetiredList, deleteCompanionsOnDisk, retireMap, removeCfgLines, activeEnsures, publicBlips, PUBLIC, joaat, ACTIVITY, activityOf, rscTruncated, truncatedFiles, _setLuaFs: (f) => { luaFs = f; } }; // tests Node seulement
 
 if (typeof GetCurrentResourceName === 'function') {
   const self = GetCurrentResourceName();
@@ -580,17 +658,19 @@ if (typeof GetCurrentResourceName === 'function') {
     return cache;
   };
   exports('MapScan', scan);
-  // V12.15 · Retirer une map depuis F11 (super-admin / fondateur, vérifié côté Lua) : arrêtée tout de suite, ligne commentée
-  // dans cfg/addons.cfg (server-data/cfg, à côté de resources/) → plus chargée aux démarrages suivants, réversible.
+  // V12.15 · Retirer une map depuis F11 (super-admin / fondateur, vérifié côté Lua). V12.36 : vraiment supprimée (avant : seulement
+  // arrêtée + ligne commentée, le dossier restait et IMPORTER-MODS le réinstallait) : arrêt, dossier effacé, nom dans
+  // mods-retires.txt, ligne enlevée de cfg/addons.cfg, comme RETIRED_MAPS au démarrage ; archive gardée dans mods-a-trier.
   exports('DisableMap', (name, who) => {
     const known = scan().maps.some((m) => m.name === name);
     if (!known || !/^gsa_[a-z0-9_]+$/.test(name)) return { ok: false, msg: 'Map inconnue.' };
-    const cfgFile = path.resolve(GetResourcePath(name), '..', '..', '..', 'cfg', 'addons.cfg');
-    const day = new Date().toISOString().slice(0, 10);
-    const inCfg = disableInCfg(cfgFile, name, `retirée en jeu (F11) par ${String(who || 'staff').replace(/[^\w .-]/g, '')} le ${day}`);
+    const serverData = path.resolve(GetResourcePath(name), '..', '..', '..');
     StopResource(name);
+    const r = retireMap(serverData, path.resolve(serverData, '..'), name, who);
     cache = null;
-    return { ok: true, msg: inCfg ? 'Map retirée : arrêtée, et plus chargée aux prochains démarrages.' : 'Map arrêtée. Ligne introuvable dans cfg/addons.cfg : mets un # devant à la main.' };
+    console.log(`${r.deleted ? '^2' : '^3'}[gs_admin] Map retirée en jeu (F11, ${String(who || 'staff').replace(/[^\w .-]/g, '')}) : ${name} — ${r.msg}^7`);
+    broadcastBlips(); // V12.36 : son blip public disparaît chez tous les joueurs tout de suite
+    return { ok: r.ok, msg: r.msg };
   });
   // V12.16 · Supprimer définitivement toutes les maps du disque (dossiers, lignes de addons.cfg, copies, archives)
   exports('DeleteAllMaps', () => {
@@ -636,7 +716,8 @@ if (typeof GetCurrentResourceName === 'function') {
     const cfgFile = path.resolve(GetResourcePath(self), '..', '..', '..', 'cfg', 'addons.cfg');
     let text = '';
     try { text = fs.readFileSync(cfgFile, 'utf8'); } catch (e) { return []; }
-    return activeEnsures(text).filter((n) => /^gsa_/.test(n) && !RETIRED_MAPS.includes(n))
+    const listed = readRetiredList(path.resolve(GetResourcePath(self), '..', '..', '..', '..'));
+    return activeEnsures(text).filter((n) => /^gsa_/.test(n) && !retiredReason(n, listed)) // V12.36 : retraits par nom, motif ou liste
       .map((name) => ({ name, state: GetResourceState(name) })).filter((x) => x.state !== 'started')
       .filter((x) => { const d = GetResourcePath(x.name); if (!d) return x.state === 'missing'; try { const s = scanResource(x.name, d); return s.ymaps > 0 || s.streamed.length > 0; } catch (e) { return true; } });
   };
@@ -647,17 +728,27 @@ if (typeof GetCurrentResourceName === 'function') {
     try { text = fs.readFileSync(cfgFile, 'utf8'); } catch (e) { return []; }
     return activeEnsures(text).filter((n) => !/^gsa_/.test(n)).map((name) => ({ name, state: GetResourceState(name) })).filter((x) => x.state !== 'started');
   };
-  // V12.18 · Maps retirées par décision (RETIRED_MAPS) : arrêtées puis supprimées, avant la fusion (qui ne les voit plus)
+  // V12.18 · Maps retirées par décision : arrêtées puis supprimées, avant la fusion (qui ne les voit plus). V12.36 : par NOM
+  // (RETIRED_MAPS), par MOTIF (RETIRED_PATTERNS : plasmagame_dlc2, redline… restaient, absents de la liste exacte) et par
+  // mods-retires.txt (retrait F11 dont le dossier était verrouillé, VPS après METTRE-A-JOUR-OVH) ; leurs scripts compagnons
+  // (sans préfixe gsa_) retirés par motif aussi. Seulement dans resources/[addons] : rien d'autre n'est touché.
+  const inAddons = (n) => { const d = GetResourcePath(n); return !!d && path.basename(path.dirname(d)) === '[addons]'; };
   setTimeout(() => {
-    const present = RETIRED_MAPS.filter((n) => GetResourceState(n) !== 'missing');
-    if (!present.length) return;
-    for (const n of present) if (GetResourceState(n) === 'started') StopResource(n);
     const serverData = path.resolve(GetResourcePath(self), '..', '..', '..');
-    let done = { maps: [], errors: [] };
-    try { done = deleteMapsOnDisk(serverData, path.resolve(serverData, '..'), { only: present, keepArchives: true }); } catch (e) { done.errors.push(e.message); }
-    cache = null;
-    if (done.maps.length) console.log(`^2[gs_admin] Maps retirées (décision du 12/10) : ${done.maps.join(', ')}^7`);
-    for (const e of done.errors) console.log(`^1[gs_admin] Retrait de map impossible : ${e}^7`);
+    const root = path.resolve(serverData, '..');
+    const listed = readRetiredList(root);
+    const why = (n) => retiredReason(n, listed);
+    for (let i = 0; i < GetNumResources(); i++) {
+      const n = GetResourceByFindIndex(i);
+      if (n && why(n) && GetResourceState(n) === 'started' && inAddons(n)) StopResource(n);
+    }
+    let done = { maps: [], errors: [] }, comp = { scripts: [], errors: [] };
+    try { done = deleteMapsOnDisk(serverData, root, { filter: why, keepArchives: true }); } catch (e) { done.errors.push(e.message); }
+    try { comp = deleteCompanionsOnDisk(serverData, (n) => { const r = why(n); return r && r.by === 'motif' ? r : null; }); } catch (e) { comp.errors.push(e.message); }
+    if (done.maps.length || comp.scripts.length) cache = null;
+    for (const n of done.maps) console.log(`^2[gs_admin] Map retirée (${retiredLabel(why(n))}) : ${n} supprimée^7`);
+    for (const n of comp.scripts) console.log(`^2[gs_admin] Script compagnon retiré (${retiredLabel(why(n))}) : ${n} supprimé^7`);
+    for (const e of [...done.errors, ...comp.errors]) console.log(`^1[gs_admin] Retrait de map impossible : ${e}^7`);
   }, 8000);
   // V12.29 · Blips publics : envoyés à chaque joueur qui les demande (client/mapblips.lua), et à tous quand la liste change
   const lastAsk = new Map();

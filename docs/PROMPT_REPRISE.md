@@ -1,6 +1,6 @@
 # Prompt de reprise — RoadLine RP (à coller dans une nouvelle session Claude)
 
-> Copie tout ce qui est sous la ligne ci-dessous dans ta deuxième session. Mis à jour le 12/10/2026 (V12.35).
+> Copie tout ce qui est sous la ligne ci-dessous dans ta deuxième session. Mis à jour le 13/10/2026 (V12.38).
 
 ---
 
@@ -13,7 +13,7 @@ l'optimisation.
 1. Lis **`docs/AUDIT_V12_35.md`** (état et risques au 12/10), puis **`docs/ETAT_PROJET.md`** en entier (récap complet, historique V12.x, décisions) puis `docs/MLO.md` et
    `docs/IMPORTER_MODS.md` (maps payantes, scripts compagnons, diagnostic).
 2. Vérifie que tu es à jour : `git fetch origin && git log -1 origin/feature/phase1-bridge` doit montrer
-   « V12.35 : site en mode léger, audit global » (ou plus récent).
+   « V12.38 : fusion des sessions Windows (V12.37) et web (V12.35) » (ou plus récent).
 
 ## Règles permanentes (à respecter sans exception)
 - **Tout en français** (code commenté, messages en jeu, docs, réponses).
@@ -21,6 +21,8 @@ l'optimisation.
 - **Demande-moi avant de supprimer quoi que ce soit** (fichier, map, PDF, ressource).
 - **Aucune vraie marque** (voitures, mode, police réelle) : risque de bannissement Cfx.re. Seulement le « lore GTA ».
 - Lance **`bash tests/run.sh`** avant chaque push (un hook pre-push le fait aussi) : tout doit être vert.
+- Si l'utilisateur t'envoie `ROADLINE-commits.bundle` (commits du PC Windows) : `bash scripts/linux/recevoir-bundle.sh ROADLINE-commits.bundle`
+  (vérifie, fusionne, teste, pousse). Sur le PC Windows, c'est `POUSSER-GITHUB.bat` (voir `docs/GITHUB.md`).
 - Pousse sur **les deux branches** :
   `for b in feature/phase1-bridge claude/gta-rp-architecture-stack-pbvdxz; do git push origin "feature/phase1-bridge:$b"; done`
 - Version : `gs_version` dans `server/server.cfg.example` et `VERSION` dans `tools/pdf.py` (+ `tools/backtest.py`,
@@ -41,7 +43,7 @@ l'optimisation.
 - Sur le PC : `C:\GTASOON\` (server-data, `mods-a-trier` = archives à importer, `mods-tri` = tri + RAPPORT-MODS.txt,
   `mods-tri\scripts-a-verifier`, `mods-retires.txt`).
 - Lecteur de maps : `gs_admin/server/maps.js` (scan des .ymap, conflits d'occlusion fusionnés dans
-  `gsa_zz_fusion_occlusion`, `RETIRED_MAPS`, `PUBLIC` = blips publics, `ACTIVITY`, contrôle d'intégrité) ;
+  `gsa_zz_fusion_occlusion`, `RETIRED_MAPS` + `RETIRED_PATTERNS` (V12.36 : retrait par motif), `PUBLIC` = blips publics, `ACTIVITY`, contrôle d'intégrité) ;
   menu staff F11 → Monde et lieux → Mappings installés (`gs_admin/client/quick.lua`).
 
 ## Pièges FXServer déjà rencontrés (ne pas refaire)
@@ -55,15 +57,22 @@ l'optimisation.
 F1 téléphone, F2 inventaire, F3 progression, F4 intervention (police / EMS), F5 emotes, F6 métiers, F7 duo, F9 gang,
 F10/F11 staff, I aide, K inventaire proche, W radial, H mains en l'air, L verrouiller, B ceinture, **U garde-robe**.
 
-## État au 12/10/2026 (V12.35)
+## État au 13/10/2026 (V12.38)
 - Récents : clés de véhicule en objet (`gs_carkey`), vêtements et tenues en objets + garde-robe (U), apparition fiable
   dans les véhicules, blips publics des maps, contrôle « chez moi » des maps (F11), scripts compagnons des maps payantes
   installés par IMPORTER-MODS, intégrité des maps vérifiée au démarrage, outil REPARER-FIVEM.bat, site de doc HTML.
 - Maps : villa moderne 01 **retirée** (12/10), **villa bunker remise** ; retirées aussi : laser game, karting (+ DLC),
   plasmatron (V12.33), Willie's, alcool Paleto, Moreo Gym, casse, Benny's original, Digital Den, Shadow Complex.
-  `RETIRED_MAPS` (maps.js) = source unique : le serveur les supprime au démarrage, IMPORTER-MODS ne les réinstalle jamais.
-- Deux sessions Claude (web + poste Windows) : la V12.33 du poste Windows a été intégrée dans git à la main. Toujours
-  pousser sur GitHub pour que l'autre session reparte de la même base. Désactivées (archives coupées, à retélécharger) :
+  `RETIRED_MAPS` (noms exacts) + `RETIRED_PATTERNS` (motifs : plasmagame, plasmakart, plasmatron, villa_01, redline) dans maps.js = source
+  unique : le serveur les supprime au démarrage, le retrait F11 supprime aussi le dossier, IMPORTER-MODS ne les réinstalle jamais (V12.36).
+- **V12.37 (13/10)** : gs_jobs (une interaction par point, service par état voulu + anti-rebond, garage : messages exacts, armurerie
+  prêtée et reprise), gs_details (holster réécrit, `/dosreglage`, `DAMAGE` adouci), gs_weather (interventions créées à l'approche sur
+  la route), gs_rental (13 comptoirs), gs_admin / gs_bridge / gs_markers (placement libre, « PNJ et objets » reliés aux métiers / gangs,
+  table `gs_staff_peds`), gs_bridge/server/points_fichier.lua (`points-deplaces.json` : les points déplacés passent du PC au VPS via
+  METTRE-A-JOUR-OVH ; gardé par METTRE-A-JOUR et « roadline maj »), retouches Qbox : PPA retiré de qbx_cityhall, service / garage de
+  qbx_police et qbx_ambulancejob neutralisés (motif à confirmer sur la version installée : avertissement jaune si absent).
+- Deux sessions Claude (web + poste Windows) : V12.33 puis V12.37 du poste Windows intégrées par la session web (V12.38 =
+  fusion). Côté Windows : POUSSER-GITHUB.bat (docs/GITHUB.md) pour envoyer directement sur GitHub. Désactivées (archives coupées, à retélécharger) :
   beach party, soccer / soccer_cloth, plasmatron.
 
 ## En attente (à reprendre avec moi)

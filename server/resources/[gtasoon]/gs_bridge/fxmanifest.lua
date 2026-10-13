@@ -8,6 +8,7 @@ version '0.2.0'
 
 dependencies { 'oxmysql', 'qbx_core', 'ox_inventory' }
 
-server_scripts { '@oxmysql/lib/MySQL.lua', 'server/main.lua', 'server/points.lua', 'server/carkeys.lua' }
+-- points_fichier.lua AVANT points.lua : il importe points-deplaces.json dans les KVP que points.lua lit (V12.37)
+server_scripts { '@oxmysql/lib/MySQL.lua', 'server/main.lua', 'server/points_fichier.lua', 'server/points.lua', 'server/carkeys.lua' }
 client_scripts { 'client/main.lua', 'client/points.lua' }
 files { 'shared/points.lua' } -- inclus par nos autres ressources (@gs_bridge/shared/points.lua)

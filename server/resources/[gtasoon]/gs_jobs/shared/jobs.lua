@@ -8,6 +8,10 @@
 -- grades[n]   = { label, salary (par paie, en service), boss = true pour la direction }
 -- points      = duty / boss / stash / armory / garage (listes, plusieurs points possibles) ; déplaçables en jeu :
 --               menu staff F11 → « Points de métier » (sauvegardé en BDD, prioritaire sur ces coords)
+-- peds        = V12.36 · PNJ aux points (agent d'accueil à la prise de service, assistant à la direction, responsable du parc au
+--               garage), portés par gs_markers : peds.duty[i] / peds.boss[i] / peds.garage[i] = { model (ped du jeu), heading
+--               (direction du regard : le PNJ se tient 2 m derrière le point et regarde vers lui), scenario }. Même index que la
+--               liste de points ; il suit le point quand le staff le déplace. Caps à caler en jeu.
 -- outfits     = tenues de service au vestiaire (points.cloakroom) : { label, minGrade, male = {…}, female = {…} }
 --               composants : [n° composant] = { drawable, texture } ; props : p0 chapeau, p1 lunettes (à caler en jeu)
 -- armory      = équipement de service gratuit (en service) : { item, max, minGrade } ; on complète jusqu'à `max`
@@ -41,6 +45,11 @@ Jobs = {
             garage = {
                 { coords = vec3(458.9, -1017.1, 28.2), spawn = vec4(446.1, -1025.4, 28.6, 5.0) },
             },
+        },
+        peds = { -- V12.36 · accueil du commissariat, secrétariat du capitaine, responsable du parc
+            duty = { { model = 's_f_y_cop_01', heading = 180.0, scenario = 'WORLD_HUMAN_CLIPBOARD' } },
+            boss = { { model = 's_m_y_cop_01', heading = 90.0, scenario = 'WORLD_HUMAN_STAND_MOBILE' } },
+            garage = { { model = 's_m_m_autoshop_02', heading = 90.0, scenario = 'WORLD_HUMAN_CLIPBOARD' } },
         },
         vehicles = {
             { model = 'police', label = 'Cruiser', minGrade = 0 },
@@ -97,6 +106,13 @@ Jobs = {
                 { coords = vec3(-457.6, 6024.6, 31.34), spawn = vec4(-462.3, 6029.9, 31.34, 225.0) },
             },
         },
+        peds = { -- V12.36 · adjoints à l'accueil (Sandy, Paleto), secrétariat du shérif, parc
+            duty = { { model = 's_f_y_sheriff_01', heading = 300.0, scenario = 'WORLD_HUMAN_CLIPBOARD' },
+                     { model = 's_m_y_sheriff_01', heading = 45.0, scenario = 'WORLD_HUMAN_CLIPBOARD' } },
+            boss = { { model = 's_m_y_sheriff_01', heading = 90.0, scenario = 'WORLD_HUMAN_STAND_MOBILE' } },
+            garage = { { model = 's_m_m_autoshop_01', heading = 210.0, scenario = 'WORLD_HUMAN_CLIPBOARD' },
+                       { model = 's_m_y_sheriff_01', heading = 225.0, scenario = 'WORLD_HUMAN_COP_IDLES' } },
+        },
         vehicles = {
             { model = 'sheriff', label = 'Cruiser du shérif', minGrade = 0 },
             { model = 'sheriff2', label = 'SUV du shérif', minGrade = 1 },
@@ -143,6 +159,11 @@ Jobs = {
                 { coords = vec3(294.5, -574.0, 43.18), spawn = vec4(290.0, -570.0, 43.2, 70.0) },
             },
         },
+        peds = { -- V12.36 · infirmière d'accueil, chef de service, ambulancier au parc
+            duty = { { model = 's_f_y_scrubs_01', heading = 70.0, scenario = 'WORLD_HUMAN_CLIPBOARD' } },
+            boss = { { model = 's_m_m_doctor_01', heading = 160.0, scenario = 'WORLD_HUMAN_AA_COFFEE' } },
+            garage = { { model = 's_m_m_paramedic_01', heading = 70.0, scenario = 'WORLD_HUMAN_CLIPBOARD' } },
+        },
         vehicles = {
             { model = 'ambulance', label = 'Ambulance', minGrade = 0 },
             { model = 'lguard', label = 'Intervention rapide', minGrade = 2 },
@@ -183,6 +204,11 @@ Jobs = {
             garage = {
                 { coords = vec3(718.0, -1088.0, 22.3), spawn = vec4(706.0, -1080.0, 22.4, 90.0) },
             },
+        },
+        peds = { -- V12.36 · mécano à l'accueil, patron au bureau, mécano au parc
+            duty = { { model = 's_m_y_xmech_01', heading = 180.0, scenario = 'WORLD_HUMAN_CLIPBOARD' } },
+            boss = { { model = 's_m_m_autoshop_01', heading = 90.0, scenario = 'WORLD_HUMAN_STAND_MOBILE' } },
+            garage = { { model = 's_m_y_xmech_02', heading = 90.0, scenario = 'WORLD_HUMAN_SMOKING' } },
         },
         vehicles = {
             { model = 'towtruck', label = 'Dépanneuse', minGrade = 0 },
@@ -239,6 +265,11 @@ Jobs = {
                 { coords = vec3(-18.4, -1113.9, 26.67), spawn = vec4(-15.8, -1105.5, 26.67, 160.0) },
             },
         },
+        peds = { -- V12.36 · hôte d'accueil, assistante de direction, préparateur au parc
+            duty = { { model = 'a_m_y_business_01', heading = 160.0, scenario = 'WORLD_HUMAN_CLIPBOARD' } },
+            boss = { { model = 'a_f_y_business_01', heading = 250.0, scenario = 'WORLD_HUMAN_STAND_MOBILE' } },
+            garage = { { model = 'a_m_y_business_02', heading = 160.0, scenario = 'WORLD_HUMAN_CLIPBOARD' } },
+        },
         vehicles = { { model = 'baller', label = 'Véhicule d\'essai', minGrade = 0 } },
         outfits = {
             { label = 'Costume', minGrade = 0,
@@ -265,6 +296,11 @@ Jobs = {
             stash = { { label = 'Dossiers', coords = vec3(-712.5, 262.0, 84.1), slots = 20, weight = 20000, minGrade = 0 } },
             garage = { { coords = vec3(-706.0, 273.0, 83.1), spawn = vec4(-700.0, 277.0, 83.1, 300.0) } },
         },
+        peds = { -- V12.36 · agent d'accueil devant la vitrine, directeur, voiturier
+            duty = { { model = 'a_f_y_business_02', heading = 300.0, scenario = 'WORLD_HUMAN_CLIPBOARD' } },
+            boss = { { model = 'a_m_m_business_01', heading = 300.0, scenario = 'WORLD_HUMAN_STAND_MOBILE' } },
+            garage = { { model = 'a_m_y_business_03', heading = 300.0, scenario = 'WORLD_HUMAN_HANG_OUT_STREET' } },
+        },
         vehicles = { { model = 'tailgater', label = 'Voiture de l\'agence', minGrade = 0 } },
     },
 
@@ -276,6 +312,8 @@ Jobs = {
         billing = { label = 'Leçon de conduite', max = 5000 },
         grades = { [0] = { label = 'Moniteur', salary = 250 }, [1] = { label = 'Directeur', salary = 400, boss = true } },
         points = { boss = { vec3(241.4, -1378.9, 33.7) }, garage = { { coords = vec3(226.0, -1390.0, 30.5), spawn = vec4(232.4, -1393.6, 30.5, 140.0) } } },
+        peds = { boss = { { model = 'a_f_m_business_02', heading = 320.0, scenario = 'WORLD_HUMAN_CLIPBOARD' } }, -- V12.36 · secrétaire, moniteur au parc
+                 garage = { { model = 'a_m_y_business_02', heading = 140.0, scenario = 'WORLD_HUMAN_STAND_MOBILE' } } },
         vehicles = { { model = 'blista', label = 'Voiture-école', minGrade = 0 } },
     },
 
@@ -285,6 +323,7 @@ Jobs = {
         billing = { label = 'Honoraires', max = 50000 },
         grades = { [0] = { label = 'Avocat stagiaire', salary = 200 }, [1] = { label = 'Avocat', salary = 350 }, [2] = { label = 'Associé', salary = 500, boss = true } },
         points = { boss = { vec3(-551.6, -196.1, 38.2) }, stash = { { label = 'Dossiers', coords = vec3(-549.9, -193.2, 38.2), slots = 20, weight = 20000, minGrade = 0 } } },
+        peds = { boss = { { model = 'a_f_y_business_04', heading = 250.0, scenario = 'WORLD_HUMAN_CLIPBOARD' } } }, -- V12.36 · assistante du cabinet
     },
 
     judge = {
@@ -292,6 +331,7 @@ Jobs = {
         blip = { sprite = 419, color = 0, label = 'Tribunal (mairie)' },
         grades = { [0] = { label = 'Juge', salary = 450 }, [1] = { label = 'Président du tribunal', salary = 600, boss = true } },
         points = { boss = { vec3(-547.1, -199.4, 38.2) } },
+        peds = { boss = { { model = 's_m_m_security_01', heading = 250.0, scenario = 'WORLD_HUMAN_GUARD_STAND' } } }, -- V12.36 · huissier
     },
 
     weazel = {
@@ -300,6 +340,8 @@ Jobs = {
         billing = { label = 'Encart publicitaire', max = 20000 },
         grades = { [0] = { label = 'Pigiste', salary = 150 }, [1] = { label = 'Journaliste', salary = 280 }, [2] = { label = 'Rédacteur en chef', salary = 450, boss = true } },
         points = { boss = { vec3(-598.9, -929.9, 23.9) }, garage = { { coords = vec3(-582.4, -931.0, 23.9), spawn = vec4(-577.3, -935.9, 23.9, 90.0) } } },
+        peds = { boss = { { model = 'a_f_y_business_01', heading = 180.0, scenario = 'WORLD_HUMAN_CLIPBOARD' } }, -- V12.36 · accueil de la rédaction, technicien au parc
+                 garage = { { model = 'a_m_y_business_03', heading = 90.0, scenario = 'WORLD_HUMAN_STAND_MOBILE' } } },
         vehicles = { { model = 'rumpo', label = 'Van de reportage', minGrade = 0 } },
     },
 
@@ -312,6 +354,8 @@ Jobs = {
         grades = { [0] = { label = 'Serveur', salary = 150 }, [1] = { label = 'Barman', salary = 220 }, [2] = { label = 'Gérant', salary = 350, boss = true } },
         points = { duty = { vec3(-561.8, 286.9, 82.2) }, boss = { vec3(-563.9, 289.0, 82.2) },
                    stash = { { label = 'Réserve', coords = vec3(-565.2, 285.7, 82.2), slots = 50, weight = 150000, minGrade = 0 } } },
+        peds = { duty = { { model = 's_m_y_barman_01', heading = 350.0, scenario = 'WORLD_HUMAN_CLIPBOARD' } }, -- V12.36 · barman, gérant
+                 boss = { { model = 'a_m_y_hipster_01', heading = 90.0, scenario = 'WORLD_HUMAN_STAND_MOBILE' } } },
     },
 
     vanilla = {
@@ -322,6 +366,8 @@ Jobs = {
                    [3] = { label = 'Gérant', salary = 400, boss = true } },
         points = { duty = { vec3(106.1, -1299.1, 28.77) }, boss = { vec3(95.9, -1293.0, 29.27) },
                    stash = { { label = 'Réserve', coords = vec3(132.5, -1286.5, 29.27), slots = 50, weight = 150000, minGrade = 0 } } },
+        peds = { duty = { { model = 's_f_y_bartender_01', heading = 30.0, scenario = 'WORLD_HUMAN_CLIPBOARD' } }, -- V12.36 · barmaid, videur à la direction
+                 boss = { { model = 's_m_m_bouncer_01', heading = 300.0, scenario = 'WORLD_HUMAN_GUARD_STAND' } } },
     },
 
     bahama = {
@@ -332,6 +378,8 @@ Jobs = {
                    [3] = { label = 'Gérant', salary = 400, boss = true } },
         points = { duty = { vec3(-1376.0, -628.0, 30.82) }, boss = { vec3(-1370.6, -625.8, 30.82) },
                    stash = { { label = 'Réserve', coords = vec3(-1384.5, -605.0, 30.32), slots = 50, weight = 150000, minGrade = 0 } } },
+        peds = { duty = { { model = 's_m_y_barman_01', heading = 130.0, scenario = 'WORLD_HUMAN_CLIPBOARD' } }, -- V12.36 · barman, gérante
+                 boss = { { model = 'a_f_y_business_04', heading = 50.0, scenario = 'WORLD_HUMAN_STAND_MOBILE' } } },
     },
 
     cityhall = {
@@ -339,6 +387,7 @@ Jobs = {
         blip = { sprite = 419, color = 5, label = 'Mairie' },
         grades = { [0] = { label = 'Agent d\'état civil', salary = 250 }, [1] = { label = 'Adjoint au maire', salary = 400 }, [2] = { label = 'Maire', salary = 600, boss = true } },
         points = { boss = { vec3(-542.0, -201.5, 38.2) } },
+        peds = { boss = { { model = 'a_f_m_business_02', heading = 250.0, scenario = 'WORLD_HUMAN_CLIPBOARD' } } }, -- V12.36 · agent d'accueil de la mairie
     },
 
     psy = {
@@ -347,6 +396,7 @@ Jobs = {
         billing = { label = 'Séance', max = 5000 },
         grades = { [0] = { label = 'Psychologue', salary = 250 }, [1] = { label = 'Psychiatre', salary = 400, boss = true } },
         points = { boss = { vec3(-449.7, -340.7, 34.5) } },
+        peds = { boss = { { model = 'a_f_y_business_02', heading = 200.0, scenario = 'WORLD_HUMAN_CLIPBOARD' } } }, -- V12.36 · secrétaire du cabinet
     },
 
     trucker = {
@@ -358,6 +408,7 @@ Jobs = {
         points = {
             garage = { { coords = vec3(1191.0, -3253.0, 7.1), spawn = vec4(1180.0, -3240.0, 6.0, 90.0) } },
         },
+        peds = { garage = { { model = 's_m_m_trucker_01', heading = 90.0, scenario = 'WORLD_HUMAN_CLIPBOARD' } } }, -- V12.36 · chef de dépôt
         vehicles = { { model = 'pounder', label = 'Porteur', minGrade = 0 } },
         mission = {
             pool = 'depots', stops = 2, stepDuration = 6000,
@@ -376,6 +427,7 @@ Jobs = {
         points = {
             garage = { { coords = vec3(453.2, -602.3, 28.6), spawn = vec4(462.0, -605.0, 28.5, 214.0) } },
         },
+        peds = { garage = { { model = 's_m_m_gentransport', heading = 214.0, scenario = 'WORLD_HUMAN_CLIPBOARD' } } }, -- V12.36 · régulateur du dépôt
         vehicles = { { model = 'bus', label = 'Bus', minGrade = 0 } },
         mission = {
             pool = 'busstops', stops = 5, stepDuration = 5000, stepLabel = 'Arrêt : montée / descente des passagers',
@@ -392,6 +444,7 @@ Jobs = {
         points = {
             garage = { { coords = vec3(903.0, -170.0, 74.1), spawn = vec4(916.0, -170.5, 74.4, 120.0) } },
         },
+        peds = { garage = { { model = 'a_m_m_eastsa_02', heading = 120.0, scenario = 'WORLD_HUMAN_SMOKING' } } }, -- V12.36 · dispatcheur de la compagnie
         vehicles = { { model = 'taxi', label = 'Taxi', minGrade = 0 } },
         mission = {
             pool = 'city', stops = 2, stepDuration = 2500,
@@ -409,6 +462,7 @@ Jobs = {
         points = {
             garage = { { coords = vec3(-424.0, -2789.8, 6.0), spawn = vec4(-440.0, -2795.0, 6.0, 45.0) } },
         },
+        peds = { garage = { { model = 's_m_m_postal_01', heading = 45.0, scenario = 'WORLD_HUMAN_CLIPBOARD' } } }, -- V12.36 · chef de quai
         vehicles = { { model = 'boxville2', label = 'Fourgon', minGrade = 0 } },
         mission = {
             pool = 'shops', stops = 3, stepDuration = 3000, stepLabel = 'Livrer le colis',
@@ -427,6 +481,7 @@ Jobs = {
         points = {
             garage = { { coords = vec3(-321.7, -1545.8, 31.0), spawn = vec4(-328.0, -1523.0, 27.5, 270.0) } },
         },
+        peds = { garage = { { model = 's_m_y_garbage', heading = 270.0, scenario = 'WORLD_HUMAN_CLIPBOARD' } } }, -- V12.36 · chef d'équipe de la voirie
         vehicles = { { model = 'trash', label = 'Benne', minGrade = 0 } },
         mission = {
             pool = 'shops', stops = 4, stepDuration = 4000, stepLabel = 'Vider les poubelles',
@@ -441,4 +496,10 @@ Jobs = {
 for name, def in pairs(Jobs) do
     def.name = name
     def.points = def.points or {}
+    def.peds = def.peds or {} -- V12.36
+end
+
+-- V12.36 · Agent d'accueil du Pôle Emploi (point Config.JobCenter de shared/config.lua) : réglé ici, avec les autres PNJ de métier.
+if type(Config) == 'table' and type(Config.JobCenter) == 'table' and Config.JobCenter.ped == nil then
+    Config.JobCenter.ped = { model = 'a_f_y_business_02', heading = 0.0, scenario = 'WORLD_HUMAN_CLIPBOARD' }
 end

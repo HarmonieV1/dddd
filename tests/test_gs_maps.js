@@ -1,5 +1,6 @@
 // Tests du lecteur de maps (gs_admin/server/maps.js) : décompression RSC7, repérage des objets posés, fichiers du jeu
-// remplacés, lieux (priorité au bâtiment qui porte le nom de la map, regroupement à 200 m), conflits entre deux maps.
+// remplacés, lieux (priorité au bâtiment qui porte le nom de la map, regroupement à 200 m), conflits entre deux maps,
+// retraits (V12.36 : par nom, par motif, par mods-retires.txt ; retrait F11 = suppression du disque ; listes lues par l'importeur).
 'use strict';
 const fs = require('fs');
 const os = require('os');
@@ -259,6 +260,84 @@ check('blip d\'une activité sans son script : « (bientôt) »', pb2[0].label =
   M._setLuaFs(null);
   check('écriture refusée à Node : passe par Lua', !threw && ok1 && fs.readFileSync(cfgD, 'utf8').startsWith('# ensure gsa_a') && calls.includes('w'));
   check('suppression refusée à Node : passe par Lua', !fs.existsSync(path.join(tmp, 'deny', 'fus', 'stream', 'old_occl_01.ymap')) && calls.includes('r'));
+}
+const rd = (p) => { try { return fs.readFileSync(p, 'utf8'); } catch (e) { return ''; } }; // lecture sans plantage (une régression doit donner « ÉCHEC », pas une exception)
+// 10. V12.36 · Retraits par MOTIF (plasmagame_dlc2 et le pack Redline restaient : absents de la liste exacte), retrait F11 =
+//     suppression du disque + mods-retires.txt + ligne enlevée de addons.cfg, scripts compagnons, synchronisation avec l'importeur
+check('motifs : les 5 décidés, en minuscules', JSON.stringify(M.RETIRED_PATTERNS) === JSON.stringify(['plasmagame', 'plasmakart', 'plasmatron', 'villa_01', 'redline']));
+check('plasmagame_dlc2 (absent de la liste exacte) : retiré par motif', JSON.stringify(M.retiredReason('gsa_patoche_plasmagame_dlc2_pack')) === JSON.stringify({ by: 'motif', pattern: 'plasmagame' }));
+check('pack Redline : retiré par motif « redline », libellé console', (M.retiredReason('gsa_energy_redline_pack') || {}).pattern === 'redline' && M.retiredLabel(M.retiredReason('gsa_energy_redline_pack')) === 'motif « redline »');
+check('majuscules dans le nom : motif quand même', (M.retiredReason('gsa_Energy_REDLINE_pack') || {}).by === 'motif');
+check('nom exact de RETIRED_MAPS : par nom', (M.retiredReason('gsa_mlo_willies_supermarket') || {}).by === 'nom' && M.retiredLabel({ by: 'nom' }) === 'décision du 12/10');
+check('villa 01 retirée (nom et motif), villa bunker gardée', M.retiredReason('gsa_sub_patoche_villa_01_pack') !== null && M.retiredReason('gsa_patoche_villa_01_v2') !== null && M.retiredReason('gsa_patoche_villa_bunker_pack') === null);
+check('casino, prison, Benny\'s noir et blanc, ressources gs_ : gardés', ['gsa_patoche_casino_pack', 'gsa_sub_patoche_prison_pack', 'gsa_sub_patoche_benny_bw_pack', 'gs_admin', 'ox_lib'].every((n) => M.retiredReason(n) === null));
+check('script compagnon du laser game : par motif', (M.retiredReason('patoche_plasmagame_script') || {}).pattern === 'plasmagame');
+check('mods-retires.txt : retiré par liste (V12.36 : plus aucune map remise d office, RESTORED_MAPS vide)', (M.retiredReason('gsa_ancienne', ['gsa_ancienne']) || {}).by === 'liste' && M.retiredLabel({ by: 'liste' }) === 'mods-retires.txt'
+  && (M.retiredReason('gsa_patoche_villa_bunker_pack', ['gsa_patoche_villa_bunker_pack']) || {}).by === 'liste' && M.RESTORED_MAPS.length === 0 && M.retiredLabel(null) === '');
+{ // Démarrage : par motif et par liste, scripts compagnons, addons.cfg nettoyé, archives gardées
+  const R3 = path.join(tmp, 'G3'), S3 = path.join(R3, 'server-data'), A3 = path.join(S3, 'resources', '[addons]');
+  put(path.join(A3, 'gsa_patoche_plasmagame_dlc2_pack', 'stream', 'dlc2.ymap'), ymap([[10, 10, 10]]));
+  put(path.join(A3, 'gsa_energy_redline_pack', 'stream', 'redline.ymap'), ymap([[20, 20, 20]]));
+  put(path.join(A3, 'gsa_patoche_casino_pack', 'stream', 'casino.ymap'), ymap([[30, 30, 30]]));
+  put(path.join(A3, 'patoche_plasmagame_script', 'fxmanifest.lua'), 'x');
+  put(path.join(A3, 'patoche_lib', 'fxmanifest.lua'), 'x');
+  put(path.join(A3, 'gsa_old_listed', 'stream', 'old.ymap'), ymap([[40, 40, 40]]));
+  put(path.join(S3, 'cfg', 'addons.cfg'), '## Mods importés par IMPORTER-MODS.bat\r\nensure gsa_patoche_plasmagame_dlc2_pack\r\n## gsa_energy_redline_pack : désactivé par sécurité (test)\r\n# ensure gsa_energy_redline_pack\r\nensure gsa_patoche_casino_pack\r\nensure patoche_plasmagame_script\r\nensure patoche_lib\r\nensure gsa_old_listed\r\n');
+  put(path.join(R3, 'mods-a-trier', 'patoche_plasmagame_dlc2_pack.zip'), 'zip');
+  put(path.join(R3, 'mods-retires.txt'), '# en-tête\r\nold_listed\r\n');
+  const listed = M.readRetiredList(R3);
+  check('mods-retires.txt lu avec le préfixe gsa_ (absent : liste vide)', JSON.stringify(listed) === '["gsa_old_listed"]' && M.readRetiredList(path.join(tmp, 'nulle_part')).length === 0);
+  const why = (n) => M.retiredReason(n, listed);
+  const d3 = M.deleteMapsOnDisk(S3, R3, { filter: why, keepArchives: true });
+  check('démarrage : maps par motif et par liste supprimées, casino gardé', d3.maps.sort().join() === 'gsa_energy_redline_pack,gsa_old_listed,gsa_patoche_plasmagame_dlc2_pack'
+    && !fs.existsSync(path.join(A3, 'gsa_energy_redline_pack')) && !fs.existsSync(path.join(A3, 'gsa_patoche_plasmagame_dlc2_pack')) && fs.existsSync(path.join(A3, 'gsa_patoche_casino_pack')));
+  const c3 = M.deleteCompanionsOnDisk(S3, (n) => { const r = why(n); return r && r.by === 'motif' ? r : null; });
+  check('script compagnon du laser game supprimé, librairie du vendeur gardée', c3.scripts.join() === 'patoche_plasmagame_script' && !fs.existsSync(path.join(A3, 'patoche_plasmagame_script')) && fs.existsSync(path.join(A3, 'patoche_lib')));
+  const cfg3 = rd(path.join(S3, 'cfg', 'addons.cfg'));
+  check('addons.cfg : lignes (actives, commentées, notes) des retraits enlevées, le reste gardé', !cfg3.includes('plasmagame') && !cfg3.includes('redline') && !cfg3.includes('old_listed')
+    && cfg3.includes('ensure gsa_patoche_casino_pack\r\n') && cfg3.includes('ensure patoche_lib\r\n') && cfg3.startsWith('## Mods importés par IMPORTER-MODS.bat\r\n'));
+  const ret3 = rd(path.join(R3, 'mods-retires.txt'));
+  check('archive gardée (pack payant), noms courts dans mods-retires.txt', fs.existsSync(path.join(R3, 'mods-a-trier', 'patoche_plasmagame_dlc2_pack.zip'))
+    && ['patoche_plasmagame_dlc2_pack', 'energy_redline_pack', 'old_listed'].every((s) => ret3.includes(s)));
+  check('2e démarrage : plus rien à retirer', M.deleteMapsOnDisk(S3, R3, { filter: why, keepArchives: true }).maps.length === 0 && M.deleteCompanionsOnDisk(S3, why).scripts.length === 0);
+  check('pas de [addons] : rien, sans planter', M.deleteCompanionsOnDisk(path.join(tmp, 'nulle_part'), why).scripts.length === 0);
+}
+{ // Retrait F11 d'une map (retireMap) : suppression disque, mods-retires.txt, ligne enlevée, archive gardée, cas limites
+  const R4 = path.join(tmp, 'G4'), S4 = path.join(R4, 'server-data'), A4 = path.join(S4, 'resources', '[addons]');
+  put(path.join(A4, 'gsa_patoche_tacos_pack', 'stream', 'tacos.ymap'), ymap([[50, 50, 50]]));
+  put(path.join(A4, 'gsa_patoche_tabac_pack', 'stream', 'tabac.ymap'), ymap([[60, 60, 60]]));
+  put(path.join(S4, 'cfg', 'addons.cfg'), 'ensure gsa_patoche_tacos_pack\r\nensure gsa_patoche_tabac_pack\r\n');
+  put(path.join(R4, 'mods-a-trier', 'patoche_tacos_pack.zip'), 'zip');
+  const f11 = M.retireMap(S4, R4, 'gsa_patoche_tacos_pack', 'Fondateur');
+  check('retrait F11 : dossier supprimé, le voisin gardé', f11.ok && f11.deleted && !fs.existsSync(path.join(A4, 'gsa_patoche_tacos_pack')) && fs.existsSync(path.join(A4, 'gsa_patoche_tabac_pack')));
+  check('retrait F11 : ligne enlevée de addons.cfg (pas seulement commentée), voisin gardé', rd(path.join(S4, 'cfg', 'addons.cfg')) === 'ensure gsa_patoche_tabac_pack\r\n');
+  check('retrait F11 : noté dans mods-retires.txt, archive gardée', rd(path.join(R4, 'mods-retires.txt')).includes('patoche_tacos_pack') && fs.existsSync(path.join(R4, 'mods-a-trier', 'patoche_tacos_pack.zip')));
+  check('retrait F11 : message clair', f11.msg.includes('dossier supprimé') && f11.msg.includes('mods-retires.txt') && f11.msg.includes('addons.cfg'));
+  check('retrait F11 : nom invalide refusé', !M.retireMap(S4, R4, 'gs_admin', 'x').ok && !M.retireMap(S4, R4, 'gsa_x; rm', 'x').ok);
+  fs.appendFileSync(path.join(S4, 'cfg', 'addons.cfg'), 'ensure gsa_ailleurs\r\n');
+  const f11b = M.retireMap(S4, R4, 'gsa_ailleurs', 'Fondateur');
+  check('retrait F11 d\'une map hors [addons] : ligne commentée, message le dit', f11b.ok && !f11b.deleted && rd(path.join(S4, 'cfg', 'addons.cfg')).includes('# ensure gsa_ailleurs') && f11b.msg.includes('introuvable'));
+  // Dossier verrouillé (suppression refusée partout) : noté quand même dans mods-retires.txt, message « au prochain démarrage »
+  const orig = { w: fs.writeFileSync, u: fs.unlinkSync, r: fs.rmSync };
+  const deny = () => { const e = new Error('Access to this API has been restricted. Use --allow-fs-write to manage permissions.'); e.code = 'ERR_ACCESS_DENIED'; throw e; };
+  M._setLuaFs({ write: (p, b64) => { orig.w(p, Buffer.from(b64, 'base64')); return true; }, remove: () => true }); // Lua « réussit » sans rien effacer = verrou
+  fs.unlinkSync = deny; fs.rmSync = deny;
+  let f11c = null, threw = null;
+  try { f11c = M.retireMap(S4, R4, 'gsa_patoche_tabac_pack', 'Fondateur'); } catch (e) { threw = e; }
+  Object.assign(fs, { writeFileSync: orig.w, unlinkSync: orig.u, rmSync: orig.r });
+  M._setLuaFs(null);
+  check('retrait F11, dossier verrouillé : rien ne plante, noté dans mods-retires.txt, ligne enlevée, message « prochain démarrage »', !threw && f11c && f11c.ok && !f11c.deleted
+    && f11c.msg.includes('prochain démarrage') && rd(path.join(R4, 'mods-retires.txt')).includes('patoche_tabac_pack') && !rd(path.join(S4, 'cfg', 'addons.cfg')).includes('tabac'));
+  check('dossier verrouillé : supprimé au démarrage suivant grâce à mods-retires.txt', (M.retiredReason('gsa_patoche_tabac_pack', M.readRetiredList(R4)) || {}).by === 'liste'
+    && M.deleteMapsOnDisk(S4, R4, { filter: (n) => M.retiredReason(n, M.readRetiredList(R4)), keepArchives: true }).maps.join() === 'gsa_patoche_tabac_pack');
+}
+{ // L'importeur (importer-mods.ps1) lit RETIRED_MAPS et RETIRED_PATTERNS dans maps.js par regex : les deux côtés doivent voir les mêmes listes
+  const src = fs.readFileSync(path.join(__dirname, '..', 'server', 'resources', '[gtasoon]', 'gs_admin', 'server', 'maps.js'), 'utf8');
+  const grab = (re, item) => { const b = (src.match(re) || [])[1] || ''; return [...b.matchAll(item)].map((m) => m[1]); };
+  check('importeur : RETIRED_PATTERNS lus par regex = la liste', JSON.stringify(grab(/const RETIRED_PATTERNS = \[([\s\S]*?)\];/, /'([a-z0-9_]+)'/g)) === JSON.stringify(M.RETIRED_PATTERNS));
+  check('importeur : RETIRED_MAPS lus par regex = la liste (noms courts)', JSON.stringify(grab(/const RETIRED_MAPS = \[([\s\S]*?)\];/, /'gsa_([a-z0-9_]+)'/g)) === JSON.stringify(M.RETIRED_MAPS.map((n) => n.replace(/^gsa_/, ''))));
+  const ps1 = fs.readFileSync(path.join(__dirname, '..', 'scripts', 'windows', 'importer-mods.ps1'), 'utf8');
+  check('importeur : lit bien les deux blocs et applique Test-Retired', ps1.includes('const RETIRED_PATTERNS = \\[(.*?)\\];') && ps1.includes('const RETIRED_MAPS = \\[(.*?)\\];') && (ps1.match(/Test-Retired/g) || []).length >= 4);
 }
 fs.rmSync(tmp, { recursive: true, force: true });
 

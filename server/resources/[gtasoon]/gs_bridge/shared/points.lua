@@ -4,6 +4,39 @@
 --    par gs_bridge) ; 2. côté client, déclare ces positions à gs_bridge pour le menu staff « Déplacer un point ».
 -- Clé d'un point = ressource + chemin dans Config (ex : gs_harvest:Config.Activities.fishing.spots.3) : stable tant que
 -- la config garde sa forme. Après un déplacement, la ressource est relancée (le nouveau point s'applique à tous).
+--
+-- V12.37 · `GsPoints` : fonctions pures partagées autour des PNJ et objets posés par le staff (F11 → Monde et lieux →
+-- « PNJ et objets »), publiés par gs_bridge dans GlobalState.gsStaffPeds : { id, kind ('ped' | 'prop'), target, model, scenario,
+-- x, y, z, heading, by, at }. `target` relie l'entrée à un point : 'job:police:duty' (accueil), 'job:police:boss' (direction),
+-- 'job:police:garage' (+ index si plusieurs points : 'job:police:duty2'), 'gang:ballas' (planque), ou 'libre' (décor sans
+-- interaction). Un PNJ relié devient LE PNJ du point : il remplace celui de la config (gs_jobs/shared/jobs.lua `peds`) ou s'ajoute
+-- s'il n'y en avait pas, et garde l'interaction du point (options ox_target fournies par la ressource).
+GsPoints = GsPoints or {}
+
+--- Cible d'un point de métier : 'job:<métier>:<rôle>' pour le premier point, suffixe numérique au-delà ('job:police:duty2').
+function GsPoints.pedTarget(job, kind, idx)
+    return ('job:%s:%s%s'):format(tostring(job), tostring(kind), (tonumber(idx) or 1) > 1 and tostring(idx) or '')
+end
+
+--- Entrée staff de type PNJ reliée à `target`, dans `list` (GlobalState.gsStaffPeds par défaut) ; nil sinon.
+function GsPoints.staffPed(target, list)
+    list = list or GlobalState.gsStaffPeds
+    if type(target) ~= 'string' or type(list) ~= 'table' then return nil end
+    for _, e in ipairs(list) do
+        if type(e) == 'table' and e.kind == 'ped' and e.target == target then return e end
+    end
+    return nil
+end
+
+--- PNJ à afficher sur un point : celui du staff s'il en a relié un (position absolue `at`, `staffId` pour que gs_markers ne le
+--- crée pas une seconde fois en PNJ d'ambiance), sinon `cfg` (PNJ de la config, éventuellement nil).
+function GsPoints.pointPed(cfg, target, list)
+    local e = GsPoints.staffPed(target, list)
+    if not e then return cfg end
+    return { model = e.model, scenario = e.scenario, staffId = e.id,
+        at = { x = e.x + 0.0, y = e.y + 0.0, z = e.z + 0.0, heading = (e.heading or 0.0) + 0.0 } }
+end
+
 do
     local res = GetCurrentResourceName()
     local overrides = GlobalState.gsPoints or {}

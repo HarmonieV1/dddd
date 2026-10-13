@@ -38,6 +38,9 @@ et le couper coupe tout : vol, invisibilité, invincibilité, animal, spectate.
 | Vol libre, invisible, invincible, se transformer en animal, TP au marqueur, spectate, amener, soigner, figer, supprimer un véhicule | Modérateur |
 | Se mettre (ou mettre un joueur) un **métier et un grade**, dans un **gang**, faire apparaître un véhicule | Admin |
 | **Points de métier** : déplacer service / coffre / armurerie / direction / garage à sa position (bâtiments fermés, futurs MLO) | Admin |
+| **Placement libre** d'un point (V12.37) : aperçu, flèches 10 cm, PgUp/PgDn hauteur, Q/E rotation, Maj ×5, G au sol, Tab viser, Entrée / Retour. **PNJ et objets posés par le staff** : relié à un métier (remplace le PNJ du point), à un gang (planque) ou libre ; retrait en visant | Super-admin |
+| **Points déplacés : gardés aux mises à jour** (KVP du serveur) et, depuis la V12.37, **copiés sur le VPS** par METTRE-A-JOUR-OVH (fichier `gs_bridge/points-deplaces.json`, écrit toutes les minutes ou par `/pointsexport`). Le PC est la référence : cale tout sur le PC, OVH suit à la mise à jour suivante | Super-admin |
+| **`/dosreglage`** : position des armes longues dans le dos (±1 cm, ±2°, os), « Copier le bloc Config.Back » à coller dans `gs_details/shared/config.lua` puis `restart gs_details` | Staff |
 | **Fun** (sur soi, events) : course rapide, super saut, endurance infinie, nage rapide, gravité lunaire, visions nocturne / thermique | Admin |
 | **Items** : donner (motif obligatoire) · **Objets du décor** (placer / retirer une poubelle, un banc…) | Super-admin |
 | **Items** sans motif, retirer, poser au sol · **Rang staff** d'un joueur (Joueurs → joueur → Rang) | Fondateur (`group.god`) |
@@ -56,6 +59,12 @@ Vol libre : ZQSD, Espace/Ctrl pour monter/descendre, Shift vite, Alt lent. Spect
   Seul le fondateur voit cette ligne ; super-admin et admin ne peuvent promouvoir personne.
 - Hiérarchie : god (fondateur) > superadmin > admin > mod > helper (voir `cfg/permissions.cfg`).
 - Un rang écrit à la main dans `secrets.cfg` ne peut pas être retiré depuis le jeu : préfère le menu.
+- **`/optin` (service admin Qbox, V12.15 / V12.36)** : à taper une fois par personnage pour activer les commandes Qbox d'admin
+  (`/tp`, clés, etc.) ; c'est une bascule (un second `/optin` te remet « hors service »). Réponse attendue : « Service staff : in. »
+  (un second `/optin` → « Service staff : out. »). Si ça répond « Service staff : out. » à chaque fois, l'ACE `admin` manque sur le serveur qui tourne : `cfg/permissions.cfg`
+  ancien (VPS pas à jour → METTRE-A-JOUR-OVH, envoyé depuis la V12.36 ; ou METTRE-A-JOUR pas relancé sur le PC). Si ça répond
+  « Access denied » : tu n'es pas dans `group.admin` ou plus (DEVENIR-ADMIN.bat, puis GERER-OVH → 12). Les modérateurs et
+  helpers n'y ont pas droit, c'est voulu.
 
 ## Tests
 `tests/test_gs_admin.lua` (50 tests) : niveaux, anti-abus, motifs, plafonds, tickets, isolement persistant, publication des sanctions.
@@ -116,6 +125,7 @@ Placer n'importe quel objet du jeu, le déplacer, le tourner, le dupliquer, le s
 - **Rumeurs des joueurs** (`Config.Custom`) : au comptoir, « Raconter ma propre histoire » (100 $, une toutes les 2 h). Rien n'est public avant le staff : F11 → Événements → **Rumeurs des joueurs** → Valider (les barmans la racontent), Valider + brève Weazel, ou Écarter.
 - **Fil de la ville** (`gs_discord`, `Config.Digest`) : chaque soir à 23 h 30, un résumé court dans #annonces (crimes, arrestations, verdicts, faits divers, rumeur réalisée, légende, quartier chaud) ; rien à dire = rien posté. `enabled = false` pour couper.
 - **Alt (ox_target)** : appui simple (`setr ox_target:toggleHotkey 1` dans cfg/convars.cfg) ; mettre 0 pour revenir au maintien.
+  V12.36 : plus d'erreur « Error executing native 0xfcdff7b72d23a1ac » (HasEntityClearLosToEntity) au ciblage sur le build 3570 : la native est protégée par la retouche Qbox d'ox_target (METTRE-A-JOUR l'applique).
 
 ## V11 · Bêta ouverte
 - **Lieux de mémoire** (`gs_scars`, `Config.Plaques`) : `/plaque <texte>` pose une plaque là où tu es (admin et plus, 80 caractères) —

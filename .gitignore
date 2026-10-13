@@ -18,4 +18,5 @@ backups/
 # NUI compilées : livrées avec la ressource (FiveM ne build pas)
 !server/resources/*/*/web/dist/
 livraison/
-
+# Écrit par le serveur en jeu (points déplacés par le staff), jamais dans le dépôt
+points-deplaces.json
