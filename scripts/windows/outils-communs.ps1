@@ -82,6 +82,12 @@ $QboxPatches = @(
     @{ res = 'qbx_cityhall'; file = 'config\shared.lua'; find = 'showBlip = true'; repl = 'showBlip = false'; why = 'carte : un seul logo Pôle Emploi / services' }
     @{ res = 'qbx_vehicleshop'; file = 'config\shared.lua'; find = "(label = 'Premium Deluxe Motorsport',\s*\n\s*coords = [^\n]*\n\s*show = )true"; repl = '${1}false'; why = 'carte : un seul logo concession PDM' }
     @{ res = 'qbx_police'; file = 'client\main.lua'; find = 'for i = 1, #config\.locations\.stations do(\s*\n\s*local station = config\.locations\.stations\[i\])'; repl = 'for i = 1, 0 do -- logos gérés par gs_jobs (un seul commissariat sur la carte)${1}'; why = 'carte : plus de logos police en double' }
+    # V12.37 · service et garage de qbx_police / qbx_ambulancejob : gérés par gs_jobs. Leur point de service de Mission Row est au même
+    # endroit que le nôtre : 2e option « service » en visée et bascule en double (« Prise de service » puis « Fin de service »,
+    # garage « hors service »). Motif absent (autre version) = avertissement jaune, rien de cassé.
+    @{ res = 'qbx_police'; file = 'client\main.lua'; find = 'for i = 1, #config\.locations\.duty do'; repl = 'for i = 1, 0 do -- service : gs_jobs (V12.37)'; why = 'service police : gs_jobs (plus de double option)' }
+    @{ res = 'qbx_police'; file = 'client\main.lua'; find = 'for i = 1, #config\.locations\.vehicle do'; repl = 'for i = 1, 0 do -- garage : gs_jobs (V12.37)'; why = 'garage police : gs_jobs' }
+    @{ res = 'qbx_ambulancejob'; file = 'client\job.lua'; find = 'for i = 1, #sharedConfig\.locations\.duty do'; repl = 'for i = 1, 0 do -- service : gs_jobs (V12.37)'; why = 'service EMS : gs_jobs (plus de double option)' }
     # V8 : preuves gérées par gs_evidence (contrôlées par le serveur). Celles de qbx_police acceptaient des preuves
     # fabriquées par le client (sang au nom d'un autre joueur…) : leur création est coupée.
     @{ res = 'qbx_police'; file = 'server\main.lua'; find = "(RegisterNetEvent\('evidence:server:(?:CreateBloodDrop|CreateFingerDrop|CreateCasing)', function\([^)]*\))(?! do return end)"; repl = '${1} do return end -- preuves : gs_evidence (V8)'; why = 'preuves : système RoadLine (anti-triche)' }
@@ -117,8 +123,13 @@ $QboxPatches = @(
     @{ res = 'qbx_core'; file = 'config\shared.lua'; why = 'création : plus de cartes en double (téléphone seul)'
        find = "(?s)\s*\{ name = 'id_card', amount = 1, metadata = function\(source\).*?\n        \},\s*\{ name = 'driver_license', amount = 1, metadata = function\(source\).*?\n        \},"
        repl = '' }
-    @{ res = 'qbx_cityhall'; file = 'config\shared.lua'; why = 'mairie : permis de conduire retiré (auto-école obligatoire)'
+    @{ res = 'qbx_cityhall'; file = 'config\shared.lua'; why = 'mairie : permis de conduire retiré (donné à tous à la connexion, V12.36)'
        find = "(?s)\n\s*\['driver'\] = \{\s*item = 'driver_license',.*?\},"
+       repl = '' }
+    # V12.37 : le permis de port d'arme (PPA) ne se vend plus 50 $ à la mairie / au PNJ du Pôle Emploi : le vrai passe par le comptoir
+    # de l'Ammu-Nation (gs_blackmarket Config.Permit : 500 $, casier vierge, retirable par la police)
+    @{ res = 'qbx_cityhall'; file = 'config\shared.lua'; why = 'mairie : permis de port d''arme retiré (le vrai : 500 $ au comptoir Ammu-Nation)'
+       find = "(?s)\n\s*\['weapon'\] = \{\s*item = 'weaponlicense',.*?\},"
        repl = '' }
     # Carte d'identité montrée : se ferme seule après 6 s (sinon restait à l'écran), Échap ou Retour arrière la ferment aussi
     @{ res = 'qbx_idcard'; file = 'config\shared.lua'; find = 'status\s*=\s*false,[^\n]*\n\s*time\s*=\s*\d+'; repl = "status = true,`n            time = 6000"; why = 'carte d''identité : fermeture auto après 6 s' }

@@ -182,3 +182,10 @@ Sinon, le fichier à modifier sur le VPS est `secrets.cfg` (codes, webhooks, jet
 | METTRE-A-JOUR-OVH annonce une ancienne version | Il propose de mettre le PC à jour d'abord : réponds O |
 | `items.lua … '}' expected near 'eau'` (inventaire, coffres, qbx_core en erreur) | Relance `GERER-OVH.bat` : il répare les fichiers d'objets tout seul et redémarre (ou `sudo roadline reparer-objets`) |
 | Une mise à jour casse quelque chose | `GERER-OVH.bat` → **Revenir à la version précédente**, puis **Console** pour voir l'erreur |
+
+## Points déplacés en jeu (V12.37)
+
+Les points déplacés depuis F11 sont gardés dans la mémoire du serveur (KVP) et survivent à « roadline maj ». Depuis la V12.37, gs_bridge
+les écrit aussi dans `resources/[gtasoon]/gs_bridge/points-deplaces.json` : METTRE-A-JOUR-OVH emporte celui du PC et le VPS l'importe au
+démarrage (une seule fois par version du fichier). Si l'archive n'en contient pas, le VPS garde le sien. Le PC est la référence : cale les
+points sur le PC (ou `/pointsexport` en console pour écrire le fichier tout de suite), puis METTRE-A-JOUR-OVH.

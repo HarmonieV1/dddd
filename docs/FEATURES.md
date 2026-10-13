@@ -19,7 +19,9 @@ Un crime n'existe pour la police **que s'il est signalé**.
 ## gs_economy — économie dynamique
 - Chaque achat fait monter le prix (demande), chaque revente le fait baisser (offre) ; retour progressif à l'équilibre.
 - Bornes min/max par produit, prix affichés avec tendance ▲ / ▼.
-- **Événements** : canicule → eau +60 %, tempête → kits de réparation +50 %…
+- **Événements** : canicule → eau +60 %, tempête → kits de réparation +50 %… V12.37 : les interventions de tempête (véhicule en
+  détresse, arbre, barrière) sont créées à l'approche (< 150 m), posées sur la route la plus proche (≤ 60 m, collision chargée,
+  sinon ligne console « point à caler ») ; blip et [E] sur la vraie position ; retirées au-delà de 250 m.
 - **Anti-arbitrage** : revente toujours strictement sous le prix d'achat (testé sur toutes les pressions).
 - Supérettes, quincaillerie, ferrailleurs (ferraille, cuivre). Items absents d'ox_inventory désactivés au démarrage.
 - API : `GetBuyPrice`, `GetSellPrice`, `RecordBuy`, `RecordSell` pour brancher d'autres commerces. Staff : `/marche`.
@@ -101,7 +103,9 @@ alcool (effet d'ivresse), cigarettes (briquet requis), téléphone, bandages, je
 par défaut (vides) sont retirés par METTRE-A-JOUR.
 
 ## gs_rental — location de véhicules (V2)
-- 5 comptoirs (mairie, Legion Square, Del Perro, Sandy Shores, Paleto) signalés par un blip et un cercle au sol.
+- 13 comptoirs (V12.37 : mairie, Legion Square, Del Perro, Sandy Shores (devant le 24/7, plus dans le poste du shérif), Paleto,
+  Grapeseed, Harmony, Vinewood, Vespucci, aéroport, hôpital Pillbox + 2 pontons bateaux) signalés par un blip et un cercle au sol ;
+  les nouveaux sont marqués « à caler » dans la config (F11 → Déplacer un point).
 - BMX 15 $, vélo 20 $, scooter 45 $, mini citadine 90 $, petite décapotable 140 $ : 30 à 60 min, une location à la fois.
   Le véhicule est rendu à n'importe quel comptoir et récupéré à l'échéance (avec un délai de grâce si le joueur est encore dedans).
 
@@ -145,6 +149,9 @@ réparation de fortune (moteur 75 %), réparation avancée (complète), nettoyag
   carcasse dépouillée qui reste visible et repousse ; contremaître PNJ à chaque vestiaire) : **pêche** (pontons), **mine** (carrière), **bûcheron** (Paleto), **ferme** (Grapeseed),
   **chasse** (animaux créés par le serveur, dépeçage au couteau). Outils en quincaillerie, casse 3 %, acheteurs dédiés, défi du jour « récolte ».
 - **Nouveaux métiers gs_jobs** : **routier** (entrepôts, au km), **chauffeur de bus** (5 arrêts), **agent immobilier Dynasty 8** (whitelist).
+  V12.37 : un point = une interaction (le PNJ porte l'option, [E] reste), prise de service par état voulu + anti-rebond (plus de
+  double bascule ni de garage « hors service » à tort), messages exacts du garage, **équipement de l'armurerie repris** à la fin du
+  service / changement de métier / licenciement / déconnexion (quantités fournies seulement).
 - **Logement : qbx_properties** (recipe Qbox, audité) : choix d'un **appartement de départ** au 1er perso, **achat / location** de biens créés
   par les agents immobiliers (`/createproperty` : prix, loyer, intérieur, garage), coffre, garde-robe, déco.
 - **Vendeurs PNJ** : armurier derrière chaque comptoir Ammu-Nation, vendeur aux boutiques de vêtements / coiffeur / tatoueur (illenium, ox_target).
@@ -350,9 +357,20 @@ Traductions françaises manquantes des scripts Qbox ajoutées par METTRE-A-JOUR 
   création de perso : « Visage de base / Teint / Origines » ; commandes / masquées aux joueurs (liste dans `gs_onboarding/shared/commands.lua`).
 - **Points déplaçables en jeu** (`gs_bridge/shared/points.lua`) : toute position de `Config` de nos ressources se règle en jeu
   (F11 → Monde et lieux → Déplacer un point), sauvegardée (KVP), ressource relancée. Remise à l'origine possible.
+  **V12.37 : les déplacements voyagent** : gs_bridge les écrit aussi dans `gs_bridge/points-deplaces.json` (toutes les minutes, ou
+  `/pointsexport`) ; METTRE-A-JOUR garde le fichier, METTRE-A-JOUR-OVH l'emporte, le VPS l'importe au démarrage (une fois par
+  version du fichier). Le PC est la référence : un point calé sur le PC se retrouve sur le VPS à la mise à jour suivante.
+- **V12.37 · Placement libre et PNJ / objets du staff** (F11 → Monde et lieux, super-admin et fondateur) : Déplacer un point →
+  « Placement libre » : aperçu (anneau + bille jaune = sens du cap), flèches ou pavé 8/5/4/6 = 10 cm, PgUp/PgDn = hauteur 5 cm,
+  Q/E = ±5°, Maj = pas ×5, G = au sol, Tab = viser à la souris, Entrée = valider (même sauvegarde et « ✅ Vérifié »), Retour =
+  annuler. « PNJ et objets posés par le staff » : PNJ (modèle par catégorie, scénario) ou objet (catalogue du Mapping) relié à un
+  métier (accueil, direction, garage : il remplace le PNJ de la config et porte son interaction), à un gang (il garde la planque)
+  ou libre (ambiance) ; retrait « celui que je vise » ou par la liste ; table `gs_staff_peds`, `GlobalState.gsStaffPeds`, 200 max,
+  un seul PNJ staff par cible, pose vérifiée côté serveur (≤ 60 m du staff).
 - **Récolte** (gs_harvest) : nœuds (arbres, rochers, carcasses, légumes) qui s'épuisent et repoussent, outil en main, vestiaire, PNJ aux points (V12.36 : champ `ped` de gs_markers, aussi pour l'accueil, la direction et le garage de chaque métier et le Pôle Emploi),
   revente loin de la récolte (test automatique), un seul ferrailleur (Cypress Flats), permis et fusil de chasse à l'Ammu-Nation de Paleto.
-- **Lieux** : coiffeurs / tatoueurs / chirurgien / boutiques avec vendeur et [E] ; permis de port d'arme (Ammu-Nation) ;
+- **Lieux** : coiffeurs / tatoueurs / chirurgien / boutiques avec vendeur et [E] ; permis de port d'arme (Ammu-Nation, 500 $ ;
+  V12.37 : plus vendu 50 $ à la mairie / au Pôle Emploi) ;
   pharmacies accessibles ; Rob's Liquor en supérettes ; fourrière et garages en français ; plus de logo police en double ;
   logos des motels ; dépôts des métiers libres (« Prendre le poste ici ») ; marina : retour sur le ponton.
 - **Bars** (gs_business) : Tequi-la-la, Vanilla Unicorn, Bahama Mamas ; barman PNJ en libre-service ; PNJ d'ambiance (gs_world).
@@ -432,6 +450,9 @@ Traductions françaises manquantes des scripts Qbox ajoutées par METTRE-A-JOUR 
 - **Tout en français** : toutes les armes (Mk II comprises), **munitions** et **accessoires d'armes** (jamais traduits avant).
 - **Menu staff F11** : items par **catégorie avec image** + recherche (munitions enfin donnables) ; véhicules par **catalogue Qbox** (marque, nom, prix).
 - **Armes longues dans le dos** quand elles sont rangées (fusils, pompes, mitraillettes, précision ; 2 max ; vues par tous).
+  V12.37 : plus jamais d'arme qui flotte (objet gardé seulement s'il est encore accroché au corps actuel ; mort, à terre, changement
+  de tenue ou de personnage, déconnexion, arme en main ou donnée → retirée dans la seconde ; balayage des orphelins toutes les 5 s) ;
+  **`/dosreglage`** (staff) : règle en direct la position des armes dans le dos (±1 cm, ±2°, os) et copie le bloc `Config.Back` à coller.
 - **Nourriture périssable** : frais 2 jours, chips / donut 7 jours, boissons jamais (barre de durabilité ox_inventory).
 - **Food truck de Legion Square** enfin présent ; **caméras** accrochées aux murs / poteaux et orientées vers la rue ; un **PNJ acheteur**
   à la poissonnerie, la scierie, le marché et la boucherie.

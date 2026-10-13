@@ -65,6 +65,12 @@ F10/F11 staff, I aide, K inventaire proche, W radial, H mains en l'air, L verrou
   plasmatron (V12.33), Willie's, alcool Paleto, Moreo Gym, casse, Benny's original, Digital Den, Shadow Complex.
   `RETIRED_MAPS` (noms exacts) + `RETIRED_PATTERNS` (motifs : plasmagame, plasmakart, plasmatron, villa_01, redline) dans maps.js = source
   unique : le serveur les supprime au démarrage, le retrait F11 supprime aussi le dossier, IMPORTER-MODS ne les réinstalle jamais (V12.36).
+- **V12.37 (13/10)** : gs_jobs (une interaction par point, service par état voulu + anti-rebond, garage : messages exacts, armurerie
+  prêtée et reprise), gs_details (holster réécrit, `/dosreglage`, `DAMAGE` adouci), gs_weather (interventions créées à l'approche sur
+  la route), gs_rental (13 comptoirs), gs_admin / gs_bridge / gs_markers (placement libre, « PNJ et objets » reliés aux métiers / gangs,
+  table `gs_staff_peds`), gs_bridge/server/points_fichier.lua (`points-deplaces.json` : les points déplacés passent du PC au VPS via
+  METTRE-A-JOUR-OVH ; gardé par METTRE-A-JOUR et « roadline maj »), retouches Qbox : PPA retiré de qbx_cityhall, service / garage de
+  qbx_police et qbx_ambulancejob neutralisés (motif à confirmer sur la version installée : avertissement jaune si absent).
 - Deux sessions Claude (web + poste Windows) : la V12.33 du poste Windows a été intégrée dans git à la main. Toujours
   pousser sur GitHub pour que l'autre session reparte de la même base. Désactivées (archives coupées, à retélécharger) :
   beach party, soccer / soccer_cloth, plasmatron.

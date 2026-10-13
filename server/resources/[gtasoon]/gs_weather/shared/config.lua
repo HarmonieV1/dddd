@@ -56,8 +56,18 @@ Config.AnnouncePrefix = 'Radio Néon Météo'
 -- V8 · Météo événementielle : pendant la tempête, des routes sont fermées (barrières, détour) et des interventions
 -- apparaissent sur la carte (arbres tombés, véhicules en détresse). Les mécanos en service (ou n'importe qui avec un kit
 -- de réparation) sont payés pour les dégager. Points à caler en jeu (F11 → Points).
+-- V12.37 · Plus d'intervention « dans le vide » : les barrières, arbres et véhicules sont créés par le client seulement à
+-- moins de `streamIn` m du joueur (sol chargé et attendu avant de poser), retirés au-delà de `streamOut` m et recréés à
+-- l'approche. Le véhicule en détresse est posé sur le nœud de route le plus proche du point configuré (≤ `snapRadius` m) :
+-- la position exacte du point n'a donc plus besoin d'être au centimètre, il suffit qu'une route passe à moins de 60 m.
+-- `fixRange` = distance tolérée par le serveur autour de l'intervention (le marqueur [E] porte à 6 m).
 Config.Storm = {
     closures = 2, incidents = 4, pay = { 300, 650 }, mechanicJob = 'mechanic', repairItem = 'repairkit',
+    strandedModel = 'emperor',  -- V12.37 : modèle du véhicule en détresse (véhicule GTA, jamais de vraie marque)
+    snapRadius = 60.0,          -- V12.37 : rayon de recherche d'une route autour du point (véhicule en détresse)
+    fixRange = 10.0,            -- V12.37 : tolérance serveur autour de l'intervention (+ snapRadius pour un véhicule)
+    streamIn = 150.0,           -- V12.37 : créé en dessous de cette distance au joueur (boucle lente 2 s, jamais par image)
+    streamOut = 250.0,          -- V12.37 : retiré au-dessus (marge pour ne pas clignoter à la limite)
     roads = {
         { label = 'Route 68 (Harmony)', coords = vec4(1020.0, 2680.0, 39.5, 90.0) },
         { label = 'Great Ocean Highway (Chumash)', coords = vec4(-2610.0, 2350.0, 32.0, 10.0) },
@@ -65,10 +75,15 @@ Config.Storm = {
         { label = 'Route de Paleto (Procopio)', coords = vec4(1580.0, 6440.0, 24.0, 60.0) },
         { label = 'Senora Way (Grapeseed)', coords = vec4(2170.0, 4760.0, 40.0, 30.0) },
     },
+    -- V12.37 : un `label` par intervention → nommée dans le menu staff des points (F11 → Points), au lieu de « point N »
     spots = {
-        { kind = 'tree', coords = vec4(-1840.0, 4730.0, 56.0, 0.0) }, { kind = 'stranded', coords = vec4(2560.0, 4220.0, 41.0, 330.0) },
-        { kind = 'tree', coords = vec4(-490.0, 5780.0, 35.0, 0.0) }, { kind = 'stranded', coords = vec4(1960.0, 2980.0, 45.5, 60.0) },
-        { kind = 'stranded', coords = vec4(-1520.0, 2160.0, 56.0, 120.0) }, { kind = 'tree', coords = vec4(240.0, 3100.0, 42.5, 0.0) },
-        { kind = 'stranded', coords = vec4(-60.0, 1900.0, 196.0, 270.0) }, { kind = 'tree', coords = vec4(2690.0, 5100.0, 44.0, 0.0) },
+        { kind = 'tree', label = 'Arbre · Great Ocean Hwy (forêt de Paleto)', coords = vec4(-1840.0, 4730.0, 56.0, 0.0) },
+        { kind = 'stranded', label = 'Véhicule · Senora Fwy (Grapeseed)', coords = vec4(2560.0, 4220.0, 41.0, 330.0) },
+        { kind = 'tree', label = 'Arbre · Route 1 (Paleto Forest)', coords = vec4(-490.0, 5780.0, 35.0, 0.0) },
+        { kind = 'stranded', label = 'Véhicule · Senora Fwy (sud de Sandy)', coords = vec4(1960.0, 2980.0, 45.5, 60.0) },
+        { kind = 'stranded', label = 'Véhicule · Route 68 (Tongva Hills)', coords = vec4(-1520.0, 2160.0, 56.0, 120.0) },
+        { kind = 'tree', label = 'Arbre · Route 68 (Grand Chaparral)', coords = vec4(240.0, 3100.0, 42.5, 0.0) },
+        { kind = 'stranded', label = 'Véhicule · Baytree Canyon Rd', coords = vec4(-60.0, 1900.0, 196.0, 270.0) },
+        { kind = 'tree', label = 'Arbre · Route de Grapeseed (nord)', coords = vec4(2690.0, 5100.0, 44.0, 0.0) },
     },
 }

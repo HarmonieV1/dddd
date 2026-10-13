@@ -7,9 +7,9 @@ from pdf import H1, H2, P, SMALL, VERSION, footer, A4, mm, colors, SimpleDocTemp
 # (test, qui, priorité)
 SESSIONS = [
     ('0 · Avant de commencer (5 min)', [
-        ('METTRE-A-JOUR.bat : version V12.34 affichée, « Base de données sauvegardée », « Sauvegardes programmées » ; METTRE-A-JOUR-OVH puis GERER-OVH → 1 : « Version RoadLine : V12.34 »', 'Staff', 3),
+        ('METTRE-A-JOUR.bat : version V12.37 affichée, « Base de données sauvegardée », « Sauvegardes programmées » ; METTRE-A-JOUR-OVH puis GERER-OVH → 1 : « Version RoadLine : V12.37 »', 'Staff', 3),
         ('Fenêtre du serveur : aucune ligne ROUGE au démarrage (sauf un conflit de maps déjà connu) ; F8 en jeu : aucune erreur rouge ; GERER-OVH → 3 : aucune erreur de script', 'Seul', 3),
-        ('VIDER-CACHE-FIVEM.bat si tu vois un ancien menu (F11 doit afficher « RoadLine V12.34 ») ; pendant le backtest : set gs_honeypot "log" dans secrets.cfg (piège = simple signalement)', 'Staff', 2),
+        ('VIDER-CACHE-FIVEM.bat si tu vois un ancien menu (F11 doit afficher « RoadLine V12.37 ») ; pendant le backtest : set gs_honeypot "log" dans secrets.cfg (piège = simple signalement)', 'Staff', 2),
     ]),
     ('1 · Arrivée et personnage (15 min) — corrigé après tes retours', [
         ('Nouveau joueur : un seul personnage ; fondateur, super-admins et VIP (F11 → Joueurs → VIP) : deux ; plus de choix du lieu ; déco / reco = même endroit', '2', 3),
@@ -65,6 +65,17 @@ SESSIONS = [
         ('Hôpital Pillbox, Fleeca, Pop\'s Pills, Bahama Mamas : nos points (soins, braquage, pharmacie, bar) accessibles sans les maps', 'Staff', 3),
         ('NETTOYER-MARQUES.bat : liste les mods de marque (dont mp_male_the_goat), supprime après « O », le reste intact', 'Staff', 2),
         ('Pack acheté (plus tard) : IMPORTER-MODS puis F11 → Mappings installés : chaque map a un quartier, aucune ligne rouge (conflit) ni jaune (poids) en console', 'Staff', 2),
+    ]),
+    ('6b · V12.37 — corrections du 13/10 (30 min)', [
+        ('Garage de métier : « Sortir » donne le véhicule à chaque fois (plus de « hors service » aléatoire) et UNE seule notification ; prise de service au PNJ : une seule interaction, un seul message', '2', 3),
+        ('Quitter la LSPD (démission ou renvoi) : les armes et équipements de l\'armurerie sont repris au moment du départ ; message explicite', '2', 3),
+        ('Armes dans le dos : fusil + pompe visibles pour soi et un autre joueur ; mort → disparaissent ; réanimé → reviennent ; changement de tenue (illenium) → suivent le corps, RIEN ne reste en l\'air ; déconnexion → objet parti en 5 s ; /dosreglage (staff) : ±1 cm / ±2° en direct, « Copier le bloc Config.Back »', '2', 3),
+        ('Dégâts : un coup de pistolet ou de poing fait sensiblement moins mal qu\'avant (−25 % / −20 %), collision véhicule −30 %', '2', 2),
+        ('PPA : le PNJ du Pôle Emploi / la mairie ne vend PLUS de permis de port d\'arme à 50 $ ; seul le comptoir Ammu-Nation (500 $) le délivre', 'Seul', 3),
+        ('/meteoevent storm : en approchant d\'une « Véhicule en détresse », le véhicule est SUR la route (< 150 m), blip + [E] dessus, réparation payée ; aucune ligne « aucune route à moins de 60 m » en F8 (sinon déplacer le point) ; arbres et barrières au sol', '2', 3),
+        ('Location : 13 comptoirs sur la carte, Sandy Shores devant le 24/7 (plus dans le poste du shérif) ; louer un vélo à Grapeseed / Vinewood ; caler les 7 points « à caler » (F11 → Déplacer un point)', 'Seul', 2),
+        ('F11 → Monde et lieux → Déplacer un point : placement libre (hauteur / rotation comme les props) ; « PNJ et objets » : poser un PNJ relié à un métier ou un gang, puis le retirer', 'Staff', 3),
+        ('Points déplacés : déplacer un point sur le PC, attendre 1 min (ou /pointsexport en console) → fichier gs_bridge/points-deplaces.json ; METTRE-A-JOUR puis METTRE-A-JOUR-OVH : le point est au même endroit sur le VPS ; console VPS « point(s) déplacé(s) … importés »', 'Staff', 3),
     ]),
     ('7 · Nouveautés jamais testées — la ville se souvient (30 min)', [
         ('Mémoire des lieux : 3 événements au même endroit → un passant en parle, Radio Los Santos le rappelle ; 10e → plaque ; la nuit près d\'un lieu à 5 événements : « Les échos » (silhouettes 40 s)', '2', 3),

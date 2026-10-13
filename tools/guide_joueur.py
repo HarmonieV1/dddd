@@ -231,6 +231,7 @@ def build():
             ['E', 'Action sur un point [E]'],
             ['N · ²', 'Parler · portée de la voix (chuchoter, normal, crier)'],
             ['H · L · B', 'Mains en l\'air · verrouiller le véhicule · ceinture'],
+            ['Crochet / fils', 'Mini-jeu : quand le curseur passe dans la zone claire, appuie sur la touche CHIFFRE affichée (1, 2, 3 ou 4) ; 3 à 4 fois de suite, rater = recommencer'],
             ['U', 'Garde-robe : ton personnage en grand, retirer / enfiler chaque vêtement (objets du sac)'],
             ['I', 'Aide des touches en jeu']]
     s += [table(keys, [40 * mm, 140 * mm])]

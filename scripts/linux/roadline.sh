@@ -34,6 +34,9 @@ maj() { # archive envoyée par METTRE-A-JOUR-OVH.bat
   [ -d "$DATA/resources/[gtasoon]" ] && mv "$DATA/resources/[gtasoon]" "$old"
   rsync -a "$st/gtasoon/" "$DATA/resources/[gtasoon]/"
   mkdir -p "$DATA/resources/[gtasoon]/gsa_zz_fusion_occlusion/stream" # fusions de maps écrites par gs_admin (FiveM ne crée pas ce dossier)
+  # V12.37 : points déplacés par le staff (fichier écrit par gs_bridge) : celui du PC arrive dans l'archive ; sinon on garde celui du VPS
+  local pts="gs_bridge/points-deplaces.json"
+  if [ ! -f "$DATA/resources/[gtasoon]/$pts" ] && [ -f "$old/$pts" ]; then cp "$old/$pts" "$DATA/resources/[gtasoon]/$pts"; fi
   [ -d "$st/extra" ] && rsync -a "$st/extra/" "$DATA/"
   for f in "$st"/cfg/*.cfg; do
     [ -e "$f" ] || continue

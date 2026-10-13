@@ -441,10 +441,18 @@ local function confirmPoint(src, key, res, c)
     end)
 end
 
+-- V12.37 · Placement libre : `data.pose` = { x, y, z, heading } choisie à l'aperçu (gs_markers Place), vérifiée ici (nombres,
+-- ≤ 60 m du staff) ; sans pose, le point est posé à la position du staff, orienté comme lui (comportement d'avant).
 Actions.movepoint = { level = 4, duty = true, run = function(src, _, data)
     local ped = GetPlayerPed(src)
-    local c = GetEntityCoords(ped)
-    local ok, res = exports.gs_bridge:SetPoint(data.key, vector4(c.x, c.y, c.z, GetEntityHeading(ped)))
+    local here = GetEntityCoords(ped)
+    local c, w = here, GetEntityHeading(ped)
+    if data.pose ~= nil then
+        local pose, err = exports.gs_bridge:CleanPose(data.pose, here, 60.0)
+        need(pose, err)
+        c, w = vector3(pose.x, pose.y, pose.z), pose.w
+    end
+    local ok, res = exports.gs_bridge:SetPoint(data.key, vector4(c.x, c.y, c.z, w))
     need(ok, res)
     confirmPoint(src, data.key, res, c)
     return ('Point déplacé, %s redémarre (confirmation dans quelques secondes)'):format(res)
@@ -468,6 +476,76 @@ Actions.enablepoint = { level = 4, duty = true, run = function(_, _, data)
     need(ok, res)
     return ('Point réactivé (%s relancé)'):format(res)
 end }
+
+-- V12.37 · PNJ et objets posés par le staff (F11 → Monde et lieux → PNJ et objets), reliés à un métier, un gang ou libres.
+-- Stockés par gs_bridge (table gs_staff_peds, GlobalState.gsStaffPeds) ; super-admin et fondateur, en mode staff.
+local STAFF_PED_ROLES = { duty = 'Accueil', boss = 'Direction', garage = 'Garage' }
+
+--- Pure : cible normalisée ou nil, message. 'libre' ; 'job:<métier>:<duty|boss|garage>[n]' (le point n doit exister dans `jobs`,
+--- forme de JobsApi:ListJobs) ; 'gang:<gang>' (dans `gangs`, forme de gs_gangs:ListGangs).
+function Admin.staffTarget(t, jobs, gangs)
+    if t == nil or t == '' or t == 'libre' then return 'libre' end
+    if type(t) ~= 'string' or #t > 48 then return nil, 'Cible invalide.' end
+    local job, kind, idx = t:match('^job:([%w_]+):(%a+)(%d*)$')
+    if job then
+        if not STAFF_PED_ROLES[kind] then return nil, 'Rôle inconnu (accueil, direction ou garage).' end
+        idx = tonumber(idx) or 1
+        for _, j in ipairs(jobs or {}) do
+            if j.name == job then
+                for _, pt in ipairs(j.points or {}) do
+                    if pt.kind == kind and pt.idx == idx then return ('job:%s:%s%s'):format(job, kind, idx > 1 and idx or '') end
+                end
+                return nil, 'Ce métier n\'a pas ce point.'
+            end
+        end
+        return nil, 'Métier inconnu.'
+    end
+    local gang = t:match('^gang:([%w_]+)$')
+    if gang then
+        for _, g in ipairs(gangs or {}) do if g.name == gang then return t end end
+        return nil, 'Gang inconnu.'
+    end
+    return nil, 'Cible invalide.'
+end
+
+Actions.addstaffped = { level = 4, duty = true, run = function(src, _, data)
+    local kind = need((data.kind == 'ped' or data.kind == 'prop') and data.kind, 'Type invalide (PNJ ou objet).')
+    local model = need(Security:Sanitize(data.model, 64), 'Modèle obligatoire.')
+    need(model:match('^[%w_]+$'), 'Nom de modèle invalide.')
+    local gangs = started('gs_gangs') and exports.gs_gangs:ListGangs() or {}
+    local target, terr = Admin.staffTarget(data.target, JobsApi:ListJobs(), gangs)
+    need(target, terr)
+    local scenario = Security:Sanitize(data.scenario, 48)
+    if scenario then need(kind == 'ped' and scenario:match('^[%u_]+$') and (scenario:find('^WORLD_HUMAN_') or scenario:find('^PROP_HUMAN_') or scenario:find('^CODE_HUMAN_')), 'Scénario invalide.') end
+    local pose, perr = exports.gs_bridge:CleanPose(data.pose, GetEntityCoords(GetPlayerPed(src)), 60.0)
+    need(pose, perr)
+    local ok, res = exports.gs_bridge:AddStaffPed({ kind = kind, target = target, model = model, scenario = scenario,
+        x = pose.x, y = pose.y, z = pose.z, heading = pose.w, by = label(src) })
+    need(ok, res)
+    return ('%s #%d « %s » posé (%s)'):format(kind == 'ped' and 'PNJ' or 'Objet', res, model, target)
+end }
+
+Actions.delstaffped = { level = 4, duty = true, run = function(_, _, data)
+    local ok, res = exports.gs_bridge:RemoveStaffPed(tonumber(data.id))
+    need(ok, res)
+    return ('%s #%d « %s » retiré (%s)'):format(res.kind == 'ped' and 'PNJ' or 'Objet', res.id, res.model, res.target)
+end }
+
+--- Pure : catalogue d'objets de gs_builder (shared/config.lua, `Config.Catalog`) lu dans le texte du fichier : gs_admin ne
+--- charge pas la config de gs_builder et le serveur n'exécute jamais de code dynamique. { { label, icon, items = { { model, label } } } }.
+function Admin.parseCatalog(text)
+    local cats = {}
+    if type(text) ~= 'string' then return cats end
+    local body = text:match('Config%.Catalog%s*=%s*{(.*)') or ''
+    for label, icon, items in body:gmatch("{%s*label%s*=%s*'([^']+)',%s*icon%s*=%s*'([^']+)',%s*items%s*=%s*{(.-)}%s*},") do
+        local cat = { label = label, icon = icon, items = {} }
+        for model, name in items:gmatch("{%s*model%s*=%s*'([%w_]+)',%s*label%s*=%s*'(.-)'%s*}") do
+            cat.items[#cat.items + 1] = { model = model, label = (name:gsub("\\'", "'")) }
+        end
+        if #cat.items > 0 then cats[#cats + 1] = cat end
+    end
+    return cats
+end
 
 Actions.spectate = { level = 2, duty = true, target = true, run = function(src, target)
     need(target ~= src, 'Tu ne peux pas te regarder toi-même.')
@@ -712,6 +790,14 @@ lib.callback.register('gs_admin:mappings', function(src)
     local ok, res = pcall(function() return exports[GetCurrentResourceName()]:MapScan() end)
     if not ok or type(res) ~= 'table' then return { maps = {}, conflicts = {}, error = tostring(res) } end
     return res
+end)
+
+--- V12.37 · Catalogue d'objets (celui de gs_builder) pour « Ajouter un objet » : super-admin et fondateur, lu une fois.
+local catalogCache
+lib.callback.register('gs_admin:staffCatalog', function(src)
+    if not staffGuard(src, 'staffCatalog', 4, 10000) or Admin.level(src) < 4 then return nil end
+    if not catalogCache then catalogCache = Admin.parseCatalog(LoadResourceFile('gs_builder', 'shared/config.lua')) end
+    return catalogCache
 end)
 
 --- V12.30 · Résultat du contrôle « chez moi » (F11 → Mappings installés → Contrôler) recopié dans la console du serveur :

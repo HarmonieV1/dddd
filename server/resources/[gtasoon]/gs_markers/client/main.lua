@@ -8,6 +8,11 @@
 -- les ressources. Il se tient `distance` m (1,2 par défaut) « derrière » le point dans la direction `heading` et regarde vers le point.
 -- Il porte l'interaction (ox_target) : `options` = options ox_target fournies par la ressource, sinon une option « [label] » qui
 -- déclenche le même `event` que la touche [E]. Le point reste déplaçable par le staff : le PNJ suit la position du point.
+--
+-- V12.37 · PNJ et objets posés par le staff (F11 → Monde et lieux → « PNJ et objets », GlobalState.gsStaffPeds, gs_bridge) :
+-- `ped.at = { x, y, z, heading }` = position absolue (le PNJ ne se déduit plus du point) et `ped.staffId` = entrée staff reprise
+-- par ce point (gs_bridge/shared/points.lua `GsPoints.pointPed`). Les entrées que personne ne reprend sont créées ici en PNJ
+-- d'ambiance (sans interaction) ou en objets, par la même boucle lente. Export `Place` : placement libre avec aperçu (menu staff).
 
 -- V7 : style discret pour le RP. Plus de flèches ni d'icônes flottantes : un petit cercle au sol, peu opaque, visible
 -- seulement de près (15 m max), texte à moins de 4 m. Seuls les repères de quête gardent un symbole (losange, cône).
@@ -43,16 +48,24 @@ local function loadModel(hash)
     return true
 end
 
---- Position du PNJ : `distance` m derrière le point dans la direction `heading` (il regarde donc vers le point), pieds au sol.
---- Les points sont relevés à hauteur de joueur (≈ 1 m au-dessus du sol) : repli à c.z - 1 si le sol n'est pas encore chargé.
-local function pedPlace(p)
-    local d, c = p.ped, p.coords
+--- Ancrage d'un PNJ de point (pur, sans sol) : `distance` m derrière le point dans la direction `heading` (il regarde donc vers
+--- le point) ; ou, V12.37, sa position absolue `at` quand le staff l'a posé lui-même. Retourne x, y, zIndicatif, cap, absolu. [API]
+local function pedAnchor(d, c)
+    if type(d.at) == 'table' then return d.at.x + 0.0, d.at.y + 0.0, d.at.z + 0.0, (d.at.heading or 0.0) + 0.0, true end
     local h = math.rad(d.heading or 0.0)
     local dist = d.distance or 1.2
-    local x, y = c.x + math.sin(h) * dist, c.y - math.cos(h) * dist
+    return c.x + math.sin(h) * dist, c.y - math.cos(h) * dist, c.z - 1.0, (d.heading or 0.0) + 0.0, false
+end
+
+--- Position du PNJ, pieds au sol. Les points sont relevés à hauteur de joueur (≈ 1 m au-dessus du sol) : repli à c.z - 1 si le
+--- sol n'est pas encore chargé. Un PNJ posé par le staff (`at`) garde exactement sa hauteur (déjà calée à l'aperçu).
+local function pedPlace(p)
+    local d, c = p.ped, p.coords
+    local x, y, z, _, absolute = pedAnchor(d, c)
+    if absolute then return x, y, z, true end
     local found, gz = GetGroundZFor_3dCoord(x, y, c.z + 1.0, false)
     if found and math.abs((gz + 1.0) - c.z) < 6.0 then return x, y, gz, true end
-    return x, y, c.z - 1.0, false
+    return x, y, z, false
 end
 
 local function despawnPed(id)
@@ -72,10 +85,11 @@ local function spawnPed(id, p)
         return
     end
     local x, y, z, grounded = pedPlace(p)
-    local ped = CreatePed(4, hash, x, y, z, d.heading or 0.0, false, true)
+    local _, _, _, heading = pedAnchor(d, p.coords) -- V12.37 : cap absolu si le PNJ a été posé par le staff
+    local ped = CreatePed(4, hash, x, y, z, heading, false, true)
     SetModelAsNoLongerNeeded(hash)
     if not ped or ped == 0 then return end
-    SetEntityHeading(ped, d.heading or 0.0)
+    SetEntityHeading(ped, heading)
     SetEntityInvincible(ped, true)
     FreezeEntityPosition(ped, true)
     SetBlockingOfNonTemporaryEvents(ped, true)
@@ -140,6 +154,79 @@ end)
 exports('Add', add)
 exports('Remove', remove)
 exports('RemovePrefix', removePrefix)
+exports('PedAnchor', pedAnchor)
+
+-- PNJ et objets posés par le staff (V12.37) -------------------------------------------------------------------------------
+-- Copie locale de GlobalState.gsStaffPeds. Une entrée reprise par un point (points[*].ped.staffId) est créée par ce point, avec
+-- son interaction ; les autres sont créées ici : PNJ d'ambiance (`staff:<id>` dans `peds`) ou objet figé (`props`).
+local staffList = {}   -- { id, kind, model, scenario, x, y, z, heading, p = pseudo-point pour spawnPed }
+local props = {}       -- ['staff:<id>'] = objet créé à proximité
+
+local function despawnProp(id)
+    local ent = props[id]
+    if ent and DoesEntityExist(ent) then DeleteEntity(ent) end
+    props[id] = nil
+end
+
+local function spawnProp(id, e)
+    local hash = GetHashKey(e.model)
+    if not loadModel(hash) then
+        print(('[gs_markers] objet du staff #%s : modèle « %s » introuvable, ignoré'):format(e.id, tostring(e.model)))
+        e.failed = true
+        return
+    end
+    local ent = CreateObjectNoOffset(hash, e.x, e.y, e.z, false, false, false)
+    SetModelAsNoLongerNeeded(hash)
+    if not ent or ent == 0 then return end
+    SetEntityHeading(ent, e.heading or 0.0)
+    FreezeEntityPosition(ent, true)
+    props[id] = ent
+end
+
+--- Recharge la liste du staff : tout ce qui a été créé ici est retiré, la boucle lente recrée ce qui est encore proche.
+local function setStaffList(list)
+    for id in pairs(props) do despawnProp(id) end
+    for id in pairs(peds) do if id:sub(1, 6) == 'staff:' then despawnPed(id) end end
+    staffList = {}
+    if type(list) ~= 'table' then return end
+    for _, e in ipairs(list) do
+        if type(e) == 'table' and type(e.model) == 'string' and tonumber(e.id) then
+            local x, y, z, h = (e.x or 0.0) + 0.0, (e.y or 0.0) + 0.0, (e.z or 0.0) + 0.0, (e.heading or 0.0) + 0.0
+            staffList[#staffList + 1] = { id = e.id, kind = e.kind, model = e.model, scenario = e.scenario, x = x, y = y, z = z, heading = h,
+                p = { coords = vec3(x, y, z), ped = { model = e.model, scenario = e.scenario, at = { x = x, y = y, z = z, heading = h }, staffId = e.id } } }
+        end
+    end
+end
+
+setStaffList(GlobalState.gsStaffPeds)
+AddStateBagChangeHandler('gsStaffPeds', 'global', function(_, _, value) setStaffList(value) end)
+
+--- Entrée staff (id) dont l'entité `entity` est le PNJ ou l'objet, créé ici ou repris par un point ; nil sinon. [API]
+local function staffEntryOf(entity)
+    if not entity or entity == 0 then return nil end
+    for id, e in pairs(peds) do
+        if e.ent == entity then
+            local n = id:match('^staff:(%d+)$')
+            if n then return tonumber(n) end
+            local p = points[id]
+            return p and p.ped and p.ped.staffId or nil
+        end
+    end
+    for id, ent in pairs(props) do
+        if ent == entity then return tonumber(id:match('^staff:(%d+)$')) end
+    end
+    return nil
+end
+exports('StaffEntryOf', staffEntryOf)
+
+--- Entrées staff à créer ici : celles qu'aucun point déclaré ne reprend (pur). Retourne la liste et l'ensemble des id repris.
+local function unclaimedStaff(list, pts)
+    local claimed, out = {}, {}
+    for _, p in pairs(pts) do if p.ped and p.ped.staffId then claimed[p.ped.staffId] = true end end
+    for _, e in ipairs(list) do if not claimed[e.id] then out[#out + 1] = e end end
+    return out, claimed
+end
+exports('UnclaimedStaff', function(list, pts) return unclaimedStaff(list or staffList, pts or points) end)
 
 local function text3d(c, label)
     local onScreen, x, y = GetScreenCoordFromWorldCoord(c.x, c.y, c.z)
@@ -191,7 +278,25 @@ CreateThread(function()
                 end
             end
         end
-        for id in pairs(peds) do if not points[id] then despawnPed(id) end end -- point retiré sans passer par Remove
+        -- V12.37 · entrées du staff que personne ne reprend : PNJ d'ambiance ou objets, mêmes distances
+        local free, claimed = unclaimedStaff(staffList, points)
+        for _, e in ipairs(free) do
+            local id = 'staff:' .. e.id
+            local d = #(me - e.p.coords)
+            if e.kind == 'prop' then
+                if not props[id] then
+                    if d < PED_RANGE and not e.failed then spawnProp(id, e) end
+                elseif d > PED_FORGET then despawnProp(id) end
+            elseif not peds[id] then
+                if d < PED_RANGE and not e.p.pedFailed then spawnPed(id, e.p) end
+            elseif d > PED_FORGET then despawnPed(id) end
+        end
+        for id in pairs(peds) do
+            local n = id:match('^staff:(%d+)$')
+            if n then
+                if claimed[tonumber(n)] then despawnPed(id) end -- repris entre-temps par un point : plus de doublon
+            elseif not points[id] then despawnPed(id) end -- point retiré sans passer par Remove
+        end
         Wait(2500)
     end
 end)
@@ -199,6 +304,7 @@ end)
 AddEventHandler('onResourceStop', function(res)
     if res ~= GetCurrentResourceName() then return end
     for id in pairs(peds) do despawnPed(id) end -- V12.36 : aucun PNJ orphelin quand gs_markers redémarre
+    for id in pairs(props) do despawnProp(id) end -- V12.37 : ni objet du staff
 end)
 
 CreateThread(function()
@@ -248,3 +354,150 @@ CreateThread(function()
         end
     end
 end)
+
+-- Placement libre (V12.37) ------------------------------------------------------------------------------------------------
+-- Pour le menu staff F11 (gs_admin) : aperçu d'un point (anneau + repère de cap), d'un PNJ ou d'un objet en fantôme devant le
+-- joueur, réglé au clavier, puis Entrée / Retour. Les textes d'aide sont affichés par l'appelant (lib.showTextUI : gs_markers ne
+-- charge pas ox_lib). Une seule boucle par image, le temps du placement ; un seul placement à la fois.
+local STEP_MOVE, STEP_UP, STEP_TURN = 0.10, 0.05, 5.0      -- 10 cm, 5 cm, 5° par pas ; Maj = pas × 5
+local PLACE_DISABLED = { 24, 25, 44, 38, 45, 47, 73, 172, 173, 174, 175, 10, 11, 14, 15, 16, 17, 37, 108, 109, 111, 112, 140, 141, 142, 257, 263 }
+local placing = false
+local held = {} -- [commande] = horodatage du premier appui (répétition quand la touche reste enfoncée)
+
+--- Pure : nouvelle pose après les commandes d'une image. `inp` = { fwd, right, up, turn } en nombre de pas (signés, fractions
+--- autorisées pour le maintien), `camHeading` = cap de la caméra en degrés (avancer = s'éloigner de la caméra), `mult` = Maj × 5.
+--- Le cap suit la convention du jeu (sens inverse des aiguilles d'une montre) : turn > 0 tourne à gauche. [API]
+local function placeStep(pose, inp, camHeading, mult)
+    mult = mult or 1.0
+    local h = math.rad(camHeading or 0.0)
+    local fx, fy = -math.sin(h), math.cos(h)
+    local rx, ry = math.cos(h), math.sin(h)
+    local fwd, right = (inp.fwd or 0) * STEP_MOVE * mult, (inp.right or 0) * STEP_MOVE * mult
+    return {
+        x = pose.x + fx * fwd + rx * right,
+        y = pose.y + fy * fwd + ry * right,
+        z = pose.z + (inp.up or 0) * STEP_UP * mult,
+        heading = ((pose.heading or 0.0) + (inp.turn or 0) * STEP_TURN * mult) % 360.0,
+    }
+end
+exports('PlaceStep', placeStep)
+
+--- Un pas au premier appui ; touche maintenue plus de 350 ms : pas continus (≈ 10 pas par seconde).
+local function pressed(c, dt)
+    if IsDisabledControlJustPressed(0, c) then held[c] = GetGameTimer() return 1.0 end
+    if IsDisabledControlPressed(0, c) then
+        if held[c] and GetGameTimer() - held[c] > 350 then return dt * 10.0 end
+        return 0.0
+    end
+    held[c] = nil
+    return 0.0
+end
+local function axis(plus, minus, dt) return pressed(plus, dt) - pressed(minus, dt) end
+
+--- Point visé par la caméra (sol et objets, joueur ignoré), à 25 m max ; nil si rien.
+local function camAim()
+    local cam, rot = GetGameplayCamCoord(), GetGameplayCamRot(2)
+    local rz, rx = math.rad(rot.z), math.rad(rot.x)
+    local dir = vec3(-math.sin(rz) * math.cos(rx), math.cos(rz) * math.cos(rx), math.sin(rx))
+    local to = cam + dir * 25.0
+    local _, hit, at = GetShapeTestResult(StartExpensiveSynchronousShapeTestLosProbe(cam.x, cam.y, cam.z, to.x, to.y, to.z, 1 | 16, PlayerPedId(), 4))
+    if hit then return at end
+    return nil
+end
+
+--- Fantôme : PNJ ou objet semi-transparent, sans collision, figé. Retourne l'entité (0 pour un point), ou nil + message.
+local function ghostCreate(kind, model, scenario, pose)
+    if kind ~= 'ped' and kind ~= 'prop' then return 0 end
+    local hash = GetHashKey(tostring(model or ''))
+    if not loadModel(hash) then return nil, 'Modèle inconnu : ' .. tostring(model) end
+    local ent
+    if kind == 'ped' then ent = CreatePed(4, hash, pose.x, pose.y, pose.z, pose.heading, false, false)
+    else ent = CreateObjectNoOffset(hash, pose.x, pose.y, pose.z, false, false, false) end
+    SetModelAsNoLongerNeeded(hash)
+    if not ent or ent == 0 then return nil, 'Création impossible.' end
+    SetEntityAlpha(ent, 170, false)
+    SetEntityCollision(ent, false, false)
+    SetEntityInvincible(ent, true)
+    FreezeEntityPosition(ent, true)
+    if kind == 'ped' then
+        SetBlockingOfNonTemporaryEvents(ent, true)
+        if scenario then TaskStartScenarioInPlace(ent, scenario, 0, true) end
+    end
+    return ent
+end
+
+local function ghostMove(kind, ent, pose)
+    if not ent or ent == 0 then return end
+    if kind == 'ped' then SetEntityCoords(ent, pose.x, pose.y, pose.z, false, false, false, false) -- avec décalage : z = sol, comme CreatePed
+    else SetEntityCoordsNoOffset(ent, pose.x, pose.y, pose.z, false, false, false) end
+    SetEntityHeading(ent, pose.heading)
+end
+
+--- Au sol : point = 1 m au-dessus (convention des points, hauteur de joueur), PNJ = pieds au sol, objet = posé par le jeu.
+local function placeGround(kind, pose, ghost)
+    if kind == 'prop' and ghost and ghost ~= 0 then
+        PlaceObjectOnGroundProperly(ghost)
+        local c = GetEntityCoords(ghost)
+        return { x = c.x, y = c.y, z = c.z, heading = pose.heading }
+    end
+    local found, gz = GetGroundZFor_3dCoord(pose.x, pose.y, pose.z + 1.0, false)
+    if not found then found, gz = GetGroundZFor_3dCoord(pose.x, pose.y, pose.z + 10.0, false) end
+    if not found then return pose end
+    return { x = pose.x, y = pose.y, z = gz + (kind == 'point' and 1.0 or 0.0), heading = pose.heading }
+end
+
+--- Aperçu d'un point : anneau au sol, bille au point, bille plus petite vers l'avant (sens du cap).
+local function drawPointPreview(pose)
+    local h = math.rad(pose.heading)
+    DrawMarker(25, pose.x, pose.y, pose.z - 0.97, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.3, 1.3, 1.0, 40, 224, 255, 150, false, false, 2, false, nil, nil, false)
+    DrawMarker(28, pose.x, pose.y, pose.z, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.14, 0.14, 0.14, 40, 224, 255, 210, false, false, 2, false, nil, nil, false)
+    DrawMarker(28, pose.x - math.sin(h) * 0.8, pose.y + math.cos(h) * 0.8, pose.z - 0.6, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.09, 0.09, 0.09, 255, 196, 0, 220, false, false, 2, false, nil, nil, false)
+end
+
+--- Placement libre. opts = { kind = 'point' | 'ped' | 'prop', model?, scenario?, x?, y?, z?, heading? } (sans x : 2,5 m devant le
+--- joueur, au sol). Touches : flèches ou pavé 8/5/4/6 = 10 cm, PgUp/PgDn = 5 cm, Q/E = 5°, Maj = pas × 5, G = au sol, Tab = viser à
+--- la souris, Entrée = valider, Retour = annuler. Retourne { x, y, z, heading }, nil si annulé, nil + message si impossible. [API]
+local function place(opts)
+    if placing then return nil, 'Un placement est déjà en cours.' end
+    if type(opts) ~= 'table' then return nil, 'Options invalides.' end
+    local kind = opts.kind == 'ped' and 'ped' or opts.kind == 'prop' and 'prop' or 'point'
+    local me = PlayerPedId()
+    local heading = (tonumber(opts.heading) or GetEntityHeading(me)) + 0.0
+    local pose
+    if tonumber(opts.x) and tonumber(opts.y) and tonumber(opts.z) then
+        pose = { x = opts.x + 0.0, y = opts.y + 0.0, z = opts.z + 0.0, heading = heading }
+    else
+        local c = GetOffsetFromEntityInWorldCoords(me, 0.0, 2.5, 0.0)
+        pose = placeGround(kind, { x = c.x, y = c.y, z = c.z - (kind == 'point' and 0.0 or 1.0), heading = heading }, nil)
+    end
+    local ghost, err = ghostCreate(kind, opts.model, opts.scenario, pose)
+    if ghost == nil then return nil, err end
+    placing, held = true, {}
+    local aim, result = false, nil
+    -- par frame : seulement pendant un placement libre du staff (sortie avec Entrée / Retour)
+    while true do
+        for _, c in ipairs(PLACE_DISABLED) do DisableControlAction(0, c, true) end
+        local dt = GetFrameTime()
+        local mult = IsControlPressed(0, 21) and 5.0 or 1.0 -- Maj
+        if IsDisabledControlJustPressed(0, 37) then aim = not aim end -- Tab : viser à la souris / réglage fin
+        if aim then
+            local at = camAim()
+            if at then pose = { x = at.x, y = at.y, z = at.z + (kind == 'point' and 1.0 or 0.0), heading = pose.heading } end
+        end
+        local inp = { fwd = axis(172, 173, dt) + axis(111, 112, dt), right = axis(175, 174, dt) + axis(109, 108, dt),
+            up = axis(10, 11, dt), turn = axis(44, 38, dt) } -- Q : à gauche, E : à droite
+        if inp.fwd ~= 0 or inp.right ~= 0 or inp.up ~= 0 or inp.turn ~= 0 then
+            pose = placeStep(pose, inp, GetGameplayCamRot(2).z, mult)
+            if inp.fwd ~= 0 or inp.right ~= 0 or inp.up ~= 0 then aim = false end
+        end
+        if IsDisabledControlJustPressed(0, 47) then pose, aim = placeGround(kind, pose, ghost), false end -- G : au sol
+        if kind == 'point' then drawPointPreview(pose) else ghostMove(kind, ghost, pose) end
+        if IsControlJustPressed(0, 191) then result = pose break end -- Entrée
+        if IsControlJustPressed(0, 194) then break end -- Retour
+        Wait(0)
+    end
+    if ghost ~= 0 and DoesEntityExist(ghost) then DeleteEntity(ghost) end
+    placing = false
+    return result
+end
+exports('Place', place)

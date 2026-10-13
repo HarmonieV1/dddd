@@ -578,6 +578,237 @@ local function gangAdminMenu()
     }, 'gs_staff_quick')
 end
 
+-- V12.37 · Placement libre (aperçu + réglages au clavier : export Place de gs_markers) et PNJ / objets posés par le staff -------
+local PLACE_HELP = table.concat({
+    '[Flèches / pavé 8 5 4 6] déplacer de 10 cm  ·  [PgUp/PgDn] hauteur 5 cm',
+    '[Q/E] tourner de 5°  ·  [Maj] pas × 5  ·  [Tab] viser à la souris',
+    '[G] au sol  ·  [Entrée] valider  ·  [Retour] annuler',
+}, '  \n')
+
+--- Aperçu + réglages ; retourne la pose { x, y, z, heading } ou nil (annulé, ou impossible : déjà notifié).
+local function freePlace(opts)
+    lib.showTextUI(PLACE_HELP, { position = 'right-center' })
+    local pose, err = exports.gs_markers:Place(opts)
+    lib.hideTextUI()
+    if not pose and err then notify(false, err) end
+    return pose
+end
+
+-- Modèles de PNJ du jeu par catégorie (noms exacts de GTA V) ; n'importe quel autre modèle reste possible en le tapant.
+local PED_MODELS = {
+    { label = 'Civils', icon = 'user', items = {
+        { model = 'a_m_y_business_01', label = 'Homme d\'affaires' }, { model = 'a_f_y_business_02', label = 'Femme d\'affaires' },
+        { model = 'a_m_m_business_01', label = 'Cadre (âge mûr)' }, { model = 'a_f_m_business_02', label = 'Cadre (femme)' },
+        { model = 'a_f_y_business_04', label = 'Secrétaire' }, { model = 'a_m_y_hipster_01', label = 'Hipster' }, { model = 'a_f_y_hipster_01', label = 'Hipster (femme)' },
+        { model = 'a_m_y_beach_01', label = 'Plagiste' }, { model = 'a_f_y_tourist_01', label = 'Touriste' }, { model = 'a_m_y_skater_01', label = 'Skateur' },
+        { model = 'a_m_m_farmer_01', label = 'Fermier' }, { model = 'a_m_y_golfer_01', label = 'Golfeur' }, { model = 'a_f_y_fitness_01', label = 'Sportive' },
+        { model = 'a_m_y_runner_01', label = 'Joggeur' }, { model = 'a_m_o_genstreet_01', label = 'Homme âgé' }, { model = 'a_f_o_genstreet_01', label = 'Femme âgée' },
+        { model = 'a_m_m_eastsa_02', label = 'Habitant (quartier est)' }, { model = 'a_f_y_soucent_01', label = 'Habitante (sud)' }, { model = 'a_m_m_tramp_01', label = 'Sans-abri' },
+    } },
+    { label = 'Police et sécurité', icon = 'shield-halved', items = {
+        { model = 's_m_y_cop_01', label = 'Policier' }, { model = 's_f_y_cop_01', label = 'Policière' }, { model = 's_m_y_sheriff_01', label = 'Shérif' },
+        { model = 's_f_y_sheriff_01', label = 'Shérif (femme)' }, { model = 's_m_y_hwaycop_01', label = 'Motard de la route' }, { model = 's_m_y_swat_01', label = 'SWAT' },
+        { model = 's_m_m_fiboffice_01', label = 'Agent FIB' }, { model = 's_m_m_security_01', label = 'Agent de sécurité' }, { model = 's_m_m_highsec_01', label = 'Agent de sécurité (costume)' },
+        { model = 's_m_m_prisguard_01', label = 'Gardien de prison' }, { model = 's_m_y_ranger_01', label = 'Garde forestier' }, { model = 's_f_y_ranger_01', label = 'Garde forestière' },
+        { model = 's_m_m_bouncer_01', label = 'Videur' },
+    } },
+    { label = 'Médical et secours', icon = 'briefcase-medical', items = {
+        { model = 's_m_m_paramedic_01', label = 'Ambulancier' }, { model = 's_m_m_doctor_01', label = 'Médecin' }, { model = 's_f_y_scrubs_01', label = 'Infirmière' },
+        { model = 's_m_y_fireman_01', label = 'Pompier' }, { model = 's_m_m_lifeguard_01', label = 'Maître-nageur' }, { model = 's_f_y_baywatch_01', label = 'Sauveteuse' },
+    } },
+    { label = 'Mécanos et ouvriers', icon = 'wrench', items = {
+        { model = 's_m_m_autoshop_01', label = 'Mécano (patron)' }, { model = 's_m_m_autoshop_02', label = 'Mécano' }, { model = 's_m_y_xmech_01', label = 'Mécano (jeune)' },
+        { model = 's_m_y_xmech_02', label = 'Mécano (tatoué)' }, { model = 's_m_y_construct_01', label = 'Ouvrier' }, { model = 's_m_y_construct_02', label = 'Ouvrier (casque)' },
+        { model = 's_m_m_trucker_01', label = 'Routier' }, { model = 's_m_y_garbage', label = 'Éboueur' }, { model = 's_m_m_gardener_01', label = 'Jardinier' },
+        { model = 's_m_m_dockwork_01', label = 'Docker' }, { model = 's_m_m_postal_01', label = 'Facteur' }, { model = 's_m_m_gentransport', label = 'Chauffeur de bus' },
+        { model = 's_m_m_pilot_01', label = 'Pilote' }, { model = 's_m_y_valet_01', label = 'Voiturier' },
+    } },
+    { label = 'Vendeurs et accueil', icon = 'store', items = {
+        { model = 'mp_m_shopkeep_01', label = 'Commerçant' }, { model = 's_f_y_shop_low', label = 'Vendeuse' }, { model = 's_f_y_shop_mid', label = 'Vendeuse (prêt-à-porter)' },
+        { model = 's_f_m_shop_high', label = 'Vendeuse (boutique chic)' }, { model = 's_m_y_shop_mask', label = 'Vendeur (station)' }, { model = 's_m_y_ammucity_01', label = 'Armurier' },
+        { model = 's_m_m_ammucountry', label = 'Armurier (campagne)' }, { model = 'u_m_m_bankman', label = 'Banquier' }, { model = 's_m_m_strvend_01', label = 'Vendeur de rue' },
+        { model = 's_m_y_barman_01', label = 'Barman' }, { model = 's_f_y_bartender_01', label = 'Barmaid' }, { model = 's_m_y_waiter_01', label = 'Serveur' },
+        { model = 's_m_y_chef_01', label = 'Chef cuisinier' }, { model = 's_m_m_linecook', label = 'Cuisinier' }, { model = 's_f_y_casino_01', label = 'Croupière' },
+        { model = 's_m_y_casino_01', label = 'Croupier' },
+    } },
+    { label = 'Gangs et rue', icon = 'people-group', items = {
+        { model = 'g_m_y_ballasout_01', label = 'Ballas' }, { model = 'g_m_y_ballaorig_01', label = 'Ballas (original)' }, { model = 'g_f_y_ballas_01', label = 'Ballas (femme)' },
+        { model = 'g_m_y_famca_01', label = 'Families' }, { model = 'g_m_y_famdnf_01', label = 'Families (Forum)' }, { model = 'g_f_y_families_01', label = 'Families (femme)' },
+        { model = 'g_m_y_mexgoon_01', label = 'Vagos' }, { model = 'g_f_y_vagos_01', label = 'Vagos (femme)' }, { model = 'g_m_y_lost_01', label = 'Lost MC' },
+        { model = 'g_f_y_lost_01', label = 'Lost MC (femme)' }, { model = 'g_m_m_armboss_01', label = 'Chef arménien' }, { model = 'g_m_m_chigoon_01', label = 'Triade' },
+        { model = 'g_m_y_korean_01', label = 'Kkangpae' }, { model = 'g_m_y_salvagoon_01', label = 'Marabunta' }, { model = 'g_m_y_pologoon_01', label = 'Mafia polonaise' },
+        { model = 'a_m_y_stbla_01', label = 'Jeune de la rue' },
+    } },
+}
+
+-- Scénarios d'attente (noms exacts du jeu) ; nil = debout, immobile.
+local SCENARIOS = {
+    { value = 'WORLD_HUMAN_CLIPBOARD', label = 'Bloc-notes (accueil)' }, { value = 'WORLD_HUMAN_STAND_IMPATIENT', label = 'Attente impatiente' },
+    { value = 'WORLD_HUMAN_GUARD_STAND', label = 'Garde debout' }, { value = 'WORLD_HUMAN_COP_IDLES', label = 'Policier en faction' },
+    { value = 'WORLD_HUMAN_SECURITY_SHINE_TORCH', label = 'Vigile à la lampe' }, { value = 'WORLD_HUMAN_SMOKING', label = 'Fume une cigarette' },
+    { value = 'WORLD_HUMAN_LEANING', label = 'Adossé au mur' }, { value = 'WORLD_HUMAN_STAND_MOBILE', label = 'Au téléphone' },
+    { value = 'WORLD_HUMAN_AA_COFFEE', label = 'Boit un café' }, { value = 'WORLD_HUMAN_DRINKING', label = 'Boit une canette' },
+    { value = 'WORLD_HUMAN_HANG_OUT_STREET', label = 'Traîne dans la rue' }, { value = 'WORLD_HUMAN_WELDING', label = 'Soude' },
+    { value = 'WORLD_HUMAN_HAMMERING', label = 'Martèle' }, { value = 'WORLD_HUMAN_JANITOR', label = 'Balaie' },
+    { value = 'WORLD_HUMAN_MAID_CLEAN', label = 'Nettoie' }, { value = 'WORLD_HUMAN_GARDENER_PLANT', label = 'Jardine' },
+    { value = 'WORLD_HUMAN_MUSICIAN', label = 'Musicien' }, { value = 'WORLD_HUMAN_TOURIST_MAP', label = 'Lit un plan' },
+    { value = 'WORLD_HUMAN_BINOCULARS', label = 'Jumelles' }, { value = 'WORLD_HUMAN_SUNBATHE', label = 'Bronze (allongé)' },
+    { value = 'WORLD_HUMAN_YOGA', label = 'Yoga' }, { value = 'WORLD_HUMAN_SIT_UPS', label = 'Abdos' },
+}
+
+local STAFF_ROLES = { duty = 'Accueil', boss = 'Direction', garage = 'Garage' }
+
+--- Cible lisible : 'job:police:duty' → « LSPD · Accueil », 'gang:ballas' → « Gang Ballas », 'libre' → « Décor libre ».
+local function targetLabel(t)
+    if not t or t == 'libre' then return 'Décor libre' end
+    local job, kind, idx = t:match('^job:([%w_]+):(%a+)(%d*)$')
+    if job then
+        local label = job
+        for _, j in ipairs(info.jobs or {}) do if j.name == job then label = j.label end end
+        return ('%s · %s%s'):format(label, STAFF_ROLES[kind] or kind, idx ~= '' and (' ' .. idx) or '')
+    end
+    local gang = t:match('^gang:([%w_]+)$')
+    if gang then
+        for _, g in ipairs(info.gangs or {}) do if g.name == gang then return 'Gang ' .. g.label end end
+        return 'Gang ' .. gang
+    end
+    return t
+end
+
+--- Choix de la cible : décor libre, un point de métier (accueil / direction / garage) ou un gang ; `cb(target)`.
+local function pickTarget(title, cb)
+    local o = {
+        { title = 'Décor libre', icon = 'tree', description = 'Sans interaction : ambiance seulement', onSelect = function() cb('libre') end },
+    }
+    for _, j in ipairs(info.jobs or {}) do
+        local roles = {}
+        for _, pt in ipairs(j.points or {}) do
+            if STAFF_ROLES[pt.kind] then
+                roles[#roles + 1] = { title = pt.label, icon = 'briefcase', description = ('%s · le PNJ portera l\'interaction de ce point'):format(STAFF_ROLES[pt.kind]),
+                    onSelect = function() cb(('job:%s:%s%s'):format(j.name, pt.kind, pt.idx > 1 and pt.idx or '')) end }
+            end
+        end
+        if #roles > 0 then
+            o[#o + 1] = { title = 'Métier · ' .. j.label, icon = 'briefcase', arrow = true, description = ('%d point(s) : accueil, direction, garage'):format(#roles),
+                onSelect = function() show('gs_staff_sp_role', j.label .. ' · quel point ?', roles, 'gs_staff_sp_target') end }
+        end
+    end
+    for _, g in ipairs(info.gangs or {}) do
+        o[#o + 1] = { title = 'Gang · ' .. g.label, icon = 'people-group', description = 'Garde la planque : les membres lui parlent pour l\'ouvrir',
+            onSelect = function() cb('gang:' .. g.name) end }
+    end
+    show('gs_staff_sp_target', title, o, 'gs_staff_sp')
+end
+
+--- Choix du modèle de PNJ (catégories, ou nom libre) ; `cb(model)`.
+local function pickPedModel(cb)
+    local cats = {}
+    for i, c in ipairs(PED_MODELS) do
+        cats[#cats + 1] = { title = c.label, icon = c.icon, arrow = true, description = ('%d modèles'):format(#c.items), onSelect = function()
+            local items = {}
+            for _, it in ipairs(c.items) do items[#items + 1] = { title = it.label, description = it.model, icon = 'user', onSelect = function() cb(it.model) end } end
+            show('gs_staff_sp_pedcat_' .. i, c.label, items, 'gs_staff_sp_ped')
+        end }
+    end
+    cats[#cats + 1] = { title = 'Autre modèle (nom)', icon = 'keyboard', description = 'ex : s_m_y_cop_01', onSelect = function()
+        local r = input('Nom du modèle de PNJ', { { type = 'input', label = 'ex : s_m_y_cop_01', required = true, max = 64 } })
+        if r then cb((r[1]:gsub('%s', ''))) end
+    end }
+    show('gs_staff_sp_ped', 'Quel PNJ ?', cats, 'gs_staff_sp')
+end
+
+--- Choix du scénario d'attente ; `cb(scenario | nil)`.
+local function pickScenario(cb)
+    local o = { { title = 'Aucun (debout, immobile)', icon = 'person', onSelect = function() cb(nil) end } }
+    for _, s in ipairs(SCENARIOS) do
+        o[#o + 1] = { title = s.label, description = s.value, icon = 'person-walking', onSelect = function() cb(s.value) end }
+    end
+    show('gs_staff_sp_scen', 'Que fait-il en attendant ?', o, 'gs_staff_sp')
+end
+
+local function addStaffPed()
+    pickTarget('Nouveau PNJ : relié à quoi ?', function(target)
+        pickPedModel(function(model)
+            pickScenario(function(scenario)
+                local pose = freePlace({ kind = 'ped', model = model, scenario = scenario })
+                if pose then notify(act('addstaffped', nil, { kind = 'ped', target = target, model = model, scenario = scenario, pose = pose })) end
+            end)
+        end)
+    end)
+end
+
+local function addStaffProp()
+    local catalog = lib.callback.await('gs_admin:staffCatalog', false)
+    if not catalog then return notify(false, 'Catalogue indisponible.') end
+    pickTarget('Nouvel objet : relié à quoi ?', function(target)
+        local function placeProp(model)
+            local pose = freePlace({ kind = 'prop', model = model })
+            if pose then notify(act('addstaffped', nil, { kind = 'prop', target = target, model = model, pose = pose })) end
+        end
+        local cats = {}
+        for i, c in ipairs(catalog) do
+            cats[#cats + 1] = { title = c.label, icon = c.icon or 'cube', arrow = true, description = ('%d objets'):format(#c.items), onSelect = function()
+                local items = {}
+                for _, it in ipairs(c.items) do items[#items + 1] = { title = it.label, description = it.model, icon = 'cube', onSelect = function() placeProp(it.model) end } end
+                show('gs_staff_sp_cat_' .. i, c.label, items, 'gs_staff_sp_catalog')
+            end }
+        end
+        cats[#cats + 1] = { title = 'Autre modèle (nom)', icon = 'keyboard', description = 'ex : prop_bench_01a', onSelect = function()
+            local r = input('Nom du modèle', { { type = 'input', label = 'ex : prop_bench_01a', required = true, max = 64 } })
+            if r then placeProp((r[1]:gsub('%s', ''))) end
+        end }
+        show('gs_staff_sp_catalog', 'Catalogue d\'objets', cats, 'gs_staff_sp')
+    end)
+end
+
+local function confirmRemoveStaff(e)
+    local what = e.kind == 'ped' and 'PNJ' or 'Objet'
+    if lib.alertDialog({ header = ('Retirer %s #%d ?'):format(what, e.id), centered = true, cancel = true,
+        content = ('%s · %s\n\nIl disparaît pour tout le monde ; le PNJ de la config, s\'il y en avait un, revient.'):format(e.model, targetLabel(e.target)) }) == 'confirm' then
+        notify(act('delstaffped', nil, { id = e.id }))
+    end
+end
+
+local function removeAimedStaff()
+    local hit, entity = lib.raycast.cam(8 | 16, 4, 30.0) -- [API] ox_lib : PNJ et objets
+    local id = hit and entity ~= 0 and exports.gs_markers:StaffEntryOf(entity) or nil
+    if not id then return notify(false, 'Vise un PNJ ou un objet posé par le staff.') end
+    for _, e in ipairs(GlobalState.gsStaffPeds or {}) do
+        if e.id == id then return confirmRemoveStaff(e) end
+    end
+    notify(false, 'Entrée introuvable (déjà retirée ?).')
+end
+
+local function staffPedsList()
+    local me = GetEntityCoords(PlayerPedId())
+    local list = {}
+    for _, e in ipairs(GlobalState.gsStaffPeds or {}) do list[#list + 1] = { e = e, dist = #(me - vec3(e.x, e.y, e.z)) } end
+    table.sort(list, function(a, b) return a.dist < b.dist end)
+    local _, claimed = exports.gs_markers:UnclaimedStaff()
+    local o = {}
+    for i = 1, math.min(#list, 30) do
+        local e = list[i].e
+        local state = e.kind ~= 'ped' and 'objet' or (claimed[e.id] and 'porte l\'interaction du point' or 'ambiance, sans interaction')
+        o[#o + 1] = { title = ('%s #%d · %s'):format(e.kind == 'ped' and 'PNJ' or 'Objet', e.id, e.model), icon = e.kind == 'ped' and 'user' or 'cube', arrow = true,
+            description = ('%s · %s · à %d m · par %s'):format(targetLabel(e.target), state, math.floor(list[i].dist), e.by or '?'),
+            onSelect = function() confirmRemoveStaff(e) end }
+    end
+    if #o == 0 then o[1] = { title = 'Aucun PNJ ni objet posé par le staff', readOnly = true } end
+    show('gs_staff_sp_list', ('PNJ et objets posés (%d) · cliquer pour retirer'):format(#list), o, 'gs_staff_sp')
+end
+
+local function staffPedsMenu()
+    show('gs_staff_sp', 'PNJ et objets posés par le staff', {
+        { title = 'Ajouter un PNJ', icon = 'user-plus', arrow = true, onSelect = addStaffPed,
+          description = 'Relié à un métier (accueil, direction, garage), à un gang ou décor libre ; modèle, scénario, puis placement libre' },
+        { title = 'Ajouter un objet', icon = 'cube', arrow = true, onSelect = addStaffProp,
+          description = 'Catalogue (celui du Mapping) ou nom de modèle, relié à un métier / gang / libre, puis placement libre' },
+        { title = 'Retirer celui que je vise', icon = 'crosshairs', description = 'Vise un PNJ ou un objet posé par le staff', onSelect = removeAimedStaff },
+        { title = 'Liste (les plus proches)', icon = 'list', arrow = true, onSelect = staffPedsList,
+          description = ('%d posé(s) sur %d · retirer depuis la liste'):format(#(GlobalState.gsStaffPeds or {}), 200) },
+    }, 'gs_staff_world')
+end
+
 local function animalsMenu()
     local options = {}
     if animal then options[1] = { title = 'Reprendre forme humaine', icon = 'person', iconColor = ON, onSelect = function() setAnimal(nil) end } end
@@ -1133,6 +1364,9 @@ local function mainMenu()
             description = 'Point mal placé ? Mets-toi au bon endroit et choisis-le. Super-admin : retirer du jeu', onSelect = function() TriggerEvent('gs_bridge:client:pointsMenu') end })
         a(4, { title = 'Points de métier (placer ici)', icon = 'briefcase', arrow = true,
             description = 'Service, coffre, armurerie, direction, garage', onSelect = pointsMenu })
+        -- V12.37 : PNJ et objets posés par le staff, reliés à un métier / un gang (cohérence du mapping), placement libre
+        a(4, { title = 'PNJ et objets posés par le staff', icon = 'user-plus', arrow = true,
+            description = 'Ajouter un PNJ ou un objet relié à un métier / un gang (ou libre), aperçu et réglages, retirer', onSelect = staffPedsMenu })
         a(4, { title = 'Gangs (création, QG, garage)', icon = 'people-group', arrow = true, onSelect = gangAdminMenu })
         a(4, { title = 'Mapping : objets du décor', icon = 'cube', arrow = true, description = 'Catalogue par catégorie, placer, modifier, retirer de la map (/builder)',
             onSelect = function() exports.gs_builder:Open('gs_staff_world') end })
@@ -1239,6 +1473,20 @@ local function pointsAllMenu(filter)
                             notify(act('movepoint', nil, { key = p.key }))
                         end
                     end },
+                    -- V12.37 · placement libre : aperçu du point (anneau + cap), réglages au clavier, même sauvegarde et même vérification
+                    { title = 'Placement libre (aperçu, hauteur, orientation)', icon = 'arrows-up-down-left-right', disabled = p.off,
+                        description = 'Flèches 10 cm · PgUp/PgDn 5 cm · Q/E 5° · Maj ×5 · G au sol · Tab viser · Entrée / Retour', onSelect = function()
+                            local ped = PlayerPedId()
+                            local me = GetEntityCoords(ped)
+                            local cur = exports.gs_bridge:FindPoint(p.key)
+                            local start = (cur and #(me - cur) <= 50.0) and cur or me -- l'aperçu part du point s'il est proche (régler sa hauteur), sinon de moi
+                            local pose = freePlace({ kind = 'point', x = start.x, y = start.y, z = start.z, heading = GetEntityHeading(ped) })
+                            if not pose then return end
+                            if lib.alertDialog({ header = p.label, content = ('Le point est posé à l\'endroit de l\'aperçu (hauteur %.2f, cap %d°).\n\n%s est relancé quelques secondes (les joueurs en train de l\'utiliser devront recommencer).'):format(pose.z, math.floor(pose.heading), p.res),
+                                centered = true, cancel = true }) == 'confirm' then
+                                notify(act('movepoint', nil, { key = p.key, pose = pose }))
+                            end
+                        end },
                     { title = 'Remettre la position d\'origine', icon = 'rotate-left', disabled = not p.moved,
                         onSelect = function() notify(act('resetpoint', nil, { key = p.key })) end },
                 }

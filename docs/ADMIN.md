@@ -38,6 +38,9 @@ et le couper coupe tout : vol, invisibilité, invincibilité, animal, spectate.
 | Vol libre, invisible, invincible, se transformer en animal, TP au marqueur, spectate, amener, soigner, figer, supprimer un véhicule | Modérateur |
 | Se mettre (ou mettre un joueur) un **métier et un grade**, dans un **gang**, faire apparaître un véhicule | Admin |
 | **Points de métier** : déplacer service / coffre / armurerie / direction / garage à sa position (bâtiments fermés, futurs MLO) | Admin |
+| **Placement libre** d'un point (V12.37) : aperçu, flèches 10 cm, PgUp/PgDn hauteur, Q/E rotation, Maj ×5, G au sol, Tab viser, Entrée / Retour. **PNJ et objets posés par le staff** : relié à un métier (remplace le PNJ du point), à un gang (planque) ou libre ; retrait en visant | Super-admin |
+| **Points déplacés : gardés aux mises à jour** (KVP du serveur) et, depuis la V12.37, **copiés sur le VPS** par METTRE-A-JOUR-OVH (fichier `gs_bridge/points-deplaces.json`, écrit toutes les minutes ou par `/pointsexport`). Le PC est la référence : cale tout sur le PC, OVH suit à la mise à jour suivante | Super-admin |
+| **`/dosreglage`** : position des armes longues dans le dos (±1 cm, ±2°, os), « Copier le bloc Config.Back » à coller dans `gs_details/shared/config.lua` puis `restart gs_details` | Staff |
 | **Fun** (sur soi, events) : course rapide, super saut, endurance infinie, nage rapide, gravité lunaire, visions nocturne / thermique | Admin |
 | **Items** : donner (motif obligatoire) · **Objets du décor** (placer / retirer une poubelle, un banc…) | Super-admin |
 | **Items** sans motif, retirer, poser au sol · **Rang staff** d'un joueur (Joueurs → joueur → Rang) | Fondateur (`group.god`) |

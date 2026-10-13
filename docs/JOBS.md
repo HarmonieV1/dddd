@@ -10,6 +10,8 @@
 | Paie | toutes les 15 min, en service uniquement, par l'État ou la caisse ; anti-AFK ; allocation chômage |
 | Garages | véhicule spawn **côté serveur**, 1 max par joueur, plaque au préfixe du job, clés auto, rendu en fin de service |
 | Coffres | ox_inventory, restreints par job + grade + distance |
+| Armurerie | équipement de service **prêté** (V12.37) : repris à la fin du service, au changement de métier, au licenciement / à la démission et à la déconnexion ; seulement les quantités fournies (ce qu'on avait avant reste, ce qui a été consommé n'est pas réclamé) ; reconnexion : repris 5 s après le chargement |
+| Points (V12.37) | une seule interaction par point (le PNJ porte l'option ox_target, [E] reste), verrou anti-double-clic 1 s, prise de service par **état voulu** + anti-rebond 1,5 s (plus de « Prise » puis « Fin de service » en double), garage : messages exacts (pas de métier actif / autre métier / hors service) et verrou pendant la sortie |
 | Factures / amendes | stockées en BDD, `/factures` pour payer, 10 % à l'émetteur, reste à la caisse |
 | Missions | taxi, livreur, éboueur : étapes choisies par le serveur, anti-TP, véhicule de service exigé |
 | Actions véhicule | mécano : réparer (kit consommé), nettoyer ; durée vérifiée côté serveur |

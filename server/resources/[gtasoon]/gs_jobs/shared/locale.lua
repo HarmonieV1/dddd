@@ -31,6 +31,13 @@ local strings = {
     duty_off = 'Fin de service.',
     on_duty = 'En service',
     off_duty = 'Hors service',
+    -- V12.37 : messages exacts (avant : « Tu dois être en service. » même sans métier actif ou au garage d'un autre métier)
+    already_on_duty = 'Tu es déjà en service.',
+    already_off_duty = 'Tu es déjà hors service.',
+    no_active_job = "Tu n'as pas de métier actif : passe-le en actif (F6) puis prends ton service.",
+    wrong_job_garage = 'Ce garage est celui de %s : passe ce métier en actif (F6) et prends ton service.',
+    garage_busy = 'Véhicule en cours de sortie, patiente une seconde.',
+    armory_returned = 'Équipement de service rendu.',
 
     -- Direction
     not_boss = 'Accès réservé à la direction.',

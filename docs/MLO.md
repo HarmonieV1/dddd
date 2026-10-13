@@ -238,6 +238,15 @@ La sélection de MLO à consulter (20 gratuits, 10 payants) est dans `docs/SELEC
 | Map « retirée » en F11 mais toujours là (collisions, dossier présent) | console : « Map retirée en jeu (F11…) » | corrigé en V12.36 : avant, F11 arrêtait la ressource et commentait sa ligne, le dossier restait ; maintenant dossier supprimé + mods-retires.txt + ligne enlevée |
 | Variante d'une map retirée encore présente (plasmagame_dlc2, redline…) | console au démarrage : « Map retirée (motif « … ») » | corrigé en V12.36 : retrait par motif, plus seulement par nom exact |
 
+## 7b. PNJ et objets du staff reliés aux métiers et aux gangs (V12.37)
+
+Quand un mapping (poste, planque, garage) ne colle pas aux PNJ et objets prévus par la config : **F11 → Monde et lieux → PNJ et
+objets** → « Ajouter un PNJ » (modèle, scénario, placement libre à l'aperçu : hauteur, rotation, pas fins) ou « Ajouter un objet »
+(catalogue gs_builder), puis **relier** l'entrée à un métier (`police`, `ambulance`…) ou à un gang (`gang:ballas`) : le point de
+métier ou la planque reprend ce PNJ (un seul PNJ staff par cible), un PNJ « libre » n'est que de l'ambiance. Retrait depuis la même
+liste. Stockage : table SQL `gs_staff_peds` (par serveur : à refaire sur le VPS, ou à poser directement dessus) ; les **points**
+déplacés, eux, voyagent du PC au VPS via `gs_bridge/points-deplaces.json` (V12.37).
+
 ## 8. Après le téléchargement
 
 1. Tout dans `C:\GTASOON\mods-a-trier` (zips tels quels, même imbriqués).

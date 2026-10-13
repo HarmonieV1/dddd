@@ -64,7 +64,7 @@ par un colis (zip de l'installation ou de la session) + ce fichier, et comparer 
 ## 2. Versions : interne vs publique (important, piège classique)
 
 Depuis la V11.3, il y a **deux numéros de version différents**, volontairement :
-- `gs_version` (convar, `server.cfg.example`) = **V12.36** → version technique interne, vue par le staff (F11, console,
+- `gs_version` (convar, `server.cfg.example`) = **V12.37** → version technique interne, vue par le staff (F11, console,
   METTRE-A-JOUR). Continue d'avancer à chaque mise à jour (V11.2, V11.3...).
 - `gs_public_version` (convar) = **« V4 · bêta »** → version vue par les **joueurs** (écran de chargement, statut
   Discord, Gazette). Le site affiche son propre journal (V1 à V4, V5 « classé confidentiel »).
@@ -271,6 +271,40 @@ Résumé très condensé (le détail complet est dans `docs/ROADMAP.md`, `docs/F
   ne remplace pas le curseur), profondeur CSS `animation-timeline: view()` (captures, mock, carte, chiffres), intro
   façon chargement de mission (Entrée / clic pour passer). Tout coupé par `prefers-reduced-motion`, souris seulement
   sur ordinateur. Une seule boucle rAF qui s'endort quand rien ne bouge. Vérifié dans le navigateur : 0 erreur.
+
+- **V12.37** (13/10/2026, poste Windows, 4 sous-agents relus + intégration) — retours du fondateur du 13/10 :
+  - **Garages de métier « hors service » 3 fois sur 4 + notifications en rafale** : au point de service, la V12.36 avait DEUX
+    interactions (zone + PNJ) pour une bascule aveugle → « Prise de service » puis « Fin de service », garage refusé. gs_jobs :
+    un point = une interaction (le PNJ porte l'option, [E] reste), verrou anti-double-clic 1 s, prise de service par **état voulu**
+    + anti-rebond 1,5 s (F6, /service, point, téléphone), messages exacts du garage (pas de métier actif / autre métier / hors
+    service) et verrou pendant la sortie. Retouche Qbox ajoutée (METTRE-A-JOUR) : service et garage de qbx_police / qbx_ambulancejob
+    neutralisés (même point que le nôtre à Mission Row ; motif absent = avertissement jaune). Tests jobs 124/124.
+  - **Quitter la LSPD en gardant les armes** : l'équipement de l'armurerie est **prêté** : quantités fournies notées, reprises à la
+    fin du service, au changement de métier, au licenciement / démission et à la déconnexion (reconnexion : 5 s après le chargement) ;
+    ce qu'on avait avant reste, ce qui a été consommé n'est pas réclamé ; audit `armory_return`.
+  - **Armes lourdes qui flottent dans le vide** : gs_details/holster.lua réécrit : objet gardé seulement s'il est encore accroché
+    au corps ACTUEL (mort, à terre, tenue / personnage changé, déconnexion, arme en main ou donnée → retiré dans la seconde),
+    modèle chargé avant création, attache vérifiée, balayage des orphelins 5 s, une seule boucle lente. **`/dosreglage`** (staff) :
+    position des armes dans le dos en direct (±1 cm, ±2°, os) + « Copier le bloc Config.Back ». Tests holster 74/74.
+  - **Dégâts adoucis** (demande : « pas trop réaliste ») : armes à feu −25 %, corps à corps −20 %, véhicules −30 %
+    (`DAMAGE` dans gs_details/client/health.lua, réappliqué toutes les 5 s).
+  - **PPA à 50 $ au Pôle Emploi / mairie** : retiré (retouche Qbox de qbx_cityhall) ; le vrai reste au comptoir Ammu-Nation (500 $).
+  - **Interventions de tempête dans le vide** : créées à l'approche (< 150 m) sur la route la plus proche (≤ 60 m, collision
+    attendue), blip et [E] sur la vraie position, retirées au-delà de 250 m ; console « aucune route à moins de 60 m » = point à
+    caler. **Location** : 13 comptoirs (Sandy sorti du poste du shérif, 6 ajoutés « à caler »). Tests weather 72/72, rental 23/23.
+  - **F11 → Déplacer un point : placement libre** (aperçu anneau + cap, réglages au clavier : hauteur, rotation, pas fins, comme
+    les props ; pose vérifiée côté serveur, ≤ 60 m du staff) ; **« PNJ et objets »** : poser un PNJ (modèle, scénario) ou un objet
+    (catalogue gs_builder) **relié à un métier ou un gang** (le point de métier / la planque le reprend ; un seul PNJ staff par
+    cible) ou libre (ambiance), retrait ; table SQL `gs_staff_peds`, GlobalState `gsStaffPeds`, créés à proximité par gs_markers.
+  - **Les points déplacés voyagent** : gs_bridge écrit aussi `gs_bridge/points-deplaces.json` (toutes les minutes, ou
+    `/pointsexport` console / ACE admin) ; METTRE-A-JOUR garde celui du PC, METTRE-A-JOUR-OVH l'emporte, le VPS l'importe au
+    démarrage (une fois par version du fichier, le PC est la référence, un serveur sans aucun point n'écrit jamais de fichier).
+    Réponse à la question du fondateur : les points calés en jeu sont gardés aux mises à jour ET, désormais, repris sur OVH.
+    Tests points_fichier 25/25.
+  - Réponses sans code : crochetage = mini-jeu ox_lib, appuyer sur la touche **chiffre affichée (1 à 4)** (guide joueur) ; F6
+    qui passe en vol libre = raccourci FiveM du compte (Paramètres → Raccourcis clavier → FiveM) ; jetons d'auto-tamponneuses =
+    script tiers, lignes de console à fournir ; preuves (douilles, scanner, empreintes) couvertes par les tests, à valider en jeu.
+  - À vérifier en jeu : fiche de backtest, session « 6b · V12.37 ».
 
 - **V12.36** (13/10/2026, poste Windows, orchestration multi-agents + relecture) — corrections du 12/10 :
   - **Maps vraiment supprimées** : le retrait F11 « Retirer cette map » arrête la ressource ET supprime son dossier, enlève sa ligne

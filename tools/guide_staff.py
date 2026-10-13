@@ -101,7 +101,7 @@ def build():
             [38 * G.mm, 120 * G.mm, 22 * G.mm], font=8.2)]
     s += [Paragraph('Un point mal placé (transformateur, ring, vendeur, PNJ…) : F11 → Monde et lieux → <b>Déplacer / retirer un point</b> (filtre par ressource ; '
                     'super-admin : retirer du jeu, réversible). Points de métier : menu dédié. Tout est gardé aux mises à jour.', SMALL)]
-    s += [Paragraph('6. Nouveautés V11.4 → V12.34 pour le staff', H2)]
+    s += [Paragraph('6. Nouveautés V11.4 → V12.37 pour le staff', H2)]
     s += [t([['Quoi', 'Comment'],
              ['VIP (2 personnages)', 'F11 → Joueurs → le joueur → VIP (fondateur). Tout le monde a 1 personnage ; staff super-admin+ et VIP en ont 2.'],
              ['Mapping', 'F11 → Monde et lieux → Mapping : catalogue par catégorie (mobilier, chantier, éclairage, végétation, stands, plage, police), placement à la souris, retrait d\'objets de la map.'],
@@ -122,7 +122,14 @@ def build():
              ['Monde et lieux', 'Toute la catégorie F11 (lieux publics, points, points de métier, gangs, décor, mappings, coordonnées) est réservée au <b>super-admin et au fondateur</b>, aussi côté serveur.'],
              ['Alertes police', 'Toutes les alertes passent par le central (docs/ALERTES.md) : tirs, armes blanches, vols de voiture, braquages… Chasseur avec permis en zone de chasse : pas d\'alerte. /911p réservé au staff.'],
              ['Police IA', 'Seul en ville : un crime sérieux est signalé au moins 6 fois sur 10. <b>/policeia 1-5</b> (admin) la déclenche sur toi pour la tester.'],
-             ['Discord', 'Message de bienvenue des nouveaux membres (salon réglé dans CONFIGURER-DISCORD, option « Server Members Intent » du portail Discord).']],
+             ['Discord', 'Message de bienvenue des nouveaux membres (salon réglé dans CONFIGURER-DISCORD, option « Server Members Intent » du portail Discord).'],
+             ['Placement libre', 'F11 → Monde et lieux → Déplacer un point → Placement libre : flèches / pavé 8-5-4-6 = 10 cm, PgUp-PgDn = hauteur 5 cm, Q-E = ±5°, Maj = ×5, G = au sol, Tab = viser à la souris, Entrée = valider, Retour = annuler (V12.37).'],
+             ['PNJ et objets du staff', 'F11 → Monde et lieux → PNJ et objets posés par le staff : Ajouter un PNJ (modèle, scénario) ou un objet (catalogue), relié à un métier (accueil / direction / garage : il remplace le PNJ prévu et porte l\'interaction), à un gang (planque) ou libre ; Retirer celui que je vise. 200 max, un seul PNJ staff par cible (V12.37).'],
+             ['Points : PC → VPS', 'V12.37 : les points déplacés sont gardés aux mises à jour ET copiés sur le VPS par METTRE-A-JOUR-OVH (fichier gs_bridge/points-deplaces.json, écrit toutes les minutes ou /pointsexport). Cale tout sur le PC : OVH suit.'],
+             ['/dosreglage', 'Armes dans le dos : règle en direct la position (±1 cm, ±2°, os 24818 / 24816), « Copier le bloc Config.Back » puis coller dans gs_details/shared/config.lua et restart gs_details. Plus d\'arme qui flotte après une mort ou un changement de tenue (V12.37).'],
+             ['Dégâts adoucis', 'V12.37 : armes à feu −25 %, corps à corps −20 %, véhicules −30 % (gs_details/client/health.lua, DAMAGE). 1.0 = valeurs du jeu.'],
+             ['Tempête', 'Interventions (véhicule en détresse, arbre, barrière) créées à l\'approche, posées sur la route la plus proche. Console « aucune route à moins de 60 m du point » = point à déplacer (F11 → Points, nommés « Véhicule · … »).'],
+             ['Location', '13 comptoirs (Sandy devant le 24/7, plus dans le poste du shérif ; Grapeseed, Harmony, Vinewood, Vespucci, aéroport, Pillbox ajoutés, « à caler » via F11 → Déplacer un point).']],
             [38 * G.mm, 142 * G.mm], font=8.2)]
 
     s += [Paragraph('7. La déontologie du staff', H2)]

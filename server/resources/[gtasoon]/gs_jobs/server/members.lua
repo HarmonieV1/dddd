@@ -143,11 +143,23 @@ RegisterNetEvent('gs_jobs:server:switch', function(job)
     GSJ.notify(src, L('switched', GSJ.jobLabel(job)), 'success')
 end)
 
-RegisterNetEvent('gs_jobs:server:toggleDuty', function(remote)
+-- V12.37 · Anti-double déclenchement du service. Au point de service, la V12.36 avait DEUX options ox_target (PNJ + zone) en plus
+-- de la touche [E] : deux demandes rapprochées basculaient le service deux fois (« Prise de service » puis « Fin de service » à
+-- la suite) et le garage refusait ensuite (hors service). Deux garde-fous : une 2e demande dans Config.DutyDebounce ms est
+-- ignorée sans message, et le client envoie l'état VOULU (`want`) : s'il est déjà acquis, on le dit sans rebasculer.
+-- `want` absent (appli téléphone) : simple bascule, comme avant.
+local lastDuty = {} -- [src] = GetGameTimer() de la dernière bascule acceptée
+
+RegisterNetEvent('gs_jobs:server:toggleDuty', function(remote, want)
     local src = source
     if not GSJ.guard(src, 'duty', 3, 10000) then return end
     local job, def = GSJ.activeJob(src)
     if not job or not def then return end
+    local now = GetGameTimer()
+    if lastDuty[src] ~= nil and now - lastDuty[src] < Config.DutyDebounce then return end -- V12.37 : doublon ignoré
+    if type(want) == 'boolean' and want == job.onduty then -- V12.37 : état déjà acquis, on ne rebascule pas
+        return GSJ.notify(src, L(want and 'already_on_duty' or 'already_off_duty'), 'inform')
+    end
     -- V11.5 : depuis le téléphone (appli Emplois, /service) on prend ou quitte le service de n'importe où : il faut
     -- un téléphone sur soi. Sinon : au point de service du métier, comme avant.
     local byPhone = remote == true and Bridge:GetItemCount(src, 'phone') > 0
@@ -155,7 +167,8 @@ RegisterNetEvent('gs_jobs:server:toggleDuty', function(remote)
         return GSJ.notify(src, L(remote == true and 'duty_no_phone' or 'too_far'), 'error')
     end
     local on = not job.onduty
-    if not on then GSJ.endService(src) end
+    lastDuty[src] = now
+    if not on then GSJ.endService(src) end -- rend le véhicule, la mission et l'équipement de service (V12.37)
     Bridge:SetDuty(src, on)
     GSJ.notify(src, on and L('duty_on', def.label) or L('duty_off'), 'success')
     DB.audit(on and 'duty_on' or 'duty_off', job.name, GSJ.cid(src), nil, nil, nil)
@@ -228,6 +241,7 @@ end)
 AddEventHandler('gs_bridge:server:playerLoaded', function(src) GSJ.load(src) end)
 
 AddEventHandler('gs_bridge:server:playerUnloaded', function(src)
+    lastDuty[src] = nil -- V12.37
     if not Members[src] then return end
     GSJ.endService(src)
     Members[src] = nil

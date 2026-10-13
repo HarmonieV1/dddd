@@ -36,7 +36,7 @@ AddEventHandler('gs_gangs:client:openStash', function()
     if membership then TriggerServerEvent('gs_gangs:server:stashVisit') Bridge:OpenStash('gs_gang_' .. membership.gang) end
 end)
 
-RegisterNetEvent('gs_gangs:client:membership', function(m)
+local function applyMembership(m)
     membership = m
     if stashZone then exports.ox_target:removeZone(stashZone) stashZone = nil end
     if qgBlip then RemoveBlip(qgBlip) qgBlip = nil end
@@ -50,8 +50,10 @@ RegisterNetEvent('gs_gangs:client:membership', function(m)
         BeginTextCommandSetBlipName('STRING')
         AddTextComponentSubstringPlayerName('QG ' .. m.label)
         EndTextCommandSetBlipName(qgBlip)
+        -- V12.37 · un PNJ posé par le staff et relié au gang ('gang:ballas') garde la planque : les membres lui parlent pour
+        -- l'ouvrir ([E] reste), les autres le voient en PNJ d'ambiance (gs_markers). Lu dans GlobalState.gsStaffPeds (GsPoints).
         exports.gs_markers:Add('gs_gangs:qg', { coords = m.stash, style = 'entry', label = 'Planque ' .. m.label,
-            event = 'gs_gangs:client:openStash', prompt = 'Ouvrir la planque' })
+            event = 'gs_gangs:client:openStash', prompt = 'Ouvrir la planque', ped = GsPoints.pointPed(nil, 'gang:' .. m.gang) })
         stashZone = exports.ox_target:addSphereZone({
             coords = m.stash, radius = 1.5,
             options = { {
@@ -60,7 +62,10 @@ RegisterNetEvent('gs_gangs:client:membership', function(m)
             } },
         })
     end
-end)
+end
+RegisterNetEvent('gs_gangs:client:membership', applyMembership)
+-- V12.37 · PNJ du staff posé ou retiré : le PNJ de la planque est recalculé
+AddStateBagChangeHandler('gsStaffPeds', 'global', function() if membership then applyMembership(membership) end end)
 
 RegisterNetEvent('gs_gangs:client:invite', function(label)
     local answer = lib.alertDialog({

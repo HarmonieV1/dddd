@@ -2,7 +2,29 @@
 -- Les points déplacés par le staff (GlobalState.gsJobPoints) remplacent ceux de jobs.lua, zones reconstruites à chaud.
 -- V12.36 : PNJ aux points (Jobs[x].peds, Config.JobCenter.ped) portés par gs_markers (champ `ped` du point) : créés à l'approche,
 -- ils portent la même action que la zone, aux mêmes conditions, et suivent le point quand le staff le déplace.
+-- V12.37 : UNE interaction ox_target par point. La V12.36 gardait la zone sphérique ET l'option du PNJ (à 2 m d'une sphère de
+-- 1,5 m, le corps du PNJ était dans la zone : option affichée deux fois, double déclenchement possible → la prise de service
+-- rebasculait hors service). Désormais : le PNJ porte seul l'option quand il existe, sinon la zone ; la touche [E] reste.
+-- Verrou anti-double-clic (Config.InteractLock) et métier relu à la source (GSJ.refreshJob) avant chaque action.
 local zones, blips = {}, {}
+
+-- V12.37 · verrou commun à toutes les interactions de point (PNJ, zone, [E]) : au plus une par Config.InteractLock ms
+local lastInteract = 0
+local function once()
+    local now = GetGameTimer()
+    if now - lastInteract < Config.InteractLock then return false end
+    lastInteract = now
+    return true
+end
+
+--- V12.37 · Enveloppe une action de point : verrou + métier relu à la source avant de décider.
+local function act(fn)
+    return function(...)
+        if not once() then return end
+        GSJ.refreshJob()
+        return fn(...)
+    end
+end
 
 local function addZone(coords, option)
     option.distance = option.distance or 2.5
@@ -11,20 +33,27 @@ local function addZone(coords, option)
     })
 end
 
---- V12.36 · PNJ d'un point : même option ox_target que la zone (nom suffixé), placé juste hors de la zone (rayon + 0,5 m) pour que
---- l'option n'apparaisse pas deux fois quand on vise le PNJ depuis le point. `def` = { model, heading, scenario } de la config.
+--- V12.36 · PNJ d'un point : même option ox_target que la zone (nom suffixé). V12.37 : il la porte SEUL (plus de zone en plus),
+--- à Config.PedDistance m du point. `def` = { model, heading, scenario } de la config.
 local function pedOf(def, option)
     if type(def) ~= 'table' or type(def.model) ~= 'string' or def.model == '' then return nil end
-    return { model = def.model, heading = def.heading, scenario = def.scenario, distance = Config.ZoneRadius + 0.5,
+    return { model = def.model, heading = def.heading, scenario = def.scenario, distance = Config.PedDistance,
+        at = def.at, staffId = def.staffId, -- V12.37 : PNJ posé par le staff (position absolue, entrée reprise)
         options = { { name = option.name .. '_ped', icon = option.icon, label = option.label, distance = 2.5,
                       canInteract = option.canInteract, onSelect = option.onSelect } } }
 end
 
-local function addPed(name, kind, i, coords, option)
+--- V12.37 · Un point = une interaction : le PNJ s'il est configuré (Jobs[x].peds[kind][i]), sinon la zone sphérique.
+--- Un PNJ posé par le staff (F11 → Monde et lieux → PNJ et objets) et relié à ce point ('job:police:duty') remplace celui de la
+--- config, ou s'ajoute s'il n'y en avait pas, avec la même interaction (GlobalState.gsStaffPeds lu par GsPoints, gs_bridge).
+local function addPoint(name, kind, i, coords, option)
     local list = Jobs[name].peds and Jobs[name].peds[kind]
-    local ped = list and pedOf(list[i], option)
-    if not ped then return end
-    exports.gs_markers:Add(('gs_jobs:ped:%s:%s%d'):format(name, kind, i), { coords = coords, style = 'hidden', ped = ped })
+    local ped = pedOf(GsPoints.pointPed(list and list[i], GsPoints.pedTarget(name, kind, i)), option)
+    if ped then
+        exports.gs_markers:Add(('gs_jobs:ped:%s:%s%d'):format(name, kind, i), { coords = coords, style = 'hidden', ped = ped })
+    else
+        addZone(coords, option)
+    end
 end
 
 local function addBlip(coords, b)
@@ -121,10 +150,12 @@ local function refreshMarkers()
     for i, g in ipairs(p.garage or {}) do mark('garage', i, g.coords, 'Garage') end
 end
 
---- [E] sur un point de son métier : mêmes actions (et mêmes conditions) que les zones ox_target.
+--- [E] sur un point de son métier : mêmes actions (et mêmes conditions) que le PNJ / la zone ox_target.
 AddEventHandler('gs_jobs:client:point', function(name, kind, i)
+    if not once() then return end -- V12.37 : anti-double-clic ([E] + clic sur le PNJ dans la même seconde)
+    GSJ.refreshJob()              -- V12.37 : état de service lu à la source, pas la copie d'il y a un instant
     if not GSJ.isJob(name) then return end
-    if kind == 'duty' then return TriggerServerEvent('gs_jobs:server:toggleDuty') end
+    if kind == 'duty' then return GSJ.toggleDuty(false) end
     if kind == 'cloakroom' then return openCloakroom(name) end
     if kind == 'boss' then
         if GSJ.isBoss(name) then return GSJ.openBossMenu() end
@@ -140,6 +171,9 @@ AddEventHandler('gs_jobs:client:point', function(name, kind, i)
     end
 end)
 
+-- V12.37 · [E] au Pôle Emploi (avant : seulement ox_target ; le PNJ porte maintenant l'option, la touche reste)
+AddEventHandler('gs_jobs:client:center', act(function() GSJ.openJobCenter() end))
+
 local function clear()
     for _, id in ipairs(zones) do exports.ox_target:removeZone(id) end
     for _, blip in ipairs(blips) do RemoveBlip(blip) end
@@ -153,20 +187,18 @@ local function build()
         local p = def.points
 
         for i, coords in ipairs(p.duty or {}) do
-            local option = {
+            addPoint(name, 'duty', i, coords, { -- V12.36 : agent d'accueil
                 name = 'gs_duty_' .. name, icon = 'fa-solid fa-id-badge', label = L('zone_duty'),
                 canInteract = function() return GSJ.isJob(name) end,
-                onSelect = function() TriggerServerEvent('gs_jobs:server:toggleDuty') end,
-            }
-            addZone(coords, option)
-            addPed(name, 'duty', i, coords, option) -- V12.36 : agent d'accueil
+                onSelect = act(function() GSJ.toggleDuty(false) end),
+            })
         end
 
         for i, s in ipairs(p.stash or {}) do
             addZone(s.coords, {
                 name = ('gs_stash_%s_%d'):format(name, i), icon = 'fa-solid fa-box-archive', label = s.label,
                 canInteract = function() return GSJ.isOnDuty(name) and GSJ.job.grade >= (s.minGrade or 0) end,
-                onSelect = function() Bridge:OpenStash(('gs_%s_%d'):format(name, i)) end,
+                onSelect = act(function() Bridge:OpenStash(('gs_%s_%d'):format(name, i)) end),
             })
         end
 
@@ -174,7 +206,7 @@ local function build()
             addZone(coords, {
                 name = ('gs_cloak_%s_%d'):format(name, i), icon = 'fa-solid fa-shirt', label = 'Vestiaire',
                 canInteract = function() return GSJ.isJob(name) end,
-                onSelect = function() openCloakroom(name) end,
+                onSelect = act(function() openCloakroom(name) end),
             })
         end
 
@@ -182,28 +214,24 @@ local function build()
             addZone(coords, {
                 name = ('gs_armory_%s_%d'):format(name, i), icon = 'fa-solid fa-shield-halved', label = Jobs[name].armoryLabel or 'Équipement de service',
                 canInteract = function() return GSJ.isOnDuty(name) end,
-                onSelect = function() openArmory(name) end,
+                onSelect = act(function() openArmory(name) end),
             })
         end
 
         for i, coords in ipairs(p.boss or {}) do
-            local option = {
+            addPoint(name, 'boss', i, coords, { -- V12.36 : assistant de direction
                 name = 'gs_boss_' .. name, icon = 'fa-solid fa-briefcase', label = L('zone_boss'),
                 canInteract = function() return GSJ.isBoss(name) end,
-                onSelect = function() GSJ.openBossMenu() end,
-            }
-            addZone(coords, option)
-            addPed(name, 'boss', i, coords, option) -- V12.36 : assistant de direction
+                onSelect = act(function() GSJ.openBossMenu() end),
+            })
         end
 
         for i, g in ipairs(p.garage or {}) do
-            local option = {
+            addPoint(name, 'garage', i, g.coords, { -- V12.36 : responsable du parc
                 name = ('gs_garage_%s_%d'):format(name, i), icon = 'fa-solid fa-car', label = L('zone_garage'),
                 canInteract = function() return GSJ.isOnDuty(name) end,
-                onSelect = function() GSJ.openGarageMenu(name, i) end,
-            }
-            addZone(g.coords, option)
-            addPed(name, 'garage', i, g.coords, option) -- V12.36 : responsable du parc
+                onSelect = act(function() GSJ.openGarageMenu(name, i) end),
+            })
         end
 
         local anchor = (p.duty and p.duty[1]) or (p.garage and p.garage[1] and p.garage[1].coords)
@@ -212,12 +240,13 @@ local function build()
 
     local center = {
         name = 'gs_job_center', icon = 'fa-solid fa-building', label = L('zone_job_center'),
-        onSelect = function() GSJ.openJobCenter() end,
+        onSelect = act(function() GSJ.openJobCenter() end),
     }
-    addZone(Config.JobCenter.coords, center)
+    local centerPed = pedOf(Config.JobCenter.ped, center) -- V12.36 : agent d'accueil du Pôle Emploi
+    if not centerPed then addZone(Config.JobCenter.coords, center) end -- V12.37 : le PNJ porte l'option, sinon la zone
     addBlip(Config.JobCenter.coords, Config.JobCenter.blip)
     exports.gs_markers:Add('gs_jobs:center', { coords = Config.JobCenter.coords, style = 'entry', label = 'Pôle Emploi',
-        ped = pedOf(Config.JobCenter.ped, center) }) -- V12.36 : agent d'accueil du Pôle Emploi
+        event = 'gs_jobs:client:center', prompt = L('zone_job_center'), ped = centerPed })
     refreshMarkers()
 end
 
@@ -234,6 +263,9 @@ AddStateBagChangeHandler('gsJobPoints', 'global', function(_, _, value)
     applyAll(value)
     build()
 end)
+
+-- V12.37 · PNJ posés ou retirés par le staff : les points de métier reliés sont reconstruits (PNJ remplacé / ajouté / retiré)
+AddStateBagChangeHandler('gsStaffPeds', 'global', function() build() end)
 
 AddEventHandler('gs_bridge:client:jobUpdated', function() Wait(0) refreshMarkers() end)
 
