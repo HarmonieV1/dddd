@@ -379,6 +379,10 @@ EOF
   sauvegardes) need_root "$@"; "$TOOLS/roadline-bdd.sh" liste ;;
   restaurer) need_root "$@"; "$TOOLS/roadline-bdd.sh" restaurer "${2:?fichier}" ;;
   restaurer-joueur) need_root "$@"; "$TOOLS/roadline-bdd.sh" restaurer-joueur "${2:?fichier}" "${3:?citizenid}" ;;
+  placements) need_root "$@" # V12.57 · ENVOYER-PLACEMENTS.bat : portes, mapping, points… du PC (base sauvegardée avant)
+    "$TOOLS/roadline-bdd.sh" placements "${2:-/tmp/roadline-placements.sql.gz}"; rm -f "${2:-/tmp/roadline-placements.sql.gz}"
+    if [ "${3:-}" = "redemarrer" ]; then rm -f "$BASE/.maintenance"; systemctl restart roadline; echo "Serveur redémarré : placements visibles."
+    else echo "Visibles au prochain redémarrage (roadline redemarrer, ou le redémarrage quotidien)."; fi ;;
   maj) need_root "$@"; maj "${2:-/tmp/roadline-maj.zip}" ;;
   retour) need_root "$@"; retour ;;
   programme) need_root "$@"
@@ -402,6 +406,7 @@ roadline redemarrer        redémarrer (aussi : arreter, demarrer)
 roadline public | prive    ouvrir au public / repasser en privé pour tester
 roadline sauvegarde        sauvegarder la base maintenant (automatique toutes les 6 h)
 roadline sauvegardes       liste des sauvegardes · roadline restaurer FICHIER · roadline restaurer-joueur FICHIER CID
+roadline placements        appliquer les placements envoyés par ENVOYER-PLACEMENTS.bat (portes, mapping, points…)
 roadline maj               installer la mise à jour envoyée par METTRE-A-JOUR-OVH.bat (base sauvegardée avant)
 roadline retour            revenir à la version précédente de RoadLine (si une mise à jour pose problème)
 roadline programme         mettre à jour le programme FiveM (version recommandée)

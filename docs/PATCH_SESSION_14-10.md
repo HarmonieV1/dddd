@@ -145,3 +145,16 @@
 |---|---|---|
 | **Territoires de gang** | gs_gangs | Plus de grands ronds : le quartier est dessiné en pâtés de maisons alignés sur les rues ; /quartierforme pour ajuster l'angle |
 | Propositions | docs/PROPOSITIONS.md (D7) | n° 118 à 131 : signatures, ajouts simples, améliorations |
+
+## V12.57 (15/10) — vie quotidienne, masques, placements
+| Quoi | Où | Ce que ça change |
+|---|---|---|
+| **Fouiller les poubelles** | gs_vie | Alt sur une benne : un peu de ferraille, de quoi manger… ou rien. Une benne fouillée reste vide 20 min |
+| **Distributeurs** | ox_inventory (shops) | Boissons (eau, soda, énergisante), snacks (chips, donut), café |
+| **Se laver** | gs_vie | Lavabos, douches, fontaines (Alt) ou /laver dans la mer : sang et saleté effacés |
+| **Démarche blessée** | gs_vie | Relevé après être tombé : on boite 10 min ; un bandage ou des antidouleurs soignent |
+| **Passagers bavards** | gs_vie, gs_rumors | Un PNJ assis dans ton véhicule (bus, taxi) raconte une vraie rumeur de la ville |
+| **Porter / prendre en otage** | gs_vie | Alt sur un joueur ; il accepte (sauf menotté ou à terre) ; otage : arme de poing ou couteau en main ; X pour lâcher |
+| **Magasin de masques** | gs_places | Plage de Vespucci (blip) : menu des masques seulement, payé en validant. Les masques restent aussi en boutique de vêtements |
+| **ENVOYER-PLACEMENTS.bat** | scripts | Ce que tu poses sur le PC (portes, mapping, points, concession, courses, PNJ) part sur le VPS ; joueurs et argent du VPS jamais touchés, base sauvegardée avant |
+| **Test de charge** | gs_vie, docs/TEST_DE_CHARGE.md | /perfserveur pendant un test à plusieurs : une ligne par minute, bilan à la fin |

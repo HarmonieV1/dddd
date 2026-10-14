@@ -298,7 +298,8 @@ function Copy-Unix($src, $dest) {
 }
 
 #--- Copie de la base du PC (mêmes réglages que SAUVEGARDER-BDD). Retourne $true si le fichier est écrit.
-function Export-LocalDb($Data, $out) {
+#    V12.57 · -Tables : seulement ces tables (celles absentes de la base du PC sont ignorées) ; $false si aucune n'existe.
+function Export-LocalDb($Data, $out, [string[]]$Tables) {
     $secrets = Get-Content -LiteralPath (Join-Path $Data 'cfg\secrets.cfg') -Raw -Encoding UTF8
     $cs = [regex]::Match($secrets, 'mysql_connection_string\s+"mysql:/{2}([^:]+):(.*)@([^:/@]+)(?::(\d+))?/([^?"]+)')
     $svc = Get-CimInstance Win32_Service | Where-Object { $_.Name -match 'maria|mysql' -and $_.PathName -match 'mysqld|mariadbd' } | Select-Object -First 1
@@ -309,7 +310,16 @@ function Export-LocalDb($Data, $out) {
     $ErrorActionPreference = 'Continue'
     $env:MYSQL_PWD = [uri]::UnescapeDataString($cs.Groups[2].Value)
     $p = if ($cs.Groups[4].Value) { $cs.Groups[4].Value } else { '3306' }
-    & $dump -h $cs.Groups[3].Value -P $p -u $cs.Groups[1].Value --single-transaction --routines --default-character-set=utf8mb4 --result-file="$out" $cs.Groups[5].Value 2>&1 | Out-Null
+    $only = @()
+    if ($Tables) {
+        $cli = @('mariadb.exe', 'mysql.exe') | ForEach-Object { Join-Path $bin $_ } | Where-Object { Test-Path $_ } | Select-Object -First 1
+        $have = if ($cli) { & $cli -h $cs.Groups[3].Value -P $p -u $cs.Groups[1].Value -N -B -e 'SHOW TABLES' $cs.Groups[5].Value 2>$null } else { @() }
+        $only = @($Tables | Where-Object { $have -contains $_ })
+        if (-not $only.Count) { Remove-Item Env:MYSQL_PWD -ErrorAction SilentlyContinue; $ErrorActionPreference = $old; return $false }
+    }
+    $opts = @('--single-transaction', '--default-character-set=utf8mb4', "--result-file=$out")
+    if (-not $only.Count) { $opts += '--routines' } # base complète : procédures comprises
+    & $dump -h $cs.Groups[3].Value -P $p -u $cs.Groups[1].Value @opts $cs.Groups[5].Value @only 2>&1 | Out-Null
     $code = $LASTEXITCODE
     Remove-Item Env:MYSQL_PWD -ErrorAction SilentlyContinue
     $ErrorActionPreference = $old

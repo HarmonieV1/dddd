@@ -62,5 +62,13 @@ ok, d = Rumors.indic(2, 'vagos' == 'x' and 'x' or 'ballas')
 check('pas de fuite à chaque fois', ok and W.notes[3] == nil)
 fixRandom()
 
+-- V12.57 · Rumeur au hasard pour les passagers bavards (gs_vie) : vague (jamais de détails des témoins) ou rien
+Rumors.list = {}
+check('passagers : rien à raconter → nil', Rumors.random() == nil)
+TriggerEvent('gs_wanted:server:report', { label = 'Coups de feu', coords = vec3(110.0, -1930.0, 20.0), desc = { 'masqué' } })
+advance(Config.FreeMinAge * 60000 + 1000)
+local rr = Rumors.random()
+check('passagers : rumeur vague avec le quartier', rr and rr:find('Grove Street') and not rr:find('masqué'))
+
 io.write(('\n%d réussis, %d échoués\n'):format(passed, failed))
 os.exit(failed == 0 and 0 or 1)

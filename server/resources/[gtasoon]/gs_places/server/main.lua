@@ -109,6 +109,20 @@ lib.callback.register('gs_places:barber', function(src)
     return true, ('Coupe réglée : %d $. Ça te va bien !'):format(Config.Barber.price)
 end)
 
+--- V12.57 · Masque choisi au magasin de masques : payé à la validation (sinon le client remet l'ancien visage)
+lib.callback.register('gs_places:mask', function(src)
+    if not Security:RateLimit(src, 'gs_places:mask', 3, 10000) then return false, 'Doucement.' end
+    local near = false
+    for _, st in ipairs(AppearanceStores) do
+        if st[1] == 'mask' and Security:InRange(src, vec3(st[2].x, st[2].y, st[2].z), Config.Masks.range) then near = true break end
+    end
+    if not near then return false, 'Il faut être au magasin de masques.' end
+    local Bridge = exports.gs_bridge
+    local acc = Bridge:GetMoney(src, 'cash') >= Config.Masks.price and 'cash' or 'bank'
+    if not Bridge:RemoveMoney(src, acc, Config.Masks.price, 'masque') then return false, 'Pas assez d\'argent.' end
+    return true, ('Masque acheté : %d $. Personne ne te reconnaîtra… ou presque.'):format(Config.Masks.price)
+end)
+
 --- V10.2 · Vendeurs des boutiques d'apparence : déclarés à gs_stickup (braquage de caisse possible)
 exports('GetVendors', function()
     local out = {}

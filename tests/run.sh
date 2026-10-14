@@ -66,4 +66,6 @@ if command -v node >/dev/null; then
 fi
 # IMPORTER-MODS de bout en bout (scripts compagnons des maps payantes, V12.31) : seulement si PowerShell 7 est installé
 bash tests/test_importer.sh
+# V12.57 · ENVOYER-PLACEMENTS : le VPS n'accepte que les tables de placements, sauvegarde avant
+bash tests/test_placements.sh
 for s in scripts/linux/*.sh; do bash -n "$s" || exit 1; done && echo "Scripts Linux OK (sauvegardes, installation OVH, commande roadline)"

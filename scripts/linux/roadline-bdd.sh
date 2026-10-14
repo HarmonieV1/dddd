@@ -5,6 +5,7 @@
 #   ./roadline-bdd.sh restaurer FICHIER               → toute la base revient à l'heure du fichier (serveur ARRÊTÉ)
 #   ./roadline-bdd.sh restaurer-joueur FICHIER CID    → un seul joueur (perso + véhicules) revient à l'heure du fichier
 #   ./roadline-bdd.sh programmer                      → cron : sauvegarde toutes les 6 h (5 h, 11 h, 17 h, 23 h)
+#   ./roadline-bdd.sh placements FICHIER              → V12.57 : remplace les tables de placements (portes, mapping, points…) par celles du PC
 # Identifiants : fichier .env à côté du script (DB_NAME, DB_USER, DB_PASS, DB_HOST, DB_PORT, BACKUP_DIR). Jamais affichés.
 set -euo pipefail
 HERE="$(cd "$(dirname "$0")" && pwd)"
@@ -34,6 +35,21 @@ fix_fk() { awk '
   { print }'; }
 import_into() { # base fichier
   { echo "SET FOREIGN_KEY_CHECKS=0;"; gunzip -c "$2" | fix_fk; echo "SET FOREIGN_KEY_CHECKS=1;"; } | sql "$1"
+}
+
+# V12.57 · Tables de placements posés en jeu (ENVOYER-PLACEMENTS.bat) : seules celles-ci peuvent être remplacées
+PLACEMENTS="ox_doorlock gs_builder_objects gs_builder_hides gs_job_points gs_places gs_showroom_slots gs_showroom_starts gs_race_custom gs_staff_peds"
+placements() {
+  local f="$1" t bad=""
+  [ -f "$f" ] || { echo "Introuvable : $f"; exit 1; }
+  for t in $(gunzip -c "$f" | sed -n 's/^CREATE TABLE `\([^`]*\)`.*/\1/p'); do
+    case " $PLACEMENTS " in *" $t "*) ;; *) bad="$bad $t" ;; esac
+  done
+  [ -z "$bad" ] || { echo "REFUSÉ : ce fichier contient d'autres tables que les placements :$bad"; exit 1; }
+  gunzip -c "$f" | grep -q '^CREATE TABLE' || { echo "REFUSÉ : aucune table de placements dans ce fichier."; exit 1; }
+  backup avant-placements
+  import_into "$DB_NAME" "$f"
+  echo "Placements importés : $(gunzip -c "$f" | sed -n 's/^CREATE TABLE `\([^`]*\)`.*/\1/p' | tr '\n' ' ')"
 }
 
 confirm() { read -r -p "$1 Tape OUI : " a; [ "$a" = "OUI" ] || { echo "Annulé."; exit 1; }; }
@@ -73,5 +89,6 @@ case "${1:-}" in
     # (VPS neuf : pas encore de crontab, « crontab -l » échoue → ne doit pas arrêter le script)
     { { crontab -l 2>/dev/null || true; } | { grep -v 'roadline-bdd.sh sauvegarde' || true; }; echo "$line"; } | crontab -
     echo "Programmé : toutes les 6 h (5 h, 11 h, 17 h, 23 h)." ;;
-  *) sed -n '2,8p' "$0" ;;
+  placements) placements "${2:?fichier ?}" ;;
+  *) sed -n '2,9p' "$0" ;;
 esac

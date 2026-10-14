@@ -45,6 +45,14 @@ function Rumors.free()
     return ('Paraît que %s, du côté de %s.'):format(r.text, r.zone)
 end
 
+--- V12.57 · Une rumeur vague au hasard (passagers bavards de gs_vie), nil s'il n'y a rien à raconter
+function Rumors.random()
+    local l = fresh(Config.FreeMinAge)
+    if #l == 0 then return nil end
+    local r = l[math.random(1, #l)]
+    return ('Paraît que %s, du côté de %s.'):format(r.text, r.zone)
+end
+
 --- Payant : les 3 dernières, détaillées
 function Rumors.paid(src)
     local l = fresh(0)
@@ -159,3 +167,4 @@ end)
 
 exports('Add', Rumors.add)
 exports('Zone', Rumors.zone)
+exports('Random', Rumors.random)

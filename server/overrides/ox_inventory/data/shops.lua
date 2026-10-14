@@ -53,14 +53,37 @@ return {
 
 	-- Marché noir : voir gs_blackmarket (contact qui change de planque, /contact)
 
+	-- V12.57 · Distributeurs de la ville (Alt dessus) : boissons, snacks, café. Les objets doivent exister (« cola » n'existe pas : sprunk)
 	VendingMachineDrinks = {
-		name = 'Vending Machine',
+		name = 'Distributeur de boissons',
 		inventory = {
 			{ name = 'water', price = 10 },
-			{ name = 'cola', price = 10 },
+			{ name = 'sprunk', price = 12 },
+			{ name = 'gs_energy', price = 20 },
 		},
 		model = {
 			`prop_vend_soda_02`, `prop_vend_fridge01`, `prop_vend_water_01`, `prop_vend_soda_01`
+		}
+	},
+
+	VendingMachineSnacks = {
+		name = 'Distributeur de snacks',
+		inventory = {
+			{ name = 'gs_chips', price = 8 },
+			{ name = 'gs_donut', price = 10 },
+		},
+		model = {
+			`prop_vend_snak_01`, `prop_vend_snak_01_tu`
+		}
+	},
+
+	VendingMachineCoffee = {
+		name = 'Machine à café',
+		inventory = {
+			{ name = 'coffee', price = 6 },
+		},
+		model = {
+			`prop_vend_coffe_01`
 		}
 	}
 }

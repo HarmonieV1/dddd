@@ -1,4 +1,4 @@
-# État du projet RoadLine RP — récapitulatif complet (à jour au 15/10/2026, V12.50)
+# État du projet RoadLine RP — récapitulatif complet (à jour au 15/10/2026, V12.57)
 
 Ce document sert de **point de sauvegarde** : si une conversation avec Claude est perdue, compressée ou doit reprendre
 ailleurs, tout ce qu'il faut savoir est ici. Il est versionné avec le code (`git log` en garde aussi l'historique).
@@ -54,7 +54,7 @@ exclusifs (« ce que tu ne trouveras nulle part ailleurs »).
 - `feature/phase1-bridge`
 - `claude/gta-rp-architecture-stack-pbvdxz`
 
-**Dernier commit poussé** : « V12.56 : territoires en pâtés de maisons, propositions D7 » (hash exact :
+**Dernier commit poussé** : « V12.57 : vie quotidienne (poubelles, distributeurs, se laver, porter / otage), masques, ENVOYER-PLACEMENTS » (hash exact :
 `git log -1 origin/feature/phase1-bridge`). Les deux branches pointent sur le même commit.
 
 **Deux sessions Claude en parallèle** (poste Windows et session web) : elles ne se voient pas. Toujours synchroniser
@@ -64,7 +64,7 @@ par un colis (zip de l'installation ou de la session) + ce fichier, et comparer 
 ## 2. Versions : interne vs publique (important, piège classique)
 
 Depuis la V11.3, il y a **deux numéros de version différents**, volontairement :
-- `gs_version` (convar, `server.cfg.example`) = **V12.56** → version technique interne, vue par le staff (F11, console,
+- `gs_version` (convar, `server.cfg.example`) = **V12.57** → version technique interne, vue par le staff (F11, console,
   METTRE-A-JOUR). Continue d'avancer à chaque mise à jour (V11.2, V11.3...).
 - `gs_public_version` (convar) = **« V4 · bêta »** → version vue par les **joueurs** (écran de chargement, statut
   Discord, Gazette). Le site affiche son propre journal (V1 à V4, V5 « classé confidentiel »).
@@ -272,6 +272,16 @@ Résumé très condensé (le détail complet est dans `docs/ROADMAP.md`, `docs/F
   façon chargement de mission (Entrée / clic pour passer). Tout coupé par `prefers-reduced-motion`, souris seulement
   sur ordinateur. Une seule boucle rAF qui s'endort quand rien ne bouge. Vérifié dans le navigateur : 0 erreur.
 
+- **V12.57** (15/10/2026, session web) — phase 1 des propositions D7. Nouvelle ressource **gs_vie** : poubelles (Alt sur
+  une benne, butin serveur, délai par benne 20 min + par joueur 45 s + 12/h), se laver (lavabos, douches, fontaines ou /laver
+  dans l'eau), démarche blessée 10 min après avoir été à terre / mort (state bag qbx_medical, soignée par bandage /
+  antidouleurs via le crochet ox_inventory usingItem, gardée à la reconnexion), passagers PNJ bavards (export gs_rumors
+  `Random`, phrases de secours), porter / prendre en otage (ox_target joueur, accord sauf menotté / à terre, arme de poing ou
+  couteau pour l'otage, X ou /lacher), /perfserveur (mesure de charge, journal perf-serveur.log, docs/TEST_DE_CHARGE.md).
+  Distributeurs ox_inventory : boissons (cola inexistant → sprunk, + boisson énergisante), snacks, café. Magasin de masques
+  gs_places (plage de Vespucci, éditeur illenium limité aux masques, payé à la validation). **ENVOYER-PLACEMENTS.bat** :
+  copie seulement les tables de placements du PC (portes, mapping F11, points, lieux, concession, courses, PNJ staff) vers le
+  VPS ; `roadline placements` refuse toute autre table et sauvegarde la base avant. Tests : gs_vie 36, test_placements.sh 6.
 - **V12.56** (15/10/2026, session web) — territoires « en ronds qui débordent » : GTA ne dessine pas de forme libre ; chaque
   quartier tenu = cases carrées (`AddBlipForArea` + `SetBlipRotation`) alignées sur le sens des rues (gs_gangs/shared/blocks.lua,
   `Config.Territory.cell` 90 m, `angle` / `cell` par quartier). Même découpage côté serveur (`Blocks.contains` dans

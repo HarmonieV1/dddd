@@ -6,6 +6,9 @@ AppearanceKinds = {
     tattoo   = { event = 'illenium-appearance:client:OpenTattooShop', prompt = 'Tatoueur', model = 'u_m_y_tattoo_01', scenario = 'WORLD_HUMAN_SMOKING' },
     surgeon  = { event = 'illenium-appearance:client:OpenSurgeonShop', prompt = 'Chirurgien esthétique (visage)', model = 's_m_m_doctor_01', scenario = 'WORLD_HUMAN_CLIPBOARD' },
     clothing = { event = 'illenium-appearance:client:openClothingShopMenu', prompt = 'Boutique de vêtements', model = 's_f_y_shop_mid', scenario = 'WORLD_HUMAN_STAND_IMPATIENT' },
+    -- V12.57 · Magasin de masques (menu limité aux masques, payé à la validation ; les masques restent aussi en boutique de vêtements)
+    mask     = { prompt = 'Magasin de masques', model = 's_m_y_shop_mask', scenario = 'WORLD_HUMAN_STAND_IMPATIENT',
+        blip = { sprite = 73, color = 27, label = 'Magasin de masques' } },
 }
 AppearanceStores = {
     { 'clothing', vec4(1693.2, 4828.11, 42.07, 188.66) }, { 'clothing', vec4(-705.5, -149.22, 37.42, 122.0) },
@@ -24,4 +27,5 @@ AppearanceStores = {
     { 'tattoo', vec4(322.62, 180.34, 103.59, 156.2) }, { 'tattoo', vec4(-3169.52, 1074.86, 20.83, 253.29) },
     { 'tattoo', vec4(1864.1, 3747.91, 33.03, 17.23) }, { 'tattoo', vec4(-294.24, 6200.12, 31.49, 195.72) },
     { 'surgeon', vec4(298.78, -572.81, 43.26, 114.27) },
+    { 'mask', vec4(-1338.12, -1278.04, 4.87, 110.0) }, -- V12.57 · échoppe de masques de la plage de Vespucci
 }

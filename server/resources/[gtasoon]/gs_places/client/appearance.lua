@@ -140,9 +140,29 @@ local function barber()
     lib.showMenu('gs_barber')
 end
 
+-- V12.57 · Magasin de masques : l'éditeur d'illenium limité aux masques ; payé en validant, sinon on remet l'ancien
+local MASK_ONLY = { masks = true, upperBody = false, lowerBody = false, bags = false, shoes = false, scarfAndChains = false,
+    bodyArmor = false, shirts = false, decals = false, jackets = false }
+local function maskShop()
+    local A = exports['illenium-appearance'] -- [API] illenium-appearance
+    local okO, orig = pcall(function() return A:getPedAppearance(cache.ped) end)
+    A:startPlayerCustomization(function(app)
+        if not app then return end
+        local ok, msg = lib.callback.await('gs_places:mask', false)
+        if not ok then
+            if okO and orig then pcall(function() A:setPlayerAppearance(orig) end) end
+            return lib.notify({ description = msg, type = 'error' })
+        end
+        TriggerServerEvent('illenium-appearance:server:saveAppearance', app)
+        lib.notify({ description = msg, type = 'success' })
+    end, { ped = false, headBlend = false, faceFeatures = false, headOverlays = false, components = true, componentConfig = MASK_ONLY,
+        props = false, tattoos = false, enableExit = true, hasTracker = false, automaticFade = false })
+end
+
 AddEventHandler('gs_places:client:appearance', function(kindName)
     if kindName == 'barber' and B.enabled then return barber() end
     if kindName == 'clothing' then return clothingShop() end
+    if kindName == 'mask' then return maskShop() end
     local k = KINDS[kindName]
     if k then TriggerEvent(k.event) end
 end)
@@ -162,6 +182,11 @@ CreateThread(function()
         local kind = KINDS[s[1]]
         exports.gs_markers:Add('gs_places:app:' .. i, { coords = front(s[2]), style = 'shop', label = kind.prompt, prompt = kind.prompt,
             event = 'gs_places:client:appearance', args = { s[1] }, reach = 1.6 })
+        if kind.blip then -- les autres boutiques ont déjà le blip d'illenium-appearance
+            local b = AddBlipForCoord(s[2].x, s[2].y, s[2].z)
+            SetBlipSprite(b, kind.blip.sprite) SetBlipColour(b, kind.blip.color) SetBlipScale(b, 0.7) SetBlipAsShortRange(b, true)
+            BeginTextCommandSetBlipName('STRING') AddTextComponentSubstringPlayerName(kind.blip.label) EndTextCommandSetBlipName(b)
+        end
     end
     -- Vendeurs : créés à l'approche (60 m), supprimés au départ (pas 30 PNJ permanents)
     local tick = 0

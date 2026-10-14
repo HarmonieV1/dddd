@@ -17,3 +17,6 @@ Config.Defaults = {}
 -- V10.2 · Coiffeur : menu de barbier classique (coupe, couleur, reflets, barbe, sourcils, maquillage) au lieu de l'éditeur
 -- complet. false = garder le menu d'illenium-appearance.
 Config.Barber = { enabled = true, price = 150, range = 8.0 }
+
+-- V12.57 · Magasin de masques : prix d'un masque (payé en liquide, sinon par carte)
+Config.Masks = { price = 250, range = 8.0 }

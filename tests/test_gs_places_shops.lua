@@ -22,6 +22,19 @@ check('coiffeur : sinon banque', ok and W.players[1].money.bank == 500 - Config.
 W.players[1].money.bank = 0
 ok = cb('gs_places:barber', 1) advance(11000)
 check('coiffeur : sans argent refusé', not ok)
+-- V12.57 · Magasin de masques
+local mask
+for _, s in ipairs(AppearanceStores) do if s[1] == 'mask' then mask = s[2] break end end
+check('masques : boutique déclarée (blip + vendeur)', mask ~= nil and AppearanceKinds.mask.blip ~= nil and AppearanceKinds.mask.model ~= nil)
+W.players[2].money.cash = 1000
+ok = cb('gs_places:mask', 2) advance(11000)
+check('masques : hors de la boutique refusé', not ok and W.players[2].money.cash == 1000)
+tp(2, vec3(mask.x, mask.y, mask.z))
+ok = cb('gs_places:mask', 2) advance(11000)
+check('masques : payé', ok and W.players[2].money.cash == 1000 - Config.Masks.price)
+W.players[2].money.cash, W.players[2].money.bank = 0, 0
+ok = cb('gs_places:mask', 2) advance(11000)
+check('masques : sans argent refusé (le client remet l\'ancien visage)', not ok)
 local vendors = getExport('gs_places', 'GetVendors')()
 check('vendeurs déclarés (coiffeurs, vêtements, tatoueurs)', #vendors == #AppearanceStores and vendors[1].coords ~= nil)
 io.write(('\n%d réussis, %d échoués\n'):format(passed, failed))
