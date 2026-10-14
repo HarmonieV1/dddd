@@ -254,8 +254,8 @@ $Converted = @{ basic = 'ROADTRIP-coiffures_femme_1.zip'; box_braids = 'ROADTRIP
     hyun_hair = 'ROADTRIP-coiffures_femme_3.zip'; braid_with_long_hairstyle_for_mp_female = 'ROADTRIP-coiffures_femme_3.zip'
     long_braids_hairstyle_by_jazlyn13 = 'ROADTRIP-coiffures_femme_3.zip'; long_hair = 'ROADTRIP-coiffures_femme_3.zip'
     '088_erika_hair' = 'ROADTRIP-coiffures_femme_3.zip'; free_alycia_hair_by_jinxstore = 'ROADTRIP-coiffures_femme_3.zip'
-    grace_dress = 'ROADTRIP-tenues_femme_1.zip'; knee_jeans = 'ROADTRIP-tenues_femme_1.zip'
-    dollie_moko_summer_dress_for_mp_female = 'ROADTRIP-tenues_femme_1.zip'; dress_with_cut_outs_for_mp_female_by_jaa = 'ROADTRIP-tenues_femme_1.zip' }
+    grace_dress = 'ROADTRIP-tenues_femme_1.zip'; knee_jeans = 'ROADTRIP-tenues_femme_2.zip'
+    dollie_moko_summer_dress_for_mp_female = 'ROADTRIP-tenues_femme_2.zip'; dress_with_cut_outs_for_mp_female_by_jaa = 'ROADTRIP-tenues_femme_1.zip' }
 $PackPick = @{} # ex. : @{ nom_du_pack = @('modele1', 'modele2') }
 function Save-Xml($x, $path) {
     $s = New-Object Xml.XmlWriterSettings; $s.Encoding = New-Object Text.UTF8Encoding $false; $s.Indent = $true

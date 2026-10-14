@@ -15,9 +15,10 @@ modèles différents du ped freemode.
 | coiffures_femme_2 | gsafemmeb | mp_f | edgar, leopard print, locs | 11/10 |
 | coiffures_homme_2 | gsahommec | mp_m | dreadlocks (Suthyland), Buzzcut Fade ×2, coupe « hair » | 14/10 |
 | coiffures_femme_3 | gsafemmec | mp_f | Long Hyun, tresse grzybeek, long braids jazlyn13, long hair, Erika, Alycia, tresse Natt | 14/10 |
-| tenues_femme_1 | gsafemmed | mp_f | robe Grace (23 coloris), robe d'été Dollie Moko (26), robe à découpes (18, 1 texture coupée retirée), sweat Lace Up (haut + bas), Knee Jeans | 14/10 |
+| tenues_femme_1 | gsafemmed | mp_f | robe Grace (23 coloris), robe à découpes (18, 1 texture coupée retirée), sweat Lace Up (haut + bas) | 14/10 |
+| tenues_femme_2 | gsafemmee | mp_f | robe d'été Dollie Moko (26 coloris), Knee Jeans | 14/10 |
 
-Prochaines : `gsahommed`, `gsafemmee`, puis `f`, `g`… Une archive coupée (texture tronquée) est refusée : la redemander.
+Prochaines : `gsahommed`, `gsafemmef`, puis `g`, `h`… Une archive coupée (texture tronquée) est refusée : la redemander.
 Les .rar : `unar` (le 7z du conteneur n'a pas le codec RAR).
 
 Refusés le 14/10 : sac BOOMODS (logo d'une vraie marque de luxe), Afro for Lamar (ped de l'histoire `ig_lamardavis`),
