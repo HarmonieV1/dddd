@@ -1,7 +1,7 @@
 -- gs_places (client) : boutiques d'apparence (illenium-appearance) avec un vrai vendeur PNJ au comptoir (coiffeur,
 -- tatoueur, chirurgien, vendeuse), aussi dans les boutiques posées par le staff. Le vendeur se braque comme une caisse
 -- de supérette (gs_stickup). V10.2 :
---   - coiffeur : menu de barbier classique (coupe, couleur, reflets, barbe, sourcils, maquillage) avec aperçu en
+--   - coiffeur : menu de barbier classique (coupe, couleur, reflets, barbe, sourcils, maquillage, blush, lèvres) avec aperçu en
 --     direct et caméra sur le visage, au lieu de l'éditeur complet ;
 --   - vêtements : une tenue achetée arrive AUSSI dans le sac sous forme d'objet Tenue (gs_details).
 local KINDS, STORES = AppearanceKinds, AppearanceStores
@@ -81,7 +81,7 @@ end
 local function snapshot(ped)
     return { hair = GetPedDrawableVariation(ped, 2), hairTex = GetPedTextureVariation(ped, 2),
         color = GetPedHairColor(ped), light = GetPedHairHighlightColor(ped),
-        beard = overlay(ped, 1), brows = overlay(ped, 2), makeup = overlay(ped, 4), lips = overlay(ped, 8) }
+        beard = overlay(ped, 1), brows = overlay(ped, 2), makeup = overlay(ped, 4), blush = overlay(ped, 5), lips = overlay(ped, 8) }
 end
 
 local function apply(ped, s)
@@ -91,7 +91,7 @@ local function apply(ped, s)
         if o.v < 0 then SetPedHeadOverlay(ped, id, 255, 0.0)
         else SetPedHeadOverlay(ped, id, o.v, 1.0) SetPedHeadOverlayColor(ped, id, colorType, o.c, o.c) end
     end
-    ov(1, s.beard, 1) ov(2, s.brows, 1) ov(4, s.makeup, 0) ov(8, s.lips, 2)
+    ov(1, s.beard, 1) ov(2, s.brows, 1) ov(4, s.makeup, 0) ov(5, s.blush, 2) ov(8, s.lips, 2)
 end
 
 local function range(from, to) local t = {} for i = from, to do t[#t + 1] = i < 0 and 'Aucun' or tostring(i + 1) end return t end
@@ -115,7 +115,9 @@ local function barber()
     end
     if not female then ovRow('beard', 'Barbe', 1, 'Couleur de la barbe') end
     ovRow('brows', 'Sourcils', 2, 'Couleur des sourcils')
-    if female then ovRow('makeup', 'Maquillage', 4, 'Teinte du maquillage') ovRow('lips', 'Rouge à lèvres', 8, 'Couleur des lèvres') end
+    if female then -- V12.49 : blush ajouté (fard à joues)
+        ovRow('makeup', 'Maquillage', 4, 'Teinte du maquillage') ovRow('blush', 'Blush', 5, 'Couleur du blush') ovRow('lips', 'Rouge à lèvres', 8, 'Couleur des lèvres')
+    end
 
     local options = {}
     for i, r in ipairs(rows) do options[i] = { label = r.label, values = r.values, defaultIndex = r.get(), close = false } end

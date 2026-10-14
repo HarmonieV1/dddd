@@ -1,4 +1,4 @@
-# État du projet RoadLine RP — récapitulatif complet (à jour au 14/10/2026, V12.48)
+# État du projet RoadLine RP — récapitulatif complet (à jour au 14/10/2026, V12.49)
 
 Ce document sert de **point de sauvegarde** : si une conversation avec Claude est perdue, compressée ou doit reprendre
 ailleurs, tout ce qu'il faut savoir est ici. Il est versionné avec le code (`git log` en garde aussi l'historique).
@@ -54,7 +54,7 @@ exclusifs (« ce que tu ne trouveras nulle part ailleurs »).
 - `feature/phase1-bridge`
 - `claude/gta-rp-architecture-stack-pbvdxz`
 
-**Dernier commit poussé** : « V12.48 : importeur (patoche_interact sous son vrai nom, convertis prioritaires, refus manuels) » (hash exact :
+**Dernier commit poussé** : « V12.49 : blush au coiffeur (personnages femme) » (hash exact :
 `git log -1 origin/feature/phase1-bridge`). Les deux branches pointent sur le même commit.
 
 **Deux sessions Claude en parallèle** (poste Windows et session web) : elles ne se voient pas. Toujours synchroniser
@@ -64,7 +64,7 @@ par un colis (zip de l'installation ou de la session) + ce fichier, et comparer 
 ## 2. Versions : interne vs publique (important, piège classique)
 
 Depuis la V11.3, il y a **deux numéros de version différents**, volontairement :
-- `gs_version` (convar, `server.cfg.example`) = **V12.48** → version technique interne, vue par le staff (F11, console,
+- `gs_version` (convar, `server.cfg.example`) = **V12.49** → version technique interne, vue par le staff (F11, console,
   METTRE-A-JOUR). Continue d'avancer à chaque mise à jour (V11.2, V11.3...).
 - `gs_public_version` (convar) = **« V4 · bêta »** → version vue par les **joueurs** (écran de chargement, statut
   Discord, Gazette). Le site affiche son propre journal (V1 à V4, V5 « classé confidentiel »).
@@ -271,6 +271,11 @@ Résumé très condensé (le détail complet est dans `docs/ROADMAP.md`, `docs/F
   ne remplace pas le curseur), profondeur CSS `animation-timeline: view()` (captures, mock, carte, chiffres), intro
   façon chargement de mission (Entrée / clic pour passer). Tout coupé par `prefers-reduced-motion`, souris seulement
   sur ordinateur. Une seule boucle rAF qui s'endort quand rien ne bouge. Vérifié dans le navigateur : 0 erreur.
+
+- **V12.49** (14/10/2026, session web) — coiffeur (gs_places/client/appearance.lua) : **Blush** + sa couleur pour les
+  personnages femme (overlay 5), à côté de sourcils, maquillage et rouge à lèvres ; sauvegardé avec l'apparence.
+  Point fait sur la personnalisation femme : corps féminins (Muscular Body for MP Female, Improved Lower Body) jamais reçus ;
+  `natt_s_heart_cardigan` et `long_hair_with_a_bun_by_jaagoda` à convertir (petits, à envoyer).
 
 - **V12.48** (14/10/2026, session web) — rapport IMPORTER-MODS du 14/10 08:22 (41 mods) :
   - **Bibliothèques réclamées par un script** : `patoche_interact_pack` contient des modèles → rangé « map » et installé en
