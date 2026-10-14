@@ -15,6 +15,12 @@ Config.BuyerIdentifier = 'fivem'
 --   ped     : skin débloqué, applicable depuis /boutique
 --   outfit  : tenue débloquée (composants de vêtements, addons originaux)
 Config.Packages = {
+    -- V12.41 · RoadCoins : `coins` = crédités tout de suite sur le compte Cfx.re à la livraison Tebex (rien à réclamer).
+    -- Monnaie de BOUTIQUE seulement : jamais convertible en $ du jeu, ni en objet de gameplay, ni échangeable entre joueurs.
+    roadcoins_500 = { label = '500 RoadCoins', coins = 500 },
+    roadcoins_1100 = { label = '1 100 RoadCoins', coins = 1100 },
+    roadcoins_2400 = { label = '2 400 RoadCoins', coins = 2400 },
+    roadcoins_5000 = { label = '5 000 RoadCoins', coins = 5000 },
     pack_neon_rider = {
         label = 'Pack Neon Rider',
         grants = {
@@ -50,3 +56,50 @@ Config.Outfits = {
 }
 
 Config.ClaimRateLimit = { max = 3, windowMs = 10000 }
+
+-- V12.41 · Vitrine de la boutique EN JEU (/boutique ou la touche réglable dans Paramètres → Raccourcis → FiveM).
+-- Affichage seulement : on paie sur Tebex (bouton « Acheter » = ouvre ShopUrl dans le navigateur), puis on récupère ici
+-- (onglet « Mes achats »). `package` = clé de Config.Packages livrée par Tebex. price = prix Tebex affiché (texte, nil = « Prix
+-- à venir ») ; coins = prix en RoadCoins (article payable directement en jeu, si le pack a des `grants`). Montants à valider.
+-- Catégories : vip, vehicules, perso, armes (skins d'armes UNIQUEMENT : teintes, gravures ; jamais une arme ni un bonus).
+Config.ShopUrl = '' -- adresse de la boutique Tebex (ex. 'https://roadline.tebex.io') ; vide = boutons « Bientôt »
+Config.Categories = {
+    { id = 'roadcoins', label = 'RoadCoins', icon = '🪙' },
+    { id = 'vip', label = 'VIP', icon = '👑' },
+    { id = 'vehicules', label = 'Véhicules', icon = '🏎️' },
+    { id = 'perso', label = 'Personnalisation', icon = '🧥' },
+    { id = 'armes', label = 'Skins d\'armes', icon = '🎨' },
+}
+Config.Catalog = {
+    -- RoadCoins (achetés sur Tebex). `bonus` = texte du badge. Les autres articles peuvent avoir `coins = N` : payables en RoadCoins.
+    { package = 'roadcoins_500', cat = 'roadcoins', icon = '🪙', label = '500 RoadCoins', price = nil, pack = 500,
+      points = { 'Crédités tout de suite sur ton compte', 'Partagés entre tes personnages', 'Uniquement pour la boutique' } },
+    { package = 'roadcoins_1100', cat = 'roadcoins', icon = '💰', label = '1 100 RoadCoins', hot = '+10 %', price = nil, pack = 1100,
+      points = { 'Crédités tout de suite sur ton compte', 'Partagés entre tes personnages', 'Uniquement pour la boutique' } },
+    { package = 'roadcoins_2400', cat = 'roadcoins', icon = '💎', label = '2 400 RoadCoins', hot = '+20 %', price = nil, pack = 2400,
+      points = { 'Crédités tout de suite sur ton compte', 'Partagés entre tes personnages', 'Uniquement pour la boutique' } },
+    { package = 'roadcoins_5000', cat = 'roadcoins', icon = '👑', label = '5 000 RoadCoins', hot = '+25 %', price = nil, pack = 5000,
+      points = { 'Crédités tout de suite sur ton compte', 'Partagés entre tes personnages', 'Uniquement pour la boutique' } },
+    { package = 'vip_argent', cat = 'vip', icon = '👑', label = 'VIP Argent', price = nil, unit = '/ mois',
+      points = { '2e personnage', 'Badge VIP sur Discord', 'File d\'attente prioritaire' } },
+    { package = 'vip_or', cat = 'vip', icon = '💠', label = 'VIP Or', hot = 'Populaire', price = nil, unit = '/ mois',
+      points = { 'Tout le VIP Argent', '3 tenues enregistrées en plus', 'Plaque personnalisée (1 / mois)' } },
+    { package = 'vip_neon', cat = 'vip', icon = '🌌', label = 'VIP Néon', price = nil, unit = '/ mois',
+      points = { 'Tout le VIP Or', 'Couleur de nom sur Discord', 'Accès anticipé aux nouveautés' } },
+    { package = 'pack_neon_rider', cat = 'vehicules', icon = '🛵', label = 'Pack Neon Rider', hot = 'Pack', price = nil, coins = 1500,
+      points = { 'Scooter néon livré au garage', 'Veste Néon', 'Performances de série' } },
+    { package = 'vehicule_exclusif', cat = 'vehicules', icon = '🏎️', label = 'Véhicule exclusif', hot = 'Unique', price = nil,
+      points = { 'Modèle hors concession', 'Mêmes performances que sa catégorie', 'Livré dans ton garage' } },
+    { package = 'plaque_perso', cat = 'vehicules', icon = '🔢', label = 'Plaque personnalisée', price = nil,
+      points = { '8 caractères au choix', 'Validée par le staff', 'Sur le véhicule de ton choix' } },
+    { package = 'skin_sunset', cat = 'perso', icon = '🌅', label = 'Skin Sunset', price = nil, coins = 600,
+      points = { 'Apparence alternative', 'Tu reprends ton perso quand tu veux', 'Purement visuel' } },
+    { package = 'season_pass', cat = 'perso', icon = '🎟️', label = 'Pass de saison', price = nil, coins = 900,
+      points = { 'Piste premium de la saison', 'Récompenses 100 % cosmétiques', 'Tenues exclusives' } },
+    { package = 'retouche_perso', cat = 'perso', icon = '✂️', label = 'Retouche du personnage', price = nil,
+      points = { 'Visage, coiffure, héritage', 'Sans recréer ton perso', 'Une fois, quand tu veux' } },
+    { package = 'teintes_armes', cat = 'armes', icon = '🎨', label = 'Teintes d\'armes', price = nil,
+      points = { 'Finitions or, chrome, néon', 'Sur une arme que tu possèdes déjà', 'Aucun bonus de dégâts' } },
+    { package = 'gravure_arme', cat = 'armes', icon = '🗡️', label = 'Gravure personnalisée', price = nil,
+      points = { 'Ton nom ou ton gang sur l\'arme', 'Visible à l\'inspection', 'Aucun bonus de dégâts' } },
+}

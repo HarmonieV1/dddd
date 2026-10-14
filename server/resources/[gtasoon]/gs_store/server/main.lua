@@ -54,9 +54,18 @@ RegisterCommand('gsstore_deliver', function(src, args)
         return print(('[gs_store] transaction %s déjà enregistrée : ignorée'):format(transaction))
     end
     log('Achat reçu : %s → %s (transaction %s)', package, buyer, transaction)
+    local coins = Config.Packages[package] and tonumber(Config.Packages[package].coins)
+    if coins and coins > 0 then -- V12.41 : pack de RoadCoins = crédité tout de suite sur le compte (rien à réclamer)
+        Store.claim(transaction, buyer, 'ROADCOINS')
+        Store.addCoins(buyer, coins, 'Tebex ' .. transaction)
+        log('RoadCoins : +%d pour %s (transaction %s)', coins, buyer, transaction)
+    end
     for _, id in ipairs(GetPlayers()) do
         local s = tonumber(id)
-        if buyerOf(s) == buyer then Bridge:Notify(s, 'Achat boutique reçu ! Tape /boutique pour le récupérer.', 'success') end
+        if buyerOf(s) == buyer then
+            Bridge:Notify(s, coins and ('+%d RoadCoins sur ton compte ! /boutique pour les dépenser.'):format(coins)
+                or 'Achat boutique reçu ! Tape /boutique pour le récupérer.', 'success')
+        end
     end
 end, true)
 
@@ -65,9 +74,14 @@ RegisterCommand('gsstore_revoke', function(src, args)
     if not consoleOnly(src) then return end
     local transaction = cleanRef(args[1])
     if not transaction then return print('[gs_store] usage : gsstore_revoke <transaction>') end
-    local status, cid = Store.revoke(transaction)
+    local status, cid, package, buyer = Store.revoke(transaction)
     if not status then return print(('[gs_store] transaction %s inconnue'):format(transaction)) end
-    if status == 'claimed' then
+    local coins = package and Config.Packages[package] and tonumber(Config.Packages[package].coins)
+    if coins and status == 'claimed' and buyer then -- V12.41 : RoadCoins repris (ce qui reste) ; le manque est signalé au staff
+        local took = Store.takeBackCoins(buyer, coins, 'Remboursement ' .. transaction)
+        log('Révocation %s : %d / %d RoadCoins repris à %s%s', transaction, took, coins, buyer,
+            took < coins and ' (déjà dépensés : achats faits avec à revoir À LA MAIN)' or '')
+    elseif status == 'claimed' then
         log('Révocation %s : déjà réclamée par %s. Skins/tenues retirés ; véhicule éventuel à retirer À LA MAIN.', transaction, cid)
     else
         log('Révocation %s (statut %s)', transaction, status)
@@ -104,11 +118,39 @@ lib.callback.register('gs_store:data', function(src)
     end
     return {
         enabled = Config.Enabled,
+        shopUrl = Config.ShopUrl ~= '' and Config.ShopUrl or nil, -- V12.41 : vitrine en jeu
+        coins = buyer and Store.coins(buyer) or 0,
+        categories = Config.Categories,
+        catalog = Config.Catalog,
         pending = pending,
         peds = catalog(Config.Peds, u.ped),
         outfits = catalog(Config.Outfits, u.outfit),
     }
 end)
+
+-- Donne le contenu d'un pack au personnage (réclamation d'un achat Tebex ou achat en RoadCoins). ref = trace (transaction).
+function Shop.grant(src, cid, package, ref)
+    local given, failed = {}, {}
+    for _, g in ipairs(package.grants or {}) do
+        if g.type == 'vehicle' then
+            if Bridge:GiveVehicle(src, g.model) then given[#given + 1] = g.label or g.model else failed[#failed + 1] = g.model end
+        elseif g.type == 'season_pass' and GetResourceState('gs_seasons') == 'started' and exports.gs_seasons:GrantPremium(cid) then
+            given[#given + 1] = 'Pass de saison (piste premium)'
+        elseif (g.type == 'ped' and Config.Peds[g.id]) or (g.type == 'outfit' and Config.Outfits[g.id]) then
+            Store.unlock(cid, g.type, g.id, ref)
+            given[#given + 1] = (g.type == 'ped' and Config.Peds or Config.Outfits)[g.id].label
+        else
+            failed[#failed + 1] = tostring(g.id or g.model or g.type)
+        end
+    end
+    Shop.loadUnlocks(src)
+    if #failed > 0 then
+        log('LIVRAISON PARTIELLE %s pour %s : %s à livrer à la main', ref, cid, table.concat(failed, ', '))
+        if #given == 0 then return true, 'Le staff va te livrer ton achat (ticket Discord si besoin, réf. ' .. ref .. ').', 0 end
+        return true, ('Reçu : %s. Le reste sera livré par le staff.'):format(table.concat(given, ', ')), #given
+    end
+    return true, 'Reçu : ' .. table.concat(given, ', '), #given
+end
 
 lib.callback.register('gs_store:claim', function(src, transaction)
     if not guard(src, 'claim') then return false, 'Doucement.' end
@@ -126,26 +168,32 @@ lib.callback.register('gs_store:claim', function(src, transaction)
     if not package then return false, 'Pack inconnu : contacte le staff (transaction ' .. transaction .. ').' end
     if not Store.claim(transaction, buyer, cid) then return false, 'Achat déjà récupéré.' end
 
-    local given, failed = {}, {}
-    for _, g in ipairs(package.grants) do
-        if g.type == 'vehicle' then
-            if Bridge:GiveVehicle(src, g.model) then given[#given + 1] = g.label or g.model else failed[#failed + 1] = g.model end
-        elseif g.type == 'season_pass' and GetResourceState('gs_seasons') == 'started' and exports.gs_seasons:GrantPremium(cid) then
-            given[#given + 1] = 'Pass de saison (piste premium)'
-        elseif (g.type == 'ped' and Config.Peds[g.id]) or (g.type == 'outfit' and Config.Outfits[g.id]) then
-            Store.unlock(cid, g.type, g.id, transaction)
-            given[#given + 1] = (g.type == 'ped' and Config.Peds or Config.Outfits)[g.id].label
-        else
-            failed[#failed + 1] = tostring(g.id or g.model)
-        end
-    end
-    Shop.loadUnlocks(src)
+    local ok, msg = Shop.grant(src, cid, package, transaction)
     log('Réclamé : %s (%s) par %s / %s', package.label, transaction, buyer, cid)
-    if #failed > 0 then
-        log('LIVRAISON PARTIELLE %s pour %s : %s à livrer à la main', transaction, cid, table.concat(failed, ', '))
-        return true, ('Reçu : %s. Le reste sera livré par le staff.'):format(table.concat(given, ', '))
+    return ok, msg
+end)
+
+-- V12.41 · Achat en RoadCoins : article du catalogue qui a un prix `coins` ET un pack défini (grants). Dépense atomique,
+-- puis livraison sur CE personnage ; si rien n'a pu être livré, les RoadCoins sont rendus.
+lib.callback.register('gs_store:buyCoins', function(src, packageKey)
+    if not guard(src, 'buyCoins') then return false, 'Doucement.' end
+    if not Config.Enabled then return false, 'Boutique bientôt disponible.' end
+    local item
+    for _, it in ipairs(Config.Catalog or {}) do if it.package == packageKey then item = it break end end
+    local package = item and Config.Packages[item.package]
+    local price = item and tonumber(item.coins)
+    if not item or not price or price <= 0 or not package or not package.grants then return false, 'Cet article ne se paie pas en RoadCoins.' end
+    local buyer, cid = buyerOf(src), Bridge:GetIdentifier(src)
+    if not buyer or not cid then return false, 'Compte Cfx.re introuvable : relance FiveM connecté.' end
+    local ref = ('RC-%s-%d'):format(item.package, os.time())
+    if not Store.spendCoins(buyer, price, ref .. ' ' .. cid) then return false, ('Il te faut %d RoadCoins.'):format(price) end
+    local ok, msg, n = Shop.grant(src, cid, package, ref)
+    if n == 0 then
+        Store.addCoins(buyer, price, 'Rendu ' .. ref)
+        return false, ('Livraison impossible pour le moment : tes %d RoadCoins sont rendus.'):format(price)
     end
-    return true, 'Reçu : ' .. table.concat(given, ', ')
+    log('RoadCoins : %s acheté %d RC par %s / %s', item.label, price, buyer, cid)
+    return ok, msg
 end)
 
 lib.callback.register('gs_store:applyPed', function(src, id)

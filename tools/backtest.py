@@ -7,9 +7,9 @@ from pdf import H1, H2, P, SMALL, VERSION, footer, A4, mm, colors, SimpleDocTemp
 # (test, qui, priorité)
 SESSIONS = [
     ('0 · Avant de commencer (5 min)', [
-        ('METTRE-A-JOUR.bat : version V12.40 affichée, « Base de données sauvegardée », « Sauvegardes programmées » ; METTRE-A-JOUR-OVH puis GERER-OVH → 1 : « Version RoadLine : V12.40 »', 'Staff', 3),
+        ('METTRE-A-JOUR.bat : version V12.41 affichée, « Base de données sauvegardée », « Sauvegardes programmées » ; METTRE-A-JOUR-OVH puis GERER-OVH → 1 : « Version RoadLine : V12.41 »', 'Staff', 3),
         ('Fenêtre du serveur : aucune ligne ROUGE au démarrage (sauf un conflit de maps déjà connu) ; F8 en jeu : aucune erreur rouge ; GERER-OVH → 3 : aucune erreur de script', 'Seul', 3),
-        ('VIDER-CACHE-FIVEM.bat si tu vois un ancien menu (F11 doit afficher « RoadLine V12.40 ») ; pendant le backtest : set gs_honeypot "log" dans secrets.cfg (piège = simple signalement)', 'Staff', 2),
+        ('VIDER-CACHE-FIVEM.bat si tu vois un ancien menu (F11 doit afficher « RoadLine V12.41 ») ; pendant le backtest : set gs_honeypot "log" dans secrets.cfg (piège = simple signalement)', 'Staff', 2),
     ]),
     ('1 · Arrivée et personnage (15 min) — corrigé après tes retours', [
         ('Nouveau joueur : un seul personnage ; fondateur, super-admins et VIP (F11 → Joueurs → VIP) : deux ; plus de choix du lieu ; déco / reco = même endroit', '2', 3),
@@ -65,6 +65,13 @@ SESSIONS = [
         ('Hôpital Pillbox, Fleeca, Pop\'s Pills, Bahama Mamas : nos points (soins, braquage, pharmacie, bar) accessibles sans les maps', 'Staff', 3),
         ('NETTOYER-MARQUES.bat : liste les mods de marque (dont mp_male_the_goat), supprime après « O », le reste intact', 'Staff', 2),
         ('Pack acheté (plus tard) : IMPORTER-MODS puis F11 → Mappings installés : chaque map a un quartier, aucune ligne rouge (conflit) ni jaune (poids) en console', 'Staff', 2),
+    ]),
+    ('6e · V12.41 — achat concession, tir à la tête, caméras, boutique (20 min)', [
+        ('Concession : Alt sur un véhicule exposé → Acheter → le véhicule apparaît au départ des essais, toi au volant, clé dans le sac (plaque = celle du garage) ; il est bien dans tes garages ensuite', '2', 3),
+        ('Staff : F11 → Concessions → un emplacement → Changer le modèle (de loin) et Replacer ICI ; Alt sur le véhicule exposé : « Changer le modèle » visible pour le staff', 'Staff', 2),
+        ('Tir à la tête (pistolet) sur un joueur : à terre en un tir ; avec un casque de moto : non ; coup de poing / taser à la tête : non', '2', 3),
+        ('Police en service au terminal de vidéosurveillance : une caméra → Voir en direct → image filtrée, souris pour tourner, molette pour zoomer, Retour pour quitter ; caméra peinte : refusée', '2', 2),
+        ('/boutique : interface RoadLine (catégories, RoadCoins, Mes achats) ; Échap ferme ; console : gsstore_deliver TEST-RC roadcoins_500 <ton id fivem> → +500 RoadCoins affichés', 'Staff', 2),
     ]),
     ('6d · V12.40 — concessions, Benny\'s, courses, gangs (40 min)', [
         ('F11 → Monde et lieux → Concessions : sur la map cardealer, « Exposer un véhicule ICI » ×3 + « Départ des essais ICI » sur la route ; s\'écarter → les véhicules apparaissent, figés, plaque EXPO', 'Staff', 3),

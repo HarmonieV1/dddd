@@ -20,6 +20,19 @@ est livrée désactivée : les achats sont enregistrés, rien n'est réclamable.
 
 Chaque contenu vendu : fichier source et licence gardés (preuve), relu par [DEV] (audit sécurité, docs/SECURITY.md).
 
+## V12.41 · Vitrine en jeu et RoadCoins
+- **Vitrine** : `/boutique` (ou une touche au choix : Paramètres → Raccourcis clavier → FiveM → « Boutique RoadLine ») ouvre
+  une interface aux couleurs du site : catégories RoadCoins, VIP, Véhicules, Personnalisation, Skins d'armes, et « Mes achats »
+  (récupérer un pack, appliquer un skin / une tenue). « Acheter » ouvre la boutique Tebex (`Config.ShopUrl`) dans le
+  navigateur. Articles, textes, icônes et prix : `Config.Catalog` (prix à définir ensemble ; vide = « Prix à venir »).
+- **RoadCoins** (monnaie de la BOUTIQUE, pas du jeu) : packs Tebex `roadcoins_500 / 1100 / 2400 / 5000` (`coins = N`),
+  crédités **tout de suite** sur le compte Cfx.re (table `gs_store_wallet`, journal `gs_store_coin_log`), partagés entre les
+  personnages du compte. Un article du catalogue avec `coins = N` (et un pack avec `grants`) se paie en jeu : débit atomique
+  (jamais de solde négatif), livraison sur le personnage en cours, RoadCoins rendus si rien n'a pu être livré.
+  Remboursement Tebex (`gsstore_revoke`) : les RoadCoins restants sont repris, le manque (déjà dépensé) est signalé au staff.
+- **Jamais** : conversion en $ du jeu, échange entre joueurs, achat d'objet de gameplay, tirage au sort (loot box).
+- Skins d'armes = teintes / gravures uniquement (à brancher : `grants` à définir) ; aucune arme vendue.
+
 ## Fonctionnement
 1. Le joueur achète sur Tebex (connecté avec son compte **Cfx.re**).
 2. Tebex exécute une commande **console** sur le serveur : `gsstore_deliver <transaction> <package> <id Cfx.re>`.

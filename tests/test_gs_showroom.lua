@@ -1,4 +1,4 @@
--- Tests gs_showroom (V12.40) : véhicules d'exposition posés par le staff, modèle changé par le vendeur, essai, achat.
+-- Tests gs_showroom (V12.40, V12.41 : achat sorti avec clés, staff) : véhicules d'exposition posés par le staff, modèle changé par le vendeur, essai, achat.
 dofile('tests/mock.lua')
 local R = 'server/resources/[gtasoon]/'
 local rows, starts, nextId = {}, {}, 0
@@ -50,6 +50,17 @@ ok = cb('gs_showroom:setModel', 3, 1, 'police'); step()
 check('vendeur : modèle exclu refusé', not ok)
 ok = cb('gs_showroom:setModel', 3, 1, 'sultan'); step()
 check('vendeur en service : modèle changé', ok)
+tp(3, vec3(900.0, 900.0, 30.0))
+ok = cb('gs_showroom:setModel', 3, 1, 'sultan'); step()
+check('vendeur loin : refusé', not ok)
+tp(1, vec3(900.0, 900.0, 30.0))
+ok = cb('gs_showroom:setModel', 1, 1, 'sultan'); step()
+check('V12.41 : staff change le modèle de loin (F11)', ok)
+ok = cb('gs_showroom:staff', 1, 'move', { id = 1 }); step()
+check('V12.41 : emplacement replacé à la position du staff', ok and Showroom.slots[1].x == 900.0)
+tp(1, spot)
+cb('gs_showroom:staff', 1, 'move', { id = 1 }); step()
+check('client : pas staff', cb('gs_showroom:me', 2) == false and cb('gs_showroom:me', 1) == true)
 
 ok, msg = cb('gs_showroom:test', 2, 1); step()
 check('essai refusé sans départ posé', not ok and msg:find('départ'))
@@ -72,7 +83,8 @@ ok, msg = cb('gs_showroom:buy', 2, 1); step()
 check('achat refusé sans argent', not ok and W.players[2].money.bank == 1000)
 W.players[2].money.bank = 50000
 ok, msg = cb('gs_showroom:buy', 2, 1); step()
-check('achat : payé, livré au garage', ok and W.players[2].money.bank == 10000 and (W.players[2].vehicles or 0) == 1)
+check('achat : payé, véhicule à son nom', ok and W.players[2].money.bank == 10000 and (W.players[2].vehicles or 0) == 1)
+check('V12.41 : sorti au départ des essais, plaque annoncée', W.players[2].lastOut and W.players[2].lastOut.x == spot.x and msg:find('GS000001') and msg:find('clés'))
 check('commission à la caisse de la concession', society.cardealer == 4000)
 ok = cb('gs_showroom:staff', 1, 'remove', { id = 1 }); step()
 check('emplacement retiré', ok and Showroom.slots[1] == nil and #GlobalState.gsShowroom.slots == 0)

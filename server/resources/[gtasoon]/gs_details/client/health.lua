@@ -12,6 +12,27 @@ CreateThread(function()
         Wait(5000)
     end
 end)
+-- V12.41 · Balle dans la tête = à terre en un tir (cohérence RP, demande du fondateur). Vu par la VICTIME (le seul jeu
+-- qui sait vraiment quel os a été touché) : arme à balles uniquement (pas de poing, couteau, taser, balle en caoutchouc,
+-- extincteur), tireur = un autre joueur ou un PNJ, casque lourd porté = protégé. Le reste (corps, jambes) ne change pas :
+-- dégâts adoucis ci-dessus. La mise à terre passe par qbx_medical (dernier souffle, réanimation EMS) comme toute mort.
+local HEAD = 31086 -- SKEL_Head
+local BULLET = 3   -- type de dégâts « balle »
+local NOT_LETHAL = { [GetHashKey('WEAPON_STUNGUN')] = true, [GetHashKey('WEAPON_STUNGUN_MP')] = true }
+AddEventHandler('gameEventTriggered', function(name, args)
+    if name ~= 'CEventNetworkEntityDamage' then return end
+    local ped = cache.ped
+    local victim, attacker, weapon = args[1], args[2], args[7]
+    if victim ~= ped or attacker == ped or not weapon or NOT_LETHAL[weapon] then return end
+    if GetWeaponDamageType(weapon) ~= BULLET then return end
+    if IsEntityDead(ped) or GetPlayerInvincible(PlayerId()) then return end -- staff invincible : jamais
+    local hit, bone = GetPedLastDamageBone(ped)
+    if not hit or bone ~= HEAD then return end
+    if GetPedPropIndex(ped, 0) >= 0 and IsPedWearingHelmet(ped) then return end -- casque (moto, intervention) : protégé
+    ClearPedLastDamageBone(ped)
+    SetEntityHealth(ped, 0)
+end)
+
 -- Les blessures par zone du corps, saignements et fractures sont gérés par qbx_medical.
 exports('painkillers', function(data)
     if not lib.progressBar({ duration = 2500, label = 'Tu prends un antidouleur…', canCancel = true,

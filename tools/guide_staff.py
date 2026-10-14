@@ -101,7 +101,7 @@ def build():
             [38 * G.mm, 120 * G.mm, 22 * G.mm], font=8.2)]
     s += [Paragraph('Un point mal placé (transformateur, ring, vendeur, PNJ…) : F11 → Monde et lieux → <b>Déplacer / retirer un point</b> (filtre par ressource ; '
                     'super-admin : retirer du jeu, réversible). Points de métier : menu dédié. Tout est gardé aux mises à jour.', SMALL)]
-    s += [Paragraph('6. Nouveautés V11.4 → V12.40 pour le staff', H2)]
+    s += [Paragraph('6. Nouveautés V11.4 → V12.41 pour le staff', H2)]
     s += [t([['Quoi', 'Comment'],
              ['VIP (2 personnages)', 'F11 → Joueurs → le joueur → VIP (fondateur). Tout le monde a 1 personnage ; staff super-admin+ et VIP en ont 2.'],
              ['Mapping', 'F11 → Monde et lieux → Mapping : catalogue par catégorie (mobilier, chantier, éclairage, végétation, stands, plage, police), placement à la souris, retrait d\'objets de la map.'],
@@ -133,6 +133,8 @@ def build():
              ['Courses sur mesure', 'V12.40 : F11 → Courses de rue sur mesure : points posés à ta position (30 m mini), 3 à 30 points, éphémère (1 à 168 h) ou permanente.'],
              ['Portes verrouillées', 'V12.40 : F11 → Portes verrouillées : ouvre /doorlock (ox_doorlock). Groupes : police + sheriff (cellules, commissariat), ambulance, mechanic, cardealer, le gang pour son QG.'],
              ['Territoires', 'V12.40 : visibles des seuls membres de gang ; niveaux 0-3 selon l\'influence, 3 territoires max par gang ; /territoire id -3..3 (admin) ajoute un bonus (perdu au redémarrage).'],
+             ['Boutique et RoadCoins', 'V12.41 : /boutique = vitrine en jeu. Test console : gsstore_deliver TEST-1 roadcoins_500 <id fivem du joueur> (crédit immédiat). Remboursement : gsstore_revoke TEST-1. Jamais de commande boutique en jeu (refusée même admin).'],
+             ['Caméras en direct', 'V12.41 : terminal de vidéosurveillance (police en service) → une caméra → Voir en direct. Peinte à la bombe ou black-out : image noire.'],
              ['Location', '13 comptoirs (Sandy devant le 24/7, plus dans le poste du shérif ; Grapeseed, Harmony, Vinewood, Vespucci, aéroport, Pillbox ajoutés, « à caler » via F11 → Déplacer un point).']],
             [38 * G.mm, 142 * G.mm], font=8.2)]
 

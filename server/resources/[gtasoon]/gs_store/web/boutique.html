@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Boutique RoadLine</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;700;800&display=swap" rel="stylesheet">
+<style>
+/* V12.41 · Boutique en jeu : mêmes couleurs, polices et effets que le site (docs/site/index.html) */
+:root{--black:#07040d;--bg:#0c0716;--bg2:#120a22;--card:#180e2c;--line:#2c1d4d;--text:#f7f3ff;--muted:#b7a9d6;
+  --pink:#e43bd1;--violet:#a24bff;--red:#ff2340;--cyan:#4fd8ff;
+  --neon:linear-gradient(120deg,#ff2340 0%,#e43bd1 28%,#a24bff 60%,#4fd8ff 100%);--glow:0 0 24px rgba(176,72,255,.55);--ease:cubic-bezier(.2,.8,.2,1)}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:100%;height:100%;overflow:hidden;background:transparent;color:var(--text);font:15px/1.5 Inter,'Segoe UI',system-ui,sans-serif;user-select:none}
+#app{position:fixed;inset:0;display:none;place-items:center;background:radial-gradient(ellipse at 50% 40%,rgba(12,7,22,.72),rgba(4,2,8,.92))}
+#app.on{display:grid;animation:fade .35s var(--ease)}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+.shell{width:min(1280px,92vw);height:min(780px,88vh);display:grid;grid-template-columns:250px 1fr;background:linear-gradient(180deg,var(--bg),var(--black));
+  border:1px solid var(--line);border-radius:22px;overflow:hidden;box-shadow:0 30px 120px rgba(0,0,0,.6),0 0 0 1px rgba(162,75,255,.12);position:relative;animation:pop .45s var(--ease)}
+@keyframes pop{from{transform:translateY(24px) scale(.98);opacity:0}to{transform:none;opacity:1}}
+.shell::before{content:'';position:absolute;inset:0 0 auto 0;height:3px;background:var(--neon);box-shadow:var(--glow);z-index:2}
+.aurora{position:absolute;inset:-30%;pointer-events:none;opacity:.5;filter:blur(60px);
+  background:radial-gradient(30% 30% at 20% 20%,rgba(176,72,255,.35),transparent),radial-gradient(30% 30% at 85% 15%,rgba(79,216,255,.22),transparent),radial-gradient(35% 35% at 70% 90%,rgba(228,59,209,.25),transparent);animation:drift 18s ease-in-out infinite alternate}
+@keyframes drift{to{transform:translate3d(4%,-3%,0) rotate(6deg)}}
+aside{position:relative;z-index:1;border-right:1px solid var(--line);background:rgba(7,4,13,.55);padding:26px 18px;display:flex;flex-direction:column;gap:6px}
+.logo{font-family:Anton,Impact,sans-serif;font-size:1.7rem;letter-spacing:.03em;line-height:1;margin-bottom:4px}
+.logo b{background:var(--neon);-webkit-background-clip:text;background-clip:text;color:transparent;font-weight:400}
+.kicker{display:flex;align-items:center;gap:8px;font-weight:800;font-size:.7rem;letter-spacing:.22em;text-transform:uppercase;color:#c79bff;margin:0 0 18px}
+.kicker::before{content:'';width:22px;height:2px;background:var(--neon);box-shadow:var(--glow)}
+.nav-t{font-size:.68rem;font-weight:800;letter-spacing:.2em;text-transform:uppercase;color:#7d6aa8;margin:14px 6px 6px}
+.tab{display:flex;align-items:center;gap:10px;width:100%;padding:11px 12px;border-radius:12px;border:1px solid transparent;background:none;color:var(--muted);font:600 .95rem Inter,system-ui,sans-serif;cursor:pointer;text-align:left;transition:.25s var(--ease)}
+.tab:hover{color:var(--text);background:rgba(162,75,255,.08);border-color:var(--line)}
+.tab.on{color:#fff;background:linear-gradient(120deg,rgba(255,35,64,.85),rgba(228,59,209,.85) 55%,rgba(162,75,255,.85));box-shadow:var(--glow)}
+.tab i{font-style:normal;width:22px;text-align:center}
+.tab .n{margin-left:auto;font-size:.7rem;font-weight:800;padding:2px 7px;border-radius:99px;background:var(--cyan);color:#07040d}
+.side-foot{margin-top:auto;font-size:.78rem;color:var(--muted);border:1px dashed var(--line);border-radius:14px;padding:12px}
+.side-foot b{color:var(--text)}
+main{position:relative;z-index:1;display:flex;flex-direction:column;min-height:0}
+header{display:flex;align-items:flex-end;justify-content:space-between;gap:18px;padding:26px 30px 16px}
+h1{font-family:Anton,Impact,sans-serif;font-weight:400;font-size:2.7rem;line-height:1;text-transform:uppercase;letter-spacing:.02em}
+h1 span{background:var(--neon);-webkit-background-clip:text;background-clip:text;color:transparent}
+.sub{color:var(--muted);font-size:.9rem;margin-top:6px;max-width:560px}
+.x{width:42px;height:42px;border-radius:12px;border:1px solid var(--line);background:rgba(162,75,255,.06);color:var(--muted);font-size:1.2rem;cursor:pointer;transition:.2s}
+.x:hover{color:#fff;border-color:var(--pink);box-shadow:var(--glow)}
+.banner{margin:0 30px 14px;padding:10px 14px;border-radius:12px;font-size:.85rem;background:rgba(79,216,255,.08);border:1px solid rgba(79,216,255,.35);color:#cfefff;display:none}
+.banner.on{display:block}
+.scroll{flex:1;min-height:0;overflow:auto;padding:4px 30px 30px}
+.scroll::-webkit-scrollbar{width:8px}.scroll::-webkit-scrollbar-thumb{background:var(--line);border-radius:8px}
+.grid{display:grid;gap:16px;grid-template-columns:repeat(auto-fill,minmax(230px,1fr))}
+.card{position:relative;display:flex;flex-direction:column;background:var(--card);border:1px solid var(--line);border-radius:18px;overflow:hidden;
+  transition:transform .35s var(--ease),border-color .3s,box-shadow .3s;animation:up .5s var(--ease) both;animation-delay:calc(var(--d,0)*45ms)}
+@keyframes up{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
+.card:hover{transform:translateY(-4px);border-color:rgba(176,72,255,.6);box-shadow:0 12px 40px rgba(0,0,0,.35),0 0 26px rgba(176,72,255,.18)}
+.vis{position:relative;height:118px;display:grid;place-items:center;font-size:2.9rem;border-bottom:1px solid var(--line);
+  background:radial-gradient(120% 140% at 20% 0%,rgba(228,59,209,.35),transparent 60%),radial-gradient(120% 140% at 100% 100%,rgba(79,216,255,.25),transparent 55%),var(--bg2)}
+.card:hover .vis span{transform:scale(1.15) rotate(-6deg)}.vis span{transition:transform .4s var(--ease)}
+.tag{position:absolute;top:10px;left:10px;font-size:.62rem;font-weight:800;letter-spacing:.16em;text-transform:uppercase;padding:4px 9px;border-radius:99px;background:rgba(7,4,13,.7);border:1px solid rgba(255,255,255,.14);color:#e9dcff}
+.tag.hot{left:auto;right:10px;border-color:transparent;background:var(--neon);color:#fff}
+.body{padding:16px 18px 18px;display:flex;flex-direction:column;gap:8px;flex:1}
+h3{font-family:Anton,Impact,sans-serif;font-weight:400;font-size:1.25rem;text-transform:uppercase;letter-spacing:.02em}
+ul{padding-left:18px;color:var(--muted);font-size:.86rem}
+.foot{margin-top:auto;display:flex;align-items:center;justify-content:space-between;gap:10px;padding-top:10px}
+.price{font-family:Anton,Impact,sans-serif;font-size:1.45rem}
+.price small{font-family:Inter,system-ui,sans-serif;font-size:.7rem;color:var(--muted);letter-spacing:.12em;text-transform:uppercase}
+.btn{display:inline-flex;align-items:center;gap:6px;white-space:nowrap;padding:9px 15px;border-radius:11px;font:800 .82rem Inter,system-ui,sans-serif;letter-spacing:.02em;cursor:pointer;border:2px solid transparent;transition:.25s var(--ease)}
+.btn-main{background:linear-gradient(120deg,var(--red),var(--pink) 55%,var(--violet));background-size:160% 100%;color:#fff;box-shadow:var(--glow)}
+.btn-main:hover{background-position:100% 0;box-shadow:0 0 34px rgba(176,72,255,.8)}
+.btn-ghost{border-color:var(--cyan);color:var(--cyan);background:rgba(79,216,255,.05)}
+.btn-ghost:hover{background:rgba(79,216,255,.14);color:#fff}
+.btn[disabled]{opacity:.5;cursor:not-allowed;box-shadow:none}
+.row{display:flex;align-items:center;gap:14px;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px 16px;margin-bottom:10px;animation:up .45s var(--ease) both}
+.row .ic{font-size:1.6rem;width:44px;height:44px;display:grid;place-items:center;border-radius:12px;background:var(--bg2);border:1px solid var(--line)}
+.row b{display:block}.row small{color:var(--muted)}
+.row .btn{margin-left:auto}
+.sec{font-family:Anton,Impact,sans-serif;font-weight:400;text-transform:uppercase;font-size:1.15rem;letter-spacing:.04em;margin:18px 0 10px;color:#e9dcff}
+.empty{color:var(--muted);font-size:.9rem;padding:14px;border:1px dashed var(--line);border-radius:14px}
+.wallet{display:flex;align-items:center;gap:10px;margin:2px 0 6px;padding:12px 14px;border-radius:14px;background:linear-gradient(120deg,rgba(255,196,0,.14),rgba(162,75,255,.14));border:1px solid rgba(255,196,0,.35)}
+.wallet .coin{font-size:1.5rem;filter:drop-shadow(0 0 8px rgba(255,196,0,.6))}
+.wallet b{font-family:Anton,Impact,sans-serif;font-weight:400;font-size:1.45rem;letter-spacing:.02em;display:block;line-height:1}
+.wallet small{color:var(--muted);font-size:.7rem;letter-spacing:.14em;text-transform:uppercase}
+.rc{display:inline-flex;align-items:baseline;gap:5px;white-space:nowrap;font-family:Anton,Impact,sans-serif;font-size:1.2rem;color:#ffd75e}
+.rc small{font-family:Inter,system-ui,sans-serif;font-size:.68rem;color:var(--muted);letter-spacing:.12em;text-transform:uppercase}
+.prices{display:flex;flex-direction:column;line-height:1.15}
+.btns{display:flex;flex-direction:column;gap:6px;align-items:flex-end}
+.btn-gold{background:linear-gradient(120deg,#ffb300,#ffd75e);color:#1a1000;box-shadow:0 0 18px rgba(255,196,0,.45)}
+.btn-gold:hover{box-shadow:0 0 30px rgba(255,196,0,.75)}
+.toast{position:fixed;left:50%;bottom:6vh;transform:translateX(-50%) translateY(20px);opacity:0;padding:12px 18px;border-radius:12px;background:rgba(7,4,13,.92);border:1px solid var(--line);box-shadow:var(--glow);transition:.3s var(--ease);font-size:.9rem;max-width:80vw;text-align:center}
+.toast.on{opacity:1;transform:translateX(-50%)}
+.toast code{color:var(--cyan)}
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="shell">
+    <div class="aurora"></div>
+    <aside>
+      <div class="logo"><b>RoadLine</b> RP</div>
+      <div class="kicker">Boutique</div>
+      <div class="wallet" title="RoadCoins : la monnaie de la boutique (jamais convertible en $ du jeu)"><span class="coin">🪙</span><div><b id="coins">0</b><small>RoadCoins</small></div></div>
+      <div class="nav-t">Catalogue</div>
+      <div id="cats"></div>
+      <div class="nav-t">Mon compte</div>
+      <button class="tab" data-view="mine"><i>🎁</i>Mes achats<span class="n" id="pendingN" hidden></span></button>
+      <div class="side-foot"><b>💎 Zéro pay-to-win</b><br>Uniquement du style et du confort : ni argent, ni arme, ni avantage.</div>
+    </aside>
+    <main>
+      <header>
+        <div><h1 id="title">La <span>boutique</span></h1><p class="sub" id="sub">Soutiens la ville avec style. Paiement sécurisé sur la plateforme officielle de FiveM, récupéré ici à ta prochaine visite.</p></div>
+        <button class="x" id="close" title="Fermer (Échap)">✕</button>
+      </header>
+      <div class="banner" id="banner">La boutique ouvre très bientôt : les articles et les prix arrivent. Tes achats éventuels sont déjà enregistrés.</div>
+      <div class="scroll" id="view"></div>
+    </main>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+<script>
+const RES = (window.GetParentResourceName && GetParentResourceName()) || 'gs_store';
+const post = (name, body) => fetch(`https://${RES}/${name}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body || {}) }).then(r => r.json()).catch(() => null);
+const $ = (s) => document.querySelector(s);
+const esc = (t) => String(t ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+let D = null, view = 'all';
+
+function toast(html) { const t = $('#toast'); t.innerHTML = html; t.classList.add('on'); clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove('on'), 3800); }
+
+function buy(item) {
+  if (!D.shopUrl) return toast('Bientôt disponible : la boutique ouvre très prochainement.');
+  const url = D.shopUrl + (item.package ? '?pack=' + encodeURIComponent(item.package) : '');
+  try { if (window.invokeNative) { window.invokeNative('openUrl', url); return toast('Boutique ouverte dans ton navigateur. Reviens dans « Mes achats » après le paiement.'); } } catch (e) {}
+  const ta = document.createElement('textarea'); ta.value = url; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove();
+  toast('Lien copié : <code>' + esc(url) + '</code>');
+}
+
+function renderTabs() {
+  const cats = [{ id: 'all', label: 'Tout voir', icon: '✨' }, ...(D.categories || [])];
+  $('#cats').innerHTML = cats.map(c => `<button class="tab${view === c.id ? ' on' : ''}" data-view="${esc(c.id)}"><i>${c.icon || ''}</i>${esc(c.label)}</button>`).join('');
+  document.querySelectorAll('.tab').forEach(b => { b.classList.toggle('on', b.dataset.view === view); b.onclick = () => { view = b.dataset.view; render(); }; });
+  const n = (D.pending || []).length; const el = $('#pendingN'); el.hidden = !n; el.textContent = n;
+}
+
+function renderCatalog() {
+  const cat = (D.categories || []).find(c => c.id === view);
+  $('#title').innerHTML = cat ? esc(cat.label) : 'La <span>boutique</span>';
+  $('#sub').textContent = view === 'armes' ? 'Teintes et gravures uniquement : aucune arme vendue, aucun bonus de dégâts.'
+    : view === 'roadcoins' ? 'La monnaie de la boutique : crédités sur ton compte dès le paiement, à dépenser ici. Jamais convertibles en dollars du jeu.' : 'Soutiens la ville avec style. Paiement sécurisé sur la plateforme officielle de FiveM, récupéré ici à ta prochaine visite.';
+  const items = (D.catalog || []).filter(i => view === 'all' || i.cat === view);
+  const label = Object.fromEntries((D.categories || []).map(c => [c.id, c.label]));
+  if (!items.length) { $('#view').innerHTML = '<div class="empty">Rien dans cette catégorie pour le moment.</div>'; return; }
+  $('#view').innerHTML = '<div class="grid">' + items.map((it, i) => {
+    const price = it.price ? esc(it.price) + (it.unit ? ' <small>' + esc(it.unit) + '</small>' : '') : '<small>Prix à venir</small>';
+    const live = D.shopUrl && it.price;
+    const rc = it.coins ? `<span class="rc">🪙 ${fmt(it.coins)} <small>RC</small></span>` : '';
+    const canRc = it.coins && D.enabled && (D.coins || 0) >= it.coins;
+    return `<article class="card" style="--d:${i}"><div class="vis"><span class="tag">${esc(label[it.cat] || '')}</span>${it.hot ? `<span class="tag hot">${esc(it.hot)}</span>` : ''}<span>${it.icon || '🛍️'}</span></div>
+      <div class="body"><h3>${esc(it.label)}</h3><ul>${(it.points || []).map(p => `<li>${esc(p)}</li>`).join('')}</ul>
+      <div class="foot"><span class="prices">${it.cat === 'roadcoins' || !it.coins || it.price ? `<span class="price">${price}</span>` : ''}${rc}</span>
+        <span class="btns">${it.coins ? `<button class="btn btn-gold" data-rc="${i}" ${canRc ? '' : 'disabled'} title="${D.enabled ? (canRc ? '' : 'Solde insuffisant') : 'Bientôt'}">Payer 🪙</button>` : ''}
+        ${it.coins && !it.price ? '' : `<button class="btn ${live ? 'btn-main' : 'btn-ghost'}" data-i="${i}">${live ? 'Acheter' : 'Bientôt'}</button>`}</span></div></div></article>`;
+  }).join('') + '</div>';
+  document.querySelectorAll('#view [data-i]').forEach(b => b.onclick = () => buy(items[+b.dataset.i]));
+  document.querySelectorAll('#view [data-rc]').forEach(b => b.onclick = async () => {
+    const it = items[+b.dataset.rc];
+    if (!confirm(`${it.label} pour ${fmt(it.coins)} RoadCoins, livré à CE personnage. Continuer ?`)) return;
+    b.disabled = true; const r = await post('buyCoins', { package: it.package }); if (r && r.msg) toast(esc(r.msg));
+  });
+}
+
+function renderMine() {
+  $('#title').innerHTML = 'Mes <span>achats</span>';
+  $('#sub').textContent = 'Un pack se récupère sur le personnage de ton choix, définitivement. Skins et tenues : à appliquer quand tu veux.';
+  let h = '<div class="sec">À récupérer</div>';
+  h += (D.pending || []).length ? D.pending.map((o, i) => `<div class="row" style="animation-delay:${i * 40}ms"><span class="ic">🎁</span><div><b>${esc(o.label)}</b><small>Achat payé, en attente</small></div><button class="btn btn-main" data-claim="${esc(o.transaction)}" ${D.enabled ? '' : 'disabled'}>Récupérer ici</button></div>`).join('')
+    : '<div class="empty">Aucun achat en attente.</div>';
+  h += '<div class="sec">Skins</div>';
+  h += (D.peds || []).length ? D.peds.map(p => `<div class="row"><span class="ic">🧑‍🎤</span><div><b>${esc(p.label)}</b><small>Apparence alternative</small></div><button class="btn btn-ghost" data-ped="${esc(p.id)}">Appliquer</button></div>`).join('')
+      + '<div class="row"><span class="ic">↩️</span><div><b>Reprendre mon apparence</b><small>Ton personnage d\'origine</small></div><button class="btn btn-ghost" data-reset>Revenir</button></div>'
+    : '<div class="empty">Aucun skin débloqué.</div>';
+  h += '<div class="sec">Tenues</div>';
+  h += (D.outfits || []).length ? D.outfits.map(o => `<div class="row"><span class="ic">🧥</span><div><b>${esc(o.label)}</b><small>Tenue débloquée</small></div><button class="btn btn-ghost" data-outfit="${esc(o.id)}">Enfiler</button></div>`).join('')
+    : '<div class="empty">Aucune tenue débloquée.</div>';
+  $('#view').innerHTML = h;
+  document.querySelectorAll('[data-claim]').forEach(b => b.onclick = async () => {
+    if (!confirm('Ce pack sera attribué à CE personnage, définitivement. Continuer ?')) return;
+    b.disabled = true; const r = await post('claim', { transaction: b.dataset.claim }); if (r && r.msg) toast(esc(r.msg));
+  });
+  document.querySelectorAll('[data-ped]').forEach(b => b.onclick = () => post('applyPed', { id: b.dataset.ped }));
+  document.querySelectorAll('[data-outfit]').forEach(b => b.onclick = () => post('applyOutfit', { id: b.dataset.outfit }));
+  document.querySelectorAll('[data-reset]').forEach(b => b.onclick = () => post('resetPed'));
+}
+
+const fmt = (n) => String(Math.floor(n || 0)).replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+function render() { $('#coins').textContent = fmt(D.coins); renderTabs(); $('#banner').classList.toggle('on', !D.enabled); view === 'mine' ? renderMine() : renderCatalog(); $('#view').scrollTop = 0; }
+
+window.addEventListener('message', (e) => {
+  const m = e.data || {};
+  if (m.action === 'open') { D = m.data || {}; view = 'all'; $('#app').classList.add('on'); render(); post('ready'); }
+  else if (m.action === 'data') { D = m.data || D; render(); }
+  else if (m.action === 'close') $('#app').classList.remove('on');
+});
+$('#close').onclick = () => post('close');
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape' || e.key === 'Backspace') post('close'); });
+</script>
+</body>
+</html>

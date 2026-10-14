@@ -366,14 +366,29 @@ local function SpawnVehicle(src, model, vtype, coords, heading, plate, warp)
 end
 
 --- Véhicule possédé ajouté au garage du personnage (boutique, récompenses). Retourne true si créé.
-local function GiveVehicle(src, model)
+--- V12.41 · `out` = { x, y, z, h } : comme la concession Qbox (qbx_vehicleshop), le véhicule est aussi SORTI à ce point,
+--- avec sa vraie plaque (celle du garage), le joueur au volant et ses clés (→ clé en objet gs_carkey). Retourne
+--- ok, plaque, sorti (false = resté au garage : point encombré ou création refusée).
+local function GiveVehicle(src, model, out)
     local cid = GetIdentifier(src)
     if not cid or type(model) ~= 'string' then return false end
     local ok, id = pcall(function()
         return exports.qbx_vehicles:CreatePlayerVehicle({ model = model, citizenid = cid }) -- [API]
     end)
     if not ok then print(('[gs_bridge] GiveVehicle %s a échoué : %s'):format(model, id)) end
-    return ok and id ~= nil
+    if not ok or id == nil then return false end
+    if type(out) ~= 'table' then return true end
+    local got, row = pcall(function() return exports.qbx_vehicles:GetPlayerVehicle(id) end) -- [API]
+    local plate = got and type(row) == 'table' and (row.props and row.props.plate or row.plate) or nil
+    if not plate then return true, nil, false end
+    local at = vec3(out.x, out.y, out.z)
+    for _, v in ipairs(GetAllVehicles()) do
+        if #(GetEntityCoords(v) - at) < 3.0 then return true, plate, false end -- point encombré : reste au garage
+    end
+    local veh = SpawnVehicle(src, model, 'automobile', at, out.h, plate, true)
+    if not veh or veh == 0 then return true, plate, false end
+    Entity(veh).state:set('vehicleid', id, false) -- [API] qbx_vehicles / qbx_garages : véhicule possédé, sorti
+    return true, plate, true
 end
 
 --- Réanimation / soin complet via le système médical du framework. [API] qbx_medical

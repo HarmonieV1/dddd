@@ -127,6 +127,25 @@ lib.callback.register('gs_cctv:blind', function(src, i)
     return CCTV.blindCam(src, i)
 end)
 
+-- V12.41 · Vue en direct : police en service, devant un terminal, caméra pas aveuglée. Le client ne regarde qu'avec ce feu vert.
+function CCTV.view(src, i)
+    i = tonumber(i)
+    local cam = i and Config.Cameras[i]
+    if not cam then return false, 'Caméra inconnue.' end
+    if not isCop(src) then return false, 'Réservé à la police en service.' end
+    local atTerminal = false
+    for _, t in ipairs(Config.Terminals) do
+        if Security:InRange(src, t, Config.TerminalRange + 3.0) then atTerminal = true break end
+    end
+    if not atTerminal then return false, 'Il faut être devant un ordinateur de vidéosurveillance.' end
+    if not CCTV.active(i) then return false, 'Image noire : l\'objectif a été peint ou le quartier est privé de courant.' end
+    return true, { x = cam.coords.x, y = cam.coords.y, z = cam.coords.z, label = cam.label }
+end
+lib.callback.register('gs_cctv:view', function(src, i)
+    if not Security:RateLimit(src, 'gs_cctv:view', 6, 10000) then return false, 'Doucement.' end
+    return CCTV.view(src, i)
+end)
+
 exports('Search', function(plate) return CCTV.find(plate) end) -- pour d'autres ressources (enquêtes)
 --- V11.2 : black-out de quartier (gs_city) : toutes les caméras dans le rayon sont aveugles pendant `minutes`
 exports('BlindArea', function(x, y, radius, minutes)

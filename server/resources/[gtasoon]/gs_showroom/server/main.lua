@@ -85,6 +85,14 @@ lib.callback.register('gs_showroom:staff', function(src, action, data)
         Showroom.slots[id] = nil
         publish()
         return true, ('Emplacement n°%d retiré.'):format(id)
+    elseif action == 'move' then -- V12.41 : replacer un emplacement existant à la position du staff
+        local id = tonumber(data.id)
+        local s = id and Showroom.slots[id]
+        if not s then return false, 'Emplacement inconnu.' end
+        MySQL.update.await('UPDATE gs_showroom_slots SET x = ?, y = ?, z = ?, h = ? WHERE id = ?', { c.x, c.y, c.z, h, id })
+        s.x, s.y, s.z, s.h = c.x, c.y, c.z, h
+        publish()
+        return true, ('Emplacement n°%d replacé ici. Écarte-toi pour le voir.'):format(id)
     elseif action == 'start' then
         if not Config.Dealers[data.dealer] then return false, 'Concession inconnue.' end
         MySQL.update.await('REPLACE INTO gs_showroom_starts (dealer, x, y, z, h) VALUES (?, ?, ?, ?, ?)', { data.dealer, c.x, c.y, c.z, h })
@@ -100,8 +108,9 @@ lib.callback.register('gs_showroom:setModel', function(src, id, model)
     if not Security:RateLimit(src, 'gs_showroom:setModel', 6, 10000) then return false, 'Doucement.' end
     local s = Showroom.slots[tonumber(id) or 0]
     if not s then return false, 'Emplacement inconnu.' end
-    if not isDealer(src, s.dealer) and staffLevel(src) < Config.StaffLevel then return false, 'Réservé aux vendeurs en service.' end
-    if not near(src, s, 15.0) then return false, 'Approche-toi du véhicule exposé.' end
+    local staff = staffLevel(src) >= Config.StaffLevel
+    if not staff and not isDealer(src, s.dealer) then return false, 'Réservé aux vendeurs en service.' end
+    if not staff and not near(src, s, 15.0) then return false, 'Approche-toi du véhicule exposé.' end -- V12.41 : le staff change de loin (F11)
     local v = catalog(model)
     if not v then return false, 'Modèle inconnu du catalogue (ou non vendable ici).' end
     MySQL.update.await('UPDATE gs_showroom_slots SET model = ? WHERE id = ?', { model:lower(), id })
@@ -171,9 +180,12 @@ lib.callback.register('gs_showroom:buy', function(src, id)
     local v = catalog(s.model)
     if not v then return false, 'Ce modèle n\'est plus au catalogue.' end
     local price = math.floor(tonumber(v.price))
+    if Showroom.testing[src] then return false, 'Termine d\'abord ton essai (/finessai).' end
     local acc = Bridge:Pay(src, price, 'achat véhicule ' .. s.model, 'bank')
     if not acc then return false, ('Il te faut %d $ (carte ou espèces).'):format(price) end
-    if not Bridge:GiveVehicle(src, s.model) then
+    -- V12.41 : comme la concession Qbox : véhicule à ton nom, sorti au départ des essais, toi au volant, clés (+ clé en objet)
+    local ok, plate, out = Bridge:GiveVehicle(src, s.model, Showroom.starts[s.dealer])
+    if not ok then
         Bridge:AddMoney(src, acc, price, 'remboursement achat véhicule')
         return false, 'Achat impossible pour le moment : remboursé.'
     end
@@ -181,7 +193,16 @@ lib.callback.register('gs_showroom:buy', function(src, id)
     local job = Config.Dealers[s.dealer] and Config.Dealers[s.dealer].jobs and Config.Dealers[s.dealer].jobs[1]
     if cut > 0 and job then pcall(function() exports.gs_jobs:AddSocietyMoney(job, cut, true) end) end
     Security:LogStaff(('[Concession] %s a acheté %s (%d $)'):format(GetPlayerName(src) or src, s.model, price), 'economy')
-    return true, ('%s achetée %d $ : elle t\'attend dans tes garages.'):format(v.name or s.model, price)
+    if out then
+        return true, ('%s achetée %d $ : elle est à toi (plaque %s), clés en poche. Bonne route !'):format(v.name or s.model, price, plate or '?')
+    end
+    return true, ('%s achetée %d $ (plaque %s) : la sortie est encombrée, elle t\'attend dans tes garages.'):format(v.name or s.model, price, plate or '?')
+end)
+
+-- V12.41 : le client sait s'il est staff (option « Changer le modèle » au Alt, comme le vendeur)
+lib.callback.register('gs_showroom:me', function(src)
+    if not Security:RateLimit(src, 'gs_showroom:me', 3, 10000) then return false end
+    return staffLevel(src) >= Config.StaffLevel
 end)
 
 exports('ListSlots', function() return Showroom.slots end)

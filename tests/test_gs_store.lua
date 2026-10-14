@@ -3,14 +3,18 @@ dofile('tests/mock.lua')
 local R = 'server/resources/[gtasoon]/'
 loadResource('gs_security', { R .. 'gs_security/server/main.lua' })
 loadResource('gs_store', { R .. 'gs_store/shared/config.lua' })
-local orders, unlocks, prefs = {}, {}, {}
+local orders, unlocks, prefs, wallet = {}, {}, {}, {}
 Store = {
     init = function() end,
     addOrder = function(t, p, b) if orders[t] then return false end orders[t] = { transaction = t, package = p, buyer = b, status = 'pending' } return true end,
     pending = function(b) local l = {} for _, o in pairs(orders) do if o.buyer == b and o.status == 'pending' then l[#l + 1] = o end end return l end,
     claim = function(t, b, cid) local o = orders[t] if o and o.buyer == b and o.status == 'pending' then o.status, o.claimed_by = 'claimed', cid return true end return false end,
     revoke = function(t) local o = orders[t] if not o then return nil end local s = o.status o.status = 'revoked'
-        for k, u in pairs(unlocks) do if u.transaction == t then unlocks[k] = nil end end return s, o.claimed_by end,
+        for k, u in pairs(unlocks) do if u.transaction == t then unlocks[k] = nil end end return s, o.claimed_by, o.package, o.buyer end,
+    coins = function(b) return wallet[b] or 0 end,
+    addCoins = function(b, n) wallet[b] = (wallet[b] or 0) + n end,
+    spendCoins = function(b, n) if (wallet[b] or 0) < n then return false end wallet[b] = wallet[b] - n return true end,
+    takeBackCoins = function(b, n) local t = math.min(wallet[b] or 0, n) wallet[b] = (wallet[b] or 0) - t return t end,
     unlock = function(cid, ty, ref, t) unlocks[cid .. ty .. ref] = { citizenid = cid, type = ty, ref = ref, transaction = t } end,
     unlocks = function(cid) local l = {} for _, u in pairs(unlocks) do if u.citizenid == cid then l[#l + 1] = u end end return l end,
     setPed = function(cid, ped) prefs[cid] = ped end,
@@ -93,6 +97,31 @@ check('révocation : skin retiré', cb('gs_store:applyPed', 1, 'sunset_runner') 
 step()
 W.commands.gsstore_revoke(1, { 'TX-1' })
 check('révocation refusée en jeu', orders['TX-1'].status == 'claimed')
+
+-- V12.41 · RoadCoins ----------------------------------------------------------------------------------------------
+W.commands.gsstore_deliver(0, { 'TX-RC1', 'roadcoins_1100', '111' })
+check('RoadCoins crédités tout de suite (rien à réclamer)', wallet['fivem:111'] == 1100 and orders['TX-RC1'].status == 'claimed')
+W.commands.gsstore_deliver(0, { 'TX-RC1', 'roadcoins_1100', '111' })
+check('RoadCoins : pas de double crédit', wallet['fivem:111'] == 1100)
+data = cb('gs_store:data', 1); step()
+check('solde visible dans la boutique', data.coins == 1100 and data.catalog and #data.catalog > 0)
+ok = cb('gs_store:buyCoins', 1, 'vip_or'); step()
+check('article sans prix RoadCoins : refusé', not ok and wallet['fivem:111'] == 1100)
+ok = cb('gs_store:buyCoins', 1, 'pack_neon_rider'); step()
+check('solde insuffisant : refusé, rien débité', not ok and wallet['fivem:111'] == 1100)
+local before = W.players[1].vehicles
+ok, msg = cb('gs_store:buyCoins', 1, 'skin_sunset'); step()
+check('payé en RoadCoins : débité et livré à ce personnage', ok and wallet['fivem:111'] == 500 and cb('gs_store:applyPed', 1, 'sunset_runner') ~= nil)
+step()
+ok = cb('gs_store:buyCoins', 2, 'skin_sunset'); step()
+check('autre compte : son propre solde (0)', not ok and wallet['fivem:111'] == 500)
+W.commands.gsstore_revoke(0, { 'TX-RC1' })
+check('remboursement Tebex : RoadCoins restants repris', wallet['fivem:111'] == 0)
+Config.Packages.test_rc = { label = 'Test RC', grants = { { type = 'vehicle', model = 'casse' } } }
+Config.Catalog[#Config.Catalog + 1] = { package = 'test_rc', cat = 'perso', label = 'Test', coins = 100 }
+wallet['fivem:111'] = 100
+ok = cb('gs_store:buyCoins', 1, 'test_rc'); step()
+check('livraison impossible : RoadCoins rendus', not ok and wallet['fivem:111'] == 100 and W.players[1].vehicles == before)
 
 io.write(('\n%d réussis, %d échoués\n'):format(passed, failed))
 os.exit(failed == 0 and 0 or 1)

@@ -5,6 +5,7 @@ local Bridge = exports.gs_bridge
 local shown = {}   -- [id] = { veh, model }
 local state = { slots = {}, starts = {} }
 local testing
+local isStaff = false -- V12.41 : le staff voit aussi « Changer le modèle » au Alt (demandé au serveur, pas deviné)
 
 local function notify(ok, msg) if msg then lib.notify({ description = msg, type = ok and 'success' or 'error' }) end end
 
@@ -64,6 +65,7 @@ local function targetOptions(slot)
             end },
         { name = 'gs_showroom_model', icon = 'fa-solid fa-arrows-rotate', label = 'Changer le modèle exposé (vendeur)', distance = Config.Range,
             canInteract = function()
+                if isStaff then return true end
                 local j = Bridge:GetJob()
                 local d = Config.Dealers[slot.dealer]
                 if not j or not j.onduty or not d then return false end
@@ -104,12 +106,14 @@ end)
 CreateThread(function()
     Wait(2000)
     if GlobalState.gsShowroom then state = GlobalState.gsShowroom end
+    isStaff = lib.callback.await('gs_showroom:me', false) == true
     while true do
         if state.slots and #state.slots > 0 then
             local me = GetEntityCoords(cache.ped)
             for _, s in ipairs(state.slots) do
                 local d = #(me - vec3(s.x, s.y, s.z))
-                if d < Config.StreamRange and not shown[s.id] then spawn(s)
+                -- pas sur la tête de quelqu'un : on attend qu'il s'écarte (le staff qui vient de poser l'emplacement)
+                if d < Config.StreamRange and d > 3.0 and not shown[s.id] then spawn(s)
                 elseif d > Config.StreamRange + 20.0 and shown[s.id] then remove(s.id) end
             end
         end
@@ -154,6 +158,7 @@ end
 
 --- Menu staff (appelé par gs_admin, F11 → Monde et lieux → Concessions)
 local function staffMenu()
+    isStaff = true -- ouvert depuis F11 (déjà contrôlé par gs_admin ; le serveur revérifie chaque action)
     local o = {}
     for id, d in pairs(Config.Dealers) do
         local count = 0
@@ -173,6 +178,8 @@ local function staffMenu()
                         m[#m + 1] = { title = ('n°%d · %s'):format(s.id, name), icon = 'car-side', arrow = true, onSelect = function()
                             lib.registerContext({ id = 'gs_showroom_slot', title = ('n°%d · %s'):format(s.id, name), menu = 'gs_showroom_dealer', options = {
                                 { title = 'Y aller', icon = 'location-arrow', onSelect = function() SetEntityCoords(cache.ped, s.x, s.y, s.z + 1.0, false, false, false, false) end },
+                                { title = 'Replacer ICI', icon = 'up-down-left-right', description = 'Ta position et ton cap actuels', onSelect = function()
+                                    notify(lib.callback.await('gs_showroom:staff', false, 'move', { id = s.id })) end },
                                 { title = 'Changer le modèle', icon = 'arrows-rotate', onSelect = function()
                                     pickModel(function(model) notify(lib.callback.await('gs_showroom:setModel', false, s.id, model)) end) end },
                                 { title = 'Retirer', icon = 'trash', iconColor = '#ff6b6b', onSelect = function()

@@ -37,11 +37,19 @@ check('police au commissariat : trouvé par morceau de plaque', ok and #res == 1
 advance(6000)
 ok, res = cb('gs_cctv:search', 2, 'ZZZ')
 check('plaque inconnue : rien', ok and #res == 0)
+advance(11000)
+ok, res = cb('gs_cctv:view', 2, 1)
+check('V12.41 : vue en direct depuis le terminal', ok and res.label == Config.Cameras[1].label)
+ok = cb('gs_cctv:view', 4, 1)
+check('V12.41 : vue en direct refusée à un inconnu', not ok)
 -- aveugler
 join(3, 'CID3', 'Tagueur', cam)
 W.players[3].items.spraycan = 1
 ok = cb('gs_cctv:blind', 3, 1)
 check('caméra aveuglée, bombe consommée, vandalisme signalé', ok and not CCTV.active(1) and (W.players[3].items.spraycan or 0) == 0 and crimes[1])
+advance(11000)
+ok = cb('gs_cctv:view', 2, 1)
+check('V12.41 : caméra peinte = image noire', not ok)
 CCTV.seen = {}
 CCTV.log = {}
 CCTV.sample()

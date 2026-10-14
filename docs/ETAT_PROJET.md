@@ -1,4 +1,4 @@
-# État du projet RoadLine RP — récapitulatif complet (à jour au 14/10/2026, V12.40)
+# État du projet RoadLine RP — récapitulatif complet (à jour au 14/10/2026, V12.41)
 
 Ce document sert de **point de sauvegarde** : si une conversation avec Claude est perdue, compressée ou doit reprendre
 ailleurs, tout ce qu'il faut savoir est ici. Il est versionné avec le code (`git log` en garde aussi l'historique).
@@ -54,7 +54,7 @@ exclusifs (« ce que tu ne trouveras nulle part ailleurs »).
 - `feature/phase1-bridge`
 - `claude/gta-rp-architecture-stack-pbvdxz`
 
-**Dernier commit poussé** : « V12.40 : concessions, mécano Benny's, courses sur mesure, territoires de gang » (hash exact :
+**Dernier commit poussé** : « V12.41 : concession (achat sorti avec clés), tir à la tête, caméras en direct, boutique du site » (hash exact :
 `git log -1 origin/feature/phase1-bridge`). Les deux branches pointent sur le même commit.
 
 **Deux sessions Claude en parallèle** (poste Windows et session web) : elles ne se voient pas. Toujours synchroniser
@@ -64,7 +64,7 @@ par un colis (zip de l'installation ou de la session) + ce fichier, et comparer 
 ## 2. Versions : interne vs publique (important, piège classique)
 
 Depuis la V11.3, il y a **deux numéros de version différents**, volontairement :
-- `gs_version` (convar, `server.cfg.example`) = **V12.40** → version technique interne, vue par le staff (F11, console,
+- `gs_version` (convar, `server.cfg.example`) = **V12.41** → version technique interne, vue par le staff (F11, console,
   METTRE-A-JOUR). Continue d'avancer à chaque mise à jour (V11.2, V11.3...).
 - `gs_public_version` (convar) = **« V4 · bêta »** → version vue par les **joueurs** (écran de chargement, statut
   Discord, Gazette). Le site affiche son propre journal (V1 à V4, V5 « classé confidentiel »).
@@ -271,6 +271,24 @@ Résumé très condensé (le détail complet est dans `docs/ROADMAP.md`, `docs/F
   ne remplace pas le curseur), profondeur CSS `animation-timeline: view()` (captures, mock, carte, chiffres), intro
   façon chargement de mission (Entrée / clic pour passer). Tout coupé par `prefers-reduced-motion`, souris seulement
   sur ordinateur. Une seule boucle rAF qui s'endort quand rien ne bouge. Vérifié dans le navigateur : 0 erreur.
+
+- **V12.41** (14/10/2026, session web) — retours du 14/10 au soir :
+  - **Concession** : l'achat au Alt fait maintenant comme la concession Qbox : véhicule **à ton nom** (vraie plaque du garage),
+    **sorti au départ des essais**, toi au volant, **clés** données (+ clé en objet). Sortie encombrée → livré au garage (message).
+    `Bridge:GiveVehicle(src, model, out)` (gs_bridge). Le **staff change le modèle de loin** (F11) et voit « Changer le modèle »
+    au Alt ; « Replacer ICI » pour déplacer un emplacement ; le véhicule n'apparaît plus sur la tête du staff qui vient de le
+    poser (attend qu'il s'écarte de 3 m). Rappel : les points du métier `cardealer` (prise de service, patron, garage) sont
+    encore à PDM → F11 → points de métier pour les mettre sur la map Patoche. Tests 22/22.
+  - **Balle dans la tête** : à terre en un tir (arme à balles seulement, tireur joueur ou PNJ ; casque lourd = protégé ;
+    staff invincible jamais). Vu par la victime, mise à terre par qbx_medical (réanimation EMS). Le reste des dégâts inchangé.
+  - **Caméras LSPD : vue en direct** depuis l'ordinateur du commissariat (Mission Row, Sandy, Paleto) : caméra → « Voir en
+    direct » (filtre vidéosurveillance, ● REC + heure, souris pour tourner sur 150°, molette pour zoomer, Retour pour quitter).
+    Refusé hors service, loin du terminal ou caméra peinte / black-out. Tests 14/14.
+  - **Boutique en jeu** (`/boutique`, gs_store) : vraie interface aux couleurs du site (catégories RoadCoins, VIP, Véhicules,
+    Personnalisation, Skins d'armes, « Mes achats »). **RoadCoins** : packs Tebex crédités tout de suite sur le compte, dépensés
+    en jeu sur les articles qui ont un prix en RoadCoins (docs/BOUTIQUE.md). Toujours `Config.Enabled = false` (prix et
+    conformité PLA à valider). Tests 32/32.
+  - Vérifié : vêtements en objets en place depuis la V12.26 (`gs_cloth`, `gs_outfit`, garde-robe U).
 
 - **V12.40** (14/10/2026, session web) — retours du 14/10 :
   - **Concessions (nouvelle ressource `gs_showroom`)** : F11 → Monde et lieux → « Concessions : véhicules d'exposition » (admin+) :
