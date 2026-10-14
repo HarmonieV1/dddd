@@ -7,9 +7,9 @@ from pdf import H1, H2, P, SMALL, VERSION, footer, A4, mm, colors, SimpleDocTemp
 # (test, qui, priorité)
 SESSIONS = [
     ('0 · Avant de commencer (5 min)', [
-        ('METTRE-A-JOUR.bat : version V12.41 affichée, « Base de données sauvegardée », « Sauvegardes programmées » ; METTRE-A-JOUR-OVH puis GERER-OVH → 1 : « Version RoadLine : V12.41 »', 'Staff', 3),
+        ('METTRE-A-JOUR.bat : version V12.42 affichée, « Base de données sauvegardée », « Sauvegardes programmées » ; METTRE-A-JOUR-OVH puis GERER-OVH → 1 : « Version RoadLine : V12.42 »', 'Staff', 3),
         ('Fenêtre du serveur : aucune ligne ROUGE au démarrage (sauf un conflit de maps déjà connu) ; F8 en jeu : aucune erreur rouge ; GERER-OVH → 3 : aucune erreur de script', 'Seul', 3),
-        ('VIDER-CACHE-FIVEM.bat si tu vois un ancien menu (F11 doit afficher « RoadLine V12.41 ») ; pendant le backtest : set gs_honeypot "log" dans secrets.cfg (piège = simple signalement)', 'Staff', 2),
+        ('VIDER-CACHE-FIVEM.bat si tu vois un ancien menu (F11 doit afficher « RoadLine V12.42 ») ; pendant le backtest : set gs_honeypot "log" dans secrets.cfg (piège = simple signalement)', 'Staff', 2),
     ]),
     ('1 · Arrivée et personnage (15 min) — corrigé après tes retours', [
         ('Nouveau joueur : un seul personnage ; fondateur, super-admins et VIP (F11 → Joueurs → VIP) : deux ; plus de choix du lieu ; déco / reco = même endroit', '2', 3),
@@ -65,6 +65,12 @@ SESSIONS = [
         ('Hôpital Pillbox, Fleeca, Pop\'s Pills, Bahama Mamas : nos points (soins, braquage, pharmacie, bar) accessibles sans les maps', 'Staff', 3),
         ('NETTOYER-MARQUES.bat : liste les mods de marque (dont mp_male_the_goat), supprime après « O », le reste intact', 'Staff', 2),
         ('Pack acheté (plus tard) : IMPORTER-MODS puis F11 → Mappings installés : chaque map a un quartier, aucune ligne rouge (conflit) ni jaune (poids) en console', 'Staff', 2),
+    ]),
+    ('6f · V12.42 — labo, mobilier, fauteuil roulant, arme dans le dos (15 min)', [
+        ('Labo : prélever une douille (lampe torche), la donner à un collègue ; il va au labo → le scellé apparaît dans « Scellés dans ton sac » → Analyser → résultat 3 min après ; idem après un restart gs_evidence', '2', 3),
+        ('F11 → Mapping : poser un banc, une chaise, un lit d\'hôpital, un fauteuil roulant ; Alt → S\'asseoir / S\'allonger : bien placé (sinon PgUp/PgDn, flèches, ligne en F8 à m\'envoyer) ; X pour se lever ; un 2e joueur voit la pose', '2', 3),
+        ('Fauteuil roulant : Alt → S\'asseoir et rouler : Z/S/Q/D, Maj ; s\'arrête contre un mur et devant une marche ; un 2e joueur voit le fauteuil bouger (et plus celui d\'origine) ; X → le fauteuil revient à sa place', '2', 3),
+        ('Arme dans le dos : courir, sauter, tomber (ragdoll), monter en véhicule : l\'arme reste fixe au dos, ne se balance pas, ne tombe pas', '2', 3),
     ]),
     ('6e · V12.41 — achat concession, tir à la tête, caméras, boutique (20 min)', [
         ('Concession : Alt sur un véhicule exposé → Acheter → le véhicule apparaît au départ des essais, toi au volant, clé dans le sac (plaque = celle du garage) ; il est bien dans tes garages ensuite', '2', 3),

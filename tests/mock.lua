@@ -160,10 +160,14 @@ provide('gs_bridge', {
     GetItemCount = function(src, item) return W.players[src].items[item] or 0 end,
     ItemExists = function(item) return item ~= "introuvable" end,
     CanCarry = function(src, _, n) return W.players[src] ~= nil and positiveInt(n) and not W.players[src].full end,
-    AddItem = function(src, item, n)
+    AddItem = function(src, item, n, meta)
         local p = W.players[src]
         if not p or p.full then return false end
         p.items[item] = (p.items[item] or 0) + n
+        if meta then -- V12.42 : objets à métadonnées (scellés, clés…) rangés par case pour ListSlots / TakeSlot
+            p.slots = p.slots or {}
+            for _ = 1, n do p.slots[#p.slots + 1] = { name = item, metadata = meta } end
+        end
         return true
     end,
     RemoveItem = function(src, item, n)
@@ -171,6 +175,22 @@ provide('gs_bridge', {
         if (p.items[item] or 0) < n then return false end
         p.items[item] = p.items[item] - n
         return true
+    end,
+    ListSlots = function(src, item)
+        local out, p = {}, W.players[src]
+        for i, sl in pairs(p and p.slots or {}) do
+            if sl.name == item then out[#out + 1] = { slot = i, label = sl.metadata.label, metadata = sl.metadata } end
+        end
+        table.sort(out, function(a, b) return a.slot < b.slot end)
+        return out
+    end,
+    TakeSlot = function(src, item, slot)
+        local p = W.players[src]
+        local sl = p and p.slots and p.slots[slot]
+        if not sl or sl.name ~= item then return nil end
+        p.slots[slot] = nil
+        p.items[item] = math.max(0, (p.items[item] or 0) - 1)
+        return sl.metadata
     end,
     -- V11.5 : carte de permis (weaponlicense / driver_license) donnée ou reprise avec le permis
     LicenceCard = function(src, kind, on)

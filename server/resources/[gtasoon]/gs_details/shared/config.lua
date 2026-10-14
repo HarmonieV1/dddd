@@ -63,3 +63,4 @@ Config.Wardrobe = {
         { key = 'shoes',    kind = 'c', id = 6,  label = 'Chaussures',         image = 'cloth_shoes',    side = 'right', none = { m = 34, f = 35 } },
     },
 }
+

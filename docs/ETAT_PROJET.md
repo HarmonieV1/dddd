@@ -1,4 +1,4 @@
-# État du projet RoadLine RP — récapitulatif complet (à jour au 14/10/2026, V12.41)
+# État du projet RoadLine RP — récapitulatif complet (à jour au 14/10/2026, V12.42)
 
 Ce document sert de **point de sauvegarde** : si une conversation avec Claude est perdue, compressée ou doit reprendre
 ailleurs, tout ce qu'il faut savoir est ici. Il est versionné avec le code (`git log` en garde aussi l'historique).
@@ -54,7 +54,7 @@ exclusifs (« ce que tu ne trouveras nulle part ailleurs »).
 - `feature/phase1-bridge`
 - `claude/gta-rp-architecture-stack-pbvdxz`
 
-**Dernier commit poussé** : « V12.41 : concession (achat sorti avec clés), tir à la tête, caméras en direct, boutique du site » (hash exact :
+**Dernier commit poussé** : « V12.42 : labo (scellés gardés), mobilier utilisable, fauteuil roulant, arme fixe dans le dos » (hash exact :
 `git log -1 origin/feature/phase1-bridge`). Les deux branches pointent sur le même commit.
 
 **Deux sessions Claude en parallèle** (poste Windows et session web) : elles ne se voient pas. Toujours synchroniser
@@ -64,7 +64,7 @@ par un colis (zip de l'installation ou de la session) + ce fichier, et comparer 
 ## 2. Versions : interne vs publique (important, piège classique)
 
 Depuis la V11.3, il y a **deux numéros de version différents**, volontairement :
-- `gs_version` (convar, `server.cfg.example`) = **V12.41** → version technique interne, vue par le staff (F11, console,
+- `gs_version` (convar, `server.cfg.example`) = **V12.42** → version technique interne, vue par le staff (F11, console,
   METTRE-A-JOUR). Continue d'avancer à chaque mise à jour (V11.2, V11.3...).
 - `gs_public_version` (convar) = **« V4 · bêta »** → version vue par les **joueurs** (écran de chargement, statut
   Discord, Gazette). Le site affiche son propre journal (V1 à V4, V5 « classé confidentiel »).
@@ -271,6 +271,22 @@ Résumé très condensé (le détail complet est dans `docs/ROADMAP.md`, `docs/F
   ne remplace pas le curseur), profondeur CSS `animation-timeline: view()` (captures, mock, carte, chiffres), intro
   façon chargement de mission (Entrée / clic pour passer). Tout coupé par `prefers-reduced-motion`, souris seulement
   sur ordinateur. Une seule boucle rAF qui s'endort quand rien ne bouge. Vérifié dans le navigateur : 0 erreur.
+
+- **V12.42** (14/10/2026, session web) — retours du 14/10 (nuit) :
+  - **Labo (gs_evidence)** : « mes scellés ne sont pas captés ». Cause : les scellés vivaient en mémoire seulement (un
+    redémarrage → sacs orphelins, numérotation repartie à 1) et le labo ne listait que ceux qu'on avait prélevés soi-même.
+    Maintenant : table `gs_evidence_seals` (rechargée au démarrage, numérotation reprise), le labo lit les sacs VRAIMENT
+    présents dans l'inventaire (case par case, `Bridge:ListSlots` / `TakeSlot`), y compris ceux remis par un collègue ;
+    un ancien sac d'avant la mise à jour est affiché « illisible » (à jeter). Tests 49/49.
+  - **Mobilier utilisable** (ressource `gs_furniture`, `Config.Furniture`) : Alt sur un banc, une chaise, un canapé,
+    un lit d'hôpital, un matelas… (posés au F11 → Mapping ET ceux de la ville) : S'asseoir / S'allonger, place occupée
+    refusée, X pour se lever. **Fauteuil roulant** : « S'asseoir et rouler » (Z/S, Q/D, Maj ; bloqué par murs et marches ;
+    le fauteuil d'origine est caché chez tous pendant le trajet et revient à sa place) ou simplement s'asseoir. Hauteurs
+    à caler en jeu : PgUp/PgDn et flèches pendant la pose, ligne à recopier affichée en F8.
+  - **Arme dans le dos** : attache rigide (avant : « souple », l'arme se balançait et se décrochait aux chocs), sans gravité
+    ni physique propre ; les réglages /dosreglage restent valables.
+  - Réponse skate : pas de skate jouable dans GTA de base (seul l'objet décor `prop_skateboard_01` existe) ; un skate
+    « roulant » = véhicule invisible + objet accroché + animation : faisable mais fragile, proposé après l'ouverture.
 
 - **V12.41** (14/10/2026, session web) — retours du 14/10 au soir :
   - **Concession** : l'achat au Alt fait maintenant comme la concession Qbox : véhicule **à ton nom** (vraie plaque du garage),

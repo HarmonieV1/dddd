@@ -165,7 +165,9 @@ local function place(obj, ped, slot)
     if not o or not DoesEntityExist(ped) then return false end
     local bone = GetPedBoneIndex(ped, B.bone)
     if bone == -1 then return false end
-    AttachEntityToEntity(obj, ped, bone, o.x, o.y, o.z, o.rx, o.ry, o.rz, true, true, false, true, 1, true)
+    -- V12.42 : attache RIGIDE (useSoftPinning = false) : avant, l'attache « souple » laissait l'arme se balancer et se
+    -- décrocher aux chocs (chute, ragdoll, véhicule). Ordre de rotation inchangé : les réglages /dosreglage restent bons.
+    AttachEntityToEntity(obj, ped, bone, o.x, o.y, o.z, o.rx, o.ry, o.rz, true, false, false, true, 1, true)
     if IsEntityAttachedToEntity(obj, ped) then return true end
     Wait(0) -- une image de tolérance si le jeu applique l'attache au cycle suivant
     return IsEntityAttachedToEntity(obj, ped)
@@ -178,6 +180,8 @@ local function attach(ped, hash, slot)
     created[obj] = true
     if not place(obj, ped, slot) then destroy(obj) return nil end -- V12.37 : attache ratée = supprimé, jamais laissé libre
     SetEntityCollision(obj, false, false)
+    SetEntityHasGravity(obj, false)   -- V12.42 : aucune physique propre : l'arme suit le dos, rien d'autre
+    SetEntityDynamic(obj, false)
     return obj
 end
 

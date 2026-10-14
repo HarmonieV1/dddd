@@ -28,16 +28,18 @@ function CreateWeaponObject(hash, _, x, y, z)
     W.entities[W.nextEntity] = { type = 3, pos = vec3(x, y, z), model = hash }
     return W.nextEntity
 end
-function AttachEntityToEntity(obj, ped, bone, x, y, z, rx, ry, rz)
+function AttachEntityToEntity(obj, ped, bone, x, y, z, rx, ry, rz, _, soft)
     local e = W.entities[obj]
     if not e or W.failAttach then return end
-    e.attached, e.bone, e.off = ped, bone, { x = x, y = y, z = z, rx = rx, ry = ry, rz = rz }
+    e.attached, e.bone, e.off, e.soft = ped, bone, { x = x, y = y, z = z, rx = rx, ry = ry, rz = rz }, soft
     W.attachCalls = (W.attachCalls or 0) + 1
 end
 function IsEntityAttachedToEntity(obj, ped) local e = W.entities[obj] return e ~= nil and e.attached == ped and W.entities[ped] ~= nil end
 function IsEntityAttached(obj) local e = W.entities[obj] return e ~= nil and e.attached ~= nil and W.entities[e.attached] ~= nil end
 function DetachEntity(obj) local e = W.entities[obj] if e then e.attached = nil end end
 function SetEntityCollision() end
+function SetEntityHasGravity(obj, on) if W.entities[obj] then W.entities[obj].gravity = on end end
+function SetEntityDynamic(obj, on) if W.entities[obj] then W.entities[obj].dynamic = on end end
 function SetEntityAsMissionEntity() end
 function IsNuiFocused() return false end
 W.ui = { notes = {}, contexts = {}, open = nil, clipboard = nil, input = nil }
@@ -265,6 +267,13 @@ W.commands.dosreglage()
 check('même commande : ferme le menu', W.ui.open == nil)
 
 -- 6. Arrêt de la ressource --------------------------------------------------------------------------------------------
+do -- V12.42 : attache rigide, sans gravité ni physique
+    local rigid, n = true, 0
+    for _, e in pairs(W.entities) do
+        if e.type == 3 and e.attached then n = n + 1 if e.soft ~= false or e.gravity ~= false or e.dynamic ~= false then rigid = false end end
+    end
+    check('V12.42 : arme dans le dos en attache rigide, sans gravité ni physique', n > 0 and rigid)
+end
 TriggerEvent('onResourceStop', GetCurrentResourceName())
 check('arrêt : tous les objets supprimés, state bag retiré', objs() == 0 and Holster.count() == 0 and W.pstate[1].gsBack == nil)
 

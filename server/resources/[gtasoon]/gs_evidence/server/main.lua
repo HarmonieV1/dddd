@@ -170,6 +170,7 @@ lib.callback.register('gs_evidence:collect', function(src, id)
         return false, 'Inventaire plein.'
     end
     Evidence.seals[s.id] = s
+    Store.saveSeal(s)
     remove(t.id)
     return true, label
 end)
@@ -225,21 +226,34 @@ end
 function Evidence.lab(src, action, id)
     if not isPolice(src) then return false, 'Réservé à la police en service.' end
     if not atLab(src) then return false, 'Il faut être au labo du commissariat.' end
-    local cid = Bridge:GetIdentifier(src)
     for _, s in pairs(Evidence.seals) do -- analyses terminées
-        if s.status == 'analyzing' and now() >= s.readyAt then s.status, s.result = 'done', Evidence.analyze(s) end
+        if s.status == 'analyzing' and now() >= s.readyAt then s.status, s.result = 'done', Evidence.analyze(s) Store.saveSeal(s) end
     end
+    -- V12.42 : les scellés à analyser sont ceux qui sont VRAIMENT dans le sac (prélevés par soi ou remis par un collègue),
+    -- lus case par case (métadonnée `seal`). Avant : seulement ceux qu'on avait prélevés soi-même, et rien après un redémarrage.
+    local bags = Bridge:ListSlots(src, Config.Items.bag) or {}
     if action == 'analyze' then
         local s = Evidence.seals[tonumber(id)]
-        if not s or s.status ~= 'sealed' then return false, 'Scellé introuvable.' end
-        if not Bridge:RemoveItem(src, Config.Items.bag, 1, { seal = s.id }) then return false, 'Il faut avoir le scellé sur toi.' end
+        if not s or s.status ~= 'sealed' then return false, 'Scellé introuvable ou déjà analysé.' end
+        local slot
+        for _, b in ipairs(bags) do if tonumber(b.metadata.seal) == s.id then slot = b.slot break end end
+        if not slot or not Bridge:TakeSlot(src, Config.Items.bag, slot) then return false, 'Il faut avoir ce scellé dans ton sac.' end
         s.status, s.readyAt = 'analyzing', now() + Config.Lab.seconds
+        Store.saveSeal(s)
         return true, ('Scellé n°%d en analyse (%d min).'):format(s.id, math.ceil(Config.Lab.seconds / 60))
     end
-    local mine, others = {}, {}
+    local mine, others, seen = {}, {}, {}
+    for _, b in ipairs(bags) do
+        local sid = tonumber(b.metadata.seal)
+        local s = sid and Evidence.seals[sid]
+        if sid and not seen[sid] then
+            seen[sid] = true
+            if s and s.status == 'sealed' then mine[#mine + 1] = view(s)
+            elseif not s then mine[#mine + 1] = { id = sid, label = 'Scellé illisible', date = '?', lost = true } end
+        end
+    end
     for _, s in pairs(Evidence.seals) do
-        if s.status == 'sealed' and s.by == cid then mine[#mine + 1] = view(s)
-        elseif s.status ~= 'sealed' then others[#others + 1] = view(s) end
+        if s.status ~= 'sealed' then others[#others + 1] = view(s) end
     end
     table.sort(mine, function(a, b) return a.id < b.id end)
     table.sort(others, function(a, b) return a.id > b.id end)
@@ -261,6 +275,10 @@ end
 
 CreateThread(function()
     Store.init()
+    for _, s in ipairs(Store.loadSeals and Store.loadSeals() or {}) do -- V12.42 : scellés retrouvés après un redémarrage
+        Evidence.seals[s.id] = s
+        if s.id > Evidence.nextSeal then Evidence.nextSeal = s.id end
+    end
     while true do Wait(60000) Evidence.decay() end
 end)
 
@@ -272,7 +290,7 @@ exports('IsFiled', function(cid) return Store.filed(cid) ~= nil end)
 exports('CourtPiece', function(kind, ref)
     if kind == 'seal' then
         local s = Evidence.seals[tonumber(ref) or -1]
-        if s and s.status == 'analyzing' and now() >= (s.readyAt or 0) then s.status, s.result = 'done', Evidence.analyze(s) end
+        if s and s.status == 'analyzing' and now() >= (s.readyAt or 0) then s.status, s.result = 'done', Evidence.analyze(s) Store.saveSeal(s) end
         if not s or s.status ~= 'done' then return nil end
         return ('Scellé n°%d · %s (%s) : %s'):format(s.id, Config.Kinds[s.kind].label, s.date, s.result)
     elseif kind == 'photo' then

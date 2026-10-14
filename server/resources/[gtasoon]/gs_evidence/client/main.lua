@@ -85,15 +85,24 @@ CreateThread(function()
 end)
 
 -- Labo du commissariat -----------------------------------------------------------------------------------------
-local function labMenu()
+local labMenu
+labMenu = function()
     local ok, d = lib.callback.await('gs_evidence:lab', false, 'list')
     if not ok then return notify(false, d) end
-    local options = { { title = 'Mes scellés à analyser', icon = 'box-archive', readOnly = true } }
+    local options = { { title = 'Scellés dans ton sac', icon = 'box-archive', readOnly = true } }
     for _, s in ipairs(d.mine) do
-        options[#options + 1] = { title = ('n°%d · %s'):format(s.id, s.label), description = 'Prélevé le ' .. s.date, icon = 'flask', arrow = true,
-            onSelect = function() notify(lib.callback.await('gs_evidence:lab', false, 'analyze', s.id)) end }
+        if s.lost then -- V12.42 : sac d'avant la mise à jour (scellé perdu au redémarrage) : à jeter
+            options[#options + 1] = { title = ('n°%d · scellé illisible'):format(s.id), icon = 'triangle-exclamation', iconColor = '#ff9f43', readOnly = true,
+                description = 'Prélevé avant la mise à jour du labo : plus analysable, tu peux le jeter.' }
+        else
+            options[#options + 1] = { title = ('n°%d · %s'):format(s.id, s.label), description = ('Prélevé le %s par %s · Analyser'):format(s.date, s.by or '?'),
+                icon = 'flask', arrow = true, onSelect = function()
+                    notify(lib.callback.await('gs_evidence:lab', false, 'analyze', s.id))
+                    labMenu()
+                end }
+        end
     end
-    if #d.mine == 0 then options[#options + 1] = { title = 'Aucun scellé sur toi', icon = 'circle-info', readOnly = true } end
+    if #d.mine == 0 then options[#options + 1] = { title = 'Aucun scellé dans ton sac', icon = 'circle-info', readOnly = true } end
     options[#options + 1] = { title = 'Résultats du labo', icon = 'microscope', readOnly = true }
     for _, s in ipairs(d.results) do
         options[#options + 1] = { title = ('n°%d · %s'):format(s.id, s.label), icon = s.status == 'done' and 'file-circle-check' or 'hourglass-half',

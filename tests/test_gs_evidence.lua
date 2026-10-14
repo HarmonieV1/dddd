@@ -16,7 +16,10 @@ local weapon = { label = 'Pistolet', name = 'WEAPON_PISTOL', metadata = { serial
 provide('ox_inventory', { GetCurrentWeapon = function() return weapon end })
 function GetVehicleBodyHealth(veh) return W.entities[veh].body or 1000 end
 local filed = {}
-Store = { init = function() end, filed = function(cid) return filed[cid] end, file = function(cid, name) filed[cid] = name end }
+local savedSeals = {}
+Store = { init = function() end, filed = function(cid) return filed[cid] end, file = function(cid, name) filed[cid] = name end,
+    saveSeal = function(s) savedSeals[s.id] = { id = s.id, status = s.status, kind = s.kind, cid = s.cid, key = s.key, date = s.date, by = s.by, byName = s.byName, readyAt = s.readyAt, result = s.result } end,
+    loadSeals = function() local l = {} for _, v in pairs(savedSeals) do l[#l + 1] = v end return l end }
 loadResource('gs_security', { R .. 'gs_security/server/main.lua' })
 loadResource('gs_evidence', { R .. 'gs_evidence/shared/config.lua', R .. 'gs_evidence/server/main.lua', R .. 'gs_evidence/server/photo.lua' })
 
@@ -125,6 +128,30 @@ advance(Config.Lab.seconds * 1000 + 1000)
 ok2, d = cb('gs_evidence:lab', 2, 'list')
 check('douille : arme, série et propriétaire enregistré', d.results[1].result:find('Pistolet') and d.results[1].result:find('AB123') and d.results[1].result:find('Jean Tireur'))
 check('analyser le scellé d\'un autre / déjà analysé : refusé', not cb('gs_evidence:lab', 2, 'analyze', sealId))
+
+-- V12.42 · Scellé remis par un collègue, puis redémarrage du serveur : toujours analysable au labo
+for _, t in pairs(Evidence.traces) do if t.kind ~= 'print' then c1 = t end end
+join(3, 'CID3', 'Agent Deux', c1.coords) duty[3] = true
+advance(6000)
+check('V12.42 : prélevé par un collègue', cb('gs_evidence:collect', 3, c1.id) == true)
+local given = W.players[3].slots[#W.players[3].slots]
+W.players[3].slots[#W.players[3].slots] = nil W.players[3].items.evidence_bag = 0
+W.players[2].slots = W.players[2].slots or {} W.players[2].slots[#W.players[2].slots + 1] = given W.players[2].items.evidence_bag = (W.players[2].items.evidence_bag or 0) + 1
+local gid = given.metadata.seal
+check('V12.42 : scellé gardé en base', savedSeals[gid] and savedSeals[gid].status == 'sealed')
+Evidence.seals = {} Evidence.nextSeal = 0 -- « redémarrage »
+for _, sv in ipairs(Store.loadSeals()) do Evidence.seals[sv.id] = sv if sv.id > Evidence.nextSeal then Evidence.nextSeal = sv.id end end
+advance(6000)
+ok2, d = cb('gs_evidence:lab', 2, 'list')
+local listed = false for _, m in ipairs(d.mine) do if m.id == gid and not m.lost then listed = true end end
+check('V12.42 : après redémarrage, le scellé remis par un collègue est listé', ok2 and listed)
+check('V12.42 : analyse lancée, sac retiré', cb('gs_evidence:lab', 2, 'analyze', gid) == true and Evidence.seals[gid].status == 'analyzing')
+check('V12.42 : numérotation reprise après le plus grand (pas de doublon)', Evidence.nextSeal >= gid)
+W.players[2].slots[#W.players[2].slots + 1] = { name = 'evidence_bag', metadata = { seal = 999, label = 'Scellé n°999' } }
+advance(6000)
+ok2, d = cb('gs_evidence:lab', 2, 'list')
+local lost = false for _, m in ipairs(d.mine) do if m.id == 999 and m.lost then lost = true end end
+check('V12.42 : ancien sac inconnu signalé illisible', lost)
 
 -- Javel ----------------------------------------------------------------------------------------------------------------------
 local before = count()
