@@ -78,6 +78,10 @@ lib.callback.register('gs_harvest:finish', function(src)
     local item, n, entry = Harvest.roll(a.loot)
     if not Bridge:CanCarry(src, item, n) or not Bridge:AddItem(src, item, n) then return false, 'Tu ne peux plus rien porter.' end
     if GetResourceState('gs_quests') == 'started' then exports.gs_quests:Track(src, 'harvest') end
+    -- V12.45 · activité illégale (pavot) : chaque récolte peut être vue et signalée (témoins / police IA de gs_wanted)
+    if a.illegal and GetResourceState('gs_wanted') == 'started' then
+        pcall(function() exports.gs_wanted:ReportCrime(src, a.illegal, GetEntityCoords(GetPlayerPed(src))) end)
+    end
     local st = nodeState(src, p.id, p.spot)
     st.n = st.n + 1
     local depleted = st.n >= (a.perNode or 3)

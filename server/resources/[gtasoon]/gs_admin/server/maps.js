@@ -206,7 +206,8 @@ function scanResource(name, dir) {
 
 // V12.15 : vrais noms des maps installées (menu F11 et blips), au lieu du nom de fichier du mod
 const LABELS = {
-  gsa_sub_patoche_benny_bw_pack: "Benny's", // V12.40 : plus de blip public (celui du métier mécano suffit), le nom reste
+  gsa_sub_patoche_benny_bw_pack: "Benny's",
+  gsa_9a13b85d2a84bbb31aad0d6f69e178d3b502ba3d: 'Props de récolte (orge, houblon, maïs, tabac, pavot)', // V12.45 : gs_harvest // V12.40 : plus de blip public (celui du métier mécano suffit), le nom reste
   gsa_apteka_pops_pills_v_dauntaune: "Pharmacie Pop's Pills",
   gsa_bahamas_mamas_v1_0: 'Bahama Mamas',
   gsa_biznes_ofis: "Bureau d'entreprise",
@@ -238,6 +239,7 @@ const PUBLIC = {
   gsa_patoche_ammu: { label: 'Ammu-Nation', sprite: 110, color: 1 },
   gsa_patoche_ammu2: { label: 'Ammu-Nation', sprite: 110, color: 1 },
   gsa_patoche_gamestand_pack: { label: 'Stand de jeux', sprite: 38, color: 27 }, // V12.44 (+ patoche_gamestand_script)
+  gsa_9a13b85d2a84bbb31aad0d6f69e178d3b502ba3d: false, // V12.45 : props de récolte (BzZz), pas un lieu
   gsa_patoche_fastbox_pack: false, // V12.44 : points relais FastBox (colis) : le script pose ses propres blips (config Patoche)
   gsa_sub_patoche_track_pack: { label: 'Circuit', sprite: 38, color: 46 }, // V12.44 (+ patoche_track_script)
   gsa_patoche_beach_party_pack: { label: 'Beach party', sprite: 93, color: 27 },

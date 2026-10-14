@@ -248,7 +248,14 @@ function MB($bytes) { [math]::Round($bytes / 1MB, 1) }
 # Packs trop lourds : on ne garde que quelques modèles choisis (le reste des fichiers et des entrées .meta est retiré).
 # Vêtements solo déjà convertis par nos soins (zips ROADTRIP-*.zip) : signalés comme tels au lieu de « à convertir ».
 $Converted = @{ basic = 'ROADTRIP-coiffures_femme_1.zip'; box_braids = 'ROADTRIP-coiffures_femme_1.zip'; dreads = 'ROADTRIP-coiffures_femme_1.zip'
-    edgar = 'ROADTRIP-coiffures_femme_2.zip'; leopard_print = 'ROADTRIP-coiffures_femme_2.zip'; locs = 'ROADTRIP-coiffures_femme_2.zip' }
+    edgar = 'ROADTRIP-coiffures_femme_2.zip'; leopard_print = 'ROADTRIP-coiffures_femme_2.zip'; locs = 'ROADTRIP-coiffures_femme_2.zip'
+    # V12.45 · convertis le 14/10 (session web)
+    dreadlocks = 'ROADTRIP-coiffures_homme_2.zip'; buzzcut_fade = 'ROADTRIP-coiffures_homme_2.zip'
+    hyun_hair = 'ROADTRIP-coiffures_femme_3.zip'; braid_with_long_hairstyle_for_mp_female = 'ROADTRIP-coiffures_femme_3.zip'
+    long_braids_hairstyle_by_jazlyn13 = 'ROADTRIP-coiffures_femme_3.zip'; long_hair = 'ROADTRIP-coiffures_femme_3.zip'
+    '088_erika_hair' = 'ROADTRIP-coiffures_femme_3.zip'; free_alycia_hair_by_jinxstore = 'ROADTRIP-coiffures_femme_3.zip'
+    grace_dress = 'ROADTRIP-tenues_femme_1.zip'; knee_jeans = 'ROADTRIP-tenues_femme_1.zip'
+    dollie_moko_summer_dress_for_mp_female = 'ROADTRIP-tenues_femme_1.zip'; dress_with_cut_outs_for_mp_female_by_jaa = 'ROADTRIP-tenues_femme_1.zip' }
 $PackPick = @{} # ex. : @{ nom_du_pack = @('modele1', 'modele2') }
 function Save-Xml($x, $path) {
     $s = New-Object Xml.XmlWriterSettings; $s.Encoding = New-Object Text.UTF8Encoding $false; $s.Indent = $true
@@ -301,7 +308,7 @@ function Slim-Tuning($root) {
 }
 # Marques réelles (voitures sous licence, mode, police réelle) : refusées, risque de retrait du serveur par Cfx.re /
 # Rockstar. On garde le contenu « lore GTA » (marques inventées du jeu) ou sans marque.
-$BrandBlock = 'lamborghini|ferrari|porsche|mercedes|maybach|amg|audi|etron|bmw|dodge|chrysler|jeep|ford|mustang|chevrolet|chevy|corvette|cadillac|volkswagen|(?<!mini)golf|toyota|lexus|nissan|honda|mazda|subaru|mitsubishi|bugatti|mclaren|tesla|bentley|rolls|aston|jaguar|land.?rover|range.?rover|maserati|alfa|fiat|peugeot|renault|citroen|koenigsegg|pagani|rimac|gucci|versace|nike|adidas|jordan|supreme|balenciaga|louis.?vuitton|dior|chanel|prada|rolex|north.?face|dallas|nypd|lapd|lspd_real|rhgs|roadtrip_vetements_homme'
+$BrandBlock = 'lamborghini|ferrari|porsche|mercedes|maybach|amg|audi|etron|bmw|dodge|chrysler|jeep|ford|mustang|chevrolet|chevy|corvette|cadillac|volkswagen|(?<!mini)golf|toyota|lexus|nissan|honda|mazda|subaru|mitsubishi|bugatti|mclaren|tesla|bentley|rolls|aston|jaguar|land.?rover|range.?rover|maserati|alfa|fiat|peugeot|renault|citroen|koenigsegg|pagani|rimac|gucci|versace|nike|adidas|jordan|supreme|balenciaga|louis.?vuitton|dior|chanel|prada|rolex|north.?face|dallas|nypd|lapd|lspd_real|rhgs|roadtrip_vetements_homme|boomods_brand_bag|ysl'
 # Fichiers à l'intérieur d'un pack : marques sans ambiguïté seulement (un « golf_course.ytd » de map n'est pas une Golf)
 $BrandStrong = 'lamborghini|ferrari|porsche|mercedes|maybach|bugatti|mclaren|koenigsegg|gucci|versace|balenciaga|louis.?vuitton|rolex|dallas'
 function Test-Brand($name, [switch]$File) { return ($name.ToLower() -match $(if ($File) { $BrandStrong } else { $BrandBlock })) }

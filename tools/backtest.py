@@ -6,13 +6,13 @@ from pdf import H1, H2, P, SMALL, VERSION, footer, A4, mm, colors, SimpleDocTemp
 
 # (test, qui, priorité)
 SESSIONS = [
-    # V12.44 (14/10) : fiche allégée. Tout ce qui datait d'avant la V12.37 et n'a pas fait l'objet d'un retour est considéré
+    # V12.45 (14/10) : fiche allégée. Tout ce qui datait d'avant la V12.37 et n'a pas fait l'objet d'un retour est considéré
     # validé (arrivée, téléphone, métiers, papiers, staff, Discord, site, alertes, vie légale / illégale…) et retiré.
     # Reste : ce qui a été corrigé ou ajouté depuis, jamais revu en jeu, et ce qui est obligatoire avant d'ouvrir.
     ('0 · Avant de commencer (5 min)', [
-        ('METTRE-A-JOUR.bat : version V12.44 affichée, « Base de données sauvegardée » ; METTRE-A-JOUR-OVH puis GERER-OVH → 1 : « Version RoadLine : V12.44 »', 'Staff', 3),
+        ('METTRE-A-JOUR.bat : version V12.45 affichée, « Base de données sauvegardée » ; METTRE-A-JOUR-OVH puis GERER-OVH → 1 : « Version RoadLine : V12.45 »', 'Staff', 3),
         ('Console au démarrage (PC et VPS) : aucune ligne ROUGE ; en jaune seulement « Conflit tranché » (2 fichiers Patoche) ; F8 en jeu : aucune erreur rouge', 'Staff', 3),
-        ('VIDER-CACHE-FIVEM.bat si un ancien menu apparaît (F11 doit afficher « RoadLine V12.44 »)', 'Staff', 2),
+        ('VIDER-CACHE-FIVEM.bat si un ancien menu apparaît (F11 doit afficher « RoadLine V12.45 »)', 'Staff', 2),
     ]),
     ('1 · Corrections du 13/10 à confirmer (V12.37 → V12.39, 20 min)', [
         ('Garage de métier : « Sortir » donne le véhicule à chaque fois, UNE notification ; prise de service au PNJ : une seule interaction', '2', 3),
@@ -36,11 +36,15 @@ SESSIONS = [
         ('Arme dans le dos : courir, sauter, ragdoll, véhicule : reste fixe, ne se balance pas, ne tombe pas', '2', 3),
         ('/boutique : interface RoadLine (catégories, RoadCoins, Mes achats), Échap ferme ; console : gsstore_deliver TEST-RC roadcoins_500 <id fivem> → +500 affichés', 'Staff', 2),
     ]),
-    ('4 · V12.43 / V12.44 — console, police, maps, import (10 min)', [
+    ('4 · V12.43 / V12.45 — console, police, maps, import (10 min)', [
         ('Policier en service : monter / voler une voiture près du commissariat → plus de pop-up « prise de service / véhicule » en boucle', '2', 3),
         ('Garage de police : véhicules du pack LSPD selon le grade (Scout, moto, K9, Stalker…) ; concession : Severo et Hachura au catalogue', '2', 2),
         ('Stand de jeux, circuit, FastBox : démarrés (pas de « NON démarré » en console), blips Stand de jeux / Circuit ; FastBox : envoyer un colis à un autre point relais', '2', 2),
         ('Braquage masqué puis démasqué : la description des témoins dit « masqué » seulement dans le 1er cas', '2', 2),
+    ]),
+    ('4b · V12.45 — vêtements convertis, récolte (15 min)', [
+        ('Coiffeur / garde-robe : nouvelles coupes homme (dreadlocks, buzzcut) et femme (tresses, cheveux longs) ; magasin : robes, sweat Lace Up, Knee Jeans ; rien du jeu n\'a disparu', '2', 3),
+        ('Récolte : champs d\'orge / houblon / maïs et tabac à Grapeseed (vrais plants), revente au marché ; pavot : pas de blip, latex vendu au receleur du port, alerte police possible', 'Seul', 2),
     ]),
     ('5 · Obligatoire avant d\'ouvrir', [
         ('SAUVEGARDER-BDD.bat puis RESTAURER-BDD.bat sur un joueur ; redémarrage de 6 h : annonces 15 / 5 / 1 min', 'Staff', 3),

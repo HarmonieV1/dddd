@@ -41,7 +41,7 @@ PRIORITIES = [
         'Démarrage : aucune ligne rouge (maps « NON démarrée », scripts Patoche : stand de jeux, circuit, FastBox, villa bunker)',
         'Envoyer les 21 mods « à convertir » (cheveux, robes, jeans) : zip glissé dans la conversation ou domaine wetransfer.com autorisé',
         'patoche_interact installé (script de la villa bunker) ; props de récolte retrouvés dans l\'import',
-        'Version V12.44+ sur le PC ET sur le VPS (console : [RoadLine RP] version …)',
+        'Version V12.45+ sur le PC ET sur le VPS (console : [RoadLine RP] version …)',
     ]),
     ('Priorité haute (cette semaine)', [
         'Backtest allégé (onglet Backtest, 31 tests) en commençant par les ★★★',

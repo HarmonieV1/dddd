@@ -1,4 +1,4 @@
-# Patch récap — session web du 14/10/2026 (V12.40 → V12.44)
+# Patch récap — session web du 14/10/2026 (V12.40 → V12.45)
 
 > À garder pour le récap global de fin. Détail technique de chaque version : `docs/ETAT_PROJET.md` (historique).
 > Rien de cette session n'a encore été essayé en jeu : backtest sections **6d, 6e, 6f, 6g** (site de doc).
@@ -51,16 +51,22 @@
 | **Backtest allégé** | `tools/backtest.py` (PDF + site de doc) | 31 tests au lieu d'environ 90 : seulement le récent jamais revu en jeu et l'obligatoire avant l'ouverture |
 | Documentation | `ETAT_PROJET.md`, `PROMPT_REPRISE.md`, priorités du site de doc | « En attente » et priorités remis à jour (ce qui est fait retiré) |
 
+## V12.45 — vêtements convertis, récolte
+| Quoi | Où | Ce que ça change |
+|---|---|---|
+| **Coiffures et tenues converties** | `livraison/vetements-convertis` (3 zips ROADTRIP-…) | 7 coupes femme, 4 homme, 3 robes, sweat Lace Up, Knee Jeans : en plus de celles du jeu (rien remplacé) |
+| Refusés | importeur + NETTOYER-MARQUES | Sac BOOMODS (logo YSL), Afro de Lamar (perso solo), dreadlocks Trycky (archive coupée) |
+| **Récolte : céréales, tabac** | `gs_harvest` | Vrais plants (props BzZz), revente au marché de Grapeseed |
+| **Récolte : pavot** (illégal) | `gs_harvest`, `gs_wanted` | Sans blip, alerte possible, receleur du port |
+
 ## Ce qu'il reste à faire de ton côté
 1. **METTRE-A-JOUR** (applique les retouches Qbox : pop-up police, soins), puis **METTRE-A-JOUR-OVH**.
-2. **21 mods « à convertir »** (cheveux, robes, jeans au format solo) : le lien WeTransfer du 14/10 est **bloqué par le réseau de
-   la session web** (wetransfer.com refusé). Deux solutions : glisser les zips directement dans la conversation (plusieurs petits
-   envois), ou autoriser le domaine `wetransfer.com` dans les réglages réseau de l'environnement Claude. `male_hair_collection_vol_1`
-   a un fichier de 27,8 Mo (> 16 Mo) : je l'allège ou on retire ce modèle.
+2. **Vêtements convertis** : copie les 3 zips `ROADTRIP-…` dans `C:\GTASOON\mods-a-trier`, puis IMPORTER-MODS et
+   METTRE-A-JOUR-OVH. Restent 3 gros mods (coiffures homme vol. 1, robes femme, pack Tide) : à m'envoyer en morceaux 7-Zip de 25 Mo.
 3. `patoche_villa_bunker_script_pack` : il lui faut la ressource **`patoche_interact`** (dans ton portail Cfx « Granted Assets »,
    même compte que la clé du serveur) : elle n'était pas dans l'import du 14/10.
-3 bis. **Props de récolte** : absents du rapport du 14/10 (aucune ligne). Vérifie le nom de leur archive dans `mods-a-trier`.
-4. Rejeté : `lace_up_sweats` (vêtement des persos solo Franklin / Michael / Trevor).
+3 bis. **Props de récolte** : reçus et branchés (V12.45) ; points des champs à vérifier en jeu (F11).
+4. `lace_up_sweats` : finalement converti (c'est un vêtement femme MP, mal classé par l'importeur).
 5. Placer en jeu : points du métier mécano sur la map Benny's, véhicules d'exposition + départ des essais, portes `/doorlock`.
 6. Backtest allégé : 31 tests (onglet Backtest du site de doc / PDF), ★★★ d'abord.
 

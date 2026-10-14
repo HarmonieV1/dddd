@@ -196,7 +196,7 @@ end)
 
 CreateThread(function()
     for id, a in pairs(Config.Activities) do
-        blip(a.spots[1], a.blip, a.label)
+        if a.blip then blip(a.spots[1], a.blip, a.label) end -- V12.45 : pas de blip pour l'illégal (pavot)
         if a.outfit ~= false then
             -- vestiaire à côté du premier nœud (recalé au sol à la création du point) ; V12.36 : contremaître (PNJ) au vestiaire
             local c = a.spots[1]
@@ -206,7 +206,7 @@ CreateThread(function()
         end
     end
     for i, b in ipairs(Config.Buyers) do
-        blip(b.coords, b.blip, b.label, false) -- acheteurs visibles de loin
+        if b.blip then blip(b.coords, b.blip, b.label, false) end -- acheteurs visibles de loin (sauf receleur)
         -- V11.5 acheteur visible ; V12.36 : créé par gs_markers (ox_target « Vendre » sur le PNJ, en plus du [E])
         exports.gs_markers:Add('gs_harvest:buyer:' .. i, { coords = b.coords, style = 'shop', label = b.label,
             event = 'gs_harvest:client:sell', args = { i }, prompt = 'Vendre · ' .. b.label,

@@ -46,6 +46,12 @@
 ['wood_log'] = { label = 'Bûche', weight = 2000, stack = true, client = { image = 'wood.png' } }, -- remplace
 ['tomato'] = { label = 'Tomate', weight = 150, stack = true, degrade = 2880, client = { status = { hunger = 50000 }, anim = 'eating', usetime = 2000, image = 'tomato.png' } }, -- remplace
 ['potato'] = { label = 'Pomme de terre', weight = 200, stack = true, client = { image = 'potato.png' } }, -- remplace
+-- V12.45 · récoltes des props BzZz (champs de Grapeseed) : céréales / houblon / maïs, tabac (légal) ; pavot (illégal)
+['barley'] = { label = 'Orge', weight = 300, stack = true, description = 'Céréale récoltée à Grapeseed. Se vend au marché.', client = { image = 'wheat.png' } },
+['hops'] = { label = 'Houblon', weight = 150, stack = true, description = 'Cônes de houblon frais. Se vend au marché.', client = { image = 'hops.png' } },
+['corn'] = { label = 'Épi de maïs', weight = 400, stack = true, degrade = 4320, client = { status = { hunger = 80000 }, anim = 'eating', usetime = 2500, image = 'corn.png' } },
+['tobacco_leaf'] = { label = 'Feuilles de tabac', weight = 100, stack = true, description = 'À faire sécher. Se vend au marché.', client = { image = 'tobacco.png' } },
+['poppy_resin'] = { label = 'Latex de pavot', weight = 100, stack = true, description = 'Illégal. Un receleur du port en veut.', client = { image = 'poppy_resin.png' } },
 ['meat'] = { label = 'Viande de gibier', weight = 1000, stack = true, degrade = 2880, client = { image = 'meat.png' } }, -- remplace
 ['leather'] = { label = 'Cuir', weight = 800, stack = true, client = { image = 'leather.png' } }, -- remplace
 ['painkillers'] = { label = 'Antidouleurs', weight = 50, stack = true, close = true, description = '+30 PV en quelques secondes.', client = { image = 'painkillers.png', export = 'gs_details.painkillers' } }, -- remplace

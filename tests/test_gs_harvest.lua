@@ -218,5 +218,24 @@ for id, a in pairs(Config.Activities) do
 end
 check('portée des PNJ : générique dans gs_markers, plus de réglage propre à gs_harvest', Config.BuyerPedRange == nil)
 
+-- V12.45 · props de récolte BzZz : céréales et tabac (légal, vendus au marché), pavot (illégal, signalé, receleur sans blip)
+do
+    local before = #crimes
+    local cer = Config.Activities.cereals
+    tp(1, cer.spots[1]) step()
+    local okC = cb('gs_harvest:begin', 1, 'cereals', 1); advance(cer.duration[2])
+    local okC2 = cb('gs_harvest:finish', 1); step()
+    local got = (W.players[1].items.barley or 0) + (W.players[1].items.hops or 0) + (W.players[1].items.corn or 0)
+    check('V12.45 : céréales récoltées (orge / houblon / maïs), rien de signalé', okC and okC2 and got > 0 and #crimes == before)
+    local pop = Config.Activities.poppy
+    tp(1, pop.spots[1]) step()
+    local okP = cb('gs_harvest:begin', 1, 'poppy', 1); advance(pop.duration[2])
+    local okP2 = cb('gs_harvest:finish', 1); step()
+    check('V12.45 : pavot récolté et signalé (culture illicite)', okP and okP2 and (W.players[1].items.poppy_resin or 0) > 0 and crimes[#crimes] == 'drug_cultivation')
+    check('V12.45 : pavot sans blip, receleur sans blip', pop.blip == false and (function() for _, b in ipairs(Config.Buyers) do if b.items.poppy_resin then return b.blip == false end end end)())
+    local market for _, b in ipairs(Config.Buyers) do if b.items.barley then market = b end end
+    check('V12.45 : orge, houblon, maïs, tabac rachetés au marché de Grapeseed', market and market.items.hops and market.items.corn and market.items.tobacco_leaf)
+end
+
 io.write(('\n%d réussis, %d échoués\n'):format(passed, failed))
 os.exit(failed == 0 and 0 or 1)

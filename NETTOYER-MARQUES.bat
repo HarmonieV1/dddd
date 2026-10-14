@@ -12,7 +12,7 @@ $Data = Join-Path $Root 'server-data'
 $Addons = Join-Path $Data 'resources\[addons]'
 $Cfg = Join-Path $Data 'cfg\addons.cfg'
 # Meme liste que scripts\windows\importer-mods.ps1 ($BrandBlock / $BrandStrong) : garder les deux identiques.
-$BrandBlock = 'lamborghini|ferrari|porsche|mercedes|maybach|amg|audi|etron|bmw|dodge|chrysler|jeep|ford|mustang|chevrolet|chevy|corvette|cadillac|volkswagen|(?<!mini)golf|toyota|lexus|nissan|honda|mazda|subaru|mitsubishi|bugatti|mclaren|tesla|bentley|rolls|aston|jaguar|land.?rover|range.?rover|maserati|alfa|fiat|peugeot|renault|citroen|koenigsegg|pagani|rimac|gucci|versace|nike|adidas|jordan|supreme|balenciaga|louis.?vuitton|dior|chanel|prada|rolex|north.?face|dallas|nypd|lapd|lspd_real|rhgs|roadtrip_vetements_homme'
+$BrandBlock = 'lamborghini|ferrari|porsche|mercedes|maybach|amg|audi|etron|bmw|dodge|chrysler|jeep|ford|mustang|chevrolet|chevy|corvette|cadillac|volkswagen|(?<!mini)golf|toyota|lexus|nissan|honda|mazda|subaru|mitsubishi|bugatti|mclaren|tesla|bentley|rolls|aston|jaguar|land.?rover|range.?rover|maserati|alfa|fiat|peugeot|renault|citroen|koenigsegg|pagani|rimac|gucci|versace|nike|adidas|jordan|supreme|balenciaga|louis.?vuitton|dior|chanel|prada|rolex|north.?face|dallas|nypd|lapd|lspd_real|rhgs|roadtrip_vetements_homme|boomods_brand_bag|ysl'
 $BrandStrong = 'lamborghini|ferrari|porsche|mercedes|maybach|bugatti|mclaren|koenigsegg|gucci|versace|balenciaga|louis.?vuitton|rolex|dallas'
 function Is-Brand($name) { $name.ToLower() -match $BrandBlock }
 

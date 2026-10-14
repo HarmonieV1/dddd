@@ -18,6 +18,7 @@ Config.WorkOutfit = {
 Config.ItemLabels = {
     fish = 'poisson', tuna = 'thon', scrapmetal = 'ferraille', copper = 'cuivre', stone = 'pierre', iron_ore = 'minerai de fer',
     gold_ore = 'pépite d\'or', wood_log = 'bûche', tomato = 'tomate', potato = 'pomme de terre', meat = 'viande', leather = 'cuir',
+    barley = 'orge', hops = 'houblon', corn = 'épi de maïs', tobacco_leaf = 'feuilles de tabac', poppy_resin = 'latex de pavot',
 }
 
 -- V7 : chaque activité a plusieurs « nœuds » (arbres, rochers, carcasses, rangs de légumes, places de pêche).
@@ -105,6 +106,42 @@ Config.Activities = {
                   vec3(2020.0, 4889.0, 42.7), vec3(2029.0, 4892.0, 42.7), vec3(2038.0, 4895.0, 42.7), vec3(2047.0, 4898.0, 42.7),
                   vec3(2022.0, 4898.0, 42.7), vec3(2031.0, 4901.0, 42.7), vec3(2040.0, 4904.0, 42.7), vec3(2049.0, 4907.0, 42.7) },
     },
+    -- V12.45 · props BzZz (ressource gsa_9a13b85…, « Addon props » gardenpack) : vrais plants d'orge, houblon, maïs, tabac, pavot.
+    -- Sans ces props (ressource arrêtée), repli sur un objet du jeu. Points à caler en jeu : F11 → Monde et lieux → Déplacer un point.
+    cereals = {
+        label = 'Champs d\'orge, de houblon et de maïs (Grapeseed)', verb = 'Récolter', tool = nil, duration = { 5000, 7000 },
+        scenario = 'WORLD_HUMAN_GARDENER_PLANT', prop = 'prop_veg_crop_03_cab', perNode = 2,
+        props = { 'prop_bzzz_gardenpack_barley001', 'prop_bzzz_gardenpack_hops001', 'prop_bzzz_gardenpack_cornstalk001',
+                  'prop_bzzz_gardenpack_barley002', 'prop_bzzz_gardenpack_hops002', 'prop_bzzz_gardenpack_cornstalk002',
+                  'prop_bzzz_gardenpack_barley003', 'prop_bzzz_gardenpack_hops003', 'prop_bzzz_gardenpack_cornstalk003' },
+        blip = { sprite = 285, color = 46 }, sell = 'Marché de Grapeseed', icon = 'fa-solid fa-wheat-awn',
+        loot = { { 'barley', 40, { 2, 4 }, finds = { 'une gerbe d\'orge' } }, { 'hops', 30, { 1, 3 }, finds = { 'des cônes de houblon' } },
+                 { 'corn', 30, { 2, 3 }, finds = { 'des épis bien mûrs' } } },
+        lockerPed = { model = 'a_m_m_farmer_01', heading = 135.0, scenario = 'WORLD_HUMAN_CLIPBOARD' },
+        spots = { vec3(2062.0, 4912.0, 41.0), vec3(2071.0, 4915.0, 41.0), vec3(2080.0, 4918.0, 41.0), vec3(2089.0, 4921.0, 41.0),
+                  vec3(2064.0, 4921.0, 41.0), vec3(2073.0, 4924.0, 41.0), vec3(2082.0, 4927.0, 41.0), vec3(2091.0, 4930.0, 41.0),
+                  vec3(2066.0, 4930.0, 41.0), vec3(2075.0, 4933.0, 41.0), vec3(2084.0, 4936.0, 41.0), vec3(2093.0, 4939.0, 41.0) },
+    },
+    tobacco = {
+        label = 'Plantation de tabac (Grapeseed)', verb = 'Cueillir', tool = nil, duration = { 5000, 7000 },
+        scenario = 'WORLD_HUMAN_GARDENER_PLANT', prop = 'prop_veg_crop_03_cab', perNode = 2,
+        props = { 'prop_bzzz_gardenpack_tabacco001', 'prop_bzzz_gardenpack_tabacco002', 'prop_bzzz_gardenpack_tabacco003' },
+        blip = { sprite = 285, color = 21 }, sell = 'Marché de Grapeseed', icon = 'fa-solid fa-leaf', outfit = false,
+        loot = { { 'tobacco_leaf', 100, { 2, 4 }, finds = { 'de grandes feuilles de tabac' } } },
+        spots = { vec3(1895.0, 4795.0, 44.0), vec3(1903.0, 4799.0, 44.0), vec3(1911.0, 4803.0, 44.0), vec3(1919.0, 4807.0, 44.0),
+                  vec3(1897.0, 4804.0, 44.0), vec3(1905.0, 4808.0, 44.0), vec3(1913.0, 4812.0, 44.0), vec3(1921.0, 4816.0, 44.0) },
+    },
+    -- Illégal : pas de blip, pas de vestiaire ; chaque récolte peut être signalée (gs_wanted, « Culture illicite »)
+    poppy = {
+        label = 'Champ de pavot', verb = 'Inciser', tool = nil, duration = { 7000, 9000 },
+        scenario = 'WORLD_HUMAN_GARDENER_PLANT', prop = 'prop_veg_crop_03_cab', perNode = 2, blip = false, outfit = false,
+        illegal = 'drug_cultivation', icon = 'fa-solid fa-seedling',
+        props = { 'prop_bzzz_gardenpack_poppy001', 'prop_bzzz_gardenpack_poppy002', 'prop_bzzz_gardenpack_poppy003' },
+        sell = 'un receleur du port (on en parle au marché noir)',
+        loot = { { 'poppy_resin', 100, { 1, 2 }, finds = { 'quelques gouttes de latex' } } },
+        spots = { vec3(2208.0, 5562.0, 53.0), vec3(2214.0, 5566.0, 53.0), vec3(2220.0, 5570.0, 53.0), vec3(2226.0, 5574.0, 53.0),
+                  vec3(2210.0, 5571.0, 53.0), vec3(2216.0, 5575.0, 53.0) },
+    },
 }
 
 -- Chasse : animaux créés par le serveur dans la zone (pas de faux gibier), dépecés au couteau une fois abattus.
@@ -134,7 +171,10 @@ Config.Buyers = {
     { label = 'Scierie de Paleto', coords = vec3(-552.4, 5348.5, 74.7), blip = { sprite = 77, color = 47 },
       items = { wood_log = { 20, 28 } }, ped = { model = 's_m_y_construct_01', heading = 90.0, scenario = 'WORLD_HUMAN_CLIPBOARD' } },
     { label = 'Marché de Grapeseed', coords = vec3(1678.4, 4880.4, 42.2), blip = { sprite = 52, color = 2 },
-      items = { tomato = { 6, 9 }, potato = { 5, 8 } }, ped = { model = 'a_m_m_farmer_01', heading = 180.0, scenario = 'WORLD_HUMAN_CLIPBOARD' } },
+      items = { tomato = { 6, 9 }, potato = { 5, 8 }, barley = { 4, 7 }, hops = { 7, 10 }, corn = { 5, 8 }, tobacco_leaf = { 9, 13 } }, ped = { model = 'a_m_m_farmer_01', heading = 180.0, scenario = 'WORLD_HUMAN_CLIPBOARD' } },
+    -- V12.45 · receleur du port (pavot) : pas de blip, on le trouve par le bouche-à-oreille RP
+    { label = 'Receleur du port', coords = vec3(1003.2, -2918.6, 5.9), blip = false,
+      items = { poppy_resin = { 45, 70 } }, ped = { model = 'g_m_m_chicold_01', heading = 90.0, scenario = 'WORLD_HUMAN_SMOKING' } },
     { label = 'Boucherie de Paleto (gibier de la chasse)', coords = vec3(-69.2, 6253.8, 31.1), blip = { sprite = 141, color = 47 },
       items = { meat = { 40, 60 }, leather = { 55, 80 } }, ped = { model = 's_m_m_linecook', heading = 45.0, scenario = 'WORLD_HUMAN_CLIPBOARD' } },
 }

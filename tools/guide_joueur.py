@@ -403,6 +403,8 @@ def build():
                ['Bûcheron', 'Hache (160 $)', 'Forêt de Paleto', 'Bûches (2-3)', 'Scierie de Paleto'],
                ['Ferraille', 'aucun', 'Rogers Salvage (La Puerta) et casse de Sandy Shores', 'Ferraille (2-4), cuivre (1-2)', 'Ferrailleur de Cypress Flats'],
                ['Ferme', 'aucun', 'Champs de Grapeseed', 'Tomates (2-4), pommes de terre (2-4)', 'Marché de Grapeseed'],
+               ['Céréales', 'aucun', 'Champs de Grapeseed', 'Orge, houblon, maïs', 'Marché de Grapeseed'],
+               ['Tabac', 'aucun', 'Plantation de Grapeseed', 'Feuilles de tabac', 'Marché de Grapeseed'],
                ['Chasse', 'Couteau de chasse (140 $) + fusil et permis', 'Forêts au sud de Paleto', 'Viande (2-4), cuir', 'Boucherie de Paleto']]
     s += [table(harvest, [20 * mm, 32 * mm, 43 * mm, 45 * mm, 40 * mm], font=8)]
     s += [Paragraph('Prix de revente (par unité)', H3)]
