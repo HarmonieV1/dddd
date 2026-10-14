@@ -289,6 +289,20 @@ do
     check('boulot : loin du poste refusé', not Prison.work(31, 2))
     for _ = 1, 20 do advance(PP.jobCooldown * 1000 + 1000) Prison.work(31, 1) end
     check('peine jamais sous le minimum', Police.jailed[31].untilTs - os.time() >= PP.minLeft - 1)
+    -- V12.53 · Musculation : délai à part des boulots, pas de tickets, 3e valeur = séance de sport
+    local gi
+    for k, jb in ipairs(PP.jobs) do if jb.gym then gi = k break end end
+    check('musculation : au moins un poste', gi ~= nil)
+    Police.jail(31, 10, 'Test') -- peine remise à 10 min (sinon déjà au minimum)
+    tp(31, PP.jobs[gi].coords)
+    local tk, b2 = W.players[31].items.gs_canteen or 0, Police.jailed[31].untilTs
+    local okG, _, isGym = Prison.work(31, gi)
+    check('musculation : peine réduite, pas de ticket', okG == true and isGym == true and Police.jailed[31].untilTs == b2 - PP.jobs[gi].reduce
+        and (W.players[31].items.gs_canteen or 0) == tk)
+    check('musculation : délai entre deux séances', not Prison.work(31, gi))
+    tp(31, PP.jobs[1].coords)
+    advance(PP.jobCooldown * 1000 + 1000)
+    check('musculation : n\'empêche pas un petit boulot', Prison.work(31, 1) == true)
     tp(31, PP.canteen.coords)
     local t = W.players[31].items.gs_canteen
     check('cantine : achat en tickets', Prison.buy(31, 'canteen', 1) == true and W.players[31].items.gs_canteen == t - PP.canteen.items[1].price)

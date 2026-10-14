@@ -22,11 +22,16 @@ function Prison.work(src, i)
     if not j then return false, 'Tu n\'es pas détenu.' end
     if not job or not near(src, job.coords, 4.0) then return false, 'Pas ici.' end
     local now = os.time()
-    if (Prison.lastJob[src] or 0) + P.jobCooldown > now then return false, 'Le surveillant te dit de souffler un peu.' end
-    Prison.lastJob[src] = now
+    local key = job.gym and ('gym:' .. src) or src -- V12.53 : la musculation a son propre délai
+    local wait = job.gym and (P.gymCooldown or 90) or P.jobCooldown
+    if (Prison.lastJob[key] or 0) + wait > now then
+        return false, job.gym and 'Tes muscles brûlent : récupère un peu avant la prochaine série.' or 'Le surveillant te dit de souffler un peu.'
+    end
+    Prison.lastJob[key] = now
     j.untilTs = math.max(now + P.minLeft, j.untilTs - job.reduce)
-    Store.jailSet(j.cid, j.untilTs, 'peine réduite (travail)')
+    Store.jailSet(j.cid, j.untilTs, job.gym and 'peine réduite (sport)' or 'peine réduite (travail)')
     TriggerClientEvent('gs_police:client:jail', src, j.untilTs - now)
+    if job.gym then return true, ('Belle série : peine réduite de %d s, ta forme progresse.'):format(job.reduce), true end
     Bridge:AddItem(src, P.ticket, job.tickets)
     return true, ('Peine réduite de %d s · +%d ticket(s) de cantine'):format(job.reduce, job.tickets)
 end
@@ -99,4 +104,4 @@ end)
 AddEventHandler('gs_police:server:jailed', function(target)
     Bridge:Notify(target, 'Bolingbroke : petits boulots (peine réduite), cantine, trafics… et pour les plus audacieux, la grille.', 'inform')
 end)
-AddEventHandler('playerDropped', function() Prison.lastJob[source] = nil end)
+AddEventHandler('playerDropped', function() Prison.lastJob[source] = nil Prison.lastJob['gym:' .. source] = nil end)

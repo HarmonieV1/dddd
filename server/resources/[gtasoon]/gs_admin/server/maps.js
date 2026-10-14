@@ -384,8 +384,10 @@ const PREFER = ['gsa_cfx_draft_pb_liquor_pack']; // si une fusion échoue : vers
 // la ressource choisie est relancée après les autres au démarrage → sa version du fichier est celle que les joueurs reçoivent.
 // L'autre map perd seulement ce fichier-là (un peu d'herbe ou de décor autour d'elle). Inverser = changer le nom ici.
 const KEEP_ON_CONFLICT = {
-  'cs4_03_grass_0.ymap': 'gsa_sub_patoche_storage_pack',  // stand de jeux ↔ entrepôt : l'entrepôt garde son herbe
-  'hei_sm_22_strm_2.ymap': 'gsa_patoche_billiard_pack',   // stand de jeux ↔ billard : le billard garde son décor
+  'cs4_03_grass_0.ymap': 'gsa_sub_patoche_storage_pack',  // stand de jeux ↔ entrepôt : l'entrepôt garde son herbe (herbe seulement)
+  // V12.53 : rendu au stand de jeux (ses stands sont dans ce fichier : donné au billard, le stand était introuvable sous son
+  // blip) ; le billard n'est qu'un décor sans script, il perd un peu de décor à la place
+  'hei_sm_22_strm_2.ymap': 'gsa_patoche_gamestand_pack',
 };
 /** Conflits tranchés par priorité : { file → ressource gardée } pour ceux dont la ressource choisie est bien en cause. */
 function keptOf(conflicts) {
@@ -394,6 +396,29 @@ function keptOf(conflicts) {
     const k = KEEP_ON_CONFLICT[c.file];
     if (!c.resolved && k && c.resources.includes(k)) out[c.file] = k;
   }
+  return out;
+}
+
+/** V12.53 · Ordre de relance des gagnants : relancée en dernier, une ressource reprend TOUS ses fichiers en conflit. Un gagnant
+ *  qui doit perdre un autre fichier face à un autre gagnant est donc relancé AVANT lui (ex. stand de jeux avant l'entrepôt :
+ *  le stand garde ses stands, l'entrepôt son herbe). Tri topologique simple, l'ordre d'origine départage. */
+function relaunchOrder(conflicts, kept) {
+  const winners = [...new Set(Object.values(kept))];
+  const after = new Map(winners.map((w) => [w, new Set()])); // w → ceux qui doivent passer avant w
+  for (const c of conflicts) {
+    const k = kept[c.file];
+    if (!k) continue;
+    for (const r of c.resources) if (r !== k && after.has(r)) after.get(k).add(r);
+  }
+  const out = [], done = new Set();
+  let guard = winners.length * winners.length + 1;
+  while (out.length < winners.length && guard-- > 0) {
+    for (const w of winners) {
+      if (done.has(w)) continue;
+      if ([...after.get(w)].every((x) => done.has(x))) { out.push(w); done.add(w); }
+    }
+  }
+  for (const w of winners) if (!done.has(w)) out.push(w); // cycle (impossible à satisfaire) : ordre d'origine
   return out;
 }
 
@@ -670,7 +695,7 @@ function applyFusions(maps, fusionDir) {
   return written;
 }
 
-if (typeof module !== 'undefined' && module.exports) module.exports = { keptOf, KEEP_ON_CONFLICT, cleanName, deleteMapsOnDisk, pruneFusions, disableInCfg, inflateRsc7, entitiesOf, memoryMB, memorySplit, pagesSize, isVanillaName, placesOf, scanResource, conflictsOf, scanAll, labelOf, mergeOcclusion, applyFusions, RETIRED_MAPS, RETIRED_PATTERNS, RESTORED_MAPS, retiredReason, retiredLabel, readRetiredList, deleteCompanionsOnDisk, retireMap, removeCfgLines, activeEnsures, publicBlips, PUBLIC, joaat, ACTIVITY, activityOf, rscTruncated, truncatedFiles, _setLuaFs: (f) => { luaFs = f; } }; // tests Node seulement
+if (typeof module !== 'undefined' && module.exports) module.exports = { keptOf, relaunchOrder, KEEP_ON_CONFLICT, cleanName, deleteMapsOnDisk, pruneFusions, disableInCfg, inflateRsc7, entitiesOf, memoryMB, memorySplit, pagesSize, isVanillaName, placesOf, scanResource, conflictsOf, scanAll, labelOf, mergeOcclusion, applyFusions, RETIRED_MAPS, RETIRED_PATTERNS, RESTORED_MAPS, retiredReason, retiredLabel, readRetiredList, deleteCompanionsOnDisk, retireMap, removeCfgLines, activeEnsures, publicBlips, PUBLIC, joaat, ACTIVITY, activityOf, rscTruncated, truncatedFiles, _setLuaFs: (f) => { luaFs = f; } }; // tests Node seulement
 
 if (typeof GetCurrentResourceName === 'function') {
   const self = GetCurrentResourceName();
@@ -852,7 +877,7 @@ if (typeof GetCurrentResourceName === 'function') {
     for (const m of r.maps) if (m.activity && !m.activity.script) console.log(`^3[gs_admin] Map ${m.name} : DÉCOR SEUL. L'activité (${m.activity.what}) est un script vendu à part (aucune ressource « *${ACTIVITY[m.name].token}* » démarrée) : pas de point pour jouer. Il est dans C:\\GTASOON\\mods-tri\\scripts-a-verifier : à relire avant de l'installer. Blip affiché « (bientôt) »^7`);
     for (const m of r.maps) for (const h of m.heavy) console.log(`^3[gs_admin] Map ${m.name} : ${h.file} prend ${h.mb} Mo en mémoire (au-delà de la limite FiveM : 48 Mo graphique / 64 Mo système) : textures ou murs qui peuvent ne pas s'afficher^7`);
     const kept = keptOf(r.conflicts);
-    const relaunch = [...new Set(Object.values(kept))].filter((n) => GetResourceState(n) === 'started');
+    const relaunch = relaunchOrder(r.conflicts, kept).filter((n) => GetResourceState(n) === 'started'); // V12.53 : ordre qui respecte chaque choix
     for (const n of relaunch) { StopResource(n); StartResource(n); } // relancée en dernier : sa version gagne
     for (const c of r.conflicts) {
       if (c.resolved) console.log(`^2[gs_admin] Conflit résolu : ${c.file} (${c.resources.join(' + ')}) fusionné par ${c.resolved}^7`);

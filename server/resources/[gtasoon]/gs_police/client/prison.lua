@@ -22,7 +22,15 @@ AddEventHandler('gs_police:client:prisonWork', function(i)
     if not lib.progressBar({ duration = job.seconds * 1000, label = job.label .. '…', canCancel = true, anim = { scenario = job.scenario },
         disable = { move = true, car = true, combat = true } }) then return ClearPedTasks(cache.ped) end
     ClearPedTasks(cache.ped)
-    notify(lib.callback.await('gs_police:prisonWork', false, i))
+    local ok, msg, gym = lib.callback.await('gs_police:prisonWork', false, i)
+    notify(ok, msg)
+    if ok and gym then -- V12.53 : force et endurance (statistiques du jeu : coups plus solides, sprint plus long)
+        for _, stat in ipairs({ 'MP0_STRENGTH', 'MP0_STAMINA' }) do
+            local h = GetHashKey(stat)
+            local _, v = StatGetInt(h, -1)
+            StatSetInt(h, math.min(100, (v or 0) + (P.gymStat or 3)), true)
+        end
+    end
 end)
 AddEventHandler('gs_police:client:prisonShop', shop)
 AddEventHandler('gs_police:client:prisonEscape', function()
@@ -40,7 +48,7 @@ local function show(on)
     if not on then return exports.gs_markers:RemovePrefix('gs_prison:') end
     for i, job in ipairs(P.jobs) do
         exports.gs_markers:Add('gs_prison:job' .. i, { coords = job.coords, style = 'job', label = job.label, event = 'gs_police:client:prisonWork', args = { i },
-            prompt = ('%s (peine réduite)'):format(job.label), reach = 2.0 })
+            prompt = job.gym and ('%s (musculation)'):format(job.label) or ('%s (peine réduite)'):format(job.label), reach = 2.0 })
     end
     exports.gs_markers:Add('gs_prison:canteen', { coords = P.canteen.coords, style = 'shop', label = 'Cantine', event = 'gs_police:client:prisonShop', args = { 'canteen' }, prompt = 'Cantine (tickets)' })
     exports.gs_markers:Add('gs_prison:dealer', { coords = P.dealer.coords, style = 'hidden', event = 'gs_police:client:prisonShop', args = { 'dealer' }, prompt = 'Parler au détenu louche', reach = 1.8 })

@@ -8,7 +8,7 @@ from reportlab.lib.units import mm
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, PageBreak, KeepTogether
 from reportlab.graphics.shapes import Drawing, Rect, Circle, String, Line
 
-VERSION = 'V12.52'
+VERSION = 'V12.53'
 NEON = colors.HexColor('#28E0FF')
 DARK = colors.HexColor('#0F091C')
 PINK = colors.HexColor('#FF2E88')

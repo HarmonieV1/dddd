@@ -54,7 +54,7 @@ exclusifs (« ce que tu ne trouveras nulle part ailleurs »).
 - `feature/phase1-bridge`
 - `claude/gta-rp-architecture-stack-pbvdxz`
 
-**Dernier commit poussé** : « V12.52 : /son, aide vocale en jeu pour tous les joueurs » (hash exact :
+**Dernier commit poussé** : « V12.53 : stand de jeux, jetons des scripts importés, musculation en prison » (hash exact :
 `git log -1 origin/feature/phase1-bridge`). Les deux branches pointent sur le même commit.
 
 **Deux sessions Claude en parallèle** (poste Windows et session web) : elles ne se voient pas. Toujours synchroniser
@@ -64,7 +64,7 @@ par un colis (zip de l'installation ou de la session) + ce fichier, et comparer 
 ## 2. Versions : interne vs publique (important, piège classique)
 
 Depuis la V11.3, il y a **deux numéros de version différents**, volontairement :
-- `gs_version` (convar, `server.cfg.example`) = **V12.52** → version technique interne, vue par le staff (F11, console,
+- `gs_version` (convar, `server.cfg.example`) = **V12.53** → version technique interne, vue par le staff (F11, console,
   METTRE-A-JOUR). Continue d'avancer à chaque mise à jour (V11.2, V11.3...).
 - `gs_public_version` (convar) = **« V4 · bêta »** → version vue par les **joueurs** (écran de chargement, statut
   Discord, Gazette). Le site affiche son propre journal (V1 à V4, V5 « classé confidentiel »).
@@ -271,6 +271,21 @@ Résumé très condensé (le détail complet est dans `docs/ROADMAP.md`, `docs/F
   ne remplace pas le curseur), profondeur CSS `animation-timeline: view()` (captures, mock, carte, chiffres), intro
   façon chargement de mission (Entrée / clic pour passer). Tout coupé par `prefers-reduced-motion`, souris seulement
   sur ordinateur. Une seule boucle rAF qui s'endort quand rien ne bouge. Vérifié dans le navigateur : 0 erreur.
+
+- **V12.53** (15/10/2026, session web) — retours du 15/10 (4) :
+  - **Stand de jeux introuvable sous son blip** : `hei_sm_22_strm_2.ymap` (secteur sm_22 = jetée de Del Perro, là où le pack pose
+    ses stands) était donné au billard par KEEP_ON_CONFLICT (V12.43) → rendu à `gsa_patoche_gamestand_pack` (le billard n'est
+    qu'un décor sans script). `relaunchOrder` (maps.js) : un gagnant relancé en dernier reprenait TOUS ses fichiers en conflit
+    (il aurait aussi pris l'herbe de l'entrepôt) ; tri topologique : stand relancé avant l'entrepôt. Tests maps 126/126.
+  - **Jetons d'auto-tamponneuses (« je ne peux pas acheter »)** : un objet absent d'ox_inventory fait échouer l'achat sans
+    message. IMPORTER-MODS (étape 3b) lit les fichiers lisibles des scripts / packs installés (config.lua ; les fichiers
+    chiffrés sont ignorés), repère les objets (`…Item/Token/Ticket = '…'`, AddItem / RemoveItem / HasItem…) et ajoute ceux
+    qui manquent à `ox_inventory/data/items.lua` (bloc « Objets des scripts importés », libellé Jeton / Ticket), noté au
+    rapport. Si le rapport n'en ajoute aucun : envoyer le config.lua du script d'auto-tamponneuses et les lignes de console.
+  - **Musculation en prison** (gs_police, prison vivante) : Pompes, Abdos, Haltères, Tractions dans la cour (scénarios du jeu,
+    `gym = true` : délai à part `gymCooldown` 90 s, peine −30 s, pas de tickets) ; force et endurance du jeu +3 par séance
+    (MP0_STRENGTH / MP0_STAMINA). Positions à caler via F11. Tests police 109/109.
+  - Lien redonné au fondateur : visages féminins améliorés github.com/zfbx/improved-females.
 
 - **V12.52** (15/10/2026, session web) — « tous les joueurs n'auront pas REPARER-SON » : le son du jeu qui baisse pendant le
   vocal vient de Windows chez le joueur (atténuation « Communications », ou « améliorations audio » selon un rapport du forum

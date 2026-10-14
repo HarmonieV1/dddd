@@ -120,3 +120,10 @@
 | Quoi | Où | Ce que ça change |
 |---|---|---|
 | **/son** | gs_onboarding, écran de chargement | Chaque joueur voit en jeu comment régler Windows (30 s) : commande /son, guide Que faire ? → Aide, rappel aux 3 premières connexions, astuce au chargement. Plus besoin de distribuer REPARER-SON |
+
+## V12.53 (15/10) — stand de jeux, jetons, musculation
+| Quoi | Où | Ce que ça change |
+|---|---|---|
+| **Stand de jeux** | gs_admin (maps.js) | Ses stands étaient dans un fichier de décor donné au billard : rendu au stand ; l'entrepôt garde son herbe |
+| **Jetons (auto-tamponneuses…)** | IMPORTER-MODS | Les objets qu'un script importé attend (jetons, tickets) sont ajoutés à l'inventaire s'ils manquent |
+| **Musculation en prison** | gs_police | Pompes, abdos, haltères, tractions : peine réduite, meilleure forme |

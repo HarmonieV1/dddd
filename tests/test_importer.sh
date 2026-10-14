@@ -16,6 +16,10 @@ mk() { mkdir -p "$B/$1/$2"; printf '%b' "$3" > "$B/$1/$2/fxmanifest.lua"; head -
 mk pk patoche_bowlinggame_map "fx_version 'cerulean'\nthis_is_a_map 'yes'\n"; mkdir -p "$B/pk/patoche_bowlinggame_map/stream"; head -c 200 /dev/urandom > "$B/pk/patoche_bowlinggame_map/stream/pg.ymap"
 mk pk patoche_bowlinggame_script "fx_version 'cerulean'\ndependencies {\n 'ox_lib',\n 'qb-core',\n 'patoche_lib',\n '/onesync'\n}\n"; head -c 99 /dev/urandom > "$B/pk/patoche_bowlinggame_script/client.lua"
 mk pk patoche_lib "fx_version 'cerulean'\n"; head -c 99 /dev/urandom > "$B/pk/patoche_lib/c.lua"
+# V12.53 : config lisible d'un script compagnon (jeton absent d'ox_inventory → ajouté), ox_inventory du serveur
+printf "Config = {}\nConfig.TokenItem = 'bowling_token'\nConfig.Price = 50\n-- exports.ox_inventory:AddItem(src, 'water', 1)\n" > "$B/pk/patoche_bowlinggame_script/config.lua"
+mkdir -p "$R/server-data/resources/[ox]/ox_inventory/data"; printf "return {\n    ['water'] = { label = 'Eau', weight = 500 },\n}\n" > "$R/server-data/resources/[ox]/ox_inventory/data/items.lua"
+
 mk pw patoche_wipeout_pack "fx_version 'cerulean'\nthis_is_a_map 'yes'\n"; mkdir -p "$B/pw/patoche_wipeout_pack/stream"; head -c 99 /dev/urandom > "$B/pw/patoche_wipeout_pack/stream/w.ymap"
 mk ps patoche_wipeout_script "fx_version 'cerulean'\ndependency 'pas_installee'\n"; head -c 99 /dev/urandom > "$B/ps/patoche_wipeout_script/a.lua"
 mk pl patoche_lonely_script "fx_version 'cerulean'\n"; head -c 99 /dev/urandom > "$B/pl/patoche_lonely_script/a.lua"
@@ -62,5 +66,7 @@ check 'bibliothèque réclamée installée sous le nom attendu (patoche_interact
 check 'ancienne copie gsa_patoche_interact_pack plus démarrée' '! grep -q "gsa_patoche_interact_pack" <<<"$CFG"'
 check 'mod déjà converti (natt_hair5_fivem) : pas installé, plus démarré' '! grep -q "natt_hair5" <<<"$CFG" && grep -A1 "^- natt_hair5_fivem" <<<"$REP" | grep -q "déjà converti"'
 check 'refus manuel (afro de Lamar) : rejeté avec sa raison' 'grep -A1 "^- afro_for_lamar_tykus" <<<"$REP" | grep -q "Lamar"'
+ITEMS=$(cat "$R/server-data/resources/[ox]/ox_inventory/data/items.lua")
+check 'objet réclamé par un script ajouté à ox_inventory (une seule fois, objet existant non doublé)' 'grep -q "\[.bowling_token.\] = { label = .Jeton." <<<"$ITEMS" && [ "$(grep -c "\[.water.\]" <<<"$ITEMS")" = 1 ] && grep -q "bowling_token" <<<"$REP" && luac5.4 -p "$R/server-data/resources/[ox]/ox_inventory/data/items.lua"'
 echo "importeur (scripts compagnons, retraits) : $ok réussis, $ko échoués"
 [ "$ko" -eq 0 ]

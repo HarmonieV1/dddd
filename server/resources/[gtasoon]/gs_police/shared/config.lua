@@ -54,7 +54,15 @@ Config.Prison = {
         { label = 'Nettoyer la cour', coords = vec3(1705.0, 2550.0, 45.56), seconds = 20, reduce = 60, tickets = 2, scenario = 'WORLD_HUMAN_JANITOR' },
         { label = 'Laverie', coords = vec3(1678.0, 2575.0, 45.56), seconds = 25, reduce = 75, tickets = 3, scenario = 'PROP_HUMAN_BUM_BIN' },
         { label = 'Cuisine', coords = vec3(1690.0, 2590.0, 45.56), seconds = 30, reduce = 90, tickets = 3, scenario = 'PROP_HUMAN_BBQ' },
+        -- V12.53 · Musculation dans la cour (gym = true : délai à part `gymCooldown`, pas de tickets, la forme du perso monte).
+        -- Positions à caler en jeu : F11 → Monde et lieux → Déplacer un point (gs_police).
+        { label = 'Pompes', coords = vec3(1698.0, 2541.0, 45.56), seconds = 20, reduce = 30, tickets = 0, scenario = 'WORLD_HUMAN_PUSH_UPS', gym = true },
+        { label = 'Abdos', coords = vec3(1701.0, 2541.0, 45.56), seconds = 20, reduce = 30, tickets = 0, scenario = 'WORLD_HUMAN_SIT_UPS', gym = true },
+        { label = 'Haltères', coords = vec3(1704.0, 2541.0, 45.56), seconds = 25, reduce = 30, tickets = 0, scenario = 'WORLD_HUMAN_MUSCLE_FREE_WEIGHTS', gym = true },
+        { label = 'Tractions', coords = vec3(1707.0, 2541.0, 45.56), seconds = 20, reduce = 30, tickets = 0, scenario = 'PROP_HUMAN_MUSCLE_CHIN_UPS', gym = true },
     },
+    gymCooldown = 90,           -- s entre deux séances de musculation (à part des petits boulots)
+    gymStat = 3,                -- points de force et d'endurance gagnés par séance (max 100, statistiques du jeu)
     jobCooldown = 60,           -- s entre deux tâches (par détenu)
     minLeft = 60,               -- une peine ne descend jamais sous 1 min avec les boulots
     canteen = { coords = vec3(1660.0, 2560.0, 45.56), items = { { item = 'sandwich', price = 2 }, { item = 'water', price = 1 }, { item = 'gs_cigarettes', price = 4 } } },

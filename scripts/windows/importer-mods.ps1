@@ -656,6 +656,46 @@ foreach ($r in $results) {
         }
     }
 }
+
+# 3b. V12.53 · OBJETS réclamés par les scripts installés (jetons d'auto-tamponneuses, tickets, pièces de jeu…). Un objet absent
+#     d'ox_inventory = achat qui échoue sans message (« je ne peux pas acheter de jeton »). On lit les fichiers lisibles du
+#     script (config.lua : l'escrow ne chiffre presque jamais la config) et on ajoute à ox_inventory les objets qui manquent.
+$Accounts = 'money', 'cash', 'bank', 'black_money', 'dirty_money', 'markedbills', 'crypto'
+function Get-ScriptItems($dir) {
+    $names = @{}
+    foreach ($f in @(Get-ChildItem -LiteralPath $dir -Recurse -File -Filter '*.lua' -ErrorAction SilentlyContinue)) {
+        $t = [IO.File]::ReadAllText($f.FullName)
+        if ($t -match '[\x00-\x08]') { continue } # chiffré (escrow) : illisible
+        $rx = @('(?i)\w*(?:item|token|ticket|coin|jeton)(?:name)?s?\s*=\s*[''"]([a-z0-9_]{3,40})[''"]',
+                '(?i)\b(?:AddItem|RemoveItem|HasItem|GetItemCount|GetItemByName|CanCarryItem)\s*\(\s*(?:[^,()''"]+,\s*)?[''"]([a-z0-9_]{3,40})[''"]')
+        foreach ($x in $rx) { foreach ($m in [regex]::Matches($t, $x)) { $names[$m.Groups[1].Value.ToLower()] = $true } }
+    }
+    @($names.Keys | Where-Object { $Accounts -notcontains $_ -and $_ -notmatch '^(weapon_|ammo)' })
+}
+$oxItems = if ($canInstall) { Get-ChildItem -LiteralPath (Join-Path $Data 'resources') -Recurse -Filter 'items.lua' -ErrorAction SilentlyContinue |
+    Where-Object { $_.FullName -match 'ox_inventory[\\/]data[\\/]items\.lua$' } | Select-Object -First 1 }
+if ($oxItems) {
+    $known = [IO.File]::ReadAllText($oxItems.FullName)
+    $newItems = @()
+    foreach ($r in @($results | Where-Object { $_.install -and ($_.type -eq 'script' -or $_.type -eq 'map') })) { # map + script dans un même pack aussi
+        $dest = Join-Path $Addons $(if ($r.resName -and $r.companion) { $r.resName } else { 'gsa_' + $r.name })
+        if (-not (Test-Path -LiteralPath $dest)) { continue }
+        $missing = @(Get-ScriptItems $dest | Where-Object { $known -notmatch ("\[\s*['""]" + [regex]::Escape($_) + "['""]\s*\]\s*=") -and $newItems -notcontains $_ })
+        if ($missing.Count -eq 0) { continue }
+        $newItems += $missing
+        [void]$r.notes.Add("objets du script ajoutés à ox_inventory (ils n'existaient pas : achat impossible avant) : $($missing -join ', ')")
+    }
+    if ($newItems.Count -gt 0) {
+        $lines = foreach ($n in $newItems) {
+            $label = if ($n -match 'token|coin|jeton') { 'Jeton' } elseif ($n -match 'ticket') { 'Ticket' } else { (Get-Culture).TextInfo.ToTitleCase(($n -replace '_', ' ')) }
+            "    ['$n'] = { label = '$label', weight = 1, stack = true, close = true, description = 'Objet d\'un script importé (IMPORTER-MODS).' }," # Lua : apostrophe échappée par \'
+        }
+        $i = $known.LastIndexOf('}')
+        $known = $known.Substring(0, $i).TrimEnd() + "`n`n    -- Objets des scripts importés (IMPORTER-MODS, V12.53)`n" + ($lines -join "`n") + "`n" + $known.Substring($i)
+        [IO.File]::WriteAllText($oxItems.FullName, $known, (New-Object Text.UTF8Encoding($false)))
+        Say "  ox_inventory : $($newItems.Count) objet(s) de scripts importés ajouté(s) ($($newItems -join ', '))" 'Green'
+    }
+}
 if ($canInstall) {
     $cfg = @('## Mods importés par IMPORTER-MODS.bat (véhicules, vêtements, maps). Ce fichier n''est jamais écrasé par METTRE-A-JOUR.',
         '## Mets un # devant une ligne pour désactiver un mod.',
