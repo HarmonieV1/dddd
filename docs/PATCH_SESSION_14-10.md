@@ -1,4 +1,4 @@
-# Patch récap — session web du 14/10/2026 (V12.40 → V12.43)
+# Patch récap — session web du 14/10/2026 (V12.40 → V12.44)
 
 > À garder pour le récap global de fin. Détail technique de chaque version : `docs/ETAT_PROJET.md` (historique).
 > Rien de cette session n'a encore été essayé en jeu : backtest sections **6d, 6e, 6f, 6g** (site de doc).
@@ -42,12 +42,21 @@
 | **Pack LSPD importé** | `gs_jobs/shared/jobs.lua` | 12 véhicules au garage de police, par grade (Scout, K9, moto, banalisées, blindé, Stalker) |
 | Severo, Hachura | IMPORTER-MODS | Ajoutées seules au catalogue (catégorie « roadtrip ») : à exposer via F11 → Concessions |
 
+## V12.44 — 2e import du 14/10
+| Quoi | Où | Ce que ça change |
+|---|---|---|
+| Stand de jeux, circuit | `maps.js` (PUBLIC, ACTIVITY) | Blips « Stand de jeux » et « Circuit », scripts Patoche reconnus (sinon « décor seul » en console) |
+| FastBox (colis) | `maps.js` | Pas de blip public : le script Patoche pose les siens (sa config) |
+| Doublons de l'import | `importer-mods.ps1` | Même mod présent deux fois (zip d'origine + WeTransfer, pack / pack_1) : traité une seule fois |
+
 ## Ce qu'il reste à faire de ton côté
 1. **METTRE-A-JOUR** (applique les retouches Qbox : pop-up police, soins), puis **METTRE-A-JOUR-OVH**.
 2. **30 mods « à convertir »** (cheveux, robes, jeans au format solo) : envoie-moi le dossier `C:\GTASOON\mods-tri\a-convertir`
    (zip / WeTransfer), je les convertis en ajouts FiveM (cheveux renumérotés pour ne pas s'écraser). `male_hair_collection_vol_1`
    a un fichier de 27,8 Mo (> 16 Mo) : je l'allège ou on retire ce modèle.
-3. `patoche_villa_bunker_script_pack` : il lui faut la ressource **`patoche_interact`** (gratuite chez Patoche, même compte Cfx).
+3. `patoche_villa_bunker_script_pack` : il lui faut la ressource **`patoche_interact`** (dans ton portail Cfx « Granted Assets »,
+   même compte que la clé du serveur) : elle n'était pas dans l'import du 14/10.
+3 bis. **Props de récolte** : absents du rapport du 14/10 (aucune ligne). Vérifie le nom de leur archive dans `mods-a-trier`.
 4. Rejeté : `lace_up_sweats` (vêtement des persos solo Franklin / Michael / Trevor).
 5. Placer en jeu : points du métier mécano sur la map Benny's, véhicules d'exposition + départ des essais, portes `/doorlock`.
 6. Backtest 6d → 6g.

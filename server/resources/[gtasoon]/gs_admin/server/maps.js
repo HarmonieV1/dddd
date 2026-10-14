@@ -237,6 +237,9 @@ const PUBLIC = {
   gsa_es_billboard_map_pack: false,
   gsa_patoche_ammu: { label: 'Ammu-Nation', sprite: 110, color: 1 },
   gsa_patoche_ammu2: { label: 'Ammu-Nation', sprite: 110, color: 1 },
+  gsa_patoche_gamestand_pack: { label: 'Stand de jeux', sprite: 38, color: 27 }, // V12.44 (+ patoche_gamestand_script)
+  gsa_patoche_fastbox_pack: false, // V12.44 : points relais FastBox (colis) : le script pose ses propres blips (config Patoche)
+  gsa_sub_patoche_track_pack: { label: 'Circuit', sprite: 38, color: 46 }, // V12.44 (+ patoche_track_script)
   gsa_patoche_beach_party_pack: { label: 'Beach party', sprite: 93, color: 27 },
   gsa_patoche_billiard_pack: { label: 'Salle de billard', sprite: 93, color: 5 },
   gsa_patoche_bumpercar_del_perro: { label: 'Auto-tamponneuses', sprite: 38, color: 27 },
@@ -314,6 +317,8 @@ const ACTIVITY = {
   gsa_patoche_bumpercar_pacific: { what: 'auto-tamponneuses', token: 'bumpercar' },
   gsa_patoche_soccer_pack: { what: 'football', token: 'soccer' },
   gsa_patoche_billiard_pack: { what: 'billard', token: 'billiard' },
+  gsa_patoche_gamestand_pack: { what: 'stand de jeux', token: 'gamestand' }, // V12.44
+  gsa_sub_patoche_track_pack: { what: 'circuit', token: 'patoche_track' },  // V12.44
 };
 
 /** Script d'activité démarré pour une map (`started` = noms des ressources démarrées), ou null. */

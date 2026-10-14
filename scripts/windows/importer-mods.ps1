@@ -484,6 +484,12 @@ foreach ($p in $packages) {
         $results += $r
     } catch { Say "  $($p.Name) : analyse impossible ($($_.Exception.Message))" 'Yellow' }
 }
+# V12.44 · Doublons (même mod dans deux archives : zip d'origine + zip WeTransfer, « pack » et « pack_1 ») : traité une seule fois
+$seenMods = @{}
+$results = @($results | Where-Object {
+    $k = ($_.name -replace '_\d+$', '') + '|' + $_.sizeMB
+    if ($seenMods[$k]) { Say "  doublon ignoré : $($_.name) (même mod que $($seenMods[$k]))" 'DarkGray'; $false } else { $seenMods[$k] = $_.name; $true }
+})
 # V12.16 : mods retirés par le staff (F11 → Supprimer définitivement les maps) : jamais réinstallés, même depuis une archive groupée
 $RetiredFile = Join-Path $Root 'mods-retires.txt'
 $Retired = @()
