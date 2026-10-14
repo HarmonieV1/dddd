@@ -48,7 +48,12 @@ end
 --- Braquage d'un magasin : si le braqueur avait le visage découvert, le vendeur s'en souvient
 function Regulars.robbed(src, coords)
     local ped = GetPlayerPed(src)
-    if ped == 0 or GetPedDrawableVariation(ped, 1) ~= 0 then return false end -- masqué : pas reconnu
+    if ped == 0 then return false end
+    -- V12.43 : le serveur n'a pas GetPedDrawableVariation ; le masque vient du résumé de tenue publié par le joueur (gs_wanted)
+    local f = rawget(_G, 'GetPedDrawableVariation')
+    local look = Player(src).state.gsLook
+    local mask = f and f(ped, 1) or (type(look) == 'table' and look.c and look.c[2] and tonumber(look.c[2][1])) or 0
+    if mask ~= 0 then return false end -- masqué : pas reconnu
     local best, bd
     for i, sh in ipairs(Config.Shops) do
         local c = sh.clerk or sh.coords

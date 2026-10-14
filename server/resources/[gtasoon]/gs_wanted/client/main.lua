@@ -212,3 +212,21 @@ RegisterNetEvent('gs_wanted:client:npcPolice', function(stars)
         lib.notify({ description = 'La police a perdu ta trace.', type = 'success' })
     end)
 end)
+
+-- V12.43 · Résumé de la tenue pour les témoins (le serveur ne peut pas la lire lui-même) : composants 0 à 11
+-- (modèle, texture) + couvre-chef, publié dans le state bag `gsLook` seulement quand il change (vérifié toutes les 3 s).
+CreateThread(function()
+    local last
+    while true do
+        local ped = cache.ped
+        local c = {}
+        for comp = 0, 11 do c[comp + 1] = { GetPedDrawableVariation(ped, comp), GetPedTextureVariation(ped, comp) } end
+        local hat = GetPedPropIndex(ped, 0)
+        local key = json.encode(c) .. hat
+        if key ~= last then
+            last = key
+            LocalPlayer.state:set('gsLook', { c = c, hat = hat }, true)
+        end
+        Wait(3000)
+    end
+end)

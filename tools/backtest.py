@@ -7,9 +7,9 @@ from pdf import H1, H2, P, SMALL, VERSION, footer, A4, mm, colors, SimpleDocTemp
 # (test, qui, priorité)
 SESSIONS = [
     ('0 · Avant de commencer (5 min)', [
-        ('METTRE-A-JOUR.bat : version V12.42 affichée, « Base de données sauvegardée », « Sauvegardes programmées » ; METTRE-A-JOUR-OVH puis GERER-OVH → 1 : « Version RoadLine : V12.42 »', 'Staff', 3),
+        ('METTRE-A-JOUR.bat : version V12.43 affichée, « Base de données sauvegardée », « Sauvegardes programmées » ; METTRE-A-JOUR-OVH puis GERER-OVH → 1 : « Version RoadLine : V12.43 »', 'Staff', 3),
         ('Fenêtre du serveur : aucune ligne ROUGE au démarrage (sauf un conflit de maps déjà connu) ; F8 en jeu : aucune erreur rouge ; GERER-OVH → 3 : aucune erreur de script', 'Seul', 3),
-        ('VIDER-CACHE-FIVEM.bat si tu vois un ancien menu (F11 doit afficher « RoadLine V12.42 ») ; pendant le backtest : set gs_honeypot "log" dans secrets.cfg (piège = simple signalement)', 'Staff', 2),
+        ('VIDER-CACHE-FIVEM.bat si tu vois un ancien menu (F11 doit afficher « RoadLine V12.43 ») ; pendant le backtest : set gs_honeypot "log" dans secrets.cfg (piège = simple signalement)', 'Staff', 2),
     ]),
     ('1 · Arrivée et personnage (15 min) — corrigé après tes retours', [
         ('Nouveau joueur : un seul personnage ; fondateur, super-admins et VIP (F11 → Joueurs → VIP) : deux ; plus de choix du lieu ; déco / reco = même endroit', '2', 3),
@@ -65,6 +65,12 @@ SESSIONS = [
         ('Hôpital Pillbox, Fleeca, Pop\'s Pills, Bahama Mamas : nos points (soins, braquage, pharmacie, bar) accessibles sans les maps', 'Staff', 3),
         ('NETTOYER-MARQUES.bat : liste les mods de marque (dont mp_male_the_goat), supprime après « O », le reste intact', 'Staff', 2),
         ('Pack acheté (plus tard) : IMPORTER-MODS puis F11 → Mappings installés : chaque map a un quartier, aucune ligne rouge (conflit) ni jaune (poids) en console', 'Staff', 2),
+    ]),
+    ('6g · V12.43 — console, police, maps (10 min)', [
+        ('Console au démarrage : plus d\'erreur gs_wanted (lastVehicleCrime, GetPedDrawableVariation) ni qbx_ambulance (Renewed-Banking) ; « Conflit tranché » en jaune pour les 2 fichiers Patoche', 'Staff', 3),
+        ('Policier en service : voler / monter dans une voiture près du commissariat → plus de pop-up « prise de service / véhicule » en boucle', '2', 3),
+        ('Garage de police : les véhicules du pack LSPD apparaissent selon le grade (Scout, moto, K9, Stalker…)', '2', 2),
+        ('Braquage masqué puis démasqué : la description des témoins dit « masqué » seulement dans le 1er cas', '2', 2),
     ]),
     ('6f · V12.42 — labo, mobilier, fauteuil roulant, arme dans le dos (15 min)', [
         ('Labo : prélever une douille (lampe torche), la donner à un collègue ; il va au labo → le scellé apparaît dans « Scellés dans ton sac » → Analyser → résultat 3 min après ; idem après un restart gs_evidence', '2', 3),

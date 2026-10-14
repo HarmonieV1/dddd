@@ -373,6 +373,22 @@ function scanAll(list) {
 // versions (jeu − retraits de A − retraits de B). Écrite dans la ressource gsa_zz_fusion_occlusion, lancée après les maps.
 const META_BASE = 0x50000000, CMAPDATA = 0xd3593fa6, BOX_OFF = 128, MODEL_OFF = 144, BOX_SIZE = 16, MODEL_SIZE = 64;
 const PREFER = ['gsa_cfx_draft_pb_liquor_pack']; // si une fusion échoue : version gardée en priorité (choix du 12/10)
+// V12.43 · Conflits qui ne sont PAS de l'occlusion (herbe, décor) entre packs protégés : impossibles à fusionner. On tranche :
+// la ressource choisie est relancée après les autres au démarrage → sa version du fichier est celle que les joueurs reçoivent.
+// L'autre map perd seulement ce fichier-là (un peu d'herbe ou de décor autour d'elle). Inverser = changer le nom ici.
+const KEEP_ON_CONFLICT = {
+  'cs4_03_grass_0.ymap': 'gsa_sub_patoche_storage_pack',  // stand de jeux ↔ entrepôt : l'entrepôt garde son herbe
+  'hei_sm_22_strm_2.ymap': 'gsa_patoche_billiard_pack',   // stand de jeux ↔ billard : le billard garde son décor
+};
+/** Conflits tranchés par priorité : { file → ressource gardée } pour ceux dont la ressource choisie est bien en cause. */
+function keptOf(conflicts) {
+  const out = {};
+  for (const c of conflicts) {
+    const k = KEEP_ON_CONFLICT[c.file];
+    if (!c.resolved && k && c.resources.includes(k)) out[c.file] = k;
+  }
+  return out;
+}
 
 function readMeta(raw) {
   const data = inflateRsc7(raw);
@@ -647,7 +663,7 @@ function applyFusions(maps, fusionDir) {
   return written;
 }
 
-if (typeof module !== 'undefined' && module.exports) module.exports = { cleanName, deleteMapsOnDisk, pruneFusions, disableInCfg, inflateRsc7, entitiesOf, memoryMB, memorySplit, pagesSize, isVanillaName, placesOf, scanResource, conflictsOf, scanAll, labelOf, mergeOcclusion, applyFusions, RETIRED_MAPS, RETIRED_PATTERNS, RESTORED_MAPS, retiredReason, retiredLabel, readRetiredList, deleteCompanionsOnDisk, retireMap, removeCfgLines, activeEnsures, publicBlips, PUBLIC, joaat, ACTIVITY, activityOf, rscTruncated, truncatedFiles, _setLuaFs: (f) => { luaFs = f; } }; // tests Node seulement
+if (typeof module !== 'undefined' && module.exports) module.exports = { keptOf, KEEP_ON_CONFLICT, cleanName, deleteMapsOnDisk, pruneFusions, disableInCfg, inflateRsc7, entitiesOf, memoryMB, memorySplit, pagesSize, isVanillaName, placesOf, scanResource, conflictsOf, scanAll, labelOf, mergeOcclusion, applyFusions, RETIRED_MAPS, RETIRED_PATTERNS, RESTORED_MAPS, retiredReason, retiredLabel, readRetiredList, deleteCompanionsOnDisk, retireMap, removeCfgLines, activeEnsures, publicBlips, PUBLIC, joaat, ACTIVITY, activityOf, rscTruncated, truncatedFiles, _setLuaFs: (f) => { luaFs = f; } }; // tests Node seulement
 
 if (typeof GetCurrentResourceName === 'function') {
   const self = GetCurrentResourceName();
@@ -820,7 +836,7 @@ if (typeof GetCurrentResourceName === 'function') {
     const placed = r.maps.filter((m) => m.places.length).length;
     const open = r.conflicts.filter((c) => !c.resolved);
     console.log(`[gs_admin] Mappings : ${r.maps.length} installé(s), ${placed} situé(s) (F11 → Monde et lieux → Mappings installés)` +
-      (open.length ? `, ^1${open.length} CONFLIT(S)^7` : ', aucun conflit') + (r.conflicts.length - open.length ? `, ${r.conflicts.length - open.length} résolu(s) par fusion` : ''));
+      (open.length - Object.keys(keptOf(r.conflicts)).length > 0 ? `, ^1${open.length - Object.keys(keptOf(r.conflicts)).length} CONFLIT(S)^7` : ', aucun conflit non tranché') + (r.conflicts.length - open.length ? `, ${r.conflicts.length - open.length} résolu(s) par fusion` : ''));
     // V12.25 · Maps activées dans cfg/addons.cfg mais NON démarrées : en jeu = bâtiment absent ou chargement sans fin.
     // Cause habituelle d'une map payante : licence (achetée avec un autre compte Cfx que celui de la clé du serveur) ou
     // fichier .fxap manquant ; la vraie raison est écrite plus haut dans la console (« entitlement », « protected »…).
@@ -828,8 +844,12 @@ if (typeof GetCurrentResourceName === 'function') {
     for (const n of notStartedScripts()) console.log(`^1[gs_admin] Script de map activé mais NON démarré : ${n.name} (état : ${n.state}). Cherche « ${n.name} » plus haut dans la console : licence Cfx (« entitlement »), dépendance manquante (« dependency »), ou script qui refuse d'être renommé^7`);
     for (const m of r.maps) if (m.activity && !m.activity.script) console.log(`^3[gs_admin] Map ${m.name} : DÉCOR SEUL. L'activité (${m.activity.what}) est un script vendu à part (aucune ressource « *${ACTIVITY[m.name].token}* » démarrée) : pas de point pour jouer. Il est dans C:\\GTASOON\\mods-tri\\scripts-a-verifier : à relire avant de l'installer. Blip affiché « (bientôt) »^7`);
     for (const m of r.maps) for (const h of m.heavy) console.log(`^3[gs_admin] Map ${m.name} : ${h.file} prend ${h.mb} Mo en mémoire (au-delà de la limite FiveM : 48 Mo graphique / 64 Mo système) : textures ou murs qui peuvent ne pas s'afficher^7`);
+    const kept = keptOf(r.conflicts);
+    const relaunch = [...new Set(Object.values(kept))].filter((n) => GetResourceState(n) === 'started');
+    for (const n of relaunch) { StopResource(n); StartResource(n); } // relancée en dernier : sa version gagne
     for (const c of r.conflicts) {
       if (c.resolved) console.log(`^2[gs_admin] Conflit résolu : ${c.file} (${c.resources.join(' + ')}) fusionné par ${c.resolved}^7`);
+      else if (kept[c.file]) console.log(`^3[gs_admin] Conflit tranché : ${c.file} → version de ${kept[c.file]} (relancée en dernier ; ${c.resources.filter((x) => x !== kept[c.file]).join(', ')} perd ce fichier : un peu d'herbe ou de décor)^7`);
       else console.log(`^1[gs_admin] Conflit de maps : ${c.file} est remplacé par ${c.resources.join(' ET ')} (une seule des deux s'affichera correctement)^7`);
     }
   }, 15000);

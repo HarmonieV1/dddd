@@ -1,6 +1,6 @@
 # Prompt de reprise — RoadLine RP (à coller dans une nouvelle session Claude)
 
-> Copie tout ce qui est sous la ligne ci-dessous dans ta deuxième session. Mis à jour le 14/10/2026 (V12.42).
+> Copie tout ce qui est sous la ligne ci-dessous dans ta deuxième session. Mis à jour le 14/10/2026 (V12.43).
 
 ---
 
@@ -13,7 +13,7 @@ l'optimisation.
 1. Lis **`docs/AUDIT_V12_35.md`** (état et risques au 12/10), puis **`docs/ETAT_PROJET.md`** en entier (récap complet, historique V12.x, décisions) puis `docs/MLO.md` et
    `docs/IMPORTER_MODS.md` (maps payantes, scripts compagnons, diagnostic).
 2. Vérifie que tu es à jour : `git fetch origin && git log -1 origin/feature/phase1-bridge` doit montrer
-   « V12.42 : labo (scellés gardés), mobilier utilisable, fauteuil roulant, arme fixe dans le dos » (ou plus récent).
+   « V12.43 : erreurs console, pop-up police, conflits de maps tranchés, pack LSPD branché » (ou plus récent).
 
 ## Règles permanentes (à respecter sans exception)
 - **Tout en français** (code commenté, messages en jeu, docs, réponses).
@@ -57,7 +57,7 @@ l'optimisation.
 F1 téléphone, F2 inventaire, F3 progression, F4 intervention (police / EMS), F5 emotes, F6 métiers, F7 duo, F9 gang,
 F10/F11 staff, I aide, K inventaire proche, W radial, H mains en l'air, L verrouiller, B ceinture, **U garde-robe**.
 
-## État au 14/10/2026 (V12.42)
+## État au 14/10/2026 (V12.43)
 - Récents : clés de véhicule en objet (`gs_carkey`), vêtements et tenues en objets + garde-robe (U), apparition fiable
   dans les véhicules, blips publics des maps, contrôle « chez moi » des maps (F11), scripts compagnons des maps payantes
   installés par IMPORTER-MODS, intégrité des maps vérifiée au démarrage, outil REPARER-FIVEM.bat, site de doc HTML.
@@ -80,6 +80,9 @@ F10/F11 staff, I aide, K inventaire proche, W radial, H mains en l'air, L verrou
   du site + **RoadCoins** (docs/BOUTIQUE.md). Boutique toujours désactivée : prix et contenus des packs à définir avec moi.
 - **V12.42 (14/10)** : labo réparé (scellés gardés en base, lus dans le sac), mobilier utilisable (Alt : s'asseoir, s'allonger,
   rouler en fauteuil roulant ; `Config.Furniture` dans gs_furniture, hauteurs à caler en jeu), arme dans le dos en attache rigide.
+- **V12.43 (14/10)** : erreurs console corrigées (gs_wanted, soins Qbox), pop-up police en boucle (retouche qbx_police
+  job.lua), conflits Patoche tranchés, pack LSPD au garage police. Récap de la session : **`docs/PATCH_SESSION_14-10.md`**.
+  En attente : 30 mods « à convertir » (dossier mods-tri\a-convertir à m'envoyer), `patoche_interact` pour la villa bunker.
 - Deux sessions Claude (web + poste Windows) : V12.33 puis V12.37 du poste Windows intégrées par la session web (V12.38 =
   fusion). Côté Windows : POUSSER-GITHUB.bat (docs/GITHUB.md) pour envoyer directement sur GitHub. Désactivées (archives coupées, à retélécharger) :
   beach party, soccer / soccer_cloth, plasmatron.

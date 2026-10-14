@@ -58,6 +58,19 @@ Jobs = {
             { model = 'policeb', label = 'Moto', minGrade = 2, type = 'bike' },
             { model = 'fbi', label = 'Banalisée', minGrade = 3 },
             -- Véhicules ajoutés par mod : { model = 'monmodele', label = '…', minGrade = 1, addon = true } (affiché si le mod est installé)
+            -- V12.43 · pack LSPD importé (gsa_lspd_pack_3_1), par grade : patrouille → moto / chiens → banalisées → intervention
+            { model = 'pscout', label = 'Scout (patrouille)', minGrade = 0, addon = true },
+            { model = 'pscoutnew', label = 'Scout récent', minGrade = 1, addon = true },
+            { model = 'police42old', label = 'Cruiser ancien', minGrade = 0, addon = true },
+            { model = 'policeold', label = 'Cruiser classique', minGrade = 0, addon = true },
+            { model = 'polalamoold', label = 'Alamo (SUV)', minGrade = 1, addon = true },
+            { model = 'lspdb', label = 'Moto LSPD', minGrade = 1, addon = true, type = 'bike' },
+            { model = 'polsadlerk9', label = 'Sadler maître-chien (K9)', minGrade = 2, addon = true },
+            { model = 'policeslick', label = 'Slicktop (sans rampe)', minGrade = 2, addon = true },
+            { model = 'poleveron', label = 'Everon (tout-terrain)', minGrade = 2, addon = true },
+            { model = 'polspeedo', label = 'Fourgon de transport', minGrade = 2, addon = true },
+            { model = 'polriot', label = 'Blindé anti-émeute', minGrade = 3, addon = true },
+            { model = 'swatstalker', label = 'Stalker d\'intervention', minGrade = 3, addon = true },
         },
         outfits = {
             { label = 'Cadet', minGrade = 0,

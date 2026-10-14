@@ -346,6 +346,19 @@ check('mods-retires.txt : retiré par liste (V12.36 : plus aucune map remise d o
 }
 fs.rmSync(tmp, { recursive: true, force: true });
 
+// V12.43 · conflits non fusionnables tranchés par priorité (herbe / décor entre packs Patoche protégés)
+{
+  const k = M.keptOf([
+    { file: 'cs4_03_grass_0.ymap', resources: ['gsa_patoche_gamestand_pack', 'gsa_sub_patoche_storage_pack'], resolved: null },
+    { file: 'hei_sm_22_strm_2.ymap', resources: ['gsa_patoche_gamestand_pack', 'gsa_patoche_billiard_pack'], resolved: null },
+    { file: 'autre.ymap', resources: ['a', 'b'], resolved: null },
+    { file: 'id1_occl_02.ymap', resources: ['gsa_sub_patoche_storage_pack', 'x'], resolved: 'gsa_zz_fusion_occlusion' },
+  ]);
+  check('V12.43 : herbe → entrepôt gardé', k['cs4_03_grass_0.ymap'] === 'gsa_sub_patoche_storage_pack');
+  check('V12.43 : décor → billard gardé', k['hei_sm_22_strm_2.ymap'] === 'gsa_patoche_billiard_pack');
+  check('V12.43 : conflit sans priorité choisie : reste signalé', !k['autre.ymap'] && !k['id1_occl_02.ymap']);
+}
+
 pendingTrunc.then(() => {
   console.log(`lecteur de maps : ${passed} réussis, ${failed} échoués`);
   if (failed) process.exit(1);

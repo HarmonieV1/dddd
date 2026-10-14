@@ -359,6 +359,7 @@ function Wanted.legalHunter(src, coords)
 end
 
 local lastShot = {} -- [src] = GetGameTimer() : un signalement de tirs toutes les 10 s par joueur au plus
+local lastVehicleCrime = {} -- V12.43 : déclaré ici (playerDropped ci-dessous l'utilisait avant sa déclaration → erreur)
 local function onShot(src, silenced)
     local t = GetGameTimer()
     if lastShot[src] and t - lastShot[src] < 10000 then return end
@@ -396,7 +397,6 @@ end)
 -- V12.7 · Vols de véhicule : un seul signalement par joueur et par 20 s, que ce soit un car-jacking (on sort le
 -- conducteur) ou une serrure forcée / démarrage aux fils (qbx_vehiclekeys, branché ici au lieu du canal qbx_police).
 -- Avant : le même vol pouvait arriver deux fois au policier, sous deux formes d'alerte différentes.
-local lastVehicleCrime = {}
 local function vehicleCrime(src, crimeType)
     local t = GetGameTimer()
     if lastVehicleCrime[src] and t - lastVehicleCrime[src] < 20000 then return end

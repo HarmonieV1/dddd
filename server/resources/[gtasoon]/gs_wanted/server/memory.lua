@@ -1,10 +1,33 @@
 -- gs_wanted (serveur) · V8 « La ville se souvient » : description brute du suspect par les témoins et mémoire de la
--- ville (tenue, véhicule). Tout est lu côté serveur (OneSync) : le client ne peut ni cacher ni inventer un détail.
+-- ville (tenue, véhicule). Position, arme, véhicule lus côté serveur (OneSync) ; la tenue vient du résumé publié par le joueur (V12.43).
 local Bridge = exports.gs_bridge
 
 Memory = { list = {} } -- list[cid] = { { id, outfit, plate, color, at }, … } (plus récent en premier)
 
 local UNARMED = GetHashKey('WEAPON_UNARMED')
+
+-- V12.43 · Le serveur FiveM n'a PAS GetPedDrawableVariation / GetPedPropIndex (fonctions du jeu côté joueur) : erreur
+-- « attempt to call a nil value » à chaque tir. Chaque joueur publie donc un résumé de sa tenue dans son state bag
+-- `gsLook` (client/main.lua, toutes les 3 s si elle change) ; on le lit ici. Si la fonction existe (autre version), on la prend.
+local function lookOf(ped)
+    local ok, src = pcall(NetworkGetEntityOwner, ped)
+    local st = ok and src and src > 0 and Player(src).state.gsLook
+    return type(st) == 'table' and st or nil
+end
+local function drawable(ped, comp)
+    local f, t = rawget(_G, 'GetPedDrawableVariation'), rawget(_G, 'GetPedTextureVariation')
+    if f and t then return f(ped, comp), t(ped, comp) end
+    local L = lookOf(ped)
+    local c = L and L.c and (L.c[comp + 1] or L.c[tostring(comp)])
+    if type(c) == 'table' then return tonumber(c[1]) or 0, tonumber(c[2]) or 0 end
+    return 0, 0
+end
+local function propIndex(ped, id)
+    local f = rawget(_G, 'GetPedPropIndex')
+    if f then return f(ped, id) end
+    local L = lookOf(ped)
+    return L and tonumber(L.hat) or -1
+end
 
 function Memory.colorName(index)
     index = tonumber(index)
@@ -18,9 +41,9 @@ end
 function Memory.outfitOf(ped)
     local parts = {}
     for _, comp in ipairs(Config.Memory.outfit) do
-        parts[#parts + 1] = ('%d:%d'):format(GetPedDrawableVariation(ped, comp), GetPedTextureVariation(ped, comp))
+        parts[#parts + 1] = ('%d:%d'):format(drawable(ped, comp))
     end
-    parts[#parts + 1] = 'p' .. GetPedPropIndex(ped, 0)
+    parts[#parts + 1] = 'p' .. propIndex(ped, 0)
     return table.concat(parts, '|')
 end
 
@@ -61,8 +84,8 @@ function Memory.visibleMarks(src, ped, masked)
     if not m then return out end
     local g = Bridge:GetGender(src) == 'female' and 'female' or 'male'
     if m.head and not masked then out[#out + 1] = 'tatouage au visage' end
-    if m.arms and Config.Memory.bareArms[g][GetPedDrawableVariation(ped, 3)] then out[#out + 1] = 'bras tatoués' end
-    if m.torso and Config.Memory.bareTorso[g][GetPedDrawableVariation(ped, 11)] then out[#out + 1] = 'torse tatoué' end
+    if m.arms and Config.Memory.bareArms[g][(drawable(ped, 3))] then out[#out + 1] = 'bras tatoués' end
+    if m.torso and Config.Memory.bareTorso[g][(drawable(ped, 11))] then out[#out + 1] = 'torse tatoué' end
     return out
 end
 
@@ -72,11 +95,11 @@ function Memory.describe(src, precision, veh)
     local ped = GetPlayerPed(src)
     if ped == 0 then return out end
     if precision >= see.gender then out[#out + 1] = Bridge:GetGender(src) == 'female' and 'Femme' or 'Homme' end
-    local masked = GetPedDrawableVariation(ped, 1) > 0
+    local masked = (drawable(ped, 1)) > 0
     if masked and precision >= see.mask then out[#out + 1] = 'masqué' end
-    if GetPedPropIndex(ped, 0) >= 0 and precision >= see.hat then out[#out + 1] = 'couvre-chef' end
-    if GetPedDrawableVariation(ped, 5) > 0 and precision >= see.bag then out[#out + 1] = 'sac' end
-    if GetPedDrawableVariation(ped, 9) > 0 and precision >= see.armour then out[#out + 1] = 'gilet pare-balles' end
+    if propIndex(ped, 0) >= 0 and precision >= see.hat then out[#out + 1] = 'couvre-chef' end
+    if (drawable(ped, 5)) > 0 and precision >= see.bag then out[#out + 1] = 'sac' end
+    if (drawable(ped, 9)) > 0 and precision >= see.armour then out[#out + 1] = 'gilet pare-balles' end
     if GetSelectedPedWeapon(ped) ~= UNARMED and precision >= see.armed then out[#out + 1] = 'armé' end
     if precision >= Config.Memory.tattooSee then
         for _, mark in ipairs(Memory.visibleMarks(src, ped, masked)) do out[#out + 1] = mark end

@@ -15,6 +15,8 @@ $QboxPatches = @(
     @{ res = 'qbx_ambulancejob'; file = 'config\shared.lua'; find = 'checkInCost\s*=\s*\d+'; repl = 'checkInCost = 500'; why = 'hôpital : 500 $' },
     @{ res = 'qbx_ambulancejob'; file = 'config\shared.lua'; find = 'minForCheckIn\s*=\s*\d+'; repl = 'minForCheckIn = 1'; why = 'accueil IA si aucun EMS' },
     @{ res = 'qbx_ambulancejob'; file = 'config\server.lua'; find = 'wipeInvOnRespawn\s*=\s*true'; repl = 'wipeInvOnRespawn = false'; why = 'inventaire gardé à la réapparition' },
+    # V12.43 · « No such export addAccountMoney in resource Renewed-Banking » : on n'a pas cette banque ; l'argent des soins va à la caisse EMS (gs_jobs)
+    @{ res = 'qbx_ambulancejob'; file = 'config\server.lua'; find = "exports\['Renewed-Banking'\]:addAccountMoney\(society, amount\)"; repl = 'pcall(function() exports.gs_jobs:AddSocietyMoney(society, amount, true) end) -- RoadLine : caisse gs_jobs'; why = 'soins payés : caisse de l''hôpital (plus d''erreur Renewed-Banking)' },
     @{ res = 'illenium-appearance'; file = 'shared\config.lua'; find = '(Config\.NewCharacterSections\s*=\s*\{\s*Ped\s*=\s*)true'; repl = '${1}false'; why = 'création : perso classique seulement (pas de ped GTA)' },
     @{ res = 'illenium-appearance'; file = 'shared\config.lua'; find = 'Config\.UseTarget\s*=\s*false'; repl = 'Config.UseTarget = true'; why = 'vêtements / coiffeur / tatoueur / chirurgien : vendeur PNJ au comptoir (ox_target)' },
     # Boutiques (vêtements, coiffeur, tatoueur, chirurgien) : zone = TOUT le magasin (polygone), pas un petit cube au comptoir
@@ -90,6 +92,10 @@ $QboxPatches = @(
     @{ res = 'qbx_police'; file = 'client\main.lua'; find = 'for i = 1, #config\.locations\.duty do'; repl = 'for i = 1, 0 do -- service : gs_jobs (V12.37)'; why = 'service police : gs_jobs (plus de double option)' }
     @{ res = 'qbx_police'; file = 'client\main.lua'; find = 'for i = 1, #config\.locations\.vehicle do'; repl = 'for i = 1, 0 do -- garage : gs_jobs (V12.37)'; why = 'garage police : gs_jobs' }
     @{ res = 'qbx_ambulancejob'; file = 'client\job.lua'; find = 'for i = 1, #sharedConfig\.locations\.duty do'; repl = 'for i = 1, 0 do -- service : gs_jobs (V12.37)'; why = 'service EMS : gs_jobs (plus de double option)' }
+    # V12.43 · version actuelle de qbx_police : les zones service / garage sont dans client\job.lua (sharedConfig), pas client\main.lua.
+    # Restées actives, elles affichaient « Prise de service » / « Sortir un véhicule » en boucle près du commissariat (en volant une voiture).
+    @{ res = 'qbx_police'; file = 'client\job.lua'; find = 'for i = 1, #sharedConfig\.locations\.duty do'; repl = 'for i = 1, 0 do -- service : gs_jobs (V12.43)'; why = 'service police : gs_jobs (version job.lua)' }
+    @{ res = 'qbx_police'; file = 'client\job.lua'; find = 'for i = 1, #sharedConfig\.locations\.vehicle do'; repl = 'for i = 1, 0 do -- garage : gs_jobs (V12.43)'; why = 'garage police : gs_jobs (version job.lua)' }
     # V8 : preuves gérées par gs_evidence (contrôlées par le serveur). Celles de qbx_police acceptaient des preuves
     # fabriquées par le client (sang au nom d'un autre joueur…) : leur création est coupée.
     @{ res = 'qbx_police'; file = 'server\main.lua'; find = "(RegisterNetEvent\('evidence:server:(?:CreateBloodDrop|CreateFingerDrop|CreateCasing)', function\([^)]*\))(?! do return end)"; repl = '${1} do return end -- preuves : gs_evidence (V8)'; why = 'preuves : système RoadLine (anti-triche)' }
