@@ -40,8 +40,8 @@ PRIORITIES = [
         'METTRE-A-JOUR puis METTRE-A-JOUR-OVH (retouches Qbox : pop-up police, soins ; maps Patoche tranchées)',
         'Démarrage : aucune ligne rouge (maps « NON démarrée », scripts Patoche : stand de jeux, circuit, FastBox, villa bunker)',
         'Les 9 zips ROADTRIP-… (coiffures et tenues converties) dans mods-a-trier → IMPORTER-MODS → METTRE-A-JOUR-OVH',
-        'patoche_interact installé (script de la villa bunker) ; male_hair_collection_vol_1 à envoyer en morceaux 7-Zip (optionnel)',
-        'Version V12.47+ sur le PC ET sur le VPS (console : [RoadLine RP] version …)',
+        'IMPORTER-MODS relancé (V12.48) : patoche_interact sous son vrai nom → script de la villa bunker installé ; scripts billard / football remis dans mods-a-trier',
+        'Version V12.48+ sur le PC ET sur le VPS (console : [RoadLine RP] version …)',
     ]),
     ('Priorité haute (cette semaine)', [
         'Backtest allégé (onglet Backtest, 31 tests) en commençant par les ★★★',

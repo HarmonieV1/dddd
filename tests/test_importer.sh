@@ -25,12 +25,21 @@ mk pr patoche_plasmakart_map "fx_version 'cerulean'\nthis_is_a_map 'yes'\n"; mkd
 mk pd patoche_plasmagame_dlc2_map "fx_version 'cerulean'\nthis_is_a_map 'yes'\n"; mkdir -p "$B/pd/patoche_plasmagame_dlc2_map/stream"; head -c 99 /dev/urandom > "$B/pd/patoche_plasmagame_dlc2_map/stream/d.ymap"
 mk pg patoche_plasmagame_script "fx_version 'cerulean'\n"; head -c 99 /dev/urandom > "$B/pg/patoche_plasmagame_script/a.lua"
 mk pe energy_redline_pack "fx_version 'cerulean'\nthis_is_a_map 'yes'\n"; mkdir -p "$B/pe/energy_redline_pack/stream"; head -c 99 /dev/urandom > "$B/pe/energy_redline_pack/stream/r.ymap"
+# V12.48 : bibliothèque du vendeur livrée seule (modèles → rangée « map ») réclamée par un script : nom exact attendu
+mk pc patoche_chalet_map "fx_version 'cerulean'\nthis_is_a_map 'yes'\n"; mkdir -p "$B/pc/patoche_chalet_map/stream"; head -c 99 /dev/urandom > "$B/pc/patoche_chalet_map/stream/c.ymap"
+mk pcs patoche_chalet_script "fx_version 'cerulean'\ndependencies {\n 'ox_lib',\n 'patoche_interact'\n}\n"; head -c 99 /dev/urandom > "$B/pcs/patoche_chalet_script/a.lua"
+mk pi patoche_interact "fx_version 'cerulean'\n"; mkdir -p "$B/pi/patoche_interact/stream"; head -c 99 /dev/urandom > "$B/pi/patoche_interact/stream/i.ydr"; head -c 99 /dev/urandom > "$B/pi/patoche_interact/c.lua"
+mkdir -p "$R/server-data/resources/[addons]/gsa_patoche_interact_pack"; touch "$R/server-data/resources/[addons]/gsa_patoche_interact_pack/fxmanifest.lua"
+# V12.48 : mod déjà converti (version ROADTRIP) mais livré avec un fxmanifest : plus démarré ; refus manuel
+mkdir -p "$B/pn/natt_hair5_fivem/stream"; printf "fx_version 'cerulean'\n" > "$B/pn/natt_hair5_fivem/fxmanifest.lua"; head -c 99 /dev/urandom > "$B/pn/natt_hair5_fivem/stream/hair_000_u.ydd"
+mkdir -p "$R/server-data/resources/[addons]/gsa_natt_hair5_fivem"; touch "$R/server-data/resources/[addons]/gsa_natt_hair5_fivem/fxmanifest.lua"
+mkdir -p "$B/pa/afro"; head -c 99 /dev/urandom > "$B/pa/afro/hair_000_u.ydd"; head -c 99 /dev/urandom > "$B/pa/afro/hair_diff_000_a_uni.ytd"
 # Script compagnon déjà installé (dossier présent) : sa ligne de addons.cfg était gardée tant que le dossier existait
 mkdir -p "$R/server-data/resources/[addons]/patoche_plasmagame_script"; touch "$R/server-data/resources/[addons]/patoche_plasmagame_script/fxmanifest.lua"
 # Noms d'archives comme ceux du portail Cfx (le nom d'une map installée vient de son archive)
-for z in pr:patoche_plasmakart_pack pk:patoche_bowlinggame_pack pw:patoche_wipeout_pack ps:patoche_wipeout_script pl:patoche_lonely_script pd:patoche_plasmagame_dlc2_pack pg:patoche_plasmagame_script pe:energy_redline_pack; do (cd "$B/${z%%:*}" && zip -qr "$R/mods-a-trier/${z#*:}.zip" .); done
+for z in pr:patoche_plasmakart_pack pk:patoche_bowlinggame_pack pw:patoche_wipeout_pack ps:patoche_wipeout_script pl:patoche_lonely_script pd:patoche_plasmagame_dlc2_pack pg:patoche_plasmagame_script pe:energy_redline_pack pc:patoche_chalet_pack pcs:patoche_chalet_script pi:patoche_interact_pack pn:natt_hair5_fivem pa:afro_for_lamar_tykus; do (cd "$B/${z%%:*}" && zip -qr "$R/mods-a-trier/${z#*:}.zip" .); done
 printf '# Mods retirés\npatoche_villa_bunker_pack\nmlo_willies_supermarket\n' > "$R/mods-retires.txt"
-printf 'ensure gsa_ancienne_map\nensure script_disparu\nensure gsa_patoche_plasmakart_pack\nensure gsa_energy_redline_pack\nensure patoche_plasmagame_script\n' > "$R/server-data/cfg/addons.cfg"
+printf 'ensure gsa_ancienne_map\nensure script_disparu\nensure gsa_patoche_plasmakart_pack\nensure gsa_energy_redline_pack\nensure patoche_plasmagame_script\nensure gsa_patoche_interact_pack\nensure gsa_natt_hair5_fivem\n' > "$R/server-data/cfg/addons.cfg"
 GTASOON_ROOT=$R GTASOON_TEST=1 GTASOON_7Z=$SEVENZ GTASOON_TEXOPT=0 "$PWSH" -NoProfile -File "$REPO/scripts/windows/importer-mods.ps1" > "$T/log.txt" 2>&1 || { cat "$T/log.txt"; exit 1; }
 CFG=$(cat "$R/server-data/cfg/addons.cfg"); REP=$(cat "$R/mods-tri/RAPPORT-MODS.txt")
 ok=0; ko=0
@@ -48,5 +57,10 @@ check 'motif plasmagame : DLC2 du laser game jamais installé, raison « RETIRED
 check 'motif redline : pack Redline jamais installé, sa ligne de addons.cfg enlevée' '! grep -q redline <<<"$CFG" && [ ! -d "$R/server-data/resources/[addons]/gsa_energy_redline_pack" ]'
 check 'script compagnon du laser game : pas installé, sa ligne de addons.cfg enlevée malgré son dossier' '! grep -q patoche_plasmagame_script <<<"$CFG"'
 check 'les maps gardées ne sont pas touchées par les motifs' 'grep -q "^ensure gsa_patoche_bowlinggame_map$" <<<"$CFG" && grep -q "^ensure gsa_ancienne_map$" <<<"$CFG"'
+# V12.48
+check 'bibliothèque réclamée installée sous le nom attendu (patoche_interact), son script compagnon aussi' 'grep -q "^ensure patoche_interact$" <<<"$CFG" && [ -d "$R/server-data/resources/[addons]/patoche_interact" ] && grep -q "^ensure patoche_chalet_script$" <<<"$CFG"'
+check 'ancienne copie gsa_patoche_interact_pack plus démarrée' '! grep -q "gsa_patoche_interact_pack" <<<"$CFG"'
+check 'mod déjà converti (natt_hair5_fivem) : pas installé, plus démarré' '! grep -q "natt_hair5" <<<"$CFG" && grep -A1 "^- natt_hair5_fivem" <<<"$REP" | grep -q "déjà converti"'
+check 'refus manuel (afro de Lamar) : rejeté avec sa raison' 'grep -A1 "^- afro_for_lamar_tykus" <<<"$REP" | grep -q "Lamar"'
 echo "importeur (scripts compagnons, retraits) : $ok réussis, $ko échoués"
 [ "$ko" -eq 0 ]

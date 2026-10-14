@@ -1,4 +1,4 @@
-# Patch récap — session web du 14/10/2026 (V12.40 → V12.47)
+# Patch récap — session web du 14/10/2026 (V12.40 → V12.48)
 
 > À garder pour le récap global de fin. Détail technique de chaque version : `docs/ETAT_PROJET.md` (historique).
 > Rien de cette session n'a encore été essayé en jeu : backtest sections **6d, 6e, 6f, 6g** (site de doc).
@@ -71,6 +71,13 @@
 | Quoi | Où | Ce que ça change |
 |---|---|---|
 | **REPARER-BDD.bat** | racine du dossier RoadLine | Pour `Unable to establish a connection to the database` (ECONNRESET) : un double-clic redémarre MariaDB, trouve la cause (disque plein, port pris par un autre MySQL, fichiers abîmés), répare sans rien supprimer, règle MariaDB pour qu'elle **se relance seule** si elle plante, puis relance le serveur |
+
+## V12.48 — rapport d'import du 14/10 08:22
+| Quoi | Où | Ce que ça change |
+|---|---|---|
+| **Villa bunker** | importeur | `patoche_interact` était installé sous un autre nom (gsa_patoche_interact_pack) : son script ne le trouvait pas. Il est maintenant installé sous son vrai nom, et le script de la villa avec lui |
+| Lace Up, « hair », natt_hair5 | importeur | Reconnus comme déjà convertis (plus « refusé » ni installé en double) ; l'ancien natt_hair5 n'est plus démarré |
+| Afro de Lamar | importeur | Refusé avec sa vraie raison (personnage de l'histoire) |
 
 **Les 9 zips de vêtements à importer** : `coiffures_homme_2`, `_3`, `_4` · `coiffures_femme_3` · `tenues_femme_1` à `_5`.
 

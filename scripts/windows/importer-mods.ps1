@@ -257,7 +257,11 @@ $Converted = @{ basic = 'ROADTRIP-coiffures_femme_1.zip'; box_braids = 'ROADTRIP
     grace_dress = 'ROADTRIP-tenues_femme_1.zip'; knee_jeans = 'ROADTRIP-tenues_femme_2.zip'
     dollie_moko_summer_dress_for_mp_female = 'ROADTRIP-tenues_femme_2.zip'; dress_with_cut_outs_for_mp_female_by_jaa = 'ROADTRIP-tenues_femme_1.zip'
     tidefn5modshairpack = 'ROADTRIP-coiffures_homme_3.zip et ROADTRIP-coiffures_homme_4.zip'
-    dresspackmpfemale1_0 = 'ROADTRIP-tenues_femme_3.zip, _4.zip et _5.zip' }
+    dresspackmpfemale1_0 = 'ROADTRIP-tenues_femme_3.zip, _4.zip et _5.zip'
+    # V12.48 : rapport du 14/10 08:22
+    lace_up_sweats = 'ROADTRIP-tenues_femme_1.zip'; hair = 'ROADTRIP-coiffures_homme_2.zip'; natt_hair5_fivem = 'ROADTRIP-coiffures_femme_3.zip' }
+# V12.48 · Refusés pour une raison que l'analyse ne peut pas voir seule (ped de l'histoire, archive coupée…).
+$Refused = @{ afro_for_lamar_tykus = 'coiffure du personnage de l''histoire Lamar (ped ig_lamardavis), pas des persos FiveM : pas convertible' }
 $PackPick = @{} # ex. : @{ nom_du_pack = @('modele1', 'modele2') }
 function Save-Xml($x, $path) {
     $s = New-Object Xml.XmlWriterSettings; $s.Encoding = New-Object Text.UTF8Encoding $false; $s.Indent = $true
@@ -395,6 +399,12 @@ function Analyze($pkg) {
         else { [void]$r.issues.Add('rien d''utilisable pour FiveM trouvé') }
     }
     if ($r.issues | Where-Object { $_ -match 'escrow|ESX|obfusqué' }) { $r.install = $false; $r.type = 'rejete' }
+    # V12.48 : déjà converti par nos soins (ROADTRIP-…) ou refusé à la main : prioritaire sur l'analyse automatique
+    if ($Converted[$r.name] -and $r.type -ne 'converti') {
+        $r.type = 'converti'; $r.install = $false; $r.issues.Clear()
+        [void]$r.notes.Add("déjà converti : c'est $($Converted[$r.name]) (à mettre dans mods-a-trier) ; l'ancienne copie gsa_$($r.name) n'est plus démarrée")
+    }
+    if ($Refused[$r.name]) { $r.type = 'rejete'; $r.install = $false; $r.issues.Clear(); [void]$r.issues.Add($Refused[$r.name]) }
     if ($brandHit) { $r.install = $false; $r.type = 'rejete'; [void]$r.issues.Add('marque réelle (voiture, mode, police) : refusé, risque de retrait du serveur par Cfx.re / Rockstar. Cherche une version « lore GTA »') }
     if ($r.sizeMB -gt 300 -and $r.install) { $r.install = $false; [void]$r.issues.Add('trop lourd pour être installé tel quel (> 300 Mo) : on choisira 2 ou 3 éléments du pack') }
     if ($big.Count -gt 0 -and $r.install) { $r.install = $false; [void]$r.issues.Add('pas installé : à optimiser d''abord (fichier > 16 Mo). Je peux l''alléger si tu me l''envoies') }
@@ -566,9 +576,30 @@ foreach ($r in $results) {
     $r.resName = ((Split-Path $r.root -Leaf) -replace '[^A-Za-z0-9_\-]', '_')
     $scriptPool[$r.resName.ToLower()] = $r
 }
+# V12.48 · BIBLIOTHÈQUES : un script compagnon dépend parfois d'un autre pack du même vendeur (villa bunker → patoche_interact).
+#     Ce pack contient des modèles, il était donc rangé en « map » et installé en gsa_patoche_interact_pack : le nom attendu
+#     (patoche_interact) n'existait pas sur le serveur. Un pack dont le dossier (ou le nom sans « _pack ») est réclamé par un
+#     script de l'import est installé sous ce nom exact ; son ancienne copie gsa_… n'est plus démarrée (dossier laissé en place).
+$libPool = @{}
+$Superseded = @{}
+foreach ($r in $results) { if ($r.type -eq 'converti') { $Superseded['gsa_' + $r.name] = $true } }
+$wanted = @{}
+foreach ($r in $results) { if ($r.type -eq 'script') { foreach ($d in $r.deps) { $wanted[$d.ToLower()] = $r } } }
+foreach ($r in $results) {
+    if ($r.type -eq 'script' -or $r.type -eq 'rejete' -or -not $r.install) { continue }
+    $leaf = (Split-Path $r.root -Leaf).ToLower()
+    $short = ($r.name -replace '_pack(_\d+)?$', '').ToLower()
+    $hitName = @($leaf, $short) | Where-Object { $wanted.ContainsKey($_) } | Select-Object -First 1
+    if (-not $hitName) { continue }
+    $user = $wanted[$hitName]
+    $r.resName = $hitName; $r.companion = ((Split-Path $user.root -Leaf) -replace '[^A-Za-z0-9_\-]', '_')
+    $libPool[$hitName] = $r
+    $Superseded['gsa_' + $r.name] = $true
+    [void]$r.notes.Add("bibliothèque de $($r.companion) : installée sous le nom attendu $hitName (l'ancienne copie gsa_$($r.name) n'est plus démarrée)")
+}
 function Test-Dep($d) {
     $d = $d.ToLower()
-    return $haveRes[$d] -or ($Provides.ContainsKey($d) -and $haveRes[$Provides[$d]]) -or $scriptPool.ContainsKey($d)
+    return $haveRes[$d] -or ($Provides.ContainsKey($d) -and $haveRes[$Provides[$d]]) -or $scriptPool.ContainsKey($d) -or $libPool.ContainsKey($d)
 }
 foreach ($r in @($scriptPool.Values)) {
     $tokens = @("$($r.name)_$($r.resName)".ToLower() -split '[_\-]' | Where-Object { $_.Length -ge 5 -and $Generic -notcontains $_ } | Sort-Object -Unique) # nom de l'archive + nom du dossier
@@ -635,6 +666,7 @@ if ($canInstall) {
         # V12.31 : scripts compagnons (nom d'origine), gardés tant que leur dossier existe
         ($_ -match '^#?\s*ensure\s+(\S+)' -and (Test-Path -LiteralPath (Join-Path $Addons $Matches[1]))) }) }
     $names = @($installed) + @($keep | ForEach-Object { (($_ -replace '^#?\s*ensure\s+', '').Trim() -split '\s+')[0] }) | Sort-Object -Unique
+    $names = @($names | Where-Object { -not $Superseded[$_] })   # V12.48 : copie gsa_ remplacée (version convertie, bibliothèque sous son vrai nom)
     $names = @($names | Where-Object { -not (Test-Retired $_) }) # V12.34 : lignes des maps retirées enlevées ; V12.36 : par motif aussi, scripts compagnons compris
     $notes = @()
     if (Test-Path -LiteralPath $previous) { $notes = @(Get-Content -LiteralPath $previous | Where-Object { $_ -match '^## gsa_\S+ : désactivé' } | ForEach-Object { ($_ -split '\s+')[1] }) }

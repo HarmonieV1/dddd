@@ -10,9 +10,9 @@ SESSIONS = [
     # validé (arrivée, téléphone, métiers, papiers, staff, Discord, site, alertes, vie légale / illégale…) et retiré.
     # Reste : ce qui a été corrigé ou ajouté depuis, jamais revu en jeu, et ce qui est obligatoire avant d'ouvrir.
     ('0 · Avant de commencer (5 min)', [
-        ('METTRE-A-JOUR.bat : version V12.47 affichée, « Base de données sauvegardée » ; METTRE-A-JOUR-OVH puis GERER-OVH → 1 : « Version RoadLine : V12.47 »', 'Staff', 3),
+        ('METTRE-A-JOUR.bat : version V12.48 affichée, « Base de données sauvegardée » ; METTRE-A-JOUR-OVH puis GERER-OVH → 1 : « Version RoadLine : V12.48 »', 'Staff', 3),
         ('Console au démarrage (PC et VPS) : aucune ligne ROUGE ; en jaune seulement « Conflit tranché » (2 fichiers Patoche) ; F8 en jeu : aucune erreur rouge', 'Staff', 3),
-        ('VIDER-CACHE-FIVEM.bat si un ancien menu apparaît (F11 doit afficher « RoadLine V12.47 »)', 'Staff', 2),
+        ('VIDER-CACHE-FIVEM.bat si un ancien menu apparaît (F11 doit afficher « RoadLine V12.48 »)', 'Staff', 2),
     ]),
     ('1 · Corrections du 13/10 à confirmer (V12.37 → V12.39, 20 min)', [
         ('Garage de métier : « Sortir » donne le véhicule à chaque fois, UNE notification ; prise de service au PNJ : une seule interaction', '2', 3),
