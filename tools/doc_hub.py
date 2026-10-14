@@ -46,6 +46,7 @@ PRIORITIES = [
     ('Priorité haute (cette semaine)', [
         'Backtest allégé (onglet Backtest, 31 tests) en commençant par les ★★★',
         'Caler en jeu : points du mécano sur la map Benny\'s, véhicules d\'exposition + départ des essais, portes /doorlock',
+        'Personnalisation : envoyer Improved Females (visages), corps femme (Muscular Body / Improved Lower Body), cardigan cœur, chignon',
         'Récolte : vérifier les champs (céréales, tabac, pavot) et la hauteur du mobilier ; nouvelles coupes / robes au coiffeur et au magasin',
         'Doublons de lieux (casino, concession, Ammu-Nation, prison) : « nouveau » ou « ancien » pour chacun',
         'Prison : coordonnées de cellule et de sortie avec la map prison',

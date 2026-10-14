@@ -100,6 +100,11 @@ F10/F11 staff, I aide, K inventaire proche, W radial, H mains en l'air, L verrou
 ## En attente (à reprendre avec moi) — mis à jour le 14/10
 1. **Dernier gros mod** (optionnel) : `male_hair_collection_vol_1` (134 Mo, un .ydd de 27,8 Mo à alléger) : à envoyer en
    volumes 7-Zip de 25 Mo. Tous les autres mods « à convertir » sont faits (9 zips ROADTRIP, `tools/vetements/README.md`).
+1 bis. **Personnalisation conseillée mais jamais reçue** (liens donnés le 14/10, rien importé) : visages « Improved Females »
+   (github zfbx/improved-females, change toutes les femmes), corps « Muscular Body for MP Female » (jinxmods, au choix),
+   « Improved Lower Body for MP Female 2.0 » (page gta5-mods d'origine). À convertir (petits) : `natt_s_heart_cardigan`,
+   `long_hair_with_a_bun_by_jaagoda`. Coupes dont la couleur du coiffeur ne s'applique pas partout (shader `ped_alpha`) :
+   Buzzcut Fade ×2 (coiffures_homme_2 n°1-2, pas teintables), dreadlocks Suthyland et 6 coupes TideFN (une partie fixe).
 2. **Récolte** : points des champs (céréales, tabac, pavot) à caler en jeu via F11 si besoin.
 3. **patoche_interact** : importé le 14/10 ; V12.48 l'installe sous son vrai nom au prochain IMPORTER-MODS. Scripts billard /
    football : à remettre dans mods-a-trier. `mp25_muscular` (vêtement installé) : vérifier qu'il ne change pas tous les corps.
