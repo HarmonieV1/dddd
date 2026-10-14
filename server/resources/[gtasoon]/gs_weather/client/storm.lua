@@ -50,6 +50,26 @@ local function groundLoaded(entity, c)
     return HasCollisionLoadedAroundEntity(entity)
 end
 
+--- V12.40 · « véhicules dans le vide » : SetVehicleOnGroundProperly / PlaceObjectOnGroundProperly peuvent échouer en silence
+--- (sol pas encore dense, pont, talus) ; l'entité était quand même figée là où elle était, en l'air. Désormais on lit le vrai sol
+--- sous le point (sonde partant juste au-dessus : jamais le tablier d'un pont plus haut), on pose, on VÉRIFIE la hauteur au-dessus
+--- du sol, et si c'est raté l'élément est retiré et réessayé plus tard. Jamais d'entité figée dans le vide.
+local MAX_ABOVE = 1.2 -- m : au-delà, l'entité n'est pas posée (véhicule : roues au sol ≈ 0,5 m)
+
+local function groundAt(x, y, zHint)
+    for _ = 1, 10 do
+        local ok, gz = GetGroundZFor_3dCoord(x, y, zHint + 2.0, false)
+        if ok and math.abs(gz - zHint) < 4.0 then return gz end
+        RequestCollisionAtCoord(x, y, zHint)
+        Wait(100)
+    end
+end
+
+local function settled(e)
+    local h = GetEntityHeightAboveGround(e)
+    return h >= -0.5 and h <= MAX_ABOVE
+end
+
 --- Objet figé posé au sol (barrière, arbre). false si modèle absent ou sol non chargé (l'appelant retire et réessaie plus tard).
 local function placeProp(item, name, c, heading, offset)
     local h = model(name)
@@ -62,7 +82,11 @@ local function placeProp(item, name, c, heading, offset)
     FreezeEntityPosition(o, true) -- figé tout de suite : il ne tombe pas pendant le chargement du sol
     SetEntityHeading(o, heading)
     if not groundLoaded(o, pos) then return false end
-    FreezeEntityPosition(o, false) PlaceObjectOnGroundProperly(o) FreezeEntityPosition(o, true)
+    local gz = groundAt(pos.x, pos.y, pos.z)
+    if not gz then return false end
+    SetEntityCoordsNoOffset(o, pos.x, pos.y, gz, false, false, false) -- au sol réel même si la pose fine échoue
+    PlaceObjectOnGroundProperly(o) -- (l'origine d'un arbre couché n'est pas à sa base : pas de contrôle de hauteur ici)
+    FreezeEntityPosition(o, true)
     return true
 end
 
@@ -85,7 +109,15 @@ local function placeVehicle(item)
     item.ents[#item.ents + 1] = v
     FreezeEntityPosition(v, true)
     if not groundLoaded(v, node) then return false end
-    FreezeEntityPosition(v, false) SetVehicleOnGroundProperly(v) FreezeEntityPosition(v, true)
+    local gz = groundAt(node.x, node.y, node.z)
+    if not gz then return false end
+    SetEntityCoordsNoOffset(v, node.x, node.y, gz + 0.3, false, false, false)
+    SetEntityHeading(v, heading)
+    FreezeEntityPosition(v, false)
+    local placed = SetVehicleOnGroundProperly(v)
+    FreezeEntityPosition(v, true) -- figé une fois au sol : ni vent ni collision ne le déplacent
+    if not placed or not settled(v) then return false end -- raté : retiré, nouvel essai (jamais laissé en l'air)
+    SetVehicleDoorsLocked(v, 2)
     SetVehicleIndicatorLights(v, 0, true) SetVehicleIndicatorLights(v, 1, true)
     SetVehicleEngineHealth(v, 100.0)
     local pos = GetEntityCoords(v)

@@ -174,5 +174,44 @@ check('départ possible depuis la grille', cb('gs_races:start', 20, 'sprint', 's
 cb('gs_races:cancel', 20); step()
 check('abandon : voiture prêtée reprise', Races.loaners[20] == nil)
 
+-- V12.40 · Courses créées par le staff : brouillon, points posés sur place, enregistrement, organisateur, expiration
+local nextId = 0
+MySQL = { query = { await = function() return {} end }, insert = { await = function() nextId = nextId + 1 return nextId end },
+    update = { await = function() return 1 end } }
+local lv = {}
+provide('gs_admin', { GetStaffLevel = function(src) return lv[src] or 0 end })
+loadResource('gs_races', { R .. 'gs_races/server/custom.lua' })
+join(30, 'CID30', 'Admin Course', vec3(0.0, 0.0, 30.0))
+local okE, msgE = cb('gs_races:editor', 30, 'new', { label = 'Rallye du port', hours = 2 }); step()
+check('éditeur : réservé au staff', not okE)
+lv[30] = 4
+okE = cb('gs_races:editor', 30, 'point'); step()
+check('éditeur : pas de point sans brouillon', not okE)
+okE = cb('gs_races:editor', 30, 'new', { label = 'Rallye du port', hours = 2 }); step()
+check('brouillon ouvert', okE)
+cb('gs_races:editor', 30, 'point'); step()
+okE, msgE = cb('gs_races:editor', 30, 'point'); step()
+check('points trop proches refusés', not okE)
+tp(30, vec3(200.0, 0.0, 30.0)) cb('gs_races:editor', 30, 'point'); step()
+okE = cb('gs_races:editor', 30, 'save'); step()
+check('au moins 3 points', not okE)
+tp(30, vec3(400.0, 0.0, 30.0)) cb('gs_races:editor', 30, 'point'); step()
+okE, msgE = cb('gs_races:editor', 30, 'save'); step()
+check('course enregistrée et ajoutée aux circuits', okE and Config.Circuits.c1 and #Config.Circuits.c1.points == 3 and Config.Circuits.c1.custom)
+check('publiée aux joueurs', GlobalState.gsRaceCustom and GlobalState.gsRaceCustom.c1 and GlobalState.gsRaceCustom.c1.label == 'Rallye du port')
+local listC = cb('gs_races:list', 30); step()
+local seen = false
+for _, c in ipairs(listC.circuits) do if c.id == 'c1' then seen = true end end
+check('chez l\'organisateur', seen)
+Custom.expire(os.time() + 3 * 3600)
+check('éphémère : retirée à expiration', Config.Circuits.c1 == nil and GlobalState.gsRaceCustom.c1 == nil)
+cb('gs_races:editor', 30, 'new', { label = 'Boucle permanente', hours = 0 }); step()
+for i = 0, 2 do tp(30, vec3(1000.0 + i * 100.0, 0.0, 30.0)) cb('gs_races:editor', 30, 'point'); step() end
+cb('gs_races:editor', 30, 'save'); step()
+Custom.expire(os.time() + 1000 * 3600)
+check('permanente : jamais retirée', Config.Circuits.c2 ~= nil)
+okE = cb('gs_races:editor', 30, 'delete', { id = 2 }); step()
+check('suppression', okE and Config.Circuits.c2 == nil)
+
 io.write(('\n%d réussis, %d échoués\n'):format(passed, failed))
 os.exit(failed == 0 and 0 or 1)

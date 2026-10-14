@@ -35,3 +35,11 @@ Config.Circuits = {
     montagne = { label = 'Descente de Vinewood', points = {
         vec3(373.9, 328.4, 103.6), vec3(1135.0, -472.0, 66.5), vec3(1163.4, -323.8, 69.2), vec3(298.0, -584.0, 43.2), vec3(123.0, -1296.0, 29.3) } },
 }
+
+-- V12.40 · Courses créées en jeu par le staff (F11 → Monde et lieux → Courses de rue sur mesure)
+Config.Custom = {
+    staffLevel = 3,   -- niveau gs_admin minimum
+    minPoints = 3, maxPoints = 30,
+    minGap = 30.0,    -- m minimum entre deux points
+    maxHours = 168,   -- durée de vie max d'une course éphémère (0 = permanente)
+}

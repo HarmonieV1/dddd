@@ -169,9 +169,23 @@ end)
 
 -- Territoires -------------------------------------------------------------------------------------------------
 
+--- V12.40 · Niveau d'un quartier (0 à maxLevel) : influence du gang qui le tient au-dessus du seuil, + bonus staff.
+function Gangs.level(id)
+    local t = Gangs.territories[id]
+    if not t or not t.owner then return 0 end
+    local cfg = Config.Territory
+    local v = math.floor(((t.influence[t.owner] or 0) - cfg.ownThreshold) / cfg.levelStep) + (t.bonus or 0)
+    return math.max(0, math.min(cfg.maxLevel, v))
+end
+
+--- Rayon effectif (le quartier grandit avec le niveau, +45 % max).
+function Gangs.radius(id)
+    return Config.Territories[id].radius * (1 + Config.Territory.growPerLevel * Gangs.level(id))
+end
+
 local function territoryAt(coords)
     for id, t in pairs(Config.Territories) do
-        if #(coords - t.center) <= t.radius then return id end
+        if #(coords - t.center) <= (Gangs.territories[id] and Gangs.radius(id) or t.radius) then return id end
     end
 end
 Gangs.territoryAt = territoryAt
@@ -184,7 +198,8 @@ local function publish()
             if now - t.crimes[i] > Config.Territory.heatWindow then table.remove(t.crimes, i) else heat = heat + 1 end
         end
         local g = t.owner and Gangs.list[t.owner]
-        out[id] = { owner = g and g.label or nil, color = g and g.color or 0, heat = heat }
+        out[id] = { owner = g and g.label or nil, ownerId = g and t.owner or nil, color = g and g.color or 0, heat = heat,
+            level = Gangs.level(id), radius = Gangs.radius(id) } -- V12.40 : identifiant (population), niveau, rayon effectif
     end
     GlobalState.gsTerritories = out
 end
@@ -192,8 +207,11 @@ end
 --- Recalcule le propriétaire : gang le plus influent au-dessus du seuil (égalité = le tenant garde).
 local function resolveOwner(id, t)
     local best, bestVal = t.owner, t.owner and (t.influence[t.owner] or 0) or 0
+    -- V12.40 · plafond : un gang qui tient déjà maxPerGang quartiers n'en prend pas d'autre (jamais toute la carte)
+    local held = {}
+    for _, o in pairs(Gangs.territories) do if o.owner then held[o.owner] = (held[o.owner] or 0) + 1 end end
     for gang, v in pairs(t.influence) do
-        if v > bestVal and Gangs.list[gang] then best, bestVal = gang, v end
+        if v > bestVal and Gangs.list[gang] and (gang == t.owner or (held[gang] or 0) < Config.Territory.maxPerGang) then best, bestVal = gang, v end
     end
     if bestVal < Config.Territory.ownThreshold then best = nil end
     if best ~= t.owner then
@@ -436,6 +454,24 @@ exports('GetGang', function(src) local m = Gangs.online[src] return m and m.gang
 exports('GetTerritoryAt', function(coords) return territoryAt(coords) end)
 exports('FenceLocation', function() return Extras and Extras.fenceLocation and Extras.fenceLocation() or nil end) -- V8 : l'indic' le sait
 exports('GetTerritoryOwner', function(id) return Gangs.territories[id] and Gangs.territories[id].owner end)
+
+--- V12.40 · Bonus de taille posé par le staff (-3 à +3 niveaux, plafonné à maxLevel au total) : /territoire <quartier> <bonus>
+function Gangs.setBonus(id, bonus)
+    local t = Gangs.territories[id]
+    bonus = tonumber(bonus)
+    if not t or not bonus then return false end
+    t.bonus = math.max(-3, math.min(3, math.floor(bonus)))
+    publish()
+    return true
+end
+exports('SetTerritoryBonus', Gangs.setBonus)
+RegisterCommand('territoire', function(src, args)
+    if src ~= 0 and not IsPlayerAceAllowed(src, 'gs.admin.admin') then return end
+    local ok = Gangs.setBonus(args[1], args[2])
+    local msg = ok and ('Quartier %s : bonus %s (niveau %d, rayon %d m)'):format(args[1], args[2], Gangs.level(args[1]), math.floor(Gangs.radius(args[1])))
+        or ('Usage : /territoire <%s> <-3..3>'):format(table.concat((function() local l = {} for k in pairs(Config.Territories) do l[#l + 1] = k end table.sort(l) return l end)(), '|'))
+    if src == 0 then print(msg) else notify(src, msg, ok and 'success' or 'error') end
+end, false)
 function Gangs.addInfluence(gang, id, n)
     local t = Gangs.territories[id]
     if not t or not Gangs.list[gang] or type(n) ~= 'number' then return false end

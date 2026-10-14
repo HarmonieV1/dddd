@@ -10,6 +10,7 @@ local Bridge   = exports.gs_bridge
 local JobsApi  = exports.gs_jobs
 
 Mechanic = {}
+Mechanic.sessions = {} -- V12.40 · [src] = { netId, veh, cid, plate, original } : véhicule sur lequel travaille le mécano
 
 -- Clés ox_lib que le mécano ne touche jamais (identité et état du véhicule) : gardées depuis la base, jamais renvoyées au jeu.
 Mechanic.locked = { model = true, plate = true, lockState = true, bodyHealth = true, engineHealth = true, tankHealth = true,
@@ -42,11 +43,64 @@ function Mechanic.check(src, netId)
     return { veh = veh, id = id, plate = plate, cid = cid }
 end
 
-lib.callback.register('gs_tuning:mechanicCheck', function(src, netId)
+lib.callback.register('gs_tuning:mechanicCheck', function(src, netId, original)
     if not Security:RateLimit(src, 'gs_tuning:mechanicCheck', 5, 10000) then return false, 'Doucement.' end
     local v, err = Mechanic.check(src, netId)
+    if v then
+        -- V12.40 · session : sert à l'aperçu en direct et à la facture (réglages de départ vus par le mécano)
+        Mechanic.sessions[src] = { netId = tonumber(netId), veh = v.veh, cid = v.cid, plate = v.plate,
+            original = type(original) == 'table' and original or nil }
+    end
     return v ~= nil, err
 end)
+
+--- V12.40 · Égalité profonde (réglages ox_lib : nombres, booléens, tables de couleurs / extras / néons).
+local function same(a, b)
+    if type(a) ~= type(b) then return false end
+    if type(a) ~= 'table' then return a == b end
+    for k, v in pairs(a) do if not same(v, b[k]) then return false end end
+    for k in pairs(b) do if a[k] == nil then return false end end
+    return true
+end
+
+--- V12.40 · Prix d'un réglage modifié (Config.Mechanic.prices) ; « d'origine » (-1 / false) = gratuit.
+function Mechanic.price(key, value)
+    local P = Config.Mechanic.prices
+    if value == -1 or value == false then return 0 end
+    local perf = P.perf[key]
+    if perf then return type(value) == 'number' and (perf[value + 1] or perf[#perf]) or 0 end
+    if key == 'modTurbo' then return P.turbo end
+    return P.keys[key] or (key:sub(1, 3) == 'mod' and P.mod or 0)
+end
+
+--- V12.40 · Facture : somme des réglages qui changent par rapport à `base`. Retourne total (plafonné), nombre de pièces.
+function Mechanic.bill(base, props)
+    local total, lines = 0, 0
+    for k, v in pairs(props) do
+        if type(k) == 'string' and not Mechanic.locked[k] and not same(base[k], v) then
+            local p = Mechanic.price(k, v)
+            if p > 0 then total, lines = total + p, lines + 1 end
+        end
+    end
+    return math.min(total, Config.Mechanic.maxBill), lines
+end
+
+--- V12.40 · Aperçu en direct : chaque choix du mécano est appliqué par le PROPRIÉTAIRE RÉSEAU du véhicule (sinon le client
+--- et les passants ne voyaient rien : les réglages posés par un joueur qui n'a pas la main ne se synchronisent pas).
+RegisterNetEvent('gs_tuning:server:preview', function(netId, props)
+    local src = source
+    if not Security:RateLimit(src, 'gs_tuning:preview', 30, 10000) then return end
+    local s = Mechanic.sessions[src]
+    if not s or s.netId ~= tonumber(netId) or type(props) ~= 'table' then return end
+    if not JobsApi:IsOnDutyAs(src, 'mechanic') or not DoesEntityExist(s.veh) then Mechanic.sessions[src] = nil return end
+    if not Security:EntityInRange(src, s.veh, Config.Mechanic.range) then return end
+    local apply = Mechanic.applicable(props)
+    if #json.encode(apply) > Config.Mechanic.maxJson then return end
+    local owner = NetworkGetEntityOwner(s.veh)
+    if owner and owner > 0 and owner ~= src then TriggerClientEvent('gs_tuning:client:applyProps', owner, s.netId, apply) end
+end)
+
+AddEventHandler('playerDropped', function() Mechanic.sessions[source] = nil end)
 
 --- V12.36 · Fusionne les réglages du mécano dans ceux de la base : seules les clés cosmétiques / performances changent,
 --- la carte grise garde identité et état (plaque, modèle, carburant, santé, portes, vitres, pneus).
@@ -90,5 +144,16 @@ lib.callback.register('gs_tuning:mechanicSave', function(src, netId, props)
     TriggerClientEvent('gs_tuning:client:applyProps', (owner and owner > 0) and owner or src,
         NetworkGetNetworkIdFromEntity(v.veh), Mechanic.applicable(merged))
     Security:LogStaff(('[Mécano] %s a personnalisé %s'):format(GetPlayerName(src) or src, v.plate), 'jobs')
-    return true, ('Personnalisation enregistrée sur %s. Pense à la facture (F6).'):format(v.plate)
+    -- V12.40 · facture automatique au client (prix recalculés ici, jamais ceux du client) ; sa propre voiture : rien
+    local s = Mechanic.sessions[src]
+    local base = (s and s.netId == tonumber(netId) and s.original) or current
+    local total, lines = Mechanic.bill(base, props)
+    Mechanic.sessions[src] = nil
+    local mechCid = Bridge:GetIdentifier(src)
+    if total > 0 and v.cid ~= mechCid then
+        local billed = JobsApi:CreateBill(v.cid, 'mechanic', total, ('Personnalisation %s (%d pièce%s)'):format(v.plate, lines, lines > 1 and 's' or ''),
+            mechCid, GetPlayerName(src))
+        if billed then return true, ('Personnalisation enregistrée sur %s : facture de %d $ envoyée au client (%d pièce%s).'):format(v.plate, total, lines, lines > 1 and 's' or '') end
+    end
+    return true, ('Personnalisation enregistrée sur %s.'):format(v.plate)
 end)

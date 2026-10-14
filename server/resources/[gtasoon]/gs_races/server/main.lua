@@ -292,8 +292,11 @@ AddEventHandler('playerDropped', function() leave(source, true) end)
 
 CreateThread(function()
     Store.init()
+    if Custom then Custom.load() end -- V12.40 · courses créées par le staff
+    local lastExpire = 0
     while true do
         Wait(1000)
         Races.tick()
+        if Custom and os.time() - lastExpire >= 60 then lastExpire = os.time() Custom.expire(lastExpire) end
     end
 end)

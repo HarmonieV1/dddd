@@ -1,6 +1,6 @@
 # Prompt de reprise — RoadLine RP (à coller dans une nouvelle session Claude)
 
-> Copie tout ce qui est sous la ligne ci-dessous dans ta deuxième session. Mis à jour le 13/10/2026 (V12.39).
+> Copie tout ce qui est sous la ligne ci-dessous dans ta deuxième session. Mis à jour le 14/10/2026 (V12.40).
 
 ---
 
@@ -13,7 +13,7 @@ l'optimisation.
 1. Lis **`docs/AUDIT_V12_35.md`** (état et risques au 12/10), puis **`docs/ETAT_PROJET.md`** en entier (récap complet, historique V12.x, décisions) puis `docs/MLO.md` et
    `docs/IMPORTER_MODS.md` (maps payantes, scripts compagnons, diagnostic).
 2. Vérifie que tu es à jour : `git fetch origin && git log -1 origin/feature/phase1-bridge` doit montrer
-   « V12.39 : éboueurs (sac porté, payé au dépôt), bus, paiements, virements hors ligne » (ou plus récent).
+   « V12.40 : concessions, mécano Benny's, courses sur mesure, territoires de gang » (ou plus récent).
 
 ## Règles permanentes (à respecter sans exception)
 - **Tout en français** (code commenté, messages en jeu, docs, réponses).
@@ -57,7 +57,7 @@ l'optimisation.
 F1 téléphone, F2 inventaire, F3 progression, F4 intervention (police / EMS), F5 emotes, F6 métiers, F7 duo, F9 gang,
 F10/F11 staff, I aide, K inventaire proche, W radial, H mains en l'air, L verrouiller, B ceinture, **U garde-robe**.
 
-## État au 13/10/2026 (V12.39)
+## État au 14/10/2026 (V12.40)
 - Récents : clés de véhicule en objet (`gs_carkey`), vêtements et tenues en objets + garde-robe (U), apparition fiable
   dans les véhicules, blips publics des maps, contrôle « chez moi » des maps (F11), scripts compagnons des maps payantes
   installés par IMPORTER-MODS, intégrité des maps vérifiée au démarrage, outil REPARER-FIVEM.bat, site de doc HTML.
@@ -71,6 +71,10 @@ F10/F11 staff, I aide, K inventaire proche, W radial, H mains en l'air, L verrou
   table `gs_staff_peds`), gs_bridge/server/points_fichier.lua (`points-deplaces.json` : les points déplacés passent du PC au VPS via
   METTRE-A-JOUR-OVH ; gardé par METTRE-A-JOUR et « roadline maj »), retouches Qbox : PPA retiré de qbx_cityhall, service / garage de
   qbx_police et qbx_ambulancejob neutralisés (motif à confirmer sur la version installée : avertissement jaune si absent).
+- **V12.40 (14/10)** : `gs_showroom` (véhicules d'exposition posés par le staff, essai 2 min, achat), mécano Benny's (aperçu
+  en direct pour le client, animations, facture), courses sur mesure (F11), portes `/doorlock` (F11), territoires de gang
+  visibles des seuls membres + niveaux + population, tempête posée au sol, Cayo en espèces / argent sale, blips de maps devinés,
+  « RoadLine RP » sur la carte Échap. Rien n'a encore été essayé en jeu : backtest section 6d.
 - Deux sessions Claude (web + poste Windows) : V12.33 puis V12.37 du poste Windows intégrées par la session web (V12.38 =
   fusion). Côté Windows : POUSSER-GITHUB.bat (docs/GITHUB.md) pour envoyer directement sur GitHub. Désactivées (archives coupées, à retélécharger) :
   beach party, soccer / soccer_cloth, plasmatron.
@@ -88,6 +92,9 @@ F10/F11 staff, I aide, K inventaire proche, W radial, H mains en l'air, L verrou
 6. Packs vêtements / coiffures : liens donnés, rien d'importé sans mon accord.
 7. Après l'ouverture : entityLockdown strict, audit des ~300 points d'entrée réseau, refonte des cabines téléphoniques,
    miniatures du menu d'apparence, mises à jour ox_lib / ox_inventory / oxmysql.
+
+8. **V12.40 à caler en jeu** : points du métier mécano encore à La Mesa → les déplacer sur la map Benny's (F11 → points de
+   métier) ; poser les véhicules d'exposition et le départ des essais (F11 → Concessions) ; poser les portes (`/doorlock`).
 
 ## Ce qu'a fait la session web le 12/10 (V12.17 → V12.34), en bref
 - Maps payantes (escrow) : import réparé, archives coupées refusées (7-Zip ≥ 2), intégrité vérifiée au démarrage, fusion

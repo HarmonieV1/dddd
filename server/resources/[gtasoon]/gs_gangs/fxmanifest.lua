@@ -10,4 +10,4 @@ dependencies { 'oxmysql', 'ox_lib', 'gs_security', 'gs_bridge', 'gs_jobs', 'gs_m
 
 shared_scripts { '@ox_lib/init.lua', 'shared/config.lua', '@gs_bridge/shared/points.lua' }
 server_scripts { '@oxmysql/lib/MySQL.lua', 'server/store.lua', 'server/main.lua', 'server/extras.lua', 'server/wars.lua', 'server/racket.lua', 'server/ops.lua' }
-client_scripts { 'client/main.lua', 'client/extras.lua', 'client/racket.lua' }
+client_scripts { 'client/main.lua', 'client/extras.lua', 'client/racket.lua', 'client/population.lua' }

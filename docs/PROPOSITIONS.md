@@ -174,6 +174,23 @@ Règles de la maison : tout validé serveur, zéro pay-to-win, tout en français
 | 96 | **Plaider-coupable** : en garde à vue, l'avocat négocie avec le gradé une peine réduite sans procès ; accepté = appliqué tout de suite, refusé = tribunal ; inscrit au dossier comme tel | ✚ | gs_justice, gs_police (garde à vue), gs_jobs (avocat) |
 | 97 | **Contrôle technique** : vignette 30 jours délivrée par un mécano (vérifications réelles : moteur, pneus, carrosserie) ; sans vignette, amende au contrôle et assurance qui ne couvre plus | ✚✚ | gs_jobs (mécano), gs_police (contrôle), gs_insurance |
 
+## D5. Signatures « maison » (V12.40, 14/10) — prolongent ce qui vient d'être livré
+
+| # | Proposition | Effort | S'appuie sur |
+|---|---|---|---|
+| 98 | **Crédit auto** : à la concession, payer 30 % puis 10 mensualités prélevées sur le compte ; impayé = saisie par le vendeur (véhicule bloqué au garage) ; le vendeur touche sa commission à la signature | ✚✚ | gs_showroom, gs_bridge (Pay), gs_jobs (factures) |
+| 99 | **Essai accompagné** : le vendeur en service monte côté passager pendant l'essai, l'essai dure 5 min au lieu de 2 et la commission passe à 15 % si la vente suit | ✚ | gs_showroom, gs_jobs |
+| 100 | **Diagnostic mécano** : valise de diagnostic (objet) : affiche l'état moteur, carrosserie, réservoir, pneus ; le mécano établit un devis en un clic depuis le diagnostic | ✚ | gs_tuning (mécano), gs_jobs (factures) |
+| 101 | **Banc de puissance au Benny's** : passage payant sur le banc, la vitesse de pointe et le 0-100 du véhicule s'affichent (avant / après préparation) ; record du jour affiché à l'atelier | ✚✚ | gs_tuning, gs_races |
+| 102 | **Saison de courses** : les courses sur mesure posées par le staff comptent pour un classement mensuel (points, titre « Roi du bitume » affiché sur la carte d'identité, plaque spéciale) | ✚✚ | gs_races (courses sur mesure), gs_progression |
+| 103 | **Tags de gang** : poser un graffiti (bombe de peinture) dans un territoire donne de l'influence ; les rivaux le recouvrent ; la mairie paie les civils qui nettoient | ✚✚ | gs_gangs (territoires), gs_jobs |
+| 104 | **Racket de quartier** : le gang qui tient un territoire de niveau 2+ prélève une « protection » sur les commerces joueurs de la zone ; le patron peut porter plainte (enquête police) | ✚✚✚ | gs_gangs, gs_business, gs_police |
+| 105 | **Ronde des guetteurs** : la population de gang (V12.40) signale par SMS au chef l'arrivée de la police ou d'un rival dans le territoire tenu | ✚ | gs_gangs (population), gs_phone |
+| 106 | **Bulletin météo de crise** : 10 min avant une tempête, alerte Vibe + radio ; les joueurs abrités (intérieur, garage) ne subissent rien, les véhicules garés dehors prennent de la carrosserie | ✚ | gs_weather (tempêtes), gs_social, gs_phone |
+| 107 | **Badges d'accès** : les portes verrouillées des métiers s'ouvrent aussi avec un badge (objet) que la direction remet ou retire à un extérieur (avocat en prison, livreur à l'hôpital) | ✚ | ox_doorlock, gs_jobs (direction), ox_inventory |
+
+Rappel : 99, 100, 105, 106 et 107 sont les ✚ réalistes avant l'ouverture ; le reste après le 20/10.
+
 ---
 À coller à la suite de la section B dans `C:\Users\STEPHANE\Desktop\Base STEVEN\roadline-repo\docs\PROPOSITIONS.md` (nouvelle section D),
 puis tri par le fondateur comme pour les 57 premières. Rappel du cap décidé le 11/10 : pas de nouveau gros système avant le 20/10 ;

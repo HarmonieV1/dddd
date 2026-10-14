@@ -23,6 +23,8 @@ $QboxPatches = @(
     @{ res = 'illenium-appearance'; file = 'shared\config.lua'; find = 'Config\.EnablePedsForClothingRooms\s*=\s*true'; repl = 'Config.EnablePedsForClothingRooms = false'; why = 'vestiaires : pas de ped GTA' },
     @{ res = 'illenium-appearance'; file = 'shared\config.lua'; find = 'Config\.EnablePedsForPlayerOutfitRooms\s*=\s*true'; repl = 'Config.EnablePedsForPlayerOutfitRooms = false'; why = 'garde-robes : pas de ped GTA' },
     @{ res = 'qbx_core'; file = 'config\client.lua'; find = 'startingApartment\s*=\s*true'; repl = 'startingApartment = false'; why = 'nouveau perso : apparition en ville (mairie), pas d''appartement gratuit' },
+    # V12.40 : carte (Échap) : « Powered by Qbox » → nom du serveur (gs_hud le pose aussi, au cas où le motif change)
+    @{ res = 'qbx_core'; file = 'config\client.lua'; find = 'pauseMapText\s*=\s*''[^'']*'''; repl = "pauseMapText = 'RoadLine RP'"; why = 'carte Échap : nom du serveur au lieu de Powered by Qbox' },
     # V11.5 : un seul personnage par joueur ; 2 pour le fondateur, les super-admins et les VIP (gs_admin:CharacterSlots)
     @{ res = 'qbx_core'; file = 'config\server.lua'; find = 'defaultNumberOfCharacters\s*=\s*[2-9]'; repl = 'defaultNumberOfCharacters = 1'; why = 'personnages : 1 par joueur' },
     @{ res = 'qbx_core'; file = 'server\character.lua'; why = 'personnages : 2 pour le staff et les VIP (gs_admin)'

@@ -183,9 +183,9 @@ Jobs = {
     },
 
     mechanic = {
-        label = 'Mécano LS Customs', type = 'mechanic', whitelisted = true, society = true, salaryFrom = 'society', armoryLabel = 'Établi et outillage',
+        label = 'Mécano Benny\'s', type = 'mechanic', whitelisted = true, society = true, salaryFrom = 'society', armoryLabel = 'Établi et outillage', -- V12.40 : atelier renommé Benny's (map Patoche)
         platePrefix = 'MECA',
-        blip = { sprite = 446, color = 47, label = 'LS Customs' },
+        blip = { sprite = 446, color = 47, label = 'Benny\'s' }, -- V12.40 : un seul blip (celui de la map Benny's est masqué)
         billing = { label = 'Facture garage', max = 15000 },
         grades = {
             [0] = { label = 'Apprenti', salary = 250 },

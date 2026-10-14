@@ -2,25 +2,39 @@
 local Bridge = exports.gs_bridge
 local membership
 local blips = {}
+--- V12.40 · gang du joueur (lu par client/population.lua)
+function GSGangMine() return membership and membership.gang or nil end
 local stashZone
 
--- Carte des territoires : couleur du gang propriétaire, opacité selon la chaleur du quartier.
+-- Carte des territoires · V12.40 : visible SEULEMENT des membres d'un gang (les autres joueurs n'ont rien sur leur carte).
+-- Style épuré : quartier tenu = couleur du gang, discrète (le sien un peu plus marqué), au rayon effectif (il grandit avec
+-- le niveau) ; quartier libre = pas de zone, juste un petit repère gris. Plus de grands disques blancs.
+local lastState
 local function drawTerritories(state)
-    for _, b in pairs(blips) do RemoveBlip(b.area) RemoveBlip(b.label) end
+    lastState = state
+    for _, b in pairs(blips) do if b.area then RemoveBlip(b.area) end RemoveBlip(b.label) end
     blips = {}
+    if not membership then return end
     for id, t in pairs(Config.Territories) do
         local s = state and state[id] or {}
-        local area = AddBlipForRadius(t.center.x, t.center.y, t.center.z, t.radius)
-        SetBlipColour(area, s.owner and s.color or 4)
-        SetBlipAlpha(area, math.min(160, 60 + (s.heat or 0) * 15))
-        SetBlipAsShortRange(area, true)
+        local mine = s.ownerId and s.ownerId == membership.gang
+        local area
+        if s.owner then
+            area = AddBlipForRadius(t.center.x, t.center.y, t.center.z, s.radius or t.radius)
+            SetBlipColour(area, s.color or 4)
+            SetBlipAlpha(area, mine and 95 or math.min(85, 45 + (s.heat or 0) * 6))
+            SetBlipAsShortRange(area, true)
+        end
         local label = AddBlipForCoord(t.center.x, t.center.y, t.center.z)
         SetBlipSprite(label, 437)
-        SetBlipColour(label, s.owner and s.color or 4)
-        SetBlipScale(label, 0.6)
+        SetBlipColour(label, s.owner and s.color or 39)
+        SetBlipAlpha(label, s.owner and 255 or 150)
+        SetBlipScale(label, s.owner and 0.6 or 0.45)
         SetBlipAsShortRange(label, true)
+        SetBlipCategory(label, 10)
         BeginTextCommandSetBlipName('STRING')
-        AddTextComponentSubstringPlayerName(('%s · %s'):format(t.label, s.owner or 'libre'))
+        AddTextComponentSubstringPlayerName(s.owner and ('%s · %s%s'):format(t.label, s.owner, (s.level or 0) > 0 and (' · niv. %d'):format(s.level) or '')
+            or ('%s · libre'):format(t.label))
         EndTextCommandSetBlipName(label)
         blips[id] = { area = area, label = label }
     end
@@ -38,6 +52,7 @@ end)
 
 local function applyMembership(m)
     membership = m
+    drawTerritories(lastState or GlobalState.gsTerritories) -- V12.40 : carte des quartiers seulement pour les membres
     if stashZone then exports.ox_target:removeZone(stashZone) stashZone = nil end
     if qgBlip then RemoveBlip(qgBlip) qgBlip = nil end
     exports.gs_markers:Remove('gs_gangs:qg')

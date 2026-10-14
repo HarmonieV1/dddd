@@ -1370,6 +1370,35 @@ local function mainMenu()
         a(4, { title = 'Gangs (création, QG, garage)', icon = 'people-group', arrow = true, onSelect = gangAdminMenu })
         a(4, { title = 'Mapping : objets du décor', icon = 'cube', arrow = true, description = 'Catalogue par catégorie, placer, modifier, retirer de la map (/builder)',
             onSelect = function() exports.gs_builder:Open('gs_staff_world') end })
+        -- V12.40 · portes verrouillées par métier / gang (ox_doorlock, éditeur en jeu) : prison, commissariat, mappings…
+        a(3, { title = 'Portes verrouillées (métiers, gangs)', icon = 'door-closed', arrow = true,
+            description = 'Viser une porte (même d\'un mapping) et la réserver à la police, aux EMS, à un gang…',
+            onSelect = function()
+                local c = lib.alertDialog({ header = 'Portes verrouillées', centered = true, cancel = true, size = 'lg', labels = { confirm = 'Ouvrir l\'éditeur' },
+                    content = table.concat({
+                        '1. **Créer** : vise la porte (ou les 2 battants : « Porte double »), donne un nom clair (« Prison · sas 1 »).',
+                        '2. **Groupes** : métier ou gang + grade minimum. Réglages conseillés :',
+                        '   · Prison / cellules : `police` 0 + `sheriff` 0 · Commissariat (accueil exclu) : `police` 0',
+                        '   · Hôpital (bloc, pharmacie) : `ambulance` 0 · Garage Benny\'s (atelier) : `mechanic` 0',
+                        '   · Concession (bureau) : `cardealer` 1 · QG de gang : le gang (ex. `ballas` 0)',
+                        '3. **Verrouillée par défaut** pour la prison et les cellules ; « Fermeture auto » 5 s pour les sas.',
+                        '4. En jeu : [E] près de la porte pour ouvrir / fermer si tu as le métier (en service conseillé).',
+                        'Les portes sont enregistrées en base (ox_doorlock) : rien à refaire aux mises à jour.',
+                    }, '\n') })
+                if c == 'confirm' then ExecuteCommand('doorlock') end
+            end })
+        -- V12.40 · courses de rue sur mesure (gs_races) : points posés sur place, éphémères ou permanentes
+        a(3, { title = 'Courses de rue sur mesure', icon = 'flag-checkered', arrow = true, description = 'Créer une course (points posés là où tu es), durée de vie, supprimer',
+            onSelect = function()
+                if GetResourceState('gs_races') ~= 'started' then return notify(false, 'gs_races n\'est pas démarré.') end
+                exports.gs_races:OpenEditor()
+            end })
+        -- V12.40 · véhicules d'exposition des concessions (gs_showroom) : poser, départ des essais, changer, retirer
+        a(3, { title = 'Concessions : véhicules d\'exposition', icon = 'car', arrow = true, description = 'Exposer un véhicule ici, départ des essais, changer le modèle, retirer',
+            onSelect = function()
+                if GetResourceState('gs_showroom') ~= 'started' then return notify(false, 'gs_showroom n\'est pas démarré.') end
+                exports.gs_showroom:OpenStaffMenu()
+            end })
         a(4, { title = 'Mappings installés', icon = 'map', arrow = true, description = 'Où est chaque map ajoutée : y aller, la voir sur la carte, conflits',
             onSelect = function() mappingsMenu() end })
         a(4, { title = 'Copier mes coordonnées', icon = 'crosshairs', description = 'vec4 dans le presse-papiers', onSelect = function()

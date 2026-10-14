@@ -32,6 +32,29 @@ Config.Territory = {
     ownThreshold = 50,       -- influence minimale pour tenir le quartier
     racketPerHour = 600,     -- revenu versé à la caisse du gang propriétaire, par quartier
     heatWindow = 3600,       -- chaleur de quartier = crimes signalés sur la dernière heure
+    -- V12.40 · Expansion par la notoriété : niveau 0 à 3 selon l'influence du gang qui tient le quartier (au-dessus du seuil),
+    -- +15 % de rayon par niveau (+45 % max) ; le staff peut ajouter un bonus (/territoire). Jamais toute la carte :
+    maxPerGang = 3,          -- quartiers tenus au maximum par un même gang
+    levelStep = 15,          -- points d'influence au-dessus du seuil par niveau
+    maxLevel = 3,
+    growPerLevel = 0.15,
+}
+
+-- V12.40 · Population du gang dans les quartiers qu'il tient (PNJ locaux, créés à l'approche, plus nombreux avec le niveau) :
+-- rivaux = hostiles, police = méfiants, civils = neutres (ils répondent si on les provoque).
+Config.Population = {
+    base = 3, perLevel = 2, max = 9,  -- PNJ par quartier : base + perLevel × niveau
+    spawnRange = 160.0, despawnRange = 210.0,
+    weapons = { 'WEAPON_PISTOL', 'WEAPON_KNIFE', 'WEAPON_BAT', 'WEAPON_SNSPISTOL' },
+    scenarios = { 'WORLD_HUMAN_SMOKING', 'WORLD_HUMAN_DRINKING', 'WORLD_HUMAN_HANG_OUT_STREET', 'WORLD_HUMAN_LEANING', 'WORLD_HUMAN_STAND_IMPATIENT' },
+    models = { -- par gang (id) ; autres gangs : `default`
+        families = { 'g_m_y_famca_01', 'g_m_y_famdnf_01', 'g_m_y_famfor_01' },
+        ballas = { 'g_m_y_ballaeast_01', 'g_m_y_ballaorig_01', 'g_m_y_ballasout_01' },
+        vagos = { 'g_m_y_mexgoon_01', 'g_m_y_mexgoon_02', 'g_m_y_mexgoon_03' },
+        lostmc = { 'g_m_y_lost_01', 'g_m_y_lost_02', 'g_m_y_lost_03' },
+        madrazo = { 'g_m_m_mexboss_01', 'g_m_y_mexgang_01', 'g_m_m_mexboss_02' },
+        default = { 'g_m_y_salvagoon_01', 'g_m_y_strpunk_01', 'g_m_y_korean_01', 'g_m_y_azteca_01' },
+    },
 }
 
 -- Gangs créés automatiquement au 1er démarrage (si absents), avec leur QG / planque dans leur quartier du jeu.

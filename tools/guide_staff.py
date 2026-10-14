@@ -101,7 +101,7 @@ def build():
             [38 * G.mm, 120 * G.mm, 22 * G.mm], font=8.2)]
     s += [Paragraph('Un point mal placé (transformateur, ring, vendeur, PNJ…) : F11 → Monde et lieux → <b>Déplacer / retirer un point</b> (filtre par ressource ; '
                     'super-admin : retirer du jeu, réversible). Points de métier : menu dédié. Tout est gardé aux mises à jour.', SMALL)]
-    s += [Paragraph('6. Nouveautés V11.4 → V12.39 pour le staff', H2)]
+    s += [Paragraph('6. Nouveautés V11.4 → V12.40 pour le staff', H2)]
     s += [t([['Quoi', 'Comment'],
              ['VIP (2 personnages)', 'F11 → Joueurs → le joueur → VIP (fondateur). Tout le monde a 1 personnage ; staff super-admin+ et VIP en ont 2.'],
              ['Mapping', 'F11 → Monde et lieux → Mapping : catalogue par catégorie (mobilier, chantier, éclairage, végétation, stands, plage, police), placement à la souris, retrait d\'objets de la map.'],
@@ -129,6 +129,10 @@ def build():
              ['/dosreglage', 'Armes dans le dos : règle en direct la position (±1 cm, ±2°, os 24818 / 24816), « Copier le bloc Config.Back » puis coller dans gs_details/shared/config.lua et restart gs_details. Plus d\'arme qui flotte après une mort ou un changement de tenue (V12.38).'],
              ['Dégâts adoucis', 'V12.37 : armes à feu −25 %, corps à corps −20 %, véhicules −30 % (gs_details/client/health.lua, DAMAGE). 1.0 = valeurs du jeu.'],
              ['Tempête', 'Interventions (véhicule en détresse, arbre, barrière) créées à l\'approche, posées sur la route la plus proche. Console « aucune route à moins de 60 m du point » = point à déplacer (F11 → Points, nommés « Véhicule · … »).'],
+             ['Concessions', 'V12.40 : F11 → Monde et lieux → Concessions : véhicules d\'exposition (admin+) : place-toi, « Exposer un véhicule ICI », puis « Départ des essais ICI » sur la route. Les joueurs essaient 2 min et achètent ; le vendeur en service change le modèle.'],
+             ['Courses sur mesure', 'V12.40 : F11 → Courses de rue sur mesure : points posés à ta position (30 m mini), 3 à 30 points, éphémère (1 à 168 h) ou permanente.'],
+             ['Portes verrouillées', 'V12.40 : F11 → Portes verrouillées : ouvre /doorlock (ox_doorlock). Groupes : police + sheriff (cellules, commissariat), ambulance, mechanic, cardealer, le gang pour son QG.'],
+             ['Territoires', 'V12.40 : visibles des seuls membres de gang ; niveaux 0-3 selon l\'influence, 3 territoires max par gang ; /territoire id -3..3 (admin) ajoute un bonus (perdu au redémarrage).'],
              ['Location', '13 comptoirs (Sandy devant le 24/7, plus dans le poste du shérif ; Grapeseed, Harmony, Vinewood, Vespucci, aéroport, Pillbox ajoutés, « à caler » via F11 → Déplacer un point).']],
             [38 * G.mm, 142 * G.mm], font=8.2)]
 

@@ -374,7 +374,7 @@ def build():
             ['Shérif du comté (Sandy Shores)', 'Adjoint stagiaire 350 → Shérif 800', 'Le même travail que la LSPD, dans le comté.'],
             ['EMS (Pillbox)', 'Stagiaire 350 · Ambulancier 450 · Infirmier 550 · Médecin 650 · Chef 750',
              'Réanimer, soigner, factures de soins jusqu\'à 5 000 $, interventions sur les faits divers.'],
-            ['Mécano LS Customs (La Mesa)', 'Apprenti 250 · Mécanicien 350 · Chef d\'atelier 450 · Patron 550',
+            ['Mécano Benny\'s', 'Apprenti 250 · Mécanicien 350 · Chef d\'atelier 450 · Patron 550',
              'Réparer, pneus, remorquage (dépanneuse, plateau), commandes par téléphone, factures jusqu\'à 15 000 $, tuning complet.'],
             ['Concession PDM', 'Stagiaire 200 · Vendeur 300 · Chef des ventes 400 · Directeur 500', 'Vendre, reprendre, faire essayer (factures jusqu\'à 500 000 $).'],
             ['Dynasty 8 (immobilier)', 'Agent stagiaire 200 · Agent 300 · Directeur 450', 'Créer et vendre ou louer des logements.'],

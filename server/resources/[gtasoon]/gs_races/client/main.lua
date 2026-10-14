@@ -177,3 +177,81 @@ AddEventHandler('onResourceStop', function(res)
     if organizer and DoesEntityExist(organizer) then DeletePed(organizer) end
     exports.gs_markers:RemovePrefix('gs_races:')
 end)
+
+-- V12.40 · Courses créées par le staff : ajoutées à Config.Circuits (même affichage, mêmes contrôles que les circuits livrés)
+local function mergeCustom(list)
+    for k, c in pairs(Config.Circuits) do if c.custom and not (list and list[k]) then Config.Circuits[k] = nil end end
+    for k, c in pairs(list or {}) do
+        local pts = {}
+        for i, p in ipairs(c.points or {}) do pts[i] = vec3(p.x, p.y, p.z) end
+        Config.Circuits[k] = { label = c.label, points = pts, custom = true }
+    end
+end
+AddStateBagChangeHandler('gsRaceCustom', 'global', function(_, _, value) mergeCustom(value) end)
+CreateThread(function() Wait(1500) mergeCustom(GlobalState.gsRaceCustom) end)
+
+-- Éditeur staff (F11 → Monde et lieux → Courses de rue sur mesure) : brouillon, points posés sur place, enregistrement
+local draftBlips = {}
+local function clearDraftBlips() for _, b in ipairs(draftBlips) do RemoveBlip(b) end draftBlips = {} end
+local function note(ok, msg) if msg then lib.notify({ description = msg, type = ok and 'success' or 'error' }) end end
+
+local editor
+editor = function()
+    local ok, races, draft = lib.callback.await('gs_races:editor', false, 'list')
+    if not ok then return note(false, races) end
+    local o = {}
+    if draft then
+        o[#o + 1] = { title = ('Brouillon : %s (%d point%s)'):format(draft.label, draft.points, draft.points > 1 and 's' or ''), readOnly = true, icon = 'pen',
+            description = draft.hours > 0 and ('Éphémère : %d h après enregistrement'):format(draft.hours) or 'Permanente' }
+        o[#o + 1] = { title = 'Poser un point ICI', icon = 'location-dot', description = 'Dans l\'ordre : 1er = départ, dernier = arrivée', onSelect = function()
+            local p = GetEntityCoords(cache.ped)
+            local ok2, msg = lib.callback.await('gs_races:editor', false, 'point')
+            note(ok2, msg)
+            if ok2 then
+                local b = AddBlipForCoord(p.x, p.y, p.z)
+                SetBlipSprite(b, 1) SetBlipColour(b, 5) ShowNumberOnBlip(b, #draftBlips + 1)
+                draftBlips[#draftBlips + 1] = b
+            end
+            editor()
+        end }
+        o[#o + 1] = { title = 'Retirer le dernier point', icon = 'rotate-left', onSelect = function()
+            local ok2, msg = lib.callback.await('gs_races:editor', false, 'undo')
+            note(ok2, msg)
+            if ok2 and #draftBlips > 0 then RemoveBlip(draftBlips[#draftBlips]) draftBlips[#draftBlips] = nil end
+            editor()
+        end }
+        o[#o + 1] = { title = 'Enregistrer la course', icon = 'floppy-disk', iconColor = '#5aff8c', onSelect = function()
+            local ok2, msg = lib.callback.await('gs_races:editor', false, 'save')
+            note(ok2, msg)
+            if ok2 then clearDraftBlips() end
+            editor()
+        end }
+        o[#o + 1] = { title = 'Abandonner le brouillon', icon = 'xmark', iconColor = '#ff6b6b', onSelect = function()
+            note(lib.callback.await('gs_races:editor', false, 'cancel'))
+            clearDraftBlips()
+            editor()
+        end }
+    else
+        o[#o + 1] = { title = 'Nouvelle course', icon = 'plus', description = 'Nom, puis durée de vie (heures, 0 = permanente)', onSelect = function()
+            local r = lib.inputDialog('Nouvelle course de rue', {
+                { type = 'input', label = 'Nom de la course', required = true, min = 3, max = 40 },
+                { type = 'number', label = ('Durée de vie en heures (0 = permanente, max %d)'):format(Config.Custom.maxHours), default = 0, min = 0, max = Config.Custom.maxHours },
+            })
+            if r then note(lib.callback.await('gs_races:editor', false, 'new', { label = r[1], hours = r[2] })) clearDraftBlips() end
+            editor()
+        end }
+    end
+    for _, r in ipairs(races) do
+        o[#o + 1] = { title = r.label, icon = 'flag-checkered', arrow = true,
+            description = ('%d points · %s · par %s'):format(r.points, r.expiresAt and 'éphémère' or 'permanente', r.author ~= '' and r.author or '?'),
+            onSelect = function()
+                local c = lib.alertDialog({ header = 'Supprimer « ' .. r.label .. ' » ?', centered = true, cancel = true,
+                    content = 'Elle disparaît de chez l\'organisateur (les temps enregistrés restent en base).' })
+                if c == 'confirm' then note(lib.callback.await('gs_races:editor', false, 'delete', { id = r.id })) end
+                editor()
+            end }
+    end
+    lib.registerContext({ id = 'gs_races_editor', title = 'Courses de rue sur mesure', options = o })
+    lib.showContext('gs_races_editor')
+end
+exports('OpenEditor', function() editor() end)

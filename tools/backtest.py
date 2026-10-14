@@ -7,9 +7,9 @@ from pdf import H1, H2, P, SMALL, VERSION, footer, A4, mm, colors, SimpleDocTemp
 # (test, qui, priorité)
 SESSIONS = [
     ('0 · Avant de commencer (5 min)', [
-        ('METTRE-A-JOUR.bat : version V12.39 affichée, « Base de données sauvegardée », « Sauvegardes programmées » ; METTRE-A-JOUR-OVH puis GERER-OVH → 1 : « Version RoadLine : V12.39 »', 'Staff', 3),
+        ('METTRE-A-JOUR.bat : version V12.40 affichée, « Base de données sauvegardée », « Sauvegardes programmées » ; METTRE-A-JOUR-OVH puis GERER-OVH → 1 : « Version RoadLine : V12.40 »', 'Staff', 3),
         ('Fenêtre du serveur : aucune ligne ROUGE au démarrage (sauf un conflit de maps déjà connu) ; F8 en jeu : aucune erreur rouge ; GERER-OVH → 3 : aucune erreur de script', 'Seul', 3),
-        ('VIDER-CACHE-FIVEM.bat si tu vois un ancien menu (F11 doit afficher « RoadLine V12.39 ») ; pendant le backtest : set gs_honeypot "log" dans secrets.cfg (piège = simple signalement)', 'Staff', 2),
+        ('VIDER-CACHE-FIVEM.bat si tu vois un ancien menu (F11 doit afficher « RoadLine V12.40 ») ; pendant le backtest : set gs_honeypot "log" dans secrets.cfg (piège = simple signalement)', 'Staff', 2),
     ]),
     ('1 · Arrivée et personnage (15 min) — corrigé après tes retours', [
         ('Nouveau joueur : un seul personnage ; fondateur, super-admins et VIP (F11 → Joueurs → VIP) : deux ; plus de choix du lieu ; déco / reco = même endroit', '2', 3),
@@ -65,6 +65,15 @@ SESSIONS = [
         ('Hôpital Pillbox, Fleeca, Pop\'s Pills, Bahama Mamas : nos points (soins, braquage, pharmacie, bar) accessibles sans les maps', 'Staff', 3),
         ('NETTOYER-MARQUES.bat : liste les mods de marque (dont mp_male_the_goat), supprime après « O », le reste intact', 'Staff', 2),
         ('Pack acheté (plus tard) : IMPORTER-MODS puis F11 → Mappings installés : chaque map a un quartier, aucune ligne rouge (conflit) ni jaune (poids) en console', 'Staff', 2),
+    ]),
+    ('6d · V12.40 — concessions, Benny\'s, courses, gangs (40 min)', [
+        ('F11 → Monde et lieux → Concessions : sur la map cardealer, « Exposer un véhicule ICI » ×3 + « Départ des essais ICI » sur la route ; s\'écarter → les véhicules apparaissent, figés, plaque EXPO', 'Staff', 3),
+        ('Joueur : Alt sur un véhicule exposé → Prix, Essayer (2 min, retour automatique, /finessai), Acheter (carte ou espèces) → le véhicule est au garage ; vendeur en service : Changer le modèle', '2', 3),
+        ('Mécano en service + client : Alt sur le véhicule → Personnaliser ; le CLIENT voit chaque changement en direct ; Valider → animations, facture reçue par le client ; Annuler → tout revient', '2', 3),
+        ('F11 → Courses de rue sur mesure : nouveau tracé, 4 points, enregistrer 1 h ; la course apparaît dans les circuits ; supprimée après 1 h (ou en permanent)', 'Staff', 2),
+        ('F11 → Portes verrouillées : /doorlock s\'ouvre ; poser une porte de cellule (police) → fermée pour un civil, ouverte pour un policier en service', 'Staff', 3),
+        ('Gangs : un civil ne voit AUCUNE zone ; un membre voit les zones tenues en couleur ; /territoire grove 2 → rayon plus grand, PNJ du gang dans la zone, hostiles à un rival', '2', 2),
+        ('/meteoevent storm : véhicules en détresse et arbres posés au sol, aucun en l\'air ; Cayo : carte refusée, espèces ou argent sale acceptés ; Échap : « RoadLine RP » en titre ; blips de maps : plus de ronds blancs, Benny\'s affiché une seule fois', 'Seul', 2),
     ]),
     ('6c · V12.39 — éboueur, bus, paiements (15 min)', [
         ('Éboueur : [E] à la poubelle → sac en main (marche seulement) ; [E] à l\'arrière de la benne ou Alt sur la benne → sac jeté ; rien payé en route ; après le dernier sac, retour au dépôt → tournée payée', 'Seul', 3),

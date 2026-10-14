@@ -80,7 +80,9 @@ check('pas assez d\'argent', not ok and db[1].plate == 'VICE 88')
 -- Mécano (V7, V12.36) : personnalisation complète du véhicule d'un client, enregistrée en base, plaque intouchable,
 -- client à côté (son accord), réglages fusionnés (état du véhicule gardé), appliqués par le propriétaire réseau.
 local onduty = {}
-provide('gs_jobs', { IsOnDutyAs = function(src, job) return onduty[src] == job end })
+local bills = {}
+provide('gs_jobs', { IsOnDutyAs = function(src, job) return onduty[src] == job end,
+    CreateBill = function(cid, job, amount, reason) bills[#bills + 1] = { cid = cid, job = job, amount = amount, reason = reason } return true end })
 local saved = {}
 local propsDb = { [2] = { model = 777, plate = 'ZZZ 999', fuelLevel = 42, lockState = 2, modEngine = -1, color1 = 0 }, [5] = { model = 1 } }
 db[#db + 1] = { id = 3, cid = 'CID5', plate = 'MEC 001' }   -- la voiture du mécano lui-même
@@ -154,6 +156,35 @@ check("V12.36 carte grise vide : modèle et plaque posés depuis l'entité", okS
 tp(2, vec3(100.0, 0.0, 0.0))
 okS, msgS = cb('gs_tuning:mechanicSave', 5, client, { modEngine = 3 }); step()
 check('V12.36 enregistrement refusé si le client est parti', not okS and msgS:find('client doit rester'))
+
+
+-- V12.40 · Aperçu vu par tous (relayé au propriétaire réseau), prix recalculés par le serveur, facture automatique
+tp(2, vec3(3.0, 0.0, 0.0))
+W.entities[client].owner = 2
+local orig = { modEngine = -1, color1 = 0, modSpoilers = -1 }
+check('V12.40 ouverture de session', cb('gs_tuning:mechanicCheck', 5, client, orig)); step()
+net('gs_tuning:server:preview', 5, client, { modEngine = 2, plate = 'HACK', fuelLevel = 100 })
+local pv = lastClientEvent('gs_tuning:client:applyProps', 2)
+check('V12.40 aperçu relayé au propriétaire réseau, sans plaque ni état', pv and pv.args[2].modEngine == 2 and pv.args[2].plate == nil and pv.args[2].fuelLevel == nil)
+local before = #W.clientEvents
+net('gs_tuning:server:preview', 5, rental, { modEngine = 2 })
+check('V12.40 aperçu refusé sur un autre véhicule que la session', #W.clientEvents == before)
+bills = {}
+propsDb[2] = { model = 777, plate = 'ZZZ 999' }
+okS, msgS = cb('gs_tuning:mechanicSave', 5, client, { modEngine = 2, color1 = 27, modSpoilers = 1, modTurbo = false }); step()
+local P = Config.Mechanic.prices
+local expected = P.perf.modEngine[3] + P.keys.color1 + P.mod
+check('V12.40 facture automatique au client, prix du serveur', okS and #bills == 1 and bills[1].cid == 'CID2' and bills[1].job == 'mechanic' and bills[1].amount == expected)
+check('V12.40 message avec le montant', msgS and msgS:find(tostring(expected)))
+check('V12.40 session close après validation', Mechanic.sessions[5] == nil)
+net('gs_tuning:server:preview', 5, client, { modEngine = 3 })
+check('V12.40 plus d\'aperçu sans session', lastClientEvent('gs_tuning:client:applyProps', 2).args[2].modEngine == 2)
+check('V12.40 prix : d\'origine gratuit, turbo, plafond', Mechanic.price('modEngine', -1) == 0 and Mechanic.price('modTurbo', true) == P.turbo
+    and Mechanic.bill({}, { modEngine = 3, modArmor = 4, modBrakes = 2, modTransmission = 2, modSuspension = 3, modTurbo = true, color1 = 1, customPrimaryColor = { 1, 2, 3 } }) <= Config.Mechanic.maxBill)
+bills = {}
+cb('gs_tuning:mechanicCheck', 5, mine, {}); step()
+cb('gs_tuning:mechanicSave', 5, mine, { modEngine = 1 }); step()
+check('V12.40 sa propre voiture : pas de facture', #bills == 0)
 
 io.write(('\n%d réussis, %d échoués\n'):format(passed, failed))
 os.exit(failed == 0 and 0 or 1)

@@ -98,3 +98,9 @@ CreateThread(function()
         Wait(inVeh and Config.TickInVehicle or Config.TickOnFoot)
     end
 end)
+
+-- V12.40 · Carte (Échap) : le nom du serveur au lieu de « Powered by Qbox » (qbx_core le pose à son démarrage : on repasse
+-- derrière, puis à chaque chargement de personnage). Convar `gs_server_name` pour le changer.
+local function pauseTitle() AddTextEntry('FE_THDR_GTAO', GetConvar('gs_server_name', 'RoadLine RP')) end
+CreateThread(function() Wait(5000) pauseTitle() end)
+AddEventHandler('gs_bridge:client:playerLoaded', pauseTitle)

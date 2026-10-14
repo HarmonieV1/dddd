@@ -236,8 +236,13 @@ const pb = M.publicBlips([
   { name: 'gsa_patoche_inconnu_pack', label: 'Inconnu', places: [{ x: 7, y: 8, z: 9 }] },
   { name: 'gsa_sans_lieu', label: 'Sans lieu', places: [] },
 ]);
-check('blips : casino avec son icône, QG de gang caché, map inconnue avec son nom, sans lieu ignorée',
-  pb.length === 2 && pb[0].label === 'Casino' && pb[0].sprite === 679 && pb[1].label === 'Inconnu' && pb[1].sprite === 1);
+check('blips : casino avec son icône, QG de gang caché, map inconnue SANS blip (V12.40 : plus de rond blanc), sans lieu ignorée',
+  pb.length === 1 && pb[0].label === 'Casino' && pb[0].sprite === 679);
+const pb3 = M.publicBlips([{ name: 'gsa_patoche_new_bar_pack', label: 'New bar', places: [{ x: 1, y: 2, z: 3 }] },
+  { name: 'gsa_mlo_garage_luxe', label: 'Garage luxe', places: [{ x: 1, y: 2, z: 3 }] },
+  { name: 'gsa_modern_villa_02', label: 'Villa', places: [{ x: 1, y: 2, z: 3 }] }]);
+check('V12.40 icône devinée d\'après le nom (bar, garage), villa privée sans blip', pb3.length === 2 && pb3[0].sprite === 93 && pb3[1].sprite === 446);
+check('V12.40 aucune icône par défaut (rond blanc)', [...pb, ...pb3].every((b) => b.sprite !== 1));
 const pb2 = M.publicBlips([
   { name: 'gsa_patoche_plasmagame_pack', label: 'Plasmagame', places: [{ x: 1, y: 2, z: 3 }], activity: { what: 'laser game', script: null } },
   { name: 'gsa_patoche_plasmakart_pack', label: 'Plasmakart', places: [{ x: 1, y: 2, z: 3 }], activity: { what: 'karting', script: 'patoche_plasmakart' } },

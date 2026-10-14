@@ -24,7 +24,11 @@ lib.callback.register('gs_world:fly', function(src, side)
     if not from then return false, 'Vol inconnu.' end
     if not Security:InRangeFlat(src, from.counter, 4.0, 8.0) then return false, 'Présente-toi au comptoir.' end
     if GetVehiclePedIsIn(GetPlayerPed(src), false) ~= 0 then return false, 'Descends du véhicule.' end
-    if f.price > 0 and not Bridge:Pay(src, f.price, 'vol Cayo Perico', 'bank') then return false, ('Billet : %d $ (carte ou espèces).'):format(f.price) end -- V12.39
+    -- V12.40 · vol « discret » vers l'île : espèces, sinon argent sale (jamais la banque : pas de trace)
+    if f.price > 0 and not Bridge:RemoveMoney(src, 'cash', f.price, 'vol Cayo Perico')
+        and not (Bridge:GetItemCount(src, 'black_money') >= f.price and Bridge:RemoveItem(src, 'black_money', f.price)) then
+        return false, ('Billet : %d $ en liquide ou en argent sale, pas de carte ici.'):format(f.price)
+    end
     local to = f[side == 'mainland' and 'island' or 'mainland'].arrival
     local ped = GetPlayerPed(src)
     SetEntityCoords(ped, to.x, to.y, to.z, false, false, false, false)

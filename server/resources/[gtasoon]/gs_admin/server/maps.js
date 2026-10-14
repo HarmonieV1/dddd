@@ -206,6 +206,7 @@ function scanResource(name, dir) {
 
 // V12.15 : vrais noms des maps installées (menu F11 et blips), au lieu du nom de fichier du mod
 const LABELS = {
+  gsa_sub_patoche_benny_bw_pack: "Benny's", // V12.40 : plus de blip public (celui du métier mécano suffit), le nom reste
   gsa_apteka_pops_pills_v_dauntaune: "Pharmacie Pop's Pills",
   gsa_bahamas_mamas_v1_0: 'Bahama Mamas',
   gsa_biznes_ofis: "Bureau d'entreprise",
@@ -253,7 +254,7 @@ const PUBLIC = {
   gsa_patoche_stock_pack: { label: 'Entrepôt', sprite: 357, color: 0 },
   gsa_patoche_tabac_pack: { label: 'Bureau de tabac', sprite: 52, color: 0 },
   gsa_patoche_tacos_pack: { label: 'Tacos', sprite: 93, color: 17 },
-  gsa_sub_patoche_benny_bw_pack: { label: 'Benny\'s', sprite: 72, color: 0 },
+  gsa_sub_patoche_benny_bw_pack: false, // V12.40 : le blip « Benny's » est celui du métier mécano (gs_jobs), pas de doublon
   gsa_sub_patoche_prison_pack: { label: 'Prison de Bolingbroke', sprite: 188, color: 1 },
   gsa_sub_patoche_storage_pack: { label: 'Box de stockage', sprite: 357, color: 0 },
   gsa_patoche_villa_bunker_pack: false, // villa privée (V12.31 : gardée à la place de la villa 01)
@@ -261,11 +262,40 @@ const PUBLIC = {
   gsa_mrpd_etendu: false, // sous-sol du commissariat : le commissariat a déjà son blip
 };
 
-/** Blips publics : un par map située, sauf celles marquées false. */
+// V12.40 · Map absente de PUBLIC : icône devinée d'après son nom (plus jamais le rond blanc par défaut). Aucun mot reconnu
+// (villa, décor, maison…) = pas de blip public (la map reste dans F11 → Mappings installés pour le staff).
+const GUESS = [
+  [/(^|_)(villa|house|mansion|appart|apartment|maison|home)(_|$)/, false],
+  [/(benny|mechanic|meca|garage|custom|tuning|lsc|repair)/, { sprite: 446, color: 47 }],
+  [/(cardealer|dealer|concession|showroom|pdm)/, { sprite: 225, color: 3 }],
+  [/(police|lspd|mrpd|sheriff|(^|_)pd(_|$))/, { sprite: 60, color: 29 }],
+  [/(prison|jail|bolingbroke)/, { sprite: 188, color: 1 }],
+  [/(hospital|medical|clinic|pillbox|(^|_)ems(_|$))/, { sprite: 61, color: 1 }],
+  [/(casino)/, { sprite: 679, color: 5 }],
+  [/(ammu|gunshop|weapon)/, { sprite: 110, color: 1 }],
+  [/(bank|fleeca)/, { sprite: 108, color: 2 }],
+  [/(barber|hair|coiff)/, { sprite: 71, color: 0 }],
+  [/(tattoo|tatoo)/, { sprite: 75, color: 0 }],
+  [/(cloth|binco|suburban|ponsonby|boutique)/, { sprite: 73, color: 0 }],
+  [/(gym|fitness|muscle)/, { sprite: 311, color: 7 }],
+  [/(gas|fuel|ltd|station_service)/, { sprite: 361, color: 1 }],
+  [/(bar|pub|club|nightclub|tequila|bahama|unicorn|lounge)/, { sprite: 93, color: 27 }],
+  [/(burger|pizza|tacos|food|restaurant|diner|cafe|coffee|bean)/, { sprite: 93, color: 17 }],
+  [/(shop|store|market|liquor|247|superette|supermarket)/, { sprite: 52, color: 2 }],
+  [/(stock|storage|warehouse|entrepot|depot)/, { sprite: 357, color: 0 }],
+  [/(bowling|arcade|cinema|kart|soccer|golf|beach|park|bumpercar|laser)/, { sprite: 38, color: 27 }],
+];
+function guessBlip(name) {
+  const n = String(name).toLowerCase().replace(/^gsa_/, '');
+  for (const [re, cfg] of GUESS) if (re.test(n)) return cfg;
+  return false;
+}
+
+/** Blips publics : un par map située, sauf celles marquées false (ou sans icône devinable). */
 function publicBlips(maps) {
   const out = [];
   for (const m of maps) {
-    const cfg = PUBLIC[m.name];
+    const cfg = PUBLIC[m.name] !== undefined ? PUBLIC[m.name] : guessBlip(m.name);
     if (cfg === false || !m.places || !m.places.length) continue;
     const p = m.places[0];
     const soon = m.activity && !m.activity.script ? ' (bientôt)' : ''; // activité sans son script : pas encore jouable

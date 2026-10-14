@@ -147,6 +147,27 @@ for _ = 1, 60 do Gangs.tick() end
 check('Ballas absents : déclin', (t.influence.ballas or 0) < before)
 check('Vagos reprennent Grove', t.owner == 'vagos')
 
+-- V12.40 · Niveau du quartier (notoriété), rayon qui grandit (plafonné), bonus staff, plafond de quartiers par gang
+local TC = Config.Territory
+t.influence.vagos = TC.ownThreshold + TC.levelStep * 2 + 1
+check('niveau selon l\'influence', Gangs.level('grove') == 2)
+check('rayon effectif agrandi', math.abs(Gangs.radius('grove') - Config.Territories.grove.radius * (1 + 2 * TC.growPerLevel)) < 0.01)
+t.influence.vagos = 100
+check('niveau plafonné', Gangs.level('grove') == TC.maxLevel)
+Gangs.setBonus('grove', -3)
+check('bonus staff appliqué (niveau jamais négatif)', Gangs.level('grove') == 0)
+Gangs.setBonus('grove', 0)
+check('publié : identifiant, niveau, rayon', GlobalState.gsTerritories.grove.ownerId == 'vagos' and GlobalState.gsTerritories.grove.level == TC.maxLevel and GlobalState.gsTerritories.grove.radius > Config.Territories.grove.radius)
+local saved = TC.maxPerGang
+TC.maxPerGang = 1
+local dv = Gangs.territories.davis
+dv.influence.vagos = 90
+Gangs.tick()
+check('plafond : un gang ne tient pas plus de maxPerGang quartiers', dv.owner ~= 'vagos')
+TC.maxPerGang = saved
+dv.influence.vagos = nil
+Gangs.tick()
+
 -- Racket ---------------------------------------------------------------------------------------------------------
 local vagosBefore = money.vagos
 Gangs.payRacket()

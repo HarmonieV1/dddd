@@ -22,12 +22,19 @@ F.price = 350 -- tarif testé, même si le vol est gratuit par défaut
 ok = cb('gs_world:fly', 1, 'mainland'); step()
 check('sans argent', not ok and W.players[1].pos == F.mainland.counter)
 W.players[1].money.bank = 1000
+ok = cb('gs_world:fly', 1, 'mainland'); step()
+check('V12.40 : pas de carte bancaire pour Cayo', not ok and W.players[1].money.bank == 1000)
+W.players[1].items.black_money = 400
+ok = cb('gs_world:fly', 1, 'mainland'); step()
+check('V12.40 : argent sale accepté', ok and W.players[1].items.black_money == 400 - F.price and W.players[1].money.bank == 1000)
+tp(1, F.mainland.counter)
+W.players[1].money.cash = 1000
 W.players[1].vehicle = 5
 ok = cb('gs_world:fly', 1, 'mainland'); step()
 check('en véhicule : refusé', not ok)
 W.players[1].vehicle = nil
 ok = cb('gs_world:fly', 1, 'mainland'); step()
-check('arrivée sur l\'île, billet payé', ok and W.players[1].money.bank == 1000 - F.price and #(W.players[1].pos - F.island.arrival) < 1)
+check('arrivée sur l\'île, billet payé en liquide', ok and W.players[1].money.cash == 1000 - F.price and W.players[1].money.bank == 1000 and #(W.players[1].pos - F.island.arrival) < 1)
 tp(1, F.island.counter)
 ok = cb('gs_world:fly', 1, 'island'); step()
 check('retour à LS', ok and #(W.players[1].pos - F.mainland.arrival) < 1)

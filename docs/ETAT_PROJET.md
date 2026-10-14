@@ -1,4 +1,4 @@
-# État du projet RoadLine RP — récapitulatif complet (à jour au 13/10/2026, V12.39)
+# État du projet RoadLine RP — récapitulatif complet (à jour au 14/10/2026, V12.40)
 
 Ce document sert de **point de sauvegarde** : si une conversation avec Claude est perdue, compressée ou doit reprendre
 ailleurs, tout ce qu'il faut savoir est ici. Il est versionné avec le code (`git log` en garde aussi l'historique).
@@ -54,7 +54,7 @@ exclusifs (« ce que tu ne trouveras nulle part ailleurs »).
 - `feature/phase1-bridge`
 - `claude/gta-rp-architecture-stack-pbvdxz`
 
-**Dernier commit poussé** : « V12.39 : éboueurs (sac porté, payé au dépôt), bus, paiements, virements hors ligne » (hash exact :
+**Dernier commit poussé** : « V12.40 : concessions, mécano Benny's, courses sur mesure, territoires de gang » (hash exact :
 `git log -1 origin/feature/phase1-bridge`). Les deux branches pointent sur le même commit.
 
 **Deux sessions Claude en parallèle** (poste Windows et session web) : elles ne se voient pas. Toujours synchroniser
@@ -64,7 +64,7 @@ par un colis (zip de l'installation ou de la session) + ce fichier, et comparer 
 ## 2. Versions : interne vs publique (important, piège classique)
 
 Depuis la V11.3, il y a **deux numéros de version différents**, volontairement :
-- `gs_version` (convar, `server.cfg.example`) = **V12.39** → version technique interne, vue par le staff (F11, console,
+- `gs_version` (convar, `server.cfg.example`) = **V12.40** → version technique interne, vue par le staff (F11, console,
   METTRE-A-JOUR). Continue d'avancer à chaque mise à jour (V11.2, V11.3...).
 - `gs_public_version` (convar) = **« V4 · bêta »** → version vue par les **joueurs** (écran de chargement, statut
   Discord, Gazette). Le site affiche son propre journal (V1 à V4, V5 « classé confidentiel »).
@@ -271,6 +271,39 @@ Résumé très condensé (le détail complet est dans `docs/ROADMAP.md`, `docs/F
   ne remplace pas le curseur), profondeur CSS `animation-timeline: view()` (captures, mock, carte, chiffres), intro
   façon chargement de mission (Entrée / clic pour passer). Tout coupé par `prefers-reduced-motion`, souris seulement
   sur ordinateur. Une seule boucle rAF qui s'endort quand rien ne bouge. Vérifié dans le navigateur : 0 erreur.
+
+- **V12.40** (14/10/2026, session web) — retours du 14/10 :
+  - **Concessions (nouvelle ressource `gs_showroom`)** : F11 → Monde et lieux → « Concessions : véhicules d'exposition » (admin+) :
+    par concession (map Patoche « cardealer » et PDM), « Exposer un véhicule ICI » (catalogue Qbox par catégorie, position et cap
+    du staff), « Départ des essais ICI », liste (Y aller, changer le modèle, retirer). Véhicules exposés = entités locales figées,
+    invincibles, verrouillées (plaque EXPO), créées à l'approche (boucle 2 s). Alt dessus : Prix et infos, **Essayer 2 min** (départ
+    posé par le staff, retour automatique, 1 500 m max, `/finessai`), **Acheter** (carte sinon espèces, livré au garage, 10 % à la
+    caisse de la concession), « Changer le modèle exposé » (vendeur en service). Tables `gs_showroom_slots` / `gs_showroom_starts`.
+    Tests 17/17.
+  - **Mécano Benny's** (gs_tuning) : menu refait (performances par niveau avec prix, carrosserie 24 pièces, intérieur, peinture :
+    palettes classiques / mates / métaux + RVB libre, nacré, type de peinture, livrée ; jantes : type, modèle, couleur, fumée ;
+    xénon, néons, teinte des vitres, plaque, extras). **Le client voit tout en direct** (aperçu relayé par le serveur au
+    propriétaire réseau du véhicule). Panier en tête (« n pièces · total »), **vraies animations** par poste au moment de valider
+    (capot ouvert, soudure, ponçage, à genoux pour les roues, dans l'habitacle). **Facture automatique** au client (plafond
+    60 000 $, rien si c'est la voiture du mécano), annulation = retour à l'origine ; session coupée à 25 m ou hors service.
+    Tests 50/50.
+  - **Courses sur mesure** (gs_races) : F11 → « Courses de rue sur mesure » (admin+) : nouveau tracé, points posés à pied ou en
+    voiture (30 m mini entre deux, 3 à 30), annuler le dernier, enregistrer **éphémère (1 à 168 h) ou permanente** ; apparaissent
+    dans la liste des circuits comme les autres. Table `gs_race_custom`. Tests 46/46.
+  - **Portes verrouillées** : F11 → « Portes verrouillées (métiers, gangs) » : procédure et groupes conseillés puis ouvre
+    l'éditeur d'ox_doorlock (`/doorlock`) ; ox_doorlock était déjà installé. Les portes se posent à la main, map par map.
+  - **Territoires de gang** (gs_gangs) : zones visibles **seulement par les membres d'un gang** ; plus de grands cercles blancs :
+    couleur du gang qui tient, discrète (alpha selon la tension), petite étiquette grise pour les zones libres. **Niveaux 0 à 3**
+    selon l'influence (rayon +15 % par niveau), **3 territoires max par gang** (la carte ne peut pas être entièrement tenue),
+    bonus staff `/territoire <id> <-3..3>` (non gardé au redémarrage). **Population de gang** (`client/population.lua`) :
+    3 + 2 × niveau PNJ (9 max) aux couleurs du gang, armés (arme rangée), hostiles aux rivaux (et dès le niveau 2 violents),
+    méfiants envers la police. Tests 46/46.
+  - **Tempête** : les véhicules et objets ne restent plus en l'air : sol relu par sondes, posé, vérifié (sinon réessayé plus tard).
+  - **Cayo** : billet en **espèces ou argent sale** uniquement (plus de carte). **Benny's** : le métier mécano s'appelle « Mécano
+    Benny's », blip Benny's ; le blip public de la map Benny's est retiré (un seul point). **Carte Échap** : « RoadLine RP » au lieu de
+    « Powered by Qbox » (retouche Qbox + `AddTextEntry`). **Blips des maps** : plus de rond blanc : icône devinée d'après le nom
+    (garage, concession, police, prison, hôpital, bar, magasin…), rien si on ne sait pas. Tests maps 121/121.
+  - Propositions n°98 à 107 ajoutées à `docs/PROPOSITIONS.md` (section D5).
 
 - **V12.39** (13/10/2026, session web) — retours du 13/10 au soir :
   - **Éboueur** : le sac ne disparaît plus. [E] à la poubelle = « Ramasser le sac » (anim), le sac reste en main (marche
