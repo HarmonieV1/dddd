@@ -38,11 +38,27 @@ local function playLoop(ped, a)
     return true
 end
 
+--- V12.58 · Réglage d'un modèle : celui enregistré par le staff (GlobalState.gsFurniture) sinon Config.Furniture
+local function cfgOf(model)
+    local base = F.models[model]
+    local o = (GlobalState.gsFurniture or {})[model]
+    if not base or type(o) ~= 'table' then return base end
+    local c = {}
+    for k, v in pairs(base) do c[k] = v end
+    c.z, c.y, c.h = o.z or c.z, o.y or c.y, o.h or c.h
+    return c
+end
+
+--- Valeurs finales (réglage + ajustement en cours) du siège utilisé
+local function current()
+    local c, a = using.cfg, using.adj
+    return { z = (c.z or 0.5) + a.z, y = (c.y or 0.0) + (a.y or 0.0), h = ((c.h or 0.0) + a.h) % 360.0 }
+end
+
 local function printLine()
     if not using then return end
-    local c = using.cfg
-    print(('[gs_furniture] Mobilier · %s = { kind = \'%s\', z = %.2f, y = %.2f, h = %.1f },'):format(using.model, c.kind,
-        (c.z or 0.5) + using.adj.z, c.y or 0.0, ((c.h or 0.0) + using.adj.h) % 360.0))
+    local v = current()
+    print(('[gs_furniture] Mobilier · %s = { kind = \'%s\', z = %.2f, y = %.2f, h = %.1f },'):format(using.model, using.cfg.kind, v.z, v.y, v.h))
 end
 
 local function standUp()
@@ -74,10 +90,10 @@ local function pose(ent, model, cfg)
         if not occupied(pos) and (not bestD or #(pos - me) < bestD) then best, bestD = sx, #(pos - me) end
     end
     if not best then return notify('Place occupée.', false) end
-    using = { kind = cfg.kind, ent = ent, model = model, cfg = cfg, seat = best, adj = { z = 0.0, h = 0.0 } }
+    using = { kind = cfg.kind, ent = ent, model = model, cfg = cfg, seat = best, adj = { z = 0.0, y = 0.0, h = 0.0 } }
     local ped = cache.ped
     local function apply()
-        local pos, h = seatPos(ent, cfg, using.seat)
+        local pos, h = seatPos(ent, { y = (cfg.y or 0.0) + using.adj.y, z = cfg.z, h = cfg.h }, using.seat)
         SetEntityCoordsNoOffset(ped, pos.x, pos.y, pos.z + using.adj.z, false, false, false)
         SetEntityHeading(ped, (h + using.adj.h) % 360.0)
     end
@@ -85,7 +101,7 @@ local function pose(ent, model, cfg)
     apply()
     FreezeEntityPosition(ped, true)
     if not playLoop(ped, F.anims[cfg.kind]) then return standUp() end
-    lib.showTextUI('[X] Se lever · PgUp / PgDn : hauteur · ← → : tourner', { icon = cfg.kind == 'lie' and 'bed' or 'chair' })
+    lib.showTextUI('[X] Se lever · PgUp / PgDn : hauteur · ↑ ↓ : avancer / reculer · ← → : tourner', { icon = cfg.kind == 'lie' and 'bed' or 'chair' })
     CreateThread(function()
         local anim = F.anims[cfg.kind]
         while using and using.ent == ent do
@@ -96,6 +112,8 @@ local function pose(ent, model, cfg)
             if IsControlJustPressed(0, 11) then using.adj.z = using.adj.z - 0.02 changed = true end
             if IsControlJustPressed(0, 174) then using.adj.h = using.adj.h + 5.0 changed = true end
             if IsControlJustPressed(0, 175) then using.adj.h = using.adj.h - 5.0 changed = true end
+            if IsControlJustPressed(0, 172) then using.adj.y = using.adj.y + 0.05 changed = true end -- V12.58 : ↑ avancer
+            if IsControlJustPressed(0, 173) then using.adj.y = using.adj.y - 0.05 changed = true end -- ↓ reculer
             if changed then apply() printLine() end
             if not IsEntityPlayingAnim(ped2, anim.dict, anim.clip, 3) then playLoop(ped2, anim) end
             DisableControlAction(0, 24, true) DisableControlAction(0, 25, true) -- pas de tir assis
@@ -121,7 +139,7 @@ local function roll(ent, model, cfg)
     FreezeEntityPosition(chair, true)
     SetEntityCollision(chair, false, false)
     LocalPlayer.state:set('gsWheel', { x = origin.x, y = origin.y, z = origin.z, model = hash }, true) -- cache le fauteuil d'origine chez tous
-    using = { kind = 'wheel', ent = ent, model = model, cfg = cfg, chair = chair, adj = { z = 0.0, h = 0.0 } }
+    using = { kind = 'wheel', ent = ent, model = model, cfg = cfg, chair = chair, adj = { z = 0.0, y = 0.0, h = 0.0 } }
     local function attach()
         AttachEntityToEntity(ped, chair, 0, 0.0, cfg.y or 0.0, (cfg.z or 0.55) + using.adj.z, 0.0, 0.0, (cfg.h or 180.0) + using.adj.h,
             false, false, false, true, 2, true)
@@ -194,7 +212,7 @@ CreateThread(function()
             local ent = data.entity
             local model
             for m in pairs(F.models) do if GetEntityModel(ent) == GetHashKey(m) then model = m break end end
-            if model then fn(ent, model, F.models[model]) end
+            if model then fn(ent, model, cfgOf(model)) end
         end
     end
     exports.ox_target:addModel(byKind.sit, { -- [API] ox_target
@@ -209,6 +227,20 @@ CreateThread(function()
           onSelect = handler(function(ent, model, cfg) pose(ent, model, { kind = 'sit', z = cfg.z, y = cfg.y, h = cfg.h }) end) },
     })
 end)
+
+-- V12.58 · /meubleregle (staff) : assis sur un meuble, après l'avoir calé (PgUp / PgDn, flèches), enregistre ce réglage pour
+-- TOUS les meubles de ce modèle, chez tout le monde. « /meubleregle annuler » : retour aux valeurs de shared/config.lua.
+RegisterCommand('meubleregle', function(_, args)
+    if not using or using.kind == 'wheel' then
+        return notify('Assieds-toi (ou allonge-toi) d\'abord sur le meuble à régler, cale-toi, puis refais /meubleregle.', false)
+    end
+    local ok, msg
+    if args[1] == 'annuler' then ok, msg = lib.callback.await('gs_furniture:adjust', false, using.model, nil)
+    else ok, msg = lib.callback.await('gs_furniture:adjust', false, using.model, current()) end
+    notify(msg, ok)
+end, false)
+TriggerEvent('chat:addSuggestion', '/meubleregle', 'Staff : enregistrer pour tous la position assise / allongée de ce meuble', {
+    { name = 'annuler', help = 'facultatif : revenir au réglage d\'origine' } })
 
 AddEventHandler('onResourceStop', function(res)
     if res ~= GetCurrentResourceName() then return end

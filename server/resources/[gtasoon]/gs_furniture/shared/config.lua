@@ -1,7 +1,9 @@
 -- [CONFIG] gs_furniture · V12.42 Mobilier utilisable (Alt dessus) : s'asseoir, s'allonger, rouler en fauteuil roulant. Vaut pour TOUS les objets
 -- de ces modèles : ceux posés par le staff (F11 → Mapping) comme ceux de la ville. Décalages par rapport à l'objet :
 -- y = avant / arrière, z = hauteur, h = rotation du personnage (180 = dos au dossier). seats = plusieurs places (x).
--- Pendant la pose : PgUp / PgDn = hauteur, flèches gauche / droite = rotation ; la ligne à recopier ici s'affiche en F8.
+-- Pendant la pose : PgUp / PgDn = hauteur, flèches haut / bas = avant / arrière, gauche / droite = rotation.
+-- V12.58 : /meubleregle (staff, assis dessus) enregistre le réglage du modèle POUR TOUT LE MONDE (sans toucher à ce fichier) ;
+-- /meubleregle annuler revient aux valeurs ci-dessous.
 local BENCH3 = { -0.55, 0.0, 0.55 }
 Config = {}
 Config.Furniture = {

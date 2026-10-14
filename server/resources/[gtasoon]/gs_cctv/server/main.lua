@@ -105,7 +105,7 @@ function CCTV.blindCam(src, i)
     i = tonumber(i)
     local cam = i and Config.Cameras[i]
     if not cam then return false, 'Caméra inconnue.' end
-    if not Security:InRange(src, cam.coords, Config.Blind.range + 6.0) then return false, 'Trop loin.' end
+    if not Security:InRange(src, cam.coords, Config.Blind.useRange + 7.0) then return false, 'Trop loin.' end
     if not CCTV.active(i) then return false, 'Cette caméra ne voit déjà plus rien.' end
     if not Bridge:RemoveItem(src, Config.Blind.item, 1) then return false, 'Il te faut une bombe de peinture.' end
     CCTV.blind[i] = now() + Config.Blind.minutes * 60

@@ -1,4 +1,4 @@
-# État du projet RoadLine RP — récapitulatif complet (à jour au 15/10/2026, V12.57)
+# État du projet RoadLine RP — récapitulatif complet (à jour au 15/10/2026, V12.58)
 
 Ce document sert de **point de sauvegarde** : si une conversation avec Claude est perdue, compressée ou doit reprendre
 ailleurs, tout ce qu'il faut savoir est ici. Il est versionné avec le code (`git log` en garde aussi l'historique).
@@ -54,7 +54,7 @@ exclusifs (« ce que tu ne trouveras nulle part ailleurs »).
 - `feature/phase1-bridge`
 - `claude/gta-rp-architecture-stack-pbvdxz`
 
-**Dernier commit poussé** : « V12.57 : vie quotidienne (poubelles, distributeurs, se laver, porter / otage), masques, ENVOYER-PLACEMENTS » (hash exact :
+**Dernier commit poussé** : « V12.58 : bancs réglables pour tous, arme dans le dos, caméras peignables » (hash exact :
 `git log -1 origin/feature/phase1-bridge`). Les deux branches pointent sur le même commit.
 
 **Deux sessions Claude en parallèle** (poste Windows et session web) : elles ne se voient pas. Toujours synchroniser
@@ -64,7 +64,7 @@ par un colis (zip de l'installation ou de la session) + ce fichier, et comparer 
 ## 2. Versions : interne vs publique (important, piège classique)
 
 Depuis la V11.3, il y a **deux numéros de version différents**, volontairement :
-- `gs_version` (convar, `server.cfg.example`) = **V12.57** → version technique interne, vue par le staff (F11, console,
+- `gs_version` (convar, `server.cfg.example`) = **V12.58** → version technique interne, vue par le staff (F11, console,
   METTRE-A-JOUR). Continue d'avancer à chaque mise à jour (V11.2, V11.3...).
 - `gs_public_version` (convar) = **« V4 · bêta »** → version vue par les **joueurs** (écran de chargement, statut
   Discord, Gazette). Le site affiche son propre journal (V1 à V4, V5 « classé confidentiel »).
@@ -272,6 +272,12 @@ Résumé très condensé (le détail complet est dans `docs/ROADMAP.md`, `docs/F
   façon chargement de mission (Entrée / clic pour passer). Tout coupé par `prefers-reduced-motion`, souris seulement
   sur ordinateur. Une seule boucle rAF qui s'endort quand rien ne bouge. Vérifié dans le navigateur : 0 erreur.
 
+- **V12.58** (15/10/2026, session web) — retours de test : (1) assis derrière le banc → ↑ ↓ avancer / reculer pendant la pose
+  et **/meubleregle** (staff, ACE gs.admin.admin) qui enregistre le réglage du modèle pour tout le monde (KVP du serveur +
+  GlobalState.gsFurniture ; `/meubleregle annuler`). Réglage gardé par serveur : le faire sur le VPS. (2) arme dans le dos
+  décalée jusqu'à un clic sur l'os dans /dosreglage : physique coupée AVANT l'attache + seconde attache une image plus tard
+  (holster.lua attach). (3) caméras de rue impossibles à peindre : boîtier à 2,6-5 m de haut pour une portée Alt de 3 m →
+  5 m, et la bombe de peinture utilisée sous une caméra la peint (export gs_cctv `TryBlind` appelé par gs_gangs.spray).
 - **V12.57** (15/10/2026, session web) — phase 1 des propositions D7. Nouvelle ressource **gs_vie** : poubelles (Alt sur
   une benne, butin serveur, délai par benne 20 min + par joueur 45 s + 12/h), se laver (lavabos, douches, fontaines ou /laver
   dans l'eau), démarche blessée 10 min après avoir été à terre / mort (state bag qbx_medical, soignée par bandage /

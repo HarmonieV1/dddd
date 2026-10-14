@@ -18,7 +18,9 @@ Config.Terminals = {          -- ordinateurs où la police consulte les enregist
     vec3(-449.9, 6014.0, 31.72),  -- Paleto Bay (shérif)
 }
 Config.TerminalRange = 2.5
-Config.Blind = { item = 'spraycan', minutes = 120, time = 5000, range = 3.0 } -- aveugler à la bombe de peinture
+-- V12.58 : portée 5 m (le boîtier est accroché entre 2,6 et 5 m de haut : à 3 m, Alt ne le trouvait souvent pas) ;
+-- utiliser la bombe de peinture (inventaire) sous une caméra l'aveugle aussi, au lieu de taguer le mur.
+Config.Blind = { item = 'spraycan', minutes = 120, time = 5000, range = 5.0, useRange = 6.0 }
 Config.Prop = 'prop_cctv_cam_01a'
 Config.Trace = { delay = 5, maxAge = 90, keep = 30 } -- V12 : opérations de gang remontées après 5 min, visibles 90 min
 Config.Cameras = {

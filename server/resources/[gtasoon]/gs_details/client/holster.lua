@@ -185,10 +185,16 @@ local function attach(ped, hash, slot)
     local obj = weaponObject(hash, GetEntityCoords(ped))
     if not obj then return nil end
     created[obj] = true
-    if not place(obj, ped, slot) then destroy(obj) return nil end -- V12.37 : attache ratée = supprimé, jamais laissé libre
+    -- V12.58 (fondateur : « obligé de /dosreglage et cliquer sur l'os, ça règle le problème tant que l'arme n'est pas
+    -- ressortie ») : le bouton de l'os ne fait que RÉ-accrocher un objet déjà sans physique. La première attache se faisait
+    -- avant de couper collision / gravité, et le moteur la décalait. Physique coupée d'abord, puis attache, puis une
+    -- seconde attache une image plus tard (exactement ce que faisait le bouton).
     SetEntityCollision(obj, false, false)
     SetEntityHasGravity(obj, false)   -- V12.42 : aucune physique propre : l'arme suit le dos, rien d'autre
     SetEntityDynamic(obj, false)
+    if not place(obj, ped, slot) then destroy(obj) return nil end -- V12.37 : attache ratée = supprimé, jamais laissé libre
+    Wait(0)
+    if not DoesEntityExist(obj) or not place(obj, ped, slot) then destroy(obj) return nil end
     return obj
 end
 

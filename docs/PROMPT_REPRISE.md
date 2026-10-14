@@ -1,6 +1,6 @@
 # Prompt de reprise — RoadLine RP (à coller dans une nouvelle session Claude)
 
-> Copie tout ce qui est sous la ligne ci-dessous dans ta deuxième session. Mis à jour le 15/10/2026 (V12.57).
+> Copie tout ce qui est sous la ligne ci-dessous dans ta deuxième session. Mis à jour le 15/10/2026 (V12.58).
 
 ---
 
@@ -13,7 +13,7 @@ l'optimisation.
 1. Lis **`docs/AUDIT_V12_35.md`** (état et risques au 12/10), puis **`docs/ETAT_PROJET.md`** en entier (récap complet, historique V12.x, décisions) puis `docs/MLO.md` et
    `docs/IMPORTER_MODS.md` (maps payantes, scripts compagnons, diagnostic).
 2. Vérifie que tu es à jour : `git fetch origin && git log -1 origin/feature/phase1-bridge` doit montrer
-   « V12.57 : vie quotidienne (poubelles, distributeurs, se laver, porter / otage), masques, ENVOYER-PLACEMENTS » (ou plus récent).
+   « V12.58 : bancs réglables pour tous, arme dans le dos, caméras peignables » (ou plus récent).
 
 ## Règles permanentes (à respecter sans exception)
 - **Tout en français** (code commenté, messages en jeu, docs, réponses).
@@ -57,7 +57,7 @@ l'optimisation.
 F1 téléphone, F2 inventaire, F3 progression, F4 intervention (police / EMS), F5 emotes, F6 métiers, F7 duo, F9 gang,
 F10/F11 staff, I aide, K inventaire proche, W radial, H mains en l'air, L verrouiller, B ceinture, **U garde-robe**.
 
-## État au 15/10/2026 (V12.57)
+## État au 15/10/2026 (V12.58)
 - Récents : clés de véhicule en objet (`gs_carkey`), vêtements et tenues en objets + garde-robe (U), apparition fiable
   dans les véhicules, blips publics des maps, contrôle « chez moi » des maps (F11), scripts compagnons des maps payantes
   installés par IMPORTER-MODS, intégrité des maps vérifiée au démarrage, outil REPARER-FIVEM.bat, site de doc HTML.
@@ -108,6 +108,8 @@ F10/F11 staff, I aide, K inventaire proche, W radial, H mains en l'air, L verrou
 - **V12.57 (15/10)** : phase 1 D7 — gs_vie (poubelles, se laver, démarche blessée, passagers bavards, porter / otage,
   /perfserveur), distributeurs snacks / café, magasin de masques, ENVOYER-PLACEMENTS.bat. Phase 2 prévue : 119 cimetière,
   128 cabines, 129 audit réseau / entityLockdown, peut-être 122 fausse monnaie.
+- **V12.58 (15/10)** : /meubleregle (bancs : réglage gardé pour tous), arme dans le dos bien placée dès le rangement,
+  caméras de rue peignables (portée 5 m, bombe utilisée dessous).
 - Deux sessions Claude (web + poste Windows) : V12.33 puis V12.37 du poste Windows intégrées par la session web (V12.38 =
   fusion). Côté Windows : POUSSER-GITHUB.bat (docs/GITHUB.md) pour envoyer directement sur GitHub. Désactivées (archives coupées, à retélécharger) :
   beach party, soccer / soccer_cloth, plasmatron.

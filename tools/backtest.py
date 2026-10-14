@@ -10,9 +10,9 @@ SESSIONS = [
     # validé (arrivée, téléphone, métiers, papiers, staff, Discord, site, alertes, vie légale / illégale…) et retiré.
     # Reste : ce qui a été corrigé ou ajouté depuis, jamais revu en jeu, et ce qui est obligatoire avant d'ouvrir.
     ('0 · Avant de commencer (5 min)', [
-        ('METTRE-A-JOUR.bat : version V12.57 affichée, « Base de données sauvegardée » ; METTRE-A-JOUR-OVH puis GERER-OVH → 1 : « Version RoadLine : V12.57 »', 'Staff', 3),
+        ('METTRE-A-JOUR.bat : version V12.58 affichée, « Base de données sauvegardée » ; METTRE-A-JOUR-OVH puis GERER-OVH → 1 : « Version RoadLine : V12.58 »', 'Staff', 3),
         ('Console au démarrage (PC et VPS) : aucune ligne ROUGE ; en jaune seulement « Conflit tranché » (2 fichiers Patoche) ; F8 en jeu : aucune erreur rouge', 'Staff', 3),
-        ('VIDER-CACHE-FIVEM.bat si un ancien menu apparaît (F11 doit afficher « RoadLine V12.57 »)', 'Staff', 2),
+        ('VIDER-CACHE-FIVEM.bat si un ancien menu apparaît (F11 doit afficher « RoadLine V12.58 »)', 'Staff', 2),
     ]),
     ('1 · Corrections du 13/10 à confirmer (V12.37 → V12.39, 20 min)', [
         ('Garage de métier : « Sortir » donne le véhicule à chaque fois, UNE notification ; prise de service au PNJ : une seule interaction', '2', 3),
@@ -47,7 +47,7 @@ SESSIONS = [
         ('Magasin femme : robes du pack « dresspack » dans le sous-haut (accs) avec un haut vide ; 4 hauts (jbib) ; vérifier que la peau ne dépasse pas', '2', 2),
         ('Récolte : champs d\'orge / houblon / maïs et tabac à Grapeseed (vrais plants), revente au marché ; pavot : pas de blip, latex vendu au receleur du port, alerte police possible', 'Seul', 2),
     ]),
-    ('4c · V12.50 → V12.57 — tatouages, voix, garde-robe, arrivée, duo, vie quotidienne (20 min)', [
+    ('4c · V12.50 → V12.58 — tatouages, voix, garde-robe, arrivée, duo, vie quotidienne (20 min)', [
         ('Tatoueur : menu en français (Tatouages, Torse), « Appliquer » un tatouage puis quitter SANS sauvegarder : le tatouage reste, payé une seule fois', 'Seul', 3),
         ('Voix (après METTRE-A-JOUR + REPARER-SON chez chaque joueur) : on s\'entend en « Normal » à quelques mètres, le son du jeu ne baisse plus quand quelqu\'un parle', '2', 3),
         ('Garde-robe (U) : clic sur un vêtement du sac = enfilé tout de suite, rien ne disparaît ; vêtement d\'un pack non chargé = message, il reste dans le sac', 'Seul', 2),
@@ -65,6 +65,8 @@ SESSIONS = [
         ('V12.57 · Lavabo / douche / fontaine (Alt) ou /laver dans la mer : sang et saleté effacés ; relevé par l\'EMS : on boite, un bandage ou des antidouleurs soignent', 'Seul', 2),
         ('V12.57 · Porter (Alt sur un joueur) : l\'autre accepte, X pour lâcher ; menotté ou à terre = sans accord ; Prendre en otage seulement arme de poing / couteau en main', '2', 3),
         ('V12.57 · Magasin de masques (plage de Vespucci, blip) : menu des masques seulement, payé en validant ; passagers PNJ (bus, taxi) qui racontent une rumeur', 'Seul', 2),
+        ('V12.58 · Banc : assis puis ↑ ↓ (avant / arrière), PgUp / PgDn, ← → ; /meubleregle (staff) = gardé pour tous les bancs de ce modèle', 'Staff', 2),
+        ('V12.58 · Arme longue rangée puis ressortie puis rangée : bien placée dans le dos sans /dosreglage ; caméra de rue : Alt dessus ou bombe de peinture utilisée dessous = peinte', 'Seul', 3),
         ('V12.57 · ENVOYER-PLACEMENTS.bat : portes / mapping / points posés sur le PC visibles sur le VPS après redémarrage ; /perfserveur pendant un test à plusieurs', 'Staff', 3),
     ]),
     ('5 · Obligatoire avant d\'ouvrir', [

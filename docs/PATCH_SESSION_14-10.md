@@ -158,3 +158,10 @@
 | **Magasin de masques** | gs_places | Plage de Vespucci (blip) : menu des masques seulement, payé en validant. Les masques restent aussi en boutique de vêtements |
 | **ENVOYER-PLACEMENTS.bat** | scripts | Ce que tu poses sur le PC (portes, mapping, points, concession, courses, PNJ) part sur le VPS ; joueurs et argent du VPS jamais touchés, base sauvegardée avant |
 | **Test de charge** | gs_vie, docs/TEST_DE_CHARGE.md | /perfserveur pendant un test à plusieurs : une ligne par minute, bilan à la fin |
+
+## V12.58 (15/10) — retours de test
+| Quoi | Où | Ce que ça change |
+|---|---|---|
+| **Bancs : assis derrière** | gs_furniture | Assis : ↑ ↓ avancer / reculer (en plus de PgUp / PgDn et ← →). **/meubleregle** (staff) enregistre ce réglage pour TOUS les meubles de ce modèle, chez tout le monde ; /meubleregle annuler pour revenir. À faire sur le VPS (réglage gardé par serveur) |
+| **Arme dans le dos décalée** | gs_details | Plus besoin de /dosreglage : l'arme est bien accrochée dès qu'on la range (même correction que le bouton de l'os, faite automatiquement) |
+| **Caméras de rue** | gs_cctv, gs_gangs | Alt dessus jusqu'à 5 m (le boîtier est en hauteur) ; utiliser la bombe de peinture sous une caméra la peint au lieu de taguer le mur |

@@ -6,6 +6,11 @@ local function notify(ok, msg) if msg then lib.notify({ description = msg, type 
 
 -- Tags : export appelé par ox_inventory (item spraycan, client.export = 'gs_gangs.spray') --------------------------------
 exports('spray', function()
+    -- V12.58 : sous une caméra de surveillance, la bombe peint l'objectif (gang ou pas) au lieu de taguer
+    if GetResourceState('gs_cctv') == 'started' then
+        local ok, done = pcall(function() return exports.gs_cctv:TryBlind() end)
+        if ok and done then return end
+    end
     if not member then return notify(false, 'Il faut être dans un gang pour taguer.') end
     local hit, _, coords, normal = lib.raycast.cam(1, 4, 3.0) -- [API] ox_lib : mur visé à moins de 3 m
     if not hit then return notify(false, 'Vise un mur, tout près.') end

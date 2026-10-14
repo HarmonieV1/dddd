@@ -35,6 +35,31 @@ local function mountPoint(cam)
     return from, cam.heading or 0.0, false
 end
 
+--- V12.58 · Peindre l'objectif (Alt sur le boîtier, ou bombe de peinture utilisée dessous)
+local function blind(i)
+    if not lib.progressBar({ duration = Config.Blind.time, label = 'Peinture sur l\'objectif…', canCancel = true,
+        anim = { dict = 'switch@franklin@lamar_tagging_wall', clip = 'lamar_tagging_wall_loop_lamar' }, disable = { move = true, car = true } }) then return end
+    local ok, msg = lib.callback.await('gs_cctv:blind', false, i)
+    lib.notify({ description = msg, type = ok and 'success' or 'error' })
+end
+
+--- V12.58 · Appelé par la bombe de peinture (gs_gangs) : une caméra en service juste au-dessus ? On la peint (true).
+exports('TryBlind', function()
+    local me = GetEntityCoords(cache.ped)
+    local best, bestD
+    for i, o in pairs(props) do
+        if DoesEntityExist(o) and not blinded(i) then
+            local c = GetEntityCoords(o)
+            local d = #(vec2(c.x, c.y) - vec2(me.x, me.y))
+            if d <= Config.Blind.useRange and (not bestD or d < bestD) then best, bestD = i, d end
+        end
+    end
+    if not best then return false end
+    TaskTurnPedToFaceEntity(cache.ped, props[best], 800)
+    blind(best)
+    return true
+end)
+
 local function spawn(i, cam)
     local hash = GetHashKey(Config.Prop)
     if not IsModelInCdimage(hash) or not lib.requestModel(hash, 3000) then return end
@@ -46,12 +71,7 @@ local function spawn(i, cam)
     exports.ox_target:addLocalEntity(o, { {
         name = 'gs_cctv_blind', icon = 'fas fa-spray-can', label = 'Aveugler la caméra (bombe de peinture)', distance = Config.Blind.range,
         canInteract = function() return not blinded(i) end,
-        onSelect = function()
-            if not lib.progressBar({ duration = Config.Blind.time, label = 'Peinture sur l\'objectif…', canCancel = true,
-                anim = { dict = 'switch@franklin@lamar_tagging_wall', clip = 'lamar_tagging_wall_loop_lamar' }, disable = { move = true, car = true } }) then return end
-            local ok, msg = lib.callback.await('gs_cctv:blind', false, i)
-            lib.notify({ description = msg, type = ok and 'success' or 'error' })
-        end,
+        onSelect = function() blind(i) end,
     } })
     props[i] = o
 end
