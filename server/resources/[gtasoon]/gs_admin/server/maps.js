@@ -238,7 +238,12 @@ const PUBLIC = {
   gsa_es_billboard_map_pack: false,
   gsa_patoche_ammu: { label: 'Ammu-Nation', sprite: 110, color: 1 },
   gsa_patoche_ammu2: { label: 'Ammu-Nation', sprite: 110, color: 1 },
-  gsa_patoche_gamestand_pack: { label: 'Stand de jeux', sprite: 38, color: 27 }, // V12.44 (+ patoche_gamestand_script)
+  // V12.55 : « Salle de jeu », un blip par stand (positions données par le fondateur ; avant : un seul blip deviné)
+  gsa_patoche_gamestand_pack: { label: 'Salle de jeu', sprite: 38, color: 27, at: [
+    { x: 337.97, y: 3580.44, z: 47.24 },    // Sandy Shores
+    { x: -1542.15, y: -997.81, z: 28.84 },  // Del Perro
+    { x: 134.37, y: 6435.69, z: 51.76 },    // Paleto Bay
+  ] },
   gsa_9a13b85d2a84bbb31aad0d6f69e178d3b502ba3d: false, // V12.45 : props de récolte (BzZz), pas un lieu
   gsa_patoche_fastbox_pack: false, // V12.44 : points relais FastBox (colis) : le script pose ses propres blips (config Patoche)
   gsa_sub_patoche_track_pack: { label: 'Circuit', sprite: 38, color: 46 }, // V12.44 (+ patoche_track_script)
@@ -301,10 +306,12 @@ function publicBlips(maps) {
   const out = [];
   for (const m of maps) {
     const cfg = PUBLIC[m.name] !== undefined ? PUBLIC[m.name] : guessBlip(m.name);
-    if (cfg === false || !m.places || !m.places.length) continue;
-    const p = m.places[0];
+    const fixed = cfg && Array.isArray(cfg.at) && cfg.at.length ? cfg.at : null; // V12.55 : positions imposées (plusieurs lieux)
+    if (cfg === false || (!fixed && (!m.places || !m.places.length))) continue;
     const soon = m.activity && !m.activity.script ? ' (bientôt)' : ''; // activité sans son script : pas encore jouable
-    out.push({ label: String((cfg && cfg.label) || m.label).slice(0, 40 - soon.length) + soon, sprite: (cfg && cfg.sprite) || 1, color: (cfg && cfg.color) || 0, x: p.x, y: p.y, z: p.z });
+    for (const p of fixed || [m.places[0]]) {
+      out.push({ label: String((cfg && cfg.label) || m.label).slice(0, 40 - soon.length) + soon, sprite: (cfg && cfg.sprite) || 1, color: (cfg && cfg.color) || 0, x: p.x, y: p.y, z: p.z });
+    }
   }
   return out;
 }

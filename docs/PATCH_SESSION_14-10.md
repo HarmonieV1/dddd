@@ -133,3 +133,9 @@
 |---|---|---|
 | **Arme lourde dans le dos** | gs_details | Plus de copie figée en l'air : chaque joueur dessine les armes des autres chez lui seulement |
 | **Caméra du menu mécano** | gs_tuning | On tourne autour du véhicule (flèches / Z Q S D, molette, clic droit + souris) pendant le menu |
+
+## V12.55 (15/10) — salles de jeu
+| Quoi | Où | Ce que ça change |
+|---|---|---|
+| **3 blips « Salle de jeu »** | gs_admin (maps.js) | Sandy Shores, Del Perro, Paleto (l'ancien blip unique est retiré) |
+| **Jeux avec armes** | gs_wanted | Plus d'appel police, d'étoiles ni de « quartier sous tension » autour des 3 salles |

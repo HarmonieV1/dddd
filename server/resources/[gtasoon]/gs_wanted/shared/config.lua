@@ -92,6 +92,10 @@ Config.Heat = {
 Config.SafeZones = {
     { coords = vec3(13.0, -1097.0, 29.8), radius = 25.0 },   -- Ammu-Nation Pillbox (stand de tir)
     { coords = vec3(821.0, -2163.0, 29.6), radius = 25.0 },  -- Ammu-Nation Cypress Flats
+    -- V12.55 · Salles de jeu (stand Patoche, jeux avec armes) : ni appel police, ni étoiles, ni quartier « sous tension »
+    { coords = vec3(337.97, 3580.44, 47.24), radius = 30.0 },   -- Sandy Shores
+    { coords = vec3(-1542.15, -997.81, 28.84), radius = 30.0 }, -- Del Perro
+    { coords = vec3(134.37, 6435.69, 51.76), radius = 30.0 },   -- Paleto Bay
 }
 
 -- Police IA : quand il y a moins de `minCops` policiers joueurs en service, un crime signalé déclenche la police

@@ -54,7 +54,7 @@ exclusifs (« ce que tu ne trouveras nulle part ailleurs »).
 - `feature/phase1-bridge`
 - `claude/gta-rp-architecture-stack-pbvdxz`
 
-**Dernier commit poussé** : « V12.54 : armes dans le dos locales, caméra du menu mécano » (hash exact :
+**Dernier commit poussé** : « V12.55 : salles de jeu (3 blips, zones sans police) » (hash exact :
 `git log -1 origin/feature/phase1-bridge`). Les deux branches pointent sur le même commit.
 
 **Deux sessions Claude en parallèle** (poste Windows et session web) : elles ne se voient pas. Toujours synchroniser
@@ -64,7 +64,7 @@ par un colis (zip de l'installation ou de la session) + ce fichier, et comparer 
 ## 2. Versions : interne vs publique (important, piège classique)
 
 Depuis la V11.3, il y a **deux numéros de version différents**, volontairement :
-- `gs_version` (convar, `server.cfg.example`) = **V12.54** → version technique interne, vue par le staff (F11, console,
+- `gs_version` (convar, `server.cfg.example`) = **V12.55** → version technique interne, vue par le staff (F11, console,
   METTRE-A-JOUR). Continue d'avancer à chaque mise à jour (V11.2, V11.3...).
 - `gs_public_version` (convar) = **« V4 · bêta »** → version vue par les **joueurs** (écran de chargement, statut
   Discord, Gazette). Le site affiche son propre journal (V1 à V4, V5 « classé confidentiel »).
@@ -271,6 +271,15 @@ Résumé très condensé (le détail complet est dans `docs/ROADMAP.md`, `docs/F
   ne remplace pas le curseur), profondeur CSS `animation-timeline: view()` (captures, mock, carte, chiffres), intro
   façon chargement de mission (Entrée / clic pour passer). Tout coupé par `prefers-reduced-motion`, souris seulement
   sur ordinateur. Une seule boucle rAF qui s'endort quand rien ne bouge. Vérifié dans le navigateur : 0 erreur.
+
+- **V12.55** (15/10/2026, session web) — salles de jeu (stand Patoche) :
+  - Blip unique deviné retiré → 3 blips « Salle de jeu » aux positions données par le fondateur (Sandy 337.97, 3580.44 ·
+    Del Perro -1542.15, -997.81 · Paleto 134.37, 6435.69) : `PUBLIC[…].at` (maps.js, positions imposées, un blip par lieu).
+  - Jeux avec armes : appel police, 2 étoiles et brève Weazel « quartier sous tension » : les 3 lieux ajoutés aux
+    `Config.SafeZones` de gs_wanted (30 m, comme les stands de tir Ammu-Nation) : aucun signalement, donc ni étoiles, ni
+    chaleur, ni effet sur le quartier, ni brève. Tests maps 127, wanted (zones).
+  - Lancer de balles dans la bouche du clown → crash : script chiffré de l'auteur, cause à identifier (nom du crash FiveM).
+  - Auto-tamponneuses : correctif V12.53 (objets ajoutés par IMPORTER-MODS) pas encore vérifié en jeu.
 
 - **V12.54** (15/10/2026, session web) — retours du 15/10 (5) :
   - **Armes lourdes dans le dos « bloquées dans le vide » (toujours)** : cause trouvée : `CreateWeaponObject` crée un objet

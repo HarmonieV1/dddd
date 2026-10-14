@@ -367,6 +367,13 @@ fs.rmSync(tmp, { recursive: true, force: true });
   check('V12.53 : ordre sans contrainte = ordre d\'origine', M.relaunchOrder([{ file: 'f', resources: ['a', 'b'], resolved: null }], { f: 'a' }).join(',') === 'a');
 }
 
+// V12.55 · Salle de jeu : un blip par stand, positions imposées (même si la lecture de la map ne trouve aucun lieu)
+{
+  const b = M.publicBlips([{ name: 'gsa_patoche_gamestand_pack', label: 'x', places: [], activity: { what: 'stand de jeux', script: 'patoche_gamestand_script' } }]);
+  check('V12.55 : 3 blips « Salle de jeu » aux positions données', b.length === 3 && b.every((x) => x.label === 'Salle de jeu')
+    && b.some((x) => x.x === 337.97) && b.some((x) => x.x === -1542.15) && b.some((x) => x.x === 134.37));
+}
+
 pendingTrunc.then(() => {
   console.log(`lecteur de maps : ${passed} réussis, ${failed} échoués`);
   if (failed) process.exit(1);

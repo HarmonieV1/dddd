@@ -91,6 +91,8 @@ fixRandom()
 -- Zone sûre -------------------------------------------------------------------------------------------------
 fixRandom(0.0)
 check('stand de tir : jamais signalé', Wanted.report(1, 'gunshot', Config.SafeZones[1].coords) == nil)
+check('V12.55 : salles de jeu (Sandy, Del Perro, Paleto) : tirs jamais signalés', Wanted.report(1, 'gunshot', vec3(337.97, 3580.44, 47.24)) == nil
+    and Wanted.report(1, 'gunshot', vec3(-1540.0, -995.0, 28.8)) == nil and Wanted.report(1, 'gunshot', vec3(134.37, 6435.69, 51.76)) == nil)
 fixRandom()
 
 -- Chaleur : plafond, décroissance ----------------------------------------------------------------------------
