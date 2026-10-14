@@ -62,6 +62,7 @@ Guide = {
         id = 'help', label = 'Aide', icon = 'circle-question', color = '#5aff8c',
         items = {
             { label = 'Les touches', desc = 'Toutes les touches du serveur', icon = 'keyboard', cmd = 'touches' },
+            { label = 'Son et micro', desc = 'Le jeu baisse quand on parle ? On ne t\'entend pas ? 2 réglages', icon = 'volume-high', cmd = 'son' },
             { label = 'Trouver un parrain', desc = 'Un ancien te guide 7 jours, primes pour les deux', icon = 'handshake', cmd = 'mentor' },
             { label = 'Le règlement', desc = 'À relire', icon = 'scale-balanced', cmd = 'regles' },
             { label = 'Appeler le staff', desc = 'Un souci ? Un ticket arrive au staff', icon = 'life-ring', report = true },

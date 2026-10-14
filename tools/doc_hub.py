@@ -41,7 +41,7 @@ PRIORITIES = [
         'Démarrage : aucune ligne rouge (maps « NON démarrée », scripts Patoche : stand de jeux, circuit, FastBox, villa bunker)',
         'Les 9 zips ROADTRIP-… (coiffures et tenues converties) dans mods-a-trier → IMPORTER-MODS → METTRE-A-JOUR-OVH',
         'IMPORTER-MODS relancé (V12.48) : patoche_interact sous son vrai nom → script de la villa bunker installé ; scripts billard / football remis dans mods-a-trier',
-        'Version V12.51+ sur le PC ET sur le VPS (console : [RoadLine RP] version …)',
+        'Version V12.52+ sur le PC ET sur le VPS (console : [RoadLine RP] version …)',
     ]),
     ('Priorité haute (cette semaine)', [
         'Backtest allégé (onglet Backtest, 31 tests) en commençant par les ★★★',

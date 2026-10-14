@@ -10,9 +10,9 @@ SESSIONS = [
     # validé (arrivée, téléphone, métiers, papiers, staff, Discord, site, alertes, vie légale / illégale…) et retiré.
     # Reste : ce qui a été corrigé ou ajouté depuis, jamais revu en jeu, et ce qui est obligatoire avant d'ouvrir.
     ('0 · Avant de commencer (5 min)', [
-        ('METTRE-A-JOUR.bat : version V12.51 affichée, « Base de données sauvegardée » ; METTRE-A-JOUR-OVH puis GERER-OVH → 1 : « Version RoadLine : V12.51 »', 'Staff', 3),
+        ('METTRE-A-JOUR.bat : version V12.52 affichée, « Base de données sauvegardée » ; METTRE-A-JOUR-OVH puis GERER-OVH → 1 : « Version RoadLine : V12.52 »', 'Staff', 3),
         ('Console au démarrage (PC et VPS) : aucune ligne ROUGE ; en jaune seulement « Conflit tranché » (2 fichiers Patoche) ; F8 en jeu : aucune erreur rouge', 'Staff', 3),
-        ('VIDER-CACHE-FIVEM.bat si un ancien menu apparaît (F11 doit afficher « RoadLine V12.51 »)', 'Staff', 2),
+        ('VIDER-CACHE-FIVEM.bat si un ancien menu apparaît (F11 doit afficher « RoadLine V12.52 »)', 'Staff', 2),
     ]),
     ('1 · Corrections du 13/10 à confirmer (V12.37 → V12.39, 20 min)', [
         ('Garage de métier : « Sortir » donne le véhicule à chaque fois, UNE notification ; prise de service au PNJ : une seule interaction', '2', 3),
@@ -51,6 +51,7 @@ SESSIONS = [
         ('Tatoueur : menu en français (Tatouages, Torse), « Appliquer » un tatouage puis quitter SANS sauvegarder : le tatouage reste, payé une seule fois', 'Seul', 3),
         ('Voix (après METTRE-A-JOUR + REPARER-SON chez chaque joueur) : on s\'entend en « Normal » à quelques mètres, le son du jeu ne baisse plus quand quelqu\'un parle', '2', 3),
         ('Garde-robe (U) : clic sur un vêtement du sac = enfilé tout de suite, rien ne disparaît ; vêtement d\'un pack non chargé = message, il reste dans le sac', 'Seul', 2),
+        ('/son : fenêtre d\'aide son et micro (aussi dans Que faire ? → Aide) ; rappel « Vocal » ~45 s après la connexion (3 premières fois)', 'Seul', 2),
         ('Voix : console client F8 sans erreur pma-voice ; ² affiche « Chuchoter / Normal / Crier » (HUD) ; radio coupée à la mort', '2', 3),
         ('Spam de clics au poing : un coup toutes les 0,8 s au plus ; duo et missions de métier : plus de [E] qui reste après la fin', '2', 2),
         ('Connexion / réapparition : 30 s de protection (on te traverse, impossible de te frapper) ; aux points d\'apparition, personne ne peut frapper ni tirer', '2', 3),

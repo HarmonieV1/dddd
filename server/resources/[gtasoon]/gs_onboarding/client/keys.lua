@@ -14,7 +14,7 @@ local KEYS = [[
 | **F9** | Gang |
 | **W** | Menu radial (W sur clavier français, Z en QWERTY) : Moi (tenue en objet, chapeau, lunettes, masque…), Radio, Véhicule |
 | **Alt gauche** (appui simple) | Viser / interagir : choisis à la souris, rappuie sur Alt pour fermer |
-| **N** | Parler · **²** portée de la voix |
+| **N** | Parler · **²** portée de la voix · **/son** si le jeu baisse quand on parle |
 | **Verr. Maj** (maintenu) | Parler à la radio (fréquence réglée) |
 | **H** | Mains en l'air · en voiture : démarrer sans clé |
 | **L** | Verrouiller / déverrouiller son véhicule |
@@ -39,3 +39,29 @@ RegisterCommand('touches', function()
         '\n*Réassigner : Échap → Paramètres → Raccourcis clavier → FiveM.*', centered = true, size = 'lg', labels = { confirm = 'Fermer' } })
 end, false)
 RegisterKeyMapping('touches', 'Aide : toutes les touches', 'keyboard', 'I')
+
+-- V12.52 · /son : le son du jeu qui baisse quand quelqu'un parle vient de WINDOWS (atténuation « Communications » ou
+-- « améliorations audio »), pas du serveur : aucun serveur FiveM ne peut changer ce réglage chez le joueur. On l'explique
+-- en jeu (commande, guide « Que faire ? » → Aide, rappel aux 3 premières connexions, écran de chargement).
+local SOUND_HELP = '**Le son du jeu baisse quand quelqu\'un parle ?** C\'est Windows : il baisse tout le reste dès qu\'il détecte une conversation. 30 secondes à régler, une seule fois :\n\n'
+    .. '1. Touche **Windows**, tape **son**, ouvre **Paramètres de son** puis **Plus de paramètres de son**.\n'
+    .. '2. Onglet **Communications** : coche **Ne rien faire**, puis **OK**.\n'
+    .. '3. Si ça continue : onglet **Lecture**, ton casque, **Propriétés**, onglet **Améliorations** (ou **Avancé**) : décoche les améliorations audio.\n\n'
+    .. '**On ne t\'entend pas, ou tu n\'entends personne ?** Échap, **Paramètres**, **Chat vocal** : activé, le bon micro et le bon casque, volumes au maximum.\n\n'
+    .. '**Portées** (touche ²) : Chuchoter 2 m · Normal 6 m · Crier 14 m. **Radio** : maintiens Verr. Maj.'
+
+RegisterCommand('son', function()
+    if IsNuiFocused() then return end
+    lib.alertDialog({ header = 'Son et micro', content = SOUND_HELP, centered = true, size = 'lg' })
+end, false)
+
+-- Rappel discret aux 3 premières connexions (compteur gardé sur le PC du joueur)
+AddEventHandler('QBCore:Client:OnPlayerLoaded', function() -- [API] qbx_core
+    local seen = GetResourceKvpInt('gs_son_tip')
+    if seen >= 3 then return end
+    SetResourceKvpInt('gs_son_tip', seen + 1)
+    SetTimeout(45000, function()
+        lib.notify({ title = 'Vocal', description = 'Le son du jeu baisse quand quelqu\'un parle, ou on ne t\'entend pas ? Tape /son (réglage Windows, 30 s).',
+            type = 'inform', icon = 'volume-high', duration = 12000 })
+    end)
+end)

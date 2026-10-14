@@ -86,6 +86,7 @@ const tips = [
   'Une amende LSPD se paie avec /factures. Oui, même si tu roulais « juste un peu vite ».',
   'Le coucher de soleil dure plus longtemps chez nous. Profite de la golden hour.',
   'Un souci ? /report en jeu : le staff le reçoit tout de suite, même sur son téléphone.',
+  'Le son du jeu baisse quand quelqu’un parle ? En jeu, tape /son : un réglage Windows de 30 secondes.',
 ]
 let ti = Math.floor(Math.random() * tips.length)
 $('tip').textContent = tips[ti++ % tips.length]

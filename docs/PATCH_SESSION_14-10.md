@@ -115,3 +115,8 @@
 | **Voix** | gs_radio (export officiel pma-voice) | Portées 2 / 6 / 14 m posées de façon fiable (quelle que soit la version de pma-voice), modes en français sur le HUD, radio coupée à la mort |
 | **[E] qui restait** | gs_duo, gs_jobs | Après la livraison (duo) ou la fin d'une mission de métier, le texte [E] disparaît bien |
 | **Spam de coups** | gs_onboarding | Un coup de poing toutes les 0,8 s au plus (fini l'enchaînement au clic) |
+
+## V12.52 (15/10) — son du vocal pour tous
+| Quoi | Où | Ce que ça change |
+|---|---|---|
+| **/son** | gs_onboarding, écran de chargement | Chaque joueur voit en jeu comment régler Windows (30 s) : commande /son, guide Que faire ? → Aide, rappel aux 3 premières connexions, astuce au chargement. Plus besoin de distribuer REPARER-SON |

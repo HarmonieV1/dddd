@@ -54,7 +54,7 @@ exclusifs (« ce que tu ne trouveras nulle part ailleurs »).
 - `feature/phase1-bridge`
 - `claude/gta-rp-architecture-stack-pbvdxz`
 
-**Dernier commit poussé** : « V12.51 : voix fiabilisée, [E] du duo, anti-spam de coups » (hash exact :
+**Dernier commit poussé** : « V12.52 : /son, aide vocale en jeu pour tous les joueurs » (hash exact :
 `git log -1 origin/feature/phase1-bridge`). Les deux branches pointent sur le même commit.
 
 **Deux sessions Claude en parallèle** (poste Windows et session web) : elles ne se voient pas. Toujours synchroniser
@@ -64,7 +64,7 @@ par un colis (zip de l'installation ou de la session) + ce fichier, et comparer 
 ## 2. Versions : interne vs publique (important, piège classique)
 
 Depuis la V11.3, il y a **deux numéros de version différents**, volontairement :
-- `gs_version` (convar, `server.cfg.example`) = **V12.51** → version technique interne, vue par le staff (F11, console,
+- `gs_version` (convar, `server.cfg.example`) = **V12.52** → version technique interne, vue par le staff (F11, console,
   METTRE-A-JOUR). Continue d'avancer à chaque mise à jour (V11.2, V11.3...).
 - `gs_public_version` (convar) = **« V4 · bêta »** → version vue par les **joueurs** (écran de chargement, statut
   Discord, Gazette). Le site affiche son propre journal (V1 à V4, V5 « classé confidentiel »).
@@ -271,6 +271,13 @@ Résumé très condensé (le détail complet est dans `docs/ROADMAP.md`, `docs/F
   ne remplace pas le curseur), profondeur CSS `animation-timeline: view()` (captures, mock, carte, chiffres), intro
   façon chargement de mission (Entrée / clic pour passer). Tout coupé par `prefers-reduced-motion`, souris seulement
   sur ordinateur. Une seule boucle rAF qui s'endort quand rien ne bouge. Vérifié dans le navigateur : 0 erreur.
+
+- **V12.52** (15/10/2026, session web) — « tous les joueurs n'auront pas REPARER-SON » : le son du jeu qui baisse pendant le
+  vocal vient de Windows chez le joueur (atténuation « Communications », ou « améliorations audio » selon un rapport du forum
+  Cfx) ; aucun serveur FiveM ne peut modifier ce réglage. Solution sans fichier : **/son** (gs_onboarding/client/keys.lua,
+  fenêtre pas à pas + micro / chat vocal GTA + portées), entrée « Son et micro » dans Que faire ? → Aide, rappel aux 3
+  premières connexions (KVP du joueur), astuce sur l'écran de chargement, mention dans /touches (I). REPARER-SON reste pour
+  ceux qui préfèrent un double-clic. Stand de jeux Patoche : symptôme demandé au fondateur (décor, script ou armes).
 
 - **V12.51** (15/10/2026, session web) — retours du 15/10 (2) :
   - **Voix (priorité ouverture)** : la retouche V12.50 de `pma-voice\shared.lua` dépendait du texte exact du fichier (échec
