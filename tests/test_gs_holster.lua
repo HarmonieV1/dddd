@@ -28,6 +28,18 @@ function CreateWeaponObject(hash, _, x, y, z)
     W.entities[W.nextEntity] = { type = 3, pos = vec3(x, y, z), model = hash }
     return W.nextEntity
 end
+-- V12.54 : objets créés avec CreateObject (modèle de l'arme), jamais en réseau
+function GetWeapontypeModel(hash) return hash end
+function HasModelLoaded(model) return not W.unloaded[model] end
+function RequestModel() end
+function SetModelAsNoLongerNeeded() end
+function CreateObject(model, x, y, z, net)
+    if W.failCreate then return 0 end
+    W.nextEntity = W.nextEntity + 1
+    W.entities[W.nextEntity] = { type = 3, pos = vec3(x, y, z), model = model, net = net }
+    if net then W.netObjects = (W.netObjects or 0) + 1 end
+    return W.nextEntity
+end
 function AttachEntityToEntity(obj, ped, bone, x, y, z, rx, ry, rz, _, soft)
     local e = W.entities[obj]
     if not e or W.failAttach then return end
@@ -217,6 +229,7 @@ W.players[2].pos = vec3(5.0, 0.0, 0.0) W.entities[1002].pos = W.players[2].pos
 Holster.tick()
 check('voisin revenu : objet refait', on(1002) == 1)
 -- le ped du voisin est recréé par le streaming
+check('V12.54 : aucun objet d\'arme créé en réseau (pas de copie figée chez les autres)', (W.netObjects or 0) == 0)
 W.players[2].ped = 2002 W.entities[2002] = { type = 1, pos = vec3(5.0, 0.0, 0.0) } W.entities[1002] = nil
 Holster.tick()
 check('ped du voisin recréé : objet refait sur le nouveau ped, aucun orphelin', objs() == 2 and on(2002) == 1 and on(1001) == 1)

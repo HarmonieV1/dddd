@@ -127,3 +127,9 @@
 | **Stand de jeux** | gs_admin (maps.js) | Ses stands étaient dans un fichier de décor donné au billard : rendu au stand ; l'entrepôt garde son herbe |
 | **Jetons (auto-tamponneuses…)** | IMPORTER-MODS | Les objets qu'un script importé attend (jetons, tickets) sont ajoutés à l'inventaire s'ils manquent |
 | **Musculation en prison** | gs_police | Pompes, abdos, haltères, tractions : peine réduite, meilleure forme |
+
+## V12.54 (15/10) — arme dans le dos, caméra mécano
+| Quoi | Où | Ce que ça change |
+|---|---|---|
+| **Arme lourde dans le dos** | gs_details | Plus de copie figée en l'air : chaque joueur dessine les armes des autres chez lui seulement |
+| **Caméra du menu mécano** | gs_tuning | On tourne autour du véhicule (flèches / Z Q S D, molette, clic droit + souris) pendant le menu |

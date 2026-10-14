@@ -288,7 +288,77 @@ local function extrasMenu()
     lib.showContext('gs_meca_extras')
 end
 
+-- V12.54 · Caméra libre autour du véhicule pendant le menu (avant : vue bloquée, la souris est prise par le menu).
+-- ← → (ou Q / D) tourner · ↑ ↓ (ou Z / S) zoom · molette : hauteur · clic droit maintenu + souris : tourner librement.
+-- Active seulement quand un menu « gs_meca » est affiché ; le personnage ne bouge pas pendant ce temps.
+local cam, camOn = nil, false
+local orbit = { a = 0.0, d = 6.0, h = 1.2 }
+local CAM_KEYS = { left = { 174, 34 }, right = { 175, 35 }, zin = { 172, 32 }, zout = { 173, 33 } }
+local function held(list) for _, c in ipairs(list) do if IsDisabledControlPressed(0, c) then return true end end return false end
+
+local function camPlace(v)
+    local c = GetEntityCoords(v)
+    local rad = math.rad(orbit.a)
+    SetCamCoord(cam, c.x + math.cos(rad) * orbit.d, c.y + math.sin(rad) * orbit.d, c.z + orbit.h)
+    PointCamAtCoord(cam, c.x, c.y, c.z + 0.3)
+end
+
+local function camStop()
+    if not camOn then return end
+    camOn = false
+    SetNuiFocusKeepInput(false)
+    RenderScriptCams(false, true, 400, true, true)
+    lib.hideTextUI()
+end
+
+local function camStart(v)
+    if not cam then cam = CreateCam('DEFAULT_SCRIPTED_CAMERA', true) end
+    local min, max = GetModelDimensions(GetEntityModel(v))
+    orbit.d = math.max(4.5, #(max - min) * 0.9)
+    local d = GetEntityCoords(cache.ped) - GetEntityCoords(v)
+    orbit.a = math.deg(math.atan(d.y, d.x)) -- on part du point de vue du mécano
+    camPlace(v)
+    SetCamActive(cam, true)
+    RenderScriptCams(true, true, 400, true, true)
+    SetNuiFocusKeepInput(true) -- le clavier passe au jeu (touches de caméra), le menu garde la souris
+    lib.showTextUI('Caméra : ← → tourner · ↑ ↓ zoom · molette hauteur · clic droit + souris', { position = 'left-center', icon = 'camera' })
+    camOn = true
+end
+
+local function camLoop(v)
+    CreateThread(function()
+        local lastX, closedAt
+        while veh == v and DoesEntityExist(v) do
+            local menu = lib.getOpenContextMenu()
+            local open = menu ~= nil and tostring(menu):sub(1, 7) == 'gs_meca'
+            if open then closedAt = nil elseif camOn and not closedAt then closedAt = GetGameTimer() end
+            -- passage d'un sous-menu à l'autre : le menu disparaît un instant, la caméra attend 0,6 s avant de partir
+            if open and not camOn then camStart(v) elseif not open and camOn and GetGameTimer() - closedAt > 600 then camStop() end
+            if camOn then -- par frame tant que le menu est ouvert : caméra fluide, personnage immobile
+                DisableAllControlActions(0)
+                if held(CAM_KEYS.left) then orbit.a = orbit.a - 1.2 end
+                if held(CAM_KEYS.right) then orbit.a = orbit.a + 1.2 end
+                if held(CAM_KEYS.zin) then orbit.d = math.max(2.5, orbit.d - 0.06) end
+                if held(CAM_KEYS.zout) then orbit.d = math.min(14.0, orbit.d + 0.06) end
+                if IsDisabledControlJustPressed(0, 241) then orbit.h = math.min(4.0, orbit.h + 0.25) end -- molette haut
+                if IsDisabledControlJustPressed(0, 242) then orbit.h = math.max(0.2, orbit.h - 0.25) end -- molette bas
+                if IsDisabledControlPressed(0, 238) then -- clic droit maintenu : la souris fait tourner
+                    local x = GetDisabledControlNormal(0, 239)
+                    if lastX then orbit.a = orbit.a - (x - lastX) * 360.0 end
+                    lastX = x
+                else lastX = nil end
+                camPlace(v)
+                Wait(0)
+            else
+                Wait(250)
+            end
+        end
+        camStop()
+    end)
+end
+
 local function stopSession(msg, ok)
+    camStop()
     veh, netId, original = nil, nil, nil
     if msg then notify(ok, msg) end
 end
@@ -306,6 +376,7 @@ local function save()
     if not veh or not DoesEntityExist(veh) then return stopSession('Le véhicule n\'est plus là.', false) end
     local total, n, kinds = cart()
     if n == 0 then return notify(false, 'Rien n\'a changé : choisis des pièces, puis valide.') end
+    camStop() -- V12.54 : pendant le travail, vue normale (le menu est fermé)
     for _, k in ipairs({ 'perf', 'body', 'paint', 'wheels', 'inside' }) do
         if kinds[k] then
             local w = WORK[k]
@@ -379,6 +450,7 @@ CreateThread(function()
                 if not ok then return notify(false, msg) end
                 veh, netId, original = entity, VehToNet(entity), props
                 watch(entity)
+                camLoop(entity) -- V12.54
             end
             SetVehicleModKit(veh, 0)
             openMain()
@@ -399,4 +471,10 @@ RegisterNetEvent('gs_tuning:client:applyProps', function(id, props)
     if not DoesEntityExist(v) or NetworkGetEntityOwner(v) ~= cache.playerId then return end
     props.plate, props.model = nil, nil
     lib.setVehicleProperties(v, props) -- [API] ox_lib
+end)
+
+AddEventHandler('onResourceStop', function(res) -- V12.54 : jamais de caméra ni de saisie bloquées après un redémarrage
+    if res ~= GetCurrentResourceName() then return end
+    if camOn then SetNuiFocusKeepInput(false) RenderScriptCams(false, false, 0, true, true) end
+    if cam then DestroyCam(cam, false) end
 end)

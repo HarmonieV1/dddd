@@ -71,7 +71,7 @@ HISTORY = [
                       "robuste, site V13 (météo et heure de la ville en direct), catalogues véhicules et armes ; contrôle des doublons (aucun) ; "
                       "14 maps importées, F11 « Mappings installés » (emplacement lu dans les fichiers, téléportation, conflits entre maps), "
                       "sous-sol du commissariat de Mission Row (police)"],
-    ['V12.13 – V12.53', "Maps : conflits d'occlusion fusionnés automatiquement, vrais noms, « Monde et lieux » réservé aux super-admins, "
+    ['V12.13 – V12.54', "Maps : conflits d'occlusion fusionnés automatiquement, vrais noms, « Monde et lieux » réservé aux super-admins, "
                         "puis toutes les maps gratuites retirées définitivement ; réapparition [E] fiabilisée ; /optin réparé ; "
                         "40 maps payantes (escrow) installées et vérifiées au démarrage, optimiseur de textures réparé, outil REPARER-FIVEM, "
                         "site de la documentation avec backtest à cocher ; clés et vêtements en objets, garde-robe avec personnage en grand ; "

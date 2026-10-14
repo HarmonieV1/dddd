@@ -144,17 +144,23 @@ local function removeAll(sid)
     objects[sid] = nil
 end
 
---- Objet d'arme local (sans réseau), modèle chargé d'abord ; nil si le modèle ne vient pas (2 s) ou si la création rate.
+--- Objet d'arme LOCAL (sans réseau), modèle chargé d'abord ; nil si le modèle ne vient pas (2 s) ou si la création rate.
+--- V12.54 : CreateObject(…, isNetwork = false) avec le modèle de l'arme, au lieu de CreateWeaponObject. Sous OneSync,
+--- CreateWeaponObject donnait un objet RÉSEAU : chaque joueur créant aussi les armes de ses voisins, des copies partagées
+--- restaient figées en l'air chez les autres (« l'arme lourde reste bloquée dans le vide »). Accessoires (lunette…) non montrés.
 local function weaponObject(hash, at)
-    if not HasWeaponAssetLoaded(hash) then
-        RequestWeaponAsset(hash, 31, 0)
-        for _ = 1, 80 do -- V12.37 : 2 s au plus, par pas de 25 ms
-            if HasWeaponAssetLoaded(hash) then break end
+    local model = GetWeapontypeModel(hash)
+    if not model or model == 0 then return nil end
+    if not HasModelLoaded(model) then
+        RequestModel(model)
+        for _ = 1, 80 do -- 2 s au plus, par pas de 25 ms
+            if HasModelLoaded(model) then break end
             Wait(25)
         end
-        if not HasWeaponAssetLoaded(hash) then return nil end
+        if not HasModelLoaded(model) then return nil end
     end
-    local obj = CreateWeaponObject(hash, 1, at.x, at.y, at.z, true, 1.0, 0)
+    local obj = CreateObject(model, at.x, at.y, at.z - 2.0, false, false, false)
+    SetModelAsNoLongerNeeded(model)
     if not obj or obj == 0 or not DoesEntityExist(obj) then return nil end
     return obj
 end
@@ -167,7 +173,8 @@ local function place(obj, ped, slot)
     if bone == -1 then return false end
     -- V12.42 : attache RIGIDE (useSoftPinning = false) : avant, l'attache « souple » laissait l'arme se balancer et se
     -- décrocher aux chocs (chute, ragdoll, véhicule). Ordre de rotation inchangé : les réglages /dosreglage restent bons.
-    AttachEntityToEntity(obj, ped, bone, o.x, o.y, o.z, o.rx, o.ry, o.rz, true, false, false, true, 1, true)
+    -- V12.54 : isPed = false (l'objet attaché n'est pas un ped) ; ordre de rotation 1 conservé (réglages /dosreglage valables)
+    AttachEntityToEntity(obj, ped, bone, o.x, o.y, o.z, o.rx, o.ry, o.rz, true, false, false, false, 1, true)
     if IsEntityAttachedToEntity(obj, ped) then return true end
     Wait(0) -- une image de tolérance si le jeu applique l'attache au cycle suivant
     return IsEntityAttachedToEntity(obj, ped)
