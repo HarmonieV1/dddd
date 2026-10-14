@@ -1,4 +1,4 @@
-# État du projet RoadLine RP — récapitulatif complet (à jour au 14/10/2026, V12.49)
+# État du projet RoadLine RP — récapitulatif complet (à jour au 15/10/2026, V12.50)
 
 Ce document sert de **point de sauvegarde** : si une conversation avec Claude est perdue, compressée ou doit reprendre
 ailleurs, tout ce qu'il faut savoir est ici. Il est versionné avec le code (`git log` en garde aussi l'historique).
@@ -54,7 +54,7 @@ exclusifs (« ce que tu ne trouveras nulle part ailleurs »).
 - `feature/phase1-bridge`
 - `claude/gta-rp-architecture-stack-pbvdxz`
 
-**Dernier commit poussé** : « V12.49 : blush au coiffeur (personnages femme) » (hash exact :
+**Dernier commit poussé** : « V12.50 : tatouages, voix, garde-robe, protection d'arrivée, propositions D6 » (hash exact :
 `git log -1 origin/feature/phase1-bridge`). Les deux branches pointent sur le même commit.
 
 **Deux sessions Claude en parallèle** (poste Windows et session web) : elles ne se voient pas. Toujours synchroniser
@@ -64,7 +64,7 @@ par un colis (zip de l'installation ou de la session) + ce fichier, et comparer 
 ## 2. Versions : interne vs publique (important, piège classique)
 
 Depuis la V11.3, il y a **deux numéros de version différents**, volontairement :
-- `gs_version` (convar, `server.cfg.example`) = **V12.49** → version technique interne, vue par le staff (F11, console,
+- `gs_version` (convar, `server.cfg.example`) = **V12.50** → version technique interne, vue par le staff (F11, console,
   METTRE-A-JOUR). Continue d'avancer à chaque mise à jour (V11.2, V11.3...).
 - `gs_public_version` (convar) = **« V4 · bêta »** → version vue par les **joueurs** (écran de chargement, statut
   Discord, Gazette). Le site affiche son propre journal (V1 à V4, V5 « classé confidentiel »).
@@ -271,6 +271,23 @@ Résumé très condensé (le détail complet est dans `docs/ROADMAP.md`, `docs/F
   ne remplace pas le curseur), profondeur CSS `animation-timeline: view()` (captures, mock, carte, chiffres), intro
   façon chargement de mission (Entrée / clic pour passer). Tout coupé par `prefers-reduced-motion`, souris seulement
   sur ordinateur. Une seule boucle rAF qui s'endort quand rien ne bouge. Vérifié dans le navigateur : 0 erreur.
+
+- **V12.50** (15/10/2026, session web) — retours du 15/10 :
+  - **Tatouages** (retouches illenium dans outils-communs.ps1, appliquées par METTRE-A-JOUR) : textes restés en anglais de
+    `locales\fr.lua` traduits (Tatouages, Torse, Accessoires, Modèle, Reflets, Dégradé, Teint, Rouge à lèvres, Gilet
+    pare-balles, Écussons) ; un tatouage payé (« Appliquer ») est enregistré tout de suite et reste même si on quitte sans
+    « Sauvegarder » (avant : sortie = apparence d'avant, tatouage perdu mais payé) ; plus de 2e paiement à la sauvegarde.
+    Les noms des motifs restent ceux du jeu (anglais).
+  - **Voix** : pma-voice (audio natif) en 1,5 / 3 / 6 m → on ne s'entendait qu'en criant : 2 / 6 / 14 m, modes « Chuchoter /
+    Normal / Crier » (retouche de shared.lua). Le son du jeu coupé quand quelqu'un parle = atténuation Windows
+    « Communications » (80 %) : REPARER-SON.bat la met sur « Ne rien faire » (UserDuckingPreference = 3), à faire chez chaque joueur.
+  - **Garde-robe (U)** : la pièce est enfilée d'abord, le sac suit (avant : l'objet disparaissait du sac avant, et une pièce d'un
+    pack non chargé chez le joueur était perdue sans rien afficher : maintenant refusée, elle reste dans le sac) ; apparence
+    enregistrée à chaque pièce (plus seulement à la fermeture).
+  - **« Spawn patate »** (trolls qui frappent à l'apparition) : gs_onboarding/client/protection.lua : 30 s fantôme à la connexion
+    (+35 s si arrivée en bus) et à chaque réapparition / réanimation (aucun contact ni dégât, le protégé ne peut pas attaquer) ;
+    zones calmes de 20 m aux points d'apparition (Config.SpawnProtection) : coups et tirs bloqués pour tout le monde.
+  - **Propositions D6** (n° 108 à 117) : signatures et scripts maison gratuits (docs/PROPOSITIONS.md).
 
 - **V12.49** (14/10/2026, session web) — coiffeur (gs_places/client/appearance.lua) : **Blush** + sa couleur pour les
   personnages femme (overlay 5), à côté de sourcils, maquillage et rouge à lèvres ; sauvegardé avec l'apparence.

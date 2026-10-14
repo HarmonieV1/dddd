@@ -191,6 +191,23 @@ Règles de la maison : tout validé serveur, zéro pay-to-win, tout en français
 
 Rappel : 99, 100, 105, 106 et 107 sont les ✚ réalistes avant l'ouverture ; le reste après le 20/10.
 
+## D6. Signatures et scripts maison gratuits (V12.50, 15/10) — rien à acheter, tout en code maison
+
+| # | Proposition | Effort | S'appuie sur |
+|---|---|---|---|
+| 108 | **Derniers mots** : à terre, le joueur peut murmurer une dernière phrase (une ligne). Elle est gardée : l'EMS l'entend s'il arrive à temps, sinon l'enquêteur la retrouve dans le dossier, et la Gazette peut la citer | ✚ | qbx_medical (à terre), gs_evidence, gs_city (Gazette) |
+| 109 | **Le carnet** : objet qu'on remplit en jeu (pages datées). Perdu ou volé, il se lit par celui qui le trouve : preuve au tribunal, matière à chantage, ou simple secret dévoilé | ✚✚ | ox_inventory (métadonnées), gs_evidence (preuves, chantage) |
+| 110 | **Objets trouvés** : ce qui tombe à la mort et n'est pas ramassé finit au commissariat avec une étiquette (où, quand). Le propriétaire le récupère contre une petite amende ; la police voit ce qui traîne dans la ville | ✚✚ | gs_police, gs_wanted (mémoire), ox_inventory |
+| 111 | **Cicatrices du corps** : une blessure grave (balle, couteau) laisse une cicatrice visible à l'endroit touché, retirable chez le chirurgien. Les témoins la citent dans le signalement (« cicatrice au visage ») | ✚✚ | gs_details (santé, tir à la tête), illenium (décorations), gs_wanted |
+| 112 | **Budget participatif** : chaque semaine, une part des taxes est mise au vote des citoyens (téléphone) : plus de patrouilles PNJ, réparation d'un quartier, fête de quartier ; le résultat se voit en ville et dans la Gazette | ✚✚ | gs_city (quartiers), gs_economy, gs_phone, gs_city (Gazette) |
+| 113 | **Main courante** : une borne au commissariat pour déposer une plainte même sans policier en service ; elle arrive dans la file LSPD avec le lieu, l'heure et les témoins déjà connus de la ville | ✚ | gs_police, gs_wanted (témoins), gs_phone |
+| 114 | **Testament** : un joueur peut rédiger son testament (notaire / mairie). Si son personnage meurt pour de bon (mort RP validée par le staff), un véhicule, un objet et une lettre vont à l'héritier choisi | ✚ | gs_civil, gs_admin (mort RP), qbx_vehicles |
+| 115 | **Refuge animalier** : adopter un chien (modèles du jeu), le nourrir, le promener ; s'il est perdu, une affiche « chien perdu » apparaît en ville et la récompense va à celui qui le ramène | ✚✚ | gs_city, gs_jobs (refuge), modèles a_c_* du jeu |
+| 116 | **Affiches de quartier** : avis de recherche (police), concert (bar), chien perdu, petite annonce : posées sur les murs comme objets du mapping, lues en s'approchant (Alt), retirées au bout de 7 jours | ✚✚ | gs_builder (mapping), gs_police (primes), gs_social |
+| 117 | **Rue fermée pour événement** : la mairie ou le staff ferme une rue pour une fête, un tournage ou un défilé ; barrières posées d'un clic, voitures PNJ détournées, horaire affiché sur la carte | ✚ | gs_builder, gs_events, gs_hud (carte) |
+
+Rappel : 108, 113, 114 et 117 sont les ✚ faisables avant l'ouverture sans risque ; le reste après le 20/10.
+
 ---
 À coller à la suite de la section B dans `C:\Users\STEPHANE\Desktop\Base STEVEN\roadline-repo\docs\PROPOSITIONS.md` (nouvelle section D),
 puis tri par le fondateur comme pour les 57 premières. Rappel du cap décidé le 11/10 : pas de nouveau gros système avant le 20/10 ;

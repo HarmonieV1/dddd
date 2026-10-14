@@ -161,7 +161,7 @@ lib.callback.register('gs_details:wardrobeBag', function(src)
     local pieces, outfits = {}, {}
     for _, e in ipairs(Bridge:ListSlots(src, 'gs_cloth')) do
         local p = cleanPiece(e.metadata.piece)
-        if p then pieces[#pieces + 1] = { slot = e.slot, key = p.key, label = SLOT[p.key].label, image = SLOT[p.key].image, d = p.d, t = p.t, m = p.m } end
+        if p then pieces[#pieces + 1] = { slot = e.slot, key = p.key, label = SLOT[p.key].label, image = SLOT[p.key].image, d = p.d, t = p.t, m = p.m, a = p.a } end
     end
     for _, e in ipairs(Bridge:ListSlots(src, 'gs_outfit')) do
         outfits[#outfits + 1] = { slot = e.slot, label = e.metadata.label or 'Tenue', m = e.metadata.outfit and e.metadata.outfit.m }

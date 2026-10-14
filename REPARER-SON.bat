@@ -1,6 +1,7 @@
 @echo off
 REM GTA SOON : crash "audNorthAudioEngine / INIT_CORE" au lancement de GTA = aucune sortie son sur le PC.
 REM Double-clic : reactive les sorties son desactivees, sinon installe une sortie son virtuelle gratuite (VB-CABLE).
+REM V12.50 : regle aussi Windows pour que le son du jeu ne baisse plus quand quelqu'un parle en vocal (Communications).
 net session >nul 2>&1
 if errorlevel 1 (
   echo Droits administrateur necessaires : clique "Oui" dans la fenetre Windows.
@@ -53,4 +54,11 @@ else {
         }
     }
 }
+# V12.50 : Windows baisse les autres sons de 80 % des qu'il detecte une "communication" (le vocal de FiveM) :
+# quand quelqu'un parle, on n'entend plus le jeu. Reglage Son > Communications > "Ne rien faire" (valeur 3).
+Say "`n[Voix] Son du jeu quand quelqu'un parle en vocal" 'Cyan'
+$k = 'HKCU:\Software\Microsoft\Multimedia\Audio'
+if (-not (Test-Path $k)) { New-Item -Path $k -Force | Out-Null }
+Set-ItemProperty -Path $k -Name 'UserDuckingPreference' -Value 3 -Type DWord
+Say '  OK : Windows ne baisse plus le son du jeu pendant le vocal (Son > Communications > Ne rien faire).' 'Green'
 Say "`nTermine. Relance FiveM (si c'etait deja lance, ferme-le d'abord)." 'Green'

@@ -10,9 +10,9 @@ SESSIONS = [
     # validé (arrivée, téléphone, métiers, papiers, staff, Discord, site, alertes, vie légale / illégale…) et retiré.
     # Reste : ce qui a été corrigé ou ajouté depuis, jamais revu en jeu, et ce qui est obligatoire avant d'ouvrir.
     ('0 · Avant de commencer (5 min)', [
-        ('METTRE-A-JOUR.bat : version V12.49 affichée, « Base de données sauvegardée » ; METTRE-A-JOUR-OVH puis GERER-OVH → 1 : « Version RoadLine : V12.49 »', 'Staff', 3),
+        ('METTRE-A-JOUR.bat : version V12.50 affichée, « Base de données sauvegardée » ; METTRE-A-JOUR-OVH puis GERER-OVH → 1 : « Version RoadLine : V12.50 »', 'Staff', 3),
         ('Console au démarrage (PC et VPS) : aucune ligne ROUGE ; en jaune seulement « Conflit tranché » (2 fichiers Patoche) ; F8 en jeu : aucune erreur rouge', 'Staff', 3),
-        ('VIDER-CACHE-FIVEM.bat si un ancien menu apparaît (F11 doit afficher « RoadLine V12.49 »)', 'Staff', 2),
+        ('VIDER-CACHE-FIVEM.bat si un ancien menu apparaît (F11 doit afficher « RoadLine V12.50 »)', 'Staff', 2),
     ]),
     ('1 · Corrections du 13/10 à confirmer (V12.37 → V12.39, 20 min)', [
         ('Garage de métier : « Sortir » donne le véhicule à chaque fois, UNE notification ; prise de service au PNJ : une seule interaction', '2', 3),
@@ -46,6 +46,12 @@ SESSIONS = [
         ('Coiffeur / garde-robe : nouvelles coupes homme (dreadlocks, buzzcut, pack TideFN : locks, boucles) et femme (tresses, cheveux longs) ; magasin : robes, sweat Lace Up, Knee Jeans ; rien du jeu n\'a disparu', '2', 3),
         ('Magasin femme : robes du pack « dresspack » dans le sous-haut (accs) avec un haut vide ; 4 hauts (jbib) ; vérifier que la peau ne dépasse pas', '2', 2),
         ('Récolte : champs d\'orge / houblon / maïs et tabac à Grapeseed (vrais plants), revente au marché ; pavot : pas de blip, latex vendu au receleur du port, alerte police possible', 'Seul', 2),
+    ]),
+    ('4c · V12.50 — tatouages, voix, garde-robe, arrivée (10 min)', [
+        ('Tatoueur : menu en français (Tatouages, Torse), « Appliquer » un tatouage puis quitter SANS sauvegarder : le tatouage reste, payé une seule fois', 'Seul', 3),
+        ('Voix (après METTRE-A-JOUR + REPARER-SON chez chaque joueur) : on s\'entend en « Normal » à quelques mètres, le son du jeu ne baisse plus quand quelqu\'un parle', '2', 3),
+        ('Garde-robe (U) : clic sur un vêtement du sac = enfilé tout de suite, rien ne disparaît ; vêtement d\'un pack non chargé = message, il reste dans le sac', 'Seul', 2),
+        ('Connexion / réapparition : 30 s de protection (on te traverse, impossible de te frapper) ; aux points d\'apparition, personne ne peut frapper ni tirer', '2', 3),
     ]),
     ('5 · Obligatoire avant d\'ouvrir', [
         ('SAUVEGARDER-BDD.bat puis RESTAURER-BDD.bat sur un joueur ; redémarrage de 6 h : annonces 15 / 5 / 1 min', 'Staff', 3),

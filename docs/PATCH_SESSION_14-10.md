@@ -99,3 +99,12 @@
 
 ## Nouvelles ressources de la session
 `gs_showroom` (V12.40), `gs_furniture` (V12.42) — ajoutées dans `server/cfg/resources.cfg`.
+
+## V12.50 (15/10) — retours du matin
+| Quoi | Où | Ce que ça change |
+|---|---|---|
+| **Tatouages** | retouches illenium (METTRE-A-JOUR) | Menu en français ; tatouage payé = gardé même sans « Sauvegarder » ; payé une seule fois |
+| **Voix** | retouche pma-voice + REPARER-SON.bat | On s'entend en « Normal » (6 m) ; le son du jeu ne baisse plus pendant le vocal (réglage Windows, chez chaque joueur) |
+| **Garde-robe (U)** | gs_details | La pièce s'enfile tout de suite ; une pièce d'un pack non chargé reste dans le sac au lieu d'être perdue |
+| **« Spawn patate »** | gs_onboarding | 30 s de protection à l'arrivée et après une réapparition ; pas de coups ni de tirs aux points d'apparition |
+| Propositions | docs/PROPOSITIONS.md (D6) | n° 108 à 117 : signatures et scripts maison gratuits |

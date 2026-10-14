@@ -24,6 +24,25 @@ $QboxPatches = @(
     @{ res = 'illenium-appearance'; file = 'shared\config.lua'; find = 'Config\.EnablePedsForShops\s*=\s*true'; repl = 'Config.EnablePedsForShops = false'; why = 'magasins de vêtements : pas de ped GTA (boutique / staff seulement)' },
     @{ res = 'illenium-appearance'; file = 'shared\config.lua'; find = 'Config\.EnablePedsForClothingRooms\s*=\s*true'; repl = 'Config.EnablePedsForClothingRooms = false'; why = 'vestiaires : pas de ped GTA' },
     @{ res = 'illenium-appearance'; file = 'shared\config.lua'; find = 'Config\.EnablePedsForPlayerOutfitRooms\s*=\s*true'; repl = 'Config.EnablePedsForPlayerOutfitRooms = false'; why = 'garde-robes : pas de ped GTA' },
+    # V12.50 · Personnalisation : textes restés en anglais dans locales\fr.lua d'illenium (rubrique « Tattoos », Torso, Props…)
+    @{ res = 'illenium-appearance'; file = 'locales\fr.lua'; why = 'personnalisation : textes restés en anglais traduits'; map = @{
+        'title = "Tattoos"' = 'title = "Tatouages"'; 'ZONE_TORSO = "Torso"' = 'ZONE_TORSO = "Torse"'; 'highlight = "Highlight"' = 'highlight = "Reflets"'
+        'fade = "Fade"' = 'fade = "Dégradé"'; 'complexion = "Complexion"' = 'complexion = "Teint"'; 'lipstick = "Lipstick"' = 'lipstick = "Rouge à lèvres"'
+        'drawable = "Drawable"' = 'drawable = "Modèle"'; 'bodyArmor = "Body armor"' = 'bodyArmor = "Gilet pare-balles"'; 'decals = "Decals"' = 'decals = "Écussons"'
+        'title = "Props"' = 'title = "Accessoires"' } }
+    # V12.50 · Tatouage payé (« Appliquer ») puis sortie sans « Sauvegarder » : illenium remettait l'apparence d'avant, le tatouage
+    # disparaissait alors qu'il était payé. Il est maintenant enregistré dès le paiement, et la sortie le garde.
+    @{ res = 'illenium-appearance'; file = 'game\nui.lua'; why = 'tatouage payé = gardé, même en quittant sans sauvegarder'
+       find = 'client\.addPedTattoo\(cache\.ped, data\.updatedTattoos or data\)(?!; if data\.tattoo)'
+       repl = 'client.addPedTattoo(cache.ped, data.updatedTattoos or data); if data.tattoo and data.updatedTattoos then local a = client.getAppearance(); a.tattoos = data.updatedTattoos; TriggerServerEvent("illenium-appearance:server:saveAppearance", a) end -- RoadLine' }
+    # … et « Sauvegarder » ne fait plus payer le prix du salon en plus des tatouages déjà payés un par un
+    @{ res = 'illenium-appearance'; file = 'client\client.lua'; why = 'salon de tatouage : pas de 2e paiement à la sauvegarde'
+       find = 'if not isPedMenu then(\s*TriggerServerEvent\("illenium-appearance:server:chargeCustomer", shopType\))'
+       repl = 'if not isPedMenu and not (shopType == "tattoo" and Config.ChargePerTattoo) then -- RoadLine : tatouages payés un par un${1}' }
+    # V12.50 · Voix (pma-voice, audio natif) : 3 m en « Normal », on ne s'entendait qu'en criant. Portées élargies + noms en français
+    # (affichés sous le micro du HUD). Le son du jeu coupé pendant le vocal, lui, est un réglage Windows : REPARER-SON.bat.
+    @{ res = 'pma-voice'; file = 'shared.lua'; why = 'voix : portées 2 / 6 / 14 m, noms en français'; map = @{
+        '{ 1.5, "Whisper" }' = '{ 2.0, "Chuchoter" }'; '{ 3.0, "Normal" }' = '{ 6.0, "Normal" }'; '{ 6.0, "Shouting" }' = '{ 14.0, "Crier" }' } }
     @{ res = 'qbx_core'; file = 'config\client.lua'; find = 'startingApartment\s*=\s*true'; repl = 'startingApartment = false'; why = 'nouveau perso : apparition en ville (mairie), pas d''appartement gratuit' },
     # V12.40 : carte (Échap) : « Powered by Qbox » → nom du serveur (gs_hud le pose aussi, au cas où le motif change)
     @{ res = 'qbx_core'; file = 'config\client.lua'; find = 'pauseMapText\s*=\s*''[^'']*'''; repl = "pauseMapText = 'RoadLine RP'"; why = 'carte Échap : nom du serveur au lieu de Powered by Qbox' },

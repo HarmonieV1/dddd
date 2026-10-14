@@ -7,6 +7,7 @@ local SLOT = {}
 for _, s in ipairs(W.slots) do SLOT[s.key] = s end
 local open, cam, view = false, nil, 'body'
 local nuiReady = false -- V12.33 : l'interface a confirmé l'ouverture (sinon on referme : jamais de focus bloqué)
+local lastBag = {} -- V12.50 : [case du sac] = pièce, d'après le dernier état affiché (pour l'enfiler tout de suite)
 
 local function modelKey(ped) return GetEntityModel(ped) == GetHashKey('mp_f_freemode_01') and 'f' or 'm' end
 local function isFreemode(ped) local m = GetEntityModel(ped) return m == GetHashKey('mp_m_freemode_01') or m == GetHashKey('mp_f_freemode_01') end
@@ -67,7 +68,8 @@ local function state()
     end
     local bag = lib.callback.await('gs_details:wardrobeBag', false) or { pieces = {}, outfits = {} }
     local m = modelKey(ped)
-    for _, b in ipairs(bag.pieces) do b.fits = b.m == m end
+    lastBag = {}
+    for _, b in ipairs(bag.pieces) do b.fits = b.m == m lastBag[b.slot] = b end
     for _, o in ipairs(bag.outfits) do o.fits = (o.m or m) == m end
     local ok, name = pcall(function() return exports.gs_bridge:GetCharName() end)
     return { slots = slots, bag = bag, name = ok and name or GetPlayerName(PlayerId()), view = view }
@@ -164,18 +166,44 @@ RegisterNUICallback('takeOff', function(d, cb)
     local p = s and worn(s, cache.ped)
     if not p then cb(1) return refresh() end
     local ok, msg = lib.callback.await('gs_details:takeOffPiece', false, p)
-    if ok then removePiece(s) end
+    if ok then removePiece(s) save() end
     lib.notify({ description = msg, type = ok and 'success' or 'error' })
     refresh()
     cb(1)
 end)
 
-local function wearFromBag(slot, key)
+--- V12.50 : la pièce existe-t-elle chez ce joueur ? (un pack de vêtements pas encore chargé = rien ne s'affiche)
+local function available(p)
+    local s, ped = SLOT[p.key], cache.ped
+    if s.kind == 'p' then
+        return p.d < GetNumberOfPedPropDrawableVariations(ped, s.id) and p.t < GetNumberOfPedPropTextureVariations(ped, s.id, p.d)
+    end
+    return p.d < GetNumberOfPedDrawableVariations(ped, s.id) and p.t < GetNumberOfPedTextureVariations(ped, s.id, p.d)
+end
+
+--- V12.50 : la pièce est enfilée TOUT DE SUITE, puis le sac suit (avant : l'objet disparaissait du sac d'abord, et une pièce
+--- d'un pack non chargé était perdue sans rien afficher). Refus du serveur = on remet ce qui était porté.
+local function wearFromBag(slot, key, piece)
     local s = SLOT[key]
     if not s then return false end
-    local ok, res = lib.callback.await('gs_details:wearPiece', false, slot, worn(s, cache.ped), modelKey(cache.ped))
-    if not ok then lib.notify({ description = res, type = 'error' }) return false end
-    wearPiece(res)
+    piece = piece or lastBag[slot]
+    local before = worn(s, cache.ped)
+    if piece then
+        if piece.m and piece.m ~= modelKey(cache.ped) then lib.notify({ description = 'Ce vêtement n\'est pas à ta taille (modèle homme / femme).', type = 'error' }) return false end
+        if not available(piece) then
+            lib.notify({ description = 'Ce vêtement vient d\'un pack pas encore chargé chez toi (VIDER-CACHE-FIVEM puis reconnecte-toi) : il reste dans ton sac.', type = 'error', duration = 7000 })
+            return false
+        end
+        wearPiece(piece)
+    end
+    local ok, res = lib.callback.await('gs_details:wearPiece', false, slot, before, modelKey(cache.ped))
+    if not ok then
+        if piece then if before then wearPiece(before) else removePiece(s) end end
+        lib.notify({ description = res, type = 'error' })
+        return false
+    end
+    wearPiece(res) -- version vérifiée par le serveur
+    save()         -- enregistré tout de suite (avant : seulement à la fermeture)
     return true
 end
 
@@ -209,10 +237,9 @@ exports('wearCloth', function(_, slot)
     local piece = slot and slot.metadata and slot.metadata.piece
     if type(piece) ~= 'table' or not SLOT[piece.key] then return lib.notify({ description = 'Vêtement abîmé.', type = 'error' }) end
     if cache.vehicle then return lib.notify({ description = 'Descends du véhicule.', type = 'error' }) end
-    if wearFromBag(slot.slot, piece.key) then
+    if wearFromBag(slot.slot, piece.key, piece) then
         anim('clothingshirt', 'try_shirt_positive_d', 1800)
         lib.notify({ description = SLOT[piece.key].label .. ' enfilé.', type = 'success' })
-        save()
     end
 end)
 
