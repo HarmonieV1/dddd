@@ -10,9 +10,9 @@ SESSIONS = [
     # validé (arrivée, téléphone, métiers, papiers, staff, Discord, site, alertes, vie légale / illégale…) et retiré.
     # Reste : ce qui a été corrigé ou ajouté depuis, jamais revu en jeu, et ce qui est obligatoire avant d'ouvrir.
     ('0 · Avant de commencer (5 min)', [
-        ('METTRE-A-JOUR.bat : version V12.45 affichée, « Base de données sauvegardée » ; METTRE-A-JOUR-OVH puis GERER-OVH → 1 : « Version RoadLine : V12.45 »', 'Staff', 3),
+        ('METTRE-A-JOUR.bat : version V12.46 affichée, « Base de données sauvegardée » ; METTRE-A-JOUR-OVH puis GERER-OVH → 1 : « Version RoadLine : V12.46 »', 'Staff', 3),
         ('Console au démarrage (PC et VPS) : aucune ligne ROUGE ; en jaune seulement « Conflit tranché » (2 fichiers Patoche) ; F8 en jeu : aucune erreur rouge', 'Staff', 3),
-        ('VIDER-CACHE-FIVEM.bat si un ancien menu apparaît (F11 doit afficher « RoadLine V12.45 »)', 'Staff', 2),
+        ('VIDER-CACHE-FIVEM.bat si un ancien menu apparaît (F11 doit afficher « RoadLine V12.46 »)', 'Staff', 2),
     ]),
     ('1 · Corrections du 13/10 à confirmer (V12.37 → V12.39, 20 min)', [
         ('Garage de métier : « Sortir » donne le véhicule à chaque fois, UNE notification ; prise de service au PNJ : une seule interaction', '2', 3),
@@ -42,8 +42,9 @@ SESSIONS = [
         ('Stand de jeux, circuit, FastBox : démarrés (pas de « NON démarré » en console), blips Stand de jeux / Circuit ; FastBox : envoyer un colis à un autre point relais', '2', 2),
         ('Braquage masqué puis démasqué : la description des témoins dit « masqué » seulement dans le 1er cas', '2', 2),
     ]),
-    ('4b · V12.45 — vêtements convertis, récolte (15 min)', [
-        ('Coiffeur / garde-robe : nouvelles coupes homme (dreadlocks, buzzcut) et femme (tresses, cheveux longs) ; magasin : robes, sweat Lace Up, Knee Jeans ; rien du jeu n\'a disparu', '2', 3),
+    ('4b · V12.45 / V12.46 — vêtements convertis, récolte (15 min)', [
+        ('Coiffeur / garde-robe : nouvelles coupes homme (dreadlocks, buzzcut, pack TideFN : locks, boucles) et femme (tresses, cheveux longs) ; magasin : robes, sweat Lace Up, Knee Jeans ; rien du jeu n\'a disparu', '2', 3),
+        ('Magasin femme : robes du pack « dresspack » dans le sous-haut (accs) avec un haut vide ; 4 hauts (jbib) ; vérifier que la peau ne dépasse pas', '2', 2),
         ('Récolte : champs d\'orge / houblon / maïs et tabac à Grapeseed (vrais plants), revente au marché ; pavot : pas de blip, latex vendu au receleur du port, alerte police possible', 'Seul', 2),
     ]),
     ('5 · Obligatoire avant d\'ouvrir', [

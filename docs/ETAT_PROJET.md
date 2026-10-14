@@ -1,4 +1,4 @@
-# État du projet RoadLine RP — récapitulatif complet (à jour au 14/10/2026, V12.45)
+# État du projet RoadLine RP — récapitulatif complet (à jour au 14/10/2026, V12.46)
 
 Ce document sert de **point de sauvegarde** : si une conversation avec Claude est perdue, compressée ou doit reprendre
 ailleurs, tout ce qu'il faut savoir est ici. Il est versionné avec le code (`git log` en garde aussi l'historique).
@@ -54,7 +54,7 @@ exclusifs (« ce que tu ne trouveras nulle part ailleurs »).
 - `feature/phase1-bridge`
 - `claude/gta-rp-architecture-stack-pbvdxz`
 
-**Dernier commit poussé** : « V12.45 : vêtements et coiffures convertis, props de récolte (céréales, tabac, pavot) » (hash exact :
+**Dernier commit poussé** : « V12.46 : pack de robes converti, site public (V5), docs et patch de session finaux » (hash exact :
 `git log -1 origin/feature/phase1-bridge`). Les deux branches pointent sur le même commit.
 
 **Deux sessions Claude en parallèle** (poste Windows et session web) : elles ne se voient pas. Toujours synchroniser
@@ -64,7 +64,7 @@ par un colis (zip de l'installation ou de la session) + ce fichier, et comparer 
 ## 2. Versions : interne vs publique (important, piège classique)
 
 Depuis la V11.3, il y a **deux numéros de version différents**, volontairement :
-- `gs_version` (convar, `server.cfg.example`) = **V12.45** → version technique interne, vue par le staff (F11, console,
+- `gs_version` (convar, `server.cfg.example`) = **V12.46** → version technique interne, vue par le staff (F11, console,
   METTRE-A-JOUR). Continue d'avancer à chaque mise à jour (V11.2, V11.3...).
 - `gs_public_version` (convar) = **« V4 · bêta »** → version vue par les **joueurs** (écran de chargement, statut
   Discord, Gazette). Le site affiche son propre journal (V1 à V4, V5 « classé confidentiel »).
@@ -271,6 +271,16 @@ Résumé très condensé (le détail complet est dans `docs/ROADMAP.md`, `docs/F
   ne remplace pas le curseur), profondeur CSS `animation-timeline: view()` (captures, mock, carte, chiffres), intro
   façon chargement de mission (Entrée / clic pour passer). Tout coupé par `prefers-reduced-motion`, souris seulement
   sur ordinateur. Une seule boucle rAF qui s'endort quand rien ne bouge. Vérifié dans le navigateur : 0 erreur.
+
+- **V12.46** (14/10/2026, session web) — fin de session :
+  - **Pack de robes** `dresspackmpfemale1.0` (remplaçait des vêtements DLC dans patchday19ng) converti en 3 ajouts :
+    `ROADTRIP-tenues_femme_3` / `_4` / `_5` (dlc `gsafemmef` / `g` / `h`) : 28 robes en sous-haut (accs) + 4 hauts (jbib).
+    Doublon `accs_000_u_1` (identique à `accs_000_u`) ignoré. Importeur : `dresspackmpfemale1_0` marqué « déjà converti ».
+  - **Site public** : carte **V5** « Dernière ligne droite avant l'ouverture » (concessions, Benny's, courses, territoires,
+    caméras / labo / tir à la tête, mobilier, récolte, coiffures et robes) ; le teaser confidentiel passe en **V6**.
+    La boutique n'y est pas annoncée (désactivée tant que prix et PLA ne sont pas validés).
+  - Reste non reçu : `male_hair_collection_vol_1` (134 Mo). La Hachura « custom » (`hachurac`, dlc.rpf non chiffré) reçue en
+    morceaux : IMPORTER-MODS l'ouvre seul (étape 1b), il suffit de laisser l'archive d'origine dans mods-a-trier.
 
 - **V12.45** (14/10/2026, session web) — fichiers envoyés dans la conversation (WeTransfer bloqué par le réseau de la session) :
   - **Vêtements et coiffures convertis** (solo → ajouts FiveM, `tools/vetements`, rien ne remplace le jeu) : `ROADTRIP-coiffures_homme_2`

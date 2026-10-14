@@ -1,4 +1,4 @@
-# Patch récap — session web du 14/10/2026 (V12.40 → V12.45)
+# Patch récap — session web du 14/10/2026 (V12.40 → V12.46)
 
 > À garder pour le récap global de fin. Détail technique de chaque version : `docs/ETAT_PROJET.md` (historique).
 > Rien de cette session n'a encore été essayé en jeu : backtest sections **6d, 6e, 6f, 6g** (site de doc).
@@ -54,15 +54,25 @@
 ## V12.45 — vêtements convertis, récolte
 | Quoi | Où | Ce que ça change |
 |---|---|---|
-| **Coiffures et tenues converties** | `livraison/vetements-convertis` (6 zips ROADTRIP-…, chacun < 30 Mo) | 7 coupes femme, 13 homme (dont 9 du pack TideFN : dreads, locks, boucles), 3 robes, sweat Lace Up, Knee Jeans : en plus de celles du jeu (rien remplacé) |
+| **Coiffures et tenues converties** | `livraison/vetements-convertis` (zips ROADTRIP-…, chacun < 30 Mo) | 7 coupes femme, 13 homme (dont 9 du pack TideFN : dreads, locks, boucles), 3 robes, sweat Lace Up, Knee Jeans : en plus de celles du jeu (rien remplacé) |
 | Refusés | importeur + NETTOYER-MARQUES | Sac BOOMODS (logo YSL), Afro de Lamar (perso solo), dreadlocks Trycky (archive coupée) |
 | **Récolte : céréales, tabac** | `gs_harvest` | Vrais plants (props BzZz), revente au marché de Grapeseed |
 | **Récolte : pavot** (illégal) | `gs_harvest`, `gs_wanted` | Sans blip, alerte possible, receleur du port |
 
+## V12.46 — robes, site, docs (fin de session)
+| Quoi | Où | Ce que ça change |
+|---|---|---|
+| **Pack de robes** | 3 zips `ROADTRIP-tenues_femme_3/4/5` | 28 robes (dans « sous-haut ») + 4 hauts, en plus du jeu (le mod d'origine remplaçait des vêtements) |
+| **Site public** | `docs/site/index.html` | Carte **V5** « Dernière ligne droite avant l'ouverture » (concessions, Benny's, courses, territoires, enquêtes, mobilier, récolte, coiffures et robes) ; le teaser confidentiel devient **V6** |
+| Site de doc, guide staff | priorités, section 6 | À faire mis à jour (zips à importer, récolte à vérifier) ; récolte et nouveaux vêtements expliqués au staff |
+| Hachura « custom » | importeur | Rien à convertir : son dlc.rpf est lisible, IMPORTER-MODS l'ouvre seul (laisse l'archive d'origine dans mods-a-trier) |
+
+**Les 9 zips de vêtements à importer** : `coiffures_homme_2`, `_3`, `_4` · `coiffures_femme_3` · `tenues_femme_1` à `_5`.
+
 ## Ce qu'il reste à faire de ton côté
 1. **METTRE-A-JOUR** (applique les retouches Qbox : pop-up police, soins), puis **METTRE-A-JOUR-OVH**.
-2. **Vêtements convertis** : copie les 6 zips `ROADTRIP-…` dans `C:\GTASOON\mods-a-trier`, puis IMPORTER-MODS et
-   METTRE-A-JOUR-OVH. Pack Tide fait ; restent 2 gros mods (coiffures homme vol. 1, robes femme) : à m'envoyer en morceaux 7-Zip de 25 Mo.
+2. **Vêtements convertis** : copie les 9 zips `ROADTRIP-…` dans `C:\GTASOON\mods-a-trier`, puis IMPORTER-MODS et
+   METTRE-A-JOUR-OVH. Pack Tide et robes faits ; reste `male_hair_collection_vol_1` (optionnel) : à m'envoyer en morceaux 7-Zip de 25 Mo.
 3. `patoche_villa_bunker_script_pack` : il lui faut la ressource **`patoche_interact`** (dans ton portail Cfx « Granted Assets »,
    même compte que la clé du serveur) : elle n'était pas dans l'import du 14/10.
 3 bis. **Props de récolte** : reçus et branchés (V12.45) ; points des champs à vérifier en jeu (F11).

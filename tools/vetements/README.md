@@ -19,8 +19,11 @@ modèles différents du ped freemode.
 | tenues_femme_2 | gsafemmee | mp_f | robe d'été Dollie Moko (26 coloris), Knee Jeans | 14/10 |
 | coiffures_homme_3 | gsahommed | mp_m | pack TideFN : dreads attachées, dreads Jason, freeform dreads, box twists | 14/10 |
 | coiffures_homme_4 | gsahommee | mp_m | pack TideFN : afro bouclé, crête bouclée, bush raie, bush bouclé, Druss | 14/10 |
+| tenues_femme_3 | gsafemmef | mp_f | dresspack : 6 robes (importexport 000-005), 3 robes luxe, 2 robes biker (accs) | 14/10 |
+| tenues_femme_4 | gsafemmeg | mp_f | dresspack : 5 robes (importexport 006-010), 2 robes lowrider, 4 robes gunrunning (accs) | 14/10 |
+| tenues_femme_5 | gsafemmeh | mp_f | dresspack : 6 robes heist (accs), 4 hauts executive (jbib) | 14/10 |
 
-Prochaines : `gsahommef`, `gsafemmef`, puis `g`, `h`… Une archive coupée (texture tronquée) est refusée : la redemander.
+Prochaines : `gsahommef`, `gsafemmei`, puis `j`, `k`… Une archive coupée (texture tronquée) est refusée : la redemander.
 Les .rar : `unar` (le 7z du conteneur n'a pas le codec RAR).
 
 Refusés le 14/10 : sac BOOMODS (logo d'une vraie marque de luxe), Afro for Lamar (ped de l'histoire `ig_lamardavis`),

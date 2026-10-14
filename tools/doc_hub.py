@@ -39,13 +39,14 @@ PRIORITIES = [
     ('Urgent (avant de rouvrir la bêta)', [
         'METTRE-A-JOUR puis METTRE-A-JOUR-OVH (retouches Qbox : pop-up police, soins ; maps Patoche tranchées)',
         'Démarrage : aucune ligne rouge (maps « NON démarrée », scripts Patoche : stand de jeux, circuit, FastBox, villa bunker)',
-        'Envoyer les 21 mods « à convertir » (cheveux, robes, jeans) : zip glissé dans la conversation ou domaine wetransfer.com autorisé',
-        'patoche_interact installé (script de la villa bunker) ; props de récolte retrouvés dans l\'import',
-        'Version V12.45+ sur le PC ET sur le VPS (console : [RoadLine RP] version …)',
+        'Les 9 zips ROADTRIP-… (coiffures et tenues converties) dans mods-a-trier → IMPORTER-MODS → METTRE-A-JOUR-OVH',
+        'patoche_interact installé (script de la villa bunker) ; male_hair_collection_vol_1 à envoyer en morceaux 7-Zip (optionnel)',
+        'Version V12.46+ sur le PC ET sur le VPS (console : [RoadLine RP] version …)',
     ]),
     ('Priorité haute (cette semaine)', [
         'Backtest allégé (onglet Backtest, 31 tests) en commençant par les ★★★',
         'Caler en jeu : points du mécano sur la map Benny\'s, véhicules d\'exposition + départ des essais, portes /doorlock',
+        'Récolte : vérifier les champs (céréales, tabac, pavot) et la hauteur du mobilier ; nouvelles coupes / robes au coiffeur et au magasin',
         'Doublons de lieux (casino, concession, Ammu-Nation, prison) : « nouveau » ou « ancien » pour chacun',
         'Prison : coordonnées de cellule et de sortie avec la map prison',
         'Sauvegardes de la base : GERER-OVH → sauvegarde présente du jour',
