@@ -275,7 +275,8 @@ Résumé très condensé (le détail complet est dans `docs/ROADMAP.md`, `docs/F
 - **V12.45** (14/10/2026, session web) — fichiers envoyés dans la conversation (WeTransfer bloqué par le réseau de la session) :
   - **Vêtements et coiffures convertis** (solo → ajouts FiveM, `tools/vetements`, rien ne remplace le jeu) : `ROADTRIP-coiffures_homme_2`
     (dreadlocks, Buzzcut Fade ×2, coupe « hair »), `ROADTRIP-coiffures_femme_3` (Long Hyun, tresses grzybeek / jazlyn13 / Natt,
-    long hair, Erika, Alycia), `ROADTRIP-tenues_femme_1` (robes Grace, à découpes ; sweat Lace Up), `ROADTRIP-tenues_femme_2` (robe Dollie Moko, Knee Jeans).
+    long hair, Erika, Alycia), `ROADTRIP-tenues_femme_1` (robes Grace, à découpes ; sweat Lace Up), `ROADTRIP-tenues_femme_2` (robe Dollie Moko, Knee Jeans),
+    `ROADTRIP-coiffures_homme_3` / `_4` (pack TideFN : 4 dreads / locks, 5 coupes bouclées).
     À mettre dans mods-a-trier → IMPORTER-MODS. Archives d'origine marquées « déjà converti » ($Converted).
   - Refusés : sac BOOMODS (logo YSL, marque réelle → ajouté à $BrandBlock, aussi dans NETTOYER-MARQUES), Afro for Lamar (ped de
     l'histoire), dreadlocks Trycky (archive coupée). Lace Up Sweats était refusé à tort (« perso solo ») : set MP Female, converti.

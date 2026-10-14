@@ -84,15 +84,15 @@ F10/F11 staff, I aide, K inventaire proche, W radial, H mains en l'air, L verrou
   job.lua), conflits Patoche tranchés, pack LSPD au garage police. Récap de la session : **`docs/PATCH_SESSION_14-10.md`**.
   En attente : 30 mods « à convertir » (dossier mods-tri\a-convertir à m'envoyer), `patoche_interact` pour la villa bunker.
 - **V12.45 (14/10)** : mods solo convertis en ajouts FiveM (`tools/vetements/README.md` : noms dlc déjà pris, suivants
-  `gsahommed` / `gsafemmef`) → 4 zips `ROADTRIP-…` à passer par IMPORTER-MODS ; récolte céréales, tabac (légal) et pavot
+  `gsahommef` / `gsafemmef`) → 6 zips `ROADTRIP-…` à passer par IMPORTER-MODS ; récolte céréales, tabac (légal) et pavot
   (illégal, sans blip, receleur du port, crime `drug_cultivation`) avec les props BzZz (`gsa_9a13b85…`).
 - Deux sessions Claude (web + poste Windows) : V12.33 puis V12.37 du poste Windows intégrées par la session web (V12.38 =
   fusion). Côté Windows : POUSSER-GITHUB.bat (docs/GITHUB.md) pour envoyer directement sur GitHub. Désactivées (archives coupées, à retélécharger) :
   beach party, soccer / soccer_cloth, plasmatron.
 
 ## En attente (à reprendre avec moi) — mis à jour le 14/10
-1. **3 gros mods à convertir** : `male_hair_collection_vol_1` (134 Mo), `dresspackmpfemale1_0` (74,5 Mo),
-   `tidefn5modshairpack` (50,8 Mo) : à envoyer découpés en volumes 7-Zip de 25 Mo (`.7z.001`, `.002`…) ; les autres sont faits (V12.45).
+1. **2 gros mods à convertir** : `male_hair_collection_vol_1` (134 Mo), `dresspackmpfemale1_0` (74,5 Mo)
+   (TideFN fait : coiffures_homme_3 et 4) : à envoyer découpés en volumes 7-Zip de 25 Mo (`.7z.001`, `.002`…) ; les autres sont faits (V12.45).
 2. **Récolte** : points des champs (céréales, tabac, pavot) à caler en jeu via F11 si besoin.
 3. **patoche_interact** (script de la villa bunker) : trouvé par le fondateur, à importer.
 4. **À caler en jeu** : points du mécano sur la map Benny's, véhicules d'exposition + départ des essais, portes `/doorlock`,

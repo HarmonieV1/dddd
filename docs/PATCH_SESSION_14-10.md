@@ -54,15 +54,15 @@
 ## V12.45 — vêtements convertis, récolte
 | Quoi | Où | Ce que ça change |
 |---|---|---|
-| **Coiffures et tenues converties** | `livraison/vetements-convertis` (4 zips ROADTRIP-…, chacun < 30 Mo) | 7 coupes femme, 4 homme, 3 robes, sweat Lace Up, Knee Jeans : en plus de celles du jeu (rien remplacé) |
+| **Coiffures et tenues converties** | `livraison/vetements-convertis` (6 zips ROADTRIP-…, chacun < 30 Mo) | 7 coupes femme, 13 homme (dont 9 du pack TideFN : dreads, locks, boucles), 3 robes, sweat Lace Up, Knee Jeans : en plus de celles du jeu (rien remplacé) |
 | Refusés | importeur + NETTOYER-MARQUES | Sac BOOMODS (logo YSL), Afro de Lamar (perso solo), dreadlocks Trycky (archive coupée) |
 | **Récolte : céréales, tabac** | `gs_harvest` | Vrais plants (props BzZz), revente au marché de Grapeseed |
 | **Récolte : pavot** (illégal) | `gs_harvest`, `gs_wanted` | Sans blip, alerte possible, receleur du port |
 
 ## Ce qu'il reste à faire de ton côté
 1. **METTRE-A-JOUR** (applique les retouches Qbox : pop-up police, soins), puis **METTRE-A-JOUR-OVH**.
-2. **Vêtements convertis** : copie les 4 zips `ROADTRIP-…` dans `C:\GTASOON\mods-a-trier`, puis IMPORTER-MODS et
-   METTRE-A-JOUR-OVH. Restent 3 gros mods (coiffures homme vol. 1, robes femme, pack Tide) : à m'envoyer en morceaux 7-Zip de 25 Mo.
+2. **Vêtements convertis** : copie les 6 zips `ROADTRIP-…` dans `C:\GTASOON\mods-a-trier`, puis IMPORTER-MODS et
+   METTRE-A-JOUR-OVH. Pack Tide fait ; restent 2 gros mods (coiffures homme vol. 1, robes femme) : à m'envoyer en morceaux 7-Zip de 25 Mo.
 3. `patoche_villa_bunker_script_pack` : il lui faut la ressource **`patoche_interact`** (dans ton portail Cfx « Granted Assets »,
    même compte que la clé du serveur) : elle n'était pas dans l'import du 14/10.
 3 bis. **Props de récolte** : reçus et branchés (V12.45) ; points des champs à vérifier en jeu (F11).

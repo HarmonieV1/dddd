@@ -17,11 +17,14 @@ modèles différents du ped freemode.
 | coiffures_femme_3 | gsafemmec | mp_f | Long Hyun, tresse grzybeek, long braids jazlyn13, long hair, Erika, Alycia, tresse Natt | 14/10 |
 | tenues_femme_1 | gsafemmed | mp_f | robe Grace (23 coloris), robe à découpes (18, 1 texture coupée retirée), sweat Lace Up (haut + bas) | 14/10 |
 | tenues_femme_2 | gsafemmee | mp_f | robe d'été Dollie Moko (26 coloris), Knee Jeans | 14/10 |
+| coiffures_homme_3 | gsahommed | mp_m | pack TideFN : dreads attachées, dreads Jason, freeform dreads, box twists | 14/10 |
+| coiffures_homme_4 | gsahommee | mp_m | pack TideFN : afro bouclé, crête bouclée, bush raie, bush bouclé, Druss | 14/10 |
 
-Prochaines : `gsahommed`, `gsafemmef`, puis `g`, `h`… Une archive coupée (texture tronquée) est refusée : la redemander.
+Prochaines : `gsahommef`, `gsafemmef`, puis `g`, `h`… Une archive coupée (texture tronquée) est refusée : la redemander.
 Les .rar : `unar` (le 7z du conteneur n'a pas le codec RAR).
 
 Refusés le 14/10 : sac BOOMODS (logo d'une vraie marque de luxe), Afro for Lamar (ped de l'histoire `ig_lamardavis`),
 dreadlocks Trycky (archive coupée : à renvoyer). Lace Up Sweats était refusé à tort par l'importeur (« perso solo ») :
 c'est un set MP Female (fichiers jbib / accs), converti. Ses pièces « (TORSO & LOWR TO USE) » (uppr_032_r, lowr_003_r) sans
 texture ne sont pas reprises : porter le haut / bas du jeu correspondant si la peau dépasse.
+Pack TideFN (14/10) : `BundledDreadsFull` et `Tied Back Dreads` sont le même modèle (fichiers identiques) : gardé une fois.
