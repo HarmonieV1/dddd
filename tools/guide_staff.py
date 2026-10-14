@@ -101,7 +101,7 @@ def build():
             [38 * G.mm, 120 * G.mm, 22 * G.mm], font=8.2)]
     s += [Paragraph('Un point mal placé (transformateur, ring, vendeur, PNJ…) : F11 → Monde et lieux → <b>Déplacer / retirer un point</b> (filtre par ressource ; '
                     'super-admin : retirer du jeu, réversible). Points de métier : menu dédié. Tout est gardé aux mises à jour.', SMALL)]
-    s += [Paragraph('6. Nouveautés V11.4 → V12.55 pour le staff', H2)]
+    s += [Paragraph('6. Nouveautés V11.4 → V12.56 pour le staff', H2)]
     s += [t([['Quoi', 'Comment'],
              ['VIP (2 personnages)', 'F11 → Joueurs → le joueur → VIP (fondateur). Tout le monde a 1 personnage ; staff super-admin+ et VIP en ont 2.'],
              ['Mapping', 'F11 → Monde et lieux → Mapping : catalogue par catégorie (mobilier, chantier, éclairage, végétation, stands, plage, police), placement à la souris, retrait d\'objets de la map.'],
@@ -136,6 +136,7 @@ def build():
              ['Mobilier', 'V12.42 : bancs, chaises, lits, matelas, fauteuil roulant posés au F11 (ou de la ville) : Alt → S\'asseoir / S\'allonger / Rouler. Mauvaise hauteur : pendant la pose PgUp/PgDn et flèches, la ligne à recopier dans Config.Furniture (gs_furniture) s\'affiche en F8.'],
              ['Boutique et RoadCoins', 'V12.41 : /boutique = vitrine en jeu. Test console : gsstore_deliver TEST-1 roadcoins_500 <id fivem du joueur> (crédit immédiat). Remboursement : gsstore_revoke TEST-1. Jamais de commande boutique en jeu (refusée même admin).'],
              ['Base injoignable', 'V12.47 : console « [oxmysql] Unable to establish a connection to the database » (ECONNRESET) sur le PC : REPARER-BDD.bat (redémarre MariaDB, explique la cause, la relance seule si elle plante, relance le serveur).'],
+             ['Forme des territoires', 'V12.56 : /quartierforme <quartier> <angle 0-90> [taille 40-200 m] (admin) : tourne les cases pour suivre les rues (carte des gangs), gardé au redémarrage. Ex. /quartierforme canals 37'],
              ['Prison : musculation', 'V12.53 : Pompes, Abdos, Haltères, Tractions dans la cour (détenus). Mal placés : F11 → Déplacer un point (gs_police).'],
              ['Arrivée protégée', 'V12.50 : 30 s fantôme à la connexion et après une réapparition ; points d\'apparition = zones sans coups ni tirs (Config.SpawnProtection dans gs_onboarding). Un troll qui frappe ailleurs : sanction normale.'],
              ['Voix', 'V12.51 : portées 2 / 6 / 14 m (gs_radio, Config.VoiceRanges). Spam de coups : 1 coup / 0,8 s. Un joueur qui n\'entend plus le jeu quand on parle : REPARER-SON.bat (réglage Windows Communications).'],

@@ -208,6 +208,39 @@ Rappel : 99, 100, 105, 106 et 107 sont les ✚ réalistes avant l'ouverture ; le
 
 Rappel : 108, 113, 114 et 117 sont les ✚ faisables avant l'ouverture sans risque ; le reste après le 20/10.
 
+## D7. Suite (V12.56, 15/10) — signatures, ajouts simples, améliorations
+
+**Signatures (introuvables ailleurs)**
+
+| # | Proposition | Effort | S'appuie sur |
+|---|---|---|---|
+| 118 | **Séquelles visibles** : après une blessure grave, démarche blessée et bras en écharpe ou béquille pendant quelques heures de jeu ; l'EMS peut les soigner plus vite (rééducation), les témoins les citent | ✚ | gs_details (santé), qbx_medical, gs_wanted |
+| 119 | **Le cimetière se remplit** : une mort RP validée laisse une vraie tombe au cimetière (nom, épitaphe, date), cortège possible, avis de décès dans la Gazette ; les proches peuvent y déposer des fleurs | ✚✚ | gs_builder (objet posé), gs_city (Gazette), gs_admin (mort RP) |
+| 120 | **Passagers bavards** : dans le bus et le taxi, les PNJ passagers échangent les rumeurs de la ville (vraies, tirées de la mémoire de la ville) : le chauffeur les entend et peut les revendre à l'indic' | ✚ | gs_jobs (bus, taxi), gs_rumors, gs_memoire |
+| 121 | **Bourse de Los Santos** : les entreprises de joueurs ont un cours qui suit leurs vraies ventes ; on peut acheter des parts (téléphone), dividendes chaque semaine, krach si le patron fait faillite | ✚✚✚ | gs_business, gs_economy, gs_phone |
+| 122 | **Faux billets** : fabriqués dans un labo clandestin, écoulés dans les commerces ; certains commerçants les repèrent (selon l'heure et la quantité), la police remonte la piste par les commerces touchés | ✚✚ | gs_drugs (labos), gs_economy (commerces), gs_evidence |
+
+**Ajouts simples (rapides, utiles tous les jours)**
+
+| # | Proposition | Effort | S'appuie sur |
+|---|---|---|---|
+| 123 | **Fouiller les poubelles** : les bennes de la ville (Alt) donnent parfois un petit objet (canette, ferraille, rarement une arme cassée) ; délai par benne | ✚ | ox_target (modèles du jeu), gs_harvest |
+| 124 | **Distributeurs automatiques** : boissons et snacks sur les machines du jeu (Alt), payées en espèces | ✚ | ox_target, ox_inventory |
+| 125 | **Se laver** : douches, lavabos et fontaines effacent le sang et la saleté (utile après un combat, pour la police aussi) | ✚ | ox_target, gs_details |
+| 126 | **Porter / prendre en otage** : porter un blessé sur l'épaule ou tenir quelqu'un sous la menace (consentement du joueur porté, sauf menotté / à terre) | ✚ | gs_details, gs_police |
+
+**Améliorations et corrections**
+
+| # | Proposition | Effort | S'appuie sur |
+|---|---|---|---|
+| 127 | **ENVOYER-PLACEMENTS** : copier portes, mapping, points, concessions, courses du PC vers le VPS (sauvegarde avant, jamais les persos) | ✚ | outils-ovh (Export-LocalDb) |
+| 128 | **Cabines téléphoniques** : refonte (appel anonyme à la police, au journal, à un numéro ; payées en pièces) | ✚✚ | gs_phone, gs_wanted |
+| 129 | **Sécurité réseau** : audit des ~300 points d'entrée serveur et entityLockdown strict (après l'ouverture) | ✚✚ | gs_security |
+| 130 | **Test de charge** : 6 à 10 joueurs, 1 h, resmon (aucune ressource gs_ au-dessus de 0,5 ms) avant l'annonce publique | ✚ | backtest section 5 |
+| 131 | **Tableau de bord staff** : sur le panneau web, carte des joueurs en direct, derniers tickets, alertes anti-triche et état des maps | ✚✚ | gs_admin (panneau web), gs_anticheat |
+
+Rappel : avant l'ouverture, 118, 120, 123, 124, 125, 127 et 130 (✚) sont les plus sûrs ; le reste après le 20/10.
+
 ---
 À coller à la suite de la section B dans `C:\Users\STEPHANE\Desktop\Base STEVEN\roadline-repo\docs\PROPOSITIONS.md` (nouvelle section D),
 puis tri par le fondateur comme pour les 57 premières. Rappel du cap décidé le 11/10 : pas de nouveau gros système avant le 20/10 ;

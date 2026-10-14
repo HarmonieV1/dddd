@@ -13,7 +13,7 @@ l'optimisation.
 1. Lis **`docs/AUDIT_V12_35.md`** (état et risques au 12/10), puis **`docs/ETAT_PROJET.md`** en entier (récap complet, historique V12.x, décisions) puis `docs/MLO.md` et
    `docs/IMPORTER_MODS.md` (maps payantes, scripts compagnons, diagnostic).
 2. Vérifie que tu es à jour : `git fetch origin && git log -1 origin/feature/phase1-bridge` doit montrer
-   « V12.55 : salles de jeu (3 blips, zones sans police) » (ou plus récent).
+   « V12.56 : territoires en pâtés de maisons, propositions D7 » (ou plus récent).
 
 ## Règles permanentes (à respecter sans exception)
 - **Tout en français** (code commenté, messages en jeu, docs, réponses).
@@ -57,7 +57,7 @@ l'optimisation.
 F1 téléphone, F2 inventaire, F3 progression, F4 intervention (police / EMS), F5 emotes, F6 métiers, F7 duo, F9 gang,
 F10/F11 staff, I aide, K inventaire proche, W radial, H mains en l'air, L verrouiller, B ceinture, **U garde-robe**.
 
-## État au 15/10/2026 (V12.55)
+## État au 15/10/2026 (V12.56)
 - Récents : clés de véhicule en objet (`gs_carkey`), vêtements et tenues en objets + garde-robe (U), apparition fiable
   dans les véhicules, blips publics des maps, contrôle « chez moi » des maps (F11), scripts compagnons des maps payantes
   installés par IMPORTER-MODS, intégrité des maps vérifiée au démarrage, outil REPARER-FIVEM.bat, site de doc HTML.
@@ -104,6 +104,7 @@ F10/F11 staff, I aide, K inventaire proche, W radial, H mains en l'air, L verrou
 - **V12.54 (15/10)** : armes dans le dos en objets locaux (plus de copie réseau figée), caméra libre dans le menu mécano.
 - **V12.55 (15/10)** : salles de jeu (3 blips aux positions du fondateur, zones sans police). En attente : nom du crash du
   jeu du clown, retour sur les jetons des auto-tamponneuses (rapport IMPORTER-MODS).
+- **V12.56 (15/10)** : territoires de gang en cases alignées sur les rues (/quartierforme), propositions D7 n° 118-131.
 - Deux sessions Claude (web + poste Windows) : V12.33 puis V12.37 du poste Windows intégrées par la session web (V12.38 =
   fusion). Côté Windows : POUSSER-GITHUB.bat (docs/GITHUB.md) pour envoyer directement sur GitHub. Désactivées (archives coupées, à retélécharger) :
   beach party, soccer / soccer_cloth, plasmatron.

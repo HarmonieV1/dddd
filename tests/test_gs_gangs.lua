@@ -5,7 +5,7 @@ local R = 'server/resources/[gtasoon]/'
 local duty = {}
 provide('gs_jobs', { IsOnDutyAs = function(src, job) return job == 'police' and duty[src] == true end })
 loadResource('gs_security', { R .. 'gs_security/server/main.lua' })
-loadResource('gs_gangs', { R .. 'gs_gangs/shared/config.lua' })
+loadResource('gs_gangs', { R .. 'gs_gangs/shared/config.lua', R .. 'gs_gangs/shared/blocks.lua' })
 local gangs, members, money = {}, {}, {}
 Store = {
     init = function() end, gangs = function() return {} end, territories = function() return {} end, saveTerritories = function() end,
@@ -158,6 +158,19 @@ Gangs.setBonus('grove', -3)
 check('bonus staff appliqué (niveau jamais négatif)', Gangs.level('grove') == 0)
 Gangs.setBonus('grove', 0)
 check('publié : identifiant, niveau, rayon', GlobalState.gsTerritories.grove.ownerId == 'vagos' and GlobalState.gsTerritories.grove.level == TC.maxLevel and GlobalState.gsTerritories.grove.radius > Config.Territories.grove.radius)
+-- V12.56 · Quartiers en pâtés de maisons alignés sur les rues
+do
+    local tg = Config.Territories.grove
+    local cells = Blocks.cells(tg.center, tg.radius, 0.0, 90.0)
+    check('V12.56 : cases dans le rayon, centre inclus', #cells > 4 and Blocks.contains(tg.center, tg.radius, 0.0, 90.0, tg.center))
+    check('V12.56 : point hors des cases refusé', not Blocks.contains(tg.center, tg.radius, 0.0, 90.0, vec3(tg.center.x + tg.radius * 1.5, tg.center.y, tg.center.z)))
+    local all = true
+    for _, c in ipairs(Blocks.cells(tg.center, tg.radius, 37.0, 80.0)) do if not Blocks.contains(tg.center, tg.radius, 37.0, 80.0, c) then all = false end end
+    check('V12.56 : chaque centre de case est bien « dans » le quartier (carte = serveur), même tourné', all)
+    check('V12.56 : /quartierforme : forme réglée et publiée', Gangs.setShape('grove', 125, 70) == true and GlobalState.gsTerritories.grove.angle == 35.0
+        and GlobalState.gsTerritories.grove.cell == 70.0 and not Gangs.setShape('inconnu', 10))
+    check('V12.56 : appartenance au quartier par les cases', Gangs.territoryAt(tg.center) == 'grove')
+end
 local saved = TC.maxPerGang
 TC.maxPerGang = 1
 local dv = Gangs.territories.davis

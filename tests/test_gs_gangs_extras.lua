@@ -9,7 +9,7 @@ local reports = 0
 provide('gs_wanted', { ReportCrime = function() reports = reports + 1 return true end })
 provide('gs_drugs', { GetSellables = function() return { { id = 'weed', label = 'Cannabis', item = 'weed_bag', price = { 70, 120 } } } end })
 loadResource('gs_security', { R .. 'gs_security/server/main.lua' })
-loadResource('gs_gangs', { R .. 'gs_gangs/shared/config.lua' })
+loadResource('gs_gangs', { R .. 'gs_gangs/shared/config.lua', R .. 'gs_gangs/shared/blocks.lua' })
 Config.DefaultGangs = {}
 local gangs, members = {}, {}
 Store = {

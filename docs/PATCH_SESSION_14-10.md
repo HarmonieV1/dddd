@@ -139,3 +139,9 @@
 |---|---|---|
 | **3 blips « Salle de jeu »** | gs_admin (maps.js) | Sandy Shores, Del Perro, Paleto (l'ancien blip unique est retiré) |
 | **Jeux avec armes** | gs_wanted | Plus d'appel police, d'étoiles ni de « quartier sous tension » autour des 3 salles |
+
+## V12.56 (15/10) — territoires
+| Quoi | Où | Ce que ça change |
+|---|---|---|
+| **Territoires de gang** | gs_gangs | Plus de grands ronds : le quartier est dessiné en pâtés de maisons alignés sur les rues ; /quartierforme pour ajuster l'angle |
+| Propositions | docs/PROPOSITIONS.md (D7) | n° 118 à 131 : signatures, ajouts simples, améliorations |

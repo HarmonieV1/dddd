@@ -10,9 +10,9 @@ SESSIONS = [
     # validé (arrivée, téléphone, métiers, papiers, staff, Discord, site, alertes, vie légale / illégale…) et retiré.
     # Reste : ce qui a été corrigé ou ajouté depuis, jamais revu en jeu, et ce qui est obligatoire avant d'ouvrir.
     ('0 · Avant de commencer (5 min)', [
-        ('METTRE-A-JOUR.bat : version V12.55 affichée, « Base de données sauvegardée » ; METTRE-A-JOUR-OVH puis GERER-OVH → 1 : « Version RoadLine : V12.55 »', 'Staff', 3),
+        ('METTRE-A-JOUR.bat : version V12.56 affichée, « Base de données sauvegardée » ; METTRE-A-JOUR-OVH puis GERER-OVH → 1 : « Version RoadLine : V12.56 »', 'Staff', 3),
         ('Console au démarrage (PC et VPS) : aucune ligne ROUGE ; en jaune seulement « Conflit tranché » (2 fichiers Patoche) ; F8 en jeu : aucune erreur rouge', 'Staff', 3),
-        ('VIDER-CACHE-FIVEM.bat si un ancien menu apparaît (F11 doit afficher « RoadLine V12.55 »)', 'Staff', 2),
+        ('VIDER-CACHE-FIVEM.bat si un ancien menu apparaît (F11 doit afficher « RoadLine V12.56 »)', 'Staff', 2),
     ]),
     ('1 · Corrections du 13/10 à confirmer (V12.37 → V12.39, 20 min)', [
         ('Garage de métier : « Sortir » donne le véhicule à chaque fois, UNE notification ; prise de service au PNJ : une seule interaction', '2', 3),
@@ -53,6 +53,7 @@ SESSIONS = [
         ('Garde-robe (U) : clic sur un vêtement du sac = enfilé tout de suite, rien ne disparaît ; vêtement d\'un pack non chargé = message, il reste dans le sac', 'Seul', 2),
         ('Arme longue dans le dos à 2 joueurs : elle suit le dos, disparaît en main, aucune copie figée en l\'air (avant / après déconnexion de l\'autre)', '2', 3),
         ('Menu mécano (Alt) : caméra autour du véhicule (flèches ou Z/Q/S/D, molette, clic droit + souris), le perso ne bouge pas, vue normale à la fermeture', 'Seul', 2),
+        ('Territoires (membre de gang) : pâtés de maisons alignés sur les rues au lieu de ronds ; /quartierforme <quartier> <angle> pour les ajuster', 'Staff', 2),
         ('Salles de jeu : 3 blips (Sandy, Del Perro, Paleto) ; jeu avec armes : ni police, ni étoiles, ni brève « quartier sous tension »', 'Seul', 3),
         ('Stand de jeux (jetée de Del Perro) : les stands sont là ; auto-tamponneuses : jeton achetable (après IMPORTER-MODS, rapport « objets du script ajoutés »)', 'Seul', 3),
         ('Prison : Pompes, Abdos, Haltères, Tractions dans la cour (peine −30 s, délai 90 s, sprint plus long)', 'Seul', 2),

@@ -5,7 +5,7 @@ local R = 'server/resources/[gtasoon]/'
 local police = {}
 provide('gs_jobs', { IsOnDutyAs = function() return false end, GetOnDutyPlayers = function() return police end })
 loadResource('gs_security', { R .. 'gs_security/server/main.lua' })
-loadResource('gs_gangs', { R .. 'gs_gangs/shared/config.lua' })
+loadResource('gs_gangs', { R .. 'gs_gangs/shared/config.lua', R .. 'gs_gangs/shared/blocks.lua' })
 local members, money = {}, { ballas = 20000, vagos = 20000 }
 Store = {
     init = function() end, gangs = function() return {} end, territories = function() return {} end, saveTerritories = function() end,

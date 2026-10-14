@@ -112,19 +112,22 @@ Config.AmmoCraft = {
 
 Config.Fence = {
     minGrade = 1, minQty = 10, maxQty = 50, bonus = 1.35, hours = { 21, 5 }, rotateMinutes = 60, reportChance = 0.35,
+    -- V12.56 · Forme : cases carrées de `cell` m alignées sur les rues (angle par quartier ci-dessous). Réglage en jeu :
+    -- /quartierforme <quartier> <angle> [taille] (admin), gardé au redémarrage. 0° = rues nord-sud / est-ouest.
+    cell = 90.0,
     locations = { vec3(-1154.9, -1558.9, 4.4), vec3(1204.7, -3116.9, 5.5), vec3(716.0, -965.0, 30.4), vec3(2474.0, 3444.0, 50.1) },
 }
 
--- Quartiers (coords approximatives, à caler en jeu)
+-- Quartiers (coords approximatives, à caler en jeu). angle = sens des rues (V12.56, estimé : à affiner avec /quartierforme)
 Config.Territories = {
-    grove    = { label = 'Grove Street',      center = vec3(105.0, -1940.0, 20.8),  radius = 220.0 },
-    davis    = { label = 'Davis',             center = vec3(40.0, -1640.0, 29.3),   radius = 250.0 },
-    rancho   = { label = 'Rancho',            center = vec3(420.0, -1820.0, 28.3),  radius = 250.0 },
-    elburro  = { label = 'El Burro Heights',  center = vec3(1370.0, -1560.0, 55.0), radius = 280.0 },
-    mirror   = { label = 'Mirror Park',       center = vec3(1100.0, -500.0, 64.0),  radius = 280.0 },
-    canals   = { label = 'Vespucci Canals',   center = vec3(-1070.0, -1010.0, 2.0), radius = 260.0 },
-    sandy    = { label = 'Sandy Shores',      center = vec3(1850.0, 3700.0, 33.0),  radius = 400.0 },
-    paleto   = { label = 'Paleto Bay',        center = vec3(-200.0, 6300.0, 31.0),  radius = 400.0 },
+    grove    = { label = 'Grove Street',      center = vec3(105.0, -1940.0, 20.8),  radius = 220.0, angle = 0.0 },
+    davis    = { label = 'Davis',             center = vec3(40.0, -1640.0, 29.3),   radius = 250.0, angle = 0.0 },
+    rancho   = { label = 'Rancho',            center = vec3(420.0, -1820.0, 28.3),  radius = 250.0, angle = 0.0 },
+    elburro  = { label = 'El Burro Heights',  center = vec3(1370.0, -1560.0, 55.0), radius = 280.0, angle = 0.0 },
+    mirror   = { label = 'Mirror Park',       center = vec3(1100.0, -500.0, 64.0),  radius = 280.0, angle = 0.0 },
+    canals   = { label = 'Vespucci Canals',   center = vec3(-1070.0, -1010.0, 2.0), radius = 260.0, angle = 37.0 },
+    sandy    = { label = 'Sandy Shores',      center = vec3(1850.0, 3700.0, 33.0),  radius = 400.0, angle = 30.0, cell = 120.0 },
+    paleto   = { label = 'Paleto Bay',        center = vec3(-200.0, 6300.0, 31.0),  radius = 400.0, angle = 45.0, cell = 110.0 },
 }
 
 -- Guerres de territoire déclarées : un chef (grade avec gestion) déclare la guerre au gang qui tient un quartier.

@@ -183,9 +183,22 @@ function Gangs.radius(id)
     return Config.Territories[id].radius * (1 + Config.Territory.growPerLevel * Gangs.level(id))
 end
 
+--- V12.56 · Forme du quartier : angle des rues et taille des cases (réglage staff gardé en KVP, sinon la config).
+Gangs.shape = {}
+for id in pairs(Config.Territories) do
+    local raw = GetResourceKvpString('gs_gangs:shape:' .. id)
+    local ok, v = pcall(json.decode, raw or '')
+    if ok and type(v) == 'table' and tonumber(v.angle) and tonumber(v.cell) then Gangs.shape[id] = { angle = tonumber(v.angle), cell = tonumber(v.cell) } end
+end
+function Gangs.shapeOf(id)
+    local t, s = Config.Territories[id], Gangs.shape[id]
+    return (s and s.angle) or t.angle or 0.0, (s and s.cell) or t.cell or Config.Territory.cell or 90.0
+end
+
 local function territoryAt(coords)
     for id, t in pairs(Config.Territories) do
-        if #(coords - t.center) <= (Gangs.territories[id] and Gangs.radius(id) or t.radius) then return id end
+        local angle, cell = Gangs.shapeOf(id)
+        if Blocks.contains(t.center, Gangs.territories[id] and Gangs.radius(id) or t.radius, angle, cell, coords) then return id end
     end
 end
 Gangs.territoryAt = territoryAt
@@ -200,6 +213,7 @@ local function publish()
         local g = t.owner and Gangs.list[t.owner]
         out[id] = { owner = g and g.label or nil, ownerId = g and t.owner or nil, color = g and g.color or 0, heat = heat,
             level = Gangs.level(id), radius = Gangs.radius(id) } -- V12.40 : identifiant (population), niveau, rayon effectif
+        out[id].angle, out[id].cell = Gangs.shapeOf(id) -- V12.56 : forme (cases alignées sur les rues)
     end
     GlobalState.gsTerritories = out
 end
@@ -472,6 +486,25 @@ RegisterCommand('territoire', function(src, args)
         or ('Usage : /territoire <%s> <-3..3>'):format(table.concat((function() local l = {} for k in pairs(Config.Territories) do l[#l + 1] = k end table.sort(l) return l end)(), '|'))
     if src == 0 then print(msg) else notify(src, msg, ok and 'success' or 'error') end
 end, false)
+--- V12.56 · /quartierforme <quartier> <angle> [taille] : oriente les cases sur les rues (admin), gardé au redémarrage.
+function Gangs.setShape(id, angle, cell)
+    angle, cell = tonumber(angle), tonumber(cell)
+    if not Config.Territories[id] or not angle then return false end
+    local _, cur = Gangs.shapeOf(id)
+    cell = math.max(40.0, math.min(200.0, cell or cur))
+    Gangs.shape[id] = { angle = (angle % 90.0), cell = cell } -- des carrés : 0° et 90° donnent la même forme
+    SetResourceKvp('gs_gangs:shape:' .. id, json.encode(Gangs.shape[id]))
+    publish()
+    return true
+end
+RegisterCommand('quartierforme', function(src, args)
+    if src ~= 0 and not IsPlayerAceAllowed(src, 'gs.admin.admin') then return end
+    local ok = Gangs.setShape(args[1], args[2], args[3])
+    local msg = ok and ('Quartier %s : rues à %.0f°, cases de %.0f m (carte des gangs mise à jour)'):format(args[1], Gangs.shape[args[1]].angle, Gangs.shape[args[1]].cell)
+        or 'Usage : /quartierforme <quartier> <angle 0-90> [taille 40-200 m]'
+    if src == 0 then print(msg) else notify(src, msg, ok and 'success' or 'error') end
+end, false)
+
 function Gangs.addInfluence(gang, id, n)
     local t = Gangs.territories[id]
     if not t or not Gangs.list[gang] or type(n) ~= 'number' then return false end

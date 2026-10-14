@@ -12,18 +12,24 @@ local stashZone
 local lastState
 local function drawTerritories(state)
     lastState = state
-    for _, b in pairs(blips) do if b.area then RemoveBlip(b.area) end RemoveBlip(b.label) end
+    for _, b in pairs(blips) do for _, a in ipairs(b.areas or {}) do RemoveBlip(a) end RemoveBlip(b.label) end
     blips = {}
     if not membership then return end
     for id, t in pairs(Config.Territories) do
         local s = state and state[id] or {}
         local mine = s.ownerId and s.ownerId == membership.gang
-        local area
-        if s.owner then
-            area = AddBlipForRadius(t.center.x, t.center.y, t.center.z, s.radius or t.radius)
-            SetBlipColour(area, s.color or 4)
-            SetBlipAlpha(area, mine and 95 or math.min(85, 45 + (s.heat or 0) * 6))
-            SetBlipAsShortRange(area, true)
+        local areas = {}
+        if s.owner then -- V12.56 : pâtés de maisons alignés sur les rues (plus de disque qui déborde)
+            local angle, cell = s.angle or t.angle or 0.0, s.cell or t.cell or Config.Territory.cell or 90.0
+            for _, c in ipairs(Blocks.cells(t.center, s.radius or t.radius, angle, cell)) do
+                local area = AddBlipForArea(c.x, c.y, c.z, cell, cell)
+                SetBlipRotation(area, math.floor(angle + 0.5))
+                SetBlipColour(area, s.color or 4)
+                SetBlipAlpha(area, mine and 95 or math.min(85, 45 + (s.heat or 0) * 6))
+                SetBlipAsShortRange(area, true)
+                SetBlipDisplay(area, 3)
+                areas[#areas + 1] = area
+            end
         end
         local label = AddBlipForCoord(t.center.x, t.center.y, t.center.z)
         SetBlipSprite(label, 437)
@@ -36,7 +42,7 @@ local function drawTerritories(state)
         AddTextComponentSubstringPlayerName(s.owner and ('%s · %s%s'):format(t.label, s.owner, (s.level or 0) > 0 and (' · niv. %d'):format(s.level) or '')
             or ('%s · libre'):format(t.label))
         EndTextCommandSetBlipName(label)
-        blips[id] = { area = area, label = label }
+        blips[id] = { areas = areas, label = label }
     end
 end
 

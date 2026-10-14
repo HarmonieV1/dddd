@@ -54,7 +54,7 @@ exclusifs (« ce que tu ne trouveras nulle part ailleurs »).
 - `feature/phase1-bridge`
 - `claude/gta-rp-architecture-stack-pbvdxz`
 
-**Dernier commit poussé** : « V12.55 : salles de jeu (3 blips, zones sans police) » (hash exact :
+**Dernier commit poussé** : « V12.56 : territoires en pâtés de maisons, propositions D7 » (hash exact :
 `git log -1 origin/feature/phase1-bridge`). Les deux branches pointent sur le même commit.
 
 **Deux sessions Claude en parallèle** (poste Windows et session web) : elles ne se voient pas. Toujours synchroniser
@@ -64,7 +64,7 @@ par un colis (zip de l'installation ou de la session) + ce fichier, et comparer 
 ## 2. Versions : interne vs publique (important, piège classique)
 
 Depuis la V11.3, il y a **deux numéros de version différents**, volontairement :
-- `gs_version` (convar, `server.cfg.example`) = **V12.55** → version technique interne, vue par le staff (F11, console,
+- `gs_version` (convar, `server.cfg.example`) = **V12.56** → version technique interne, vue par le staff (F11, console,
   METTRE-A-JOUR). Continue d'avancer à chaque mise à jour (V11.2, V11.3...).
 - `gs_public_version` (convar) = **« V4 · bêta »** → version vue par les **joueurs** (écran de chargement, statut
   Discord, Gazette). Le site affiche son propre journal (V1 à V4, V5 « classé confidentiel »).
@@ -271,6 +271,13 @@ Résumé très condensé (le détail complet est dans `docs/ROADMAP.md`, `docs/F
   ne remplace pas le curseur), profondeur CSS `animation-timeline: view()` (captures, mock, carte, chiffres), intro
   façon chargement de mission (Entrée / clic pour passer). Tout coupé par `prefers-reduced-motion`, souris seulement
   sur ordinateur. Une seule boucle rAF qui s'endort quand rien ne bouge. Vérifié dans le navigateur : 0 erreur.
+
+- **V12.56** (15/10/2026, session web) — territoires « en ronds qui débordent » : GTA ne dessine pas de forme libre ; chaque
+  quartier tenu = cases carrées (`AddBlipForArea` + `SetBlipRotation`) alignées sur le sens des rues (gs_gangs/shared/blocks.lua,
+  `Config.Territory.cell` 90 m, `angle` / `cell` par quartier). Même découpage côté serveur (`Blocks.contains` dans
+  territoryAt) : carte et appartenance identiques. Réglage en jeu : `/quartierforme <quartier> <angle 0-90> [taille 40-200]`
+  (ACE gs.admin.admin, gardé en KVP). Angles de départ estimés (canals 37°, Sandy 30°, Paleto 45°). Tests gangs 51/51.
+  Propositions D7 (n° 118 à 131). Auto-tamponneuses : aucun fichier reçu, à envoyer (config.lua + lignes de console).
 
 - **V12.55** (15/10/2026, session web) — salles de jeu (stand Patoche) :
   - Blip unique deviné retiré → 3 blips « Salle de jeu » aux positions données par le fondateur (Sandy 337.97, 3580.44 ·
