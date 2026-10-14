@@ -37,28 +37,28 @@ CATEGORIES = [
 # Priorités jusqu'à l'ouverture (20/10/2026) : cochables dans le site. À tenir à jour ici.
 PRIORITIES = [
     ('Urgent (avant de rouvrir la bêta)', [
-        'FiveM sur le PC du fondateur : REPARER-FIVEM.bat, puis le launcher Rockstar normal et FiveM normal (erreur 506)',
-        'Démarrage du serveur : aucune ligne rouge « Map activée mais NON démarrée » (sinon : licence Cfx du pack ou fichier .fxap)',
-        'Tour en jeu des 40 maps (F11 → Mappings installés → Y aller) : entrer dans chaque intérieur, noter celles qui chargent sans fin',
-        'Dernier conflit de maps (concession + gang 2) : « résolu par fusion » au démarrage (V12.24)',
+        'METTRE-A-JOUR puis METTRE-A-JOUR-OVH (retouches Qbox : pop-up police, soins ; maps Patoche tranchées)',
+        'Démarrage : aucune ligne rouge (maps « NON démarrée », scripts Patoche : stand de jeux, circuit, FastBox, villa bunker)',
+        'Envoyer les 21 mods « à convertir » (cheveux, robes, jeans) : zip glissé dans la conversation ou domaine wetransfer.com autorisé',
+        'patoche_interact installé (script de la villa bunker) ; props de récolte retrouvés dans l\'import',
         'Version V12.44+ sur le PC ET sur le VPS (console : [RoadLine RP] version …)',
     ]),
     ('Priorité haute (cette semaine)', [
-        'Backtest complet : les 56 tests de l\'onglet Backtest, en commençant par les ★★★',
-        'Réapparition [E] après la mort, avec et sans EMS en ville',
-        'Mémoire des joueurs : si chargements longs, désactiver les maps secondaires (# dans cfg/addons.cfg)',
+        'Backtest allégé (onglet Backtest, 31 tests) en commençant par les ★★★',
+        'Caler en jeu : points du mécano sur la map Benny\'s, véhicules d\'exposition + départ des essais, portes /doorlock',
+        'Doublons de lieux (casino, concession, Ammu-Nation, prison) : « nouveau » ou « ancien » pour chacun',
+        'Prison : coordonnées de cellule et de sortie avec la map prison',
         'Sauvegardes de la base : GERER-OVH → sauvegarde présente du jour',
-        'Site et Discord : liens, IP, règlement à jour ; candidature testée par un compte neuf',
     ]),
     ('Avant l\'ouverture du 20/10', [
-        'Vêtements et coiffures en plus (packs « FiveM ready », sans marque réelle)',
-        'Annonce publique (message de recrutement) sur Discord et serveurs partenaires',
-        'Rôles Discord et staff vérifiés (niveaux 1 à 5), /optin testé',
+        'Test de charge (6 à 10 joueurs, 1 h, resmon)',
+        'Boutique : prix, packs, RoadCoins, adresse Tebex, conformité PLA → Config.Enabled',
+        'Annonce publique sur Discord et serveurs partenaires ; rôles Discord et staff vérifiés',
         'Redémarrage automatique de 6 h vérifié sur le VPS',
     ]),
     ('Après l\'ouverture', [
         'entityLockdown strict (sécurité)', 'Audit des ~300 points d\'entrée réseau',
-        'Cabines téléphoniques : refonte', 'Téléphone plus complet (appels vidéo) : étude',
+        'Cabines téléphoniques : refonte', 'Skate en location (véhicule invisible + planche) : à étudier',
         'Mises à jour ox_lib / ox_inventory / oxmysql (à tester sur le PC d\'abord)',
     ]),
 ]

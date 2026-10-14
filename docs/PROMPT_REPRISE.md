@@ -87,22 +87,19 @@ F10/F11 staff, I aide, K inventaire proche, W radial, H mains en l'air, L verrou
   fusion). Côté Windows : POUSSER-GITHUB.bat (docs/GITHUB.md) pour envoyer directement sur GitHub. Désactivées (archives coupées, à retélécharger) :
   beach party, soccer / soccer_cloth, plasmatron.
 
-## En attente (à reprendre avec moi)
-1. **Maps** : relancer IMPORTER-MODS puis METTRE-A-JOUR-OVH ; lire RAPPORT-MODS.txt (scripts « INSTALLÉ … avec gsa_… »
-   ou « il lui manque … ») et la console (« NON démarré », « DÉCOR SEUL », « Intégrité des maps »). F11 → Contrôler les
-   maps chez moi. Corriger map par map selon ce qui sort.
-2. **F4 police / EMS** « cassé » : j'attends le symptôme exact (lignes rouges F8, message « Réservé… en service », action
-   qui échoue). La garde-robe ouverte bloque F4 (focus NUI).
-3. **Doublons de lieux** (casino, concession, Ammu-Nation, Benny's, prison) : pour chacun, « nouveau » (map payante) ou
-   « ancien » (lieu du jeu) → recaler nos points et retirer les blips en double.
-4. **Prison / jail** : vérifier les coordonnées de cellule et de sortie avec la map prison (`/coords` si décalé).
-5. Import incrémental (proposé, pas encore décidé).
-6. Packs vêtements / coiffures : liens donnés, rien d'importé sans mon accord.
-7. Après l'ouverture : entityLockdown strict, audit des ~300 points d'entrée réseau, refonte des cabines téléphoniques,
-   miniatures du menu d'apparence, mises à jour ox_lib / ox_inventory / oxmysql.
-
-8. **V12.40 à caler en jeu** : points du métier mécano encore à La Mesa → les déplacer sur la map Benny's (F11 → points de
-   métier) ; poser les véhicules d'exposition et le départ des essais (F11 → Concessions) ; poser les portes (`/doorlock`).
+## En attente (à reprendre avec moi) — mis à jour le 14/10
+1. **21 mods « à convertir »** (cheveux, robes, jeans au format solo) : le fondateur les envoie (zip dans la conversation ;
+   wetransfer.com est bloqué par le réseau de la session web sauf s'il est ajouté aux domaines autorisés). À convertir en
+   ajouts FiveM, coupes renumérotées (pas d'écrasement), `male_hair_collection_vol_1` : un .ydd de 27,8 Mo à alléger.
+2. **Props de récolte** : annoncés dans l'import du 14/10 mais absents du rapport : retrouver l'archive, puis les brancher
+   sur gs_harvest (légal) et la récolte illégale.
+3. **patoche_interact** (script de la villa bunker) : trouvé par le fondateur, à importer.
+4. **À caler en jeu** : points du mécano sur la map Benny's, véhicules d'exposition + départ des essais, portes `/doorlock`,
+   hauteurs du mobilier (lignes F8 envoyées par le fondateur → `gs_furniture/shared/config.lua`).
+5. **Doublons de lieux** (casino, concession, Ammu-Nation, prison) et **coordonnées de la prison** à vérifier.
+6. **Boutique** : prix, packs, RoadCoins, adresse Tebex et conformité PLA avant `Config.Enabled = true`.
+7. Après l'ouverture : entityLockdown strict, audit des ~300 points d'entrée réseau, cabines téléphoniques, skate en
+   location, mises à jour ox_lib / ox_inventory / oxmysql.
 
 ## Ce qu'a fait la session web le 12/10 (V12.17 → V12.34), en bref
 - Maps payantes (escrow) : import réparé, archives coupées refusées (7-Zip ≥ 2), intégrité vérifiée au démarrage, fusion

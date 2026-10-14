@@ -48,18 +48,21 @@
 | Stand de jeux, circuit | `maps.js` (PUBLIC, ACTIVITY) | Blips « Stand de jeux » et « Circuit », scripts Patoche reconnus (sinon « décor seul » en console) |
 | FastBox (colis) | `maps.js` | Pas de blip public : le script Patoche pose les siens (sa config) |
 | Doublons de l'import | `importer-mods.ps1` | Même mod présent deux fois (zip d'origine + WeTransfer, pack / pack_1) : traité une seule fois |
+| **Backtest allégé** | `tools/backtest.py` (PDF + site de doc) | 31 tests au lieu d'environ 90 : seulement le récent jamais revu en jeu et l'obligatoire avant l'ouverture |
+| Documentation | `ETAT_PROJET.md`, `PROMPT_REPRISE.md`, priorités du site de doc | « En attente » et priorités remis à jour (ce qui est fait retiré) |
 
 ## Ce qu'il reste à faire de ton côté
 1. **METTRE-A-JOUR** (applique les retouches Qbox : pop-up police, soins), puis **METTRE-A-JOUR-OVH**.
-2. **30 mods « à convertir »** (cheveux, robes, jeans au format solo) : envoie-moi le dossier `C:\GTASOON\mods-tri\a-convertir`
-   (zip / WeTransfer), je les convertis en ajouts FiveM (cheveux renumérotés pour ne pas s'écraser). `male_hair_collection_vol_1`
+2. **21 mods « à convertir »** (cheveux, robes, jeans au format solo) : le lien WeTransfer du 14/10 est **bloqué par le réseau de
+   la session web** (wetransfer.com refusé). Deux solutions : glisser les zips directement dans la conversation (plusieurs petits
+   envois), ou autoriser le domaine `wetransfer.com` dans les réglages réseau de l'environnement Claude. `male_hair_collection_vol_1`
    a un fichier de 27,8 Mo (> 16 Mo) : je l'allège ou on retire ce modèle.
 3. `patoche_villa_bunker_script_pack` : il lui faut la ressource **`patoche_interact`** (dans ton portail Cfx « Granted Assets »,
    même compte que la clé du serveur) : elle n'était pas dans l'import du 14/10.
 3 bis. **Props de récolte** : absents du rapport du 14/10 (aucune ligne). Vérifie le nom de leur archive dans `mods-a-trier`.
 4. Rejeté : `lace_up_sweats` (vêtement des persos solo Franklin / Michael / Trevor).
 5. Placer en jeu : points du métier mécano sur la map Benny's, véhicules d'exposition + départ des essais, portes `/doorlock`.
-6. Backtest 6d → 6g.
+6. Backtest allégé : 31 tests (onglet Backtest du site de doc / PDF), ★★★ d'abord.
 
 ## Nouvelles ressources de la session
 `gs_showroom` (V12.40), `gs_furniture` (V12.42) — ajoutées dans `server/cfg/resources.cfg`.

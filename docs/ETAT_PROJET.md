@@ -278,6 +278,10 @@ Résumé très condensé (le détail complet est dans `docs/ROADMAP.md`, `docs/F
     sa propre config → pas de blip public chez nous). Activité « décor seul » signalée si leur script ne démarre pas.
   - IMPORTER-MODS : doublons ignorés (même mod dans le zip d'origine et dans le zip WeTransfer, « pack » et « pack_1 » de même
     taille) : traités une fois, ligne grise « doublon ignoré ».
+  - **Backtest allégé** (`tools/backtest.py` → PDF + onglet du site de doc) : 31 tests au lieu d'environ 90. Retiré tout ce qui
+    datait d'avant la V12.37 sans retour du fondateur (considéré validé) ; gardé : démarrage, corrections V12.37 → V12.44 jamais
+    revues en jeu, obligatoire avant l'ouverture (sauvegardes, mode staff, test de charge, boutique), « jamais vu en jeu ».
+    Priorités du site de doc et « En attente » du prompt de reprise remis à jour.
   - Toujours en attente : 21 mods « à convertir » (fichiers du dossier mods-tri\a-convertir à m'envoyer), `patoche_interact`
     (villa bunker), props de récolte (absents du rapport).
 
