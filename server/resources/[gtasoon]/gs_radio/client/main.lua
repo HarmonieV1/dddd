@@ -19,7 +19,7 @@ local function watchItem()
     CreateThread(function()
         while current ~= 0 do
             Wait(Config.ItemCheck)
-            if current ~= 0 and (not hasRadio() or LocalPlayer.state.isDead) then
+            if current ~= 0 and (not hasRadio() or LocalPlayer.state.isDead or LocalPlayer.state['qbx_medical:deathState'] == 3) then -- V12.51 : état de mort de qbx_medical
                 leave(true)
                 lib.notify({ description = 'Plus de radio sur toi : déconnecté.', type = 'error', icon = 'walkie-talkie' })
             end

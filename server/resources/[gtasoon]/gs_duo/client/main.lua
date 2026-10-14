@@ -37,6 +37,7 @@ end)
 -- Étapes de contrat ----------------------------------------------------------------------------------
 local function clearStep()
     if not step then return end
+    step.alive = false -- V12.51 : ox_lib appelle encore nearby ~0,3 s après remove() : sans ce drapeau, le [E] se réaffichait pour toujours
     step.point:remove()
     RemoveBlip(step.blip)
     lib.hideTextUI()
@@ -54,7 +55,9 @@ RegisterNetEvent('gs_duo:client:contractStep', function(s)
     local shown, busy = false, false
     local text = ('[E] %s (%d/%d)'):format(s.label, s.index, s.total)
     local point = lib.points.new({ coords = c, distance = 60.0 })
+    local me = { point = point, blip = blip, alive = true }
     function point:nearby()
+        if not me.alive then return end
         DrawMarker(1, c.x, c.y, c.z - 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 5.0, 5.0, 0.6, 90, 200, 255, 70, false, false, 2, false, nil, nil, false)
         local inside = self.currentDistance <= 5.0
         if inside ~= shown and not busy then
@@ -73,8 +76,8 @@ RegisterNetEvent('gs_duo:client:contractStep', function(s)
             end)
         end
     end
-    function point:onExit() if shown then lib.hideTextUI() shown = false end end
-    step = { point = point, blip = blip }
+    function point:onExit() if shown and me.alive then lib.hideTextUI() shown = false end end
+    step = me
 end)
 
 RegisterNetEvent('gs_duo:client:contractEnd', function(reason)

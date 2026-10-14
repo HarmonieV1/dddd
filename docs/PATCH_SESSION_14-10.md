@@ -108,3 +108,10 @@
 | **Garde-robe (U)** | gs_details | La pièce s'enfile tout de suite ; une pièce d'un pack non chargé reste dans le sac au lieu d'être perdue |
 | **« Spawn patate »** | gs_onboarding | 30 s de protection à l'arrivée et après une réapparition ; pas de coups ni de tirs aux points d'apparition |
 | Propositions | docs/PROPOSITIONS.md (D6) | n° 108 à 117 : signatures et scripts maison gratuits |
+
+## V12.51 (15/10) — voix, duo, coups
+| Quoi | Où | Ce que ça change |
+|---|---|---|
+| **Voix** | gs_radio (export officiel pma-voice) | Portées 2 / 6 / 14 m posées de façon fiable (quelle que soit la version de pma-voice), modes en français sur le HUD, radio coupée à la mort |
+| **[E] qui restait** | gs_duo, gs_jobs | Après la livraison (duo) ou la fin d'une mission de métier, le texte [E] disparaît bien |
+| **Spam de coups** | gs_onboarding | Un coup de poing toutes les 0,8 s au plus (fini l'enchaînement au clic) |

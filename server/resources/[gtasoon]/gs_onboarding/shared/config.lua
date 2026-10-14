@@ -41,12 +41,15 @@ Config.DiscordInvite = 'discord.gg/8y2sX7EvZN'   -- affiché aux joueurs non ins
 Config.Mentor = { minLevel = 5, newbieMaxLevel = 3, maxMentees = 3, days = 7, minDaysPlayed = 3,
     rewardMentor = 2500, rewardNewbie = 1000, requestSeconds = 120 }
 
--- V12.50 · « Spawn patate » : des trolls attendaient aux points d'apparition pour frapper les joueurs qui arrivent.
+-- V12.50 · Arrivée protégée : des trolls attendaient aux points d'apparition pour frapper les joueurs qui arrivent.
 -- 1) Protection d'arrivée : `seconds` s en fantôme (aucun contact, aucun dégât ; le protégé ne peut pas attaquer non plus),
 --    à la connexion (+ `busExtra` s pour l'arrivée en bus) et à chaque réapparition / réanimation après la mort.
 -- 2) Zones calmes : impossible de frapper ou de tirer à moins de `radius` m d'un point d'apparition (pour tout le monde).
 Config.SpawnProtection = {
     enabled = true, seconds = 30, busExtra = 35, radius = 20.0,
+    -- V12.51 · « Spawn patate » = spam de clics pour enchaîner les coups de poing : 1 coup au corps à corps toutes les
+    -- `meleeCooldown` ms au plus (un vrai coup dure ~0,7 s). Surveillé seulement à pied, mains nues / arme blanche, un joueur proche.
+    meleeCooldown = 800, meleeWatchRange = 8.0,
     zones = {
         vec3(-548.0, -200.5, 37.7),   -- arrêt du bus de la mairie (nouveaux personnages)
         vec3(-540.58, -212.02, 37.65), vec3(195.17, -933.77, 29.7), vec3(-1622.5, -1036.2, 13.1), -- qbx_spawn : mairie, Legion, Del Perro

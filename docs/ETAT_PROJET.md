@@ -54,7 +54,7 @@ exclusifs (« ce que tu ne trouveras nulle part ailleurs »).
 - `feature/phase1-bridge`
 - `claude/gta-rp-architecture-stack-pbvdxz`
 
-**Dernier commit poussé** : « V12.50 : tatouages, voix, garde-robe, protection d'arrivée, propositions D6 » (hash exact :
+**Dernier commit poussé** : « V12.51 : voix fiabilisée, [E] du duo, anti-spam de coups » (hash exact :
 `git log -1 origin/feature/phase1-bridge`). Les deux branches pointent sur le même commit.
 
 **Deux sessions Claude en parallèle** (poste Windows et session web) : elles ne se voient pas. Toujours synchroniser
@@ -64,7 +64,7 @@ par un colis (zip de l'installation ou de la session) + ce fichier, et comparer 
 ## 2. Versions : interne vs publique (important, piège classique)
 
 Depuis la V11.3, il y a **deux numéros de version différents**, volontairement :
-- `gs_version` (convar, `server.cfg.example`) = **V12.50** → version technique interne, vue par le staff (F11, console,
+- `gs_version` (convar, `server.cfg.example`) = **V12.51** → version technique interne, vue par le staff (F11, console,
   METTRE-A-JOUR). Continue d'avancer à chaque mise à jour (V11.2, V11.3...).
 - `gs_public_version` (convar) = **« V4 · bêta »** → version vue par les **joueurs** (écran de chargement, statut
   Discord, Gazette). Le site affiche son propre journal (V1 à V4, V5 « classé confidentiel »).
@@ -271,6 +271,21 @@ Résumé très condensé (le détail complet est dans `docs/ROADMAP.md`, `docs/F
   ne remplace pas le curseur), profondeur CSS `animation-timeline: view()` (captures, mock, carte, chiffres), intro
   façon chargement de mission (Entrée / clic pour passer). Tout coupé par `prefers-reduced-motion`, souris seulement
   sur ordinateur. Une seule boucle rAF qui s'endort quand rien ne bouge. Vérifié dans le navigateur : 0 erreur.
+
+- **V12.51** (15/10/2026, session web) — retours du 15/10 (2) :
+  - **Voix (priorité ouverture)** : la retouche V12.50 de `pma-voice\shared.lua` dépendait du texte exact du fichier (échec
+    silencieux si la version diffère). Remplacée par l'export officiel `addVoiceMode` (gs_radio/client/voice.lua,
+    `Config.VoiceRanges` = 2 / 6 / 14 m), appliqué au démarrage et à chaque connexion au vocal, portée en cours corrigée tout de
+    suite ; METTRE-A-JOUR défait l'ancienne retouche si elle a été posée. Noms en français affichés par gs_hud (Chuchoter /
+    Normal / Crier). Radio : coupée à la mort aussi avec l'état `qbx_medical:deathState` (`isDead` n'existe pas sous Qbox).
+    Retouches « map » : avertissement jaune si rien ne correspond (plus d'échec silencieux). Audit : aucune autre ressource
+    ne touche la portée (pas d'override, pas de disableProximity), appels gs_phone via setPlayerCall, canaux gs_radio vérifiés
+    par pma-voice ; OneSync actif (ligne de commande).
+  - **[E] « Livrer la marchandise » qui restait** (duo) : ox_lib appelle encore `nearby` ~0,3 s après `point:remove()` ; chez
+    celui qui validait, le texte se réaffichait sans plus jamais disparaître. Drapeau `alive` (gs_duo et gs_jobs/missions, les
+    deux seuls `lib.points.new`).
+  - **« Spawn patate » = spam de clics** : un coup au corps à corps toutes les 0,8 s au plus (gs_onboarding/client/protection.lua,
+    `meleeCooldown`), surveillé seulement à pied, mains nues / arme blanche, joueur à moins de 8 m. La protection d'arrivée V12.50 reste.
 
 - **V12.50** (15/10/2026, session web) — retours du 15/10 :
   - **Tatouages** (retouches illenium dans outils-communs.ps1, appliquées par METTRE-A-JOUR) : textes restés en anglais de

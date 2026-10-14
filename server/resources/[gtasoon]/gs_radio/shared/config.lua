@@ -22,3 +22,8 @@ Config.JobChannels = {
 
 -- Chaque gang a son canal privé dans cette plage (attribué automatiquement, fixe tant que le gang existe).
 Config.GangRange = { 500, 999 }
+
+-- V12.51 · Portées de la voix de proximité (mètres), posées par l'export officiel pma-voice `addVoiceMode` (marche quelle que
+-- soit la version de pma-voice, sans retoucher ses fichiers). Avant : 1,5 / 3 / 6 m en audio natif, on ne s'entendait qu'en criant.
+-- Les noms restent ceux de pma-voice (Whisper / Normal / Shouting) : l'affichage français est fait par gs_details et gs_hud.
+Config.VoiceRanges = { Whisper = 2.0, Normal = 6.0, Shouting = 14.0 }

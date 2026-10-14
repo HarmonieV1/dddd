@@ -1,5 +1,6 @@
 -- gs_hud (client). Lecture adaptative (500 ms à pied, 120 ms en véhicule) et envoi à la NUI
 -- UNIQUEMENT des valeurs qui ont changé : l'interface ne se redessine presque jamais.
+local VOICE_FR = { Whisper = 'Chuchoter', Normal = 'Normal', Shouting = 'Crier' } -- V12.51 : modes de pma-voice affichés en français
 local Bridge = exports.gs_bridge
 local state = {}
 local visible = GetResourceKvpInt('gs_hud_hidden') ~= 1
@@ -78,7 +79,7 @@ CreateThread(function()
                 health = math.max(0, GetEntityHealth(ped) - 100),
                 armor = GetPedArmour(ped),
                 talking = NetworkIsPlayerTalking(PlayerId()),
-                voice = proximity and proximity.mode or nil,
+                voice = proximity and (VOICE_FR[proximity.mode] or proximity.mode) or nil, -- V12.51 : en français
                 time = ('%02d:%02d'):format(GetClockHours(), GetClockMinutes()),
                 weather = w and (WEATHER_LABELS[w.type] or w.type) or nil,
                 street = street,

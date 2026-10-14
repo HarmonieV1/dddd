@@ -39,10 +39,10 @@ $QboxPatches = @(
     @{ res = 'illenium-appearance'; file = 'client\client.lua'; why = 'salon de tatouage : pas de 2e paiement à la sauvegarde'
        find = 'if not isPedMenu then(\s*TriggerServerEvent\("illenium-appearance:server:chargeCustomer", shopType\))'
        repl = 'if not isPedMenu and not (shopType == "tattoo" and Config.ChargePerTattoo) then -- RoadLine : tatouages payés un par un${1}' }
-    # V12.50 · Voix (pma-voice, audio natif) : 3 m en « Normal », on ne s'entendait qu'en criant. Portées élargies + noms en français
-    # (affichés sous le micro du HUD). Le son du jeu coupé pendant le vocal, lui, est un réglage Windows : REPARER-SON.bat.
-    @{ res = 'pma-voice'; file = 'shared.lua'; why = 'voix : portées 2 / 6 / 14 m, noms en français'; map = @{
-        '{ 1.5, "Whisper" }' = '{ 2.0, "Chuchoter" }'; '{ 3.0, "Normal" }' = '{ 6.0, "Normal" }'; '{ 6.0, "Shouting" }' = '{ 14.0, "Crier" }' } }
+    # V12.51 · Voix : la retouche V12.50 de pma-voice\shared.lua est défaite (portées posées par gs_radio via l'export officiel
+    # addVoiceMode, qui a besoin des noms d'origine Whisper / Normal / Shouting). Sans effet sur un pma-voice jamais retouché.
+    @{ res = 'pma-voice'; file = 'shared.lua'; why = 'voix : fichier d''origine remis (portées réglées par gs_radio)'; map = @{
+        '{ 2.0, "Chuchoter" }' = '{ 1.5, "Whisper" }'; '{ 6.0, "Normal" }' = '{ 3.0, "Normal" }'; '{ 14.0, "Crier" }' = '{ 6.0, "Shouting" }' } }
     @{ res = 'qbx_core'; file = 'config\client.lua'; find = 'startingApartment\s*=\s*true'; repl = 'startingApartment = false'; why = 'nouveau perso : apparition en ville (mairie), pas d''appartement gratuit' },
     # V12.40 : carte (Échap) : « Powered by Qbox » → nom du serveur (gs_hud le pose aussi, au cas où le motif change)
     @{ res = 'qbx_core'; file = 'config\client.lua'; find = 'pauseMapText\s*=\s*''[^'']*'''; repl = "pauseMapText = 'RoadLine RP'"; why = 'carte Échap : nom du serveur au lieu de Powered by Qbox' },
@@ -310,6 +310,7 @@ function Set-QboxOverrides($Res, $Repo, [scriptblock]$Say) {
             $n = 0
             foreach ($k in $p.map.Keys) { if ($text.Contains($k)) { $text = $text.Replace($k, $p.map[$k]); $n++ } }
             if ($n -gt 0) { Write-Utf8 $file $text; & $Say "  $($p.res) : $($p.why) ($n)" 'Green' }
+            elseif (@($p.map.Values | Where-Object { $text.Contains($_) }).Count -eq 0) { & $Say "  $($p.res) : « $($p.why) » introuvable (version différente ?)" 'Yellow' } # V12.51 : plus d'échec silencieux
             continue
         }
         if ($p.prices) { # prix absolus par modèle (idempotent) : « modele = { … price = N, »

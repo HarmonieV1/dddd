@@ -14,6 +14,7 @@ end
 local function clear()
     dropCarry()
     if not current then return end
+    current.alive = false -- V12.51 : ox_lib appelle encore nearby ~0,3 s après remove() (sinon le [E] restait affiché)
     current.point:remove()
     RemoveBlip(current.blip)
     lib.hideTextUI()
@@ -117,8 +118,10 @@ RegisterNetEvent('gs_jobs:client:missionStep', function(step)
     local text = L('mission_press', step.label, step.index, step.total)
     local shown, busy = false, false
     local point = lib.points.new({ coords = c, distance = 60.0 })
+    local me = { point = point, blip = blip, alive = true }
 
     function point:nearby()
+        if not me.alive then return end
         DrawMarker(1, c.x, c.y, c.z - 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 4.0, 4.0, 1.0,
             90, 200, 255, 70, false, false, 2, false, nil, nil, false)
         local inside = self.currentDistance <= Config.Missions.checkpointRadius
@@ -156,10 +159,10 @@ RegisterNetEvent('gs_jobs:client:missionStep', function(step)
     end
 
     function point:onExit()
-        if shown then lib.hideTextUI() shown = false end
+        if shown and me.alive then lib.hideTextUI() shown = false end
     end
 
-    current = { point = point, blip = blip }
+    current = me
 end)
 
 RegisterNetEvent('gs_jobs:client:missionEnd', function(reason, earned)
