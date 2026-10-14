@@ -1,4 +1,4 @@
-# Patch récap — session web du 14/10/2026 (V12.40 → V12.46)
+# Patch récap — session web du 14/10/2026 (V12.40 → V12.47)
 
 > À garder pour le récap global de fin. Détail technique de chaque version : `docs/ETAT_PROJET.md` (historique).
 > Rien de cette session n'a encore été essayé en jeu : backtest sections **6d, 6e, 6f, 6g** (site de doc).
@@ -66,6 +66,11 @@
 | **Site public** | `docs/site/index.html` | Carte **V5** « Dernière ligne droite avant l'ouverture » (concessions, Benny's, courses, territoires, enquêtes, mobilier, récolte, coiffures et robes) ; le teaser confidentiel devient **V6** |
 | Site de doc, guide staff | priorités, section 6 | À faire mis à jour (zips à importer, récolte à vérifier) ; récolte et nouveaux vêtements expliqués au staff |
 | Hachura « custom » | importeur | Rien à convertir : son dlc.rpf est lisible, IMPORTER-MODS l'ouvre seul (laisse l'archive d'origine dans mods-a-trier) |
+
+## V12.47 — outil « magique » pour la base
+| Quoi | Où | Ce que ça change |
+|---|---|---|
+| **REPARER-BDD.bat** | racine du dossier RoadLine | Pour `Unable to establish a connection to the database` (ECONNRESET) : un double-clic redémarre MariaDB, trouve la cause (disque plein, port pris par un autre MySQL, fichiers abîmés), répare sans rien supprimer, règle MariaDB pour qu'elle **se relance seule** si elle plante, puis relance le serveur |
 
 **Les 9 zips de vêtements à importer** : `coiffures_homme_2`, `_3`, `_4` · `coiffures_femme_3` · `tenues_femme_1` à `_5`.
 

@@ -28,7 +28,7 @@ else {
     }
 }
 if (Get-NetTCPConnection -LocalPort 3306 -State Listen -ErrorAction SilentlyContinue) { Good 'Port 3306 (base de données) ouvert en local' }
-else { Bad 'Rien n''écoute sur le port 3306 : MariaDB ne tourne pas.' }
+else { Bad 'Rien n''écoute sur le port 3306 : MariaDB ne tourne pas. Lance REPARER-BDD.bat (diagnostic et réparation en un clic).' }
 
 # 2. Dossier du serveur ----------------------------------------------------------------------------------
 Say "`n[2] Fichiers du serveur" 'Cyan'

@@ -8,7 +8,7 @@ from reportlab.lib.units import mm
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, PageBreak, KeepTogether
 from reportlab.graphics.shapes import Drawing, Rect, Circle, String, Line
 
-VERSION = 'V12.46'
+VERSION = 'V12.47'
 NEON = colors.HexColor('#28E0FF')
 DARK = colors.HexColor('#0F091C')
 PINK = colors.HexColor('#FF2E88')
@@ -89,6 +89,7 @@ TOOLS = [
                       '(et copie quotidienne sur le PC), réglages Discord, heure du redémarrage, txAdmin, vérification Discord, codes et adresse '
                       'https du panneau staff. À l\'ouverture : met à jour le VPS et répare les fichiers d\'objets si besoin.'],
     ['DEVENIR-ADMIN · REPARER-LANCEUR · REPARER-MARIADB · VIDER-CACHE-FIVEM', 'Te mettre fondateur · « chemin introuvable » au démarrage · base qui ne démarre plus · ancien menu encore affiché.'],
+    ['REPARER-BDD', '« Unable to establish a connection to the database » (ECONNRESET) : redémarre MariaDB, lit son journal, répare, la relance seule si elle plante, relance le serveur.'],
 ]
 
 INTEGRATIONS = [

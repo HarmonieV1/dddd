@@ -41,7 +41,7 @@ PRIORITIES = [
         'Démarrage : aucune ligne rouge (maps « NON démarrée », scripts Patoche : stand de jeux, circuit, FastBox, villa bunker)',
         'Les 9 zips ROADTRIP-… (coiffures et tenues converties) dans mods-a-trier → IMPORTER-MODS → METTRE-A-JOUR-OVH',
         'patoche_interact installé (script de la villa bunker) ; male_hair_collection_vol_1 à envoyer en morceaux 7-Zip (optionnel)',
-        'Version V12.46+ sur le PC ET sur le VPS (console : [RoadLine RP] version …)',
+        'Version V12.47+ sur le PC ET sur le VPS (console : [RoadLine RP] version …)',
     ]),
     ('Priorité haute (cette semaine)', [
         'Backtest allégé (onglet Backtest, 31 tests) en commençant par les ★★★',

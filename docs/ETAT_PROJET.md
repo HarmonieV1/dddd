@@ -1,4 +1,4 @@
-# État du projet RoadLine RP — récapitulatif complet (à jour au 14/10/2026, V12.46)
+# État du projet RoadLine RP — récapitulatif complet (à jour au 14/10/2026, V12.47)
 
 Ce document sert de **point de sauvegarde** : si une conversation avec Claude est perdue, compressée ou doit reprendre
 ailleurs, tout ce qu'il faut savoir est ici. Il est versionné avec le code (`git log` en garde aussi l'historique).
@@ -54,7 +54,7 @@ exclusifs (« ce que tu ne trouveras nulle part ailleurs »).
 - `feature/phase1-bridge`
 - `claude/gta-rp-architecture-stack-pbvdxz`
 
-**Dernier commit poussé** : « V12.46 : pack de robes converti, site public (V5), docs et patch de session finaux » (hash exact :
+**Dernier commit poussé** : « V12.47 : REPARER-BDD (base injoignable, ECONNRESET) » (hash exact :
 `git log -1 origin/feature/phase1-bridge`). Les deux branches pointent sur le même commit.
 
 **Deux sessions Claude en parallèle** (poste Windows et session web) : elles ne se voient pas. Toujours synchroniser
@@ -64,7 +64,7 @@ par un colis (zip de l'installation ou de la session) + ce fichier, et comparer 
 ## 2. Versions : interne vs publique (important, piège classique)
 
 Depuis la V11.3, il y a **deux numéros de version différents**, volontairement :
-- `gs_version` (convar, `server.cfg.example`) = **V12.46** → version technique interne, vue par le staff (F11, console,
+- `gs_version` (convar, `server.cfg.example`) = **V12.47** → version technique interne, vue par le staff (F11, console,
   METTRE-A-JOUR). Continue d'avancer à chaque mise à jour (V11.2, V11.3...).
 - `gs_public_version` (convar) = **« V4 · bêta »** → version vue par les **joueurs** (écran de chargement, statut
   Discord, Gazette). Le site affiche son propre journal (V1 à V4, V5 « classé confidentiel »).
@@ -271,6 +271,15 @@ Résumé très condensé (le détail complet est dans `docs/ROADMAP.md`, `docs/F
   ne remplace pas le curseur), profondeur CSS `animation-timeline: view()` (captures, mock, carte, chiffres), intro
   façon chargement de mission (Entrée / clic pour passer). Tout coupé par `prefers-reduced-motion`, souris seulement
   sur ordinateur. Une seule boucle rAF qui s'endort quand rien ne bouge. Vérifié dans le navigateur : 0 erreur.
+
+- **V12.47** (14/10/2026, session web) — `[oxmysql] Unable to establish a connection to the database (ECONNRESET, -4077)` sur le PC :
+  - **REPARER-BDD.bat** (`scripts/windows/reparer-bdd.ps1`, se relance en administrateur) : service MariaDB et dossier de
+    données (my.ini), espace disque (< 1 Go = cause), qui tient le port 3306 (autre MySQL : XAMPP / WAMP / Laragon → proposé à
+    l'arrêt), redémarrage + attente réelle du port, sinon lecture du `.err` et cause expliquée (disque plein, port pris, journaux
+    Aria ou tc.log abîmés → **renommés** `.ancien-…` après accord, InnoDB abîmé → RESTAURER-BDD avec la dernière sauvegarde) ;
+    test de connexion avec secrets.cfg (mot de passe jamais affiché, `localhost` → `127.0.0.1` proposé), `mariadb-check
+    --auto-repair`, max_connections ; prévention : service en démarrage automatique + relance sur plantage (`sc failure`) ;
+    propose de relancer FXServer (oxmysql ne se reconnecte pas seul). LANCER-SERVEUR renvoie vers lui si le port 3306 est vide.
 
 - **V12.46** (14/10/2026, session web) — fin de session :
   - **Pack de robes** `dresspackmpfemale1.0` (remplaçait des vêtements DLC dans patchday19ng) converti en 3 ajouts :
