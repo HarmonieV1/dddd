@@ -1,4 +1,4 @@
-# Patch récap — session de secours du 15/10/2026 (V12.59 → V12.62)
+# Patch récap — session de secours du 15-16/10/2026 (V12.59 → V12.63)
 
 > Branche `claude/presence-check-f9jlgz` (pas encore fusionnée dans `feature/phase1-bridge`). Détail technique de chaque
 > version : `docs/ETAT_PROJET.md` (historique). À tester en jeu : backtest sections **4d, 4e, 4f, 4g** (site de doc).
@@ -57,9 +57,18 @@
 | **Console (backtest)** | `gs_discord`, `gs_wanted` | Erreur JSON du rapport staff et « invalid entity » de la police IA corrigées |
 | **Docs** | guides, backtest « 4g », bilan, site | 40 signatures, guides joueur et staff à jour |
 
+## V12.63 — appli staff externe et carte F10
+| Quoi | Où | Ce que ça change |
+|---|---|---|
+| **Appli staff** | `gs_admin/web/src/staff`, `server/web.lua` | Tableau de bord pour tablette / téléphone / PC : joueurs, carte en direct, fiches, Lives hors jeu, tickets, sanctions, journal (`docs/APPLI_STAFF.md`) |
+| **Mot de passe collectif** | GERER-OVH → 20 → M | Chacun se connecte avec son pseudo ; anciens codes effacés ; jamais dans le dépôt |
+| **Toutes les actions** | `Admin.remote` | Soigner, réanimer, réparer, téléporter, geler, isoler, avertir, expulser, bannir (1-30 j / définitif), débannir, tickets, annonce |
+| **Lives hors jeu** | `web.lua`, `gs_lives` | Écrans des joueurs dans l'appli (jusqu'à 4), replays 30 s des tickets |
+| **F10** | `gs_admin/web` | Recompilé : onglet **Carte** avec les joueurs en direct |
+
 ## Encore en attente (côté fondateur)
 - `shared/config.lua` du script des auto-tamponneuses si l'achat bloque encore ;
 - dossier `mods-tri\a-convertir` (vêtements solo) en morceaux de 25 Mo — ou intégrer le convertisseur à IMPORTER-MODS après le backtest ;
 - Emerus GTR et Tempesta widebody à retélécharger (archives coupées) ;
 - positions à caler en jeu : guichet des jetons, carré du cimetière ;
-- carte F10 en direct (après le test du gros patch) ; fusion dans `feature/phase1-bridge` sur accord.
+- fusion dans `feature/phase1-bridge` sur accord.

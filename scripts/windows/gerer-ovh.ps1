@@ -40,7 +40,7 @@ $menu = [ordered]@{
     '17' = @('Vérifier Discord (bot connecté + message de test dans chaque salon)', 'sudo roadline discord')
     '18' = @('Copie automatique de la base sur ce PC chaque jour à 12 h (tâche Windows)', '')
     '19' = @('Heure du redémarrage quotidien (annoncé en jeu 15, 5 et 1 min avant)', '')
-    '20' = @('Codes du panneau staff (téléphone) : voir / ajouter / retirer un membre', '')
+    '20' = @('Appli staff (tablette / téléphone) : mot de passe collectif, codes personnels', '')
     '21' = @('Adresse https : panneau staff en appli + carte en direct du site (une fois)', 'sudo roadline https')
     '22' = @('txAdmin : mauvais compte Cfx.re ? Nouveau code PIN (config du serveur gardée)', 'sudo roadline txadmin-compte')
 }
@@ -92,7 +92,19 @@ while ($true) {
             }
             '20' {
                 Invoke-Vps $vps 'sudo roadline staffweb liste'
-                $a = (Read-Host '  A = ajouter, R = retirer, Entrée = rien').Trim().ToUpper()
+                $a = (Read-Host '  M = mot de passe collectif (efface les codes personnels), A = ajouter un code, R = retirer un code, Entrée = rien').Trim().ToUpper()
+                if ($a -eq 'M') {
+                    # V12.63 : saisi masqué, envoyé dans un fichier (jamais sur la ligne de commande ni dans le dépôt)
+                    $sec = Read-Host '  Nouveau mot de passe collectif (6 caractères au moins, sans guillemet)' -AsSecureString
+                    $plain = [Runtime.InteropServices.Marshal]::PtrToStringAuto([Runtime.InteropServices.Marshal]::SecureStringToBSTR($sec))
+                    if ($plain.Length -lt 6 -or $plain.Contains('"')) { Say '  6 caractères au moins, sans guillemet.' 'Yellow'; break }
+                    if ((Read-Host '  Les anciens codes personnels seront effacés et le serveur redémarré (environ 1 min). Continuer ? (O/N)') -notmatch '^[oOyY]') { break }
+                    $tmp = Join-Path $env:TEMP 'staffweb-mdp.txt'
+                    [IO.File]::WriteAllText($tmp, $plain, (New-Object Text.UTF8Encoding $false)); $plain = $null
+                    try { Send-Vps $vps @($tmp) '/tmp/staffweb-mdp.txt' } finally { Remove-Item -LiteralPath $tmp -Force -ErrorAction SilentlyContinue }
+                    Invoke-Vps $vps 'sudo roadline staffweb motdepasse /tmp/staffweb-mdp.txt'
+                    break
+                }
                 if ($a -notin 'A', 'R') { break }
                 $who = (Read-Host '  Pseudo du membre (sans espace)').Trim()
                 if ($who -notmatch '^[A-Za-z0-9_-]{2,20}$') { Say '  Pseudo : 2 à 20 lettres, chiffres, - ou _.' 'Yellow'; break }

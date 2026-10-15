@@ -271,13 +271,21 @@ EOF
 EOF
 }
 
-staffweb() { # codes du panneau staff : liste | ajouter PSEUDO | retirer PSEUDO (redémarre le serveur pour appliquer)
-  local sec="$DATA/cfg/secrets.cfg" cur action="${1:-liste}" who="${2:-}" code
+staffweb() { # appli staff : liste | ajouter PSEUDO | retirer PSEUDO | motdepasse FICHIER (redémarre le serveur pour appliquer)
+  local sec="$DATA/cfg/secrets.cfg" cur action="${1:-liste}" who="${2:-}" code pass
   cur=$(grep -E '^set gs_admin_web ' "$sec" 2>/dev/null | sed -E 's/^set gs_admin_web "?([^"]*)"?.*/\1/' || true)
   case "$action" in
     liste)
-      if [ -z "$cur" ]; then echo "Aucun code : le panneau est fermé."; else echo "Membres du staff avec un code :"; tr ',' '\n' <<<"$cur" | cut -d: -f1 | sed 's/^/  - /'; fi
+      if grep -qE '^set gs_admin_web_password "[^"]{6,}"' "$sec" 2>/dev/null; then echo "Mot de passe collectif : défini (chacun se connecte avec son pseudo)."; else echo "Mot de passe collectif : aucun."; fi
+      if [ -z "$cur" ]; then echo "Codes personnels : aucun."; else echo "Codes personnels :"; tr ',' '\n' <<<"$cur" | cut -d: -f1 | sed 's/^/  - /'; fi
       return 0 ;;
+    motdepasse) # V12.63 : mot de passe collectif lu dans un fichier (jamais sur la ligne de commande) ; les codes personnels sont effacés
+      [ -f "$who" ] || { echo "Fichier du mot de passe introuvable."; exit 1; }
+      pass=$(head -n1 "$who" | tr -d '\r\n'); rm -f "$who"
+      [ "${#pass}" -ge 6 ] || { echo "Mot de passe : 6 caractères au moins."; exit 1; }
+      case "$pass" in *'"'*) echo "Pas de guillemet dans le mot de passe."; exit 1 ;; esac
+      sed -i '/^set gs_admin_web_password /d' "$sec"; printf 'set gs_admin_web_password "%s"\n' "$pass" >> "$sec"
+      cur="" ;;
     ajouter)
       [[ "$who" =~ ^[A-Za-z0-9_-]{2,20}$ ]] || { echo "Pseudo : 2 à 20 lettres, chiffres, - ou _ (sans espace)."; exit 1; }
       cur=$(tr ',' '\n' <<<"$cur" | grep -v "^$who:" | grep -v '^$' | paste -sd, - || true)
@@ -285,7 +293,7 @@ staffweb() { # codes du panneau staff : liste | ajouter PSEUDO | retirer PSEUDO 
       cur="${cur:+$cur,}$who:$code" ;;
     retirer)
       cur=$(tr ',' '\n' <<<"$cur" | grep -v "^$who:" | grep -v '^$' | paste -sd, - || true) ;;
-    *) echo "staffweb liste | ajouter PSEUDO | retirer PSEUDO"; exit 1 ;;
+    *) echo "staffweb liste | ajouter PSEUDO | retirer PSEUDO | motdepasse FICHIER"; exit 1 ;;
   esac
   sed -i '/^set gs_admin_web /d' "$sec"; echo "set gs_admin_web \"$cur\"" >> "$sec"
   chown fivem:fivem "$sec"; chmod 600 "$sec"
@@ -294,6 +302,9 @@ staffweb() { # codes du panneau staff : liste | ajouter PSEUDO | retirer PSEUDO 
     local url; url=$( [ -f "$BASE/.https" ] && echo "https://$(cat "$BASE/.https")/gs_admin/" || echo "http://$(publicip):30120/gs_admin/")
     echo "Code de $who (à lui donner en privé, il ne sera plus affiché) : $code"
     echo "Adresse : $url   (serveur redémarré, prêt dans 1 min)"
+  elif [ "$action" = "motdepasse" ]; then
+    local url2; url2=$( [ -f "$BASE/.https" ] && echo "https://$(cat "$BASE/.https")/gs_admin/" || echo "http://$(publicip):30120/gs_admin/")
+    echo "Mot de passe collectif enregistré, anciens codes personnels effacés. Adresse : $url2   (serveur redémarré, prêt dans 1 min)"
   else echo "Code de $who retiré (serveur redémarré)."; fi
 }
 
@@ -396,7 +407,7 @@ roadline erreurs           erreurs de scripts depuis le démarrage, par ressourc
 roadline discord           bot connecté ? message de test dans chaque salon Discord relié
 roadline txadmin-compte    mauvais compte Cfx.re lié à txAdmin : nouveau PIN, garder la config
 roadline https             adresse https gratuite (panneau staff en appli, carte en direct du site)
-roadline staffweb liste|ajouter PSEUDO|retirer PSEUDO   codes du panneau staff
+roadline staffweb liste|ajouter PSEUDO|retirer PSEUDO|motdepasse FICHIER   accès à l'appli staff
 roadline redemarrage-auto HH:MM|off  redémarrage quotidien annoncé en jeu (défaut 06:00, heure de Paris)
 roadline secrets FICHIER   appliquer le secrets.cfg du PC (garde la base du VPS)
 roadline mode simple|txadmin  démarrage direct (par défaut, rien à configurer) ou avec le panneau web txAdmin

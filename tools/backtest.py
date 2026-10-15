@@ -10,9 +10,9 @@ SESSIONS = [
     # validé (arrivée, téléphone, métiers, papiers, staff, Discord, site, alertes, vie légale / illégale…) et retiré.
     # Reste : ce qui a été corrigé ou ajouté depuis, jamais revu en jeu, et ce qui est obligatoire avant d'ouvrir.
     ('0 · Avant de commencer (5 min)', [
-        ('METTRE-A-JOUR.bat : version V12.62 affichée, « Base de données sauvegardée » ; METTRE-A-JOUR-OVH puis GERER-OVH → 1 : « Version RoadLine : V12.62 »', 'Staff', 3),
+        ('METTRE-A-JOUR.bat : version V12.63 affichée, « Base de données sauvegardée » ; METTRE-A-JOUR-OVH puis GERER-OVH → 1 : « Version RoadLine : V12.63 »', 'Staff', 3),
         ('Console au démarrage (PC et VPS) : aucune ligne ROUGE ; en jaune seulement « Conflit tranché » (2 fichiers Patoche) ; F8 en jeu : aucune erreur rouge', 'Staff', 3),
-        ('VIDER-CACHE-FIVEM.bat si un ancien menu apparaît (F11 doit afficher « RoadLine V12.62 »)', 'Staff', 2),
+        ('VIDER-CACHE-FIVEM.bat si un ancien menu apparaît (F11 doit afficher « RoadLine V12.63 »)', 'Staff', 2),
     ]),
     ('1 · Corrections du 13/10 à confirmer (V12.37 → V12.39, 20 min)', [
         ('Garage de métier : « Sortir » donne le véhicule à chaque fois, UNE notification ; prise de service au PNJ : une seule interaction', '2', 3),
@@ -99,6 +99,13 @@ SESSIONS = [
         ('Appareil photo sur du sang + douilles (là où quelqu\'un est tombé par balle) → « Scène de crime · … Au sol : … » ; verser au labo (police) → pièce « Scène de crime (photo) » dans les résultats, une seule fois', '2', 2),
         ('/policeia 3 (staff) : un hélico de police tourne au-dessus, projecteur la nuit ; Weazel en service prévenu ; site : « EN DIRECT · L\'hélico… » en tête du bandeau (60 s max)', 'Staff', 2),
         ('Guichet « Jetons de fête foraine » (salle de jeu Del Perro, à caler via F11) : acheter 10 jetons (50 $), revendre (4 $ pièce) ; caisse du casino : 10 jetons = 1 ticket à gratter', 'Seul', 2),
+    ]),
+    ('4h · V12.63 — appli staff externe, carte F10 (15 min)', [
+        ('GERER-OVH → 20 → M : mot de passe collectif posé ; tablette : adresse /gs_admin/ → pseudo + mot de passe → tableau de bord (joueurs, staff, tickets, carte)', 'Staff', 3),
+        ('Appli : fiche d\'un joueur → soigner, téléporter (lieu puis à côté d\'un joueur), geler / dégeler, isoler 5 min, avertir ; F10 → Journal : « Web · pseudo »', '2', 3),
+        ('Appli : bannir 1 jour un compte de test → il est éjecté, onglet Sanctions → Débannir → il revient ; un super-admin ne peut pas être sanctionné depuis l\'appli', '2', 3),
+        ('Appli → Lives : 2 écrans en même temps ; ticket « /report 12 … » → ⏪ Replay dans Tickets ; F10 → Carte : les joueurs bougent en direct', 'Staff', 2),
+        ('Téléphone : appli en mode portrait (barre d\'onglets en bas), fiche plein écran, « Ajouter à l\'écran d\'accueil » ; 5 mauvais mots de passe → bloqué 15 min', 'Seul', 2),
     ]),
     ('5 · Obligatoire avant d\'ouvrir', [
         ('SAUVEGARDER-BDD.bat puis RESTAURER-BDD.bat sur un joueur ; redémarrage de 6 h : annonces 15 / 5 / 1 min', 'Staff', 3),

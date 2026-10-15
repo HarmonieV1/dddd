@@ -122,3 +122,19 @@ Config.PublicSanctions = true
 Config.PublicShowName = true   -- nom du joueur sanctionné visible ; le staff reste anonyme
 
 Config.LogHistory = 150
+
+-- V12.63 · Appli staff externe (tablette, téléphone, PC : http(s)://ADRESSE/gs_admin/). Connexion : pseudo (pour le journal) +
+-- mot de passe collectif (secrets.cfg : set gs_admin_web_password "…", jamais dans le dépôt ; GERER-OVH → 20) ou code personnel
+-- (gs_admin_web). Une session dure `sessionHours`. Les sanctions depuis l'appli ne touchent pas un staff de rang ≥ `protectLevel`.
+Config.Web = {
+    sessionHours = 12, protectLevel = 4, maxBanDays = 3650,
+    places = { -- « Téléporter vers… » (positions du jeu, à caler si besoin)
+        { label = 'Hôpital Pillbox', coords = vec3(298.6, -584.4, 43.3) },
+        { label = 'Commissariat Mission Row', coords = vec3(441.2, -981.9, 30.7) },
+        { label = 'Mairie', coords = vec3(-544.9, -204.4, 38.2) },
+        { label = 'Parking de Legion Square', coords = vec3(215.8, -810.1, 30.7) },
+        { label = 'Aéroport LSIA', coords = vec3(-1037.8, -2737.8, 20.2) },
+        { label = 'Sandy Shores', coords = vec3(1853.0, 3686.0, 34.3) },
+        { label = 'Paleto Bay', coords = vec3(-448.0, 6012.0, 31.7) },
+    },
+}

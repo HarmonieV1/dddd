@@ -48,9 +48,11 @@ def build():
              ['F11 · menu staff rapide', 'Le couteau suisse en jeu : Joueurs, Moi, Véhicules, Monde et lieux, Événements, Anti-triche. '
               'Les pouvoirs ne marchent qu\'en <b>mode staff</b> (1re ligne) ; le couper coupe tout.'],
              ['Raccourcis (mode staff)', 'Ctrl+Y : TP au marqueur · Ctrl+U : vol libre · Ctrl+O : noms et ID · Retour : quitter le spectate'],
-             ['F10 · panel', 'Tickets, fiches joueurs complètes, sanctions, journal de toutes les actions du staff.'],
-             ['Appli staff (téléphone)', 'Joueurs, tickets, annonce, depuis ton téléphone (un code par membre, demandé au fondateur). '
-              '5 mauvais codes = 15 min de blocage.'],
+             ['F10 · panel', 'Tickets, fiches joueurs complètes, sanctions, journal, et <b>Carte</b> : tous les joueurs en direct (V12.63).'],
+             ['Appli staff (tablette, téléphone, PC)', 'Adresse /gs_admin/ du serveur (« Ajouter à l\'écran d\'accueil » = une appli). Ton <b>pseudo</b> + le '
+              '<b>mot de passe collectif</b> (donné par le fondateur). Tableau de bord, carte en direct, fiches, Lives (écrans des joueurs, replays des tickets), '
+              'soigner, réanimer, réparer, téléporter, geler, isoler, avertir, expulser, <b>bannir</b> (1 à 30 jours ou définitif), débannir, tickets, annonce. '
+              'Tout est signé « Web · ton pseudo » dans le journal. 5 mauvais mots de passe = 15 min de blocage.'],
              ['Bot Discord', '/joueurs, /geler, /degeler, /avertir, /expulser, /message, <b>/annonce</b> (texte, titre, mention @everyone / @here, en_jeu pour l\'afficher aussi en ville), <b>/isoler, /liberer, /reanimer</b> (rôle staff ou admin du Discord) quand tu n\'es pas en jeu. Joueurs : /aide (/help), /ip, /ticket, /fermer.'],
              ['txAdmin', 'Réservé au fondateur.']],
             [40 * G.mm, 140 * G.mm])]
@@ -101,9 +103,10 @@ def build():
             [38 * G.mm, 120 * G.mm, 22 * G.mm], font=8.2)]
     s += [Paragraph('Un point mal placé (transformateur, ring, vendeur, PNJ…) : F11 → Monde et lieux → <b>Déplacer / retirer un point</b> (filtre par ressource ; '
                     'super-admin : retirer du jeu, réversible). Points de métier : menu dédié. Tout est gardé aux mises à jour.', SMALL)]
-    s += [Paragraph('6. Nouveautés V11.4 → V12.62 pour le staff', H2)]
+    s += [Paragraph('6. Nouveautés V11.4 → V12.63 pour le staff', H2)]
     s += [t([['Quoi', 'Comment'],
              ['Lives (V12.60)', 'F11 → Lives ou /lives : liste des joueurs, WATCH = son écran dans une fenêtre déplaçable (4 au plus). ✕ = jouer en gardant les fenêtres. Chaque visionnage est écrit dans le journal staff.'],
+             ['Appli staff externe (V12.63)', 'Modérer sans être en jeu (tablette) : voir ci-dessus. Mot de passe collectif changé par le fondateur : GERER-OVH → 20 → M (efface les anciens codes).'],
              ['Lives grille / TP / replay (V12.62)', '▦ = toutes les fenêtres en grille ; « ⇢ TP » sur une fenêtre = se téléporter près du joueur. ⏪ (joueurs liés à un ticket ouvert : l\'auteur, et le joueur nommé par « /report 12 … ») = ses 30 dernières secondes d\'écran, gardées en mémoire tant que le ticket est ouvert, effacées à la fermeture.'],
              ['Poursuite filmée (V12.62)', 'Police IA à 3 étoiles : un hélico tourne au-dessus du suspect. Le site affiche « EN DIRECT » (quartier seulement, jamais le nom). /policeia 3 pour tester.'],
              ['Jetons de fête foraine (V12.62)', 'Guichet à la salle de jeu de Del Perro (à caler : F11 → Déplacer un point, gs_casino) et à la caisse du casino. Ticket d\'un script d\'activité (auto-tamponneuses…) : l\'ajouter dans Config.Fair.exchange (gs_casino) pour l\'échanger 1 pour 1.'],

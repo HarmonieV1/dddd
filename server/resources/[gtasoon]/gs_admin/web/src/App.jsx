@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { nui, isBrowser } from './nui.js'
 import { DEMO, DEMO_DOSSIER } from './demo.js'
+import LiveMap from './shared/LiveMap.jsx'
 
 // Actions du panel : l'affichage dépend du niveau, mais le SERVEUR revérifie tout.
 // level : 1 helper, 2 modo, 3 admin. fields : formulaire demandé avant envoi.
@@ -24,7 +25,7 @@ const ACTIONS = [
   { name: 'removejob', label: 'Retirer contrat', level: 3, danger: true, fields: [{ key: 'job', label: 'Job', type: 'select', options: ['police', 'ambulance', 'mechanic', 'taxi', 'delivery', 'garbage'] }] },
 ]
 
-const TABS = [['players', 'Joueurs'], ['tickets', 'Tickets'], ['server', 'Serveur'], ['logs', 'Journal']]
+const TABS = [['players', 'Joueurs'], ['map', 'Carte'], ['tickets', 'Tickets'], ['server', 'Serveur'], ['logs', 'Journal']] // V12.63 : carte en direct
 
 function ago(t) {
   const s = Math.max(0, Math.floor(Date.now() / 1000 - t))
@@ -142,6 +143,13 @@ export default function App() {
     return () => { window.removeEventListener('message', onMessage); window.removeEventListener('keydown', onKey) }
   }, [])
 
+  // V12.63 : carte en direct rafraîchie toutes les 3 s tant que l'onglet Carte est ouvert
+  useEffect(() => {
+    if (tab !== 'map' || !visible || isBrowser) return undefined
+    const t = setInterval(refresh, 3000)
+    return () => clearInterval(t)
+  }, [tab, visible]) // eslint-disable-line react-hooks/exhaustive-deps
+
   const players = useMemo(() => {
     if (!data) return []
     const q = search.toLowerCase()
@@ -162,7 +170,7 @@ export default function App() {
   return (
     <div className="panel">
       <header>
-        <div className="brand">GS <span>STAFF</span></div>
+        <div className="brand">ROADLINE <span>STAFF</span></div>
         <nav>
           {TABS.map(([id, name]) => (
             <button key={id} className={tab === id ? 'tab on' : 'tab'} onClick={() => setTab(id)}>
@@ -197,6 +205,12 @@ export default function App() {
             </div>
           </aside>
           <section>{dossier ? <Dossier d={dossier} level={data.level} maxJail={data.maxJail} onAction={act} /> : <div className="empty">Sélectionne un joueur.</div>}</section>
+        </div>
+      )}
+
+      {tab === 'map' && (
+        <div className="pad map-tab">
+          <LiveMap players={data.players} selected={selected} compact onSelect={(id) => { setTab('players'); loadDossier(id) }} />
         </div>
       )}
 

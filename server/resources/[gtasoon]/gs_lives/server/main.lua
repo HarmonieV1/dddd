@@ -153,3 +153,17 @@ exports('ViewsSince', function(since)
     for _, t in ipairs(Lives.views) do if t >= (tonumber(since) or 0) then n = n + 1 end end
     return n
 end)
+
+--- V12.63 · Appli staff externe (gs_admin/web.lua) : joueurs qui ont un replay ({ [id] = { ticket, frames } }) et ses images
+exports('ReplayInfo', function()
+    local out = {}
+    for id, r in pairs(Lives.replay) do if #r.frames > 0 then out[id] = { ticket = Lives.reported[id], frames = #r.frames } end end
+    return out
+end)
+exports('ReplayFrames', function(target)
+    local r = Lives.replay[tonumber(target) or -1]
+    if not r then return {} end
+    local copy = {}
+    for i, f in ipairs(r.frames) do copy[i] = f end
+    return copy
+end)

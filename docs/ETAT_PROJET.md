@@ -12,7 +12,7 @@ En bas de ce fichier : un **prompt prêt à coller** dans une nouvelle conversat
 **20/10/2026 à 21 h**. Décision du 11/10 : pas de gel des nouveautés, mais désormais **surtout du correctif, de la
 configuration et de l'optimisation** ; l'utilisateur se consacre à la promotion.
 
-**Le serveur en chiffres** : 72 ressources maison (V12.62), 40 systèmes exclusifs (« signatures »), 40 mappings payants installés,
+**Le serveur en chiffres** : 72 ressources maison (V12.63), 40 systèmes exclusifs (« signatures »), 40 mappings payants installés,
 3 770 tests automatiques, tous verts ; 27 pièges anti-triche ; 25 types de crimes reliés au central police ; budget de performance
 tenu (136 boucles client, 6 permanentes par image).
 
@@ -272,6 +272,14 @@ Résumé très condensé (le détail complet est dans `docs/ROADMAP.md`, `docs/F
   façon chargement de mission (Entrée / clic pour passer). Tout coupé par `prefers-reduced-motion`, souris seulement
   sur ordinateur. Une seule boucle rAF qui s'endort quand rien ne bouge. Vérifié dans le navigateur : 0 erreur.
 
+- **V12.63** (16/10/2026, session de secours) — **appli staff externe terminée** (`docs/APPLI_STAFF.md`) : tableau de bord
+  React (`gs_admin/web/src/staff`, compilé par Vite à côté du F10, servi par `server/web.lua`) pour tablette / téléphone / PC :
+  connexion pseudo + **mot de passe collectif** (`gs_admin_web_password` dans secrets.cfg, posé par GERER-OVH → 20 → M, anciens
+  codes effacés ; jamais dans le dépôt), jeton de session aléatoire (`server/crypto.js`), carte en direct, fiches, **Lives hors jeu**
+  (captures screenshot-basic partagées, replays des tickets via gs_lives `ReplayInfo` / `ReplayFrames`), soigner, réanimer, réparer,
+  téléporter, geler, isoler, avertir, expulser, **bannir / débannir**, tickets, annonce ; `Admin.remote` étendu (heal, fixveh,
+  clearheat, note, tp, ban, unban, tickets) avec garde-fou (pas de sanction à distance sur un super-admin). Panneau **F10** recompilé :
+  onglet **Carte** (joueurs en direct, 3 s). Backtest « 4h ».
 - **V12.62** (15/10/2026, session de secours) — propositions choisies + relecture complète du gros patch avant le backtest :
   (1) **Lives** : ▦ grille, « ⇢ TP » (action `goto` de gs_admin), **replay 30 s** (n° 137) : tant qu'un ticket est ouvert,
   20 images (1,5 s) de l'auteur et du joueur nommé (« /report 12 … », gs_admin `ReportedPlayers`) gardées EN MÉMOIRE, effacées à

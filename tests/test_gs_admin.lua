@@ -401,24 +401,48 @@ check('à distance : pas en isolement', not r.ok)
 r = remote('revive', 9, '', 'Modo')
 check('à distance : réanimé', r.ok and W.players[9].revived)
 
--- V10.1 : panneau staff web (codes dans gs_admin_web, blocage après 5 essais ratés)
+-- V12.63 : appli staff externe (mot de passe collectif ou code personnel → jeton de session ; blocage après 5 essais ratés)
 local handler
 SetHttpHandler = function(fn) handler = fn end
-GetConvar = function(k, d) if k == 'gs_admin_web' then return 'Alpha:code-tres-long-123,Court:abc' end return d end
+local web_convars = { gs_admin_web = 'Alpha:code-tres-long-123,Court:abc', gs_admin_web_password = 'NRL-test!' }
+GetConvar = function(k, d) if web_convars[k] ~= nil then return web_convars[k] end return d end
 local realDecode = json.decode
 json.decode = function(s) return load('return ' .. s)() end -- corps de test écrits en table Lua
+local realRes = GetCurrentResourceName
+local nTok = 0
+GetCurrentResourceName = function() return 'gs_admin_webtest' end
+provide('gs_admin_webtest', { RandomToken = function() nTok = nTok + 1 return ('tok%045d'):format(nTok) end, SafeEqual = function(a, b) return a == b end })
 dofile(R .. 'gs_admin/server/web.lua')
+GetCurrentResourceName = realRes
 local Web = AdminWeb
-check('web : bon code accepté', Web.handle('1.2.3.4', '{ token = "code-tres-long-123", action = "login" }').ok)
-check('web : code trop court ignoré', not Web.handle('1.2.3.4', '{ token = "abc", action = "login" }').ok)
-check('web : action inconnue', not Web.handle('1.2.3.4', '{ token = "code-tres-long-123", action = "money" }').ok)
-check('web : liste des joueurs', Web.handle('1.2.3.4', '{ token = "code-tres-long-123", action = "players" }').ok)
-for _ = 1, 5 do Web.handle('6.6.6.6', '{ token = "mauvais", action = "login" }') end
-check('web : 5 essais ratés = bloqué même avec le bon code', not Web.handle('6.6.6.6', '{ token = "code-tres-long-123", action = "login" }').ok)
+local function call(ip, body) local out Web.handle(ip, body, function(r) out = r end) return out or {} end
+local r1 = call('1.2.3.4', '{ action = "login", pseudo = "Modo", password = "NRL-test!" }')
+check('web : mot de passe collectif → session au nom du pseudo', r1.ok and r1.who == 'Modo' and type(r1.token) == 'string' and #r1.token >= 32)
+check('web : pseudo obligatoire avec le mot de passe collectif', not call('1.2.3.4', '{ action = "login", pseudo = "", password = "NRL-test!" }').ok)
+local r2 = call('1.2.3.4', '{ action = "login", password = "code-tres-long-123" }')
+check('web : code personnel accepté (nom du code)', r2.ok and r2.who == 'Alpha')
+check('web : code trop court ignoré', not call('1.2.3.4', '{ action = "login", password = "abc" }').ok)
+local tok = r1.token
+check('web : action inconnue', not call('1.2.3.4', ('{ token = %q, action = "act", name = "givemoney", id = 9 }'):format(tok)).ok)
+check('web : sans session = refusé', call('1.2.3.4', '{ token = "faux", action = "overview" }').auth == false)
+for _ = 1, 5 do call('6.6.6.6', '{ action = "login", pseudo = "X", password = "mauvais" }') end
+check('web : 5 essais ratés = bloqué même avec le bon mot de passe', not call('6.6.6.6', '{ action = "login", pseudo = "X", password = "NRL-test!" }').ok)
 check('web : page servie', handler ~= nil)
-local ov = Web.handle('1.2.3.4', '{ token = "code-tres-long-123", action = "overview" }')
-check('web V11 : vue d\'ensemble (joueurs + tickets + version)', ov.ok and type(ov.data) == 'table' and type(ov.data.players) == 'table'
-    and type(ov.data.tickets) == 'table' and ov.data.version ~= nil)
+local ov = call('1.2.3.4', ('{ token = %q, action = "overview" }'):format(tok))
+check('web : vue d\'ensemble (joueurs avec position, tickets, serveur, courbe)', ov.ok and type(ov.data.players) == 'table' and type(ov.data.tickets) == 'table'
+    and ov.data.server.version ~= nil and type(ov.data.history) == 'table' and (#ov.data.players == 0 or ov.data.players[1].x ~= nil))
+local okA = call('1.2.3.4', ('{ token = %q, action = "act", name = "heal", id = 9 }'):format(tok))
+check('web : soigner à distance, journalisé « Web · Modo »', okA.ok and Admin.logs[1].staff == 'Web · Modo' and Admin.logs[1].action == 'heal')
+local okT = call('1.2.3.4', ('{ token = %q, action = "act", name = "tp", id = 9, extra = { place = 1 } }'):format(tok))
+check('web : téléporter vers un lieu de la liste', okT.ok and okT.text:find(Config.Web.places[1].label, 1, true))
+check('web : destination inconnue refusée', not call('1.2.3.4', ('{ token = %q, action = "act", name = "tp", id = 9, extra = { place = 99 } }'):format(tok)).ok)
+check('web : dossier d\'un joueur', call('1.2.3.4', ('{ token = %q, action = "dossier", id = 9 }'):format(tok)).ok)
+local okL = call('1.2.3.4', ('{ token = %q, action = "logout" }'):format(tok))
+check('web : déconnexion = jeton invalide', okL.ok and call('1.2.3.4', ('{ token = %q, action = "overview" }'):format(tok)).auth == false)
+check('V12.63 : pas de sanction à distance sur un super-admin', not remote('kick', 1, 'test', 'Web · Modo').ok and GetPlayerName(1) ~= nil)
+check('V12.63 : bannir à distance : durée hors limites refusée', not remote('ban', 9, 'triche', 'Web · Modo', 99999).ok)
+web_convars.gs_admin_web_password = 'court'
+check('web : mot de passe collectif trop court = désactivé', not call('1.2.3.4', '{ action = "login", pseudo = "Modo", password = "court" }').ok)
 json.decode = realDecode
 
 -- V11 : redémarrage quotidien annoncé

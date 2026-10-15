@@ -144,19 +144,22 @@ function Admin.playerList()
     for _, id in ipairs(GetPlayers()) do
         local s = tonumber(id)
         local job = Bridge:GetJob(s)
+        local pos = GetEntityCoords(GetPlayerPed(s))
         list[#list + 1] = {
             id = s, name = Bridge:GetName(s) or GetPlayerName(s), account = GetPlayerName(s), ping = GetPlayerPing(s),
             job = job and job.name or nil, duty = job and job.onduty or false,
             heat = started('gs_wanted') and exports.gs_wanted:GetHeat(s) or 0,
             staff = Admin.level(s) > 0, jailed = Admin.jailed[s] ~= nil,
+            frozen = Admin.frozen[s] == true, -- V12.63 : carte en direct (F10 et appli staff)
+            x = math.floor(pos.x), y = math.floor(pos.y),
         }
     end
     table.sort(list, function(a, b) return a.id < b.id end)
     return list
 end
 
-function Admin.dossier(src, target)
-    local lvl = Admin.level(src)
+function Admin.dossier(src, target, lvlOverride) -- V12.63 : lvlOverride = appli staff externe (pas de joueur derrière)
+    local lvl = lvlOverride or Admin.level(src)
     local job = Bridge:GetJob(target)
     local d = {
         id = target, name = Bridge:GetName(target), account = GetPlayerName(target), ping = GetPlayerPing(target),
@@ -1043,6 +1046,32 @@ function Admin.remote(action, target, text, staff, extra)
         end
         return true, #out > 0 and table.concat(out, '\n') or 'Personne en ville.'
     end
+    -- V12.63 · Appli staff externe : débannir, tickets (pas de joueur ciblé)
+    if action == 'unban' then
+        local lic = Security:Sanitize(text, 64)
+        if not lic then return false, 'Licence manquante.' end
+        local b = Store.ban(lic)
+        if not Store.banClear(lic) then return false, 'Ce joueur n\'est pas banni.' end
+        Admin.logRemote(staff, 'unban', b and b.name or lic, lic)
+        Admin.publishSanction('Levée de bannissement', b and b.name or lic, 'Décision du staff')
+        return true, ('Débanni : %s'):format(b and b.name or lic)
+    end
+    if action == 'ticket_claim' or action == 'ticket_close' then
+        local t = Admin.tickets[tonumber(extra) or 0]
+        if not t then return false, 'Ticket introuvable.' end
+        if action == 'ticket_claim' then
+            if t.status ~= 'open' then return false, 'Déjà pris en charge.' end
+            t.status, t.claimedBy = 'claimed', staff
+            if online(t.src) then notify(t.src, ('Un membre du staff prend en charge ton ticket #%d.'):format(t.id), 'success') end
+        else
+            t.status = 'closed'
+            if online(t.src) then notify(t.src, ('Ton ticket #%d est clôturé. Merci !'):format(t.id), 'inform') end
+            Admin.tickets[t.id] = nil
+        end
+        pushToStaff('gs_admin:client:ticketsChanged')
+        Admin.logRemote(staff, action, '#' .. t.id)
+        return true, ('Ticket #%d %s.'):format(t.id, action == 'ticket_claim' and 'pris en charge' or 'clôturé')
+    end
     if action == 'announce' then
         local msg = Security:Sanitize(text, 200)
         if not msg or msg == '' then return false, 'Annonce vide.' end
@@ -1055,6 +1084,51 @@ function Admin.remote(action, target, text, staff, extra)
     local who = label(target)
     local reason = Security:Sanitize(text, 200)
     if reason == '' then reason = nil end
+    -- V12.63 : pas de sanction à distance sur un staff haut placé (mot de passe collectif de l'appli)
+    local SANCTION = { freeze = true, warn = true, jail = true, kick = true, ban = true }
+    if SANCTION[action] and Admin.level(target) >= ((Config.Web or {}).protectLevel or 4) then
+        return false, 'Impossible à distance sur un membre du staff de ce rang.'
+    end
+    -- V12.63 · Assistance depuis l'appli staff : soigner, réparer, effacer la recherche, note, téléporter, amener
+    if action == 'heal' then
+        TriggerClientEvent('gs_admin:client:heal', target)
+        Admin.logRemote(staff, 'heal', who)
+        return true, who .. ' soigné.'
+    end
+    if action == 'fixveh' then
+        TriggerClientEvent('gs_admin:client:fixveh', target)
+        Admin.logRemote(staff, 'fixveh', who)
+        return true, 'Véhicule de ' .. who .. ' réparé.'
+    end
+    if action == 'clearheat' then
+        if not started('gs_wanted') then return false, 'gs_wanted non démarré.' end
+        exports.gs_wanted:ClearHeat(target)
+        Admin.logRemote(staff, 'clearheat', who)
+        return true, 'Recherche de ' .. who .. ' effacée.'
+    end
+    if action == 'note' then
+        local lic = license(target)
+        if not reason or not lic then return false, 'Note vide.' end
+        Store.addNote(lic, 'note', reason, staff)
+        Admin.logRemote(staff, 'note', who, reason)
+        return true, 'Note ajoutée au dossier de ' .. who .. '.'
+    end
+    if action == 'tp' then -- extra = { place = n } ou { to = id du joueur }
+        local e = type(extra) == 'table' and extra or {}
+        local dest, where
+        if tonumber(e.to) and online(tonumber(e.to)) then
+            local c = GetEntityCoords(GetPlayerPed(tonumber(e.to)))
+            dest, where = vec3(c.x + 1.0, c.y, c.z), label(tonumber(e.to))
+        else
+            local pl = ((Config.Web or {}).places or {})[tonumber(e.place) or 0]
+            if pl then dest, where = pl.coords, pl.label end
+        end
+        if not dest then return false, 'Destination inconnue.' end
+        teleport(target, dest)
+        notify(target, 'Le staff t\'a téléporté : ' .. where .. '.', 'inform')
+        Admin.logRemote(staff, 'tp', who, where)
+        return true, ('%s téléporté : %s.'):format(who, where)
+    end
     if action == 'freeze' or action == 'unfreeze' then
         local on = action == 'freeze'
         Admin.frozen[target] = on or nil
@@ -1105,6 +1179,21 @@ function Admin.remote(action, target, text, staff, extra)
         Admin.publishSanction('Expulsion', name, reason)
         return true, who .. ' a été expulsé.'
     end
+    if action == 'ban' then -- V12.63 : extra = jours (0 = définitif)
+        local days = math.floor(tonumber(extra) or -1)
+        if days < 0 or days > ((Config.Web or {}).maxBanDays or 3650) then return false, 'Durée : 0 (définitif) à 3650 jours.' end
+        local lic = license(target)
+        if not lic then return false, 'Licence introuvable.' end
+        local name = Bridge:GetName(target) or GetPlayerName(target) or '?'
+        local untilTs = days == 0 and 0 or (os.time() + days * 86400)
+        local span = days == 0 and 'définitif' or (days .. ' jour(s)')
+        Store.banSet(lic, name, untilTs, reason, staff)
+        Store.addNote(lic, 'warn', ('Bannissement (%s) : %s'):format(span, reason), staff)
+        Admin.publishSanction('Bannissement', name, reason, span)
+        Admin.logRemote(staff, 'ban', who, ('%s · %s'):format(span, reason))
+        DropPlayer(target, ('Banni de RoadLine RP (%s)\nMotif : %s'):format(span, reason))
+        return true, ('%s banni (%s).'):format(who, span)
+    end
     return false, 'Action inconnue.'
 end
 
@@ -1121,6 +1210,17 @@ exports('RemoteAction', function(action, target, text, staff, extra)
     if not ok then return { ok = false, text = 'Erreur : ' .. tostring(a) } end
     return { ok = a == true, text = b or '' }
 end)
+
+-- V12.63 · Courbe « joueurs en ville » de l'appli staff : un point toutes les 5 min, 24 h gardées (mémoire)
+Admin.history = {}
+CreateThread(function()
+    while true do
+        Admin.history[#Admin.history + 1] = { t = os.time(), n = #GetPlayers() }
+        while #Admin.history > 288 do table.remove(Admin.history, 1) end
+        Wait(300000)
+    end
+end)
+function Admin.openTickets() return openTickets() end
 
 -- Version RoadLine affichée au démarrage (console) : savoir d'un coup d'œil quelle version tourne
 CreateThread(function() print(('^5[RoadLine RP]^7 version %s'):format(GetConvar('gs_version', 'inconnue'))) end)
