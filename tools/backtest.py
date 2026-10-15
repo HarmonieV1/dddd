@@ -10,9 +10,9 @@ SESSIONS = [
     # validé (arrivée, téléphone, métiers, papiers, staff, Discord, site, alertes, vie légale / illégale…) et retiré.
     # Reste : ce qui a été corrigé ou ajouté depuis, jamais revu en jeu, et ce qui est obligatoire avant d'ouvrir.
     ('0 · Avant de commencer (5 min)', [
-        ('METTRE-A-JOUR.bat : version V12.58 affichée, « Base de données sauvegardée » ; METTRE-A-JOUR-OVH puis GERER-OVH → 1 : « Version RoadLine : V12.58 »', 'Staff', 3),
+        ('METTRE-A-JOUR.bat : version V12.59 affichée, « Base de données sauvegardée » ; METTRE-A-JOUR-OVH puis GERER-OVH → 1 : « Version RoadLine : V12.59 »', 'Staff', 3),
         ('Console au démarrage (PC et VPS) : aucune ligne ROUGE ; en jaune seulement « Conflit tranché » (2 fichiers Patoche) ; F8 en jeu : aucune erreur rouge', 'Staff', 3),
-        ('VIDER-CACHE-FIVEM.bat si un ancien menu apparaît (F11 doit afficher « RoadLine V12.58 »)', 'Staff', 2),
+        ('VIDER-CACHE-FIVEM.bat si un ancien menu apparaît (F11 doit afficher « RoadLine V12.59 »)', 'Staff', 2),
     ]),
     ('1 · Corrections du 13/10 à confirmer (V12.37 → V12.39, 20 min)', [
         ('Garage de métier : « Sortir » donne le véhicule à chaque fois, UNE notification ; prise de service au PNJ : une seule interaction', '2', 3),
@@ -68,6 +68,17 @@ SESSIONS = [
         ('V12.58 · Banc : assis puis ↑ ↓ (avant / arrière), PgUp / PgDn, ← → ; /meubleregle (staff) = gardé pour tous les bancs de ce modèle', 'Staff', 2),
         ('V12.58 · Arme longue rangée puis ressortie puis rangée : bien placée dans le dos sans /dosreglage ; caméra de rue : Alt dessus ou bombe de peinture utilisée dessous = peinte', 'Seul', 3),
         ('V12.57 · ENVOYER-PLACEMENTS.bat : portes / mapping / points posés sur le PC visibles sur le VPS après redémarrage ; /perfserveur pendant un test à plusieurs', 'Staff', 3),
+    ]),
+    ('4d · V12.59 — retours du backtest du 15/10 (20 min)', [
+        ('Balle dans la tête : mort tout de suite, allongé SANS bouger (réanimable EMS) ; balle dans le corps : à terre qui bouge comme avant ; casque : arrête UNE balle, la 2e tue', '2', 3),
+        ('Arme longue rangée : bien placée dans le dos au bout de 1 à 2 s, sans /dosreglage (même après l\'avoir ressortie)', 'Seul', 3),
+        ('M : tomber au sol (rappuyer pour se relever) ; F5 → Raccourcis : emote sur 1 à 5, puis Pavé num. 1 à 5 la joue ; /vue ou W → Moi → Vue d\'ensemble : caméra autour du perso', 'Seul', 2),
+        ('Fusillade : flaques de sang (une de plus par victime au même endroit) + douilles, plus de bougies ; braquage : barrières de police ; tout disparaît en 24 h ; textes des plaques lus de près seulement', '2', 3),
+        ('F11 → Événements → Effets sur moi : super vitesse en voiture, voiture sauteuse (Espace), arc-en-ciel, caméra ivre ; « Chute lunaire » n\'est plus un événement général ; Persos GTA → Autre perso (nom du modèle)', 'Staff', 2),
+        ('Bombe de peinture sous une caméra du décor (boîtier du jeu) : la caméra RoadLine du coin est peinte ; terminal LSPD : ← → change de caméra en direct', '2', 2),
+        ('Sans policier en service : vol de voiture / rodéo → la police IA fonce vers toi sans devoir te voir ; braquage de banque / bijouterie → pas de police IA', 'Seul', 3),
+        ('Discord : nouveau membre accueilli même après un redémarrage du bot ; #statut à jour chaque minute (sinon ligne jaune en console) ; profil : plus « Joue à Qbox »', 'Staff', 2),
+        ('Courses sur mesure (F11) : nom avec accents, points à 15 m, enregistrer → visible chez l\'organisateur ; site : bandeau Weazel avec les articles écrits en jeu', 'Staff', 2),
     ]),
     ('5 · Obligatoire avant d\'ouvrir', [
         ('SAUVEGARDER-BDD.bat puis RESTAURER-BDD.bat sur un joueur ; redémarrage de 6 h : annonces 15 / 5 / 1 min', 'Staff', 3),

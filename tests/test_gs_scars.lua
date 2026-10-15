@@ -5,6 +5,8 @@ local R = 'server/resources/[gtasoon]/'
 local kvp = {}
 function SetResourceKvp(k, v) kvp[k] = v end
 function GetResourceKvpString(k) return kvp[k] end
+local causes = {} -- V12.59 : cause de la chute (hash d'arme) par ped
+function GetPedCauseOfDeath(ped) return causes[ped] or 0 end
 loadResource('gs_security', { R .. 'gs_security/server/main.lua' })
 loadResource('gs_scars', { R .. 'gs_scars/shared/config.lua', R .. 'gs_scars/server/main.lua' })
 
@@ -21,8 +23,14 @@ Scars.fell(1)
 check('mémorial là où il est tombé', count('memorial') == 1 and #GlobalState.gsScars == 1)
 Scars.fell(1)
 check('même joueur peu après : pas de doublon', count('memorial') == 1)
+causes[1002] = 9999 -- hash d'arme à feu (le joaat des tests = longueur du nom : valeur choisie hors liste)
 Scars.fell(2)
 check('autre joueur tout près : fusionné', count('memorial') == 1)
+-- V12.59 : traces cohérentes (sang + douilles par balle), une flaque de plus par victime, pas de bougies
+local m; for _, s in pairs(Scars.list) do if s.kind == 'memorial' then m = s end end
+check('2e victime au même endroit : 2 flaques, douilles (tir)', m and m.n == 2 and m.shot == true)
+check('traces publiées avec le nombre et le tir', GlobalState.gsScars[1].n == 2 and GlobalState.gsScars[1].shot == true)
+check('plus de bougies ni d\'ours dans la config', Config.Memorial.props == nil and Config.Memorial.hours <= 24)
 advance(Config.Memorial.hours * 3600 * 1000 + 61000)
 for id, s in pairs(Scars.list) do if s.kind == 'memorial' and os.time() - s.at > Config.Memorial.hours * 3600 then Scars.list[id] = nil end end
 check('le mémorial s\'efface avec le temps', count('memorial') == 0)

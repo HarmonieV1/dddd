@@ -135,8 +135,15 @@ local savedDuty = duty
 duty = {}
 W.clientEvents = {}
 Wanted.report(1, 'bank', street, { alarm = true })
+-- V12.59 : braquage = RP de la police joueur, jamais de police IA (étoiles comptées quand même)
+check('V12.59 braquage de banque sans policier : pas de police IA', lastClientEvent('gs_wanted:client:npcPolice', 1) == nil)
+W.clientEvents = {}
+Wanted.heat[1] = nil
+Wanted.report(1, 'stabbing', street, { alarm = true })
 local npc = lastClientEvent('gs_wanted:client:npcPolice', 1)
-check('sans policier : police IA déclenchée', npc ~= nil and npc.args[1] == 4)
+check('sans policier : police IA déclenchée (agression)', npc ~= nil and npc.args[1] >= 1)
+check('V12.59 rodéo / vol de voiture : police IA toujours ; supérette : parfois', Wanted.npcAllowed('vehicle_theft') and Wanted.npcAllowed('street_race')
+    and not Wanted.npcAllowed('jewelry') and Config.NpcPolice.someNpc.store_robbery < 1)
 check('étoiles selon la gravité', Wanted.npcStars(8) == 1 and Wanted.npcStars(30) == 2 and Wanted.npcStars(45) == 3)
 duty = savedDuty
 W.clientEvents = {}

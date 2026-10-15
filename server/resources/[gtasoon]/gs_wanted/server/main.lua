@@ -205,11 +205,20 @@ function Wanted.report(src, crimeType, coords, opts)
         -- V12 : scanner police piraté par un gang (gs_gangs) : ses membres reçoivent aussi l'appel
         local okL, listeners = pcall(function() return exports.gs_gangs:ScannerListeners() end)
         for _, s in ipairs(okL and listeners or {}) do TriggerClientEvent('gs_wanted:client:dispatch', s, report) end
-        if #cops < Config.NpcPolice.minCops then
+        if #cops < Config.NpcPolice.minCops and Wanted.npcAllowed(crimeType) then
             TriggerClientEvent('gs_wanted:client:npcPolice', src, math.min(5, Wanted.npcStars(crime.heat) + Wanted.city('NpcBonus', coords, 0)))
         end
     end)
     return report
+end
+
+--- V12.59 · Police IA pour ce crime ? Braquages : non (RP réservé à la police joueur), supérette : parfois, le reste : oui.
+function Wanted.npcAllowed(crimeType)
+    local N = Config.NpcPolice
+    if N.noNpc and N.noNpc[crimeType] then return false end
+    local p = N.someNpc and N.someNpc[crimeType]
+    if p then return math.random() < p end
+    return true
 end
 
 -- Police IA : patrouilles créées par le serveur ----------------------------------------------------------------

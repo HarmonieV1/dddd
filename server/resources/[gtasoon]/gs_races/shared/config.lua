@@ -40,6 +40,6 @@ Config.Circuits = {
 Config.Custom = {
     staffLevel = 3,   -- niveau gs_admin minimum
     minPoints = 3, maxPoints = 30,
-    minGap = 30.0,    -- m minimum entre deux points
+    minGap = 15.0,    -- m minimum entre deux points (V12.59 : 30 → 15, points posés à pied refusés trop souvent)
     maxHours = 168,   -- durée de vie max d'une course éphémère (0 = permanente)
 }

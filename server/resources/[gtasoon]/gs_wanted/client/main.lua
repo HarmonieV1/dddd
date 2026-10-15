@@ -161,8 +161,21 @@ local function control(ent)
     return NetworkHasControlOfEntity(ent)
 end
 
---- Donne leurs ordres aux agents : sirène, poursuite au volant, combat à pied
+--- Donne leurs ordres aux agents : sirène, poursuite au volant, combat à pied.
+--- V12.59 (backtest 15/10 : « la voiture pop mais ne poursuit pas, il faut passer dans son champ de vision ») : avant, un
+--- seul ordre au départ ; à 170 m le jeu attendait qu'ils voient le suspect. Maintenant ils connaissent sa position :
+--- au-delà de `track.chase` m, ils foncent vers lui (route), de près ils le prennent en chasse ; à pied, ils descendent et
+--- l'interpellent. Au-delà de `track.giveUp` m ou une fois les étoiles perdues, ils lâchent (on peut toujours les semer).
+local function setupCop(ped)
+    SetPedRelationshipGroupHash(ped, COP)
+    SetPedAsCop(ped, true)
+    SetPedCombatAttributes(ped, 46, true) -- se bat jusqu'au bout
+    SetPedKeepTask(ped, true)
+    SetDriverAbility(ped, 1.0) SetDriverAggressiveness(ped, 0.8)
+end
+
 local function command(units)
+    local T = Config.NpcPolice.units.track or { every = 1500, chase = 60.0, giveUp = 450.0, speed = 42.0, onFoot = 35.0 }
     for _, u in ipairs(units) do
         CreateThread(function()
             local t = GetGameTimer() + 5000
@@ -170,22 +183,41 @@ local function command(units)
             if not NetworkDoesEntityExistWithNetworkId(u.veh) then return end
             local veh = NetToVeh(u.veh)
             if control(veh) then SetVehicleSiren(veh, true) SetVehicleHasMutedSirens(veh, false) end
-            for i, nid in ipairs(u.peds) do
+            local peds = {}
+            for _, nid in ipairs(u.peds) do
                 local t2 = GetGameTimer() + 3000
                 while not NetworkDoesEntityExistWithNetworkId(nid) and GetGameTimer() < t2 do Wait(100) end
                 local ped = NetworkDoesEntityExistWithNetworkId(nid) and NetToPed(nid)
-                if ped and control(ped) then
-                    SetPedRelationshipGroupHash(ped, COP)
-                    SetPedAsCop(ped, true)
-                    SetPedCombatAttributes(ped, 46, true) -- se bat jusqu'au bout
-                    SetPedKeepTask(ped, true)
-                    if i == 1 then
-                        TaskVehicleChase(ped, cache.ped)
-                        SetTaskVehicleChaseIdealPursuitDistance(ped, 0.0)
-                    else
-                        TaskCombatPed(ped, cache.ped, 0, 16)
+                if ped and control(ped) then setupCop(ped) peds[#peds + 1] = ped end
+            end
+            local mode = {} -- [ped] = dernier ordre donné ('drive', 'chase', 'combat') : pas de ré-ordre à chaque passage
+            while #peds > 0 and DoesEntityExist(veh) and GetPlayerWantedLevel(PlayerId()) > 0 do
+                local me = GetEntityCoords(cache.ped)
+                local d = #(GetEntityCoords(veh) - me)
+                if d > T.giveUp then break end -- trop loin : semés
+                local suspectOnFoot = not cache.vehicle
+                for i, ped in ipairs(peds) do
+                    if DoesEntityExist(ped) and not IsEntityDead(ped) and NetworkHasControlOfEntity(ped) then
+                        local pd = #(GetEntityCoords(ped) - me)
+                        local want
+                        if suspectOnFoot and pd < T.onFoot then want = 'combat'
+                        elseif i == 1 and IsPedInVehicle(ped, veh, false) then want = d > T.chase and 'drive' or 'chase'
+                        elseif i > 1 and not IsPedInAnyVehicle(ped, false) then want = 'combat' end
+                        if want == 'drive' then -- position connue : on y va par la route, sirène hurlante (renouvelé : il bouge)
+                            TaskVehicleDriveToCoordLongrange(ped, veh, me.x, me.y, me.z, T.speed, 787004, 15.0)
+                            mode[ped] = 'drive'
+                        elseif want and mode[ped] ~= want then
+                            if want == 'chase' then
+                                TaskVehicleChase(ped, cache.ped)
+                                SetTaskVehicleChaseIdealPursuitDistance(ped, 0.0)
+                            else
+                                TaskCombatPed(ped, cache.ped, 0, 16)
+                            end
+                            mode[ped] = want
+                        end
                     end
                 end
+                Wait(T.every)
             end
         end)
     end

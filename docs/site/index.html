@@ -1235,6 +1235,7 @@ body.has-glow .reticle { opacity: 1; }
       if (move) {
         move.querySelectorAll('.live-item').forEach((x) => x.remove());
         const items = [];
+        (n.news || []).slice(0, 3).forEach((a) => { if (a && a.title) items.push('Weazel : ' + a.title + (a.author ? ' — ' + a.author : '')); }); // V12.59 : articles écrits en jeu
         if (n.rumor) items.push('Rumeur confirmée : ' + n.rumor);
         if (n.hot && n.hot.length) items.push('Tension maximale à ' + n.hot.join(' et ') + ' : les habitants restent chez eux');
         if (n.next) items.push(`${n.next.label} ${n.next.dayName} à ${n.next.from} : la ville se prépare`);

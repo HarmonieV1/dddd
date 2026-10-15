@@ -105,7 +105,8 @@ function CCTV.blindCam(src, i)
     i = tonumber(i)
     local cam = i and Config.Cameras[i]
     if not cam then return false, 'Caméra inconnue.' end
-    if not Security:InRange(src, cam.coords, Config.Blind.useRange + 7.0) then return false, 'Trop loin.' end
+    -- V12.59 : boîtier du décor peint → caméra RoadLine dans la portée (Config.Radius) : distance large en conséquence
+    if not Security:InRange(src, cam.coords, Config.Radius + Config.Blind.useRange) then return false, 'Trop loin.' end
     if not CCTV.active(i) then return false, 'Cette caméra ne voit déjà plus rien.' end
     if not Bridge:RemoveItem(src, Config.Blind.item, 1) then return false, 'Il te faut une bombe de peinture.' end
     CCTV.blind[i] = now() + Config.Blind.minutes * 60
@@ -142,7 +143,7 @@ function CCTV.view(src, i)
     return true, { x = cam.coords.x, y = cam.coords.y, z = cam.coords.z, label = cam.label }
 end
 lib.callback.register('gs_cctv:view', function(src, i)
-    if not Security:RateLimit(src, 'gs_cctv:view', 6, 10000) then return false, 'Doucement.' end
+    if not Security:RateLimit(src, 'gs_cctv:view', 20, 10000) then return false, 'Doucement.' end -- V12.59 : changement de caméra aux flèches
     return CCTV.view(src, i)
 end)
 

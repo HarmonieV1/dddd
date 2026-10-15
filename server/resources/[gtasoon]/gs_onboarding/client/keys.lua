@@ -8,7 +8,8 @@ local KEYS = [[
 | **K** | Inventaire proche (coffre, boîte à gants) |
 | **F3** | Progression, quêtes, niveau |
 | **F4** | Intervention (police / EMS en service) |
-| **F5** | Emotes · **X** annuler · **J** pointer · **G** effets |
+| **F5** | Emotes · **X** annuler · **J** pointer · **G** effets · **Pavé num. 1 à 5** emotes rapides (F5 → Raccourcis) |
+| **M** | Tomber au sol (ragdoll) · rappuie pour te relever |
 | **F6** | Métiers (service, tenue, facture, patron) · **/service** prise de service par téléphone (touche à choisir) |
 | **F7** | Duo |
 | **F9** | Gang |
@@ -21,6 +22,7 @@ local KEYS = [[
 | **B** | Ceinture |
 | **U** | Garde-robe : retirer / enfiler chaque vêtement (objets du sac) · **/tenue** plier sa tenue |
 | **Ctrl gauche** | S'accroupir |
+| **/vue** | Vue d'ensemble : caméra autour de ton perso (aussi W → Moi) |
 | **I** | Cette aide |
 
 **Téléphone (F1)** : **Weazel** le journal · **Carnet** carnets de route et road trip du mois · **Inconnu** le marché noir

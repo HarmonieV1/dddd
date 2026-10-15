@@ -74,6 +74,7 @@ lib.registerRadial({ id = 'gs_me', items = {
     { label = 'Animations', icon = 'person-walking', onSelect = function() exports.scully_emotemenu:toggleMenu() end }, -- [API] scully_emotemenu
     { label = 'Factures', icon = 'file-invoice-dollar', onSelect = function() ExecuteCommand('factures') end },
     { label = 'Téléphone', icon = 'mobile-screen', onSelect = function() ExecuteCommand('telephone') end },
+    { label = 'Vue d\'ensemble', icon = 'camera-rotate', onSelect = function() ExecuteCommand('vue') end }, -- V12.59 : gs_vie/client/vue.lua
     { label = 'Aide : touches', icon = 'keyboard', onSelect = function() ExecuteCommand('touches') end },
 } })
 

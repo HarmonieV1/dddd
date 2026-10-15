@@ -24,6 +24,8 @@ function CityNow()
         weather = w and (WEATHER[w] or w) or nil, hour = h and ('%02d:%02d'):format(h, m or 0) or nil,
         hot = hot, next = weekly[1] and { label = weekly[1].label, dayName = weekly[1].dayName, from = weekly[1].from } or nil,
         rumor = lastRumor, memories = #(GlobalState.gsMemoire or {}), fugitives = #(GlobalState.gsFugitives or {}),
+        -- V12.59 : derniers articles Weazel écrits en jeu (titre + signature) : le bandeau du site bouge chaque jour
+        news = started('gs_social') and try(function() return exports.gs_social:Headlines() end, {}) or {},
     }
 end
 

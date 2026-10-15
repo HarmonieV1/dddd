@@ -261,6 +261,11 @@ local FUN = {
     { id = 'lowgravity', label = 'Gravité lunaire', icon = 'moon' },
     { id = 'nightvision', label = 'Vision nocturne', icon = 'eye' },
     { id = 'thermal', label = 'Vision thermique', icon = 'temperature-high' },
+    -- V12.59 : délires « sur moi » (demande du backtest), seulement sur MON perso / MA voiture
+    { id = 'carspeed', label = 'Super vitesse (voiture conduite)', icon = 'gauge-high' },
+    { id = 'carjump', label = 'Voiture sauteuse (Espace en conduisant)', icon = 'car-side' },
+    { id = 'rainbow', label = 'Voiture arc-en-ciel', icon = 'palette' },
+    { id = 'drunk', label = 'Caméra ivre', icon = 'wine-glass' },
 }
 local fun = {}
 
@@ -271,19 +276,48 @@ local function applyFun()
     SetGravityLevel(fun.lowgravity and 1 or 0)
     SetNightvision(fun.nightvision == true)
     SetSeethrough(fun.thermal == true)
+    if fun.drunk then ShakeGameplayCam('DRUNK_SHAKE', 1.0) else StopGameplayCamShaking(true) end -- V12.59
+    if not fun.carspeed and cache.vehicle then ModifyVehicleTopSpeed(cache.vehicle, 0.0) end -- V12.59 : vitesse d'origine
 end
 
 local funLoopOn = false
+local function looping() return fun.superjump or fun.stamina or fun.carspeed or fun.carjump or fun.rainbow end
 local function funLoop()
     if funLoopOn then return end
     funLoopOn = true
     CreateThread(function()
-        -- par frame : seulement tant que super saut ou endurance infinie sont actifs (mode staff)
-        while fun.superjump or fun.stamina do
-            if fun.superjump then SetSuperJumpThisFrame(PlayerId()) end
-            if fun.stamina then RestorePlayerStamina(PlayerId(), 1.0) end
+        local hue, boosted, nextColor = 0, nil, 0
+        -- par frame : seulement tant qu'un effet « sur moi » à entretenir est actif (mode staff)
+        while looping() do
+            local pid = PlayerId()
+            if fun.superjump then SetSuperJumpThisFrame(pid) end
+            if fun.stamina then RestorePlayerStamina(pid, 1.0) end
+            local veh = cache.vehicle
+            if veh and GetPedInVehicleSeat(veh, -1) == cache.ped then -- V12.59 : seulement la voiture que JE conduis
+                if fun.carspeed then
+                    if boosted ~= veh then ModifyVehicleTopSpeed(veh, 60.0) boosted = veh end
+                    SetVehicleCheatPowerIncrease(veh, 4.0)
+                end
+                if fun.carjump and IsControlJustPressed(0, 22) and IsVehicleOnAllWheels(veh) then
+                    ApplyForceToEntity(veh, 1, 0.0, 0.0, 9.0, 0.0, 0.0, 0.0, 0, false, true, true, false, true)
+                end
+                if fun.rainbow and GetGameTimer() >= nextColor then
+                    nextColor = GetGameTimer() + 80
+                    hue = (hue + 4) % 360
+                    local h, r, g, b = hue / 60, 0, 0, 0
+                    local x = math.floor(255 * (1 - math.abs(h % 2 - 1)))
+                    if h < 1 then r, g = 255, x elseif h < 2 then r, g = x, 255 elseif h < 3 then g, b = 255, x
+                    elseif h < 4 then g, b = x, 255 elseif h < 5 then r, b = x, 255 else r, b = 255, x end
+                    SetVehicleCustomPrimaryColour(veh, r, g, b) SetVehicleCustomSecondaryColour(veh, r, g, b)
+                end
+            end
+            if boosted and (not fun.carspeed or boosted ~= veh) then
+                if DoesEntityExist(boosted) then ModifyVehicleTopSpeed(boosted, 0.0) end
+                boosted = nil
+            end
             Wait(0)
         end
+        if boosted and DoesEntityExist(boosted) then ModifyVehicleTopSpeed(boosted, 0.0) end
         funLoopOn = false
     end)
 end
@@ -293,7 +327,7 @@ local function setFun(id, on)
     if not on then act('power', nil, { power = id, on = false }) end
     fun[id] = on or nil
     applyFun()
-    if fun.superjump or fun.stamina then funLoop() end
+    if looping() then funLoop() end
 end
 
 --- Coupe tout (fin du mode staff, arrêt de la ressource).
@@ -822,6 +856,12 @@ end
 local function pedsMenu()
     local options = {}
     if animal then options[1] = { title = 'Reprendre mon perso', icon = 'person', iconColor = ON, onSelect = function() setAnimal(nil) end } end
+    -- V12.59 : n'importe quel ped humain du jeu (~700) par son nom de modèle (liste : docs.fivem.net/docs/game-references/ped-models)
+    options[#options + 1] = { title = 'Autre perso (nom du modèle)', icon = 'keyboard', description = 'Ex. a_m_y_hipster_02, s_f_y_cop_01, ig_josh',
+        onSelect = function()
+            local r = input('Autre perso GTA', { { type = 'input', label = 'Nom du modèle', required = true, max = 40 } })
+            if r and r[1] then setAnimal((r[1]:gsub('%s', '')):lower()) end
+        end }
     for _, a in ipairs(Config.Peds) do
         options[#options + 1] = { title = a.label, icon = 'user-secret', iconColor = animal == a.model and ON or nil,
             onSelect = function() setAnimal(a.model) end }
@@ -932,7 +972,7 @@ local function eventsMenu()
             show('gs_staff_rumors', 'Rumeurs des joueurs', o, 'gs_staff_events')
         end }
     options[#options + 1] = { title = 'Effets sur moi (animation d\'événement)', icon = 'wand-magic-sparkles', arrow = true,
-        description = 'Course rapide, super saut, gravité lunaire…', onSelect = funMenu }
+        description = 'Super vitesse en voiture, voiture sauteuse, arc-en-ciel, super saut, gravité lunaire…', onSelect = funMenu }
     show('gs_staff_events', 'Événements', options, 'gs_staff_quick')
 end
 

@@ -237,6 +237,14 @@ ok = cb('gs_admin:action', 6, 'power', nil, { power = 'animal', model = 'a_c_hus
 check('animal de la liste accordé', ok)
 ok = cb('gs_admin:action', 6, 'power', nil, { power = 'animal', model = 'mp_m_freemode_01' }); step()
 check('modèle hors liste refusé', not ok)
+-- V12.59 : n'importe quel ped HUMAIN du jeu par son nom ; rien d'autre (caractères, préfixes)
+ok = cb('gs_admin:action', 6, 'power', nil, { power = 'animal', model = 'a_m_y_hipster_02' }); step()
+check('ped humain du jeu par son nom : accordé', ok)
+ok = cb('gs_admin:action', 6, 'power', nil, { power = 'animal', model = 'prop_bin_01a' }); step()
+check('objet (pas un ped) : refusé', not ok)
+ok = cb('gs_admin:action', 6, 'power', nil, { power = 'animal', model = 'a_m_y_../x' }); step()
+check('nom de modèle bizarre : refusé', not ok)
+check('chute lunaire retirée des événements généraux', Config.Events.moon == nil and Config.Powers.lowgravity ~= nil)
 ok = cb('gs_admin:action', 3, 'power', nil, { power = 'noclip' }); step()
 check('helper : pas de vol libre', not ok)
 ok = cb('gs_admin:action', 3, 'power', nil, { power = 'names' }); step()
@@ -337,14 +345,14 @@ check('ban txAdmin publié', #sanctions == 1 and sanctions[1]:find('Bannissement
 -- Événements en un clic
 provide('gs_races', { SetFreeEntry = function(sec) W.freeRaces = sec return true end })
 Admin.onDuty[8] = nil
-ok = cb('gs_admin:action', 8, 'event', nil, { kind = 'moon' }); step()
+ok = cb('gs_admin:action', 8, 'event', nil, { kind = 'boxing' }); step()
 check('événement : mode staff requis', not ok)
 Admin.onDuty[8] = os.time()
 ok = cb('gs_admin:action', 8, 'event', nil, { kind = 'inconnu' }); step()
 check('événement inconnu', not ok)
 ok = cb('gs_admin:action', 8, 'event', nil, { kind = 'streetrace' }); step()
 check('course de rue : annonce à tous + inscription gratuite', ok and lastClientEvent('gs_admin:client:eventStart', 4) and W.freeRaces == 1800)
-ok = cb('gs_admin:action', 2, 'event', nil, { kind = 'moon' }); step()
+ok = cb('gs_admin:action', 2, 'event', nil, { kind = 'boxing' }); step()
 check('événement : modo refusé', not ok)
 
 -- V11.5 : personnages (1 par défaut, 2 pour staff / VIP) et statut VIP donné par le fondateur

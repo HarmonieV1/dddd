@@ -357,13 +357,46 @@ function createBot(env) {
   let ws = null, beat = null, seq = null, appId = null, ownerId = null, lastPresence = '', stopped = false, retry = null;
   let acked = true, delay = 10000;
   let membersDenied = false, lastIntents = 0;
-  const welcomed = new Set(); // membres déjà accueillis (pas deux messages si Discord renvoie l'événement)
+  // membres déjà accueillis (pas deux messages si Discord renvoie l'événement). V12.59 : gardés d'un redémarrage à l'autre
+  const welcomed = new Set((env.store && env.store.load && env.store.load()) || []);
+  const keepWelcomed = () => { if (env.store && env.store.save) env.store.save([...welcomed].slice(-500)); };
   const welcome = () => { const w = env.welcome ? env.welcome() : null; return w && w.channelId ? w : null; };
+  let welcomeErr = 0;
+  // V12.59 · Accueillir un membre (événement en direct OU rattrapage) ; erreur d'envoi expliquée une fois dans la console
+  const greet = async (w, u) => {
+    welcomed.add(u.id);
+    if (welcomed.size > 600) { const keep = [...welcomed].slice(-500); welcomed.clear(); keep.forEach((x) => welcomed.add(x)); }
+    keepWelcomed();
+    const r = await env.rest('POST', `/channels/${w.channelId}/messages`, { content: welcomeText(w.text, u.id), allowed_mentions: { users: [u.id] } });
+    if (r && (r.status < 200 || r.status >= 300) && r.status !== welcomeErr) {
+      welcomeErr = r.status;
+      env.log(`Message de bienvenue refusé par Discord (code ${r.status}) : ${r.status === 403 || r.status === 50013 ? 'le bot n\'a pas le droit d\'écrire dans #bienvenue (permissions du salon)' : r.status === 404 ? 'salon #bienvenue introuvable (CONFIGURER-DISCORD.bat)' : 'réessai au prochain arrivant'}.`);
+    }
+  };
   const send = (op, d) => ws && ws.send(JSON.stringify({ op, d }));
   let active = ''; // Discord RoadLine retenu à la connexion (réglé, ou détecté : voir resolveGuild)
   const guild = () => active || (env.guild ? env.guild() : '');
   const bot = {
     state: () => ({ appId, seq, lastPresence, ownerId, delay, membersDenied }),
+    /** V12.59 · Rattrapage : les arrivées pendant une coupure de connexion (reconnexion, redémarrage) étaient perdues →
+     *  « le bot n'envoie pas toujours le message de bienvenue ». Les membres arrivés depuis moins de `minutes` et jamais
+     *  accueillis le sont maintenant (après chaque connexion, puis toutes les 10 min). */
+    async catchUp(minutes) {
+      const w = welcome();
+      const g = guild();
+      if (!w || !g || membersDenied || !lastIntents) return 0;
+      const r = await env.rest('GET', `/guilds/${g}/members?limit=1000`);
+      if (!r || r.status !== 200 || !Array.isArray(r.body)) return 0;
+      const since = (env.now ? env.now() : Date.now()) - (minutes || 60) * 60000;
+      let n = 0;
+      for (const m of r.body) {
+        const u = m && m.user;
+        if (!u || u.bot || welcomed.has(u.id) || !m.joined_at || Date.parse(m.joined_at) < since) continue;
+        await greet(w, u);
+        n++;
+      }
+      return n;
+    },
     presence(force) {
       const text = env.presence();
       if (!force && text === lastPresence) return false;
@@ -407,14 +440,13 @@ function createBot(env) {
           await env.rest('PUT', `/applications/${appId}/commands`, list);
         }
         bot.presence(true);
+        bot.catchUp(60).catch(() => {}); // V12.59 : arrivées manquées pendant la coupure
       } else if (p.op === 0 && p.t === 'GUILD_MEMBER_ADD') {
         // V12.8 · nouveau membre sur le Discord RoadLine → message de bienvenue dans #bienvenue (jamais pour un bot, jamais ailleurs)
         const w = welcome();
         const u = p.d && p.d.user;
         if (!w || !u || u.bot || (guild() && p.d.guild_id !== guild()) || welcomed.has(u.id)) return;
-        welcomed.add(u.id);
-        if (welcomed.size > 500) welcomed.clear();
-        await env.rest('POST', `/channels/${w.channelId}/messages`, { content: welcomeText(w.text, u.id), allowed_mentions: { users: [u.id] } });
+        await greet(w, u);
       } else if (p.op === 0 && p.t === 'INTERACTION_CREATE' && p.d.type === 2) {
         const name = p.d.data.name;
         const ctx = { ownerId, guild: guild() };
@@ -501,9 +533,14 @@ if (typeof GetConvar === 'function') {
       log: (m) => console.log(`[gs_discord] ${m}`),
       presence: () => `${GetNumPlayerIndices()}/${GetConvarInt('sv_maxclients', 48)} citoyens à Los Santos`,
       answer,
+      store: { // V12.59 : membres déjà accueillis, gardés au redémarrage
+        load: () => { try { return JSON.parse(GetResourceKvpString('welcomed') || '[]'); } catch (e) { return []; } },
+        save: (l) => SetResourceKvp('welcomed', JSON.stringify(l)),
+      },
     });
     setTimeout(() => bot.start(), 5000);
     setInterval(() => bot.presence(false), 60000);
+    setInterval(() => { bot.catchUp(60).catch(() => {}); }, 600000); // V12.59 : filet de sécurité toutes les 10 min
     on('onResourceStop', (r) => { if (r === res) bot.stop(); });
   }
 }

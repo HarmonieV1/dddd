@@ -43,7 +43,32 @@ local function blind(i)
     lib.notify({ description = msg, type = ok and 'success' or 'error' })
 end
 
---- V12.58 · Appelé par la bombe de peinture (gs_gangs) : une caméra en service juste au-dessus ? On la peint (true).
+--- V12.59 · Caméra RoadLine qui filme un point (la plus proche dans sa portée), ou nil.
+local function camFor(pos)
+    local best, bestD
+    for i, cam in ipairs(Config.Cameras) do
+        local d = #(vec2(cam.coords.x, cam.coords.y) - vec2(pos.x, pos.y))
+        if d <= Config.Radius and (not bestD or d < bestD) then best, bestD = i, d end
+    end
+    return best
+end
+
+--- V12.59 · Boîtier du décor du jeu le plus proche (≤ useRange), ou nil.
+local function worldCam(me)
+    local best, bestD
+    for _, m in ipairs(Config.WorldProps) do
+        local o = GetClosestObjectOfType(me.x, me.y, me.z, Config.Blind.useRange + 2.0, GetHashKey(m), false, false, false)
+        if o ~= 0 then
+            local c = GetEntityCoords(o)
+            local d = #(vec2(c.x, c.y) - vec2(me.x, me.y))
+            if d <= Config.Blind.useRange and (not bestD or d < bestD) then best, bestD = o, d end
+        end
+    end
+    return best
+end
+
+--- V12.58 · Appelé par la bombe de peinture (gs_gangs) : une caméra juste au-dessus ? On la peint (true).
+--- V12.59 : aussi les boîtiers du décor du jeu (reliés à la caméra RoadLine qui filme ce coin).
 exports('TryBlind', function()
     local me = GetEntityCoords(cache.ped)
     local best, bestD
@@ -54,10 +79,39 @@ exports('TryBlind', function()
             if d <= Config.Blind.useRange and (not bestD or d < bestD) then best, bestD = i, d end
         end
     end
-    if not best then return false end
-    TaskTurnPedToFaceEntity(cache.ped, props[best], 800)
-    blind(best)
+    if best then
+        TaskTurnPedToFaceEntity(cache.ped, props[best], 800)
+        blind(best)
+        return true
+    end
+    local o = worldCam(me)
+    if not o then return false end
+    local i = camFor(GetEntityCoords(o))
+    TaskTurnPedToFaceEntity(cache.ped, o, 800)
+    if not i then
+        lib.notify({ description = 'Cette caméra n\'est reliée à aucun réseau : personne ne regarde ce coin.', type = 'inform' })
+        return true
+    end
+    if blinded(i) then
+        lib.notify({ description = 'Cette caméra ne voit déjà plus rien.', type = 'inform' })
+        return true
+    end
+    blind(i)
     return true
+end)
+
+-- V12.59 · Alt sur un boîtier du décor : même chose qu'avec la bombe
+CreateThread(function()
+    Wait(2000)
+    exports.ox_target:addModel(Config.WorldProps, { {
+        name = 'gs_cctv_blind_world', icon = 'fas fa-spray-can', label = 'Peindre l\'objectif (bombe de peinture)', distance = Config.Blind.range,
+        onSelect = function(data)
+            local i = camFor(GetEntityCoords(data.entity))
+            if not i then return lib.notify({ description = 'Cette caméra n\'est reliée à aucun réseau : personne ne regarde ce coin.', type = 'inform' }) end
+            if blinded(i) then return lib.notify({ description = 'Cette caméra ne voit déjà plus rien.', type = 'inform' }) end
+            blind(i)
+        end,
+    } })
 end)
 
 local function spawn(i, cam)
@@ -100,8 +154,12 @@ local function watch(i)
     if not ok then return lib.notify({ description = cam, type = 'error' }) end
     watching = true
     local ped = cache.ped
-    local at = props[i] and DoesEntityExist(props[i]) and GetEntityCoords(props[i]) or vec3(cam.x, cam.y, cam.z)
-    local yaw = props[i] and DoesEntityExist(props[i]) and GetEntityHeading(props[i]) or 0.0
+    local function placeOf(idx, data)
+        local at = props[idx] and DoesEntityExist(props[idx]) and GetEntityCoords(props[idx]) or vec3(data.x, data.y, data.z)
+        local yaw = props[idx] and DoesEntityExist(props[idx]) and GetEntityHeading(props[idx]) or (Config.Cameras[idx].heading or 0.0)
+        return at, yaw
+    end
+    local at, yaw = placeOf(i, cam)
     local base, pitch, fov = yaw, -20.0, 60.0
     DoScreenFadeOut(300) Wait(300)
     FreezeEntityPosition(ped, true)
@@ -110,8 +168,32 @@ local function watch(i)
     SetCamActive(c, true) RenderScriptCams(true, false, 0, true, true)
     SetTimecycleModifier('scanline_cam_cheap') SetTimecycleModifierStrength(1.0)
     Wait(500) DoScreenFadeIn(300)
-    lib.showTextUI('Vidéosurveillance · ' .. cam.label .. ' · souris : tourner · molette : zoom · Retour : quitter', { position = 'top-center', icon = 'video' })
+    local function help() lib.showTextUI('Vidéosurveillance · ' .. cam.label .. ' · souris : tourner · molette : zoom · ← → : caméra suivante · Retour : quitter', { position = 'top-center', icon = 'video' }) end
+    help()
+    --- V12.59 (backtest 15/10) : ← / → passent à la caméra en service précédente / suivante, sans quitter la vue
+    local function switch(step)
+        local n = #Config.Cameras
+        for k = 1, n - 1 do
+            local j = ((i - 1 + step * k) % n) + 1
+            if not blinded(j) then
+                local okJ, data = lib.callback.await('gs_cctv:view', false, j)
+                if okJ then
+                    DoScreenFadeOut(120) Wait(120)
+                    i, cam = j, data
+                    at, yaw = placeOf(j, data)
+                    base, pitch = yaw, -20.0
+                    SetFocusPosAndVel(at.x, at.y, at.z, 0.0, 0.0, 0.0)
+                    SetCamCoord(c, at.x, at.y, at.z - 0.25)
+                    help()
+                    Wait(150) DoScreenFadeIn(120)
+                    return
+                end
+            end
+        end
+        lib.notify({ description = 'Aucune autre caméra en service.', type = 'inform' })
+    end
     CreateThread(function()
+        -- par frame : seulement pendant la vue en direct (caméra tournée et commandes coupées à chaque image)
         while watching do
             DisableAllControlActions(0)
             EnableControlAction(0, 1, true) EnableControlAction(0, 2, true) -- souris
@@ -123,6 +205,8 @@ local function watch(i)
             end
             if IsDisabledControlJustPressed(0, 241) then fov = math.max(15.0, fov - 5.0) end
             if IsDisabledControlJustPressed(0, 242) then fov = math.min(80.0, fov + 5.0) end
+            if IsDisabledControlJustPressed(0, 174) then switch(-1) end -- flèche gauche
+            if IsDisabledControlJustPressed(0, 175) then switch(1) end  -- flèche droite
             SetCamRot(c, pitch, 0.0, yaw, 2) SetCamFov(c, fov)
             SetTextFont(4) SetTextScale(0.0, 0.42) SetTextColour(255, 255, 255, 210) SetTextOutline()
             BeginTextCommandDisplayText('STRING')
@@ -180,7 +264,7 @@ AddEventHandler('gs_cctv:client:terminal', function()
         o[#o + 1] = { title = c.label, icon = c.active and 'video' or 'video-slash', iconColor = (not c.active) and '#ff5470' or nil,
             description = c.active and ('%d passage(s) récent(s)'):format(c.count) or 'Hors service (objectif peint)', arrow = true, onSelect = function()
                 lib.registerContext({ id = 'gs_cctv_cam', title = c.label, menu = 'gs_cctv', options = {
-                    { title = 'Voir en direct', icon = 'tv', disabled = not c.active, description = 'Souris : tourner · molette : zoom · Retour : quitter',
+                    { title = 'Voir en direct', icon = 'tv', disabled = not c.active, description = 'Souris : tourner · molette : zoom · ← → : autre caméra · Retour : quitter',
                         onSelect = function() watch(i) end },
                     { title = 'Passages enregistrés', icon = 'list', onSelect = function()
                         local ok, list = lib.callback.await('gs_cctv:search', false, '', i)

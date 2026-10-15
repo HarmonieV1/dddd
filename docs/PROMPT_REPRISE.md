@@ -1,6 +1,6 @@
 # Prompt de reprise — RoadLine RP (à coller dans une nouvelle session Claude)
 
-> Copie tout ce qui est sous la ligne ci-dessous dans ta deuxième session. Mis à jour le 15/10/2026 (V12.58).
+> Copie tout ce qui est sous la ligne ci-dessous dans ta deuxième session. Mis à jour le 15/10/2026 (V12.59).
 
 ---
 
@@ -57,7 +57,7 @@ l'optimisation.
 F1 téléphone, F2 inventaire, F3 progression, F4 intervention (police / EMS), F5 emotes, F6 métiers, F7 duo, F9 gang,
 F10/F11 staff, I aide, K inventaire proche, W radial, H mains en l'air, L verrouiller, B ceinture, **U garde-robe**.
 
-## État au 15/10/2026 (V12.58)
+## État au 15/10/2026 (V12.59)
 - Récents : clés de véhicule en objet (`gs_carkey`), vêtements et tenues en objets + garde-robe (U), apparition fiable
   dans les véhicules, blips publics des maps, contrôle « chez moi » des maps (F11), scripts compagnons des maps payantes
   installés par IMPORTER-MODS, intégrité des maps vérifiée au démarrage, outil REPARER-FIVEM.bat, site de doc HTML.
@@ -108,6 +108,12 @@ F10/F11 staff, I aide, K inventaire proche, W radial, H mains en l'air, L verrou
 - **V12.57 (15/10)** : phase 1 D7 — gs_vie (poubelles, se laver, démarche blessée, passagers bavards, porter / otage,
   /perfserveur), distributeurs snacks / café, magasin de masques, ENVOYER-PLACEMENTS.bat. Phase 2 prévue : 119 cimetière,
   128 cabines, 129 audit réseau / entityLockdown, peut-être 122 fausse monnaie.
+- **V12.59 (15/10, session de secours, branche `claude/presence-check-f9jlgz`)** : IMPORTER-MODS fiabilisé (zips Drive en
+  morceaux, mods sans fxmanifest, doublons, dossiers / volumes, voitures avec script de noms, robes FiveM), tête = mort immobile,
+  casque 1 balle, arme dans le dos ré-accrochée seule, emotes rapides Pavé num. 1-5, M = ragdoll, /vue, traces de sang / douilles
+  (24 h), effets « sur moi » (super vitesse voiture…), caméras du décor peignables + ← → au terminal, police IA qui poursuit
+  (pas pour les braquages), bot Discord (rattrapage des accueils, #statut expliqué, plus « Joue à Qbox »), bandeau Weazel du site,
+  courses sur mesure. Détail : docs/ETAT_PROJET.md.
 - **V12.58 (15/10)** : /meubleregle (bancs : réglage gardé pour tous), arme dans le dos bien placée dès le rangement,
   caméras de rue peignables (portée 5 m, bombe utilisée dessous).
 - Deux sessions Claude (web + poste Windows) : V12.33 puis V12.37 du poste Windows intégrées par la session web (V12.38 =

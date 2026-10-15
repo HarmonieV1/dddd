@@ -257,6 +257,27 @@ srv.listen(0, async () => {
   botW.stop();
   check('V12.8 texte de bienvenue : {membre} remplacé, mention ajoutée sinon', welcomeText('Bienvenue {membre} !', '1') === 'Bienvenue <@1> !' && welcomeText('', '2').includes('<@2>') && welcomeText('Salut', '3') === '<@3> Salut');
 
+  // V12.59 · Rattrapage des arrivées manquées (coupure de connexion) et mémoire des membres accueillis
+  const callsC = []; let savedC = null;
+  const nowC = Date.parse('2026-10-15T20:00:00Z');
+  const botC = createBot({ token: 'T'.repeat(60), log: () => {}, presence: () => '0/48', guild: () => '123', welcome: () => ({ channelId: '777', text: '' }),
+    connect: () => ({ send: () => {}, close: () => {} }), now: () => nowC,
+    store: { load: () => ['111'], save: (l) => { savedC = l; } },
+    rest: async (m, p, b) => { callsC.push({ m, p, b });
+      if (m === 'GET') return { status: 200, body: [
+        { user: { id: '111' }, joined_at: '2026-10-15T19:50:00Z' },          // déjà accueilli (avant le redémarrage)
+        { user: { id: '222' }, joined_at: '2026-10-15T19:40:00Z' },          // arrivé pendant la coupure
+        { user: { id: '333', bot: true }, joined_at: '2026-10-15T19:45:00Z' }, // un bot
+        { user: { id: '444' }, joined_at: '2026-10-10T10:00:00Z' } ] };      // ancien membre
+      return { status: 200 }; }, answer: () => ({}) });
+  botC.start();
+  await botC.onMessage(JSON.stringify({ op: 10, d: { heartbeat_interval: 999999 } }));
+  const nC = await botC.catchUp(60);
+  const postsC = callsC.filter((c) => c.m === 'POST' && c.p === '/channels/777/messages');
+  check('V12.59 rattrapage : seul le membre arrivé pendant la coupure est accueilli', nC === 1 && postsC.length === 1 && postsC[0].b.content.includes('<@222>'));
+  check('V12.59 membres accueillis gardés (redémarrage)', Array.isArray(savedC) && savedC.includes('222') && savedC.includes('111'));
+  botC.stop();
+
   console.log(`bot Discord intégré : ${passed} réussis, ${failed} échoués`);
   process.exit(failed ? 1 : 0);
 });

@@ -112,6 +112,13 @@ Config.NpcPolice = {
     units = { maxUnits = 3, maxServer = 9, spawnDistance = 170.0, lifetime = 300, cooldown = 20,
         vehicles = { city = 'police', county = 'sheriff' }, peds = { city = 's_m_y_cop_01', county = 's_m_y_sheriff_01' },
         weapons = { [1] = 'WEAPON_STUNGUN', [2] = 'WEAPON_PISTOL', [3] = 'WEAPON_PUMPSHOTGUN' }, armour = 50 },
+    -- V12.59 (backtest 15/10) : les patrouilles foncent vers le suspect tout de suite (avant : elles attendaient de le voir) ;
+    -- elles abandonnent au-delà de `giveUp` m (on peut toujours les semer en mettant de la distance).
+    track = { every = 1500, chase = 60.0, giveUp = 450.0, speed = 42.0, onFoot = 35.0 },
+    -- V12.59 : les BRAQUAGES sont du RP pour la police joueur : pas de police IA (sauf une supérette de temps en temps).
+    -- Rodéos, courses, vols de voiture, agressions… : police IA toujours là quand aucun policier joueur n'est en service.
+    noNpc = { bank = true, jewelry = true, teller_robbery = true, shop_robbery = true, duo_contract = true },
+    someNpc = { store_robbery = 0.35 }, -- supérette : police IA 1 fois sur 3 environ
 }
 
 -- Caméras de surveillance : un crime à moins de `radius` m d'une caméra est presque toujours signalé, avec une zone précise

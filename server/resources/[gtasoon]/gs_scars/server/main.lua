@@ -19,7 +19,8 @@ end
 local function publish()
     local out = {}
     for id, s in pairs(Scars.list) do
-        out[#out + 1] = { id = id, kind = s.kind, x = s.x, y = s.y, z = s.z, label = s.label, color = s.color }
+        out[#out + 1] = { id = id, kind = s.kind, x = s.x, y = s.y, z = s.z, label = s.label, color = s.color,
+            n = s.n, shot = s.shot, auto = s.kind == 'plaque' and not (s.by and tostring(s.by):sub(1, 6) == 'staff:') or nil } -- V12.59
     end
     GlobalState.gsScars = out
 end
@@ -48,7 +49,18 @@ local function near(kind, coords, r)
     end
 end
 
---- Quelqu'un tombe : mémorial (fusionné avec un mémorial proche, un par joueur et par quart d'heure)
+--- V12.59 · Armes qui ne font PAS de douilles (cause de la chute) : coups, armes blanches, chute, véhicule, feu, explosion…
+local NO_CASING = {}
+for _, w in ipairs({ 'WEAPON_UNARMED', 'WEAPON_KNIFE', 'WEAPON_BAT', 'WEAPON_CROWBAR', 'WEAPON_HAMMER', 'WEAPON_GOLFCLUB', 'WEAPON_NIGHTSTICK',
+    'WEAPON_KNUCKLE', 'WEAPON_MACHETE', 'WEAPON_SWITCHBLADE', 'WEAPON_WRENCH', 'WEAPON_BATTLEAXE', 'WEAPON_POOLCUE', 'WEAPON_STONE_HATCHET',
+    'WEAPON_BOTTLE', 'WEAPON_DAGGER', 'WEAPON_HATCHET', 'WEAPON_FLASHLIGHT', 'WEAPON_STUNGUN', 'WEAPON_STUNGUN_MP', 'WEAPON_MOLOTOV',
+    'WEAPON_PETROLCAN', 'WEAPON_GRENADE', 'WEAPON_STICKYBOMB', 'WEAPON_FALL', 'WEAPON_RUN_OVER_BY_CAR', 'WEAPON_RAMMED_BY_CAR',
+    'WEAPON_DROWNING', 'WEAPON_DROWNING_IN_VEHICLE', 'WEAPON_EXPLOSION', 'WEAPON_FIRE', 'WEAPON_BLEEDING', 'WEAPON_ANIMAL', 'WEAPON_COUGAR' }) do
+    NO_CASING[GetHashKey(w)] = true
+end
+
+--- Quelqu'un tombe : traces au sol (fusionnées avec celles d'à côté : une flaque de plus par victime), un par joueur et
+--- par quart d'heure. V12.59 : sang + douilles si c'était par balle (avant : bougies et ours, incohérent après une fusillade).
 function Scars.fell(src)
     local ped = GetPlayerPed(src)
     if ped == 0 then return end
@@ -56,9 +68,17 @@ function Scars.fell(src)
     if cid and Scars.lastMemorial[cid] and Scars.lastMemorial[cid] + Config.Memorial.perPlayer > now() then return end
     if cid then Scars.lastMemorial[cid] = now() end
     local c = GetEntityCoords(ped)
+    local cause = GetPedCauseOfDeath(ped)
+    local shot = cause ~= 0 and not NO_CASING[cause] or nil
     local id, s = near('memorial', c, Config.Memorial.merge)
-    if s then s.at = now() publish() return id end
-    return (Scars.add('memorial', c, { label = 'Mémorial' }))
+    if s then
+        s.at = now()
+        s.n = math.min((s.n or 1) + 1, Config.Memorial.maxBlood)
+        s.shot = s.shot or shot
+        publish()
+        return id
+    end
+    return (Scars.add('memorial', c, { label = 'Traces', n = 1, shot = shot }))
 end
 
 --- Braquage : vitrine brisée à réparer (sauf si déjà une vitrine brisée tout près)
@@ -171,7 +191,12 @@ CreateThread(function()
         local changed = false
         for id, s in pairs(Scars.list) do
             if s.kind == 'memorial' and now() - s.at > Config.Memorial.hours * 3600 then Scars.list[id] = nil changed = true end
-            if s.kind == 'plaque' and now() - s.at > Config.Plaques.days * 86400 then Scars.list[id] = nil changed = true end
+            if s.kind == 'plaque' then -- V12.59 : plaques automatiques 24 h, celles du staff 30 jours
+                local staff = s.by and tostring(s.by):sub(1, 6) == 'staff:'
+                if now() - s.at > (staff and Config.Plaques.days * 86400 or Config.Plaques.autoHours * 3600) then Scars.list[id] = nil changed = true end
+            end
+            if s.kind == 'glass' and now() - s.at > Config.Glass.hours * 3600 then Scars.list[id] = nil changed = true end   -- V12.59
+            if s.kind == 'mural' and now() - s.at > Config.Mural.hours * 3600 then Scars.list[id] = nil changed = true end   -- V12.59
         end
         if changed then publish() save() end
     end

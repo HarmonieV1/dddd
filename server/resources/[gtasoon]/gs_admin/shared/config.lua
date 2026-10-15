@@ -34,6 +34,11 @@ Config.Powers = {
     nightvision = 3, -- vision nocturne
     thermal = 3,     -- vision thermique
     fastswim = 3,    -- nage rapide
+    -- V12.59 (backtest 15/10) : délires « sur moi » en plus, pour animer un événement
+    carspeed = 3,    -- super vitesse de la voiture que je conduis
+    carjump = 3,     -- voiture sauteuse (Espace en conduisant)
+    rainbow = 3,     -- voiture arc-en-ciel
+    drunk = 3,       -- caméra ivre
 }
 
 Config.Animals = {
@@ -55,6 +60,8 @@ Config.Animals = {
 -- Les animaux absents du build du jeu sont refusés proprement (« modèle absent »). Aquatiques : à utiliser dans l'eau.
 
 -- Persos GTA (peds) pour le staff : animation, événements, figurants. Même pouvoir que les animaux (niveau `animal`).
+-- V12.59 : n'importe quel autre ped HUMAIN du jeu (~700) par son nom de modèle : menu Persos GTA → « Autre perso (nom du modèle) ».
+Config.PedPattern = { '^[asgu]_[mf]_', '^ig_', '^csb?_', '^hc_', '^player_' } -- (pas mp_ : le modèle des persos joueurs)
 Config.Peds = {
     { model = 'player_zero', label = 'Michael De Santa' }, { model = 'player_one', label = 'Franklin Clinton' },
     { model = 'player_two', label = 'Trevor Philips' }, { model = 'ig_lamardavis', label = 'Lamar Davis' },
@@ -79,9 +86,8 @@ Config.Peds = {
 -- effet appliqué aux joueurs dans le rayon pendant `minutes`. fx : lowgravity, melee (boxe : armes rangées).
 -- V12.36 : « Course à super vitesse » et « Concours de super saut » retirés (demande du fondateur) ; fastrun / superjump restent
 -- des pouvoirs du menu « Effets sur moi » du staff, plus des événements.
+-- V12.59 : « Chute lunaire » retirée aussi (hors RP pour tout un quartier) : la gravité lunaire reste dans « Effets sur moi ».
 Config.Events = {
-    moon = { label = 'Chute lunaire', icon = 'moon', fx = 'lowgravity', radius = 250.0, minutes = 10,
-        text = 'Gravité lunaire activée : sautez du plus haut possible !' },
     boxing = { label = 'Soirée boxe', icon = 'hand-fist', fx = 'melee', radius = 30.0, minutes = 20,
         text = 'Soirée boxe : aux poings seulement, armes rangées automatiquement dans la zone.' },
     cayoparty = { label = 'Soirée DJ plage de Cayo Perico', icon = 'music', radius = 0.0, minutes = 60, party = true,

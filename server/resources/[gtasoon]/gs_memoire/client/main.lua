@@ -37,7 +37,7 @@ local function say(ped, text)
             local c = GetPedBoneCoords(bubble.ped, 31086, 0.0, 0.0, 0.0)
             local on, x, y = GetScreenCoordFromWorldCoord(c.x, c.y, c.z + 0.5)
             if on then
-                SetTextFont(4) SetTextScale(0.0, 0.36) SetTextCentre(true) SetTextOutline() SetTextColour(255, 214, 120, 235)
+                SetTextFont(4) SetTextScale(0.0, 0.30) SetTextCentre(true) SetTextOutline() SetTextColour(255, 214, 120, 200) -- V12.59 : plus discret
                 BeginTextCommandDisplayText('STRING') AddTextComponentSubstringPlayerName(bubble.text) EndTextCommandDisplayText(x, y)
             end
             Wait(0)

@@ -22,6 +22,12 @@ Config.TerminalRange = 2.5
 -- utiliser la bombe de peinture (inventaire) sous une caméra l'aveugle aussi, au lieu de taguer le mur.
 Config.Blind = { item = 'spraycan', minutes = 120, time = 5000, range = 5.0, useRange = 6.0 }
 Config.Prop = 'prop_cctv_cam_01a'
+-- V12.59 (backtest 15/10 : « peindre les caméras, c'est pas fonctionnel ») : les caméras DU DÉCOR du jeu (boîtiers
+-- présents partout en ville) se peignent aussi. Peindre l'une d'elles aveugle la caméra RoadLine la plus proche (dans sa
+-- portée `Config.Radius`) ; si aucune ne filme ce coin, le joueur le sait (« pas reliée au réseau »).
+Config.WorldProps = { 'prop_cctv_cam_01a', 'prop_cctv_cam_01b', 'prop_cctv_cam_02a', 'prop_cctv_cam_03a', 'prop_cctv_cam_04a',
+    'prop_cctv_cam_04b', 'prop_cctv_cam_04c', 'prop_cctv_cam_05a', 'prop_cctv_cam_06a', 'prop_cctv_cam_07a', 'prop_cctv_pole_01a',
+    'prop_cctv_pole_02', 'prop_cctv_pole_03', 'prop_cctv_pole_04', 'hei_prop_bank_cctv_01', 'hei_prop_bank_cctv_02', 'p_cctv_s' }
 Config.Trace = { delay = 5, maxAge = 90, keep = 30 } -- V12 : opérations de gang remontées après 5 min, visibles 90 min
 Config.Cameras = {
     { label = 'Legion Square', coords = vec3(195.0, -935.0, 34.0) },

@@ -43,7 +43,16 @@ $QboxPatches = @(
     # addVoiceMode, qui a besoin des noms d'origine Whisper / Normal / Shouting). Sans effet sur un pma-voice jamais retouché.
     @{ res = 'pma-voice'; file = 'shared.lua'; why = 'voix : fichier d''origine remis (portées réglées par gs_radio)'; map = @{
         '{ 2.0, "Chuchoter" }' = '{ 1.5, "Whisper" }'; '{ 6.0, "Normal" }' = '{ 3.0, "Normal" }'; '{ 14.0, "Crier" }' = '{ 6.0, "Shouting" }' } }
+    # V12.59 · Emotes rapides 1 à 5 (menu F5 → Raccourcis) : scully les crée SANS touche (defaultKey vide) → « les raccourcis
+    # ne marchent pas ». Touches par défaut Pavé num. 1 à 5 (les touches 1 à 5 sont prises par la barre rapide de l'inventaire).
+    # Nom de raccourci changé : FiveM garde la touche (vide) déjà enregistrée sous l'ancien nom chez chaque joueur.
+    @{ res = 'scully_emotemenu'; file = 'client\main.lua'; why = 'emotes rapides 1 à 5 : touches Pavé num. 1 à 5 par défaut'
+       find = "name = \('emotebindKey-%s'\):format\(index\),(\s*)description = locale\('emote_bind', index\),(\s*)defaultKey = '',"
+       repl = "name = ('rl_emoterapide_%s'):format(index),`${1}description = ('Emote rapide %s (menu F5 → Raccourcis)'):format(index),`${2}defaultKey = ('NUMPAD%s'):format(index)," },
     @{ res = 'qbx_core'; file = 'config\client.lua'; find = 'startingApartment\s*=\s*true'; repl = 'startingApartment = false'; why = 'nouveau perso : apparition en ville (mairie), pas d''appartement gratuit' },
+    # V12.59 · Discord des joueurs : « Joue à Qbox » (application Discord de Qbox). Présence de qbx_core coupée, remplacée par
+    # celle de RoadLine (gs_hud/client/presence.lua, convar gs_discord_appid) ; sans identifiant : « Joue à FiveM ».
+    @{ res = 'qbx_core'; file = 'config\client.lua'; find = '(discord = \{\s*\n\s*enabled = )true'; repl = '${1}false'; why = 'Discord : plus « Joue à Qbox » (présence RoadLine : gs_discord_appid)' },
     # V12.40 : carte (Échap) : « Powered by Qbox » → nom du serveur (gs_hud le pose aussi, au cas où le motif change)
     @{ res = 'qbx_core'; file = 'config\client.lua'; find = 'pauseMapText\s*=\s*''[^'']*'''; repl = "pauseMapText = 'RoadLine RP'"; why = 'carte Échap : nom du serveur au lieu de Powered by Qbox' },
     # V11.5 : un seul personnage par joueur ; 2 pour le fondateur, les super-admins et les VIP (gs_admin:CharacterSlots)

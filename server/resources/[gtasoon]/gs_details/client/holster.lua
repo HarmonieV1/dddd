@@ -208,12 +208,17 @@ local function sync(sid, ped, list)
         if want[slot] ~= e.hash or not DoesEntityExist(e.obj) or not IsEntityAttachedToEntity(e.obj, ped) then
             destroy(e.obj)
             cur[slot] = nil
+        elseif GetGameTimer() < (e.settle or 0) then
+            -- V12.59 (backtest 15/10 : « toujours pas patch ») : la double attache de la V12.58 ne suffisait pas. Ce qui
+            -- marchait en jeu, c'est le bouton de /dosreglage, qui ré-accroche un objet DÉJÀ en place depuis un moment.
+            -- On le fait tout seul : ré-accroche à chaque passage pendant les 6 s qui suivent la création (≈ 15 fois).
+            place(e.obj, ped, slot)
         end
     end
     for slot, hash in pairs(want) do
         if not cur[slot] then
             local obj = attach(ped, hash, slot)
-            if obj then cur[slot] = { hash = hash, obj = obj } end
+            if obj then cur[slot] = { hash = hash, obj = obj, settle = GetGameTimer() + 6000 } end
         end
     end
     objects[sid] = next(cur) and cur or nil

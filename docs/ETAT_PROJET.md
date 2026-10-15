@@ -1,4 +1,4 @@
-# État du projet RoadLine RP — récapitulatif complet (à jour au 15/10/2026, V12.58)
+# État du projet RoadLine RP — récapitulatif complet (à jour au 15/10/2026, V12.59)
 
 Ce document sert de **point de sauvegarde** : si une conversation avec Claude est perdue, compressée ou doit reprendre
 ailleurs, tout ce qu'il faut savoir est ici. Il est versionné avec le code (`git log` en garde aussi l'historique).
@@ -64,7 +64,7 @@ par un colis (zip de l'installation ou de la session) + ce fichier, et comparer 
 ## 2. Versions : interne vs publique (important, piège classique)
 
 Depuis la V11.3, il y a **deux numéros de version différents**, volontairement :
-- `gs_version` (convar, `server.cfg.example`) = **V12.58** → version technique interne, vue par le staff (F11, console,
+- `gs_version` (convar, `server.cfg.example`) = **V12.59** → version technique interne, vue par le staff (F11, console,
   METTRE-A-JOUR). Continue d'avancer à chaque mise à jour (V11.2, V11.3...).
 - `gs_public_version` (convar) = **« V4 · bêta »** → version vue par les **joueurs** (écran de chargement, statut
   Discord, Gazette). Le site affiche son propre journal (V1 à V4, V5 « classé confidentiel »).
@@ -272,6 +272,22 @@ Résumé très condensé (le détail complet est dans `docs/ROADMAP.md`, `docs/F
   façon chargement de mission (Entrée / clic pour passer). Tout coupé par `prefers-reduced-motion`, souris seulement
   sur ordinateur. Une seule boucle rAF qui s'endort quand rien ne bouge. Vérifié dans le navigateur : 0 erreur.
 
+- **V12.59** (15/10/2026, session de secours « presence-check », branche `claude/presence-check-f9jlgz`) — backtest du 15/10 :
+  (1) **IMPORTER-MODS** : zips Google Drive en plusieurs morceaux décompressés ensemble, mod sans fxmanifest plus effacé,
+  doublons à l'octet près, dossiers et volumes `.7z.001` importés, signature gardée seulement si tout est installé, voiture
+  avec `vehicle_names.lua` installée, robe FiveM en `uppr_` plus refusée « Franklin » (docs/IMPORTER_MODS.md) ;
+  (2) **tête** = mort immobile (2e mise à zéro qbx_medical), **casque** = une balle encaissée puis 2 min ; (3) arme dans le dos
+  ré-accrochée seule 6 s après création (ce que faisait le bouton de /dosreglage) ; (4) emotes rapides : Pavé num. 1-5 (retouche
+  scully), **M** = ragdoll, **/vue** caméra autour du perso (gs_vie/client/vue.lua, W → Moi) ; (5) **traces** (gs_scars) : sang
+  par victime + douilles par balle au lieu des bougies, barrières de police au braquage, 24 h max (plaques auto, vitrines,
+  fresques), textes discrets ; (6) F11 « Effets sur moi » : super vitesse voiture, voiture sauteuse, arc-en-ciel, caméra ivre ;
+  « Chute lunaire » retirée des événements ; tout ped humain par son nom ; (7) caméras : boîtiers du décor peignables, ← → au
+  terminal LSPD ; (8) police IA : fonce vers le suspect (plus besoin d'être vu), abandonne à 450 m, jamais pour banque /
+  bijouterie / guichet / commerce, supérette 1 fois sur 3 ; (9) bot Discord : rattrapage des arrivées manquées, accueils gardés,
+  échecs du #statut expliqués en console ; présence « Joue à Qbox » coupée (retouche qbx_core) + `gs_discord_appid` ;
+  (10) site : bandeau Weazel avec les articles écrits en jeu (ville.json `now.news`) ; (11) courses sur mesure : nom accentué
+  coupé proprement, 15 m entre points, erreur d'enregistrement en console. En attente : pack gang Patoche (combinaisons des
+  planques), symptôme exact du point labo et de l'organisateur de courses, 22 mods « à convertir » (mods-tri\a-convertir).
 - **V12.58** (15/10/2026, session web) — retours de test : (1) assis derrière le banc → ↑ ↓ avancer / reculer pendant la pose
   et **/meubleregle** (staff, ACE gs.admin.admin) qui enregistre le réglage du modèle pour tout le monde (KVP du serveur +
   GlobalState.gsFurniture ; `/meubleregle annuler`). Réglage gardé par serveur : le faire sur le VPS. (2) arme dans le dos

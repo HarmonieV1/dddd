@@ -79,6 +79,8 @@ lib.callback.register('gs_social:journal:publish', function(src, title, body)
     local id = JournalStore.insert(cid, author, title, body, now)
     if not id then return false, 'Erreur, réessaie.' end
     Journal.last[cid] = now
+    table.insert(Journal.headlines, 1, { title = title, author = author, at = now }) -- V12.59 : site (ville.json)
+    Journal.headlines[6] = nil
 
     -- Relais dans Vibe (compte du journaliste, badge presse) + annonce à toute la ville
     if handle then
@@ -104,4 +106,12 @@ lib.callback.register('gs_social:journal:publish', function(src, title, body)
     return true, paid and ('Article publié. La rédaction touche %d $.'):format(paid) or 'Article publié (plafond de paie du jour atteint).'
 end)
 
-CreateThread(function() JournalStore.init() end)
+-- V12.59 · Les 5 derniers titres Weazel (publics : titre, signature du journaliste, date), pour le site (gs_city/ville.json)
+Journal.headlines = {}
+exports('Headlines', function() return Journal.headlines end)
+
+CreateThread(function()
+    JournalStore.init()
+    local ok, rows = pcall(JournalStore.list, 5)
+    for i, a in ipairs(ok and rows or {}) do Journal.headlines[i] = { title = a.title, author = a.author, at = a.created } end
+end)

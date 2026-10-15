@@ -62,8 +62,10 @@ lib.callback.register('gs_races:editor', function(src, action, data)
     data = type(data) == 'table' and data or {}
     local d = Custom.drafts[src]
     if action == 'new' then
-        local label = Security:Sanitize(data.label, 40)
-        if not label or #label < 3 then return false, 'Nom de course trop court.' end
+        local label = Security:Sanitize(data.label, 120)
+        -- V12.59 : coupé à 40 CARACTÈRES (pas octets) : un accent coupé en deux faisait refuser l'enregistrement par la base
+        if label and utf8.len(label) and utf8.len(label) > 40 then label = label:sub(1, utf8.offset(label, 41) - 1) end
+        if not label or (utf8.len(label) or 0) < 3 then return false, 'Nom de course trop court (3 caractères minimum).' end
         local hours = tonumber(data.hours) or 0
         if hours ~= 0 and (hours < 1 or hours > C.maxHours) then return false, ('Durée : 1 à %d heures, ou 0 = permanente.'):format(C.maxHours) end
         Custom.drafts[src] = { label = label, hours = math.floor(hours), points = {} }
@@ -103,9 +105,12 @@ lib.callback.register('gs_races:editor', function(src, action, data)
         local pts = {}
         for i, p in ipairs(d.points) do pts[i] = { x = p.x, y = p.y, z = p.z } end
         local expiresAt = d.hours > 0 and (os.time() + d.hours * 3600) or nil
-        local id = MySQL.insert.await('INSERT INTO gs_race_custom (label, points, expires_at, author) VALUES (?, ?, ?, ?)',
-            { d.label, json.encode(pts), expiresAt, GetPlayerName(src) or '' })
-        if not id then return false, 'Erreur d\'enregistrement.' end
+        local okDb, id = pcall(MySQL.insert.await, 'INSERT INTO gs_race_custom (label, points, expires_at, author) VALUES (?, ?, ?, ?)',
+            { d.label, json.encode(pts), expiresAt, (GetPlayerName(src) or ''):sub(1, 60) })
+        if not okDb or not id then -- V12.59 : la cause est écrite dans la console du serveur (avant : message muet)
+            print(('^1[gs_races] Course « %s » non enregistrée : %s^0'):format(d.label, tostring(okDb and 'insertion refusée' or id)))
+            return false, 'Erreur d\'enregistrement (détail dans la console du serveur). Le brouillon est gardé : réessaie.'
+        end
         Custom.races[id] = { label = d.label, points = d.points, expiresAt = expiresAt, author = GetPlayerName(src) or '' }
         Custom.drafts[src] = nil
         publish()

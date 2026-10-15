@@ -419,7 +419,11 @@ Actions.power = { level = 1, duty = true, run = function(src, _, data)
         local ok = false
         for _, a in ipairs(Config.Animals) do if a.model == data.model then ok = true end end
         for _, a in ipairs(Config.Peds) do if a.model == data.model then ok = true end end
-        need(ok, 'Modèle inconnu.')
+        -- V12.59 : tout ped humain du jeu par son nom (préfixes de Config.PedPattern, lettres / chiffres / _ seulement)
+        if not ok and type(data.model) == 'string' and #data.model <= 40 and data.model:match('^[%w_]+$') then
+            for _, pat in ipairs(Config.PedPattern or {}) do if data.model:lower():match(pat) then ok = true end end
+        end
+        need(ok, 'Modèle inconnu (ped humain du jeu attendu, ex. a_m_y_hipster_02).')
     end
     return ('%s %s'):format(data.power, data.model or (data.on == false and 'OFF' or 'ON'))
 end }

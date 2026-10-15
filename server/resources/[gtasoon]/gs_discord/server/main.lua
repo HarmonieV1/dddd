@@ -56,18 +56,37 @@ local function post(url, payload, cb)
         json.encode(payload.data), { ['Content-Type'] = 'application/json' })
 end
 
+--- V12.59 · « Le bot n'envoie pas toujours les infos du serveur » : un échec de mise à jour du #statut était silencieux.
+--- Il est écrit une fois dans la console (et de nouveau seulement si l'erreur change), avec la cause probable.
+local lastStatusCode = 200
+function Discord.statusFailed(code)
+    code = tonumber(code) or 0
+    if code >= 200 and code < 300 then lastStatusCode = 200 return end
+    if code == lastStatusCode then return end
+    lastStatusCode = code
+    local why = code == 404 and 'message ou webhook #statut supprimé : recréé au prochain passage (sinon relance CONFIGURER-DISCORD.bat)'
+        or code == 429 and 'Discord limite les envois : réessai dans une minute'
+        or (code == 401 or code == 403) and 'webhook #statut refusé : recrée-le dans Discord puis CONFIGURER-DISCORD.bat'
+        or code == 0 and 'pas de réponse de Discord (réseau du serveur)'
+        or 'réessai dans une minute'
+    print(('^3[gs_discord] Statut Discord non mis à jour (code %d) : %s.^0'):format(code, why))
+end
+
 --- Met à jour le message de statut (le crée la première fois et retient son identifiant)
 function Discord.status()
     local hook = conv('gs_webhook_status')
     if not validHook(hook) then return false end
-    local data = { username = Config.Name, embeds = { Discord.statusEmbed() }, allowed_mentions = { parse = {} } }
+    local embed = Discord.statusEmbed()
     local id = GetResourceKvpString('statusMsg')
     if id and id ~= '' then
-        post(hook .. '/messages/' .. id, { method = 'PATCH', data = data }, function(code)
+        -- V12.59 : l'édition d'un message de webhook n'accepte pas `username` (envoyé seulement à la création)
+        post(hook .. '/messages/' .. id, { method = 'PATCH', data = { embeds = { embed }, allowed_mentions = { parse = {} } } }, function(code)
+            Discord.statusFailed(code)
             if code == 404 then DeleteResourceKvp('statusMsg') end -- message supprimé dans Discord : recréé au prochain passage
         end)
     else
-        post(hook .. '?wait=true', { data = data }, function(code, body)
+        post(hook .. '?wait=true', { data = { username = Config.Name, embeds = { embed }, allowed_mentions = { parse = {} } } }, function(code, body)
+            Discord.statusFailed(code)
             if code == 200 and body then
                 local ok, msg = pcall(json.decode, body)
                 if ok and msg and msg.id then SetResourceKvp('statusMsg', tostring(msg.id)) end
