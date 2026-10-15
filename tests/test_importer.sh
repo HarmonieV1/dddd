@@ -83,12 +83,23 @@ veh "$B2/mix/res_a" res_a; veh "$B2/mix/res_b" res_b; mkdir -p "$B2/mix/seule"; 
 veh "$R2/mods-a-trier/deja_extrait" dejaextrait
 veh "$B2/vol/envol" envol; (cd "$B2/vol" && "$SEVENZ" a -v20k "$R2/mods-a-trier/envol.7z" . >/dev/null)
 run2() { GTASOON_ROOT=$R2 GTASOON_TEST=1 GTASOON_7Z=$SEVENZ GTASOON_TEXOPT=0 "$@" "$PWSH" -NoProfile -File "$REPO/scripts/windows/importer-mods.ps1" > "$T/log2.txt" 2>&1 || { cat "$T/log2.txt"; exit 1; }; }
+# V12.59 · voiture + petit script de noms (installée) ; voiture + script qui parle au serveur (reste à relire) ; robe FiveM en uppr_
+veh "$B2/noms/jester4" jester4; printf "Citizen.CreateThread(function()\n    AddTextEntry('jester4', 'Jester MK4')\nend)\n" > "$B2/noms/jester4/vehicle_names.lua"
+(cd "$B2/noms" && zip -qr "$R2/mods-a-trier/jester_mk4_custom.zip" .)
+veh "$B2/louche/louche" louche; printf "RegisterCommand('x', function() TriggerServerEvent('give') end)\n" > "$B2/louche/louche/client.lua"
+(cd "$B2/louche" && zip -qr "$R2/mods-a-trier/voiture_louche.zip" .)
+mkdir -p "$B2/robe/mp_f_freemode_01"; head -c 300 /dev/urandom > "$B2/robe/mp_f_freemode_01/uppr_000_u.ydd"; head -c 300 /dev/urandom > "$B2/robe/mp_f_freemode_01/uppr_diff_000_a_uni.ytd"
+(cd "$B2/robe" && zip -qr "$R2/mods-a-trier/strut_madison_dress.zip" .)
 run2 env
 CFG2=$(cat "$R2/server-data/cfg/addons.cfg"); A2="$R2/server-data/resources/[addons]"
 check 'zip Drive en 2 morceaux : le mod à cheval est installé entier (modèle + .meta)' 'grep -q "^ensure gsa_acheval$" <<<"$CFG2" && ls "$A2/gsa_acheval/stream" | grep -q acheval.yft && [ -n "$(find "$A2/gsa_acheval" -name vehicles.meta)" ] && grep -q "^ensure gsa_entier$" <<<"$CFG2"'
 check 'mod sans fxmanifest à côté de 2 ressources : plus effacé' 'grep -q "^ensure gsa_res_a$" <<<"$CFG2" && grep -q "^ensure gsa_res_b$" <<<"$CFG2" && [ -n "$(find "$A2" -name seule.yft)" ]'
 check 'dossier déjà décompressé dans mods-a-trier : importé' 'grep -q "^ensure gsa_deja_extrait$" <<<"$CFG2"'
 check 'archive en volumes (.7z.001) : importée' 'grep -q "^ensure gsa_envol$" <<<"$CFG2"'
+REP2=$(cat "$R2/mods-tri/RAPPORT-MODS.txt")
+check 'voiture + script de noms (AddTextEntry) : installée comme voiture' 'grep -q "^ensure gsa_jester_mk4_custom$" <<<"$CFG2"'
+check 'voiture + script qui parle au serveur : pas installée, à relire' '! grep -q "voiture_louche" <<<"$CFG2" && grep -B1 -A3 "^- voiture_louche" <<<"$REP2" | grep -q "je le relis"'
+check 'robe FiveM (uppr_ sous mp_f_freemode) : à convertir, pas refusée « Franklin »' 'grep -A1 "^- strut_madison_dress" <<<"$REP2" | grep -q "à convertir"'
 check 'import réussi : signature gardée, METTRE-A-JOUR ne refait rien' '[ -f "$R2/mods-tri/.derniere-signature" ] && run2 env GTASOON_CHAIN=1 && grep -q "rien de nouveau" "$T/log2.txt"'
 check 'dossier modifié : réimporté par METTRE-A-JOUR' 'head -c 10 /dev/urandom > "$R2/mods-a-trier/deja_extrait/stream/x.ytd" && run2 env GTASOON_CHAIN=1 && ! grep -q "rien de nouveau" "$T/log2.txt"'
 echo "importeur (scripts compagnons, retraits) : $ok réussis, $ko échoués"

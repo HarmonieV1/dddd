@@ -409,7 +409,19 @@ function Analyze($pkg) {
             $r.deps = @($blocks | ForEach-Object { [regex]::Matches($_, '[''"]([^''"]+)[''"]') | ForEach-Object { $_.Groups[1].Value.Trim() } } |
                 Where-Object { $_ -and -not $_.StartsWith('/') } | Sort-Object -Unique)
         }
-        if ($lua.Count -gt 0 -and -not $escrowMap) {
+        # V12.59 · Voiture livrée avec un petit fichier de noms (vehicle_names.lua : AddTextEntry) : rangée « script » et jamais
+        #     installée (Jester MK4, Bati 801, Sentinel GTS, Itali GTO du 15/10). Si son code ne fait que nommer le modèle (aucun
+        #     événement réseau, commande, export, accès fichier / web, rien côté serveur), c'est une voiture.
+        $vehOnly = $false
+        if ($lua.Count -gt 0 -and -not $fxap -and (@($all | Where-Object { $_.Extension -ieq '.yft' }).Count -gt 0 -or $r.models.Count -gt 0) -and
+            ($lua | Measure-Object Length -Sum).Sum -lt 30KB -and "$mtext" -notmatch 'server_script') {
+            $vcode = ($lua | ForEach-Object { Get-Content -LiteralPath $_.FullName -Raw -ErrorAction SilentlyContinue }) -join "`n"
+            $vehOnly = $vcode -notmatch '(?i)Trigger(Server|Client)Event|Register(Net|Server)Event|AddEventHandler|RegisterCommand|exports|PerformHttpRequest|\bload(string)?\s*\(|\b(os|io)\.|ExecuteCommand|Kvp|Identifier|DropPlayer|SetEntity|GiveWeapon|NetworkRequest|[\x00-\x08]'
+        }
+        if ($vehOnly) {
+            $r.type = 'vehicule'; $r.install = $true
+            [void]$r.notes.Add("voiture avec un petit script de noms ($(@($lua | ForEach-Object { $_.Name }) -join ', ')) : relu automatiquement (il ne fait que nommer le modèle), installée")
+        } elseif ($lua.Count -gt 0 -and -not $escrowMap) {
             $r.type = 'script'
             $code = ($lua | ForEach-Object { Get-Content -LiteralPath $_.FullName -Raw -ErrorAction SilentlyContinue }) -join "`n"
             # Script compatible plusieurs frameworks (Config.Framework = 'esx' / 'qb') : pas un script ESX seul
@@ -434,8 +446,11 @@ function Analyze($pkg) {
             $r.type = 'vetement'
             if (@($all | Where-Object { $_.Name -match '\^' }).Count -gt 0 -and @($all | Where-Object { $_.Extension -ieq '.ymt' }).Count -gt 0) { $r.install = $true }
             elseif ($Converted[$r.name]) { $r.type = 'converti'; [void]$r.notes.Add("déjà converti : c'est $($Converted[$r.name]) (à mettre dans mods-a-trier)") }
+            # V12.59 : « uppr_ » existe aussi chez les persos FiveM (mp_f_freemode / mp_m_freemode : torse, robes) : refusé
+            #     seulement s'il n'y a aucune trace de perso FiveM (avant : robe Strut « madison » refusée à tort)
             elseif (@($all | Where-Object { $_.FullName -match '(?i)franklin|trevor|mich(ae|ea)l|player_(zero|one|two)' }).Count -gt 0 -or
-                    @($all | Where-Object { $_.Name -match '^uppr_' }).Count -gt 0) {
+                    (@($all | Where-Object { $_.Name -match '^uppr_' }).Count -gt 0 -and
+                     @($all | Where-Object { $_.FullName -match '(?i)freemode|mp[ _-]?(fe)?male|for[ _-]mp' }).Count -eq 0)) {
                 $r.type = 'rejete'; [void]$r.issues.Add('vêtement pour Franklin / Michael / Trevor (perso solo) : pas convertible pour les persos FiveM')
             } elseif ($ydd.Count -eq 0) {
                 $r.type = 'rejete'; [void]$r.issues.Add('textures seules (recoloration d''un vêtement du jeu) : pas convertible en ajout')

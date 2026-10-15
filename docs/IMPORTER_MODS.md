@@ -15,7 +15,7 @@ contrôle et le range dans `C:\GTASOON\mods-tri\` :
 - **rejetes** : scripts ESX seuls, code obfusqué, packs graphiques (reshade, oiv), **marques réelles**.
 
 ## « Un mod ne passe pas à chaque fois » : corrigé en V12.59
-Cinq causes trouvées (reproduites par `tests/test_importer.sh`) :
+Sept causes trouvées (reproduites par `tests/test_importer.sh`) :
 - **Zip Google Drive en plusieurs morceaux** (`GTA-20261014T101500Z-001.zip`, `-002.zip`…) : Drive coupe le dossier où il
   veut, un mod pouvait être à cheval (modèles dans un zip, `.meta` dans l'autre) et chaque moitié était analysée seule ; le
   2e morceau passait même pour un doublon. Les morceaux d'un même téléchargement sont maintenant décompressés **ensemble**.
@@ -28,6 +28,11 @@ Cinq causes trouvées (reproduites par `tests/test_importer.sh`) :
 - **Import raté une fois = jamais retenté** : si IMPORTER-MODS tournait serveur allumé (fichiers verrouillés), la signature
   était quand même enregistrée et METTRE-A-JOUR répondait « Mods : rien de nouveau ». Elle n'est plus enregistrée tant qu'un
   mod n'a pas pu être installé : il est retenté à chaque fois.
+- **Voiture livrée avec un petit fichier de noms** (`vehicle_names.lua`, `AddTextEntry`) : rangée dans scripts-a-verifier et
+  jamais installée (rapport du 15/10 : Jester MK4, Bati 801, Sentinel GTS, Itali GTO). Si le code ne fait que nommer le modèle
+  (aucun événement réseau, commande, export, accès fichier ou web, rien côté serveur, moins de 30 Ko), c'est une voiture.
+- **Robe ou haut FiveM refusé « Franklin / Michael / Trevor »** : les fichiers `uppr_` existent aussi chez les persos FiveM.
+  Refusé seulement sans aucune trace de perso FiveM (`mp_f_freemode`, « for MP Female »…).
 
 Refus **voulus** (raison écrite dans RAPPORT-MODS.txt, à lire avant de conclure qu'un mod « ne passe pas ») : marque réelle,
 fichier > 16 Mo, pack > 300 Mo, script ESX / obfusqué, script payant sans sa map, map retirée (`mods-retires.txt`),
