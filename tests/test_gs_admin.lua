@@ -441,6 +441,18 @@ local okL = call('1.2.3.4', ('{ token = %q, action = "logout" }'):format(tok))
 check('web : déconnexion = jeton invalide', okL.ok and call('1.2.3.4', ('{ token = %q, action = "overview" }'):format(tok)).auth == false)
 check('V12.63 : pas de sanction à distance sur un super-admin', not remote('kick', 1, 'test', 'Web · Modo').ok and GetPlayerName(1) ~= nil)
 check('V12.63 : bannir à distance : durée hors limites refusée', not remote('ban', 9, 'triche', 'Web · Modo', 99999).ok)
+check('V12.63 : bannir : durée non entière refusée (0,5 j ne devient pas définitif)', not remote('ban', 9, 'triche', 'Web · Modo', 0.5).ok)
+local r3 = call('1.2.3.4', '{ action = "login", pseudo = "Modo", password = "NRL-test!" }')
+web_convars.gs_admin_web_password = 'Nouveau-mdp-1'
+check('V12.63 : mot de passe changé = anciennes sessions terminées', call('1.2.3.4', ('{ token = %q, action = "overview" }'):format(r3.token)).auth == false)
+web_convars.gs_admin_web_https = '1'
+local outD
+Web.handle('8.8.8.8', '{ action = "login", pseudo = "Modo", password = "Nouveau-mdp-1" }', function(r) outD = r end, true)
+check('V12.63 : adresse https active = connexion en clair (port direct) refusée', outD and not outD.ok)
+local outH
+Web.handle('8.8.8.8', '{ action = "login", pseudo = "Modo", password = "Nouveau-mdp-1" }', function(r) outH = r end, false)
+check('V12.63 : par l\'adresse https (Caddy) : accepté', outH and outH.ok)
+web_convars.gs_admin_web_https = nil
 web_convars.gs_admin_web_password = 'court'
 check('web : mot de passe collectif trop court = désactivé', not call('1.2.3.4', '{ action = "login", pseudo = "Modo", password = "court" }').ok)
 json.decode = realDecode

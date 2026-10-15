@@ -262,6 +262,9 @@ EOF
   ufw allow 80/tcp >/dev/null; ufw allow 443/tcp >/dev/null
   systemctl enable caddy >/dev/null 2>&1; systemctl restart caddy
   echo "$host" > "$BASE/.https"
+  # V12.63 : l'appli staff n'accepte plus de connexion en clair (port 30120 direct) : seulement par cette adresse https
+  local sec="$DATA/cfg/secrets.cfg"; sed -i '/^set gs_admin_web_https /d' "$sec" 2>/dev/null || true
+  echo 'set gs_admin_web_https "1"' >> "$sec"; chown fivem:fivem "$sec"; chmod 600 "$sec"; systemctl restart roadline
   sleep 8
   if curl -fsS --max-time 20 "https://$host/" >/dev/null 2>&1; then echo "Adresse https prête (certificat obtenu)."
   else echo "Certificat en cours d'obtention (1 à 2 min) : réessaie l'adresse un peu plus tard."; fi
@@ -279,11 +282,11 @@ staffweb() { # appli staff : liste | ajouter PSEUDO | retirer PSEUDO | motdepass
       if grep -qE '^set gs_admin_web_password "[^"]{6,}"' "$sec" 2>/dev/null; then echo "Mot de passe collectif : défini (chacun se connecte avec son pseudo)."; else echo "Mot de passe collectif : aucun."; fi
       if [ -z "$cur" ]; then echo "Codes personnels : aucun."; else echo "Codes personnels :"; tr ',' '\n' <<<"$cur" | cut -d: -f1 | sed 's/^/  - /'; fi
       return 0 ;;
-    motdepasse) # V12.63 : mot de passe collectif lu dans un fichier (jamais sur la ligne de commande) ; les codes personnels sont effacés
-      [ -f "$who" ] || { echo "Fichier du mot de passe introuvable."; exit 1; }
-      pass=$(head -n1 "$who" | tr -d '\r\n'); rm -f "$who"
+    motdepasse) # V12.63 : mot de passe collectif lu sur l'entrée standard (jamais sur la ligne de commande ni dans un fichier) ;
+      # les codes personnels sont effacés
+      IFS= read -r pass || true; pass=$(printf '%s' "$pass" | tr -d '\r\n')
       [ "${#pass}" -ge 6 ] || { echo "Mot de passe : 6 caractères au moins."; exit 1; }
-      case "$pass" in *'"'*) echo "Pas de guillemet dans le mot de passe."; exit 1 ;; esac
+      case "$pass" in *'"'*|*'\'*|*';'*) echo "Pas de guillemet, de barre oblique inverse ni de point-virgule dans le mot de passe."; exit 1 ;; esac
       sed -i '/^set gs_admin_web_password /d' "$sec"; printf 'set gs_admin_web_password "%s"\n' "$pass" >> "$sec"
       cur="" ;;
     ajouter)
@@ -293,7 +296,7 @@ staffweb() { # appli staff : liste | ajouter PSEUDO | retirer PSEUDO | motdepass
       cur="${cur:+$cur,}$who:$code" ;;
     retirer)
       cur=$(tr ',' '\n' <<<"$cur" | grep -v "^$who:" | grep -v '^$' | paste -sd, - || true) ;;
-    *) echo "staffweb liste | ajouter PSEUDO | retirer PSEUDO | motdepasse FICHIER"; exit 1 ;;
+    *) echo "staffweb liste | ajouter PSEUDO | retirer PSEUDO | motdepasse (mot de passe sur l'entrée standard)"; exit 1 ;;
   esac
   sed -i '/^set gs_admin_web /d' "$sec"; echo "set gs_admin_web \"$cur\"" >> "$sec"
   chown fivem:fivem "$sec"; chmod 600 "$sec"
@@ -407,7 +410,7 @@ roadline erreurs           erreurs de scripts depuis le démarrage, par ressourc
 roadline discord           bot connecté ? message de test dans chaque salon Discord relié
 roadline txadmin-compte    mauvais compte Cfx.re lié à txAdmin : nouveau PIN, garder la config
 roadline https             adresse https gratuite (panneau staff en appli, carte en direct du site)
-roadline staffweb liste|ajouter PSEUDO|retirer PSEUDO|motdepasse FICHIER   accès à l'appli staff
+roadline staffweb liste|ajouter PSEUDO|retirer PSEUDO|motdepasse   accès à l'appli staff (motdepasse : lu sur l'entrée standard)
 roadline redemarrage-auto HH:MM|off  redémarrage quotidien annoncé en jeu (défaut 06:00, heure de Paris)
 roadline secrets FICHIER   appliquer le secrets.cfg du PC (garde la base du VPS)
 roadline mode simple|txadmin  démarrage direct (par défaut, rien à configurer) ou avec le panneau web txAdmin

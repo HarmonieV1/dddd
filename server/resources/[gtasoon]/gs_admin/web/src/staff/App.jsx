@@ -32,6 +32,9 @@ function Login({ onIn }) {
       <form className="login-card" onSubmit={submit}>
         <div className="brand big">ROAD<span>LINE</span></div>
         <p className="kicker">Salle de contrôle du staff</p>
+        {location.protocol === 'http:' && !/^(localhost|127\.|192\.168\.|10\.)/.test(location.hostname) && (
+          <p className="warnline">Connexion non chiffrée : utilise l'adresse https de l'appli (GERER-OVH → 21), surtout sur un wifi public.</p>
+        )}
         <label className="field"><span>Pseudo staff (signe tes actions dans le journal)</span>
           <input id="pseudo" autoComplete="username" value={pseudo} onChange={(e) => setPseudo(e.target.value)} maxLength={20} required /></label>
         <label className="field"><span>Mot de passe</span>

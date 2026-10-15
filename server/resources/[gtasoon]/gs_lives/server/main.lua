@@ -63,7 +63,7 @@ RegisterNetEvent('gs_lives:server:frame', function(target)
             Lives.busy[target] = nil
             local waiting = Lives.waiters[target] or {}
             Lives.waiters[target] = nil
-            if err or type(data) ~= 'string' then return end
+            if err or type(data) ~= 'string' or data:sub(1, 23) ~= 'data:image/jpeg;base64,' then return end -- V12.63 : vraie image seulement
             for s in pairs(waiting) do
                 if GetPlayerName(s) then TriggerLatentClientEvent('gs_lives:client:frame', s, 1500000, target, data) end -- latent : pas d'à-coup réseau
             end
@@ -115,7 +115,7 @@ function Lives.replayTick()
             local okS = pcall(function()
                 exports['screenshot-basic']:requestClientScreenshot(target, { encoding = 'jpg', quality = R.quality }, function(err, data) -- [API] screenshot-basic
                     r.busy = false
-                    if err or type(data) ~= 'string' or Lives.replay[target] ~= r then return end
+                    if err or type(data) ~= 'string' or data:sub(1, 23) ~= 'data:image/jpeg;base64,' or Lives.replay[target] ~= r then return end -- V12.63 : vraie image seulement
                     r.frames[#r.frames + 1] = data
                     if #r.frames > R.frames then table.remove(r.frames, 1) end
                 end)

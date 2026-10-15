@@ -1085,7 +1085,7 @@ function Admin.remote(action, target, text, staff, extra)
     local reason = Security:Sanitize(text, 200)
     if reason == '' then reason = nil end
     -- V12.63 : pas de sanction à distance sur un staff haut placé (mot de passe collectif de l'appli)
-    local SANCTION = { freeze = true, warn = true, jail = true, kick = true, ban = true }
+    local SANCTION = { freeze = true, warn = true, jail = true, kick = true, ban = true, tp = true }
     if SANCTION[action] and Admin.level(target) >= ((Config.Web or {}).protectLevel or 4) then
         return false, 'Impossible à distance sur un membre du staff de ce rang.'
     end
@@ -1165,8 +1165,8 @@ function Admin.remote(action, target, text, staff, extra)
         return true, who .. ' a été averti.'
     end
     if action == 'jail' then
-        local minutes = math.floor(tonumber(extra) or 15)
-        if minutes < 1 or minutes > Config.Jail.maxMinutes then return false, ('Durée : 1 à %d min.'):format(Config.Jail.maxMinutes) end
+        local minutes = math.tointeger(tonumber(extra)) -- V12.63 (relecture) : un entier, sinon refusé (plus de 15 min par défaut en silence)
+        if not minutes or minutes < 1 or minutes > Config.Jail.maxMinutes then return false, ('Durée : 1 à %d min.'):format(Config.Jail.maxMinutes) end
         Admin.jail(target, minutes, reason, staff)
         Admin.publishSanction('Isolement', Bridge:GetName(target) or GetPlayerName(target), reason, minutes .. ' min')
         Admin.logRemote(staff, 'jail', who, ('%d min · %s'):format(minutes, reason))
@@ -1180,8 +1180,8 @@ function Admin.remote(action, target, text, staff, extra)
         return true, who .. ' a été expulsé.'
     end
     if action == 'ban' then -- V12.63 : extra = jours (0 = définitif)
-        local days = math.floor(tonumber(extra) or -1)
-        if days < 0 or days > ((Config.Web or {}).maxBanDays or 3650) then return false, 'Durée : 0 (définitif) à 3650 jours.' end
+        local days = math.tointeger(tonumber(extra)) -- V12.63 (relecture) : 0,5 jour ne devient plus un bannissement définitif
+        if not days or days < 0 or days > ((Config.Web or {}).maxBanDays or 3650) then return false, 'Durée : 0 (définitif) à 3650 jours (nombre entier).' end
         local lic = license(target)
         if not lic then return false, 'Licence introuvable.' end
         local name = Bridge:GetName(target) or GetPlayerName(target) or '?'

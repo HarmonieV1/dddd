@@ -126,8 +126,10 @@ Config.LogHistory = 150
 -- V12.63 · Appli staff externe (tablette, téléphone, PC : http(s)://ADRESSE/gs_admin/). Connexion : pseudo (pour le journal) +
 -- mot de passe collectif (secrets.cfg : set gs_admin_web_password "…", jamais dans le dépôt ; GERER-OVH → 20) ou code personnel
 -- (gs_admin_web). Une session dure `sessionHours`. Les sanctions depuis l'appli ne touchent pas un staff de rang ≥ `protectLevel`.
+-- Avec l'adresse https (GERER-OVH → 21), les connexions en clair par le port 30120 sont refusées (gs_admin_web_https).
 Config.Web = {
-    sessionHours = 12, protectLevel = 4, maxBanDays = 3650,
+    sessionHours = 12, maxBanDays = 3650,
+    protectLevel = 1, -- V12.63 (relecture) : aucune sanction ni téléportation à distance sur un membre du staff, quel que soit son rang
     places = { -- « Téléporter vers… » (positions du jeu, à caler si besoin)
         { label = 'Hôpital Pillbox', coords = vec3(298.6, -584.4, 43.3) },
         { label = 'Commissariat Mission Row', coords = vec3(441.2, -981.9, 30.7) },

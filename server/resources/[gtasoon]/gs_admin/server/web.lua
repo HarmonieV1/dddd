@@ -6,7 +6,7 @@
 -- session tiré au hasard (crypto.js), valable Config.Web.sessionHours. 5 essais ratés depuis une adresse = blocage 15 min.
 -- Tout passe par Admin.remote (mêmes vérifications et même journal « Web · pseudo » que le bot Discord).
 local Security = exports.gs_security
-local Web = { fails = {}, sessions = {}, shots = {}, seen = {} } -- shots[cible] = { at, data, waiting = { cb… } }
+local Web = { fails = {}, sessions = {}, shots = {}, seen = {}, global = {} } -- shots[cible] = { at, data, waiting = { cb… } } ; global = échecs récents (toutes adresses)
 local RES = GetCurrentResourceName()
 
 local function codes()
@@ -22,6 +22,8 @@ local function collective()
     return #p >= 6 and p or nil -- trop court = désactivé
 end
 function Web.enabled() return collective() ~= nil or next(codes()) ~= nil end
+
+local function intId(x) return math.tointeger(tonumber(x)) end -- V12.63 (relecture) : un id de joueur est un entier, rien d'autre
 
 local function ipOf(req)
     local ip = tostring(req.address or '?'):gsub(':%d+$', '')
@@ -49,25 +51,39 @@ local function blocked(ip)
     local f = Web.fails[ip]
     return f and f.untilAt and os.time() < f.untilAt
 end
+--- V12.63 (relecture) : en plus du blocage par adresse, plus de 30 échecs en 15 min toutes adresses confondues = connexions
+--- par mot de passe suspendues 15 min (attaque depuis plusieurs adresses), avec une alerte au staff.
+local function globalPaused()
+    local now, keep = os.time(), {}
+    for _, t in ipairs(Web.global) do if now - t < 900 then keep[#keep + 1] = t end end
+    Web.global = keep
+    return Web.pausedUntil and now < Web.pausedUntil
+end
 local function failed(ip)
     local f = Web.fails[ip] or { n = 0 }
-    f.n = f.n + 1
+    f.n, f.at = f.n + 1, os.time()
     if f.n >= 5 then f.n, f.untilAt = 0, os.time() + 900 end
     Web.fails[ip] = f
+    Web.global[#Web.global + 1] = os.time()
+    if #Web.global > 30 and not (Web.pausedUntil and os.time() < Web.pausedUntil) then
+        Web.pausedUntil = os.time() + 900
+        Security:LogStaff('[Appli staff] plus de 30 mots de passe faux en 15 min : connexions suspendues 15 min (attaque probable).', 'staff')
+    end
 end
 
---- Connexion : renvoie le nom à journaliser, ou nil + message.
+--- Connexion : renvoie le nom à journaliser et le secret utilisé, ou nil + message.
 function Web.login(ip, pseudo, password)
     if blocked(ip) then return nil, 'Trop d\'essais : réessaie dans 15 min.' end
+    if globalPaused() then return nil, 'Connexions suspendues 15 min (trop d\'essais ratés sur le serveur).' end
     if type(password) ~= 'string' or password == '' then failed(ip) return nil, 'Mot de passe refusé.' end
     local named = codes()[password]
-    if named then Web.fails[ip] = nil return named end
+    if named then Web.fails[ip] = nil return named, password end
     local pass = collective()
     if pass and safeEqual(password, pass) then
         local who = Security:Sanitize(pseudo, 20)
         if not who or #who < 2 then return nil, 'Indique ton pseudo staff (2 à 20 caractères) : il signe tes actions dans le journal.' end
         Web.fails[ip] = nil
-        return who
+        return who, password
     end
     failed(ip)
     return nil, 'Mot de passe refusé.'
@@ -77,6 +93,8 @@ function Web.session(token)
     local s = type(token) == 'string' and Web.sessions[token] or nil
     if not s then return nil end
     if s.exp < os.time() then Web.sessions[token] = nil return nil end
+    -- V12.63 (relecture) : mot de passe changé ou code retiré (même sans redémarrage) = session terminée
+    if s.secret ~= collective() and not codes()[s.secret] then Web.sessions[token] = nil return nil end
     return s
 end
 
@@ -112,7 +130,7 @@ end
 
 -- Écran d'un joueur (Lives hors jeu) : une capture partagée entre tous les membres du staff qui le regardent -----------------
 function Web.frame(who, target, reply)
-    target = tonumber(target)
+    target = intId(target)
     if not target or not GetPlayerName(target) then return reply({ ok = false, text = 'Ce joueur n\'est plus en ville.' }) end
     if not started('screenshot-basic') then return reply({ ok = false, text = 'screenshot-basic n\'est pas démarré.' }) end
     local key = who .. ':' .. target
@@ -120,41 +138,49 @@ function Web.frame(who, target, reply)
         Web.seen[key] = true
         Security:LogStaff(('[Lives] Web · %s regarde l\'écran de %s [%d]'):format(who, GetPlayerName(target) or '?', target), 'staff')
     end
-    local s = Web.shots[target] or { waiting = {} }
+    local s = Web.shots[target] or { waiting = {}, gen = 0 }
     Web.shots[target] = s
     if s.data and GetGameTimer() - s.at < 1000 then return reply({ ok = true, img = s.data }) end -- image récente : partagée
     s.waiting[#s.waiting + 1] = reply
     if s.busy then return end
     s.busy = true
+    s.gen = s.gen + 1
+    local gen = s.gen -- V12.63 (relecture) : une réponse ou un délai d'une ANCIENNE capture n'interfère plus avec la suivante
     local function flush(res)
+        if s.gen ~= gen or not s.busy then return end
         local list = s.waiting
         s.waiting, s.busy = {}, false
-        for _, cb in ipairs(list) do cb(res) end
+        for _, cb in ipairs(list) do pcall(cb, res) end -- une réponse ratée ne bloque pas les autres membres du staff
     end
     local okS = pcall(function()
         exports['screenshot-basic']:requestClientScreenshot(target, { encoding = 'jpg', quality = 0.45 }, function(err, data) -- [API] screenshot-basic
-            if err or type(data) ~= 'string' then return flush({ ok = false, text = 'Capture impossible (joueur en chargement ?).' }) end
-            s.at, s.data = GetGameTimer(), data
+            -- seule une vraie image JPEG est acceptée (un client modifié pourrait renvoyer une adresse web à afficher chez le staff)
+            if err or type(data) ~= 'string' or data:sub(1, 23) ~= 'data:image/jpeg;base64,' then return flush({ ok = false, text = 'Capture impossible (joueur en chargement ?).' }) end
+            if s.gen == gen then s.at, s.data = GetGameTimer(), data end
             flush({ ok = true, img = data })
         end)
     end)
     if not okS then return flush({ ok = false, text = 'Capture impossible.' }) end
-    SetTimeout(8000, function() if s.busy then flush({ ok = false, text = 'Le joueur ne répond pas.' }) end end)
+    SetTimeout(8000, function() flush({ ok = false, text = 'Le joueur ne répond pas.' }) end)
 end
 
 -- Actions autorisées depuis l'appli (toutes revérifiées et journalisées par Admin.remote)
 local ACTIONS = { freeze = true, unfreeze = true, warn = true, message = true, kick = true, announce = true, jail = true, unjail = true,
     revive = true, heal = true, fixveh = true, clearheat = true, note = true, tp = true, ban = true, unban = true, ticket_claim = true, ticket_close = true }
 
-function Web.handle(ip, body, reply)
+function Web.handle(ip, body, reply, direct)
     local ok, d = pcall(json.decode, body or '')
     if not ok or type(d) ~= 'table' then return reply({ ok = false, text = 'Requête invalide.' }) end
+    -- V12.63 (relecture) : adresse https activée (GERER-OVH → 21) = plus rien en clair par le port 30120 direct
+    if direct and GetConvar('gs_admin_web_https', '0') == '1' then
+        return reply({ ok = false, text = 'Connexion non chiffrée refusée : ouvre l\'adresse https de l\'appli.', auth = false })
+    end
     if d.action == 'login' then
-        local who, err = Web.login(ip, d.pseudo, d.password)
-        if not who then return reply({ ok = false, text = err, auth = false }) end
+        local who, secret = Web.login(ip, d.pseudo, d.password)
+        if not who then return reply({ ok = false, text = secret, auth = false }) end
         local token = newToken()
         if not token then return reply({ ok = false, text = 'Connexion indisponible (crypto du serveur). Redémarre gs_admin.' }) end
-        Web.sessions[token] = { who = who, ip = ip, exp = os.time() + ((Config.Web or {}).sessionHours or 12) * 3600 }
+        Web.sessions[token] = { who = who, ip = ip, secret = secret, exp = os.time() + ((Config.Web or {}).sessionHours or 12) * 3600 }
         Security:LogStaff(('[Appli staff] connexion de %s (%s)'):format(who, ip), 'staff')
         return reply({ ok = true, token = token, who = who, text = 'Bonjour ' .. who .. '.' })
     end
@@ -167,7 +193,7 @@ function Web.handle(ip, body, reply)
     if d.action == 'logout' then Web.sessions[d.token] = nil return reply({ ok = true }) end
     if d.action == 'overview' then return reply({ ok = true, data = Web.overview(s.who) }) end
     if d.action == 'dossier' then
-        local id = tonumber(d.id)
+        local id = intId(d.id)
         if not id or not GetPlayerName(id) then return reply({ ok = false, text = 'Ce joueur n\'est plus en ville.' }) end
         return reply({ ok = true, data = Admin.dossier(nil, id, 3) })
     end
@@ -180,14 +206,15 @@ function Web.handle(ip, body, reply)
     if d.action == 'frame' then return Web.frame(s.who, d.id, reply) end
     if d.action == 'replay' then
         if not started('gs_lives') then return reply({ ok = false, text = 'gs_lives n\'est pas démarré.' }) end
-        local okR, frames = pcall(function() return exports.gs_lives:ReplayFrames(tonumber(d.id)) end)
+        local okR, frames = pcall(function() return exports.gs_lives:ReplayFrames(intId(d.id)) end)
         if not okR or type(frames) ~= 'table' or #frames == 0 then return reply({ ok = false, text = 'Pas encore d\'images pour ce joueur.' }) end
-        Security:LogStaff(('[Lives] Web · %s revoit les dernières images de %s [%s]'):format(s.who, GetPlayerName(tonumber(d.id)) or '?', tostring(d.id)), 'staff')
+        Security:LogStaff(('[Lives] Web · %s revoit les dernières images de %s [%s]'):format(s.who, GetPlayerName(intId(d.id)) or '?', tostring(intId(d.id))), 'staff')
         return reply({ ok = true, frames = frames })
     end
     if d.action == 'act' then
         if not ACTIONS[d.name] then return reply({ ok = false, text = 'Action inconnue.' }) end
-        local good, text = Admin.remote(d.name, d.id, d.text, 'Web · ' .. s.who, d.extra)
+        if d.id ~= nil and not intId(d.id) then return reply({ ok = false, text = 'Joueur invalide.' }) end
+        local good, text = Admin.remote(d.name, intId(d.id), d.text, 'Web · ' .. s.who, d.extra)
         return reply({ ok = good == true, text = text or '' })
     end
     reply({ ok = false, text = 'Action inconnue.' })
@@ -215,14 +242,18 @@ SetHttpHandler(function(req, res)
     local path = req.path or '/'
     if req.method == 'POST' and path == '/api' then
         local ip = ipOf(req)
+        local raw = tostring(req.address or ''):gsub(':%d+$', '')
+        local direct = not (raw == '127.0.0.1' or raw == '::1' or raw == '[::1]') -- pas passé par l'adresse https (Caddy)
         req.setDataHandler(function(body)
             local sent = false
             local okH, err = pcall(Web.handle, ip, body, function(out)
                 if sent then return end
+                local okE, text = pcall(json.encode, out) -- V12.63 (relecture) : une donnée non encodable ne laisse jamais la requête sans réponse
+                if not okE then text = '{"ok":false,"text":"Erreur du serveur."}' end
                 sent = true
                 res.writeHead(200, { ['Content-Type'] = 'application/json', ['Cache-Control'] = 'no-store' })
-                res.send(json.encode(out))
-            end)
+                res.send(text)
+            end, direct)
             if not okH and not sent then
                 sent = true
                 print(('^1[gs_admin] appli staff : %s^0'):format(tostring(err)))
@@ -253,6 +284,21 @@ SetHttpHandler(function(req, res)
     end
     res.writeHead(404, { ['Content-Type'] = 'text/plain; charset=utf-8' })
     res.send('Introuvable.')
+end)
+
+-- V12.63 (relecture) : ménage — sessions expirées, échecs anciens, captures gardées en mémoire (rien n'est conservé), joueurs partis
+AddEventHandler('playerDropped', function() Web.shots[source] = nil end)
+CreateThread(function()
+    while true do
+        Wait(600000)
+        local now, t = os.time(), GetGameTimer()
+        for k, s in pairs(Web.sessions) do if s.exp < now then Web.sessions[k] = nil end end
+        for ip, f in pairs(Web.fails) do if (f.untilAt or 0) < now and now - (f.at or 0) > 900 then Web.fails[ip] = nil end end
+        for id, s in pairs(Web.shots) do if not s.busy and (not s.at or t - s.at > 5000) then Web.shots[id] = nil end end
+        local n = 0
+        for _ in pairs(Web.seen) do n = n + 1 end
+        if n > 2000 then Web.seen = {} end
+    end
 end)
 
 AdminWeb = Web

@@ -95,14 +95,15 @@ while ($true) {
                 $a = (Read-Host '  M = mot de passe collectif (efface les codes personnels), A = ajouter un code, R = retirer un code, Entrée = rien').Trim().ToUpper()
                 if ($a -eq 'M') {
                     # V12.63 : saisi masqué, envoyé dans un fichier (jamais sur la ligne de commande ni dans le dépôt)
-                    $sec = Read-Host '  Nouveau mot de passe collectif (6 caractères au moins, sans guillemet)' -AsSecureString
+                    $sec = Read-Host '  Nouveau mot de passe collectif (6 caractères au moins, 12 conseillés ; sans guillemet, \ ni ;)' -AsSecureString
                     $plain = [Runtime.InteropServices.Marshal]::PtrToStringAuto([Runtime.InteropServices.Marshal]::SecureStringToBSTR($sec))
-                    if ($plain.Length -lt 6 -or $plain.Contains('"')) { Say '  6 caractères au moins, sans guillemet.' 'Yellow'; break }
+                    if ($plain.Length -lt 6 -or $plain -match '["\\;]') { Say '  6 caractères au moins, sans guillemet, \ ni ;.' 'Yellow'; break }
+                    if ($plain.Length -lt 12) { Say '  Conseil : 12 caractères ou plus (ce mot de passe permet de bannir).' 'Yellow' }
                     if ((Read-Host '  Les anciens codes personnels seront effacés et le serveur redémarré (environ 1 min). Continuer ? (O/N)') -notmatch '^[oOyY]') { break }
-                    $tmp = Join-Path $env:TEMP 'staffweb-mdp.txt'
-                    [IO.File]::WriteAllText($tmp, $plain, (New-Object Text.UTF8Encoding $false)); $plain = $null
-                    try { Send-Vps $vps @($tmp) '/tmp/staffweb-mdp.txt' } finally { Remove-Item -LiteralPath $tmp -Force -ErrorAction SilentlyContinue }
-                    Invoke-Vps $vps 'sudo roadline staffweb motdepasse /tmp/staffweb-mdp.txt'
+                    # envoyé sur l'entrée standard de la commande (ni fichier temporaire, ni ligne de commande)
+                    $a2 = SshArgs
+                    $plain | & ssh @a2 -o StrictHostKeyChecking=accept-new "$($vps.user)@$($vps.ip)" 'sudo roadline staffweb motdepasse'
+                    $plain = $null
                     break
                 }
                 if ($a -notin 'A', 'R') { break }

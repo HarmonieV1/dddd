@@ -8,13 +8,17 @@ lui-même (ressource `gs_admin`) : rien à installer côté staff.
 - Sur tablette / téléphone : menu du navigateur → **Ajouter à l'écran d'accueil** : elle s'ouvre comme une appli.
 - Connexion : **ton pseudo staff** (il signe tes actions dans le journal : « Web · pseudo ») + **le mot de passe collectif**.
 - Le mot de passe n'est envoyé qu'une fois : ensuite un jeton de session (12 h, tiré au hasard par le serveur).
-- 5 mauvais mots de passe depuis une même connexion = blocage 15 min. Chaque connexion est notée dans le journal staff.
+- 5 mauvais mots de passe depuis une même connexion = blocage 15 min ; plus de 30 échecs en 15 min sur tout le serveur =
+  connexions suspendues 15 min et alerte au staff. Chaque connexion est notée dans le journal staff (avec l'adresse).
+- **https obligatoire** dès que l'adresse https est activée (GERER-OVH → 21) : les connexions en clair par le port 30120 sont
+  refusées (sinon, sur un wifi public, le mot de passe pourrait être lu).
+- Mot de passe changé ou code retiré = toutes les sessions ouvertes avec l'ancien se ferment.
 
 ## Changer le mot de passe collectif (fondateur)
-GERER-OVH.bat → **20** → **M** : saisie masquée, envoyée au VPS dans un fichier (jamais sur une ligne de commande, jamais dans
-le dépôt). Les anciens codes personnels sont **effacés** et le serveur redémarre (1 min). Sur le PC local, on peut aussi écrire
+GERER-OVH.bat → **20** → **M** : saisie masquée, envoyée directement à la commande du VPS (ni fichier, ni ligne de commande,
+jamais dans le dépôt). Les anciens codes personnels sont **effacés** et le serveur redémarre (1 min). Sur le PC local, on peut aussi écrire
 la ligne `set gs_admin_web_password "…"` dans `server-data\cfg\secrets.cfg` (jamais committé).
-- 6 caractères au moins, sans guillemet. Un mot de passe plus long est plus sûr : il donne accès aux bannissements.
+- 6 caractères au moins (12 conseillés : il donne accès aux bannissements), sans guillemet, `\` ni `;`.
 - Les codes personnels (`gs_admin_web`, GERER-OVH → 20 → A / R) restent possibles en plus.
 
 ## Ce qu'on y trouve
@@ -32,7 +36,8 @@ la ligne `set gs_admin_web_password "…"` dans `server-data\cfg\secrets.cfg` (j
 - **Assistance** : soigner, réanimer, réparer le véhicule, effacer la recherche, téléporter (lieu de la liste ou à côté d'un joueur).
 - **Contrôle** : geler / dégeler, message privé, note staff, isoler (minutes + motif), libérer.
 - **Sanctions** : avertir, expulser, bannir (1, 3, 7, 14, 30 jours ou définitif) — motif obligatoire, publié dans #sanctions.
-- Garde-fou : aucune sanction depuis l'appli sur un staff de rang **super-admin** ou plus (`Config.Web.protectLevel`).
+- Garde-fou : aucune sanction ni téléportation depuis l'appli sur un membre du staff, quel que soit son rang (`Config.Web.protectLevel`).
+  Les durées (isolement, bannissement) doivent être des nombres entiers.
 - Lieux de téléportation : `gs_admin/shared/config.lua` → `Config.Web.places` (déplaçables via F11 → Déplacer un point).
 
 ## Technique
