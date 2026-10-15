@@ -7,10 +7,16 @@ local R = Config.StaffReport
 StaffReport = { since = 0, peak = 0, peakAt = nil, crimes = 0, deaths = {}, sentDay = nil,
     seen = { tickets = 0, lives = 0, alerts = 0 }, carry = { tickets = 0, lives = 0, alerts = 0 } } -- V12.62 : voir StaffReport.counters
 
-local function save() SetResourceKvp('staffreport', json.encode(StaffReport)) end
+-- V12.62 : seulement les compteurs (StaffReport contient aussi ses fonctions : « type 'function' is not supported by JSON »)
+local FIELDS = { 'since', 'peak', 'peakAt', 'crimes', 'deaths', 'sentDay', 'seen', 'carry' }
+local function save()
+    local d = {}
+    for _, k in ipairs(FIELDS) do d[k] = StaffReport[k] end
+    SetResourceKvp('staffreport', json.encode(d))
+end
 local function restore()
     local ok, t = pcall(json.decode, GetResourceKvpString('staffreport') or '{}')
-    if ok and type(t) == 'table' then for k, v in pairs(t) do StaffReport[k] = v end end
+    if ok and type(t) == 'table' then for _, k in ipairs(FIELDS) do if t[k] ~= nil then StaffReport[k] = t[k] end end end
     if (StaffReport.since or 0) == 0 then StaffReport.since = os.time() end
 end
 local function started(r) return GetResourceState(r) == 'started' end

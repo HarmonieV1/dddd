@@ -65,15 +65,8 @@ local function targetOptions(slot)
                 if c ~= 'confirm' then return end
                 notify(lib.callback.await('gs_showroom:buy', false, slot.id))
             end },
-        { name = 'gs_showroom_model', icon = 'fa-solid fa-arrows-rotate', label = 'Changer le modèle exposé (vendeur)', distance = Config.Range,
-            canInteract = function()
-                if isStaff then return true end
-                local j = Bridge:GetJob()
-                local d = Config.Dealers[slot.dealer]
-                if not j or not j.onduty or not d then return false end
-                for _, job in ipairs(d.jobs or {}) do if job == j.name then return true end end
-                return false
-            end,
+        -- V12.62 : sans vendeur en service, tout le monde peut choisir le modèle exposé (le serveur vérifie qu'aucun vendeur n'est là)
+        { name = 'gs_showroom_model', icon = 'fa-solid fa-arrows-rotate', label = 'Changer le modèle exposé', distance = Config.Range,
             onSelect = function() pickModel(function(model) notify(lib.callback.await('gs_showroom:setModel', false, slot.id, model)) end) end },
     }
 end

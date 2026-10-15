@@ -255,6 +255,16 @@ function Wanted.clearUnits(src)
     Wanted.live[src] = nil -- V12.62
 end
 
+--- V12.62 (backtest) : une entité créée par le serveur n'existe pas toujours tout de suite (« Tried to access invalid entity »
+--- en demandant son numéro réseau) : on l'attend 2 s au plus ; netId renvoie nil si elle n'existe pas.
+local function waitEntity(e)
+    if not e or e == 0 then return false end
+    local deadline = GetGameTimer() + 2000
+    while not DoesEntityExist(e) and GetGameTimer() < deadline do Wait(0) end
+    return DoesEntityExist(e)
+end
+local function netId(e) return e and e ~= 0 and DoesEntityExist(e) and NetworkGetNetworkIdFromEntity(e) or nil end
+
 --- V12.62 · Hélicoptère de la police IA au-dessus du suspect (poursuite filmée). Retourne l'unité { veh, peds, heli } ou nil.
 function Wanted.spawnHeli(src, stars, me, mine)
     local H = Config.NpcPolice.heli
@@ -269,7 +279,7 @@ function Wanted.spawnHeli(src, stars, me, mine)
     while not DoesEntityExist(veh) and GetGameTimer() < deadline do Wait(0) end
     if not DoesEntityExist(veh) then return nil end
     local pilot = CreatePedInsideVehicle(veh, 6, GetHashKey(H.pilot), -1, true, true)
-    if not pilot or pilot == 0 then DeleteEntity(veh) return nil end
+    if not waitEntity(pilot) then DeleteEntity(veh) return nil end
     local u = { veh = veh, peds = { pilot }, born = os.time(), heli = true }
     mine[#mine + 1] = u
     local zone = 'Los Santos'
@@ -307,7 +317,7 @@ function Wanted.spawnUnits(src, stars, positions)
     local county = me.y > 1200.0 -- au nord de Vinewood : shérif
     local out = {}
     local heli = unitCount() < U.maxServer and Wanted.spawnHeli(src, stars, me, mine) -- V12.62 : poursuite filmée
-    if heli then out[#out + 1] = { veh = NetworkGetNetworkIdFromEntity(heli.veh), peds = { NetworkGetNetworkIdFromEntity(heli.peds[1]) }, heli = true } end
+    if heli and netId(heli.veh) and netId(heli.peds[1]) then out[#out + 1] = { veh = netId(heli.veh), peds = { netId(heli.peds[1]) }, heli = true } end
     for _, pos in ipairs(positions) do
         if want <= 0 or unitCount() >= U.maxServer then break end
         if type(pos) == 'table' and tonumber(pos.x) and tonumber(pos.y) and tonumber(pos.z) then
@@ -321,7 +331,7 @@ function Wanted.spawnUnits(src, stars, positions)
                     local u = { veh = veh, peds = {}, born = now }
                     for seat = -1, 0 do
                         local p = CreatePedInsideVehicle(veh, 6, GetHashKey(county and U.peds.county or U.peds.city), seat, true, true)
-                        if p and p ~= 0 then
+                        if waitEntity(p) then -- V12.62 : agent vraiment créé avant de l'équiper
                             GiveWeaponToPed(p, GetHashKey(U.weapons[math.min(3, math.max(1, tonumber(stars) or 1))]), 120, false, true)
                             SetPedArmour(p, U.armour)
                             u.peds[#u.peds + 1] = p
@@ -329,8 +339,8 @@ function Wanted.spawnUnits(src, stars, positions)
                     end
                     mine[#mine + 1] = u
                     local nets = {}
-                    for _, p in ipairs(u.peds) do nets[#nets + 1] = NetworkGetNetworkIdFromEntity(p) end
-                    out[#out + 1] = { veh = NetworkGetNetworkIdFromEntity(veh), peds = nets }
+                    for _, p in ipairs(u.peds) do nets[#nets + 1] = netId(p) end
+                    if netId(veh) then out[#out + 1] = { veh = netId(veh), peds = nets } end
                     want = want - 1
                 end
             end

@@ -8,7 +8,12 @@ function GetConvarInt(k, d) return tonumber(convars[k]) or d end
 local reqs = {}
 function PerformHttpRequest(url, cb, method, data) reqs[#reqs + 1] = { url = url, method = method, data = data } if cb then cb(204, '') end end
 local sent = {}
-json.encode = function(t) sent[#sent + 1] = t return 'x' end
+local function noFn(t, seen) -- comme le vrai json.encode : une fonction dans la table = erreur
+    seen = seen or {}
+    if type(t) == 'function' then error("type 'function' is not supported by JSON") end
+    if type(t) == 'table' and not seen[t] then seen[t] = true for _, v in pairs(t) do noFn(v, seen) end end
+end
+json.encode = function(t) noFn(t) sent[#sent + 1] = t return 'x' end
 local nightTickets = 3
 provide('gs_admin', { NightStats = function() return { tickets = nightTickets, openTickets = 1, sanctions = { ['kick'] = 1 }, staff = { 'Modo' }, alerts = 2 } end })
 provide('gs_lives', { ViewsSince = function() return 4 end })

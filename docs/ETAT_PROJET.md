@@ -291,7 +291,9 @@ Résumé très condensé (le détail complet est dans `docs/ROADMAP.md`, `docs/F
   interrompu sans renvoyer 1 Go, reconnaît la réussite malgré les accents mal décodés ; DIAGNOSTIC-MODS met aussi en pause les
   voitures en double (copie la plus complète gardée, jamais une voiture unique perdue). (7) concessions (backtest) : véhicules
   d'exposition posés au sol (collision attendue, avant : à hauteur des hanches du staff) ; « Changer le modèle » réapparaît tout de
-  suite même vendeur collé à la voiture (avant : jamais sous 3 m, « ça charge ») ; modèle introuvable = message clair.
+  suite même vendeur collé à la voiture (avant : jamais sous 3 m, « ça charge ») ; modèle introuvable = message clair. Sans vendeur en service, un civil sur place peut
+  choisir le modèle exposé (journalisé). (8) Console du backtest : rapport staff (« type 'function' is not supported by JSON » :
+  seuls les compteurs sont sauvés) ; police IA (« Tried to access invalid entity » : agents / hélico attendus avant leur n° réseau).
 - **V12.61** (15/10/2026, session de secours) — (1) **screenshot-basic livré compilé** dans `[gtasoon]` (MIT, `ensure` actif) :
   Lives, photos Vibe et bodycam sans rien installer ; (2) cabines : **appel vers un numéro** (gs_phone `BoothCall`, « Numéro
   masqué ») et **écoute police** (grade 2+, 2 h, 5 cabines max, l'appel suivant arrive au central avec le genre de l'appelant) ;

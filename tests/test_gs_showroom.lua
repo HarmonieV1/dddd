@@ -11,6 +11,7 @@ MySQL = {
 local levels, duty, society = {}, {}, {}
 provide('gs_admin', { GetStaffLevel = function(src) return levels[src] or 0 end })
 provide('gs_jobs', { IsOnDutyAs = function(src, job) return duty[src] == job end,
+    GetOnDutyPlayers = function(job) local l = {} for s, j in pairs(duty) do if j == job then l[#l + 1] = s end end return l end,
     AddSocietyMoney = function(job, n) society[job] = (society[job] or 0) + n return true end })
 provide('qbx_core', { GetVehiclesByName = function() return {
     sultan = { name = 'Sultan', brand = 'Karin', price = 40000, category = 'sports' },
@@ -44,8 +45,10 @@ check('véhicule exposé à la position du staff', ok and Showroom.slots[1] and 
 check('publié pour les joueurs', GlobalState.gsShowroom and #GlobalState.gsShowroom.slots == 1)
 
 ok, msg = cb('gs_showroom:setModel', 2, 1, 'sultan'); step()
-check('client : ne peut pas changer le modèle', not ok)
+check('V12.62 : aucun vendeur en service : un civil sur place change le modèle', ok)
 duty[3] = 'cardealer'
+ok, msg = cb('gs_showroom:setModel', 2, 1, 'sultan'); step()
+check('V12.62 : un vendeur est en service : le civil est renvoyé vers lui', not ok and msg:find('vendeur'))
 ok = cb('gs_showroom:setModel', 3, 1, 'police'); step()
 check('vendeur : modèle exclu refusé', not ok)
 ok = cb('gs_showroom:setModel', 3, 1, 'sultan'); step()

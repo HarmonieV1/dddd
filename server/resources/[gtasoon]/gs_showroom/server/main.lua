@@ -60,6 +60,17 @@ local function isDealer(src, dealer)
     return false
 end
 
+--- V12.62 · Un vendeur de cette concession est-il en service ? (sinon, n'importe qui sur place peut changer le modèle exposé)
+local function dealerOnDuty(dealer)
+    local d = Config.Dealers[dealer]
+    if not d or GetResourceState('gs_jobs') ~= 'started' then return false end
+    for _, job in ipairs(d.jobs or {}) do
+        local ok, list = pcall(function() return exports.gs_jobs:GetOnDutyPlayers(job) end)
+        if ok and type(list) == 'table' and #list > 0 then return true end
+    end
+    return false
+end
+
 -- Staff : poser / retirer / départ des essais -----------------------------------------------------------------------------
 lib.callback.register('gs_showroom:staff', function(src, action, data)
     if not Security:RateLimit(src, 'gs_showroom:staff', 10, 10000) then return false, 'Doucement.' end
@@ -109,13 +120,15 @@ lib.callback.register('gs_showroom:setModel', function(src, id, model)
     local s = Showroom.slots[tonumber(id) or 0]
     if not s then return false, 'Emplacement inconnu.' end
     local staff = staffLevel(src) >= Config.StaffLevel
-    if not staff and not isDealer(src, s.dealer) then return false, 'Réservé aux vendeurs en service.' end
+    local civil = not staff and not isDealer(src, s.dealer)
+    if civil and dealerOnDuty(s.dealer) then return false, 'Un vendeur est en service : demande-lui de changer le modèle.' end -- V12.62
     if not staff and not near(src, s, 15.0) then return false, 'Approche-toi du véhicule exposé.' end -- V12.41 : le staff change de loin (F11)
     local v = catalog(model)
     if not v then return false, 'Modèle inconnu du catalogue (ou non vendable ici).' end
     MySQL.update.await('UPDATE gs_showroom_slots SET model = ? WHERE id = ?', { model:lower(), id })
     s.model = model:lower()
     publish()
+    if civil then Security:LogStaff(('[Concession] %s [%d] (aucun vendeur en service) expose %s (n°%d)'):format(GetPlayerName(src) or '?', src, model, id), 'staff') end
     return true, ('%s exposée.'):format(v.name or model)
 end)
 
