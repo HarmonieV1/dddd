@@ -5,7 +5,7 @@ set -euo pipefail
 PWSH=${PWSH:-$(command -v pwsh || true)}
 if [ -z "$PWSH" ]; then echo "Diagnostic des mods : PowerShell 7 absent, test ignoré"; exit 0; fi
 REPO=$(cd "$(dirname "$0")/.." && pwd)
-T=$(mktemp -d); trap 'rm -rf "$T"' EXIT
+T=${KEEP_T:-$(mktemp -d)}; [ -n "${KEEP_T:-}" ] || trap 'rm -rf "$T"' EXIT
 A="$T/server-data/resources/[addons]"; mkdir -p "$A" "$T/server-data/cfg"
 rsc() { mkdir -p "$(dirname "$1")"; { printf 'RSC7'; head -c 200 /dev/urandom; } > "$1"; }
 meta() { mkdir -p "$(dirname "$1")"; printf '%s' "$2" > "$1"; }
@@ -37,6 +37,7 @@ check 'correction sûre : mod abîmé mis en pause avec la raison' 'grep -q "^# 
 check 'correction sûre : ligne d un dossier disparu enlevée' '! grep -q "gsa_disparu" <<<"$CFG"'
 check 'les autres lignes ne bougent pas (y compris celles en pause)' 'grep -q "^ensure gsa_bonne$" <<<"$CFG" && grep -q "^# ensure gsa_pause$" <<<"$CFG"'
 check 'V12.62 : voiture en double : copie la plus complète gardée, l autre en pause avec la raison' 'grep -q "^ensure gsa_double1$" <<<"$CFG" && grep -q "^# ensure gsa_double2$" <<<"$CFG" && grep -q "## gsa_double2 : en pause (voiture en double, gardée dans gsa_double1" <<<"$CFG"'
+check 'V12.62 : rapport : copie mise en pause et copie gardée nommées' 'grep -q "mises en pause : gsa_double2 (gardé : gsa_double1)" <<<"$REP"'
 check 'V12.62 : copie qui contient une voiture unique : jamais mise en pause' 'grep -q "^ensure gsa_double3$" <<<"$CFG"'
 check 'copie de sécurité de addons.cfg' '[ -f "$T/server-data/cfg/addons.cfg.avant-diagnostic" ] && grep -q "gsa_disparu" "$T/server-data/cfg/addons.cfg.avant-diagnostic"'
 # 2e passage : plus rien à corriger, rien ne change
