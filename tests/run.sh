@@ -70,4 +70,6 @@ bash tests/test_importer.sh
 bash tests/test_diagnostic_mods.sh
 # V12.57 · ENVOYER-PLACEMENTS : le VPS n'accepte que les tables de placements, sauvegarde avant
 bash tests/test_placements.sh
+# V12.61 · screenshot-basic est livré compilé : ses fichiers dist/ doivent être suivis par git (sinon absents du zip)
+for f in client.js server.js ui.html; do git ls-files --error-unmatch "server/resources/[gtasoon]/screenshot-basic/dist/$f" >/dev/null 2>&1 || { echo "screenshot-basic : dist/$f absent du dépôt"; exit 1; }; done && echo "screenshot-basic livré compilé OK"
 for s in scripts/linux/*.sh; do bash -n "$s" || exit 1; done && echo "Scripts Linux OK (sauvegardes, installation OVH, commande roadline)"
