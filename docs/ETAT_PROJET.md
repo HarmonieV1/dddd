@@ -284,6 +284,9 @@ Résumé très condensé (le détail complet est dans `docs/ROADMAP.md`, `docs/F
   `requestScreenshot` chez le joueur + événement latent `gs_lives:server:shot` (réponse acceptée du seul joueur visé, JPEG
   seulement) ; une capture par joueur partagée entre F11, replays et appli (export gs_lives `Capture`) ; message clair dans la
   fenêtre si le joueur ne répond pas (8 s).
+  Outils OVH : GERER-OVH ne plante plus sur « roadline-envoi.txt en cours d'utilisation » (fichier d'ordres sftp unique par
+  envoi, écriture réessayée) ; METTRE-A-JOUR-OVH demande au VPS la taille de ses fichiers et ne renvoie plus les gros fichiers
+  déjà présents à l'identique (avant : ~1 Go de mods repartait tant qu'aucun envoi ne s'était terminé sans erreur).
 - **V12.62** (15/10/2026, session de secours) — propositions choisies + relecture complète du gros patch avant le backtest :
   (1) **Lives** : ▦ grille, « ⇢ TP » (action `goto` de gs_admin), **replay 30 s** (n° 137) : tant qu'un ticket est ouvert,
   20 images (1,5 s) de l'auteur et du joueur nommé (« /report 12 … », gs_admin `ReportedPlayers`) gardées EN MÉMOIRE, effacées à

@@ -242,11 +242,16 @@ function Send-Vps($vps, [string[]]$files, $dest) {
         $remote = if ($dest.EndsWith('/')) { $dest + (Split-Path $f -Leaf) } else { $dest }
         Write-Host ('  {0} ({1} Mo)' -f (Split-Path $f -Leaf), [math]::Round($size / 1MB, 1)) -ForegroundColor DarkGray
         [void](Get-VpsOutput $vps "rm -f '$remote'")
-        $batch = Join-Path $env:TEMP 'roadline-envoi.txt'
+        # V12.63 : un fichier d'ordres À PART pour chaque envoi (avant : toujours « roadline-envoi.txt », qu'un sftp resté
+        # ouvert d'une fenêtre précédente, ou l'antivirus, pouvait bloquer → « en cours d'utilisation par un autre processus »)
+        $batch = Join-Path $env:TEMP ('roadline-envoi-' + [guid]::NewGuid().ToString('N') + '.txt')
         $got = ''
         for ($try = 1; $try -le 5; $try++) {
             $put = if ([int64]("0$got") -gt 0) { 'put -a' } else { 'put' } # -a : reprend un envoi coupé
-            [IO.File]::WriteAllText($batch, "$put `"$($f.Replace('\', '/'))`" `"$remote`"`n")
+            for ($w = 1; ; $w++) { # écriture réessayée : l'antivirus peut garder le fichier une seconde
+                try { [IO.File]::WriteAllText($batch, "$put `"$($f.Replace('\', '/'))`" `"$remote`"`n"); break }
+                catch { if ($w -ge 5) { throw } ; Start-Sleep -Seconds 1 }
+            }
             $old = $ErrorActionPreference; $ErrorActionPreference = 'Continue'
             & sftp @a -o StrictHostKeyChecking=accept-new -o ServerAliveInterval=15 -b $batch $target 2>&1 |
                 ForEach-Object { if ("$_" -notmatch '^sftp>') { Write-Host "    $_" -ForegroundColor DarkGray } }

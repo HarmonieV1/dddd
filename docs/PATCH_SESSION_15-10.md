@@ -66,6 +66,7 @@
 | **Lives hors jeu** | `web.lua`, `gs_lives` | Écrans des joueurs dans l'appli (jusqu'à 4), replays 30 s des tickets |
 | **F10** | `gs_admin/web` | Recompilé : onglet **Carte** avec les joueurs en direct |
 | **Lives réparé** | `gs_lives` | Plus de « connexion » sans fin : capture faite chez le joueur et renvoyée par le réseau du jeu ; F11 et l'appli voient la même image |
+| **Outils OVH** | `scripts/windows` | GERER-OVH ne plante plus (« roadline-envoi.txt en cours d'utilisation ») ; METTRE-A-JOUR-OVH ne renvoie plus les gros fichiers déjà présents sur le VPS (fini le 1 Go à chaque fois) |
 
 ## Encore en attente (côté fondateur)
 - `shared/config.lua` du script des auto-tamponneuses si l'achat bloque encore ;

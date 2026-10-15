@@ -70,9 +70,21 @@ if (Test-Path -LiteralPath $Stage) { [IO.Directory]::Delete($Stage, $true) }
 [void][IO.Directory]::CreateDirectory($Stage)
 robocopy (Join-Path $Res '[gtasoon]') (Join-Path $Stage 'gtasoon') /E /NFL /NDL /NJH /NJS /NP /XD node_modules | Out-Null
 $since = if (Test-Path -LiteralPath $Stamp) { [datetime]::Parse((Get-Content -LiteralPath $Stamp -Raw).Trim(), [Globalization.CultureInfo]::InvariantCulture) } else { (Get-Date).AddDays(-30) }
-$n = 0
+# V12.63 : on demande au VPS la liste de ses fichiers (taille) : un gros fichier déjà présent à l'identique n'est plus renvoyé
+# (avant : tout ce qui avait été modifié depuis le dernier envoi RÉUSSI repartait, ~1 Go de mods déjà en ligne après un
+# envoi terminé en erreur). Les petits fichiers (< 1 Mo : réglages, scripts) modifiés repartent toujours, même taille ou non.
+$onServer = @{}
+$oldEnc = [Console]::OutputEncoding
+try {
+    [Console]::OutputEncoding = [Text.Encoding]::UTF8 # noms de fichiers accentués lus correctement
+    $list = Get-VpsOutput $vps "cd /home/fivem/server-data 2>/dev/null && find resources -path 'resources/[[]gtasoon[]]' -prune -o -type f -printf '%s\t%p\n' 2>/dev/null"
+    foreach ($l in ($list -split "`n")) { $p = $l.TrimEnd("`r").Split("`t", 2); if ($p.Count -eq 2 -and $p[0] -match '^\d+$') { $onServer[$p[1]] = [int64]$p[0] } }
+} catch { $onServer = @{} } finally { try { [Console]::OutputEncoding = $oldEnc } catch {} }
+$n = 0; $skip = 0; $skipMb = 0
 foreach ($f in Get-ChildItem -LiteralPath $Res -Recurse -File -Force | Where-Object { $_.LastWriteTime -gt $since -and $_.FullName -notmatch '\\\[gtasoon\]\\|\\cache\\|\\node_modules\\' }) {
     $rel = $f.FullName.Substring($Data.Length + 1)
+    $r = $onServer[$rel.Replace('\', '/')]
+    if ($null -ne $r -and $r -eq $f.Length -and $f.Length -ge 1MB) { $skip++; $skipMb += $f.Length / 1MB; continue } # déjà sur le VPS
     $dest = Join-Path (Join-Path $Stage 'extra') $rel
     [void][IO.Directory]::CreateDirectory((Split-Path $dest))
     Copy-Item -LiteralPath $f.FullName -Destination $dest -Force   # -Force : fichiers cachés compris (.fxap des maps payantes)
@@ -85,6 +97,7 @@ Copy-Item -LiteralPath (Join-Path $Data 'server.cfg') -Destination (Join-Path $S
 New-UnixZip $Stage $zip
 [IO.Directory]::Delete($Stage, $true)
 Say ('  RoadLine + {0} fichier(s) modifié(s) ailleurs · {1} Mo' -f $n, [math]::Round((Get-Item $zip).Length / 1MB, 1)) 'Green'
+if ($skip) { Say ('  {0} fichier(s) déjà identiques sur le VPS, pas renvoyés ({1} Mo économisés)' -f $skip, [math]::Round($skipMb)) 'Green' }
 [IO.File]::WriteAllText("$zip.debut", (Get-Date).ToString('o', [Globalization.CultureInfo]::InvariantCulture)) # date de préparation (reprise)
 }
 
