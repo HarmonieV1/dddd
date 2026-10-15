@@ -42,6 +42,20 @@ Invoke-Vps $vps 'sudo install -m 755 /tmp/roadline.sh /tmp/roadline-bdd.sh /home
 if ($LASTEXITCODE -ne 0) { Fail 'Impossible de mettre à jour la commande roadline sur le VPS (voir au-dessus).' }
 [IO.Directory]::Delete($tmpOutils, $true)
 
+# V12.62 · Envoi interrompu (coupure pendant l'installation) : l'archive est restée sur le PC, souvent aussi sur le VPS.
+# On la reprend au lieu de tout repréparer et de renvoyer 1 Go.
+$zip = Join-Path $Out 'roadline-maj.zip'
+$reuse = $false; $onVps = $false
+if ((Test-Path -LiteralPath $zip) -and (Get-Item -LiteralPath $zip).LastWriteTime -gt (Get-Date).AddHours(-24)) {
+    $z = Get-Item -LiteralPath $zip
+    Say ('Envoi interrompu trouvé : archive de {0} Mo du {1}.' -f [math]::Round($z.Length / 1MB, 1), $z.LastWriteTime.ToString('dd/MM HH:mm')) 'Yellow'
+    if ((Read-Host '  La reprendre (O) ou tout repréparer (N) ?') -notmatch '^[nN]') {
+        $reuse = $true
+        $onVps = (Get-VpsOutput $vps "stat -c %s /tmp/roadline-maj.zip 2>/dev/null") -eq "$($z.Length)"
+        if ($onVps) { Say '  Elle est déjà entière sur le VPS : pas de nouvel envoi.' 'Green' }
+    }
+}
+if (-not $reuse) {
 Say '[1/3] Préparation' 'Cyan'
 if (Test-Path -LiteralPath $Stage) { [IO.Directory]::Delete($Stage, $true) }
 [void][IO.Directory]::CreateDirectory($Stage)
@@ -59,18 +73,40 @@ foreach ($f in Get-ChildItem -LiteralPath $Res -Recurse -File -Force | Where-Obj
 Get-ChildItem -LiteralPath (Join-Path $Data 'cfg') -Filter *.cfg -File | Where-Object { $_.Name -ne 'secrets.cfg' } |
     ForEach-Object { Copy-Item -LiteralPath $_.FullName -Destination (Join-Path $Stage 'cfg') }
 Copy-Item -LiteralPath (Join-Path $Data 'server.cfg') -Destination (Join-Path $Stage 'server.cfg')
-$zip = Join-Path $Out 'roadline-maj.zip'
 New-UnixZip $Stage $zip
 [IO.Directory]::Delete($Stage, $true)
 Say ('  RoadLine + {0} fichier(s) modifié(s) ailleurs · {1} Mo' -f $n, [math]::Round((Get-Item $zip).Length / 1MB, 1)) 'Green'
+[IO.File]::WriteAllText("$zip.debut", (Get-Date).ToString('o', [Globalization.CultureInfo]::InvariantCulture)) # date de préparation (reprise)
+}
 
-Say '[2/3] Envoi' 'Cyan'
-$started = Get-Date
-Send-Vps $vps @($zip) '/tmp/roadline-maj.zip'
-Say '[3/3] Installation sur le VPS (base sauvegardée avant, ~30 s de coupure)' 'Cyan'
-Invoke-Vps $vps 'sudo roadline maj /tmp/roadline-maj.zip'
-if ($LASTEXITCODE -ne 0) { Fail 'La mise à jour a échoué sur le VPS (voir au-dessus). Rien n''est perdu : « roadline retour » sur le VPS si besoin.' }
+$started = if (Test-Path -LiteralPath "$zip.debut") { [datetime]::Parse((Get-Content -LiteralPath "$zip.debut" -Raw).Trim(), [Globalization.CultureInfo]::InvariantCulture) } else { Get-Date }
+if (-not $onVps) {
+    Say '[2/3] Envoi' 'Cyan'
+    Send-Vps $vps @($zip) '/tmp/roadline-maj.zip'
+}
+# V12.62 : l'installation tourne EN TÂCHE DE FOND sur le VPS (systemd-run) : une coupure de la connexion ne l'interrompt plus
+# (avant : « client_loop: send disconnect » pendant la décompression d'1 Go = installation arrêtée en route). On suit son avancée.
+Say '[3/3] Installation sur le VPS (base sauvegardée avant, ~30 s de coupure du serveur)' 'Cyan'
+$unit = 'roadline-maj-' + (Get-Date -Format 'yyyyMMddHHmmss')
+Invoke-Vps $vps "sudo systemd-run --unit=$unit --collect --quiet /usr/local/bin/roadline maj /tmp/roadline-maj.zip"
+if ($LASTEXITCODE -ne 0) { Fail 'Impossible de lancer l''installation sur le VPS (voir au-dessus). Relance l''outil : l''archive sera reprise.' }
+$t0 = Get-Date; $blank = 0
+while ($true) {
+    Start-Sleep -Seconds 10
+    $st = Get-VpsOutput $vps "systemctl is-active $unit 2>/dev/null || true"
+    if ($st -eq '') { $blank++; if ($blank -ge 30) { break } ; continue } # VPS injoignable un moment : on réessaie (5 min au plus)
+    $blank = 0
+    if ($st -notmatch '^(active|activating|reloading)$') { break }
+    Write-Host ('  … installation en cours ({0} min)' -f [math]::Floor(((Get-Date) - $t0).TotalMinutes)) -ForegroundColor DarkGray
+}
+$log = Get-VpsOutput $vps "sudo journalctl -u $unit --no-pager -o cat 2>/dev/null | tail -n 25"
+if ($log) { $log -split "`n" | ForEach-Object { Say "  $_" 'DarkGray' } }
+if ($log -notmatch 'Mise à jour installée') {
+    Fail ('L''installation ne s''est pas terminée sur le VPS (voir au-dessus). Rien n''est perdu : la base est sauvegardée. ' +
+        'Relance METTRE-A-JOUR-OVH (l''archive est reprise, pas renvoyée) ; si le serveur ne redémarre pas : GERER-OVH → 13 (version précédente).')
+}
 [IO.File]::WriteAllText($Stamp, $started.ToString('o', [Globalization.CultureInfo]::InvariantCulture))
+Remove-Item -LiteralPath "$zip.debut" -Force -ErrorAction SilentlyContinue
 Remove-Item -LiteralPath $zip -Force -ErrorAction SilentlyContinue
 Say "`nMise à jour $ver en ligne. Vérifie avec GERER-OVH.bat → Console." 'Green'
 Read-Host 'Entrée pour fermer'

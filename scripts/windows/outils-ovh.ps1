@@ -270,7 +270,8 @@ function Send-Vps($vps, [string[]]$files, $dest) {
 function Invoke-Vps($vps, $command) {
     Initialize-SshKey $vps
     $a = SshArgs
-    & ssh @a -t -o StrictHostKeyChecking=accept-new "$($vps.user)@$($vps.ip)" $command
+    # V12.62 : ServerAlive : une commande longue et silencieuse (décompression) ne fait plus couper la connexion par la box
+    & ssh @a -t -o StrictHostKeyChecking=accept-new -o ServerAliveInterval=15 -o ServerAliveCountMax=8 "$($vps.user)@$($vps.ip)" $command
 }
 
 #--- Archive avec des chemins « / » (lisible sous Linux, crochets de [gtasoon] compris)
