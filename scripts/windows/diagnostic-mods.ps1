@@ -45,6 +45,7 @@ $dlc = @{}        # [dlcName] = mods
 $models = @{}     # [modèle] = mods
 $files = @{}      # [nom de fichier] = @( @{ mod; hash } )
 $heavy = @()
+$sizes = @{}      # [mod] = taille (V12.62 : choisir la copie la plus complète d'une voiture en double)
 $RscExt = '^\.(ydd|ytd|yft|ydr|ybn)$'
 
 function Get-Head([string]$path) {
@@ -59,6 +60,7 @@ foreach ($mod in $active) {
     if (-not (Test-Path -LiteralPath $dir)) { continue }
     $all = @(Get-ChildItem -LiteralPath $dir -Recurse -File -Force -ErrorAction SilentlyContinue)
     $size = ($all | Measure-Object Length -Sum).Sum
+    $sizes[$mod] = [int64]("0$size")
     if ($size -gt 150MB) { $heavy += ('{0} ({1} Mo)' -f $mod, [math]::Round($size / 1MB)) }
     if (@($all | Where-Object { $_.Name -ieq '.fxap' -or $_.Extension -ieq '.fxap' }).Count -gt 0) { continue } # pack protégé : chiffré
     foreach ($f in $all) {
@@ -85,6 +87,24 @@ foreach ($mod in $active) {
 }
 $dlcDup = @($dlc.Keys | Where-Object { $dlc[$_].Count -gt 1 } | Sort-Object)
 $modelDup = @($models.Keys | Where-Object { $models[$_].Count -gt 1 } | Sort-Object)
+# V12.62 · Voitures en double : on garde UNE copie (pas abîmée, la plus complète, sinon le nom le plus court) et les autres
+# passent en pause, seulement si CHACUNE de leurs voitures reste dans un mod gardé (jamais une voiture perdue).
+$dupPause = @{}   # [mod mis en pause] = mod gardé
+foreach ($m in $modelDup) {
+    $cands = @($models[$m] | Where-Object { -not $broken.ContainsKey($_) })
+    if ($cands.Count -lt 2) { continue }
+    $keep = @($cands | Sort-Object @{ Expression = { $sizes[$_] }; Descending = $true }, @{ Expression = { $_.Length } }, @{ Expression = { $_ } })[0]
+    foreach ($x in $cands) { if ($x -ne $keep -and -not $dupPause.ContainsKey($x)) { $dupPause[$x] = $keep } }
+}
+do {
+    $changed = $false
+    foreach ($x in @($dupPause.Keys)) {
+        foreach ($m in @($models.Keys | Where-Object { $models[$_].Contains($x) })) {
+            $still = @($models[$m] | Where-Object { $_ -ne $x -and -not $dupPause.ContainsKey($_) -and -not $broken.ContainsKey($_) })
+            if ($still.Count -eq 0) { $dupPause.Remove($x); $changed = $true; break }
+        }
+    }
+} while ($changed)
 $fileDup = @($files.Keys | Where-Object {
     $list = $files[$_]
     @($list | ForEach-Object { $_.mod } | Sort-Object -Unique).Count -gt 1 -and @($list | ForEach-Object { $_.hash } | Sort-Object -Unique).Count -gt 1
@@ -99,7 +119,7 @@ function Section($title, $items, $hint) {
 }
 Section 'FICHIERS ABÎMÉS (crash « Invalid fixup » / « Streamer crashed »)' @($broken.Keys | Sort-Object | ForEach-Object { "$_ : $($broken[$_])" }) 'retélécharge le mod (archive complète) puis IMPORTER-MODS ; en attendant il est mis en pause par la correction sûre'
 Section 'VÊTEMENTS EN CONFLIT (même collection dlcName : l''un des packs s''affiche cassé)' @($dlcDup | ForEach-Object { "« $_ » dans : $($dlc[$_] -join ', ')" }) 'garde UN des packs (mets un # devant les autres dans cfg\addons.cfg) ou envoie-les-moi : je renomme la collection'
-Section 'VOITURES EN DOUBLE (même nom de spawn : une seule des deux existe)' @($modelDup | ForEach-Object { "$_ dans : $($models[$_] -join ', ')" }) 'garde un seul des mods (# devant l''autre dans cfg\addons.cfg)'
+Section 'VOITURES EN DOUBLE (même nom de spawn : une seule des deux existe)' @($modelDup | ForEach-Object { "$_ dans : $($models[$_] -join ', ')" }) 'correction sûre : une seule copie gardée (la plus complète), les autres mises en pause : ' + $(if ($dupPause.Count) { (@($dupPause.Keys | Sort-Object | ForEach-Object { "$_ (gardé : $($dupPause[$_]))" }) -join ', ') } else { 'aucune (copies abîmées ou voitures uniques dedans)' })
 Section 'FICHIERS EN DOUBLE (même nom, contenu différent : l''un écrase l''autre)' @($fileDup | Select-Object -First 60 | ForEach-Object { "$_ : $((@($files[$_] | ForEach-Object { $_.mod } | Sort-Object -Unique)) -join ', ')" }) 'souvent deux versions du même mod : garde la plus récente'
 Section 'LIGNES DE addons.cfg SANS DOSSIER (mod supprimé à la main)' $orphans 'enlevées par la correction sûre'
 Section 'MODS INSTALLÉS MAIS JAMAIS DÉMARRÉS' $never 'normal s''ils ont été retirés (F11) ; sinon relance IMPORTER-MODS'
@@ -107,8 +127,8 @@ Section 'MODS TRÈS LOURDS (> 150 Mo : chargement long, mémoire)' $heavy ''
 if ($fileDup.Count -gt 60) { $out += "(… et $($fileDup.Count - 60) autres fichiers en double)"; $out += '' }
 
 # Corrections sûres -----------------------------------------------------------------------------------------------------
-$todo = $orphans.Count + $broken.Count
-$apply = $Fix -or ($todo -gt 0 -and -not $NoFix -and -not $env:GTASOON_TEST -and (Read-Host "`n$todo correction(s) sûre(s) possible(s) (lignes mortes enlevées, mods abîmés mis en pause). Appliquer ? (O/N)") -match '^[oOyY]')
+$todo = $orphans.Count + $broken.Count + $dupPause.Count
+$apply = $Fix -or ($todo -gt 0 -and -not $NoFix -and -not $env:GTASOON_TEST -and (Read-Host "`n$todo correction(s) sûre(s) possible(s) (lignes mortes enlevées, mods abîmés et voitures en double mis en pause). Appliquer ? (O/N)") -match '^[oOyY]')
 if ($apply -and $todo -gt 0) {
     Copy-Item -LiteralPath $Cfg -Destination ($Cfg + '.avant-diagnostic') -Force   # copie de sécurité
     $new = New-Object System.Collections.ArrayList
@@ -121,11 +141,16 @@ if ($apply -and $todo -gt 0) {
                 [void]$new.Add("# ensure $n")
                 continue
             }
+            if ($dupPause.ContainsKey($n)) { # V12.62
+                [void]$new.Add("## $n : en pause (voiture en double, gardée dans $($dupPause[$n]), DIAGNOSTIC-MODS) : retire le # pour la reprendre")
+                [void]$new.Add("# ensure $n")
+                continue
+            }
         }
         [void]$new.Add($l)
     }
     [IO.File]::WriteAllLines($Cfg, [string[]]$new, (New-Object Text.UTF8Encoding $false))
-    $out += "CORRECTIONS APPLIQUÉES : $($orphans.Count) ligne(s) morte(s) enlevée(s), $($broken.Count) mod(s) abîmé(s) mis en pause."
+    $out += "CORRECTIONS APPLIQUÉES : $($orphans.Count) ligne(s) morte(s) enlevée(s), $($broken.Count) mod(s) abîmé(s) et $($dupPause.Count) voiture(s) en double mis en pause."
     $out += 'Copie de l''ancien fichier : cfg\addons.cfg.avant-diagnostic. Puis : VIDER-CACHE-FIVEM, METTRE-A-JOUR-OVH, redémarrer.'
 } elseif ($todo -gt 0) { $out += 'Aucune correction appliquée (relance et réponds O pour appliquer les corrections sûres).' }
 else { $out += 'Aucune correction nécessaire.' }

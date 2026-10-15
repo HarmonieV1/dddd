@@ -18,9 +18,12 @@ rsc "$A/gsa_robes_b/stream/y.ydd"; meta "$A/gsa_robes_b/data/shop_ped_apparel.me
 # 3. même voiture dans deux mods + même fichier (contenu différent)
 rsc "$A/gsa_double1/stream/sultan9.yft"; meta "$A/gsa_double1/data/vehicles.meta" '<modelName>sultan9</modelName>'
 rsc "$A/gsa_double2/stream/sultan9.yft"; meta "$A/gsa_double2/data/vehicles.meta" '<modelName>sultan9</modelName>'
+rsc "$A/gsa_double1/stream/sultan9_livery1.yft"   # V12.62 : gsa_double1 est la copie la plus complète (gardée)
+# V12.62 : 3e copie, mais avec une voiture qu'on ne trouve nulle part ailleurs : jamais mise en pause
+rsc "$A/gsa_double3/stream/sultan9.yft"; meta "$A/gsa_double3/data/vehicles.meta" '<modelName>sultan9</modelName><modelName>unique9</modelName>'
 # 4. pack protégé (chiffré) : jamais signalé abîmé
 mkdir -p "$A/gsa_payant/stream"; head -c 300 /dev/urandom > "$A/gsa_payant/stream/map.ydr"; head -c 30 /dev/urandom > "$A/gsa_payant/.fxap"
-printf 'ensure gsa_bonne\nensure gsa_cassee\nensure gsa_robes_a\nensure gsa_robes_b\nensure gsa_double1\nensure gsa_double2\nensure gsa_payant\nensure gsa_disparu\n# ensure gsa_pause\n' > "$T/server-data/cfg/addons.cfg"
+printf 'ensure gsa_bonne\nensure gsa_cassee\nensure gsa_robes_a\nensure gsa_robes_b\nensure gsa_double1\nensure gsa_double2\nensure gsa_double3\nensure gsa_payant\nensure gsa_disparu\n# ensure gsa_pause\n' > "$T/server-data/cfg/addons.cfg"
 GTASOON_ROOT=$T GTASOON_TEST=1 "$PWSH" -NoProfile -File "$REPO/scripts/windows/diagnostic-mods.ps1" -Fix > "$T/log.txt" 2>&1 || { cat "$T/log.txt"; exit 1; }
 REP=$(cat "$T/mods-tri/DIAGNOSTIC-MODS.txt"); CFG=$(cat "$T/server-data/cfg/addons.cfg")
 ok=0; ko=0
@@ -32,7 +35,9 @@ check 'voiture en double' 'grep -q "sultan9 dans : gsa_double1, gsa_double2" <<<
 check 'fichier en double (contenu différent)' 'grep -q "sultan9.yft : gsa_double1, gsa_double2" <<<"$REP"'
 check 'correction sûre : mod abîmé mis en pause avec la raison' 'grep -q "^# ensure gsa_cassee$" <<<"$CFG" && grep -q "## gsa_cassee : désactivé par sécurité" <<<"$CFG"'
 check 'correction sûre : ligne d un dossier disparu enlevée' '! grep -q "gsa_disparu" <<<"$CFG"'
-check 'les autres lignes ne bougent pas (y compris celles en pause)' 'grep -q "^ensure gsa_bonne$" <<<"$CFG" && grep -q "^ensure gsa_double2$" <<<"$CFG" && grep -q "^# ensure gsa_pause$" <<<"$CFG"'
+check 'les autres lignes ne bougent pas (y compris celles en pause)' 'grep -q "^ensure gsa_bonne$" <<<"$CFG" && grep -q "^# ensure gsa_pause$" <<<"$CFG"'
+check 'V12.62 : voiture en double : copie la plus complète gardée, l autre en pause avec la raison' 'grep -q "^ensure gsa_double1$" <<<"$CFG" && grep -q "^# ensure gsa_double2$" <<<"$CFG" && grep -q "## gsa_double2 : en pause (voiture en double, gardée dans gsa_double1" <<<"$CFG"'
+check 'V12.62 : copie qui contient une voiture unique : jamais mise en pause' 'grep -q "^ensure gsa_double3$" <<<"$CFG"'
 check 'copie de sécurité de addons.cfg' '[ -f "$T/server-data/cfg/addons.cfg.avant-diagnostic" ] && grep -q "gsa_disparu" "$T/server-data/cfg/addons.cfg.avant-diagnostic"'
 # 2e passage : plus rien à corriger, rien ne change
 cp "$T/server-data/cfg/addons.cfg" "$T/avant.cfg"
