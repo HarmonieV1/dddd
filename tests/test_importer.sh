@@ -68,5 +68,28 @@ check 'mod déjà converti (natt_hair5_fivem) : pas installé, plus démarré' '
 check 'refus manuel (afro de Lamar) : rejeté avec sa raison' 'grep -A1 "^- afro_for_lamar_tykus" <<<"$REP" | grep -q "Lamar"'
 ITEMS=$(cat "$R/server-data/resources/[ox]/ox_inventory/data/items.lua")
 check 'objet réclamé par un script ajouté à ox_inventory (une seule fois, objet existant non doublé)' 'grep -q "\[.bowling_token.\] = { label = .Jeton." <<<"$ITEMS" && [ "$(grep -c "\[.water.\]" <<<"$ITEMS")" = 1 ] && grep -q "bowling_token" <<<"$REP" && luac5.4 -p "$R/server-data/resources/[ox]/ox_inventory/data/items.lua"'
+# V12.59 · « les mods à trier ne passent pas à chaque fois » : zips Google Drive coupés en morceaux, mod sans fxmanifest à
+# côté de ressources, dossier déjà décompressé, archive en volumes, signature gardée seulement si tout est installé.
+R2=$T/root2; B2=$T/build2; mkdir -p "$R2/mods-a-trier" "$R2/server-data/cfg" "$R2/server-data/resources/[qbx]/qbx_core/shared" "$B2"
+touch "$R2/server-data/resources/[qbx]/qbx_core/fxmanifest.lua"; printf "return {\n    ['adder'] = {},\n}\n" > "$R2/server-data/resources/[qbx]/qbx_core/shared/vehicles.lua"
+veh() { mkdir -p "$1/stream" "$1/data"; head -c 300 /dev/urandom > "$1/stream/$2.yft"; head -c 300 /dev/urandom > "$1/stream/$2.ytd"
+    printf "<CVehicleModelInfo__InitDataList><InitDatas><Item><modelName>$2</modelName><vehicleClass>VC_SPORT</vehicleClass></Item></InitDatas></CVehicleModelInfo__InitDataList>" > "$1/data/vehicles.meta"
+    printf "fx_version 'cerulean'\ngame 'gta5'\nfiles {'data/*.meta'}\ndata_file 'VEHICLE_METADATA_FILE' 'data/vehicles.meta'\n" > "$1/fxmanifest.lua"; }
+veh "$B2/full/GTA/acheval" acheval; veh "$B2/d1/GTA/entier" entier
+mkdir -p "$B2/d1/GTA/acheval" "$B2/d2/GTA/acheval"; cp -r "$B2/full/GTA/acheval/stream" "$B2/d1/GTA/acheval/"; cp -r "$B2/full/GTA/acheval/data" "$B2/full/GTA/acheval/fxmanifest.lua" "$B2/d2/GTA/acheval/"
+(cd "$B2/d1" && zip -qr "$R2/mods-a-trier/GTA-20261014T101500Z-001.zip" .); (cd "$B2/d2" && zip -qr "$R2/mods-a-trier/GTA-20261014T101500Z-002.zip" .)
+veh "$B2/mix/res_a" res_a; veh "$B2/mix/res_b" res_b; mkdir -p "$B2/mix/seule"; head -c 300 /dev/urandom > "$B2/mix/seule/seule.yft"; head -c 300 /dev/urandom > "$B2/mix/seule/seule.ytd"
+(cd "$B2/mix" && zip -qr "$R2/mods-a-trier/melange.zip" .)
+veh "$R2/mods-a-trier/deja_extrait" dejaextrait
+veh "$B2/vol/envol" envol; (cd "$B2/vol" && "$SEVENZ" a -v20k "$R2/mods-a-trier/envol.7z" . >/dev/null)
+run2() { GTASOON_ROOT=$R2 GTASOON_TEST=1 GTASOON_7Z=$SEVENZ GTASOON_TEXOPT=0 "$@" "$PWSH" -NoProfile -File "$REPO/scripts/windows/importer-mods.ps1" > "$T/log2.txt" 2>&1 || { cat "$T/log2.txt"; exit 1; }; }
+run2 env
+CFG2=$(cat "$R2/server-data/cfg/addons.cfg"); A2="$R2/server-data/resources/[addons]"
+check 'zip Drive en 2 morceaux : le mod à cheval est installé entier (modèle + .meta)' 'grep -q "^ensure gsa_acheval$" <<<"$CFG2" && ls "$A2/gsa_acheval/stream" | grep -q acheval.yft && [ -n "$(find "$A2/gsa_acheval" -name vehicles.meta)" ] && grep -q "^ensure gsa_entier$" <<<"$CFG2"'
+check 'mod sans fxmanifest à côté de 2 ressources : plus effacé' 'grep -q "^ensure gsa_res_a$" <<<"$CFG2" && grep -q "^ensure gsa_res_b$" <<<"$CFG2" && [ -n "$(find "$A2" -name seule.yft)" ]'
+check 'dossier déjà décompressé dans mods-a-trier : importé' 'grep -q "^ensure gsa_deja_extrait$" <<<"$CFG2"'
+check 'archive en volumes (.7z.001) : importée' 'grep -q "^ensure gsa_envol$" <<<"$CFG2"'
+check 'import réussi : signature gardée, METTRE-A-JOUR ne refait rien' '[ -f "$R2/mods-tri/.derniere-signature" ] && run2 env GTASOON_CHAIN=1 && grep -q "rien de nouveau" "$T/log2.txt"'
+check 'dossier modifié : réimporté par METTRE-A-JOUR' 'head -c 10 /dev/urandom > "$R2/mods-a-trier/deja_extrait/stream/x.ytd" && run2 env GTASOON_CHAIN=1 && ! grep -q "rien de nouveau" "$T/log2.txt"'
 echo "importeur (scripts compagnons, retraits) : $ok réussis, $ko échoués"
 [ "$ko" -eq 0 ]

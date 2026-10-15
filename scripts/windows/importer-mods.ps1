@@ -22,7 +22,17 @@ $Report = Join-Path $Out 'RAPPORT-MODS.txt'
 $Cats   = @{ vehicule = 'vehicules'; vetement = 'vetements'; map = 'maps'; script = 'scripts-a-verifier'; convertir = 'a-convertir'; converti = 'deja-convertis'; rejete = 'rejetes' }
 
 [void][IO.Directory]::CreateDirectory($Src)
-$archives = @(Get-ChildItem -LiteralPath $Src -File | Where-Object { $_.Extension -match '^\.(zip|rar|7z)$' })
+# V12.59 · Archives en plusieurs morceaux : seul le 1er morceau est pris (7-Zip lit les suivants tout seul) :
+#     « x.7z.001 » / « x.zip.001 », « x.part1.rar ». Avant, les « .001 » étaient ignorés sans message et les « .part2.rar »
+#     ouverts seuls (archive incomplète).
+function Test-ArchiveName([string]$n) {
+    if ($n -match '(?i)\.part0*([2-9]|\d{2,})\.rar$') { return $false }
+    return $n -match '(?i)(\.(zip|rar|7z)|\.(7z|zip)\.0*1)$'
+}
+$archives = @(Get-ChildItem -LiteralPath $Src -File | Where-Object { Test-ArchiveName $_.Name })
+# V12.59 · Dossiers déjà décompressés posés dans mods-a-trier : avant ignorés sans message (« le mod ne passe pas »),
+#     maintenant importés comme une archive (sauf nos dossiers de travail).
+$folders = @(Get-ChildItem -LiteralPath $Src -Directory | Where-Object { $_.Name -notmatch '^(_|\.)' })
 # En plus de mods-a-trier : « Google Drive pour ordinateur » (lecteur G:, H:…), dossier GTA de Mon Drive, s'il existe.
 # (Un fichier présent aux deux endroits n'est pris qu'une fois.)
 if (-not $env:GTASOON_ROOT) {
@@ -31,24 +41,26 @@ if (-not $env:GTASOON_ROOT) {
             $g = Join-Path $d.Root $sub
             if (Test-Path -LiteralPath $g) {
                 $names = @($archives | ForEach-Object { $_.Name })
-                $found = @(Get-ChildItem -LiteralPath $g -File | Where-Object { $_.Extension -match '^\.(zip|rar|7z)$' -and $names -notcontains $_.Name })
+                $found = @(Get-ChildItem -LiteralPath $g -File | Where-Object { (Test-ArchiveName $_.Name) -and $names -notcontains $_.Name })
                 if ($found.Count -gt 0) { Say "Dossier Google Drive trouvé : $g (+$($found.Count) archives)" 'Green'; $archives += $found }
             }
         }
     }
 }
-if ($archives.Count -eq 0 -and $env:GTASOON_CHAIN) {
+if ($archives.Count -eq 0 -and $folders.Count -eq 0 -and $env:GTASOON_CHAIN) {
     Say "  Mods : aucun fichier dans $Src (voitures, maps, vêtements du Drive : mets-les là, tels quels)." 'Yellow'; return
 }
 # Lancé par METTRE-A-JOUR : si ni les archives ni cet importeur n'ont changé depuis le dernier import, rien à refaire
 # (évite de tout redécompresser à chaque mise à jour).
 $Stamp = Join-Path $Out '.derniere-signature'
 $signature = (@($archives | Sort-Object Name | ForEach-Object { "$($_.Name)|$($_.Length)|$($_.LastWriteTimeUtc.Ticks)" }) +
+    @($folders | Sort-Object Name | ForEach-Object { $fs = @(Get-ChildItem -LiteralPath $_.FullName -Recurse -File -Force -ErrorAction SilentlyContinue)
+        "$($_.Name)/|$($fs.Count)|$(($fs | Measure-Object Length -Sum).Sum)|$(($fs | ForEach-Object { $_.LastWriteTimeUtc.Ticks } | Measure-Object -Maximum).Maximum)" }) +
     (Get-FileHash -LiteralPath $PSCommandPath -Algorithm SHA1).Hash) -join "`n"
 if ($env:GTASOON_CHAIN -and (Test-Path -LiteralPath $Stamp) -and (Get-Content -LiteralPath $Stamp -Raw).Trim() -eq $signature.Trim()) {
     Say '  Mods : rien de nouveau depuis le dernier import.' 'Green'; return
 }
-if ($archives.Count -eq 0) {
+if ($archives.Count -eq 0 -and $folders.Count -eq 0) {
     Say "Mets tes fichiers (.zip / .rar / .7z) dans $Src puis relance IMPORTER-MODS.bat." 'Yellow'
     Start-Process explorer.exe $Src
     Read-Host 'Entrée pour quitter'; exit 0
@@ -80,7 +92,7 @@ if (Test-Path -LiteralPath $Work) {
 Get-ChildItem -LiteralPath $Out -Directory -Filter '_extraction_*' -ErrorAction SilentlyContinue | ForEach-Object { Remove-Item -LiteralPath $_.FullName -Recurse -Force -ErrorAction SilentlyContinue }
 [void][IO.Directory]::CreateDirectory($Work)
 function Clean-Name([string]$n) {
-    $n = [IO.Path]::GetFileNameWithoutExtension($n)
+    $n = [IO.Path]::GetFileNameWithoutExtension($n) -replace '(?i)\.(7z|zip|part0*1)$', ''   # « x.7z.001 », « x.part1.rar » → x
     $n = $n -replace '^[0-9a-f]{6}-', '' -replace '_\d{9,}_\d+$', ''          # préfixes / suffixes des sites de mods
     $n = ($n -replace '[^A-Za-z0-9]+', '_').Trim('_').ToLower()
     if ($n.Length -gt 40) { $n = $n.Substring(0, 40).Trim('_') }
@@ -97,25 +109,37 @@ function Invoke-7z([string[]]$a) {
 }
 #--- Décompresse une archive. Si elle contient elle-même des archives (zip du Drive = plusieurs mods), chacune
 #    devient un mod séparé. Retourne la liste des dossiers « mod ».
-function Expand-One($file, $dest) {
-    Invoke-7z @('x', $file, "-o$dest", '-y', '-bso0', '-bsp0')
+function Expand-One($files, $dest) {
+    foreach ($f in @($files)) { Invoke-7z @('x', $f, "-o$dest", '-y', '-bso0', '-bsp0') }
+    Expand-Inner $dest
+}
+function Expand-Inner($dest) {
     for ($depth = 0; $depth -lt 3; $depth++) { # archives dans l'archive d'un même mod (ex : pack de vêtements)
-        $inner = @(Get-ChildItem -LiteralPath $dest -Recurse -File | Where-Object { $_.Extension -match '^\.(zip|rar|7z)$' })
+        $inner = @(Get-ChildItem -LiteralPath $dest -Recurse -File | Where-Object { Test-ArchiveName $_.Name })
         if ($inner.Count -eq 0) { break }
         foreach ($i in $inner) {
-            Invoke-7z @('x', $i.FullName, ("-o" + (Join-Path $i.DirectoryName ([IO.Path]::GetFileNameWithoutExtension($i.Name)))), '-y', '-bso0', '-bsp0')
+            Invoke-7z @('x', $i.FullName, ("-o" + (Join-Path $i.DirectoryName (Clean-Name $i.Name))), '-y', '-bso0', '-bsp0')
             Remove-Item -LiteralPath $i.FullName -Force -ErrorAction SilentlyContinue
         }
     }
 }
-function Expand-Package($file, $dest) {
-    Invoke-7z @('x', $file, "-o$dest", '-y', '-bso0', '-bsp0')
-    $inner = @(Get-ChildItem -LiteralPath $dest -Recurse -File | Where-Object { $_.Extension -match '^\.(zip|rar|7z)$' })
-    $loose = @(Get-ChildItem -LiteralPath $dest -Recurse -File | Where-Object { $_.Extension -notmatch '^\.(zip|rar|7z|txt|url|html?|jpe?g|png|webp)$' })
+# Fichiers du jeu (ce qui fait un mod) : sert à repérer un mod resté à côté des dossiers-ressources
+$GameExt = '^\.(yft|ytd|ydd|ydr|ymap|ytyp|ybn|ymt|meta|rpf|ycd|awc|rel|dat\d*|nametable|gxt2)$'
+# $files : une archive, ou les morceaux d'un téléchargement Google Drive coupé en plusieurs zips (V12.59) ; $folder : un
+# dossier déjà décompressé posé dans mods-a-trier (V12.59).
+function Expand-Package($files, $dest, $folder) {
+    $files = @($files | Where-Object { $_ })
+    if ($folder) { Copy-Item -LiteralPath $folder -Destination $dest -Recurse -Force }
+    else { foreach ($f in $files) { Invoke-7z @('x', $f, "-o$dest", '-y', '-bso0', '-bsp0') } }
+    $inner = @(Get-ChildItem -LiteralPath $dest -Recurse -File | Where-Object { Test-ArchiveName $_.Name })
+    # V12.59 : un mode d'emploi (pdf, doc, vidéo…) à côté des archives ne fusionne plus tous les mods en un seul
+    $loose = @(Get-ChildItem -LiteralPath $dest -Recurse -File | Where-Object { -not (Test-ArchiveName $_.Name) -and
+        $_.Extension -notmatch '^\.(zip|rar|7z|\d{3}|txt|md|nfo|pdf|docx?|rtf|url|html?|jpe?g|png|gif|webp|bmp|mp4|webm|mkv|avi|ini|log)$' })
     if ($inner.Count -ge 2 -and $loose.Count -eq 0) {
         $list = @()
         foreach ($i in $inner) {
             $sub = Join-Path $Work (Clean-Name $i.Name)
+            if (Test-Path -LiteralPath $sub) { $sub = $sub + '_' + (Clean-Name (Split-Path $dest -Leaf)) }
             Expand-One $i.FullName $sub
             Remove-Item -LiteralPath $i.FullName -Force -ErrorAction SilentlyContinue
             $list += Get-Item -LiteralPath $sub
@@ -123,13 +147,17 @@ function Expand-Package($file, $dest) {
         Remove-Item -LiteralPath $dest -Recurse -Force -ErrorAction SilentlyContinue
         return $list
     }
-    Remove-Item -LiteralPath $dest -Recurse -Force -ErrorAction SilentlyContinue
-    Expand-One $file $dest
+    Expand-Inner $dest
     # V12.18 : pack payant livré en plusieurs dossiers-ressources (map + dépendance…) dans un seul zip : un mod par
     # dossier (sinon seul le premier fxmanifest était installé, les autres oubliés)
+    $sep = [IO.Path]::DirectorySeparatorChar
     $mans = @(Get-ChildItem -LiteralPath $dest -Recurse -File -Force | Where-Object { $_.Name -ieq 'fxmanifest.lua' -or $_.Name -ieq '__resource.lua' } | ForEach-Object { $_.DirectoryName } | Sort-Object -Unique)
-    $tops = @($mans | Where-Object { $d = $_; -not @($mans | Where-Object { $_ -ne $d -and $d.StartsWith($_ + '\') }).Count })
-    if ($tops.Count -ge 2) {
+    $tops = @($mans | Where-Object { $d = $_; -not @($mans | Where-Object { $_ -ne $d -and $d.StartsWith($_ + $sep) }).Count })
+    # V12.59 : mod sans fxmanifest (voiture, vêtement « stream » seul) rangé à côté de dossiers-ressources : avant, il était
+    # effacé sans un mot (2 ressources ou plus) ou ignoré (1 ressource : seul son dossier était lu). Il devient un mod à part.
+    $outside = @(Get-ChildItem -LiteralPath $dest -Recurse -File -Force | Where-Object { $_.Extension -match $GameExt -and
+        $(foreach ($t in $tops) { if ($_.FullName.StartsWith($t + $sep)) { $true; break } }) -ne $true })
+    if ($tops.Count -ge 2 -or ($tops.Count -eq 1 -and $outside.Count -gt 0 -and $tops[0] -ne $dest)) {
         $list = @()
         foreach ($t in $tops) {
             $sub = Join-Path $Work (Clean-Name (Split-Path $t -Leaf))
@@ -137,25 +165,41 @@ function Expand-Package($file, $dest) {
             Move-Item -LiteralPath $t -Destination $sub -Force
             $list += Get-Item -LiteralPath $sub
         }
-        Remove-Item -LiteralPath $dest -Recurse -Force -ErrorAction SilentlyContinue
+        if ($outside.Count -gt 0) { $list += Get-Item -LiteralPath $dest }   # le reste : un mod de plus (voitures, vêtements…)
+        else { Remove-Item -LiteralPath $dest -Recurse -Force -ErrorAction SilentlyContinue }
         return $list
     }
     return @(Get-Item -LiteralPath $dest)
 }
-Say "`n[1/3] Décompression de $($archives.Count) archive(s)" 'Cyan'
+# V12.59 · Google Drive coupe un gros dossier en plusieurs zips (« GTA-20261014T101500Z-001.zip », « -002 »…) et un même
+#     mod peut être à cheval sur deux zips : chaque moitié était analysée seule (modèles sans .meta, .meta sans modèles),
+#     la 2e moitié souvent prise pour un doublon. Les morceaux d'un même téléchargement sont décompressés ensemble.
+$groups = [ordered]@{}
+foreach ($a in $archives) {
+    $key = if ($a.Name -match '(?i)^(.+-\d{8}T\d{6}Z)-(\d+-)?\d{3}\.zip$') { $Matches[1] } else { $a.Name }
+    if (-not $groups.Contains($key)) { $groups[$key] = @() }
+    $groups[$key] += $a
+}
+Say "`n[1/3] Décompression de $($archives.Count) archive(s)$(if ($folders.Count) { " et $($folders.Count) dossier(s)" })" 'Cyan'
 $packages = @()
 $BrokenPkg = @{} # [dossier du mod] = archive incomplète d'où il vient
-foreach ($a in $archives) {
-    Say "  $($a.Name)"
+$script:ImportFailed = $false # V12.59 : échec à refaire au prochain METTRE-A-JOUR (la signature n'est pas enregistrée)
+$jobs = @(foreach ($k in $groups.Keys) { [pscustomobject]@{ label = (@($groups[$k] | ForEach-Object { $_.Name }) -join ' + '); name = $k; files = @($groups[$k] | ForEach-Object { $_.FullName }); folder = $null } }) +
+    @(foreach ($f in $folders) { [pscustomobject]@{ label = "$($f.Name)\ (dossier)"; name = $f.Name; files = @(); folder = $f.FullName } })
+foreach ($j in $jobs) {
+    Say "  $($j.label)"
+    if ($j.files.Count -gt 1) { Say "    téléchargement Google Drive en $($j.files.Count) morceaux : décompressés ensemble" 'DarkGray' }
     $script:ArchiveBroken = $false
     try {
-        $got = @(Expand-Package $a.FullName (Join-Path $Work (Clean-Name $a.Name)))
+        $dest = Join-Path $Work (Clean-Name $j.name)
+        if (Test-Path -LiteralPath $dest) { $dest = $dest + '_' + $packages.Count }
+        $got = @(Expand-Package $j.files $dest $j.folder)
         $packages += $got
         if ($script:ArchiveBroken) {
-            foreach ($g in $got) { $BrokenPkg[$g.FullName] = $a.Name }
+            foreach ($g in $got) { $BrokenPkg[$g.FullName] = $j.label }
             Say "    ARCHIVE INCOMPLÈTE (téléchargement coupé) : pas installée. Retélécharge-la puis relance." 'Red'
         }
-    } catch { Say "    échec : $($_.Exception.Message)" 'Yellow' }
+    } catch { $script:ImportFailed = $true; Say "    échec : $($_.Exception.Message)" 'Yellow' }
 }
 
 # 1b. Archives dlc.rpf (mods « solo » faits avec OpenIV) : extraction directe si non chiffrées (format OPEN), sans
@@ -328,7 +372,8 @@ function Analyze($pkg) {
     $all = @(Get-ChildItem -LiteralPath $pkg.FullName -Recurse -File -Force)
     $brandHit = (Test-Brand $pkg.Name) -or @($all | Where-Object { Test-Brand $_.Name -File } | Select-Object -First 1).Count -gt 0
     $r = [ordered]@{ name = (Clean-Name $pkg.Name); source = $pkg.Name; type = 'rejete'; sizeMB = MB (($all | Measure-Object Length -Sum).Sum)
-        issues = New-Object System.Collections.ArrayList; notes = $pre; root = $pkg.FullName; models = @(); install = $false; risk = $null; escrow = $false; broken = $null; deps = @(); resName = $null; companion = $null }
+        issues = New-Object System.Collections.ArrayList; notes = $pre; root = $pkg.FullName; models = @(); install = $false; risk = $null; escrow = $false; broken = $null; deps = @(); resName = $null; companion = $null
+        bytes = [long](($all | Measure-Object Length -Sum).Sum); nfiles = $all.Count }
     $ext = { param($e) @($all | Where-Object { $_.Extension -ieq $e }) }
     $manifest = $all | Where-Object { $_.Name -ieq 'fxmanifest.lua' -or $_.Name -ieq '__resource.lua' } | Select-Object -First 1
     $lua = @($all | Where-Object { $_.Extension -ieq '.lua' -and $_.Name -notmatch '^(fxmanifest|__resource)\.lua$' })
@@ -501,12 +546,14 @@ foreach ($p in $packages) {
             [void]$r.issues.Add("archive incomplète ($($r.broken)) : un fichier tronqué fait planter les joueurs. Retélécharge-la depuis la boutique (portail Cfx) puis relance IMPORTER-MODS")
         }
         $results += $r
-    } catch { Say "  $($p.Name) : analyse impossible ($($_.Exception.Message))" 'Yellow' }
+    } catch { $script:ImportFailed = $true; Say "  $($p.Name) : analyse impossible ($($_.Exception.Message))" 'Yellow' }
 }
 # V12.44 · Doublons (même mod dans deux archives : zip d'origine + zip WeTransfer, « pack » et « pack_1 ») : traité une seule fois
+# V12.59 : même taille à l'octet près et même nombre de fichiers (avant : taille arrondie au dixième de Mo, deux mods
+# différents « x_2 » / « x_3 » de taille proche, ou les morceaux d'un zip Drive, passaient pour des doublons et le 2e sautait)
 $seenMods = @{}
 $results = @($results | Where-Object {
-    $k = ($_.name -replace '_\d+$', '') + '|' + $_.sizeMB
+    $k = ($_.name -replace '_\d+$', '') + '|' + $_.bytes + '|' + $_.nfiles
     if ($seenMods[$k]) { Say "  doublon ignoré : $($_.name) (même mod que $($seenMods[$k]))" 'DarkGray'; $false } else { $seenMods[$k] = $_.name; $true }
 })
 # V12.16 : mods retirés par le staff (F11 → Supprimer définitivement les maps) : jamais réinstallés, même depuis une archive groupée
@@ -652,6 +699,7 @@ foreach ($r in $results) {
             $installed += $name
         } catch {
             [void]$r.issues.Add("installation impossible (fichier utilisé par un autre programme : serveur lancé ?) — ferme le serveur puis relance")
+            $script:ImportFailed = $true
             if (Test-Path -LiteralPath $dest) { $installed += $name }   # l'ancienne version reste en place
         }
     }
@@ -811,7 +859,13 @@ foreach ($grp in ($results | Group-Object type | Sort-Object Name)) {
 }
 $lines += 'Envoie-moi ce fichier (copier-coller) : je branche les véhicules (concession, garages), les maps (coords, blips) et je relis les scripts.'
 [IO.File]::WriteAllLines($Report, $lines, (New-Object Text.UTF8Encoding $false))
-if ($canInstall) { [IO.File]::WriteAllText($Stamp, $signature, (New-Object Text.UTF8Encoding $false)) }
+# V12.59 : signature enregistrée seulement si tout s'est bien passé. Avant, un mod pas installé (serveur lancé pendant
+# IMPORTER-MODS : fichiers verrouillés) n'était plus jamais retenté par METTRE-A-JOUR (« Mods : rien de nouveau »).
+if ($canInstall -and -not $script:ImportFailed) { [IO.File]::WriteAllText($Stamp, $signature, (New-Object Text.UTF8Encoding $false)) }
+elseif ($script:ImportFailed) {
+    Remove-Item -LiteralPath $Stamp -Force -ErrorAction SilentlyContinue
+    Say "  Un ou plusieurs mods n'ont pas pu être installés : ils seront retentés au prochain IMPORTER-MODS / METTRE-A-JOUR." 'Yellow'
+}
 # Copie décompressée temporaire (1 à 3 Go) : supprimée, elle est refaite au prochain import
 if (Test-Path -LiteralPath $Work) { Remove-Item -LiteralPath $Work -Recurse -Force -ErrorAction SilentlyContinue }
 Say "`nTerminé : $($results.Count) mods analysés, $($installed.Count) installés." 'Green'

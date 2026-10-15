@@ -14,6 +14,25 @@ contrôle et le range dans `C:\GTASOON\mods-tri\` :
 - **scripts-a-verifier** : scripts, jamais installés sans relecture ;
 - **rejetes** : scripts ESX seuls, code obfusqué, packs graphiques (reshade, oiv), **marques réelles**.
 
+## « Un mod ne passe pas à chaque fois » : corrigé en V12.59
+Cinq causes trouvées (reproduites par `tests/test_importer.sh`) :
+- **Zip Google Drive en plusieurs morceaux** (`GTA-20261014T101500Z-001.zip`, `-002.zip`…) : Drive coupe le dossier où il
+  veut, un mod pouvait être à cheval (modèles dans un zip, `.meta` dans l'autre) et chaque moitié était analysée seule ; le
+  2e morceau passait même pour un doublon. Les morceaux d'un même téléchargement sont maintenant décompressés **ensemble**.
+- **Mod sans fxmanifest** (voiture ou vêtement « stream » seul) rangé à côté de dossiers-ressources dans un même zip : il était
+  effacé sans un mot. Il devient un mod à part.
+- **Doublons** : deux mods différents de taille proche (`x_2` / `x_3`) passaient pour le même. Un doublon est désormais
+  identique à l'octet près (même taille exacte, même nombre de fichiers).
+- **Dossier déjà décompressé** posé dans mods-a-trier, ou **archive en volumes** (`x.7z.001`, `x.part1.rar`) : ignorés sans
+  message. Ils sont importés (ne mettre que le 1er volume n'est pas nécessaire : laisser tous les morceaux côte à côte).
+- **Import raté une fois = jamais retenté** : si IMPORTER-MODS tournait serveur allumé (fichiers verrouillés), la signature
+  était quand même enregistrée et METTRE-A-JOUR répondait « Mods : rien de nouveau ». Elle n'est plus enregistrée tant qu'un
+  mod n'a pas pu être installé : il est retenté à chaque fois.
+
+Refus **voulus** (raison écrite dans RAPPORT-MODS.txt, à lire avant de conclure qu'un mod « ne passe pas ») : marque réelle,
+fichier > 16 Mo, pack > 300 Mo, script ESX / obfusqué, script payant sans sa map, map retirée (`mods-retires.txt`),
+archive incomplète, vêtement « solo » à convertir.
+
 ## Réparer un pack abîmé (« Map ARRÊTÉE … fichier abîmé », « Invalid fixup », « Unexpected end of archive »)
 1. portal.cfx.re → **Granted Assets** → retélécharger le pack (le zip complet, sans l'ouvrir).
 2. Le mettre dans `C:\GTASOON\mods-a-trier` en **remplaçant** l'ancien (même nom, pas de « (1) »).
