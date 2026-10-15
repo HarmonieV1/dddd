@@ -16,7 +16,9 @@ try {
     [void][IO.Directory]::CreateDirectory($tmp)
     $files = foreach ($f in 'roadline.sh', 'roadline-bdd.sh') { $d = Join-Path $tmp $f; Copy-Unix (Join-Path $Repo "scripts\linux\$f") $d; $d }
     if (Test-VpsToolsCurrent $vps $files) { # V12.63 : déjà à jour → pas d'envoi à chaque ouverture
-        Invoke-Vps $vps 'sudo roadline terminer'
+        # serveur en marche = installation finie : rien à faire (avant : « terminer » à chaque ouverture, long et risqué pendant une mise à jour)
+        if ((Get-VpsOutput $vps 'systemctl is-active roadline 2>/dev/null || true') -ne 'active') { Invoke-Vps $vps 'sudo roadline terminer' }
+        else { Say '  Déjà à jour.' 'DarkGray' }
     } else {
         Send-Vps $vps $files '/tmp/'
         Invoke-Vps $vps 'sudo install -m 755 /tmp/roadline.sh /tmp/roadline-bdd.sh /home/fivem/outils/ && sudo install -m 755 /home/fivem/outils/roadline.sh /usr/local/bin/roadline && rm -f /tmp/roadline.sh /tmp/roadline-bdd.sh && sudo roadline terminer'

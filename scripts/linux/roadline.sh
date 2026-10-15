@@ -24,7 +24,10 @@ permissions_maj() { # V12.36 : groupes et ACE (dont « admin » pour /optin) vie
   if [ -n "$keep" ]; then { echo ''; echo '## Staff ajouté sur le VPS (conservé par roadline maj)'; echo "$keep"; } >> "$dst"; fi
 }
 maj() { # archive envoyée par METTRE-A-JOUR-OVH.bat
-  local zip="${1:?archive ?}" st; st=$(mktemp -d)
+  local zip="${1:?archive ?}" st
+  # V12.63 : verrou : une seule mise à jour à la fois, et « roadline terminer » (lancé par GERER-OVH) n'y touche pas pendant ce temps
+  exec 9>"$BASE/.maj.lock"; flock -n 9 || { echo "Une mise à jour est déjà en cours sur le VPS : attends qu'elle finisse."; exit 1; }
+  st=$(mktemp -d)
   [ -f "$zip" ] || { echo "Introuvable : $zip"; exit 1; }
   unzip -q "$zip" -d "$st"
   [ -d "$st/gtasoon" ] || { echo "Archive de mise à jour invalide."; rm -rf "$st"; exit 1; }
@@ -103,6 +106,10 @@ UNIT
 }
 
 terminer() { # fin d'installation : service, commande roadline, sauvegardes auto, démarrage (relançable sans risque)
+  # V12.63 : pendant une mise à jour (serveur arrêté, fichiers en cours de copie), ne rien redémarrer ni rechanger
+  if [ -e "$BASE/.maj.lock" ] && ! flock -n "$BASE/.maj.lock" true; then
+    echo "Mise à jour en cours sur le VPS : rien n'est touché (le serveur redémarre tout seul à la fin)."; return 0
+  fi
   local before; before=$(md5sum /etc/systemd/system/roadline.service 2>/dev/null || true)
   unite "$(cat "$BASE/.mode" 2>/dev/null || echo simple)" # service toujours à jour
   [ "$before" = "$(md5sum /etc/systemd/system/roadline.service)" ] || systemctl stop roadline 2>/dev/null || true

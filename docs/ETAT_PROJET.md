@@ -290,6 +290,9 @@ Résumé très condensé (le détail complet est dans `docs/ROADMAP.md`, `docs/F
   Envois (`Send-Vps`) : sftp lancé à part avec l'avancée affichée toutes les 20 s, BatchMode + délais (connexion morte coupée
   puis reprise), `-Resume` (archive reprise : le VPS complète ce qu'il a déjà, avant il l'effaçait) ; GERER-OVH compare l'empreinte
   MD5 de la commande roadline du VPS (pas d'envoi à chaque ouverture) et ouvre le menu même si cet envoi échoue.
+  Verrou `$BASE/.maj.lock` (flock) : « roadline maj » une seule à la fois, et « roadline terminer » ne touche plus à rien pendant
+  une mise à jour (avant : GERER-OVH ouvert pendant METTRE-A-JOUR-OVH pouvait redémarrer le serveur en pleine copie) ; GERER-OVH
+  ne lance plus « terminer » si le serveur tourne déjà.
 - **V12.62** (15/10/2026, session de secours) — propositions choisies + relecture complète du gros patch avant le backtest :
   (1) **Lives** : ▦ grille, « ⇢ TP » (action `goto` de gs_admin), **replay 30 s** (n° 137) : tant qu'un ticket est ouvert,
   20 images (1,5 s) de l'auteur et du joueur nommé (« /report 12 … », gs_admin `ReportedPlayers`) gardées EN MÉMOIRE, effacées à
