@@ -66,9 +66,12 @@ function Cimetiere.bury(name, epitaph, at, heading, by)
     Cimetiere.graves[g.id] = g
     save() publish()
     -- Avis de décès : Weazel tout de suite (fil Vibe), Gazette du dimanche (gs_city), lieu de mémoire (gs_memoire)
+    -- V12.62 (relecture) : une clé par tombe (avant : 'deces' pour toutes → le 2e avis rapproché était refusé sans le dire)
+    g.published = false
     if started('gs_social') then
-        pcall(function() exports.gs_social:Newsroom('deces', ('AVIS DE DÉCÈS · %s nous a quittés. %s Repose au cimetière de Hill Valley.'):format(
+        local ok, sent = pcall(function() return exports.gs_social:Newsroom('deces:' .. g.id, ('AVIS DE DÉCÈS · %s nous a quittés. %s Repose au cimetière de Hill Valley.'):format(
             name, epitaph ~= '' and ('« ' .. epitaph .. ' »') or '')) end)
+        g.published = ok and sent == true
     end
     TriggerEvent('gs_cimetiere:server:buried', name, epitaph)
     return g.id
@@ -93,6 +96,7 @@ function Cimetiere.flowers(src, id)
     if not Bridge:RemoveMoney(src, 'cash', Config.FlowerPrice, 'fleurs (cimetière)') then
         return false, ('Il faut %d $ en liquide pour le fleuriste.'):format(Config.FlowerPrice)
     end
+    for k, t in pairs(Cimetiere.flowered) do if t + Config.FlowerCooldown <= now() then Cimetiere.flowered[k] = nil end end -- V12.62 : ménage
     Cimetiere.flowered[key] = now()
     g.flowersAt = now()
     save() publish()
@@ -131,7 +135,8 @@ lib.callback.register('gs_cimetiere:staff', function(src, action, data)
     local id, err = Cimetiere.bury(name, data.epitaph, at, heading, who)
     if not id then return false, err end
     Security:LogStaff(('[Cimetière] %s a posé la tombe de %s (n°%d)'):format(GetPlayerName(src) or src, Cimetiere.graves[id].name, id), 'staff')
-    return true, ('Tombe de %s posée (avis de décès publié).'):format(Cimetiere.graves[id].name)
+    local g = Cimetiere.graves[id]
+    return true, ('Tombe de %s posée (%s).'):format(g.name, g.published and 'avis de décès publié' or 'avis de décès pas publié : fil Weazel saturé cette heure-ci, il paraîtra dans la Gazette')
 end)
 
 exports('Bury', function(name, epitaph) return Cimetiere.bury(name, epitaph, nil, nil, 'auto') end)

@@ -36,10 +36,11 @@ local function mountPoint(cam)
 end
 
 --- V12.58 · Peindre l'objectif (Alt sur le boîtier, ou bombe de peinture utilisée dessous)
-local function blind(i)
+local function blind(i, box)
     if not lib.progressBar({ duration = Config.Blind.time, label = 'Peinture sur l\'objectif…', canCancel = true,
         anim = { dict = 'switch@franklin@lamar_tagging_wall', clip = 'lamar_tagging_wall_loop_lamar' }, disable = { move = true, car = true } }) then return end
-    local ok, msg = lib.callback.await('gs_cctv:blind', false, i)
+    -- V12.62 : boîtier du décor = sa position (le serveur vérifie qu'on est à côté ET qu'il est dans la portée de la caméra)
+    local ok, msg = lib.callback.await('gs_cctv:blind', false, i, box and { x = box.x, y = box.y, z = box.z } or nil)
     lib.notify({ description = msg, type = ok and 'success' or 'error' })
 end
 
@@ -96,7 +97,7 @@ exports('TryBlind', function()
         lib.notify({ description = 'Cette caméra ne voit déjà plus rien.', type = 'inform' })
         return true
     end
-    blind(i)
+    blind(i, GetEntityCoords(o))
     return true
 end)
 
@@ -109,7 +110,7 @@ CreateThread(function()
             local i = camFor(GetEntityCoords(data.entity))
             if not i then return lib.notify({ description = 'Cette caméra n\'est reliée à aucun réseau : personne ne regarde ce coin.', type = 'inform' }) end
             if blinded(i) then return lib.notify({ description = 'Cette caméra ne voit déjà plus rien.', type = 'inform' }) end
-            blind(i)
+            blind(i, GetEntityCoords(data.entity))
         end,
     } })
 end)
@@ -171,12 +172,20 @@ local function watch(i)
     local function help() lib.showTextUI('Vidéosurveillance · ' .. cam.label .. ' · souris : tourner · molette : zoom · ← → : caméra suivante · Retour : quitter', { position = 'top-center', icon = 'video' }) end
     help()
     --- V12.59 (backtest 15/10) : ← / → passent à la caméra en service précédente / suivante, sans quitter la vue
+    local nextSwitch = 0
     local function switch(step)
+        -- V12.62 : un changement toutes les 0,3 s au plus, et on s'arrête au premier refus qui n'est pas « image noire »
+        -- (avant : un « Doucement. » faisait essayer toutes les caméras d'affilée → anti-flood → policier expulsé)
+        if GetGameTimer() < nextSwitch then return end
+        nextSwitch = GetGameTimer() + 300
         local n = #Config.Cameras
         for k = 1, n - 1 do
             local j = ((i - 1 + step * k) % n) + 1
             if not blinded(j) then
                 local okJ, data = lib.callback.await('gs_cctv:view', false, j)
+                if not okJ and not (type(data) == 'string' and data:find('^Image noire')) then
+                    return lib.notify({ description = data or 'Caméra indisponible.', type = 'error' })
+                end
                 if okJ then
                     DoScreenFadeOut(120) Wait(120)
                     i, cam = j, data

@@ -118,8 +118,17 @@ function Expand-Inner($dest) {
         $inner = @(Get-ChildItem -LiteralPath $dest -Recurse -File | Where-Object { Test-ArchiveName $_.Name })
         if ($inner.Count -eq 0) { break }
         foreach ($i in $inner) {
-            Invoke-7z @('x', $i.FullName, ("-o" + (Join-Path $i.DirectoryName (Clean-Name $i.Name))), '-y', '-bso0', '-bsp0')
+            # V12.62 (relecture) : deux archives aux noms proches (« Pack (1).rar », « Pack [1].rar ») ne fusionnent plus
+            $out = Join-Path $i.DirectoryName (Clean-Name $i.Name); $k = 2
+            while (Test-Path -LiteralPath $out) { $out = Join-Path $i.DirectoryName ((Clean-Name $i.Name) + "_$k"); $k++ }
+            Invoke-7z @('x', $i.FullName, "-o$out", '-y', '-bso0', '-bsp0')
             Remove-Item -LiteralPath $i.FullName -Force -ErrorAction SilentlyContinue
+            # V12.62 : volumes suivants (x.7z.002…, x.part2.rar…) supprimés aussi (avant : copiés dans [addons] et envoyés au VPS)
+            $base = [regex]::Escape(($i.Name -replace '(?i)(\.(7z|zip)\.0*1|\.part0*1\.rar)$', ''))
+            if ($base -ne [regex]::Escape($i.Name)) {
+                Get-ChildItem -LiteralPath $i.DirectoryName -File | Where-Object { $_.Name -match ('(?i)^' + $base + '(\.(7z|zip)\.\d{3}|\.part\d+\.rar)$') } |
+                    Remove-Item -Force -ErrorAction SilentlyContinue
+            }
         }
     }
 }
@@ -772,7 +781,10 @@ if ($canInstall) {
     $names = @($names | Where-Object { -not $Superseded[$_] })   # V12.48 : copie gsa_ remplacée (version convertie, bibliothèque sous son vrai nom)
     $names = @($names | Where-Object { -not (Test-Retired $_) }) # V12.34 : lignes des maps retirées enlevées ; V12.36 : par motif aussi, scripts compagnons compris
     $notes = @()
-    if (Test-Path -LiteralPath $previous) { $notes = @(Get-Content -LiteralPath $previous | Where-Object { $_ -match '^## gsa_\S+ : désactivé' } | ForEach-Object { ($_ -split '\s+')[1] }) }
+    if (Test-Path -LiteralPath $previous) { $notes = @(Get-Content -LiteralPath $previous | Where-Object { $_ -match '^## gsa_\S+ : désactivé' -and $_ -notmatch 'DIAGNOSTIC-MODS' } | ForEach-Object { ($_ -split '\s+')[1] }) }
+    # V12.62 : mods mis en pause par DIAGNOSTIC-MODS (fichier abîmé) : ils restent en pause avec leur note (avant : réactivés ici)
+    $diagNotes = @{}
+    if (Test-Path -LiteralPath $previous) { foreach ($l in (Get-Content -LiteralPath $previous)) { if ($l -match '^## (gsa_\S+) : .*DIAGNOSTIC-MODS') { $diagNotes[$Matches[1]] = $l } } }
     $risks = @{}
     foreach ($r in $results) { if ($r.install -and $r.risk) { $risks['gsa_' + $r.name] = $r.risk } }
     $forceOff = @{} # V12.27 : archive incomplète → désactivé d'office, même si le # avait été retiré
@@ -785,6 +797,8 @@ if ($canInstall) {
         }
         $line = $keep | Where-Object { $_ -match ('^#?\s*ensure\s+' + [regex]::Escape($n) + '(\s|$)') } | Select-Object -First 1
         $wasOff = $line -and $line -match '^#'
+        # (retéléchargé et réimporté à l'instant : $installed le contient → réactivé normalement, la note disparaît)
+        if ($diagNotes.ContainsKey($n) -and $wasOff -and @($installed) -notcontains $n) { $cfg += $diagNotes[$n]; $cfg += "# ensure $n"; continue }
         # Mod déjà désactivé par sécurité et dont le joueur a retiré le # : son choix est respecté
         $forcedOn = $line -and -not $wasOff -and ($notes -contains $n)
         if ($risks.ContainsKey($n)) {

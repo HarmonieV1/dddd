@@ -21,7 +21,7 @@ function Cabines.wiretap(src, booth, what, text)
     local t = Cabines.taps[boothKey(booth)]
     if not t then return false end
     if t.untilAt <= now() then Cabines.taps[boothKey(booth)] = nil return false end
-    local info = { street = t.street or booth.street, at = os.date('%H:%M'), what = what, text = text,
+    local info = { street = t.street or Security:Sanitize(booth.street, 60), at = os.date('%H:%M'), what = what, text = text, -- V12.62 : rue nettoyée
         gender = Bridge:GetGender(src) == 'female' and 'une femme' or 'un homme' }
     for _, cop in ipairs(onDuty(Config.PoliceJob)) do TriggerClientEvent('gs_cabines:client:tapped', cop, info) end
     return true
@@ -49,8 +49,9 @@ function Cabines.tap(src, action, booth)
     local n = 0
     for k, t in pairs(Cabines.taps) do if t.untilAt > now() then n = n + 1 else Cabines.taps[k] = nil end end
     if n >= Config.Tap.max and not Cabines.taps[key] then return false, ('%d cabines sur écoute au plus.'):format(Config.Tap.max) end
-    Cabines.taps[key] = { untilAt = now() + Config.Tap.hours * 3600, street = booth.street and Security:Sanitize(booth.street, 60) or nil, by = Bridge:GetName(src) }
-    Security:LogStaff(('[Cabine] écoute posée par %s [%d] (%s, %d h)'):format(GetPlayerName(src) or '?', src, booth.street or key, Config.Tap.hours), 'staff')
+    local street = Security:Sanitize(booth.street, 60) -- V12.62 : texte du client, nettoyé avant d'être affiché ou journalisé
+    Cabines.taps[key] = { untilAt = now() + Config.Tap.hours * 3600, street = street, by = Bridge:GetName(src) }
+    Security:LogStaff(('[Cabine] écoute posée par %s [%d] (%s, %d h)'):format(GetPlayerName(src) or '?', src, street or key, Config.Tap.hours), 'staff')
     return true, ('Cabine sur écoute pendant %d h : chaque appel passé d\'ici arrivera au central.'):format(Config.Tap.hours)
 end
 

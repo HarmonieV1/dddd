@@ -43,11 +43,12 @@ mkdir -p "$R/server-data/resources/[addons]/patoche_plasmagame_script"; touch "$
 # Noms d'archives comme ceux du portail Cfx (le nom d'une map installée vient de son archive)
 for z in pr:patoche_plasmakart_pack pk:patoche_bowlinggame_pack pw:patoche_wipeout_pack ps:patoche_wipeout_script pl:patoche_lonely_script pd:patoche_plasmagame_dlc2_pack pg:patoche_plasmagame_script pe:energy_redline_pack pc:patoche_chalet_pack pcs:patoche_chalet_script pi:patoche_interact_pack pn:natt_hair5_fivem pa:afro_for_lamar_tykus; do (cd "$B/${z%%:*}" && zip -qr "$R/mods-a-trier/${z#*:}.zip" .); done
 printf '# Mods retirés\npatoche_villa_bunker_pack\nmlo_willies_supermarket\n' > "$R/mods-retires.txt"
-printf 'ensure gsa_ancienne_map\nensure script_disparu\nensure gsa_patoche_plasmakart_pack\nensure gsa_energy_redline_pack\nensure patoche_plasmagame_script\nensure gsa_patoche_interact_pack\nensure gsa_natt_hair5_fivem\n' > "$R/server-data/cfg/addons.cfg"
+printf 'ensure gsa_ancienne_map\nensure script_disparu\nensure gsa_patoche_plasmakart_pack\nensure gsa_energy_redline_pack\nensure patoche_plasmagame_script\nensure gsa_patoche_interact_pack\nensure gsa_natt_hair5_fivem\n## gsa_abime : désactivé par sécurité (fichier abîmé stream/x.ytd, DIAGNOSTIC-MODS) : retélécharge-le puis IMPORTER-MODS\n# ensure gsa_abime\n' > "$R/server-data/cfg/addons.cfg"
 GTASOON_ROOT=$R GTASOON_TEST=1 GTASOON_7Z=$SEVENZ GTASOON_TEXOPT=0 "$PWSH" -NoProfile -File "$REPO/scripts/windows/importer-mods.ps1" > "$T/log.txt" 2>&1 || { cat "$T/log.txt"; exit 1; }
 CFG=$(cat "$R/server-data/cfg/addons.cfg"); REP=$(cat "$R/mods-tri/RAPPORT-MODS.txt")
 ok=0; ko=0
 check() { if eval "$2"; then ok=$((ok+1)); else ko=$((ko+1)); echo "ÉCHEC : $1"; fi; }
+check 'V12.62 : mod mis en pause par DIAGNOSTIC-MODS : reste en pause avec sa note' 'grep -q "^# ensure gsa_abime$" <<<"$CFG" && ! grep -q "^ensure gsa_abime" <<<"$CFG" && grep -q "^## gsa_abime : .*DIAGNOSTIC-MODS" <<<"$CFG"'
 check 'map installée' 'grep -q "^ensure gsa_patoche_bowlinggame_map$" <<<"$CFG"'
 check 'script compagnon installé sous son nom d origine' 'grep -q "^ensure patoche_bowlinggame_script$" <<<"$CFG" && [ -d "$R/server-data/resources/[addons]/patoche_bowlinggame_script" ]'
 check 'librairie du vendeur (dépendance dans le même import) installée' 'grep -q "^ensure patoche_lib$" <<<"$CFG"'

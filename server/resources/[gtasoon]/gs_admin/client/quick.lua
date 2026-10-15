@@ -269,16 +269,21 @@ local FUN = {
 }
 local fun = {}
 
+-- V12.62 (relecture) : on ne touche à un réglage du jeu que quand SON effet change (avant : chaque bascule remettait tout à zéro,
+-- ce qui coupait par exemple l'ivresse d'un vrai verre (gs_economy) ou la vitesse d'une voiture modifiée ailleurs)
+local applied = {}
+local function changed(id) local now = fun[id] == true if applied[id] == now then return false end applied[id] = now return true end
 local function applyFun()
     local pid = PlayerId()
-    SetRunSprintMultiplierForPlayer(pid, fun.fastrun and 1.49 or 1.0)
-    SetSwimMultiplierForPlayer(pid, fun.fastswim and 1.49 or 1.0)
-    SetGravityLevel(fun.lowgravity and 1 or 0)
-    SetNightvision(fun.nightvision == true)
-    SetSeethrough(fun.thermal == true)
-    if fun.drunk then ShakeGameplayCam('DRUNK_SHAKE', 1.0) else StopGameplayCamShaking(true) end -- V12.59
-    if not fun.carspeed and cache.vehicle then ModifyVehicleTopSpeed(cache.vehicle, 0.0) end -- V12.59 : vitesse d'origine
+    if changed('fastrun') then SetRunSprintMultiplierForPlayer(pid, fun.fastrun and 1.49 or 1.0) end
+    if changed('fastswim') then SetSwimMultiplierForPlayer(pid, fun.fastswim and 1.49 or 1.0) end
+    if changed('lowgravity') then SetGravityLevel(fun.lowgravity and 1 or 0) end
+    if changed('nightvision') then SetNightvision(fun.nightvision == true) end
+    if changed('thermal') then SetSeethrough(fun.thermal == true) end
+    if changed('drunk') then if fun.drunk then ShakeGameplayCam('DRUNK_SHAKE', 1.0) else StopGameplayCamShaking(true) end end -- V12.59
+    if changed('carspeed') and not fun.carspeed and cache.vehicle then ModifyVehicleTopSpeed(cache.vehicle, 0.0) end -- V12.59 : vitesse d'origine
 end
+for _, id in ipairs({ 'fastrun', 'fastswim', 'lowgravity', 'nightvision', 'thermal', 'drunk', 'carspeed' }) do applied[id] = false end
 
 local funLoopOn = false
 local function looping() return fun.superjump or fun.stamina or fun.carspeed or fun.carjump or fun.rainbow end

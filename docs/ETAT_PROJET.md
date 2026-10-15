@@ -12,8 +12,8 @@ En bas de ce fichier : un **prompt prêt à coller** dans une nouvelle conversat
 **20/10/2026 à 21 h**. Décision du 11/10 : pas de gel des nouveautés, mais désormais **surtout du correctif, de la
 configuration et de l'optimisation** ; l'utilisateur se consacre à la promotion.
 
-**Le serveur en chiffres** : 72 ressources maison (V12.61), 39 systèmes exclusifs (« signatures »), 40 mappings payants installés,
-2 882 tests automatiques, tous verts ; 27 pièges anti-triche ; 25 types de crimes reliés au central police ; budget de performance
+**Le serveur en chiffres** : 72 ressources maison (V12.62), 40 systèmes exclusifs (« signatures »), 40 mappings payants installés,
+3 770 tests automatiques, tous verts ; 27 pièges anti-triche ; 25 types de crimes reliés au central police ; budget de performance
 tenu (136 boucles client, 6 permanentes par image).
 
 **Documentation** : `docs/hub/index.html` (double-clic) = toute la doc en un site hors ligne, par catégories, recherche,
@@ -272,6 +272,21 @@ Résumé très condensé (le détail complet est dans `docs/ROADMAP.md`, `docs/F
   façon chargement de mission (Entrée / clic pour passer). Tout coupé par `prefers-reduced-motion`, souris seulement
   sur ordinateur. Une seule boucle rAF qui s'endort quand rien ne bouge. Vérifié dans le navigateur : 0 erreur.
 
+- **V12.62** (15/10/2026, session de secours) — propositions choisies + relecture complète du gros patch avant le backtest :
+  (1) **Lives** : ▦ grille, « ⇢ TP » (action `goto` de gs_admin), **replay 30 s** (n° 137) : tant qu'un ticket est ouvert,
+  20 images (1,5 s) de l'auteur et du joueur nommé (« /report 12 … », gs_admin `ReportedPlayers`) gardées EN MÉMOIRE, effacées à
+  la fermeture ; une seule capture par joueur regardé même avec plusieurs membres du staff ; (2) **scène de crime** (n° 138) :
+  photo avec sang / douilles dans le cadre → au labo, pièce « Scène de crime (photo) » (kind `scene`, recevable au tribunal) ;
+  (3) **poursuite filmée** (n° 140) : hélico `polmav` de la police IA à 3 ★ (`NpcPolice.heli`), Weazel prévenu, export
+  `LiveChase` → `ville.json` → « EN DIRECT » en tête du bandeau du site (quartier seulement) ; (4) **jetons de fête foraine**
+  (n° 142, gs_casino `Config.Fair`, objet `fair_token`) : guichet Del Perro (à caler) + caisse du casino, 5 $ / repris 4 $,
+  10 jetons = 1 ticket à gratter, échange 1 pour 1 avec `bumpton` (auto-tamponneuses Patoche, nom lu dans leur bridge) ;
+  (5) **relecture** (13 points, aucun critique) : gs_cctv ← → ne déclenche plus l'anti-flood (policier expulsé) + distance de
+  peinture resserrée ; DIAGNOSTIC-MODS : un mod mis en pause n'est plus réactivé par IMPORTER-MODS (sauf réimporté) ; volumes
+  `.002` / `.part2.rar` supprimés, dossiers aux noms proches plus fusionnés ; rapport staff juste après un redémarrage
+  (compteurs reportés, crimes en KVP) ; tables bornées (tickets 48 h, fleurs, Lives) ; police IA : réglage `track` enfin lu,
+  ordre de poursuite au conducteur ; rue des cabines nettoyée, combiné en main ; effets « sur moi » ne coupent plus l'ivresse
+  d'un vrai verre ; avis de décès : une clé par tombe et message exact. Backtest « 4g ».
 - **V12.61** (15/10/2026, session de secours) — (1) **screenshot-basic livré compilé** dans `[gtasoon]` (MIT, `ensure` actif) :
   Lives, photos Vibe et bodycam sans rien installer ; (2) cabines : **appel vers un numéro** (gs_phone `BoothCall`, « Numéro
   masqué ») et **écoute police** (grade 2+, 2 h, 5 cabines max, l'appel suivant arrive au central avec le genre de l'appelant) ;

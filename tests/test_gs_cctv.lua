@@ -64,5 +64,19 @@ CCTV.log[1][1].at = os.time() - Config.MaxAge * 60 - 1
 CCTV.clean()
 check('ménage des vieux passages', CCTV.log[1] == nil)
 
+-- V12.62 · Distance : boîtier du décor à côté du joueur ET dans la portée de la caméra ; sans boîtier, à côté de la caméra
+do
+    local c = Config.Cameras[1].coords
+    CCTV.blind[1] = nil
+    W.players[3].items.spraycan = 3
+    tp(3, vec3(c.x + 30.0, c.y, c.z))
+    advance(11000)
+    check('sans boîtier, à 30 m : trop loin', not cb('gs_cctv:blind', 3, 1))
+    advance(11000)
+    check('boîtier hors de la portée de la caméra : refusé', not cb('gs_cctv:blind', 3, 1, { x = c.x + Config.Radius + 10.0, y = c.y, z = c.z }))
+    advance(11000)
+    check('boîtier du décor à côté, filmé par la caméra : peint', cb('gs_cctv:blind', 3, 1, { x = c.x + 28.0, y = c.y, z = c.z }) == true)
+end
+
 io.write(('\n%d réussis, %d échoués\n'):format(passed, failed))
 os.exit(failed == 0 and 0 or 1)

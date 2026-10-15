@@ -130,6 +130,7 @@ RegisterNetEvent('gs_admin:server:report', function(message)
     Admin.tickets[t.id] = t
     Admin.ticketTimes = Admin.ticketTimes or {} -- V12.61 : rapport staff de fin de soirée
     Admin.ticketTimes[#Admin.ticketTimes + 1] = t.time
+    while Admin.ticketTimes[1] and Admin.ticketTimes[1] < t.time - 172800 do table.remove(Admin.ticketTimes, 1) end -- V12.62 : 48 h gardées
     pushToStaff('gs_admin:client:ticket', { id = t.id, name = t.name, message = t.message })
     Security:LogStaff(('[Ticket #%d] %s : %s'):format(t.id, t.name, message))
     notify(src, next(Admin.onDuty) and ('Ticket #%d envoyé au staff.'):format(t.id)

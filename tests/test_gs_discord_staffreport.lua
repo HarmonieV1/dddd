@@ -9,7 +9,8 @@ local reqs = {}
 function PerformHttpRequest(url, cb, method, data) reqs[#reqs + 1] = { url = url, method = method, data = data } if cb then cb(204, '') end end
 local sent = {}
 json.encode = function(t) sent[#sent + 1] = t return 'x' end
-provide('gs_admin', { NightStats = function() return { tickets = 3, openTickets = 1, sanctions = { ['kick'] = 1 }, staff = { 'Modo' }, alerts = 2 } end })
+local nightTickets = 3
+provide('gs_admin', { NightStats = function() return { tickets = nightTickets, openTickets = 1, sanctions = { ['kick'] = 1 }, staff = { 'Modo' }, alerts = 2 } end })
 provide('gs_lives', { ViewsSince = function() return 4 end })
 function GetResourceState() return 'started' end
 loadResource('gs_discord', { R .. 'gs_discord/shared/config.lua', R .. 'gs_discord/server/staffreport.lua' })
@@ -27,10 +28,17 @@ local txt = ''
 for _, f in ipairs(e.fields) do txt = txt .. f.name .. ':' .. f.value .. '\n' end
 check('rapport : tickets, sanctions, alertes, Lives, crimes, morts RP, staff', txt:find('3 ouvert') and txt:find('1 kick') and txt:find('Anti') == nil
     and txt:find('Lives ouverts:4') and txt:find('Crimes signalés:1') and txt:find('Jean Dupont') and txt:find('Modo'))
+-- V12.62 · gs_admin redémarre pendant la soirée (ses compteurs repartent de 0) : les tickets d'avant restent comptés
+nightTickets = 1
+StaffReport.sample()
+local txt2 = ''
+for _, f in ipairs(StaffReport.embed().fields) do txt2 = txt2 .. f.name .. ':' .. f.value .. '\n' end
+check('redémarrage de gs_admin : 3 tickets d\'avant + 1 depuis', txt2:find('4 ouvert'))
+check('crimes gardés en KVP', StaffReport.crimes == 1)
 check('pas l\'heure : rien n\'est envoyé', StaffReport.tick({ hour = 22, min = 0 }) == false and #reqs == 0)
 check('4 h : envoyé au salon staff', StaffReport.tick({ hour = 4, min = 1 }) == true and #reqs == 1 and reqs[1].url == convars.gs_webhook_staff)
 check('une seule fois par jour', StaffReport.tick({ hour = 4, min = 30 }) == false and #reqs == 1)
-check('compteurs remis à zéro', StaffReport.crimes == 0 and #StaffReport.deaths == 0)
+check('compteurs remis à zéro', StaffReport.crimes == 0 and #StaffReport.deaths == 0 and StaffReport.carry.tickets == 0)
 convars.gs_webhook_staff, StaffReport.sentDay = nil, nil
 check('sans webhook staff : rien (jamais un salon public)', StaffReport.send() == false and #reqs == 1)
 

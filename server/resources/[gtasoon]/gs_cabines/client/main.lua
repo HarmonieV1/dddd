@@ -11,7 +11,7 @@ local function call(kind, entity)
     local c = GetEntityCoords(entity)
     TaskTurnPedToFaceEntity(cache.ped, entity, 800)
     if not lib.progressBar({ duration = Config.CallTime, label = 'Une pièce, le numéro… ça sonne.', canCancel = true,
-        anim = { dict = 'cellphone@', clip = 'cellphone_call_listen_base' }, prop = { model = 'prop_phone_ing', bone = 28422, pos = vec3(0.0, 0.0, 0.0), rot = vec3(0.0, 0.0, 0.0) },
+        anim = { dict = 'cellphone@', clip = 'cellphone_call_listen_base' }, prop = { model = 'prop_cs_phone_01', bone = 28422, pos = vec3(0.0, 0.0, 0.0), rot = vec3(0.0, 0.0, 0.0) },
         disable = { move = true, car = true, combat = true } }) then return end
     local street = GetStreetNameFromHashKey(GetStreetNameAtCoord(c.x, c.y, c.z))
     notify(lib.callback.await('gs_cabines:call', false, kind, r[1], { x = c.x, y = c.y, z = c.z, street = street }))

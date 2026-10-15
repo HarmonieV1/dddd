@@ -199,7 +199,7 @@ local function heliUnit(u)
 end
 
 local function command(units)
-    local T = Config.NpcPolice.units.track or { every = 1500, chase = 60.0, giveUp = 450.0, speed = 42.0, onFoot = 35.0 }
+    local T = Config.NpcPolice.track or { every = 1500, chase = 60.0, giveUp = 450.0, speed = 42.0, onFoot = 35.0 } -- V12.62 : le bon chemin dans la config
     for _, u in ipairs(units) do
         if u.heli then CreateThread(function() heliUnit(u) end) goto continue end
         CreateThread(function()
@@ -221,13 +221,13 @@ local function command(units)
                 local d = #(GetEntityCoords(veh) - me)
                 if d > T.giveUp then break end -- trop loin : semés
                 local suspectOnFoot = not cache.vehicle
-                for i, ped in ipairs(peds) do
+                for _, ped in ipairs(peds) do
                     if DoesEntityExist(ped) and not IsEntityDead(ped) and NetworkHasControlOfEntity(ped) then
                         local pd = #(GetEntityCoords(ped) - me)
                         local want
                         if suspectOnFoot and pd < T.onFoot then want = 'combat'
-                        elseif i == 1 and IsPedInVehicle(ped, veh, false) then want = d > T.chase and 'drive' or 'chase'
-                        elseif i > 1 and not IsPedInAnyVehicle(ped, false) then want = 'combat' end
+                        elseif GetPedInVehicleSeat(veh, -1) == ped then want = d > T.chase and 'drive' or 'chase' -- V12.62 : le conducteur, pas « le 1er contrôlé »
+                        elseif not IsPedInAnyVehicle(ped, false) then want = 'combat' end
                         if want == 'drive' then -- position connue : on y va par la route, sirène hurlante (renouvelé : il bouge)
                             TaskVehicleDriveToCoordLongrange(ped, veh, me.x, me.y, me.z, T.speed, 787004, 15.0)
                             mode[ped] = 'drive'

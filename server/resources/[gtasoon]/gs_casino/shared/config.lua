@@ -72,5 +72,7 @@ Config.Lotto = {
 Config.Fair = {
     item = 'fair_token', price = 5, buyBack = 4, maxPerAction = 100, scratchFor = 10, range = 3.0,
     booth = vec3(-1540.15, -995.81, 28.84),   -- [À CALER] guichet à côté de la salle de jeu de Del Perro
-    exchange = {},
+    -- V12.62 : script Patoche des auto-tamponneuses : objet `bumpton` (vu dans son bridge : « buy_bumpton ») ; à corriger si
+    -- son shared/config.lua (system.itemName) dit autre chose
+    exchange = { { item = 'bumpton', label = 'Jeton d\'auto-tamponneuse' } },
 }

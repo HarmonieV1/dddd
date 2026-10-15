@@ -48,9 +48,19 @@ net('gs_lives:server:frame', 1, 2)
 check('fenêtre suivante : nouvelle capture, pas de 2e ligne de journal', #shots == 2 and #logs == 1)
 net('gs_lives:server:frame', 1, 1)
 check('se regarder soi-même : ignoré', #shots == 2)
+-- V12.62 · deux membres du staff regardent le même joueur : une seule capture, l'image part aux deux
+join(4, 'STAFF4', 'Modo Deux', vec3(1.0, 0.0, 0.0)) levels[4], duty[4] = 2, true
+net('gs_lives:server:frame', 4, 2)
+check('2e staff sur le même joueur : pas de 2e capture en cours', #shots == 2)
+W.clientEvents = {}
+shots[2].fn(nil, 'data:image/jpeg;base64,BBBB')
+local to1, to4 = false, false
+for _, e in ipairs(W.clientEvents) do if e.name == 'gs_lives:client:frame' then if e.target == 1 then to1 = true elseif e.target == 4 then to4 = true end end end
+check('image envoyée aux deux membres du staff', to1 and to4)
 
 -- V12.62 · Replay 30 s : seulement pour les joueurs liés à un ticket ouvert, effacé à la fermeture
 shots = {}
+advance(Config.Replay.every + 1) -- pas de fenêtre Lives sur ce joueur à l'instant
 Lives.replayTick()
 check('replay : aucun ticket, aucune capture', #shots == 0)
 reported = { [2] = 7 }

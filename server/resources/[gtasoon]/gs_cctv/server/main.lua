@@ -101,12 +101,17 @@ function CCTV.cameras(src)
 end
 
 --- Aveugler une caméra (bombe de peinture) : signalé comme vandalisme, la police voit la caméra hors service
-function CCTV.blindCam(src, i)
+function CCTV.blindCam(src, i, box)
     i = tonumber(i)
     local cam = i and Config.Cameras[i]
     if not cam then return false, 'Caméra inconnue.' end
-    -- V12.59 : boîtier du décor peint → caméra RoadLine dans la portée (Config.Radius) : distance large en conséquence
-    if not Security:InRange(src, cam.coords, Config.Radius + Config.Blind.useRange) then return false, 'Trop loin.' end
+    -- V12.59 : boîtier du décor peint → caméra RoadLine qui filme ce coin (Config.Radius).
+    -- V12.62 : on vérifie qu'on est à côté du boîtier (et lui dans la portée de la caméra) ; sans boîtier, à côté de la caméra.
+    if type(box) == 'table' and tonumber(box.x) and tonumber(box.y) and tonumber(box.z) then
+        local b = vec3(box.x + 0.0, box.y + 0.0, box.z + 0.0)
+        if #(vec2(b.x, b.y) - vec2(cam.coords.x, cam.coords.y)) > Config.Radius then return false, 'Cette caméra ne filme pas ce coin.' end
+        if not Security:InRange(src, b, Config.Blind.useRange + 7.0) then return false, 'Trop loin.' end
+    elseif not Security:InRange(src, cam.coords, Config.Blind.useRange + 7.0) then return false, 'Trop loin.' end
     if not CCTV.active(i) then return false, 'Cette caméra ne voit déjà plus rien.' end
     if not Bridge:RemoveItem(src, Config.Blind.item, 1) then return false, 'Il te faut une bombe de peinture.' end
     CCTV.blind[i] = now() + Config.Blind.minutes * 60
@@ -123,9 +128,9 @@ lib.callback.register('gs_cctv:cameras', function(src)
     if not Security:RateLimit(src, 'gs_cctv:cameras', 5, 10000) then return {} end
     return CCTV.cameras(src)
 end)
-lib.callback.register('gs_cctv:blind', function(src, i)
+lib.callback.register('gs_cctv:blind', function(src, i, box)
     if not Security:RateLimit(src, 'gs_cctv:blind', 2, 10000) then return false, 'Doucement.' end
-    return CCTV.blindCam(src, i)
+    return CCTV.blindCam(src, i, box)
 end)
 
 -- V12.41 · Vue en direct : police en service, devant un terminal, caméra pas aveuglée. Le client ne regarde qu'avec ce feu vert.
