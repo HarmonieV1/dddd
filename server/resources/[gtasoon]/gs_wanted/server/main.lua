@@ -237,6 +237,7 @@ end
 -- Police IA : patrouilles créées par le serveur ----------------------------------------------------------------
 Wanted.units = {}      -- [src] = { { veh, peds = {}, born } }
 Wanted.unitAsk = {}    -- [src] = os.time() de la dernière demande
+Wanted.live = {}       -- V12.62 : [src] = { zone, stars, since } (hélico au-dessus : poursuite « en direct »)
 
 local function unitCount()
     local n = 0
@@ -251,6 +252,40 @@ function Wanted.clearUnits(src)
         if DoesEntityExist(u.veh) then DeleteEntity(u.veh) end
     end
     Wanted.units[src] = nil
+    Wanted.live[src] = nil -- V12.62
+end
+
+--- V12.62 · Hélicoptère de la police IA au-dessus du suspect (poursuite filmée). Retourne l'unité { veh, peds, heli } ou nil.
+function Wanted.spawnHeli(src, stars, me, mine)
+    local H = Config.NpcPolice.heli
+    if not H or (tonumber(stars) or 0) < H.stars then return nil end
+    for _, u in ipairs(mine) do if u.heli then return nil end end
+    local n = 0
+    for _, list in pairs(Wanted.units) do for _, u in ipairs(list) do if u.heli then n = n + 1 end end end
+    if n >= H.maxServer then return nil end
+    local a = math.random() * math.pi * 2
+    local veh = CreateVehicle(GetHashKey(H.model), me.x + math.cos(a) * 150.0, me.y + math.sin(a) * 150.0, me.z + H.height, math.deg(a) + 90.0, true, true)
+    local deadline = GetGameTimer() + 2000
+    while not DoesEntityExist(veh) and GetGameTimer() < deadline do Wait(0) end
+    if not DoesEntityExist(veh) then return nil end
+    local pilot = CreatePedInsideVehicle(veh, 6, GetHashKey(H.pilot), -1, true, true)
+    if not pilot or pilot == 0 then DeleteEntity(veh) return nil end
+    local u = { veh = veh, peds = { pilot }, born = os.time(), heli = true }
+    mine[#mine + 1] = u
+    local zone = 'Los Santos'
+    if GetResourceState('gs_rumors') == 'started' then
+        local ok, z = pcall(function() return exports.gs_rumors:Zone(me) end)
+        if ok and type(z) == 'string' then zone = z end
+    end
+    Wanted.live[src] = { zone = zone, stars = tonumber(stars), since = os.time() }
+    if GetResourceState('gs_jobs') == 'started' then -- la rédaction est prévenue (le quartier, jamais le nom)
+        local ok, list = pcall(function() return JobsApi:GetOnDutyPlayers(H.pressJob) end)
+        for _, j in ipairs(ok and list or {}) do
+            TriggerClientEvent('ox_lib:notify', j, { title = 'Weazel News · direct', icon = 'helicopter', type = 'inform', duration = 9000,
+                description = ('L\'hélico de la police tourne au-dessus de %s : une poursuite est en cours. Fonce !'):format(zone) })
+        end
+    end
+    return u
 end
 
 --- Crée des patrouilles aux positions de route proposées par le client (le serveur limite le nombre et la distance).
@@ -266,9 +301,13 @@ function Wanted.spawnUnits(src, stars, positions)
     local mine = Wanted.units[src] or {}
     Wanted.units[src] = mine
     local cap = U.maxUnits + ((Wanted.saturdayNight() and Config.NpcPolice.saturday) and Config.NpcPolice.saturday.units or 0) -- V12.61 : samedi soir
-    local want = math.min(cap, math.max(1, tonumber(stars) or 1)) - #mine
+    local cars = 0
+    for _, u in ipairs(mine) do if not u.heli then cars = cars + 1 end end -- V12.62 : l'hélico ne compte pas comme une voiture
+    local want = math.min(cap, math.max(1, tonumber(stars) or 1)) - cars
     local county = me.y > 1200.0 -- au nord de Vinewood : shérif
     local out = {}
+    local heli = unitCount() < U.maxServer and Wanted.spawnHeli(src, stars, me, mine) -- V12.62 : poursuite filmée
+    if heli then out[#out + 1] = { veh = NetworkGetNetworkIdFromEntity(heli.veh), peds = { NetworkGetNetworkIdFromEntity(heli.peds[1]) }, heli = true } end
     for _, pos in ipairs(positions) do
         if want <= 0 or unitCount() >= U.maxServer then break end
         if type(pos) == 'table' and tonumber(pos.x) and tonumber(pos.y) and tonumber(pos.z) then
@@ -331,6 +370,7 @@ CreateThread(function()
             else
                 for i = #list, 1, -1 do
                     if now - list[i].born > Config.NpcPolice.units.lifetime then
+                        if list[i].heli then Wanted.live[src] = nil end -- V12.62
                         for _, p in ipairs(list[i].peds) do if DoesEntityExist(p) then DeleteEntity(p) end end
                         if DoesEntityExist(list[i].veh) then DeleteEntity(list[i].veh) end
                         table.remove(list, i)
@@ -494,6 +534,14 @@ exports('AddHeat', Wanted.addHeat)
 exports('ClearHeat', Wanted.clearHeat)
 -- Derniers signalements (rumeurs, historique des véhicules…) : jamais l'identité, sauf visage connu
 exports('GetHistory', function() return Wanted.history end)
+--- V12.62 · Poursuite filmée en cours (bandeau Weazel du site) : la plus récente, sans aucune identité. nil s'il n'y en a pas.
+exports('LiveChase', function()
+    local best
+    for src, l in pairs(Wanted.live) do
+        if GetPlayerName(src) and (not best or l.since > best.since) then best = l end
+    end
+    return best and { zone = best.zone, stars = best.stars, minutes = math.floor((os.time() - best.since) / 60) } or nil
+end)
 exports('CrimeLabel', function(t) return Config.Crimes[t] and Config.Crimes[t].label or nil end)
 
 -- V12.61 · Annonce du samedi soir (une fois, à l'heure de début) : Discord #annonces + message en jeu

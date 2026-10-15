@@ -21,7 +21,7 @@ ICONS = {
     'cashbag.png': ('💰',), 'gs_parcel.png': ('📦',), 'meat_raw.png': ('🍖',), 'milk.png': ('🥛',),
     'apple.png': ('🍎',), 'corn.png': ('🌽',), 'wheat.png': ('🌾',), 'egg.png': ('🥚',), 'lettuce.png': ('🥬',),
     'hops.png': ('🌿', (150, 200, 90)), 'tobacco.png': ('🍂',), 'poppy_resin.png': ('BAG', None, '🌺'), 'phone_card.png': ('📇',), 'jerrycan.png': ('⛽',), 'racing_flag.png': ('🏁',),
-    'evidence_bag.png': ('BAG', None, '🔎'), 'gloves.png': ('🧤',), 'bleach.png': ('🧴',), 'canteen.png': ('🎫',), 'prison_tools.png': ('🔧',), 'fakeplate.png': ('🪪',), 'camera.png': ('📷',), 'photo.png': ('🖼️',), 'contrat.png': ('📜',),
+    'evidence_bag.png': ('BAG', None, '🔎'), 'gloves.png': ('🧤',), 'bleach.png': ('🧴',), 'canteen.png': ('🎫',), 'prison_tools.png': ('🔧',), 'fakeplate.png': ('🪪',), 'camera.png': ('📷',), 'photo.png': ('🖼️',), 'contrat.png': ('📜',), 'fair_token.png': ('🪙',),
 }
 
 font = ImageFont.truetype(FONT, 109)

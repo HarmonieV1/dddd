@@ -38,6 +38,18 @@ RegisterNetEvent('gs_lives:client:frame', function(target, data)
     SendNUIMessage({ action = 'frame', id = target, src = data })
 end)
 
+-- V12.62 · Bouton TP d'une fenêtre (proposition n° 136) : passe par l'action staff « goto » de gs_admin (droits + journal)
+RegisterNUICallback('tp', function(d, cb)
+    cb(true)
+    local ok, msg = lib.callback.await('gs_admin:action', false, 'goto', tonumber(d.id))
+    notify(ok, msg)
+end)
+-- V12.62 · Replay 30 s d'un joueur lié à un ticket (proposition n° 137)
+RegisterNUICallback('replay', function(d, cb) TriggerServerEvent('gs_lives:server:replay', tonumber(d.id)) cb(true) end)
+RegisterNetEvent('gs_lives:client:replay', function(target, frames, every)
+    SendNUIMessage({ action = 'replay', id = target, frames = frames, every = every })
+end)
+
 AddEventHandler('onResourceStop', function(res)
     if res == GetCurrentResourceName() and open then SetNuiFocus(false, false) end
 end)

@@ -11,6 +11,7 @@ Config.Kinds = {
     print  = { label = 'Empreintes digitales', icon = 'fingerprint', decay = 60 },
     tyre   = { label = 'Traces de pneus', icon = 'car-side', decay = 20, rain = 3 },
     paint  = { label = 'Éclats de peinture', icon = 'spray-can', decay = 40 },
+    scene  = { label = 'Scène de crime (photo)', icon = 'camera', decay = 60 }, -- V12.62 : pièce du dossier, jamais une trace au sol
 }
 Config.RainWeathers = { RAIN = true, THUNDER = true, CLEARING = true }
 Config.MergeRadius = 6.0          -- même type, même auteur, à moins de X m et 2 min : une seule trace (compteur)

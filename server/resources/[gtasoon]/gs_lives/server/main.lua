@@ -1,10 +1,11 @@
--- gs_lives (serveur) · V12.60. Le staff demande une image de l'écran d'un joueur ; le serveur vérifie le rang et le mode staff,
+-- gs_lives (serveur) · V12.60 (V12.62 : replay 30 s des tickets). Le staff demande une image de l'écran d'un joueur ; le serveur vérifie le rang et le mode staff,
 -- la demande à screenshot-basic (capture côté joueur, envoyée au serveur), puis la renvoie au seul membre du staff qui regarde.
 -- Rien n'est enregistré : l'image passe et disparaît. Le visionnage est tracé dans le journal staff.
 local Security = exports.gs_security
 local Bridge   = exports.gs_bridge
 
-Lives = { watching = {}, busy = {}, views = {} } -- watching[staff][cible] = true (déjà journalisé) ; busy[staff .. ':' .. cible] = capture en cours
+Lives = { watching = {}, busy = {}, views = {}, replay = {}, reported = {} } -- watching[staff][cible] = true (déjà journalisé) ; busy[staff .. ':' .. cible] = capture en cours
+-- V12.62 : replay[cible] = { frames = { images }, busy } ; reported[cible] = n° du ticket ouvert (gs_admin)
 
 local function started(r) return GetResourceState(r) == 'started' end
 
@@ -27,7 +28,11 @@ lib.callback.register('gs_lives:players', function(src)
     local out = {}
     for _, id in ipairs(GetPlayers()) do
         local s = tonumber(id)
-        if s ~= src then out[#out + 1] = { id = s, name = Bridge:GetName(s) or GetPlayerName(s) or ('Joueur ' .. s), account = GetPlayerName(s) or '' } end
+        if s ~= src then
+            local r = Lives.replay[s]
+            out[#out + 1] = { id = s, name = Bridge:GetName(s) or GetPlayerName(s) or ('Joueur ' .. s), account = GetPlayerName(s) or '',
+                ticket = Lives.reported[s], replay = r and #r.frames > 0 or nil } -- V12.62
+        end
     end
     table.sort(out, function(a, b) return a.id < b.id end)
     return true, out
@@ -45,6 +50,7 @@ RegisterNetEvent('gs_lives:server:frame', function(target)
     if not Lives.watching[src][target] then
         Lives.watching[src][target] = true
         Lives.views[#Lives.views + 1] = os.time() -- V12.61 : rapport staff de fin de soirée
+        while #Lives.views > 500 do table.remove(Lives.views, 1) end -- V12.62 : la liste ne grossit pas sans fin
         Security:LogStaff(('[Lives] %s regarde l\'écran de %s [%d]'):format(GetPlayerName(src) or src, GetPlayerName(target) or '?', target), 'staff')
     end
     Lives.busy[key] = true
@@ -69,6 +75,64 @@ AddEventHandler('playerDropped', function()
     local src = source
     Lives.watching[src] = nil
     for _, w in pairs(Lives.watching) do w[src] = nil end
+    for key in pairs(Lives.busy) do -- V12.62 : pas de capture « en cours » orpheline
+        local a, b = key:match('^(%d+):(%d+)$')
+        if tonumber(a) == src or tonumber(b) == src then Lives.busy[key] = nil end
+    end
+    Lives.replay[src], Lives.reported[src] = nil, nil
+end)
+
+-- V12.62 · Replay staff 30 s (proposition n° 137) ---------------------------------------------------------------
+-- Tant qu'un ticket est ouvert, l'écran de son auteur (et du joueur qu'il a nommé : « /report 12 … ») est gardé en
+-- mémoire : les `Config.Replay.frames` dernières images, une toutes les `every` ms. Rien n'est écrit sur le disque ;
+-- le ticket fermé (ou le joueur parti), tout est effacé. Le staff le revoit depuis /lives (bouton REPLAY).
+function Lives.replayTick()
+    local R = Config.Replay
+    if not R.enabled or not Lives.ready() or not started('gs_admin') then Lives.replay, Lives.reported = {}, {} return end
+    local ok, list = pcall(function() return exports.gs_admin:ReportedPlayers() end)
+    Lives.reported = ok and type(list) == 'table' and list or {}
+    local n = 0
+    for target in pairs(Lives.replay) do if not Lives.reported[target] then Lives.replay[target] = nil end end -- ticket fermé : effacé
+    for target in pairs(Lives.reported) do
+        n = n + 1
+        if n > R.max then break end
+        local r = Lives.replay[target] or { frames = {} }
+        Lives.replay[target] = r
+        if not r.busy and GetPlayerName(target) then
+            r.busy = true
+            local okS = pcall(function()
+                exports['screenshot-basic']:requestClientScreenshot(target, { encoding = 'jpg', quality = R.quality }, function(err, data) -- [API] screenshot-basic
+                    r.busy = false
+                    if err or type(data) ~= 'string' or Lives.replay[target] ~= r then return end
+                    r.frames[#r.frames + 1] = data
+                    if #r.frames > R.frames then table.remove(r.frames, 1) end
+                end)
+            end)
+            if not okS then r.busy = false end
+            SetTimeout(10000, function() r.busy = false end) -- joueur qui ne répond pas
+        end
+    end
+end
+
+RegisterNetEvent('gs_lives:server:replay', function(target)
+    local src = source
+    target = tonumber(target)
+    if not Security:RateLimit(src, 'gs_lives:replay', 3, 10000) then return end
+    if not target or not Lives.allowed(src) then return end
+    local r = Lives.replay[target]
+    if not r or #r.frames == 0 then return TriggerClientEvent('ox_lib:notify', src, { description = 'Pas encore d\'images pour ce joueur.', type = 'error' }) end
+    Security:LogStaff(('[Lives] %s revoit les %d dernières images de %s [%d] (ticket #%s)'):format(GetPlayerName(src) or src, #r.frames,
+        GetPlayerName(target) or '?', target, tostring(Lives.reported[target] or '?')), 'staff')
+    local copy = {}
+    for i, f in ipairs(r.frames) do copy[i] = f end
+    TriggerLatentClientEvent('gs_lives:client:replay', src, 2000000, target, copy, Config.Replay.every) -- latent : pas d'à-coup réseau
+end)
+
+CreateThread(function()
+    while true do
+        Wait(Config.Replay.every)
+        Lives.replayTick()
+    end
 end)
 
 --- V12.61 · Nombre de visionnages depuis `since` (rapport staff de fin de soirée, gs_discord)

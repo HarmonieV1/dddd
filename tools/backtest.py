@@ -10,9 +10,9 @@ SESSIONS = [
     # validé (arrivée, téléphone, métiers, papiers, staff, Discord, site, alertes, vie légale / illégale…) et retiré.
     # Reste : ce qui a été corrigé ou ajouté depuis, jamais revu en jeu, et ce qui est obligatoire avant d'ouvrir.
     ('0 · Avant de commencer (5 min)', [
-        ('METTRE-A-JOUR.bat : version V12.61 affichée, « Base de données sauvegardée » ; METTRE-A-JOUR-OVH puis GERER-OVH → 1 : « Version RoadLine : V12.61 »', 'Staff', 3),
+        ('METTRE-A-JOUR.bat : version V12.62 affichée, « Base de données sauvegardée » ; METTRE-A-JOUR-OVH puis GERER-OVH → 1 : « Version RoadLine : V12.62 »', 'Staff', 3),
         ('Console au démarrage (PC et VPS) : aucune ligne ROUGE ; en jaune seulement « Conflit tranché » (2 fichiers Patoche) ; F8 en jeu : aucune erreur rouge', 'Staff', 3),
-        ('VIDER-CACHE-FIVEM.bat si un ancien menu apparaît (F11 doit afficher « RoadLine V12.61 »)', 'Staff', 2),
+        ('VIDER-CACHE-FIVEM.bat si un ancien menu apparaît (F11 doit afficher « RoadLine V12.62 »)', 'Staff', 2),
     ]),
     ('1 · Corrections du 13/10 à confirmer (V12.37 → V12.39, 20 min)', [
         ('Garage de métier : « Sortir » donne le véhicule à chaque fois, UNE notification ; prise de service au PNJ : une seule interaction', '2', 3),
@@ -92,6 +92,13 @@ SESSIONS = [
         ('Lives : screenshot-basic démarre tout seul (console sans erreur), F11 → Lives fonctionne sans rien installer', 'Staff', 3),
         ('Samedi 20 h : message LSPD en jeu + #annonces ; vol de voiture sans policier : une étoile de plus ; /rapportstaff (console) : rapport dans le salon staff', 'Staff', 2),
         ('Site : Nouveautés = V6 (teaser), V5, « V1 → V4 · Les fondations » ; Signatures : 39 systèmes (cimetière, cabines, rodéo du samedi…)', 'Staff', 1),
+    ]),
+    ('4g · V12.62 — Lives grille / replay, scène de crime, hélico, jetons (15 min)', [
+        ('Lives : 3 fenêtres ouvertes → ▦ les range en grille ; « ⇢ TP » sur une fenêtre = téléporté à côté du joueur (journal staff)', 'Staff', 3),
+        ('Un joueur fait « /report 12 il me fonce dessus » → dans /lives, le joueur 12 et l\'auteur ont « ticket #… » et ⏪ ; ⏪ rejoue ses 30 dernières secondes ; ticket fermé → plus de ⏪', '2', 3),
+        ('Appareil photo sur du sang + douilles (là où quelqu\'un est tombé par balle) → « Scène de crime · … Au sol : … » ; verser au labo (police) → pièce « Scène de crime (photo) » dans les résultats, une seule fois', '2', 2),
+        ('/policeia 3 (staff) : un hélico de police tourne au-dessus, projecteur la nuit ; Weazel en service prévenu ; site : « EN DIRECT · L\'hélico… » en tête du bandeau (60 s max)', 'Staff', 2),
+        ('Guichet « Jetons de fête foraine » (salle de jeu Del Perro, à caler via F11) : acheter 10 jetons (50 $), revendre (4 $ pièce) ; caisse du casino : 10 jetons = 1 ticket à gratter', 'Seul', 2),
     ]),
     ('5 · Obligatoire avant d\'ouvrir', [
         ('SAUVEGARDER-BDD.bat puis RESTAURER-BDD.bat sur un joueur ; redémarrage de 6 h : annonces 15 / 5 / 1 min', 'Staff', 3),

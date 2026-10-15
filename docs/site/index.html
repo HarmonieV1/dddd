@@ -11,7 +11,7 @@
 <meta property="og:url" content="https://roadlinerp.netlify.app/">
 <meta property="og:type" content="website">
 <meta property="og:title" content="RoadLine RP · new generation">
-<meta property="og:description" content="Serveur GTA RP français : Free Access, zéro pay-to-win, 39 signatures exclusives, une ville qui vit même sans toi.">
+<meta property="og:description" content="Serveur GTA RP français : Free Access, zéro pay-to-win, 40 signatures exclusives, une ville qui vit même sans toi.">
 <!--
   SITE ROADLINE RP — à personnaliser (cherche « A_REMPLIR ») :
   - CONFIG plus bas (lien Discord, code cfx.re du serveur, TikTok / Twitch / YouTube)
@@ -793,7 +793,7 @@ body.has-glow .reticle { opacity: 1; }
   <div class="wrap">
     <span class="kicker">Exclusif</span>
     <h2 class="sweep">Ce que tu ne trouveras <span class="grad">nulle part ailleurs</span></h2>
-    <p class="lead muted rv">39 systèmes pensés pour le RP, pas pour la vitrine, en 4 piliers.</p>
+    <p class="lead muted rv">40 systèmes pensés pour le RP, pas pour la vitrine, en 4 piliers.</p>
     <div class="pillars">
       <div class="pillar rv"><span class="tag">La ville se souvient</span><h3>Chaque acte laisse une trace</h3><ol>
         <li><b>Témoins et mémoire</b><span>Ils décrivent ta tenue, ta voiture, un bout de plaque… et te reconnaissent.</span></li>
@@ -830,9 +830,10 @@ body.has-glow .reticle { opacity: 1; }
         <li><b>La prison vivante</b><span>Boulots pour réduire ta peine, cantine en tickets, évasion à plusieurs.</span></li>
         <li><b>Cabines téléphoniques</b><span>Un appel anonyme à la police ou au journal, un numéro masqué… mais la cabine est peut-être sur écoute.</span></li>
         <li><b>Rodéo du samedi</b><span>Le samedi soir, la police renforce les contrôles : les rodéos coûtent une étoile de plus.</span></li>
+        <li><b>Jetons de fête foraine</b><span>Une seule monnaie pour la salle de jeu, le casino et les manèges.</span></li>
       </ol></div>
       <div class="pillar rv" style="--d:3"><span class="tag">Justice et presse</span><h3>Ton histoire fait la une</h3><ol>
-        <li><b>Direct Weazel</b><span>Les grosses poursuites en direct, hélicoptère au-dessus du suspect.</span></li>
+        <li><b>Direct Weazel</b><span>Une grosse cavale ? L'hélico de la police tourne au-dessus et le site l'annonce « en direct ».</span></li>
         <li><b>Le tribunal des preuves</b><span>Pièces au dossier, chantage à la photo, verdicts motivés.</span></li>
         <li><b>Weazel joué par les joueurs</b><span>Articles, brèves, flash info : la presse, c'est vous.</span></li>
         <li><b>Ton récap du mois</b><span>Ton histoire en chiffres, ton titre, ton classement.</span></li>
@@ -969,7 +970,8 @@ body.has-glow .reticle { opacity: 1; }
         <ul><li><b>Concessions et Benny's</b> : essai de 2 minutes, voiture à ton nom clés en main ; le mécano personnalise sous tes yeux.</li>
           <li><b>Une ville qui garde les traces</b> : sang et douilles après une fusillade, rubans de police après un braquage, un vrai cimetière.</li>
           <li><b>Cabines téléphoniques</b> : appels anonymes à la police, au journal ou à un numéro… attention aux écoutes.</li>
-          <li><b>Police plus vive</b> : sans policier en ville, la police IA te prend en chasse ; le samedi soir, les rodéos coûtent plus cher.</li>
+          <li><b>Police plus vive</b> : sans policier en ville, la police IA te prend en chasse, hélico au-dessus des grosses cavales ; le samedi soir, les rodéos coûtent plus cher.</li>
+          <li><b>Scènes de crime</b> : photographie le sang et les douilles, la police verse la photo au dossier.</li>
           <li><b>Ton style et ta vie</b> : des dizaines de coupes et de robes, s'asseoir partout, récolte, territoires de gang, courses sur mesure.</li></ul>
         <div class="chips"><span>Concessions</span><span>Benny's</span><span>Cimetière</span><span>Cabines</span><span>Police IA</span><span>Courses de rue</span><span>Territoires</span><span>Coiffures et robes</span></div></div></article>
       <article class="rv" style="--d:2"><time>V1 → V4</time><div><strong>Les fondations</strong>
@@ -1219,6 +1221,7 @@ body.has-glow .reticle { opacity: 1; }
         move.querySelectorAll('.live-item').forEach((x) => x.remove());
         const items = [];
         (n.news || []).slice(0, 3).forEach((a) => { if (a && a.title) items.push('Weazel : ' + a.title + (a.author ? ' — ' + a.author : '')); }); // V12.59 : articles écrits en jeu
+        if (n.live && n.live.zone) items.unshift(`EN DIRECT · L'hélico de la police filme une poursuite au-dessus de ${n.live.zone} (${'★'.repeat(Math.min(5, Number(n.live.stars) || 1))}, depuis ${Number(n.live.minutes) || 0} min)`); // V12.62 : poursuite filmée
         if (n.rumor) items.push('Rumeur confirmée : ' + n.rumor);
         if (n.hot && n.hot.length) items.push('Tension maximale à ' + n.hot.join(' et ') + ' : les habitants restent chez eux');
         if (n.next) items.push(`${n.next.label} ${n.next.dayName} à ${n.next.from} : la ville se prépare`);

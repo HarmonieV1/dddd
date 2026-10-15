@@ -174,9 +174,34 @@ local function setupCop(ped)
     SetDriverAbility(ped, 1.0) SetDriverAggressiveness(ped, 0.8)
 end
 
+--- V12.62 · Hélicoptère de la police IA (poursuite filmée) : il tourne au-dessus du suspect, projecteur allumé la nuit,
+--- tant que les étoiles restent. Ordre renouvelé toutes les 5 s (le suspect bouge) ; supprimé par le serveur ensuite.
+local function heliUnit(u)
+    local H = Config.NpcPolice.heli
+    local t = GetGameTimer() + 5000
+    while not (NetworkDoesEntityExistWithNetworkId(u.veh) and NetworkDoesEntityExistWithNetworkId(u.peds[1] or -1)) and GetGameTimer() < t do Wait(100) end
+    if not NetworkDoesEntityExistWithNetworkId(u.veh) or not NetworkDoesEntityExistWithNetworkId(u.peds[1] or -1) then return end
+    local heli, pilot = NetToVeh(u.veh), NetToPed(u.peds[1])
+    if not control(heli) or not control(pilot) then return end
+    SetPedKeepTask(pilot, true)
+    SetBlockingOfNonTemporaryEvents(pilot, true)
+    SetVehicleEngineOn(heli, true, true, false)
+    SetHeliBladesFullSpeed(heli)
+    while DoesEntityExist(heli) and DoesEntityExist(pilot) and not IsEntityDead(pilot) and GetPlayerWantedLevel(PlayerId()) > 0 do
+        if NetworkHasControlOfEntity(pilot) then
+            -- [native] TaskHeliMission : 9 = tourner autour de la cible, à `height` m au-dessus
+            TaskHeliMission(pilot, heli, 0, cache.ped, 0.0, 0.0, 0.0, 9, 30.0, H.radius, -1.0, math.floor(H.height), math.floor(H.height * 0.6), -1.0, 0)
+            local hour = GetClockHours()
+            SetVehicleSearchlight(heli, hour >= 20 or hour < 6, true)
+        end
+        Wait(5000)
+    end
+end
+
 local function command(units)
     local T = Config.NpcPolice.units.track or { every = 1500, chase = 60.0, giveUp = 450.0, speed = 42.0, onFoot = 35.0 }
     for _, u in ipairs(units) do
+        if u.heli then CreateThread(function() heliUnit(u) end) goto continue end
         CreateThread(function()
             local t = GetGameTimer() + 5000
             while not NetworkDoesEntityExistWithNetworkId(u.veh) and GetGameTimer() < t do Wait(100) end
@@ -220,6 +245,7 @@ local function command(units)
                 Wait(T.every)
             end
         end)
+        ::continue::
     end
 end
 

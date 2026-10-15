@@ -202,5 +202,34 @@ do
     check('décrochée : rendue', Photo.unhang(70, 1) == true and W.players[70].items.gs_photo == 1 and #GlobalState.gsWallPhotos == 0)
 end
 
+-- V12.62 · Scène de crime : sang et douilles dans le cadre → pièce versée au dossier (une seule fois)
+do
+    GlobalState.gsScars = { { id = 1, kind = 'memorial', x = -6.0, y = 0.0, z = 0.0, n = 3, shot = true },
+        { id = 2, kind = 'memorial', x = 15.0, y = 0.0, z = 0.0, n = 1 } } -- la 2e est derrière le photographe
+    for k in pairs(kvp) do if k:match('^gs_photo:') then kvp[k] = nil end end
+    W.players[70].items.gs_photo = 0
+    check('scène : photo développée', Photo.take(70) == true)
+    local id
+    for k in pairs(kvp) do if k:match('^gs_photo:') then id = k:sub(10) end end
+    local r = Photo.get(id)
+    check('scène : sang (3 flaques) et douilles dans le cadre seulement', r and r.scene == '3 flaques de sang, des douilles au sol' and r.label:find('^Scène de crime'))
+    local before = 0
+    for _ in pairs(Evidence.seals) do before = before + 1 end
+    local ok, out = Photo.analyze(2, id)
+    local found
+    for _, s in pairs(Evidence.seals) do if s.kind == 'scene' then found = s end end
+    check('scène : versée au dossier (pièce terminée, lisible au tribunal)', ok and found and found.status == 'done' and out[#out]:find('versée au dossier')
+        and getExport('gs_evidence', 'CourtPiece')('seal', found.id):find('Scène de crime'))
+    Photo.analyze(2, id)
+    local after = 0
+    for _ in pairs(Evidence.seals) do after = after + 1 end
+    check('scène : une seule pièce même analysée deux fois', after == before + 1)
+    GlobalState.gsScars = {}
+    for k in pairs(kvp) do if k:match('^gs_photo:') then kvp[k] = nil end end
+    Photo.take(70)
+    for k in pairs(kvp) do if k:match('^gs_photo:') then id = k:sub(10) end end
+    check('sans traces : photo ordinaire', Photo.get(id).scene == nil and Photo.get(id).label:find('^Photo'))
+end
+
 io.write(('\n%d réussis, %d échoués\n'):format(passed, failed))
 os.exit(failed == 0 and 0 or 1)

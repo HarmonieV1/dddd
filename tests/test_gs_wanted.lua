@@ -393,5 +393,38 @@ check('V13 avec policier en service : pas de plancher', lastClientEvent('gs_want
 Wanted.heat[8] = nil
 fixRandom()
 
+-- V12.62 · Poursuite filmée : hélico de la police IA à 3 étoiles, un seul par suspect, bandeau « en direct » sans nom
+do
+    vector3 = vector3 or vec3
+    function CreateVehicle(model, x, y, z) W.nextEntity = W.nextEntity + 1 W.entities[W.nextEntity] = { type = 2, pos = vec3(x, y, z), model = model, state = {} } return W.nextEntity end
+    function CreatePedInsideVehicle() W.nextEntity = W.nextEntity + 1 W.entities[W.nextEntity] = { type = 1, state = {} } return W.nextEntity end
+    function GiveWeaponToPed() end
+    function SetPedArmour() end
+    local press = {}
+    provide('gs_jobs', { IsOnDutyAs = function() return false end, GetOnDutyPlayers = function(job) return job == 'weazel' and { 3 } or {} end })
+    join(40, 'CID40', 'Chauffard', vec3(500.0, 500.0, 30.0))
+    local road = { { x = 700.0, y = 500.0, z = 30.0, w = 0.0 } }
+    local out = Wanted.spawnUnits(40, 2, road)
+    local heli
+    for _, u in ipairs(out) do if u.heli then heli = u end end
+    check('2 étoiles : pas d\'hélico', heli == nil and #out == 1)
+    Wanted.unitAsk[40] = nil
+    W.clientEvents = {}
+    out = Wanted.spawnUnits(40, 3, road)
+    for _, u in ipairs(out) do if u.heli then heli = u end end
+    check('3 étoiles : hélico de la police', heli and W.entities[heli.veh] and W.entities[heli.veh].model == GetHashKey(Config.NpcPolice.heli.model))
+    local ev = lastClientEvent('ox_lib:notify', 3)
+    check('la rédaction Weazel est prévenue (quartier, sans nom)', ev and not ev.args[1].description:find('Chauffard'))
+    local live = getExport('gs_wanted', 'LiveChase')()
+    check('bandeau : poursuite en direct (quartier + étoiles, sans identité)', live and live.stars == 3 and live.zone and live.name == nil)
+    Wanted.unitAsk[40] = nil
+    out = Wanted.spawnUnits(40, 4, road)
+    local again = false
+    for _, u in ipairs(out) do if u.heli then again = true end end
+    check('un seul hélico par suspect', not again)
+    Wanted.clearUnits(40)
+    check('fin de poursuite : hélico supprimé, plus de direct', not DoesEntityExist(heli.veh) and getExport('gs_wanted', 'LiveChase')() == nil)
+end
+
 io.write(('\n%d réussis, %d échoués\n'):format(passed, failed))
 os.exit(failed == 0 and 0 or 1)

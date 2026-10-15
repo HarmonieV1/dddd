@@ -124,6 +124,9 @@ RegisterNetEvent('gs_admin:server:report', function(message)
     end
     Admin.nextTicket = Admin.nextTicket + 1
     local t = { id = Admin.nextTicket, src = src, name = label(src), message = message, time = os.time(), status = 'open' }
+    -- V12.62 · « /report 12 il me fonce dessus » : le joueur n° 12 est signalé (replay staff 30 s, gs_lives)
+    local named = tonumber(message:match('^#?(%d+)%s'))
+    if named and named ~= src and online(named) then t.target = named end
     Admin.tickets[t.id] = t
     Admin.ticketTimes = Admin.ticketTimes or {} -- V12.61 : rapport staff de fin de soirée
     Admin.ticketTimes[#Admin.ticketTimes + 1] = t.time
@@ -946,6 +949,18 @@ exports('GetStaffLevel', Admin.level)
 exports('NotifyStaff', function(msg) for s in pairs(Admin.onDuty) do notify(s, msg, 'warning') end return true end)
 exports('IsJailed', function(src) return Admin.jailed[src] ~= nil end)
 exports('IsOnDuty', function(src) return Admin.onDuty[src] ~= nil end) -- V12.60 : mode staff actif (gs_lives)
+--- V12.62 · Joueurs liés à un ticket ouvert (l'auteur, et le joueur signalé s'il est nommé) : { [src] = n° de ticket }.
+--- gs_lives garde leurs 30 dernières secondes d'écran tant que le ticket est ouvert (replay staff).
+exports('ReportedPlayers', function()
+    local out = {}
+    for _, t in pairs(Admin.tickets) do
+        if t.status ~= 'closed' then
+            if online(t.src) then out[t.src] = t.id end
+            if t.target and online(t.target) then out[t.target] = t.id end
+        end
+    end
+    return out
+end)
 --- V12.61 · Chiffres depuis `since` (os.time) pour le rapport staff de fin de soirée (gs_discord) : tickets ouverts,
 --- sanctions (avertissement, gel, expulsion, prison, bannissement) par type, alertes anti-triche, membres du staff actifs.
 local SANCTIONS = { warn = 'avertissement(s)', freeze = 'gel(s)', kick = 'expulsion(s)', jail = 'prison(s) admin', ban = 'bannissement(s)' }

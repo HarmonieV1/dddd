@@ -197,7 +197,9 @@ def build():
                   '<b>Valeur de la vie</b> : sous la menace d\'une arme, ton personnage obéit.',
                   '<b>Zones calmes</b> : pas de crime à l\'hôpital, au commissariat, à la mairie ni au Pôle Emploi.',
                   '<b>Zéro pay-to-win</b> : la boutique ne vend que du style. Tout le reste se gagne en jouant.',
-                  'Un souci ? <b>/report</b> en jeu : le staff le reçoit tout de suite.'])
+                  'Un souci ? <b>/report</b> en jeu : le staff le reçoit tout de suite. Un joueur en cause ? Commence par son numéro : '
+                  '<b>/report 12 il me fonce dessus</b>. Tant que le ticket est ouvert, le staff peut revoir les 30 dernières secondes de ton '
+                  'écran et du sien (modération, rien n\'est gardé après).'])
 
     # ---- 1. Premiers pas ----
     # V12.36 : permis pour tout le monde (plus d'auto-école, quête de Max sans étape permis)
@@ -221,7 +223,10 @@ def build():
                   '<b>Cimetière</b> (blip, Hill Valley) : chaque mort RP y laisse une tombe et une épitaphe. Alt sur une tombe : la lire, '
                   'ou déposer des fleurs (25 $).',
                   '<b>Les traces</b> : après une fusillade, sang et douilles restent au sol ; après un braquage, des barrières de police. '
-                  'Tout s\'efface en 24 h.'])
+                  'Tout s\'efface en 24 h. Photographiées (appareil photo argentique), elles deviennent une <b>scène de crime</b> que la police '
+                  'verse au dossier (V12.62).',
+                  '<b>Grosse cavale</b> (3 étoiles de la police IA) : un hélicoptère te suit, projecteur la nuit, et le site annonce la poursuite '
+                  '« en direct » (le quartier, jamais ton nom).'])
     s += [Paragraph('Le permis de conduire', H3)]
     s += [table([['Étape', 'Prix', 'Comment'],
                  ['Obtention', 'Gratuit', 'Tout le monde a son permis dès l\'arrivée : la carte <b>Permis de conduire</b> est dans ton sac (F2). Pas d\'auto-école, ni code ni examen.'],
@@ -264,7 +269,7 @@ def build():
             ['/retoucheperso', 'Retoucher ton apparence une fois après la création (visage, coiffure)'],
             ['/garderobe · /tenue', 'Ouvrir la garde-robe (U) · plier ta tenue en objet Tenue'],
             ['/jury', 'Rouvrir ta convocation de juré'],
-            ['/report', 'Prévenir le staff']]
+            ['/report', 'Prévenir le staff (/report 12 … : nommer le joueur n° 12)']]
     s += [table(cmds, [40 * mm, 140 * mm])]
     s += [Paragraph('Secours et urgences', H3)]
     s += [table([['Situation', 'Ce que tu fais'],
@@ -548,7 +553,10 @@ def build():
     s += [Paragraph('Casino Diamond', H3)]
     s += bullets(['<b>Roue de la fortune</b> : 1 tour gratuit par jour. Lots de 750 $ à 25 000 $ (jackpot), XP, tickets, kits.',
                   '<b>Ticket à gratter</b> (100 $, supérettes) : jusqu\'à 10 000 $ ; 10 tickets par jour au plus.',
-                  '<b>Loto</b> : ticket à 100 $ à la caisse (10 par semaine), tirage le <b>dimanche à 20 h</b>, 3 gagnants (60/25/15 % de la cagnotte).'])
+                  '<b>Loto</b> : ticket à 100 $ à la caisse (10 par semaine), tirage le <b>dimanche à 20 h</b>, 3 gagnants (60/25/15 % de la cagnotte).',
+                  '<b>Jetons de fête foraine</b> (V12.62) : une seule monnaie pour les jeux de la ville. 5 $ le jeton au guichet de la salle de jeu '
+                  '(Del Perro) ou à la caisse du casino, repris 4 $. Au casino, 10 jetons = 1 ticket à gratter. Les manèges installés '
+                  '(auto-tamponneuses…) s\'échangent 1 jeton pour 1 ticket au guichet.'])
     s += [Paragraph('Combats clandestins', H3)]
     s += [Paragraph('Une adresse différente chaque jour, la nuit (21 h-5 h), que les barmans et les rumeurs laissent filer. Mises des combattants : '
                     '500, 1 000, 2 500 ou 5 000 $ ; les spectateurs parient (100 à 10 000 $) pendant 60 s. K.-O. ou sortie du ring = défaite ; '

@@ -26,6 +26,8 @@ function CityNow()
         rumor = lastRumor, memories = #(GlobalState.gsMemoire or {}), fugitives = #(GlobalState.gsFugitives or {}),
         -- V12.59 : derniers articles Weazel écrits en jeu (titre + signature) : le bandeau du site bouge chaque jour
         news = started('gs_social') and try(function() return exports.gs_social:Headlines() end, {}) or {},
+        -- V12.62 : poursuite filmée par l'hélico de la police IA (quartier, étoiles, durée ; jamais le nom du joueur)
+        live = started('gs_wanted') and try(function() return exports.gs_wanted:LiveChase() end, nil) or nil,
     }
 end
 

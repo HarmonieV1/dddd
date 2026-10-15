@@ -101,9 +101,12 @@ def build():
             [38 * G.mm, 120 * G.mm, 22 * G.mm], font=8.2)]
     s += [Paragraph('Un point mal placé (transformateur, ring, vendeur, PNJ…) : F11 → Monde et lieux → <b>Déplacer / retirer un point</b> (filtre par ressource ; '
                     'super-admin : retirer du jeu, réversible). Points de métier : menu dédié. Tout est gardé aux mises à jour.', SMALL)]
-    s += [Paragraph('6. Nouveautés V11.4 → V12.61 pour le staff', H2)]
+    s += [Paragraph('6. Nouveautés V11.4 → V12.62 pour le staff', H2)]
     s += [t([['Quoi', 'Comment'],
              ['Lives (V12.60)', 'F11 → Lives ou /lives : liste des joueurs, WATCH = son écran dans une fenêtre déplaçable (4 au plus). ✕ = jouer en gardant les fenêtres. Chaque visionnage est écrit dans le journal staff.'],
+             ['Lives grille / TP / replay (V12.62)', '▦ = toutes les fenêtres en grille ; « ⇢ TP » sur une fenêtre = se téléporter près du joueur. ⏪ (joueurs liés à un ticket ouvert : l\'auteur, et le joueur nommé par « /report 12 … ») = ses 30 dernières secondes d\'écran, gardées en mémoire tant que le ticket est ouvert, effacées à la fermeture.'],
+             ['Poursuite filmée (V12.62)', 'Police IA à 3 étoiles : un hélico tourne au-dessus du suspect. Le site affiche « EN DIRECT » (quartier seulement, jamais le nom). /policeia 3 pour tester.'],
+             ['Jetons de fête foraine (V12.62)', 'Guichet à la salle de jeu de Del Perro (à caler : F11 → Déplacer un point, gs_casino) et à la caisse du casino. Ticket d\'un script d\'activité (auto-tamponneuses…) : l\'ajouter dans Config.Fair.exchange (gs_casino) pour l\'échanger 1 pour 1.'],
              ['Mort RP (V12.60)', 'F11 → Joueurs → le joueur → Mort RP : tombe au cimetière + avis de décès (Weazel, Gazette). Le personnage n\'est PAS supprimé. F11 → Monde et lieux → Cimetière : poser / retirer.'],
              ['Mods (V12.60)', 'DIAGNOSTIC-MODS.bat : fichiers abîmés, vêtements en conflit, voitures en double ; O = corrections sûres. F11 → Monde et lieux → Blips en double.'],
              ['Cabines (V12.61)', 'Appels anonymes (police, Weazel, numéro masqué) tracés dans le journal staff (abus). Police grade 2+ : Alt sur une cabine → mettre sur écoute (mandat RP), 2 h.'],

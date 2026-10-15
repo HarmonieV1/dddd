@@ -123,6 +123,10 @@ Config.NpcPolice = {
     -- une étoile de plus et une patrouille de plus ; annonce à 20 h sur Discord (#annonces) et en jeu. false = désactivé.
     saturday = { from = 20, to = 3, stars = 1, units = 1, crimes = { street_race = true, vehicle_theft = true },
         text = 'Samedi soir : la police renforce les contrôles routiers contre les rodéos urbains, de 20 h à 3 h.' },
+    -- V12.62 · « Poursuite filmée » (proposition n° 140) : à partir de `stars` étoiles, un hélicoptère de la police IA
+    -- tourne au-dessus du suspect (projecteur la nuit). Le bandeau Weazel du site affiche « EN DIRECT » avec le quartier
+    -- (jamais le nom du joueur) et les journalistes en service sont prévenus. `maxServer` : hélicos en même temps.
+    heli = { stars = 3, model = 'polmav', pilot = 's_m_y_pilot_01', height = 70.0, radius = 60.0, maxServer = 2, pressJob = 'weazel' },
 }
 
 -- Caméras de surveillance : un crime à moins de `radius` m d'une caméra est presque toujours signalé, avec une zone précise

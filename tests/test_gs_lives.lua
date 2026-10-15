@@ -3,7 +3,9 @@
 dofile('tests/mock.lua')
 local R = 'server/resources/[gtasoon]/'
 local levels, duty, shots, states, logs = { [1] = 2 }, { [1] = true }, {}, { gs_admin = 'started', ['screenshot-basic'] = 'missing' }, {}
-provide('gs_admin', { GetStaffLevel = function(s) return levels[s] or 0 end, IsOnDuty = function(s) return duty[s] == true end })
+local reported = {}
+provide('gs_admin', { GetStaffLevel = function(s) return levels[s] or 0 end, IsOnDuty = function(s) return duty[s] == true end,
+    ReportedPlayers = function() return reported end })
 function GetResourceState(r) return states[r] or 'started' end
 function TriggerLatentClientEvent(name, target, _, ...) TriggerClientEvent(name, target, ...) end
 loadResource('gs_security', { R .. 'gs_security/server/main.lua' })
@@ -46,6 +48,36 @@ net('gs_lives:server:frame', 1, 2)
 check('fenêtre suivante : nouvelle capture, pas de 2e ligne de journal', #shots == 2 and #logs == 1)
 net('gs_lives:server:frame', 1, 1)
 check('se regarder soi-même : ignoré', #shots == 2)
+
+-- V12.62 · Replay 30 s : seulement pour les joueurs liés à un ticket ouvert, effacé à la fermeture
+shots = {}
+Lives.replayTick()
+check('replay : aucun ticket, aucune capture', #shots == 0)
+reported = { [2] = 7 }
+Lives.replayTick()
+check('replay : capture du joueur du ticket', #shots == 1 and shots[1].target == 2 and shots[1].opts.quality == Config.Replay.quality)
+Lives.replayTick()
+check('replay : une capture à la fois', #shots == 1)
+for i = 1, Config.Replay.frames + 3 do
+    shots[#shots].fn(nil, 'data:image/jpeg;base64,F' .. i)
+    Lives.replayTick()
+end
+check('replay : mémoire bornée', #Lives.replay[2].frames == Config.Replay.frames and Lives.replay[2].frames[Config.Replay.frames]:find('F' .. (Config.Replay.frames + 3)))
+local _, l2 = cb('gs_lives:players', 1)
+check('liste : ticket et bouton replay', l2[1].ticket == 7 and l2[1].replay == true)
+W.clientEvents = {}
+net('gs_lives:server:replay', 3, 2)
+check('replay demandé par un non-staff : ignoré', not lastClientEvent('gs_lives:client:replay'))
+net('gs_lives:server:replay', 1, 2)
+local rv = lastClientEvent('gs_lives:client:replay')
+check('replay envoyé au staff et journalisé', rv and rv.target == 1 and #rv.args[2] == Config.Replay.frames and logs[#logs]:find('revoit'))
+reported = {}
+Lives.replayTick()
+check('ticket fermé : images effacées', Lives.replay[2] == nil)
+for i = 1, 600 do Lives.views[#Lives.views + 1] = i end
+Lives.watching[1] = nil
+net('gs_lives:server:frame', 1, 3)
+check('journal des visionnages borné', #Lives.views <= 500)
 
 io.write(('lives staff : %d réussis, %d échoués\n'):format(passed, failed))
 os.exit(failed == 0 and 0 or 1)

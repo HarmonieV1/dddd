@@ -1,4 +1,4 @@
--- gs_evidence (serveur) · V9 « Appareil photo argentique ». Le serveur décide qui et quoi est sur la photo (joueurs et
+-- gs_evidence (serveur) · V9 « Appareil photo argentique » (V12.62 : scène de crime versée au dossier). Le serveur décide qui et quoi est sur la photo (joueurs et
 -- véhicules devant l'objectif) : le client ne peut pas truquer une photo. Les identités restent côté serveur (KVP) ;
 -- l'objet ne porte que le numéro de la photo, le lieu, la date et ce qu'on voit (descriptions, plaques).
 local Security = exports.gs_security
@@ -15,6 +15,28 @@ local function describe(src)
     local ok, d = pcall(function() return exports.gs_wanted:Describe(src) end)
     return ok and d or 'quelqu\'un'
 end
+--- V12.62 · Scène de crime (proposition n° 138) : traces dans le cadre (sang et douilles laissés là où quelqu'un est
+--- tombé, gs_scars ; traces d'enquête de sang / douilles, gs_evidence). Renvoie une phrase, ou nil s'il n'y a rien.
+function Photo.scene(inFrame)
+    local blood, casings = 0, false
+    for _, s in ipairs(GlobalState.gsScars or {}) do
+        if s.kind == 'memorial' and inFrame(vec3(s.x + 0.0, s.y + 0.0, s.z + 0.0)) then
+            blood = blood + (tonumber(s.n) or 1)
+            casings = casings or s.shot == true
+        end
+    end
+    for _, t in pairs(Evidence and Evidence.traces or {}) do
+        if (t.kind == 'blood' or t.kind == 'casing') and t.coords and inFrame(t.coords) then
+            if t.kind == 'casing' then casings = true elseif blood == 0 then blood = 1 end
+        end
+    end
+    if blood == 0 and not casings then return nil end
+    local parts = {}
+    if blood > 0 then parts[#parts + 1] = blood > 1 and (blood .. ' flaques de sang') or 'une flaque de sang' end
+    if casings then parts[#parts + 1] = 'des douilles au sol' end
+    return table.concat(parts, ', ')
+end
+
 local function store(id, rec) SetResourceKvp('gs_photo:' .. id, json.encode(rec)) end
 function Photo.get(id)
     local ok, r = pcall(function() return json.decode(GetResourceKvpString('gs_photo:' .. tostring(id)) or 'null') end)
@@ -47,11 +69,12 @@ function Photo.take(src, url)
     local id = ('%d%03d'):format(os.time(), math.random(0, 999))
     local place, date = zoneOf(me), os.date('%d/%m %H:%M')
     local what = #seen > 0 and table.concat(seen, ' ; ') or 'personne'
-    local md = { photo = id, label = 'Photo · ' .. place, description = ('%s · On y voit : %s%s'):format(date, what,
-        #plates > 0 and (' · Plaques : ' .. table.concat(plates, ', ')) or ''),
+    local scene = Photo.scene(inFrame) -- V12.62
+    local md = { photo = id, label = (scene and 'Scène de crime · ' or 'Photo · ') .. place, description = ('%s · On y voit : %s%s%s'):format(date, what,
+        #plates > 0 and (' · Plaques : ' .. table.concat(plates, ', ')) or '', scene and (' · Au sol : ' .. scene) or ''),
         image = type(url) == 'string' and Security:ValidImageUrl(url) and url or nil } -- hébergeur d'images autorisé seulement
     store(id, { subjects = subjects, plates = plates, place = place, date = date, by = Bridge:GetIdentifier(src),
-        label = md.label, text = md.description, image = md.image })
+        label = md.label, text = md.description, image = md.image, scene = scene })
     if not Bridge:AddItem(src, C.photo, 1, md) then return false, 'Plus de place pour la photo.' end
     TriggerEvent('gs_evidence:server:photo', src) -- V9 : biographie
     return true, 'Photo développée.'
@@ -108,6 +131,21 @@ function Photo.analyze(src, id)
     end
     if #(r.plates or {}) > 0 then out[#out + 1] = 'Plaques : ' .. table.concat(r.plates, ', ') end
     if #out == 0 then out[1] = 'Personne d\'identifiable sur ce cliché.' end
+    -- V12.62 · Scène de crime : versée au dossier une seule fois (pièce « Scène de crime (photo) » dans les résultats du labo,
+    -- recevable au tribunal comme un scellé analysé)
+    if r.scene then
+        if not r.filedSeal then
+            Evidence.nextSeal = Evidence.nextSeal + 1
+            local s = { id = Evidence.nextSeal, kind = 'scene', status = 'done', by = Bridge:GetIdentifier(src), byName = Bridge:GetName(src),
+                at = os.time(), date = r.date or os.date('%d/%m %H:%M'),
+                result = ('Scène photographiée (%s, %s) · au sol : %s · %s'):format(r.place or '?', r.date or '?', r.scene, r.text or '') }
+            Evidence.seals[s.id] = s
+            Store.saveSeal(s)
+            r.filedSeal = s.id
+            store(id, r)
+        end
+        out[#out + 1] = ('Scène de crime (%s) : versée au dossier, pièce n°%d'):format(r.scene, r.filedSeal)
+    end
     return true, out
 end
 

@@ -62,3 +62,15 @@ Config.Lotto = {
     cashier = vec3(1115.5, 220.0, -49.4), -- [À CALER] caisse du casino
     range = 4.0,
 }
+
+-- V12.62 · Jetons de fête foraine (proposition n° 142) : UNE monnaie pour les jeux de la ville. Achetés au guichet (salle de
+-- jeu de Del Perro, déplaçable via F11 → Déplacer un point) ou à la caisse du casino ; revendus un peu moins cher (pas de
+-- profit possible). Au casino, `scratchFor` jetons = 1 ticket à gratter. Les scripts d'activité vendus à part (auto-
+-- tamponneuses, stand de jeux Patoche) ont leur propre ticket : `exchange` les relie 1 pour 1 au jeton commun (seulement
+-- si l'objet existe dans ox_inventory ; IMPORTER-MODS ajoute ceux qu'il trouve dans leur config.lua). Exemple :
+--   exchange = { { item = 'bumpercar_token', label = 'Ticket d\'auto-tamponneuse' } }
+Config.Fair = {
+    item = 'fair_token', price = 5, buyBack = 4, maxPerAction = 100, scratchFor = 10, range = 3.0,
+    booth = vec3(-1540.15, -995.81, 28.84),   -- [À CALER] guichet à côté de la salle de jeu de Del Perro
+    exchange = {},
+}

@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <title>Lives</title>
 <style>
-  /* gs_lives · V12.60 : panneau LIVES (liste) + fenêtres d'écran déplaçables / redimensionnables / fermables. Couleurs du site. */
+  /* gs_lives · V12.60 (V12.62 : grille, TP, replay) : panneau LIVES (liste) + fenêtres d'écran déplaçables / redimensionnables / fermables. Couleurs du site. */
   :root { --bg: rgba(16, 10, 28, .94); --line: #6d3bd8; --accent: #b048ff; --txt: #ece6ff; --muted: #9a8fb8; }
   * { box-sizing: border-box; }
   html, body { margin: 0; height: 100%; overflow: hidden; background: transparent; font-family: Segoe UI, Arial, sans-serif; color: var(--txt); user-select: none; }
@@ -25,6 +25,10 @@
   .row .nm small { color: var(--muted); font-size: 11px; }
   .row .watch { border: 1px solid #3a2a5c; border-radius: 5px; padding: 3px 8px; font-size: 11px; background: none; color: var(--muted); cursor: pointer; }
   .row .watch.on { border-color: #5aff8c; color: #5aff8c; }
+  .row .replay { border: 1px solid #ffb020; color: #ffb020; border-radius: 5px; padding: 3px 6px; font-size: 11px; background: none; cursor: pointer; }
+  .row .tk { color: #ffb020; font-size: 10px; margin-left: 4px; }
+  .win.rp { border-color: #ffb020; }
+  .win.rp .bar .dot { background: #ffb020; animation: none; }
   .win { position: absolute; width: 480px; height: 300px; min-width: 240px; min-height: 160px; background: #000; border: 2px solid var(--line); border-radius: 6px;
     overflow: hidden; resize: both; box-shadow: 0 10px 40px rgba(0,0,0,.6); }
   body:not(.focus) .win { pointer-events: none; resize: none; opacity: .92; }
@@ -39,7 +43,7 @@
 </head>
 <body>
 <div id="panel">
-  <header><span>◉ LIVES</span><span><button id="refresh" title="Actualiser">⟳</button> <button id="release" title="Jouer (les fenêtres restent)">✕</button></span></header>
+  <header><span>◉ LIVES</span><span><button id="grid" title="Ranger les fenêtres en grille">▦</button> <button id="refresh" title="Actualiser">⟳</button> <button id="release" title="Jouer (les fenêtres restent)">✕</button></span></header>
   <input id="search" placeholder="Rechercher un joueur (nom ou ID)" autocomplete="off">
   <div class="tools"><span id="count">0 joueur</span><span id="slots"></span></div>
   <div id="list"></div>
@@ -58,7 +62,8 @@
     $('#count').textContent = `${players.length} joueur${players.length > 1 ? 's' : ''}`;
     $('#slots').textContent = `${wins.size} / ${max} fenêtres`;
     $('#list').innerHTML = list.map((p) => `<div class="row"><div class="av">${esc((p.name[0] || '?').toUpperCase())}</div>
-      <div class="nm"><b>${esc(p.name)}</b><small>#${p.id}${p.account ? ' · ' + esc(p.account) : ''}</small></div>
+      <div class="nm"><b>${esc(p.name)}</b><small>#${p.id}${p.account ? ' · ' + esc(p.account) : ''}${p.ticket ? `<span class="tk">ticket #${Number(p.ticket)}</span>` : ''}</small></div>
+      ${p.replay ? `<button class="replay" data-id="${p.id}" title="Revoir les 30 dernières secondes">⏪</button>` : ''}
       <button class="watch ${wins.has(p.id) ? 'on' : ''}" data-id="${p.id}">${wins.has(p.id) ? 'LIVE' : 'WATCH'}</button></div>`).join('');
   }
 
@@ -71,12 +76,13 @@
     el.className = 'win';
     const n = wins.size;
     el.style.left = (330 + (n % 2) * 500) + 'px'; el.style.top = (70 + Math.floor(n / 2) * 320) + 'px'; el.style.zIndex = ++z;
-    el.innerHTML = `<div class="bar"><i class="dot"></i><span class="t">${esc(p.name)} · #${p.id}</span><button title="Fermer">✕</button></div><div class="wait">Connexion à l'écran…</div><img alt="">`;
+    el.innerHTML = `<div class="bar"><i class="dot"></i><span class="t">${esc(p.name)} · #${p.id}</span><button class="tp" title="Me téléporter près de lui">⇢ TP</button><button class="x" title="Fermer">✕</button></div><div class="wait">Connexion à l'écran…</div><img alt="">`;
     document.body.appendChild(el);
     const w = { el, img: el.querySelector('img'), pending: false };
     w.timer = setInterval(() => ask(p.id), every);
     wins.set(p.id, w);
-    el.querySelector('button').onclick = () => closeWin(p.id);
+    el.querySelector('.x').onclick = () => closeWin(p.id);
+    el.querySelector('.tp').onclick = () => post('tp', { id: p.id }); // V12.62 : action « goto » de gs_admin
     el.addEventListener('mousedown', () => { el.style.zIndex = ++z; });
     drag(el, el.querySelector('.bar'));
     ask(p.id);
@@ -97,7 +103,40 @@
     });
   }
 
-  $('#list').addEventListener('click', (e) => { const b = e.target.closest('.watch'); if (!b) return; const p = players.find((x) => x.id === Number(b.dataset.id)); if (p) openWin(p); });
+  // V12.62 · Grille (proposition n° 136) : toutes les fenêtres (lives et replays) rangées à droite de la liste, 2 colonnes
+  function grid() {
+    const all = [...document.querySelectorAll('.win')]; if (!all.length) return;
+    const x0 = 330, y0 = 70, W = window.innerWidth - x0 - 12, H = window.innerHeight - y0 - 12;
+    const cols = all.length === 1 ? 1 : 2, rows = Math.ceil(all.length / cols), w = Math.floor(W / cols) - 8, h = Math.floor(H / rows) - 8;
+    all.forEach((el, i) => { el.style.left = (x0 + (i % cols) * (w + 8)) + 'px'; el.style.top = (y0 + Math.floor(i / cols) * (h + 8)) + 'px'; el.style.width = w + 'px'; el.style.height = h + 'px'; });
+  }
+  // V12.62 · Replay (proposition n° 137) : les dernières images gardées par le serveur, rejouées en boucle dans une fenêtre
+  const replays = new Map();
+  function openReplay(id, frames, step) {
+    if (!Array.isArray(frames) || !frames.length) return;
+    if (replays.has(id)) replays.get(id).close();
+    const p = players.find((x) => x.id === id) || { name: 'Joueur', id };
+    const el = document.createElement('div');
+    el.className = 'win rp'; el.style.left = '360px'; el.style.top = '100px'; el.style.zIndex = ++z;
+    el.innerHTML = `<div class="bar"><i class="dot"></i><span class="t">⏪ REPLAY · ${esc(p.name)} · #${id} · <b class="n"></b></span><button class="x" title="Fermer">✕</button></div><img alt="">`;
+    document.body.appendChild(el);
+    const img = el.querySelector('img'), n = el.querySelector('.n');
+    const ok = frames.filter((f) => typeof f === 'string' && f.startsWith('data:image/'));
+    let i = 0;
+    const show = () => { if (!ok.length) return; img.src = ok[i]; n.textContent = `${i + 1}/${ok.length}`; i = (i + 1) % ok.length; };
+    const timer = setInterval(show, Math.max(250, Number(step) || 1500)); show();
+    const r = { close: () => { clearInterval(timer); el.remove(); replays.delete(id); } };
+    replays.set(id, r);
+    el.querySelector('.x').onclick = r.close;
+    el.addEventListener('mousedown', () => { el.style.zIndex = ++z; });
+    drag(el, el.querySelector('.bar'));
+  }
+
+  $('#list').addEventListener('click', (e) => {
+    const rp = e.target.closest('.replay'); if (rp) return post('replay', { id: Number(rp.dataset.id) });
+    const b = e.target.closest('.watch'); if (!b) return; const p = players.find((x) => x.id === Number(b.dataset.id)); if (p) openWin(p);
+  });
+  $('#grid').onclick = grid;
   $('#search').addEventListener('input', render);
   $('#release').onclick = () => post('release');
   $('#refresh').onclick = () => post('refresh');
@@ -107,6 +146,7 @@
     const d = e.data || {};
     if (d.action === 'players') { players = d.players || []; max = d.max || 4; every = d.every || 1500; render(); }
     else if (d.action === 'focus') { document.body.classList.toggle('focus', !!d.on); if (d.on) $('#search').focus(); }
+    else if (d.action === 'replay') openReplay(d.id, d.frames, d.every);
     else if (d.action === 'frame') {
       const w = wins.get(d.id); if (!w) return;
       w.pending = false;
