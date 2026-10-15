@@ -77,9 +77,12 @@ $onServer = @{}
 $oldEnc = [Console]::OutputEncoding
 try {
     [Console]::OutputEncoding = [Text.Encoding]::UTF8 # noms de fichiers accentués lus correctement
-    $list = Get-VpsOutput $vps "cd /home/fivem/server-data 2>/dev/null && find resources -path 'resources/[[]gtasoon[]]' -prune -o -type f -printf '%s\t%p\n' 2>/dev/null"
+    # sudo : le dossier /home/fivem n'est pas lisible par l'utilisateur ubuntu (sans lui, liste vide = tout renvoyé)
+    $list = Get-VpsOutput $vps "sudo -n find /home/fivem/server-data/resources -path '/home/fivem/server-data/resources/[[]gtasoon[]]' -prune -o -type f -printf '%s\tresources/%P\n' 2>/dev/null"
     foreach ($l in ($list -split "`n")) { $p = $l.TrimEnd("`r").Split("`t", 2); if ($p.Count -eq 2 -and $p[0] -match '^\d+$') { $onServer[$p[1]] = [int64]$p[0] } }
 } catch { $onServer = @{} } finally { try { [Console]::OutputEncoding = $oldEnc } catch {} }
+if ($onServer.Count) { Say ('  Le VPS a déjà {0} fichier(s) de mods : ceux qui sont identiques ne seront pas renvoyés.' -f $onServer.Count) 'DarkGray' }
+else { Say '  Liste des fichiers du VPS indisponible : envoi de tout ce qui a changé depuis le dernier envoi réussi.' 'Yellow' }
 $n = 0; $skip = 0; $skipMb = 0
 foreach ($f in Get-ChildItem -LiteralPath $Res -Recurse -File -Force | Where-Object { $_.LastWriteTime -gt $since -and $_.FullName -notmatch '\\\[gtasoon\]\\|\\cache\\|\\node_modules\\' }) {
     $rel = $f.FullName.Substring($Data.Length + 1)
