@@ -147,6 +147,11 @@
     if (d.action === 'players') { players = d.players || []; max = d.max || 4; every = d.every || 1500; render(); }
     else if (d.action === 'focus') { document.body.classList.toggle('focus', !!d.on); if (d.on) $('#search').focus(); }
     else if (d.action === 'replay') openReplay(d.id, d.frames, d.every);
+    else if (d.action === 'frameError') { // V12.63 : message clair au lieu d'une attente sans fin
+      const w = wins.get(d.id); if (!w) return;
+      w.pending = false;
+      const wait = w.el.querySelector('.wait'); if (wait) wait.textContent = d.text || 'Pas d\'image pour le moment, nouvel essai…';
+    }
     else if (d.action === 'frame') {
       const w = wins.get(d.id); if (!w) return;
       w.pending = false;

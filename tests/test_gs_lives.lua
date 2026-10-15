@@ -14,7 +14,16 @@ sec.LogStaff = function(msg) logs[#logs + 1] = msg end
 provide('gs_security', sec)
 function SetTimeout() end -- le filet de 10 s (joueur muet) ne se déclenche pas pendant le test
 loadResource('gs_lives', { R .. 'gs_lives/shared/config.lua', R .. 'gs_lives/server/main.lua' })
-provide('screenshot-basic', { requestClientScreenshot = function(target, opts, fn) shots[#shots + 1] = { target = target, fn = fn, opts = opts } end })
+-- V12.63 : la capture est demandée AU JOUEUR (événement gs_lives:client:capture) qui la renvoie par gs_lives:server:shot
+local realTCE = TriggerClientEvent
+function TriggerClientEvent(name, target, ...)
+    if name == 'gs_lives:client:capture' then
+        local id, q = ...
+        shots[#shots + 1] = { target = target, id = id, opts = { encoding = 'jpg', quality = q }, fn = function(_, data) net('gs_lives:server:shot', target, id, data) end }
+        return
+    end
+    return realTCE(name, target, ...)
+end
 
 local passed, failed = 0, 0
 local function check(name, cond) if cond then passed = passed + 1 else failed = failed + 1; io.stderr:write('ÉCHEC : ' .. name .. '\n') end end
@@ -44,6 +53,7 @@ W.clientEvents = {}
 shots[1].fn(nil, 'data:image/jpeg;base64,AAAA')
 local ev = lastClientEvent('gs_lives:client:frame')
 check('image renvoyée au seul staff qui regarde', ev and ev.target == 1 and ev.args[1] == 2 and ev.args[2]:find('^data:image'))
+advance(1100) -- l'image d'il y a moins d'1 s est partagée, pas recapturée
 net('gs_lives:server:frame', 1, 2)
 check('fenêtre suivante : nouvelle capture, pas de 2e ligne de journal', #shots == 2 and #logs == 1)
 net('gs_lives:server:frame', 1, 1)
@@ -70,6 +80,7 @@ Lives.replayTick()
 check('replay : une capture à la fois', #shots == 1)
 for i = 1, Config.Replay.frames + 3 do
     shots[#shots].fn(nil, 'data:image/jpeg;base64,F' .. i)
+    advance(Config.Replay.every + 1)
     Lives.replayTick()
 end
 check('replay : mémoire bornée', #Lives.replay[2].frames == Config.Replay.frames and Lives.replay[2].frames[Config.Replay.frames]:find('F' .. (Config.Replay.frames + 3)))
@@ -88,6 +99,22 @@ for i = 1, 600 do Lives.views[#Lives.views + 1] = i end
 Lives.watching[1] = nil
 net('gs_lives:server:frame', 1, 3)
 check('journal des visionnages borné', #Lives.views <= 500)
+
+-- V12.63 · sécurité de la réponse : seulement le joueur visé, une vraie image, une demande en cours ; message si personne ne répond
+advance(5000)
+shots = {}
+Lives.pending, Lives.busy = {}, {} -- le délai de 8 s (SetTimeout) ne tourne pas en test : on repart de zéro
+net('gs_lives:server:frame', 1, 3)
+local sid = shots[1] and shots[1].id
+W.clientEvents = {}
+net('gs_lives:server:shot', 2, sid, 'data:image/jpeg;base64,FAUX')
+check('réponse d\'un autre joueur que la cible : ignorée', not lastClientEvent('gs_lives:client:frame'))
+net('gs_lives:server:shot', 3, sid, 'https://exemple.invalid/x.png')
+check('réponse qui n\'est pas une image JPEG : refusée', not lastClientEvent('gs_lives:client:frame') and lastClientEvent('gs_lives:client:frameError'))
+local got
+Lives.capture(3, 0.4, function(ok, data) got = { ok, data } end)
+net('gs_lives:server:shot', 3, shots[#shots].id, 'data:image/jpeg;base64,OK')
+check('export Capture (appli staff) : image reçue', got and got[1] == true and got[2]:find('OK'))
 
 io.write(('lives staff : %d réussis, %d échoués\n'):format(passed, failed))
 os.exit(failed == 0 and 0 or 1)

@@ -53,3 +53,19 @@ end)
 AddEventHandler('onResourceStop', function(res)
     if res == GetCurrentResourceName() and open then SetNuiFocus(false, false) end
 end)
+
+-- V12.63 · Capture demandée par le serveur (ce joueur est regardé par le staff) : faite ici par screenshot-basic, renvoyée par le
+-- réseau du jeu (avant : envoi par une adresse web du serveur, qui échouait en silence : « la connexion charge indéfiniment »)
+RegisterNetEvent('gs_lives:client:capture', function(id, quality)
+    if GetResourceState('screenshot-basic') ~= 'started' then return end
+    pcall(function()
+        exports['screenshot-basic']:requestScreenshot({ encoding = 'jpg', quality = tonumber(quality) or 0.45 }, function(data) -- [API] screenshot-basic
+            TriggerLatentServerEvent('gs_lives:server:shot', 500000, id, data)
+        end)
+    end)
+end)
+
+-- V12.63 · Le joueur regardé ne répond pas : la fenêtre l'affiche au lieu de « Connexion à l'écran… » sans fin
+RegisterNetEvent('gs_lives:client:frameError', function(target, msg)
+    SendNUIMessage({ action = 'frameError', id = target, text = msg })
+end)

@@ -1,5 +1,6 @@
 -- gs_lives (serveur) · V12.60 (V12.62 : replay 30 s des tickets). Le staff demande une image de l'écran d'un joueur ; le serveur vérifie le rang et le mode staff,
--- la demande à screenshot-basic (capture côté joueur, envoyée au serveur), puis la renvoie au seul membre du staff qui regarde.
+-- demande une capture au joueur (V12.63 : faite chez lui par screenshot-basic, renvoyée par le réseau du jeu), puis la renvoie au
+-- seul membre du staff qui regarde.
 -- Rien n'est enregistré : l'image passe et disparaît. Le visionnage est tracé dans le journal staff.
 local Security = exports.gs_security
 local Bridge   = exports.gs_bridge
@@ -38,9 +39,54 @@ lib.callback.register('gs_lives:players', function(src)
     return true, out
 end)
 
+-- V12.63 · CAPTURE (backtest : « la connexion charge indéfiniment ») ------------------------------------------------------
+-- Avant : requestClientScreenshot, qui fait ENVOYER l'image par le joueur à une adresse web du serveur (http://IP:30120) ;
+-- ce chemin échoue en silence chez beaucoup de joueurs (connexion par cfx.re, https, pare-feu) et la fenêtre attendait sans fin.
+-- Maintenant : le serveur demande au joueur une capture (requestScreenshot côté joueur, rien ne passe par le web), le joueur la
+-- renvoie par le réseau du jeu (événement latent). Une seule capture en cours par joueur, partagée entre F11, les replays et
+-- l'appli staff (export Capture). Une réponse n'est acceptée que du joueur visé et pour une demande en cours.
+Lives.pending, Lives.last, Lives.nextReq = {}, {}, 0 -- pending[id] = { target, cbs, gen } ; last[cible] = { at, data }
+
+local function resolve(id, ok, data)
+    local p = Lives.pending[id]
+    if not p then return end
+    Lives.pending[id] = nil
+    if Lives.busy[p.target] == id then Lives.busy[p.target] = nil end
+    if ok then Lives.last[p.target] = { at = GetGameTimer(), data = data } end
+    for _, cb in ipairs(p.cbs) do pcall(cb, ok, data) end
+end
+
+--- cb(ok, image | message). Image récente (< 1 s) partagée, capture en cours rejointe, sinon nouvelle demande au joueur.
+function Lives.capture(target, quality, cb)
+    target = math.tointeger(tonumber(target))
+    if not target or not GetPlayerName(target) then return cb(false, 'Ce joueur n\'est plus en ville.') end
+    if not Lives.ready() then return cb(false, 'screenshot-basic n\'est pas démarré.') end
+    local l = Lives.last[target]
+    if l and GetGameTimer() - l.at < 1000 then return cb(true, l.data) end
+    local id = Lives.busy[target]
+    if id and Lives.pending[id] then table.insert(Lives.pending[id].cbs, cb) return end
+    Lives.nextReq = Lives.nextReq + 1
+    id = Lives.nextReq
+    Lives.pending[id] = { target = target, cbs = { cb } }
+    Lives.busy[target] = id
+    TriggerClientEvent('gs_lives:client:capture', target, id, quality or Config.Quality)
+    SetTimeout(8000, function() resolve(id, false, 'Le joueur ne répond pas (écran en chargement, menu Échap, ou screenshot-basic absent chez lui).') end)
+end
+
+RegisterNetEvent('gs_lives:server:shot', function(id, data)
+    local src = source
+    if not Security:RateLimit(src, 'gs_lives:shot', 12, 6000) then return end
+    local p = Lives.pending[math.tointeger(tonumber(id)) or -1]
+    if not p or p.target ~= src then return end -- seulement le joueur visé, pour une demande en cours
+    if type(data) ~= 'string' or #data > 3000000 or data:sub(1, 23) ~= 'data:image/jpeg;base64,' then return resolve(id, false, 'Image refusée.') end
+    resolve(math.tointeger(tonumber(id)), true, data)
+end)
+
+exports('Capture', function(target, quality, cb) Lives.capture(target, quality, cb) end) -- appli staff (gs_admin/web.lua)
+
 RegisterNetEvent('gs_lives:server:frame', function(target)
     local src = source
-    target = tonumber(target)
+    target = math.tointeger(tonumber(target))
     if not target or not GetPlayerName(target) or target == src then return end
     if not Security:RateLimit(src, 'gs_lives:frame', Config.MaxWindows * 3, 3000) then return end
     if not Lives.allowed(src) or not Lives.ready() then return end
@@ -51,31 +97,17 @@ RegisterNetEvent('gs_lives:server:frame', function(target)
         while #Lives.views > 500 do table.remove(Lives.views, 1) end -- V12.62 : la liste ne grossit pas sans fin
         Security:LogStaff(('[Lives] %s regarde l\'écran de %s [%d]'):format(GetPlayerName(src) or src, GetPlayerName(target) or '?', target), 'staff')
     end
-    -- V12.62 (relecture) : UNE capture à la fois par joueur regardé, même si plusieurs membres du staff le regardent ; l'image
-    -- part à tous ceux qui l'attendent (avant : une capture par membre du staff → saccades et envoi en double chez le joueur)
-    Lives.waiters[target] = Lives.waiters[target] or {}
-    Lives.waiters[target][src] = true
-    if Lives.busy[target] then return end
-    Lives.busy[target] = true
-    Lives.lastShot[target] = GetGameTimer()
-    local okS = pcall(function()
-        exports['screenshot-basic']:requestClientScreenshot(target, { encoding = 'jpg', quality = Config.Quality }, function(err, data) -- [API] screenshot-basic
-            Lives.busy[target] = nil
-            local waiting = Lives.waiters[target] or {}
-            Lives.waiters[target] = nil
-            if err or type(data) ~= 'string' or data:sub(1, 23) ~= 'data:image/jpeg;base64,' then return end -- V12.63 : vraie image seulement
-            for s in pairs(waiting) do
-                if GetPlayerName(s) then TriggerLatentClientEvent('gs_lives:client:frame', s, 1500000, target, data) end -- latent : pas d'à-coup réseau
-            end
-            local r = Lives.replay[target] -- un ticket est ouvert : l'image sert aussi au replay
-            if r then
-                r.frames[#r.frames + 1] = data
-                if #r.frames > Config.Replay.frames then table.remove(r.frames, 1) end
-            end
-        end)
+    Lives.lastShot[target] = GetGameTimer() -- une fenêtre le filme : le replay n'a pas besoin de capture en plus
+    Lives.capture(target, Config.Quality, function(ok, data)
+        if not GetPlayerName(src) then return end
+        if not ok then return TriggerClientEvent('gs_lives:client:frameError', src, target, data) end
+        TriggerLatentClientEvent('gs_lives:client:frame', src, 1500000, target, data) -- latent : pas d'à-coup réseau
+        local r = Lives.replay[target] -- un ticket est ouvert : l'image sert aussi au replay
+        if r then
+            r.frames[#r.frames + 1] = data
+            if #r.frames > Config.Replay.frames then table.remove(r.frames, 1) end
+        end
     end)
-    if not okS then Lives.busy[target] = nil Lives.waiters[target] = nil end
-    SetTimeout(10000, function() Lives.busy[target] = nil end) -- joueur qui ne répond pas : la fenêtre redemande plus tard
 end)
 
 RegisterNetEvent('gs_lives:server:stop', function(target)
@@ -88,8 +120,8 @@ AddEventHandler('playerDropped', function()
     local src = source
     Lives.watching[src] = nil
     for _, w in pairs(Lives.watching) do w[src] = nil end
-    Lives.busy[src], Lives.waiters[src], Lives.lastShot[src] = nil, nil, nil -- V12.62 : pas de capture « en cours » orpheline
-    for _, w in pairs(Lives.waiters) do w[src] = nil end
+    Lives.busy[src], Lives.waiters[src], Lives.lastShot[src], Lives.last[src] = nil, nil, nil, nil -- pas de capture « en cours » orpheline
+    for id, p in pairs(Lives.pending) do if p.target == src then resolve(id, false, 'Le joueur est parti.') end end
     Lives.replay[src], Lives.reported[src] = nil, nil
 end)
 
@@ -112,16 +144,12 @@ function Lives.replayTick()
         local recent = Lives.lastShot[target] and GetGameTimer() - Lives.lastShot[target] < R.every -- déjà filmé par une fenêtre Lives
         if not r.busy and not recent and GetPlayerName(target) then
             r.busy = true
-            local okS = pcall(function()
-                exports['screenshot-basic']:requestClientScreenshot(target, { encoding = 'jpg', quality = R.quality }, function(err, data) -- [API] screenshot-basic
-                    r.busy = false
-                    if err or type(data) ~= 'string' or data:sub(1, 23) ~= 'data:image/jpeg;base64,' or Lives.replay[target] ~= r then return end -- V12.63 : vraie image seulement
-                    r.frames[#r.frames + 1] = data
-                    if #r.frames > R.frames then table.remove(r.frames, 1) end
-                end)
+            Lives.capture(target, R.quality, function(okC, data) -- V12.63 : même capture que F11 et l'appli
+                r.busy = false
+                if not okC or Lives.replay[target] ~= r then return end
+                r.frames[#r.frames + 1] = data
+                if #r.frames > R.frames then table.remove(r.frames, 1) end
             end)
-            if not okS then r.busy = false end
-            SetTimeout(10000, function() r.busy = false end) -- joueur qui ne répond pas
         end
     end
 end

@@ -6,7 +6,7 @@
 -- session tiré au hasard (crypto.js), valable Config.Web.sessionHours. 5 essais ratés depuis une adresse = blocage 15 min.
 -- Tout passe par Admin.remote (mêmes vérifications et même journal « Web · pseudo » que le bot Discord).
 local Security = exports.gs_security
-local Web = { fails = {}, sessions = {}, shots = {}, seen = {}, global = {} } -- shots[cible] = { at, data, waiting = { cb… } } ; global = échecs récents (toutes adresses)
+local Web = { fails = {}, sessions = {}, seen = {}, global = {} } -- global = échecs récents (toutes adresses)
 local RES = GetCurrentResourceName()
 
 local function codes()
@@ -128,40 +128,23 @@ function Web.overview(who)
     }
 end
 
--- Écran d'un joueur (Lives hors jeu) : une capture partagée entre tous les membres du staff qui le regardent -----------------
+-- Écran d'un joueur (Lives hors jeu) : même capture que F11 (gs_lives, export Capture : faite chez le joueur, renvoyée par le
+-- réseau du jeu, partagée entre tous ceux qui le regardent). V12.63 : l'appli et le jeu sont synchronisés sur la même image.
 function Web.frame(who, target, reply)
     target = intId(target)
     if not target or not GetPlayerName(target) then return reply({ ok = false, text = 'Ce joueur n\'est plus en ville.' }) end
-    if not started('screenshot-basic') then return reply({ ok = false, text = 'screenshot-basic n\'est pas démarré.' }) end
+    if not started('gs_lives') then return reply({ ok = false, text = 'gs_lives n\'est pas démarré.' }) end
     local key = who .. ':' .. target
     if not Web.seen[key] then
         Web.seen[key] = true
         Security:LogStaff(('[Lives] Web · %s regarde l\'écran de %s [%d]'):format(who, GetPlayerName(target) or '?', target), 'staff')
     end
-    local s = Web.shots[target] or { waiting = {}, gen = 0 }
-    Web.shots[target] = s
-    if s.data and GetGameTimer() - s.at < 1000 then return reply({ ok = true, img = s.data }) end -- image récente : partagée
-    s.waiting[#s.waiting + 1] = reply
-    if s.busy then return end
-    s.busy = true
-    s.gen = s.gen + 1
-    local gen = s.gen -- V12.63 (relecture) : une réponse ou un délai d'une ANCIENNE capture n'interfère plus avec la suivante
-    local function flush(res)
-        if s.gen ~= gen or not s.busy then return end
-        local list = s.waiting
-        s.waiting, s.busy = {}, false
-        for _, cb in ipairs(list) do pcall(cb, res) end -- une réponse ratée ne bloque pas les autres membres du staff
-    end
-    local okS = pcall(function()
-        exports['screenshot-basic']:requestClientScreenshot(target, { encoding = 'jpg', quality = 0.45 }, function(err, data) -- [API] screenshot-basic
-            -- seule une vraie image JPEG est acceptée (un client modifié pourrait renvoyer une adresse web à afficher chez le staff)
-            if err or type(data) ~= 'string' or data:sub(1, 23) ~= 'data:image/jpeg;base64,' then return flush({ ok = false, text = 'Capture impossible (joueur en chargement ?).' }) end
-            if s.gen == gen then s.at, s.data = GetGameTimer(), data end
-            flush({ ok = true, img = data })
+    local okE = pcall(function()
+        exports.gs_lives:Capture(target, 0.45, function(ok, data)
+            if ok then reply({ ok = true, img = data }) else reply({ ok = false, text = data or 'Pas d\'image.' }) end
         end)
     end)
-    if not okS then return flush({ ok = false, text = 'Capture impossible.' }) end
-    SetTimeout(8000, function() flush({ ok = false, text = 'Le joueur ne répond pas.' }) end)
+    if not okE then reply({ ok = false, text = 'Capture impossible.' }) end
 end
 
 -- Actions autorisées depuis l'appli (toutes revérifiées et journalisées par Admin.remote)
@@ -286,15 +269,13 @@ SetHttpHandler(function(req, res)
     res.send('Introuvable.')
 end)
 
--- V12.63 (relecture) : ménage — sessions expirées, échecs anciens, captures gardées en mémoire (rien n'est conservé), joueurs partis
-AddEventHandler('playerDropped', function() Web.shots[source] = nil end)
+-- V12.63 (relecture) : ménage — sessions expirées, échecs anciens, visionnages
 CreateThread(function()
     while true do
         Wait(600000)
-        local now, t = os.time(), GetGameTimer()
+        local now = os.time()
         for k, s in pairs(Web.sessions) do if s.exp < now then Web.sessions[k] = nil end end
         for ip, f in pairs(Web.fails) do if (f.untilAt or 0) < now and now - (f.at or 0) > 900 then Web.fails[ip] = nil end end
-        for id, s in pairs(Web.shots) do if not s.busy and (not s.at or t - s.at > 5000) then Web.shots[id] = nil end end
         local n = 0
         for _ in pairs(Web.seen) do n = n + 1 end
         if n > 2000 then Web.seen = {} end

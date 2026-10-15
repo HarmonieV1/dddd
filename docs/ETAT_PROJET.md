@@ -279,7 +279,11 @@ Résumé très condensé (le détail complet est dans `docs/ROADMAP.md`, `docs/F
   (captures screenshot-basic partagées, replays des tickets via gs_lives `ReplayInfo` / `ReplayFrames`), soigner, réanimer, réparer,
   téléporter, geler, isoler, avertir, expulser, **bannir / débannir**, tickets, annonce ; `Admin.remote` étendu (heal, fixveh,
   clearheat, note, tp, ban, unban, tickets) avec garde-fou (pas de sanction à distance sur un super-admin). Panneau **F10** recompilé :
-  onglet **Carte** (joueurs en direct, 3 s). Backtest « 4h ».
+  onglet **Carte** (joueurs en direct, 3 s). Backtest « 4h ». Lives (backtest : « la connexion charge indéfiniment ») : la capture
+  n'utilise plus l'envoi web de screenshot-basic (requestClientScreenshot → http://IP:30120, qui échouait en silence) mais
+  `requestScreenshot` chez le joueur + événement latent `gs_lives:server:shot` (réponse acceptée du seul joueur visé, JPEG
+  seulement) ; une capture par joueur partagée entre F11, replays et appli (export gs_lives `Capture`) ; message clair dans la
+  fenêtre si le joueur ne répond pas (8 s).
 - **V12.62** (15/10/2026, session de secours) — propositions choisies + relecture complète du gros patch avant le backtest :
   (1) **Lives** : ▦ grille, « ⇢ TP » (action `goto` de gs_admin), **replay 30 s** (n° 137) : tant qu'un ticket est ouvert,
   20 images (1,5 s) de l'auteur et du joueur nommé (« /report 12 … », gs_admin `ReportedPlayers`) gardées EN MÉMOIRE, effacées à

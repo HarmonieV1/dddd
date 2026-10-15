@@ -44,3 +44,5 @@ la ligne `set gs_admin_web_password "…"` dans `server-data\cfg\secrets.cfg` (j
 - Serveur : `gs_admin/server/web.lua` (API `POST /api`, fichiers de `web/dist`), jetons : `server/crypto.js`.
 - Interface : `gs_admin/web/src/staff/` (React, compilée par Vite avec le panneau F10 : `npm run build` dans `gs_admin/web`).
 - La carte (`web/src/shared/LiveMap.jsx`) est partagée avec l'onglet **Carte** du panneau F10.
+- Les écrans (Lives) viennent de gs_lives (export `Capture`) : la même capture sert à F11, aux replays et à l'appli. Le joueur
+  regardé doit avoir screenshot-basic (livré dans `[gtasoon]`, rien à installer).
