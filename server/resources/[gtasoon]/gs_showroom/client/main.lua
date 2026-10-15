@@ -3,6 +3,8 @@
 -- Menu staff (F11 → Monde et lieux → Concessions) : poser un véhicule ici, départ des essais, liste, retirer.
 local Bridge = exports.gs_bridge
 local shown = {}   -- [id] = { veh, model }
+local placed = {}  -- V12.62 : [id] = true une fois apparu (un changement de modèle réapparaît même si le vendeur est collé à la voiture)
+local failed = {}  -- V12.62 : [id .. modèle] = true : modèle introuvable / trop long à charger (prévenu une fois, pas de boucle)
 local state = { slots = {}, starts = {} }
 local testing
 local isStaff = false -- V12.41 : le staff voit aussi « Changer le modèle » au Alt (demandé au serveur, pas deviné)
@@ -76,15 +78,38 @@ local function targetOptions(slot)
     }
 end
 
+local spawning = {}
+local spawnSlot
 local function spawn(slot)
+    if spawning[slot.id] then return end -- la boucle et le changement de modèle ne créent jamais deux voitures
+    spawning[slot.id] = true
+    local ok, err = pcall(spawnSlot, slot)
+    spawning[slot.id] = nil
+    if not ok then print(('^3[gs_showroom] véhicule exposé n°%s : %s^0'):format(slot.id, tostring(err))) end
+end
+function spawnSlot(slot)
+    local key = slot.id .. ':' .. slot.model
+    if failed[key] or shown[slot.id] then return end
     local hash = GetHashKey(slot.model)
-    if not IsModelInCdimage(hash) then return end
-    if not pcall(lib.requestModel, hash, 5000) then return end
-    local v = CreateVehicle(hash, slot.x, slot.y, slot.z, slot.h, false, false)
+    -- V12.62 : modèle absent (mod pas installé / en pause) ou trop long à charger : on le dit au lieu de « charger » sans fin
+    if not IsModelInCdimage(hash) or not pcall(lib.requestModel, hash, 10000) then
+        failed[key] = true
+        if #(GetEntityCoords(cache.ped) - vec3(slot.x, slot.y, slot.z)) < 25.0 then
+            notify(false, ('Véhicule « %s » introuvable dans le jeu (mod pas installé, en pause ou pas encore téléchargé). Choisis un autre modèle.'):format(slot.model))
+        end
+        return
+    end
+    -- V12.62 : posé AU SOL (avant : créé à la hauteur des hanches du staff qui a posé l'emplacement puis figé, sol pas encore chargé)
+    RequestCollisionAtCoord(slot.x, slot.y, slot.z)
+    local found, gz = GetGroundZFor_3dCoord(slot.x, slot.y, slot.z + 1.0, false)
+    local z = (found and math.abs(gz - slot.z) < 3.0) and gz or (slot.z - 0.9)
+    local v = CreateVehicle(hash, slot.x, slot.y, z, slot.h, false, false)
     SetModelAsNoLongerNeeded(hash)
     if not v or v == 0 then return end
     SetEntityHeading(v, slot.h)
-    SetVehicleOnGroundProperly(v)
+    local t = GetGameTimer() + 2000
+    while not HasCollisionLoadedAroundEntity(v) and GetGameTimer() < t do Wait(50) end
+    for _ = 1, 10 do if SetVehicleOnGroundProperly(v) then break end Wait(50) end
     FreezeEntityPosition(v, true)
     SetEntityInvincible(v, true)
     SetVehicleDoorsLocked(v, 2)
@@ -93,6 +118,7 @@ local function spawn(slot)
     SetVehicleEngineOn(v, false, true, true)
     exports.ox_target:addLocalEntity(v, targetOptions(slot)) -- [API] ox_target
     shown[slot.id] = { veh = v, model = slot.model }
+    placed[slot.id] = true
 end
 
 AddStateBagChangeHandler('gsShowroom', 'global', function(_, _, value)
@@ -100,6 +126,13 @@ AddStateBagChangeHandler('gsShowroom', 'global', function(_, _, value)
     local keep = {}
     for _, s in ipairs(state.slots or {}) do keep[s.id] = s.model end
     for id, s in pairs(shown) do if keep[id] ~= s.model then remove(id) end end -- retiré ou modèle changé : recréé à l'approche
+    -- V12.62 : nouveau modèle affiché tout de suite (avant : jusqu'à 2 s, et jamais si le vendeur restait à moins de 3 m)
+    CreateThread(function()
+        local me = GetEntityCoords(cache.ped)
+        for _, s in ipairs(state.slots or {}) do
+            if placed[s.id] and not shown[s.id] and #(me - vec3(s.x, s.y, s.z)) < Config.StreamRange then spawn(s) end
+        end
+    end)
 end)
 
 -- Boucle lente : création / retrait selon la distance (rien à faire sans emplacement)
@@ -113,7 +146,7 @@ CreateThread(function()
             for _, s in ipairs(state.slots) do
                 local d = #(me - vec3(s.x, s.y, s.z))
                 -- pas sur la tête de quelqu'un : on attend qu'il s'écarte (le staff qui vient de poser l'emplacement)
-                if d < Config.StreamRange and d > 3.0 and not shown[s.id] then spawn(s)
+                if d < Config.StreamRange and (d > 3.0 or placed[s.id]) and not shown[s.id] then spawn(s)
                 elseif d > Config.StreamRange + 20.0 and shown[s.id] then remove(s.id) end
             end
         end

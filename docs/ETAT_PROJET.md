@@ -289,7 +289,9 @@ Résumé très condensé (le détail complet est dans `docs/ROADMAP.md`, `docs/F
   d'un vrai verre ; avis de décès : une clé par tombe et message exact. Backtest « 4g ».
   (6) après coup : METTRE-A-JOUR-OVH installe en tâche de fond (systemd-run, une coupure SSH ne l'arrête plus), reprend un envoi
   interrompu sans renvoyer 1 Go, reconnaît la réussite malgré les accents mal décodés ; DIAGNOSTIC-MODS met aussi en pause les
-  voitures en double (copie la plus complète gardée, jamais une voiture unique perdue).
+  voitures en double (copie la plus complète gardée, jamais une voiture unique perdue). (7) concessions (backtest) : véhicules
+  d'exposition posés au sol (collision attendue, avant : à hauteur des hanches du staff) ; « Changer le modèle » réapparaît tout de
+  suite même vendeur collé à la voiture (avant : jamais sous 3 m, « ça charge ») ; modèle introuvable = message clair.
 - **V12.61** (15/10/2026, session de secours) — (1) **screenshot-basic livré compilé** dans `[gtasoon]` (MIT, `ensure` actif) :
   Lives, photos Vibe et bodycam sans rien installer ; (2) cabines : **appel vers un numéro** (gs_phone `BoothCall`, « Numéro
   masqué ») et **écoute police** (grade 2+, 2 h, 5 cabines max, l'appel suivant arrive au central avec le genre de l'appelant) ;

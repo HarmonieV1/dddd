@@ -53,6 +53,7 @@
 | **Relecture (13 corrections)** | plusieurs | ← → des caméras ne fait plus expulser le policier ; mod mis en pause par le diagnostic plus réactivé ; une capture Lives par joueur ; rapport staff juste après un redémarrage ; mémoire bornée ; police IA (réglage lu, ordre au conducteur) ; cabines, effets staff, avis de décès |
 | **METTRE-A-JOUR-OVH** | `scripts/windows` | Installation en tâche de fond sur le VPS (une coupure ne l'arrête plus), envoi interrompu repris sans renvoyer 1 Go, réussite bien reconnue |
 | **DIAGNOSTIC-MODS** | `scripts/windows` | Met aussi en pause les **voitures en double** (copie la plus complète gardée, jamais une voiture unique perdue) |
+| **Concessions** | `gs_showroom` | Véhicules d'exposition posés au sol ; « Changer le modèle » s'affiche tout de suite (avant : chargement sans fin si le vendeur restait collé) ; modèle introuvable signalé |
 | **Docs** | guides, backtest « 4g », bilan, site | 40 signatures, guides joueur et staff à jour |
 
 ## Encore en attente (côté fondateur)
