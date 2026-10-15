@@ -37,9 +37,11 @@ Say 'Mise à jour de la commande roadline sur le VPS…' 'DarkGray'
 $tmpOutils = Join-Path $env:TEMP 'roadline-outils'
 [void][IO.Directory]::CreateDirectory($tmpOutils)
 $outils = foreach ($f in 'roadline.sh', 'roadline-bdd.sh') { $d = Join-Path $tmpOutils $f; Copy-Unix (Join-Path $Repo "scripts\linux\$f") $d; $d }
+if (Test-VpsToolsCurrent $vps $outils) { Say '  Déjà à jour.' 'DarkGray' } else { # V12.63 : pas d'envoi inutile
 Send-Vps $vps $outils '/tmp/'
 Invoke-Vps $vps 'sudo install -m 755 /tmp/roadline.sh /tmp/roadline-bdd.sh /home/fivem/outils/ && sudo install -m 755 /home/fivem/outils/roadline.sh /usr/local/bin/roadline && rm -f /tmp/roadline.sh /tmp/roadline-bdd.sh'
 if ($LASTEXITCODE -ne 0) { Fail 'Impossible de mettre à jour la commande roadline sur le VPS (voir au-dessus).' }
+}
 [IO.Directory]::Delete($tmpOutils, $true)
 
 # V12.62 · Envoi interrompu (coupure pendant l'installation) : l'archive est restée sur le PC, souvent aussi sur le VPS.
@@ -107,7 +109,7 @@ if ($skip) { Say ('  {0} fichier(s) déjà identiques sur le VPS, pas renvoyés 
 $started = if (Test-Path -LiteralPath "$zip.debut") { [datetime]::Parse((Get-Content -LiteralPath "$zip.debut" -Raw).Trim(), [Globalization.CultureInfo]::InvariantCulture) } else { Get-Date }
 if (-not $onVps) {
     Say '[2/3] Envoi' 'Cyan'
-    Send-Vps $vps @($zip) '/tmp/roadline-maj.zip'
+    Send-Vps $vps @($zip) '/tmp/roadline-maj.zip' -Resume:$reuse # V12.63 : archive reprise = on complète ce que le VPS a déjà
 }
 # V12.62 : l'installation tourne EN TÂCHE DE FOND sur le VPS (systemd-run) : une coupure de la connexion ne l'interrompt plus
 # (avant : « client_loop: send disconnect » pendant la décompression d'1 Go = installation arrêtée en route). On suit son avancée.

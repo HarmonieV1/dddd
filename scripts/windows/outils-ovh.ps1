@@ -225,7 +225,8 @@ function Get-VpsOutput($vps, $command) {
 
 # Envoi robuste : vérifie la place sur le VPS, reprend là où il s'est arrêté si la connexion coupe (5 essais),
 # et contrôle la taille reçue. $dest : dossier (finit par /) ou chemin complet du fichier (un seul fichier).
-function Send-Vps($vps, [string[]]$files, $dest) {
+function Send-Vps($vps, [string[]]$files, $dest, [switch]$Resume) {
+    # V12.63 · -Resume : le fichier déjà commencé sur le VPS (même archive, envoi coupé) est COMPLÉTÉ au lieu d'être effacé
     Initialize-SshKey $vps
     $a = SshArgs
     $target = "$($vps.user)@$($vps.ip)"
@@ -237,25 +238,52 @@ function Send-Vps($vps, [string[]]$files, $dest) {
             [math]::Ceiling($total * 2.2 / 1GB), [math]::Round($total / 1GB, 1), [math]::Round([int64]$free / 1GB, 1)) +
             'Allège le serveur du PC (vieux mods, cache) ou prends un VPS avec plus de disque.')
     }
+    $q = { param($s) if ("$s" -match '\s') { '"' + $s + '"' } else { "$s" } } # Start-Process : chemins avec espaces
     foreach ($f in $files) {
         $size = (Get-Item -LiteralPath $f).Length
         $remote = if ($dest.EndsWith('/')) { $dest + (Split-Path $f -Leaf) } else { $dest }
         Write-Host ('  {0} ({1} Mo)' -f (Split-Path $f -Leaf), [math]::Round($size / 1MB, 1)) -ForegroundColor DarkGray
-        [void](Get-VpsOutput $vps "rm -f '$remote'")
+        $got = ''
+        if ($Resume) {
+            $got = Get-VpsOutput $vps "stat -c %s '$remote' 2>/dev/null"
+            if ($got -eq "$size") { Write-Host '    déjà entier sur le VPS' -ForegroundColor DarkGray; continue }
+            if ([int64]("0$got") -gt $size) { $got = '' }
+            elseif ([int64]("0$got") -gt 0) { Write-Host ('    reprise à {0} Mo (déjà reçus par le VPS)' -f [math]::Round([int64]$got / 1MB)) -ForegroundColor Green }
+        }
+        if ([int64]("0$got") -eq 0) { [void](Get-VpsOutput $vps "rm -f '$remote'") }
         # V12.63 : un fichier d'ordres À PART pour chaque envoi (avant : toujours « roadline-envoi.txt », qu'un sftp resté
         # ouvert d'une fenêtre précédente, ou l'antivirus, pouvait bloquer → « en cours d'utilisation par un autre processus »)
-        $batch = Join-Path $env:TEMP ('roadline-envoi-' + [guid]::NewGuid().ToString('N') + '.txt')
-        $got = ''
+        $tag = [guid]::NewGuid().ToString('N')
+        $batch = Join-Path $env:TEMP "roadline-envoi-$tag.txt"
+        $outLog = Join-Path $env:TEMP "roadline-envoi-$tag.out"
+        $errLog = Join-Path $env:TEMP "roadline-envoi-$tag.err"
         for ($try = 1; $try -le 5; $try++) {
             $put = if ([int64]("0$got") -gt 0) { 'put -a' } else { 'put' } # -a : reprend un envoi coupé
             for ($w = 1; ; $w++) { # écriture réessayée : l'antivirus peut garder le fichier une seconde
                 try { [IO.File]::WriteAllText($batch, "$put `"$($f.Replace('\', '/'))`" `"$remote`"`n"); break }
                 catch { if ($w -ge 5) { throw } ; Start-Sleep -Seconds 1 }
             }
-            $old = $ErrorActionPreference; $ErrorActionPreference = 'Continue'
-            & sftp @a -o StrictHostKeyChecking=accept-new -o ServerAliveInterval=15 -b $batch $target 2>&1 |
-                ForEach-Object { if ("$_" -notmatch '^sftp>') { Write-Host "    $_" -ForegroundColor DarkGray } }
-            $ErrorActionPreference = $old
+            # V12.63 : BatchMode + délais (une connexion morte est coupée en ~2 min puis reprise, au lieu d'attendre sans fin) ;
+            # sftp tourne à part et on affiche l'avancée (avant : rien à l'écran pendant 20 min, on croyait l'outil bloqué)
+            $sa = @($a | ForEach-Object { & $q $_ }) + @('-o', 'StrictHostKeyChecking=accept-new', '-o', 'BatchMode=yes', '-o', 'ConnectTimeout=20',
+                '-o', 'ServerAliveInterval=15', '-o', 'ServerAliveCountMax=8', '-b', (& $q $batch), $target)
+            $p = Start-Process -FilePath 'sftp' -ArgumentList $sa -NoNewWindow -PassThru -RedirectStandardOutput $outLog -RedirectStandardError $errLog
+            $t0 = Get-Date; $from = [int64]("0$got")
+            while (-not $p.WaitForExit(20000)) {
+                if ($size -lt 20MB) { continue }
+                $now = Get-VpsOutput $vps "stat -c %s '$remote' 2>/dev/null"
+                if ($now -notmatch '^\d+$') { continue }
+                $sec = ((Get-Date) - $t0).TotalSeconds
+                $rate = if ($sec -gt 0) { ([int64]$now - $from) / $sec } else { 0 }
+                $left = if ($rate -gt 0) { ' · encore ~{0} min' -f [math]::Ceiling(($size - [int64]$now) / $rate / 60) } else { '' }
+                Write-Host ('    … {0} / {1} Mo ({2} %) · {3} Mo/s{4}' -f [math]::Round([int64]$now / 1MB), [math]::Round($size / 1MB),
+                    [math]::Floor([int64]$now * 100 / $size), [math]::Round($rate / 1MB, 1), $left) -ForegroundColor DarkGray
+            }
+            foreach ($l in @($outLog, $errLog)) {
+                if (Test-Path -LiteralPath $l) {
+                    Get-Content -LiteralPath $l | ForEach-Object { if ("$_" -and "$_" -notmatch '^sftp>') { Write-Host "    $_" -ForegroundColor DarkGray } }
+                }
+            }
             $got = Get-VpsOutput $vps "stat -c %s '$remote' 2>/dev/null"
             if ($got -eq "$size") { break }
             if ($try -lt 5) {
@@ -264,7 +292,7 @@ function Send-Vps($vps, [string[]]$files, $dest) {
                 Start-Sleep -Seconds 10
             }
         }
-        Remove-Item -LiteralPath $batch -Force -ErrorAction SilentlyContinue
+        Remove-Item -LiteralPath $batch, $outLog, $errLog -Force -ErrorAction SilentlyContinue
         if ($got -ne "$size") {
             throw ('Envoi interrompu 5 fois de suite (' + (Split-Path $f -Leaf) + '). Ta connexion internet a coupé, ' +
                 'ou le VPS est plein. Relance l''outil : rien n''est perdu.')
@@ -298,6 +326,13 @@ function New-UnixZip($folder, $zip) {
 }
 
 #--- Copie d'un script shell en fins de ligne Unix (un clone Windows peut les avoir passées en CRLF)
+# V12.63 · La commande roadline du VPS est-elle déjà celle de ces fichiers ? (empreinte MD5) : rien à renvoyer à chaque ouverture
+function Test-VpsToolsCurrent($vps, [string[]]$files) {
+    $remote = Get-VpsOutput $vps ('sudo -n md5sum ' + (($files | ForEach-Object { '/home/fivem/outils/' + (Split-Path $_ -Leaf) }) -join ' ') + " 2>/dev/null | cut -d' ' -f1")
+    $local = ($files | ForEach-Object { (Get-FileHash -LiteralPath $_ -Algorithm MD5).Hash.ToLower() }) -join "`n"
+    return ($remote -replace "`r", '') -eq $local
+}
+
 function Copy-Unix($src, $dest) {
     $t = [IO.File]::ReadAllText($src) -replace "`r`n", "`n"
     [IO.File]::WriteAllText($dest, $t, (New-Object Text.UTF8Encoding $false))

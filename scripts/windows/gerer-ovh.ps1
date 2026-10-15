@@ -15,10 +15,18 @@ try {
     $tmp = Join-Path $env:TEMP 'roadline-outils'
     [void][IO.Directory]::CreateDirectory($tmp)
     $files = foreach ($f in 'roadline.sh', 'roadline-bdd.sh') { $d = Join-Path $tmp $f; Copy-Unix (Join-Path $Repo "scripts\linux\$f") $d; $d }
-    Send-Vps $vps $files '/tmp/'
-    Invoke-Vps $vps 'sudo install -m 755 /tmp/roadline.sh /tmp/roadline-bdd.sh /home/fivem/outils/ && sudo install -m 755 /home/fivem/outils/roadline.sh /usr/local/bin/roadline && rm -f /tmp/roadline.sh /tmp/roadline-bdd.sh && sudo roadline terminer'
+    if (Test-VpsToolsCurrent $vps $files) { # V12.63 : déjà à jour → pas d'envoi à chaque ouverture
+        Invoke-Vps $vps 'sudo roadline terminer'
+    } else {
+        Send-Vps $vps $files '/tmp/'
+        Invoke-Vps $vps 'sudo install -m 755 /tmp/roadline.sh /tmp/roadline-bdd.sh /home/fivem/outils/ && sudo install -m 755 /home/fivem/outils/roadline.sh /usr/local/bin/roadline && rm -f /tmp/roadline.sh /tmp/roadline-bdd.sh && sudo roadline terminer'
+    }
     [IO.Directory]::Delete($tmp, $true)
-} catch { Say "ERREUR : $($_.Exception.Message)" 'Red'; Read-Host 'Entrée pour quitter'; exit 1 }
+} catch {
+    # V12.63 : la commande roadline du VPS reste celle d'avant, le menu marche quand même (avant : l'outil se fermait)
+    Say "Attention : mise à jour de la commande roadline impossible pour l'instant ($($_.Exception.Message))." 'Yellow'
+    Say "  Le menu fonctionne avec la version déjà sur le VPS. Si un envoi (METTRE-A-JOUR-OVH) tourne, relance GERER-OVH après." 'Yellow'
+}
 
 $menu = [ordered]@{
     '1'  = @('État + diagnostic (version, pourquoi le serveur ne répond pas)', 'sudo roadline etat; echo; sudo roadline diagnostic')

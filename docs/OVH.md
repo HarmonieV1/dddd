@@ -79,8 +79,13 @@ Le choix est retenu : les mises à jour ne le changent pas.
 
 L'outil envoie :
 - tout RoadLine (`[gtasoon]`) ;
-- les fichiers des autres ressources modifiés depuis le dernier envoi (réglages Qbox, nouveaux mods importés) ;
+- les fichiers des autres ressources modifiés depuis le dernier envoi (réglages Qbox, nouveaux mods importés) ; les gros fichiers
+  déjà présents sur le VPS avec la même taille ne repartent pas (V12.63) ;
 - les fichiers `cfg`.
+
+Pendant l'envoi, l'avancée s'affiche (Mo reçus, %, temps restant). Si la connexion coupe, l'outil reprend tout seul ; si tu
+relances l'outil après une coupure, réponds **O** à « reprendre » : le VPS complète l'archive au lieu de tout recevoir à nouveau.
+Pendant un gros envoi, GERER-OVH peut être lent (la connexion est occupée) : attends la fin de l'envoi.
 
 Sur le VPS, il :
 - **sauvegarde la base** ;
