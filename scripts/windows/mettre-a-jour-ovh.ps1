@@ -49,6 +49,15 @@ $reuse = $false; $onVps = $false
 if ((Test-Path -LiteralPath $zip) -and (Get-Item -LiteralPath $zip).LastWriteTime -gt (Get-Date).AddHours(-24)) {
     $z = Get-Item -LiteralPath $zip
     Say ('Envoi interrompu trouvé : archive de {0} Mo du {1}.' -f [math]::Round($z.Length / 1MB, 1), $z.LastWriteTime.ToString('dd/MM HH:mm')) 'Yellow'
+    # V12.62 : déjà installée (l'outil avait mal lu la réponse du VPS) ? On note l'envoi comme fait, sans rien renvoyer.
+    $done = Get-VpsOutput $vps "sudo journalctl -u 'roadline-maj-*' --no-pager -o cat 2>/dev/null | tail -n 200 | grep -a 'jour install' | tail -n 1"
+    if ($ver -and $done -match [regex]::Escape(": $ver.")) {
+        $started = if (Test-Path -LiteralPath "$zip.debut") { [datetime]::Parse((Get-Content -LiteralPath "$zip.debut" -Raw).Trim(), [Globalization.CultureInfo]::InvariantCulture) } else { $z.LastWriteTime }
+        [IO.File]::WriteAllText($Stamp, $started.ToString('o', [Globalization.CultureInfo]::InvariantCulture))
+        Remove-Item -LiteralPath $zip, "$zip.debut" -Force -ErrorAction SilentlyContinue
+        Say "  Cette archive est déjà installée sur le VPS ($ver) : rien à renvoyer. C'est bon !" 'Green'
+        Read-Host 'Entrée pour fermer'; exit 0
+    }
     if ((Read-Host '  La reprendre (O) ou tout repréparer (N) ?') -notmatch '^[nN]') {
         $reuse = $true
         $onVps = (Get-VpsOutput $vps "stat -c %s /tmp/roadline-maj.zip 2>/dev/null") -eq "$($z.Length)"
@@ -101,7 +110,8 @@ while ($true) {
 }
 $log = Get-VpsOutput $vps "sudo journalctl -u $unit --no-pager -o cat 2>/dev/null | tail -n 25"
 if ($log) { $log -split "`n" | ForEach-Object { Say "  $_" 'DarkGray' } }
-if ($log -notmatch 'Mise à jour installée') {
+# Les accents de la réponse du VPS peuvent arriver mal décodés (« install├®e ») : on cherche sans eux
+if ($log -notmatch ('jour install\S*\s*:\s*' + [regex]::Escape($ver))) {
     Fail ('L''installation ne s''est pas terminée sur le VPS (voir au-dessus). Rien n''est perdu : la base est sauvegardée. ' +
         'Relance METTRE-A-JOUR-OVH (l''archive est reprise, pas renvoyée) ; si le serveur ne redémarre pas : GERER-OVH → 13 (version précédente).')
 }
