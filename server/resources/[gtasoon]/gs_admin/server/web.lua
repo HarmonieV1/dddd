@@ -44,7 +44,18 @@ end
 local function newToken()
     local ok, t = pcall(function() return exports[RES]:RandomToken() end)
     if ok and type(t) == 'string' and #t >= 32 then return t end
-    return nil -- jamais de jeton prévisible : pas de session si la crypto de Node est indisponible
+    -- V12.63 (backtest : « Redémarre gs_admin ») : secours si crypto.js n'a pas été chargé (serveur démarré pendant une copie…) :
+    -- l'aléa du système (/dev/urandom, VPS Linux). Toujours aucun jeton prévisible (jamais math.random).
+    if not Web.cryptoWarned then
+        Web.cryptoWarned = true
+        print(('^3[gs_admin] appli staff : RandomToken indisponible (%s) : secours /dev/urandom. Redémarre le serveur pour recharger server/crypto.js.^0'):format(tostring(t)))
+    end
+    local okF, f = pcall(io.open, '/dev/urandom', 'rb')
+    if okF and f then
+        local raw = f:read(24); f:close()
+        if raw and #raw == 24 then return (raw:gsub('.', function(c) return ('%02x'):format(c:byte()) end)) end
+    end
+    return nil -- jamais de jeton prévisible : pas de session sans source d'aléa sûre
 end
 
 local function blocked(ip)
@@ -162,7 +173,7 @@ function Web.handle(ip, body, reply, direct)
         local who, secret = Web.login(ip, d.pseudo, d.password)
         if not who then return reply({ ok = false, text = secret, auth = false }) end
         local token = newToken()
-        if not token then return reply({ ok = false, text = 'Connexion indisponible (crypto du serveur). Redémarre gs_admin.' }) end
+        if not token then return reply({ ok = false, text = 'Connexion indisponible (aléa du serveur). Redémarre le serveur : GERER-OVH → 4.' }) end
         Web.sessions[token] = { who = who, ip = ip, secret = secret, exp = os.time() + ((Config.Web or {}).sessionHours or 12) * 3600 }
         Security:LogStaff(('[Appli staff] connexion de %s (%s)'):format(who, ip), 'staff')
         return reply({ ok = true, token = token, who = who, text = 'Bonjour ' .. who .. '.' })

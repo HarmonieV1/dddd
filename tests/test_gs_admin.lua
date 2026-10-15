@@ -422,6 +422,13 @@ check('web : pseudo obligatoire avec le mot de passe collectif', not call('1.2.3
 local r2 = call('1.2.3.4', '{ action = "login", password = "code-tres-long-123" }')
 check('web : code personnel accepté (nom du code)', r2.ok and r2.who == 'Alpha')
 check('web : code trop court ignoré', not call('1.2.3.4', '{ action = "login", password = "abc" }').ok)
+do -- V12.63 (backtest) : crypto.js pas chargé → secours /dev/urandom, jeton imprévisible quand même
+    local saved = getExport('gs_admin_webtest', 'RandomToken')
+    provide('gs_admin_webtest', { RandomToken = function() error('No such export') end, SafeEqual = function(a, b) return a == b end })
+    local rs = call('1.2.3.5', '{ action = "login", pseudo = "Secours", password = "NRL-test!" }')
+    check('web : sans crypto.js, jeton de secours (/dev/urandom, 48 hex)', rs.ok and type(rs.token) == 'string' and rs.token:match('^%x+$') and #rs.token == 48)
+    provide('gs_admin_webtest', { RandomToken = saved, SafeEqual = function(a, b) return a == b end })
+end
 local tok = r1.token
 check('web : action inconnue', not call('1.2.3.4', ('{ token = %q, action = "act", name = "givemoney", id = 9 }'):format(tok)).ok)
 check('web : sans session = refusé', call('1.2.3.4', '{ token = "faux", action = "overview" }').auth == false)
