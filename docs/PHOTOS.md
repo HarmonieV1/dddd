@@ -25,3 +25,6 @@ site tiers). Taille max 1,5 Mo, une photo toutes les 20 s par joueur.
 - Vibe : bouton 📷 → photo dans un post, ou **story 24 h** (bandeau en haut du fil).
 - **Heure dorée** (18 h – 20 h, heure du jeu) : une photo par jour rapporte de l'XP.
 - Police : **capture bodycam** jointe à un rapport (F4 → Dossiers → Rapports → Nouveau rapport).
+- **Lives staff** (V12.60, gs_lives) : F11 → Lives ou `/lives` : l'écran d'un ou plusieurs joueurs dans des fenêtres
+  déplaçables (une image toutes les 1,5 s, rien n'est enregistré, chaque visionnage est écrit dans le journal staff).
+  Seul screenshot-basic est nécessaire (pas d'hébergeur d'images).

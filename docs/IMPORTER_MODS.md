@@ -38,6 +38,14 @@ Refus **voulus** (raison écrite dans RAPPORT-MODS.txt, à lire avant de conclur
 fichier > 16 Mo, pack > 300 Mo, script ESX / obfusqué, script payant sans sa map, map retirée (`mods-retires.txt`),
 archive incomplète, vêtement « solo » à convertir.
 
+## DIAGNOSTIC-MODS.bat (V12.60) : l'outil « magique » après un import
+Double-clic : lit tous les mods démarrés et écrit `mods-tri\DIAGNOSTIC-MODS.txt` : **fichiers abîmés** (crash « Invalid fixup »),
+**vêtements en conflit** (deux packs avec la même collection `dlcName` : l'un s'affiche cassé), **voitures en double** (même nom
+de spawn), **fichiers en double** (même nom, contenu différent), lignes de `addons.cfg` sans dossier, mods jamais démarrés, mods
+très lourds. Réponds **O** pour les corrections sûres : mod abîmé mis en pause (`#` + raison), ligne morte enlevée (copie
+`cfg\addons.cfg.avant-diagnostic`). Les conflits ne sont jamais tranchés seuls : garde-en un, ou envoie-moi le rapport.
+Packs protégés (.fxap) : chiffrés, jamais lus ni signalés à tort. Blips en double : en jeu, F11 → Monde et lieux → Blips en double.
+
 ## Réparer un pack abîmé (« Map ARRÊTÉE … fichier abîmé », « Invalid fixup », « Unexpected end of archive »)
 1. portal.cfx.re → **Granted Assets** → retélécharger le pack (le zip complet, sans l'ouvrir).
 2. Le mettre dans `C:\GTASOON\mods-a-trier` en **remplaçant** l'ancien (même nom, pas de « (1) »).

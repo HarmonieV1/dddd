@@ -239,6 +239,26 @@ Rappel : 108, 113, 114 et 117 sont les ✚ faisables avant l'ouverture sans risq
 | 130 | **Test de charge** : 6 à 10 joueurs, 1 h, resmon (aucune ressource gs_ au-dessus de 0,5 ms) avant l'annonce publique | ✚ | backtest section 5 |
 | 131 | **Tableau de bord staff** : sur le panneau web, carte des joueurs en direct, derniers tickets, alertes anti-triche et état des maps | ✚✚ | gs_admin (panneau web), gs_anticheat |
 
+## D8. Suite (V12.60, 15/10) — après le cimetière, les cabines et les Lives
+
+| # | Proposition | Effort | S'appuie sur |
+|---|---|---|---|
+| 132 | **Messe d'enterrement** : l'EMS ou la mairie organise la cérémonie, un PNJ prêtre lit l'épitaphe, les présents reçoivent un souvenir (objet) | ✚ | gs_cimetiere, gs_civil |
+| 133 | **Héritage** : à la mort RP, le testament du notaire répartit le véhicule et une part de l'argent (validé staff) | ✚✚ | gs_cimetiere, n° 114 |
+| 134 | **Cabine piégée** : la police peut mettre une cabine sur écoute (mandat) ; le prochain appel anonyme donne la tenue de l'appelant | ✚ | gs_cabines, gs_justice |
+| 135 | **Annuaire des cabines** : les gangs se donnent rendez-vous par cabine (« appelle la cabine de Grove à 22 h ») : appel entrant qui sonne | ✚✚ | gs_cabines |
+| 136 | **Lives multi-écrans en grille** : 4 joueurs d'un coup (un braquage en cours), bouton « téléporter près de lui » sur la fenêtre | ✚ | gs_lives, gs_admin |
+| 137 | **Replay staff 30 s** : les 30 dernières images d'un joueur signalé gardées le temps d'un ticket | ✚✚ | gs_lives, tickets |
+| 138 | **Journal de la scène de crime** : les traces de sang et douilles se photographient (gs_camera) et vont au dossier police | ✚ | gs_scars, gs_evidence |
+| 139 | **Nettoyeur de scène** : métier légal (ville) ou illégal (gang) qui efface sang et douilles contre paiement | ✚ | gs_scars, gs_jobs |
+| 140 | **Poursuite filmée** : un hélico de la police IA filme la cavale ; l'image passe au bandeau Weazel du site | ✚✚ | gs_wanted, site |
+| 141 | **Rodéo du samedi** : la police IA est plus nombreuse le samedi soir dans les quartiers chauds (annoncé sur Discord) | ✚ | gs_wanted, gs_city |
+| 142 | **Pièces de collection** : les auto-tamponneuses, le stand de jeux et le casino partagent une monnaie de fête foraine | ✚ | gs_economy, scripts Patoche |
+| 143 | **Fleuriste** : boutique de fleurs (cimetière, mariage, excuses) ; un bouquet offert laisse un message dans le téléphone | ✚ | gs_cimetiere, gs_phone |
+| 144 | **Musique de quartier** : une borne (cabine, bar) joue la radio du gang qui tient le territoire | ✚✚ | gs_gangs, gs_lsradio |
+| 145 | **Carte de presse** : un journaliste en service voit les tuyaux de cabine sur sa carte (zone floue, comme la police) | ✚ | gs_cabines, gs_social |
+| 146 | **Rapport de fin de soirée staff** : à 4 h, un résumé Discord (joueurs max, tickets, sanctions, Lives ouverts, alertes) | ✚ | gs_discord, gs_admin |
+
 Rappel : avant l'ouverture, 118, 120, 123, 124, 125, 127 et 130 (✚) sont les plus sûrs ; le reste après le 20/10.
 
 ---

@@ -943,6 +943,7 @@ exports('GetStaffLevel', Admin.level)
 --- V9 : alerte aux membres du staff en service (anti-triche…)
 exports('NotifyStaff', function(msg) for s in pairs(Admin.onDuty) do notify(s, msg, 'warning') end return true end)
 exports('IsJailed', function(src) return Admin.jailed[src] ~= nil end)
+exports('IsOnDuty', function(src) return Admin.onDuty[src] ~= nil end) -- V12.60 : mode staff actif (gs_lives)
 --- V12.4 · Bannissement actif d'une licence : { name, until_ts, reason, staff } ou nil. Lu par gs_onboarding à la connexion.
 exports('GetBan', function(lic) return lic and Store.ban(lic) or nil end)
 

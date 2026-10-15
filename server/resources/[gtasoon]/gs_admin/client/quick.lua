@@ -989,6 +989,11 @@ local function playerMenu(p)
     add(3, { title = 'Effacer sa recherche (étoiles)', icon = 'star', description = 'Chaleur remise à zéro (gs_wanted)',
         onSelect = function() ExecuteCommand('effacerrecherche ' .. p.id) notify(true, 'Recherche effacée.') end })
     add(3, { title = 'Lui mettre un métier', icon = 'briefcase', arrow = true, onSelect = function() jobsMenu(p) end })
+    add(3, { title = 'Mort RP : tombe au cimetière', icon = 'cross', description = 'Tombe + épitaphe + avis de décès (le personnage n\'est pas supprimé)', -- V12.60
+        onSelect = function()
+            if GetResourceState('gs_cimetiere') ~= 'started' then return notify(false, 'gs_cimetiere n\'est pas démarré.') end
+            exports.gs_cimetiere:PlayerDeath(p.id, p.name)
+        end })
     add(3, { title = 'Le mettre dans un gang', icon = 'people-group', arrow = true, onSelect = function() gangsMenu(p) end })
     add(4, { title = 'Argent', icon = 'money-bill', arrow = true, onSelect = function() moneyMenu(p) end })
     add(4, { title = 'Items', icon = 'box-open', arrow = true, onSelect = function() itemsMenu(p) end })
@@ -1427,6 +1432,42 @@ local function mainMenu()
                     }, '\n') })
                 if c == 'confirm' then ExecuteCommand('doorlock') end
             end })
+        -- V12.60 · Blips en double (backtest 15/10) : tous les blips de MA carte (nos ressources, maps importées, scripts tiers),
+        -- regroupés quand la même icône revient à moins de 40 m. Clic = téléportation pour voir sur place lequel garder.
+        a(3, { title = 'Blips en double sur la carte', icon = 'clone', arrow = true, description = 'Même icône deux fois au même endroit (nos lieux + maps + scripts)',
+            onSelect = function()
+                local all = {}
+                for sprite = 1, 900 do
+                    local b = GetFirstBlipInfoId(sprite)
+                    while DoesBlipExist(b) do
+                        local c = GetBlipInfoIdCoord(b)
+                        if GetBlipInfoIdType(b) == 4 and (c.x ~= 0.0 or c.y ~= 0.0) then all[#all + 1] = { sprite = sprite, c = c } end -- 4 = blip posé sur une position
+                        b = GetNextBlipInfoId(sprite)
+                    end
+                end
+                local o, used = {}, {}
+                for i, p in ipairs(all) do
+                    if not used[i] then
+                        local n = 1
+                        for j = i + 1, #all do
+                            if not used[j] and all[j].sprite == p.sprite and #(vec2(all[j].c.x, all[j].c.y) - vec2(p.c.x, p.c.y)) < 40.0 then used[j] = true n = n + 1 end
+                        end
+                        if n > 1 then
+                            local street = GetStreetNameFromHashKey(GetStreetNameAtCoord(p.c.x, p.c.y, p.c.z))
+                            o[#o + 1] = { title = ('Icône %d · %d blips au même endroit'):format(p.sprite, n), icon = 'clone', iconColor = '#ffb347',
+                                description = (street ~= '' and street or 'lieu sans nom') .. ' · clic : y aller', onSelect = function() teleportTo(p.c.x, p.c.y, p.c.z) end }
+                        end
+                    end
+                end
+                if #o == 0 then o[1] = { title = ('Aucun doublon (%d blips contrôlés)'):format(#all), icon = 'check', readOnly = true } end
+                show('gs_staff_blipdup', 'Blips en double', o, 'gs_staff_world')
+            end })
+        -- V12.60 · cimetière (gs_cimetiere) : tombes, épitaphes, avis de décès
+        a(3, { title = 'Cimetière', icon = 'cross', arrow = true, description = 'Poser une tombe (carré ou ici), y aller, retirer',
+            onSelect = function()
+                if GetResourceState('gs_cimetiere') ~= 'started' then return notify(false, 'gs_cimetiere n\'est pas démarré.') end
+                exports.gs_cimetiere:OpenStaffMenu()
+            end })
         -- V12.40 · courses de rue sur mesure (gs_races) : points posés sur place, éphémères ou permanentes
         a(3, { title = 'Courses de rue sur mesure', icon = 'flag-checkered', arrow = true, description = 'Créer une course (points posés là où tu es), durée de vie, supprimer',
             onSelect = function()
@@ -1465,6 +1506,12 @@ local function mainMenu()
         end
         add(1, { title = 'Joueurs', icon = 'users', arrow = true, description = 'Triés par distance, recherche par nom ou ID', onSelect = function() playersMenu() end })
         add(1, { title = 'Moi', icon = 'user-gear', arrow = true, description = 'Vol libre, invisible, TP, peds et animaux…', onSelect = meMenu })
+        -- V12.60 · Lives : écrans des joueurs dans des fenêtres déplaçables (gs_lives, screenshot-basic)
+        add(2, { title = 'Lives (écrans des joueurs)', icon = 'tv', description = 'Regarder un ou plusieurs joueurs dans des fenêtres · aussi /lives', onSelect = function()
+            if GetResourceState('gs_lives') ~= 'started' then return notify(false, 'gs_lives n\'est pas démarré.') end
+            lib.hideContext()
+            exports.gs_lives:Open()
+        end })
         add(2, { title = 'Véhicules', icon = 'car', arrow = true, description = 'Faire apparaître, mods, réparer, supprimer', onSelect = vehMenu })
         -- V12.14 : Monde et lieux réservé aux super-admins et au fondateur (serveur : actions et callbacks au niveau 4)
         add(4, { title = 'Monde et lieux', icon = 'map-location-dot', arrow = true, description = 'Lieux publics, points, gangs, décor', onSelect = worldMenu })

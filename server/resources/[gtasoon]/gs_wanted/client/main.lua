@@ -88,7 +88,7 @@ local function describe(r)
         parts[#parts + 1] = ('%s %s'):format(name, r.plate or '')
     end
     -- La ville se souvient : description brute des témoins
-    if r.desc and #r.desc > 0 then parts[#parts + 1] = 'Suspect : ' .. table.concat(r.desc, ', ') end
+    if r.desc and #r.desc > 0 then parts[#parts + 1] = (r.crime == 'anonymous_call' and 'Message : ' or 'Suspect : ') .. table.concat(r.desc, ', ') end -- V12.60 : cabines
     if r.named then parts[#parts + 1] = ('Un témoin pense reconnaître %s'):format(r.named) end
     if r.linked then parts[#parts + 1] = ('Même %s que le signalement n°%d'):format(r.linkedBy or 'description', r.linked) end
     return ('n°%d · '):format(r.id or 0) .. table.concat(parts, ' · ')

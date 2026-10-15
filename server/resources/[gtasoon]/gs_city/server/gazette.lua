@@ -29,7 +29,8 @@ function Gazette.record(kind, a, b)
     elseif kind == 'jury' then w.juries = w.juries + 1
     elseif kind == 'legende' then push(w.legends, tostring(a or '?'), 3)
     elseif kind == 'plaque' then push(w.plaques, tostring(a or ''), 4)
-    elseif kind == 'blackout' then push(w.blackouts, a, 6) end
+    elseif kind == 'blackout' then push(w.blackouts, a, 6)
+    elseif kind == 'deces' then w.deces = w.deces or {} push(w.deces, { name = tostring(a or '?'), epitaph = b and tostring(b) or '' }, 6) end -- V12.60
     save()
 end
 
@@ -64,6 +65,9 @@ function Gazette.compose(w, number, at)
     local rum = {}
     for _, r in ipairs(w.rumeurs) do rum[#rum + 1] = ('Confirmée : %s.'):format(r) end
     sec('Les rumeurs avaient raison', rum)
+    local deaths = {} -- V12.60 : avis de décès (gs_cimetiere)
+    for _, d in ipairs(w.deces or {}) do deaths[#deaths + 1] = d.epitaph ~= '' and ('%s nous a quittés. « %s »'):format(d.name, d.epitaph) or ('%s nous a quittés.'):format(d.name) end
+    sec('Avis de décès', deaths)
     return { number = number, date = os.date('%d/%m/%Y', at or os.time()), name = G.name, headline = headline, lead = lead, sections = sections }
 end
 
@@ -116,6 +120,7 @@ AddEventHandler('gs_justice:server:jury', function() Gazette.record('jury') end)
 AddEventHandler('gs_wanted:server:legend', function(_, name) Gazette.record('legende', name) end)
 AddEventHandler('gs_scars:server:plaque', function(text) Gazette.record('plaque', text) end)
 AddEventHandler('gs_city:server:blackout', function(id, on) if on then Gazette.record('blackout', id) end end)
+AddEventHandler('gs_cimetiere:server:buried', function(name, epitaph) Gazette.record('deces', name, epitaph) end) -- V12.60
 
 CreateThread(function()
     local ok, w = pcall(json.decode, GetResourceKvpString('gazette:week') or '')

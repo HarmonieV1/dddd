@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Lives</title>
+<style>
+  /* gs_lives · V12.60 : panneau LIVES (liste) + fenêtres d'écran déplaçables / redimensionnables / fermables. Couleurs du site. */
+  :root { --bg: rgba(16, 10, 28, .94); --line: #6d3bd8; --accent: #b048ff; --txt: #ece6ff; --muted: #9a8fb8; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; overflow: hidden; background: transparent; font-family: Segoe UI, Arial, sans-serif; color: var(--txt); user-select: none; }
+  #panel { position: absolute; left: 12px; top: 70px; width: 300px; max-height: calc(100% - 140px); display: none; flex-direction: column;
+    background: var(--bg); border: 1px solid var(--line); border-radius: 8px; box-shadow: 0 10px 40px rgba(0,0,0,.5); }
+  body.focus #panel { display: flex; }
+  #panel header { display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; font-weight: 700; letter-spacing: .08em; color: var(--accent); }
+  #panel header button, .win .bar button, #panel .tools button { background: none; border: 0; color: var(--muted); cursor: pointer; font-size: 14px; }
+  #panel header button:hover, .win .bar button:hover { color: #fff; }
+  #search { margin: 0 12px 6px; padding: 7px 9px; border-radius: 6px; border: 1px solid #3a2a5c; background: #120c20; color: var(--txt); outline: none; }
+  #panel .tools { display: flex; justify-content: space-between; padding: 0 12px 6px; font-size: 11px; color: var(--muted); }
+  #list { overflow-y: auto; padding: 0 6px 8px; }
+  .row { display: flex; align-items: center; gap: 8px; padding: 7px 8px; border-radius: 6px; }
+  .row:hover { background: rgba(176, 72, 255, .12); }
+  .row .av { width: 26px; height: 26px; border-radius: 50%; background: var(--line); display: grid; place-items: center; font-size: 12px; font-weight: 700; flex: none; }
+  .row .nm { flex: 1; min-width: 0; }
+  .row .nm b { display: block; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .row .nm small { color: var(--muted); font-size: 11px; }
+  .row .watch { border: 1px solid #3a2a5c; border-radius: 5px; padding: 3px 8px; font-size: 11px; background: none; color: var(--muted); cursor: pointer; }
+  .row .watch.on { border-color: #5aff8c; color: #5aff8c; }
+  .win { position: absolute; width: 480px; height: 300px; min-width: 240px; min-height: 160px; background: #000; border: 2px solid var(--line); border-radius: 6px;
+    overflow: hidden; resize: both; box-shadow: 0 10px 40px rgba(0,0,0,.6); }
+  body:not(.focus) .win { pointer-events: none; resize: none; opacity: .92; }
+  .win .bar { position: absolute; inset: 0 0 auto 0; height: 26px; display: flex; align-items: center; gap: 6px; padding: 0 8px; font-size: 12px;
+    background: linear-gradient(180deg, rgba(16,10,28,.95), rgba(16,10,28,.6)); cursor: move; z-index: 2; }
+  .win .bar .dot { width: 8px; height: 8px; border-radius: 50%; background: #ff2340; animation: blink 1.2s steps(1) infinite; }
+  .win .bar .t { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .win img { width: 100%; height: 100%; object-fit: cover; display: block; background: #08050f; }
+  .win .wait { position: absolute; inset: 26px 0 0 0; display: grid; place-items: center; color: var(--muted); font-size: 12px; }
+  @keyframes blink { 50% { opacity: .2; } }
+</style>
+</head>
+<body>
+<div id="panel">
+  <header><span>◉ LIVES</span><span><button id="refresh" title="Actualiser">⟳</button> <button id="release" title="Jouer (les fenêtres restent)">✕</button></span></header>
+  <input id="search" placeholder="Rechercher un joueur (nom ou ID)" autocomplete="off">
+  <div class="tools"><span id="count">0 joueur</span><span id="slots"></span></div>
+  <div id="list"></div>
+</div>
+<script>
+  const RES = (window.GetParentResourceName && GetParentResourceName()) || 'gs_lives';
+  const post = (name, data) => fetch(`https://${RES}/${name}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data || {}) }).catch(() => {});
+  let players = [], max = 4, every = 1500, z = 10;
+  const wins = new Map(); // id → { el, img, pending, timer }
+  const $ = (s) => document.querySelector(s);
+  const esc = (t) => String(t).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+  function render() {
+    const q = $('#search').value.trim().toLowerCase();
+    const list = players.filter((p) => !q || p.name.toLowerCase().includes(q) || String(p.id) === q || (p.account || '').toLowerCase().includes(q));
+    $('#count').textContent = `${players.length} joueur${players.length > 1 ? 's' : ''}`;
+    $('#slots').textContent = `${wins.size} / ${max} fenêtres`;
+    $('#list').innerHTML = list.map((p) => `<div class="row"><div class="av">${esc((p.name[0] || '?').toUpperCase())}</div>
+      <div class="nm"><b>${esc(p.name)}</b><small>#${p.id}${p.account ? ' · ' + esc(p.account) : ''}</small></div>
+      <button class="watch ${wins.has(p.id) ? 'on' : ''}" data-id="${p.id}">${wins.has(p.id) ? 'LIVE' : 'WATCH'}</button></div>`).join('');
+  }
+
+  function ask(id) { const w = wins.get(id); if (!w || w.pending) return; w.pending = true; post('frame', { id }); setTimeout(() => { if (wins.get(id)) wins.get(id).pending = false; }, 8000); }
+
+  function openWin(p) {
+    if (wins.has(p.id)) return closeWin(p.id);
+    if (wins.size >= max) return;
+    const el = document.createElement('div');
+    el.className = 'win';
+    const n = wins.size;
+    el.style.left = (330 + (n % 2) * 500) + 'px'; el.style.top = (70 + Math.floor(n / 2) * 320) + 'px'; el.style.zIndex = ++z;
+    el.innerHTML = `<div class="bar"><i class="dot"></i><span class="t">${esc(p.name)} · #${p.id}</span><button title="Fermer">✕</button></div><div class="wait">Connexion à l'écran…</div><img alt="">`;
+    document.body.appendChild(el);
+    const w = { el, img: el.querySelector('img'), pending: false };
+    w.timer = setInterval(() => ask(p.id), every);
+    wins.set(p.id, w);
+    el.querySelector('button').onclick = () => closeWin(p.id);
+    el.addEventListener('mousedown', () => { el.style.zIndex = ++z; });
+    drag(el, el.querySelector('.bar'));
+    ask(p.id);
+    post('windows', { n: wins.size }); render();
+  }
+  function closeWin(id) {
+    const w = wins.get(id); if (!w) return;
+    clearInterval(w.timer); w.el.remove(); wins.delete(id);
+    post('close', { id }); post('windows', { n: wins.size }); render();
+  }
+  function drag(el, handle) {
+    handle.addEventListener('mousedown', (e) => {
+      if (e.target.tagName === 'BUTTON') return;
+      const sx = e.clientX - el.offsetLeft, sy = e.clientY - el.offsetTop;
+      const move = (m) => { el.style.left = Math.max(0, m.clientX - sx) + 'px'; el.style.top = Math.max(0, m.clientY - sy) + 'px'; };
+      const up = () => { document.removeEventListener('mousemove', move); document.removeEventListener('mouseup', up); };
+      document.addEventListener('mousemove', move); document.addEventListener('mouseup', up);
+    });
+  }
+
+  $('#list').addEventListener('click', (e) => { const b = e.target.closest('.watch'); if (!b) return; const p = players.find((x) => x.id === Number(b.dataset.id)); if (p) openWin(p); });
+  $('#search').addEventListener('input', render);
+  $('#release').onclick = () => post('release');
+  $('#refresh').onclick = () => post('refresh');
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') post('release'); });
+
+  window.addEventListener('message', (e) => {
+    const d = e.data || {};
+    if (d.action === 'players') { players = d.players || []; max = d.max || 4; every = d.every || 1500; render(); }
+    else if (d.action === 'focus') { document.body.classList.toggle('focus', !!d.on); if (d.on) $('#search').focus(); }
+    else if (d.action === 'frame') {
+      const w = wins.get(d.id); if (!w) return;
+      w.pending = false;
+      if (typeof d.src === 'string' && d.src.startsWith('data:image/')) { w.img.src = d.src; const wait = w.el.querySelector('.wait'); if (wait) wait.remove(); }
+    }
+  });
+</script>
+</body>
+</html>

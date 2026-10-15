@@ -1,4 +1,4 @@
-# État du projet RoadLine RP — récapitulatif complet (à jour au 15/10/2026, V12.59)
+# État du projet RoadLine RP — récapitulatif complet (à jour au 15/10/2026, V12.60)
 
 Ce document sert de **point de sauvegarde** : si une conversation avec Claude est perdue, compressée ou doit reprendre
 ailleurs, tout ce qu'il faut savoir est ici. Il est versionné avec le code (`git log` en garde aussi l'historique).
@@ -64,7 +64,7 @@ par un colis (zip de l'installation ou de la session) + ce fichier, et comparer 
 ## 2. Versions : interne vs publique (important, piège classique)
 
 Depuis la V11.3, il y a **deux numéros de version différents**, volontairement :
-- `gs_version` (convar, `server.cfg.example`) = **V12.59** → version technique interne, vue par le staff (F11, console,
+- `gs_version` (convar, `server.cfg.example`) = **V12.60** → version technique interne, vue par le staff (F11, console,
   METTRE-A-JOUR). Continue d'avancer à chaque mise à jour (V11.2, V11.3...).
 - `gs_public_version` (convar) = **« V4 · bêta »** → version vue par les **joueurs** (écran de chargement, statut
   Discord, Gazette). Le site affiche son propre journal (V1 à V4, V5 « classé confidentiel »).
@@ -272,6 +272,15 @@ Résumé très condensé (le détail complet est dans `docs/ROADMAP.md`, `docs/F
   façon chargement de mission (Entrée / clic pour passer). Tout coupé par `prefers-reduced-motion`, souris seulement
   sur ordinateur. Une seule boucle rAF qui s'endort quand rien ne bouge. Vérifié dans le navigateur : 0 erreur.
 
+- **V12.60** (15/10/2026, session de secours, branche `claude/presence-check-f9jlgz`) — retours du soir : (1) **DIAGNOSTIC-MODS.bat**
+  (`scripts/windows/diagnostic-mods.ps1`) : fichiers abîmés, vêtements en conflit (même dlcName), voitures en double, fichiers
+  en double, lignes mortes de addons.cfg ; corrections sûres (pause / ligne enlevée, copie `addons.cfg.avant-diagnostic`) ;
+  (2) F11 → Monde et lieux → **Blips en double** ; (3) **gs_cimetiere** (nouvelle ressource, n° 119) : tombes en KVP, épitaphe,
+  avis de décès (Weazel + section « Avis de décès » de la Gazette), fleurs 25 $, F11 → Cimetière et F11 → Joueurs → « Mort RP :
+  tombe » (le personnage n'est jamais supprimé) ; (4) **gs_cabines** (n° 128) : cabines du décor, appel anonyme au central
+  (zone floue, `anonymous_call`) ou tuyau Weazel (direct ou /tuyaux), 1 $, 5 min, trace staff ; (5) **gs_lives** : F11 → Lives
+  ou /lives, fenêtres d'écran déplaçables (screenshot-basic requis, docs/PHOTOS.md), journalisé ; gs_admin export `IsOnDuty` ;
+  (6) propositions D8 n° 132-146. En attente : config du script des auto-tamponneuses (nom de la pièce), 4e salle de jeu.
 - **V12.59** (15/10/2026, session de secours « presence-check », branche `claude/presence-check-f9jlgz`) — backtest du 15/10 :
   (1) **IMPORTER-MODS** : zips Google Drive en plusieurs morceaux décompressés ensemble, mod sans fxmanifest plus effacé,
   doublons à l'octet près, dossiers et volumes `.7z.001` importés, signature gardée seulement si tout est installé, voiture
