@@ -62,10 +62,26 @@ check('étape goto : pas encore arrivé', not ok and Progress.active[1].step == 
 tp(1, Q.welcome.steps[1].coords)
 ok = cb('gs_quests:advance', 1); step()
 check('étape 1 validée', ok and Progress.active[1].step == 2)
-for i = 2, #Q.welcome.steps - 1 do -- « premier jour » : toutes les étapes goto, puis retour à Max
-    tp(1, Q.welcome.steps[i].coords)
-    cb('gs_quests:advance', 1); step()
-end
+-- V12.61 : état civil → location → banque EN VOITURE → Pôle Emploi → téléphone ACHETÉ (pas retiré) → Max
+tp(1, Q.welcome.steps[2].coords)
+cb('gs_quests:advance', 1); step()
+check('V12.61 étape 2 : comptoir de location', Progress.active[1].step == 3 and Q.welcome.steps[2].label:find('Location'))
+tp(1, Q.welcome.steps[3].coords)
+ok = cb('gs_quests:advance', 1); step()
+check('V12.61 banque : il faut arriver en voiture', not ok and Q.welcome.steps[3].type == 'drive')
+W.players[1].vehicle = 5000
+ok = cb('gs_quests:advance', 1); step()
+W.players[1].vehicle = nil
+check('V12.61 banque en voiture : validée', ok and Progress.active[1].step == 4)
+tp(1, Q.welcome.steps[4].coords)
+cb('gs_quests:advance', 1); step()
+tp(1, Q.welcome.steps[5].coords)
+W.players[1].items.phone = nil
+ok = cb('gs_quests:advance', 1); step()
+check('V12.61 supérette sans téléphone : pas validée', not ok and Progress.active[1].step == 5 and Q.welcome.steps[5].item == 'phone')
+W.players[1].items.phone = 1
+ok = cb('gs_quests:advance', 1); step()
+check('V12.61 téléphone acheté : validé et gardé dans le sac', ok and Progress.active[1].step == 6 and W.players[1].items.phone == 1)
 tp(1, at(Characters.guide.coords))
 ok = cb('gs_quests:advance', 1); step()
 check('welcome terminée : argent + XP + marquée', ok and not Progress.active[1] and W.players[1].money.cash == Q.welcome.reward.cash
@@ -80,7 +96,7 @@ for _, st in ipairs(Q.welcome.steps) do
     local l = st.label:lower()
     if l:find('permis', 1, true) or l:find('auto-école', 1, true) then noLicence = false end
 end
-check('V12.36 : « Ton premier jour » sans étape permis / auto-école (4 étapes, outro sans permis)', noLicence and #Q.welcome.steps == 4
+check('V12.36 / V12.61 : « Ton premier jour » sans étape permis / auto-école (6 étapes, outro sans permis)', noLicence and #Q.welcome.steps == 6
     and Q.welcome.steps[#Q.welcome.steps].type == 'talk')
 
 -- Genre

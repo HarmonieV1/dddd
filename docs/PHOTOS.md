@@ -2,10 +2,9 @@
 
 Tout est prêt dans le code ; il reste deux choses à faire de ton côté, sinon le bouton 📷 reste simplement masqué.
 
-## 1. Installer screenshot-basic
-Ressource officielle Cfx.re qui capture l'écran du joueur. Télécharge-la depuis son dépôt officiel (citizenfx/screenshot-basic),
-place-la dans `resources/[standalone]/screenshot-basic`, puis retire le `#` devant `ensure screenshot-basic` dans
-`cfg/resources.cfg` (METTRE-A-JOUR remettra la ligne : garde ton `ensure` dans un cfg privé si besoin).
+## 1. screenshot-basic : déjà installé (V12.60)
+La ressource officielle Cfx.re qui capture l'écran est **livrée compilée** dans `resources/[gtasoon]/screenshot-basic`
+(licence MIT) et démarrée par `cfg/resources.cfg` : METTRE-A-JOUR l'installe, rien à télécharger ni à compiler.
 
 ## 2. Choisir un hébergeur d'images
 Un service qui accepte un envoi `multipart/form-data` et répond en JSON avec l'adresse de l'image (par exemple Fivemanage,

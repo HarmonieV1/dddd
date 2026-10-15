@@ -27,3 +27,7 @@ Config.Roles = {
 -- V10.2 · Le fil de la ville : chaque soir, un court résumé de la journée dans le salon #annonces (6 lignes max, aucun
 -- nom de joueur sauf les légendes, déjà publiques). Rien à dire = rien n'est posté. false = désactivé.
 Config.Digest = { enabled = true, hour = 23, minute = 30 }
+
+-- V12.61 · Rapport staff de fin de soirée (salon STAFF : set gs_webhook_staff "…" dans secrets.cfg, sinon gs_staff_webhook) :
+-- joueurs au plus haut, tickets, sanctions, alertes anti-triche, Lives, crimes, morts RP. /rapportstaff (console) = tout de suite.
+Config.StaffReport = { enabled = true, hour = 4, minute = 0 }

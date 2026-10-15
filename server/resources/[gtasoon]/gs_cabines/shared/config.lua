@@ -16,3 +16,8 @@ Config.PoliceJob = 'police'
 Config.PressJob = 'weazel'
 Config.Tips = { keep = 10, hours = 6 } -- tuyaux gardés pour la rédaction quand aucun journaliste n'est en service
 Config.CallTime = 6000        -- durée de l'appel (animation)
+-- V12.61 · Appeler un NUMÉRO depuis la cabine (le correspondant voit « Numéro masqué ») : plus court délai entre deux appels
+Config.NumberCooldown = 60
+-- V12.61 · Écoute : la police (grade `grade` et plus, en service, sur mandat du juge en RP) met une cabine sur écoute pendant
+-- `hours` heures. Chaque appel passé depuis elle arrive au central : heure, destinataire, message, et le genre de l'appelant.
+Config.Tap = { grade = 2, hours = 2, max = 5 }

@@ -4,7 +4,7 @@
 local Security = exports.gs_security
 local Bridge   = exports.gs_bridge
 
-Lives = { watching = {}, busy = {} } -- watching[staff][cible] = true (déjà journalisé) ; busy[staff .. ':' .. cible] = capture en cours
+Lives = { watching = {}, busy = {}, views = {} } -- watching[staff][cible] = true (déjà journalisé) ; busy[staff .. ':' .. cible] = capture en cours
 
 local function started(r) return GetResourceState(r) == 'started' end
 
@@ -44,6 +44,7 @@ RegisterNetEvent('gs_lives:server:frame', function(target)
     Lives.watching[src] = Lives.watching[src] or {}
     if not Lives.watching[src][target] then
         Lives.watching[src][target] = true
+        Lives.views[#Lives.views + 1] = os.time() -- V12.61 : rapport staff de fin de soirée
         Security:LogStaff(('[Lives] %s regarde l\'écran de %s [%d]'):format(GetPlayerName(src) or src, GetPlayerName(target) or '?', target), 'staff')
     end
     Lives.busy[key] = true
@@ -68,4 +69,11 @@ AddEventHandler('playerDropped', function()
     local src = source
     Lives.watching[src] = nil
     for _, w in pairs(Lives.watching) do w[src] = nil end
+end)
+
+--- V12.61 · Nombre de visionnages depuis `since` (rapport staff de fin de soirée, gs_discord)
+exports('ViewsSince', function(since)
+    local n = 0
+    for _, t in ipairs(Lives.views) do if t >= (tonumber(since) or 0) then n = n + 1 end end
+    return n
 end)

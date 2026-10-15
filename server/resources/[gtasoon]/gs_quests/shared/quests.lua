@@ -7,6 +7,7 @@
 --         vehicle (prêté au départ, repris à la fin), cleanup (items quête retirés en fin / abandon),
 --         steps (objectifs dans l'ordre), reward { xp, cash, items }, badge (Config.Badges, débloqué à la fin)
 -- Étapes : talk { character } · goto { coords, radius } · drive { coords, radius, limit? } (dans un véhicule)
+--          have { coords, radius, item, count } (V12.61 : avoir l'objet sur soi en arrivant, il n'est PAS retiré)
 --          deliver { coords | character, item, count } · collect { points, item? } (un ramassage par point)
 --          limit = secondes pour finir l'étape (sinon quête échouée, à relancer)
 
@@ -31,11 +32,15 @@ Quests = {
         id = 'welcome', title = 'Ton premier jour', giver = 'guide',
         intro = 'Nouveau en ville ? Moi c\'est Max. Premier jour : je te fais visiter l\'essentiel. Suis le GPS, et reviens me voir à la fin : je te paie le café.',
         -- V12.36 : plus d'étape « auto-école » ni « location en attendant le permis » : tout le monde a son permis à l'arrivée
-        outro = 'Voilà, tu connais la base : papiers, banque, boulot. Le reste, c\'est toi qui l\'écris. Bienvenue à Los Santos !',
+        outro = 'Voilà, tu connais la base : papiers, voiture, banque, boulot, téléphone. Note mon numéro… Le reste, c\'est toi qui l\'écris. Bienvenue à Los Santos !',
+        -- V12.61 (fondateur) : état civil → location → banque (en voiture de location) → Pôle Emploi → téléphone acheté à la
+        -- supérette (plus donné à l'arrivée : retouche qbx_core) → retour chez Max
         steps = {
             { type = 'goto', label = 'Mairie : papiers et état civil', coords = vec3(-545.1, -204.3, 38.2), radius = 8.0 },
-            { type = 'goto', label = 'Banque : ton compte (distributeurs partout en ville)', coords = vec3(149.4, -1040.5, 29.4), radius = 6.0 },
+            { type = 'goto', label = 'Location (à côté de la mairie) : loue un véhicule pour la suite', coords = vec3(-515.6, -262.5, 35.5), radius = 6.0 },
+            { type = 'drive', label = 'Banque : ouvre ton compte (viens en voiture)', coords = vec3(149.4, -1040.5, 29.4), radius = 12.0 },
             { type = 'goto', label = 'Pôle Emploi : trouve un premier boulot (F6)', coords = vec3(-265.0, -963.6, 31.22), radius = 6.0 },
+            { type = 'have', label = 'Supérette : achète un téléphone (F1 ensuite)', coords = vec3(25.06, -1347.32, 29.5), radius = 8.0, item = 'phone', count = 1 },
             { type = 'talk', label = 'Retourne voir Max', character = 'guide' },
         },
         reward = { xp = 300, cash = 500 },

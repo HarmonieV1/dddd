@@ -144,6 +144,9 @@ local npc = lastClientEvent('gs_wanted:client:npcPolice', 1)
 check('sans policier : police IA déclenchée (agression)', npc ~= nil and npc.args[1] >= 1)
 check('V12.59 rodéo / vol de voiture : police IA toujours ; supérette : parfois', Wanted.npcAllowed('vehicle_theft') and Wanted.npcAllowed('street_race')
     and not Wanted.npcAllowed('jewelry') and Config.NpcPolice.someNpc.store_robbery < 1)
+check('V12.61 samedi soir : +1 étoile pour un rodéo, rien un mardi ni pour un braquage', Wanted.saturdayBonus('street_race', { wday = 7, hour = 22 }) == 1
+    and Wanted.saturdayBonus('street_race', { wday = 1, hour = 2 }) == 1 and Wanted.saturdayBonus('street_race', { wday = 3, hour = 22 }) == 0
+    and Wanted.saturdayBonus('bank', { wday = 7, hour = 22 }) == 0 and Wanted.saturdayBonus('vehicle_theft', { wday = 1, hour = 4 }) == 0)
 check('étoiles selon la gravité', Wanted.npcStars(8) == 1 and Wanted.npcStars(30) == 2 and Wanted.npcStars(45) == 3)
 duty = savedDuty
 W.clientEvents = {}

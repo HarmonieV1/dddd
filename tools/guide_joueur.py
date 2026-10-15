@@ -202,16 +202,26 @@ def build():
     # ---- 1. Premiers pas ----
     # V12.36 : permis pour tout le monde (plus d'auto-école, quête de Max sans étape permis)
     s += chapter(1, 'Premiers pas', 'Tu arrives en ville <b>en bus</b>, à l\'arrêt de la mairie (un seul personnage par joueur), sans voiture mais '
-                 '<b>avec ton permis de conduire</b> : tout le monde l\'a. En une heure de jeu, tu peux avoir tes papiers, un premier boulot et un scooter. '
+                 '<b>avec ton permis de conduire</b> : tout le monde l\'a. <b>Pas de téléphone à l\'arrivée</b> : il s\'achète à la supérette. '
+                 'En une heure de jeu, tu peux avoir tes papiers, une voiture de location, un premier boulot et ton téléphone. '
                  'Suis Max « le Guide » : il t\'attend devant la mairie.')
     s += [Paragraph('Ton premier jour (quête de Max)', H3)]
     s += steps(['Parle à <b>Max « le Guide » Delgado</b> devant la mairie (Rockford Hills).',
                 '<b>Mairie</b> : papiers et état civil.',
-                '<b>Banque Fleeca de Legion Square</b> : ton compte. Les distributeurs sont partout en ville.',
+                '<b>Location</b> (à côté de la mairie) : loue un véhicule pour la suite.',
+                '<b>Banque Fleeca de Legion Square</b> : viens-y en voiture et ouvre ton compte. Les distributeurs sont partout en ville.',
                 '<b>Pôle Emploi</b> (centre-ville, près de Legion Square) : choisis un premier boulot (F6).',
+                '<b>Supérette de Strawberry</b> : achète ton <b>téléphone</b> au comptoir (puis F1).',
                 'Reviens voir Max : <b>300 XP et 500 $</b>.'])
     s += [tip('L\'arrivée en bus ne se joue qu\'une fois par personnage (Espace pour la passer). À la descente, le GPS est déjà tracé vers Max. '
               'Pas de voiture ? La <b>location de la mairie</b>, à deux pas de Max, prête vélos et scooters pour quelques dollars (chapitre 3).')]
+    s += [Paragraph('Cabines téléphoniques et cimetière (V12.60)', H3)]
+    s += bullets(['<b>Cabines</b> (Alt sur une cabine ou un téléphone mural, 1 $) : appel anonyme à la police, tuyau à Weazel News, ou appel '
+                  'vers un numéro (il voit « Numéro masqué »). X pour raccrocher. Attention : la police peut mettre une cabine <b>sur écoute</b>.',
+                  '<b>Cimetière</b> (blip, Hill Valley) : chaque mort RP y laisse une tombe et une épitaphe. Alt sur une tombe : la lire, '
+                  'ou déposer des fleurs (25 $).',
+                  '<b>Les traces</b> : après une fusillade, sang et douilles restent au sol ; après un braquage, des barrières de police. '
+                  'Tout s\'efface en 24 h.'])
     s += [Paragraph('Le permis de conduire', H3)]
     s += [table([['Étape', 'Prix', 'Comment'],
                  ['Obtention', 'Gratuit', 'Tout le monde a son permis dès l\'arrivée : la carte <b>Permis de conduire</b> est dans ton sac (F2). Pas d\'auto-école, ni code ni examen.'],
@@ -223,7 +233,8 @@ def build():
             ['F1', 'Téléphone : Que faire ?, messages, banque, factures, Vibe, Weazel, boulots, plans, ville…'],
             ['F2 · TAB · 1 à 5', 'Inventaire · barre rapide (double-clic = utiliser)'],
             ['F3', 'Progression : niveau, quêtes, défis du jour, badges'],
-            ['F5 · X', 'Animations (emotes) · annuler'],
+            ['F5 · X', 'Animations (emotes) · annuler · Pavé num. 1 à 5 : tes emotes rapides (F5 → Raccourcis)'],
+            ['M', 'Tomber au sol (ragdoll) · rappuie pour te relever'],
             ['F6', 'Métiers : prise de service (aussi par téléphone, de n\'importe où, ou /service), tenue, factures, missions, direction'],
             ['F7 · F9', 'Duo criminel · Gang'],
             ['W (clavier français)', 'Menu rapide : tenue, accessoires, radio, véhicule, factures'],
@@ -238,6 +249,7 @@ def build():
     s += [Paragraph('Les commandes utiles', H3)]
     cmds = [['Commande', 'Ce qu\'elle fait'],
             ['/quefaire', 'Tout ce qui se passe maintenant en ville, avec le GPS (aussi dans le téléphone)'],
+            ['/vue', 'Vue d\'ensemble : la caméra tourne autour de ton personnage (molette : distance), aussi W → Moi'],
             ['/rdv', 'Le programme des rendez-vous de la semaine'],
             ['/factures', 'Payer tes factures et amendes'],
             ['/recap · /reputation', 'Ton récap du mois · tes trois réputations'],

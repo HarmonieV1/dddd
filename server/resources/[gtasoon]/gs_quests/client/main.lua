@@ -210,10 +210,10 @@ CreateThread(function()
             end
         end
         local step = activeStep()
-        if step and step.coords and (step.type == 'goto' or step.type == 'drive' or step.type == 'deliver') then
+        if step and step.coords and (step.type == 'goto' or step.type == 'drive' or step.type == 'deliver' or step.type == 'have') then
             local inVeh = GetVehiclePedIsIn(ped, false) ~= 0
             local ready = (step.type ~= 'drive' or inVeh)
-                and (step.type ~= 'deliver' or exports.gs_bridge:GetItemCount(step.item) >= step.count)
+                and ((step.type ~= 'deliver' and step.type ~= 'have') or exports.gs_bridge:GetItemCount(step.item) >= (step.count or 1)) -- V12.61 : have
             if ready and #(me - step.coords) < (step.radius or 4.0) then advance() end
         end
         if state and state.active and state.active.deadlineAt and GetGameTimer() > state.active.deadlineAt then

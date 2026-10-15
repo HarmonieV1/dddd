@@ -1,4 +1,4 @@
-# État du projet RoadLine RP — récapitulatif complet (à jour au 15/10/2026, V12.60)
+# État du projet RoadLine RP — récapitulatif complet (à jour au 15/10/2026, V12.61)
 
 Ce document sert de **point de sauvegarde** : si une conversation avec Claude est perdue, compressée ou doit reprendre
 ailleurs, tout ce qu'il faut savoir est ici. Il est versionné avec le code (`git log` en garde aussi l'historique).
@@ -12,7 +12,7 @@ En bas de ce fichier : un **prompt prêt à coller** dans une nouvelle conversat
 **20/10/2026 à 21 h**. Décision du 11/10 : pas de gel des nouveautés, mais désormais **surtout du correctif, de la
 configuration et de l'optimisation** ; l'utilisateur se consacre à la promotion.
 
-**Le serveur en chiffres** : 66 ressources maison, ~34 systèmes exclusifs (« signatures »), 40 mappings payants installés,
+**Le serveur en chiffres** : 72 ressources maison (V12.61), 39 systèmes exclusifs (« signatures »), 40 mappings payants installés,
 2 882 tests automatiques, tous verts ; 27 pièges anti-triche ; 25 types de crimes reliés au central police ; budget de performance
 tenu (136 boucles client, 6 permanentes par image).
 
@@ -64,7 +64,7 @@ par un colis (zip de l'installation ou de la session) + ce fichier, et comparer 
 ## 2. Versions : interne vs publique (important, piège classique)
 
 Depuis la V11.3, il y a **deux numéros de version différents**, volontairement :
-- `gs_version` (convar, `server.cfg.example`) = **V12.60** → version technique interne, vue par le staff (F11, console,
+- `gs_version` (convar, `server.cfg.example`) = **V12.61** → version technique interne, vue par le staff (F11, console,
   METTRE-A-JOUR). Continue d'avancer à chaque mise à jour (V11.2, V11.3...).
 - `gs_public_version` (convar) = **« V4 · bêta »** → version vue par les **joueurs** (écran de chargement, statut
   Discord, Gazette). Le site affiche son propre journal (V1 à V4, V5 « classé confidentiel »).
@@ -272,6 +272,15 @@ Résumé très condensé (le détail complet est dans `docs/ROADMAP.md`, `docs/F
   façon chargement de mission (Entrée / clic pour passer). Tout coupé par `prefers-reduced-motion`, souris seulement
   sur ordinateur. Une seule boucle rAF qui s'endort quand rien ne bouge. Vérifié dans le navigateur : 0 erreur.
 
+- **V12.61** (15/10/2026, session de secours) — (1) **screenshot-basic livré compilé** dans `[gtasoon]` (MIT, `ensure` actif) :
+  Lives, photos Vibe et bodycam sans rien installer ; (2) cabines : **appel vers un numéro** (gs_phone `BoothCall`, « Numéro
+  masqué ») et **écoute police** (grade 2+, 2 h, 5 cabines max, l'appel suivant arrive au central avec le genre de l'appelant) ;
+  (3) **rodéo du samedi** (gs_wanted `NpcPolice.saturday` : 20 h → 3 h, +1 étoile et +1 patrouille pour rodéos / vols de
+  voiture, annonce en jeu + #annonces) ; (4) **rapport staff de fin de soirée** (gs_discord/server/staffreport.lua, 4 h,
+  gs_webhook_staff ; gs_admin `NightStats`, gs_lives `ViewsSince`, /rapportstaff) ; (5) **premier jour** : mairie → location →
+  banque en voiture → Pôle Emploi → téléphone acheté (nouvelle étape `have`) → Max ; téléphone plus donné à la création
+  (retouche qbx_core `starterItems`) ; (6) site : V1-V4 condensées en « Les fondations », V5 à jour, 39 signatures ; guides
+  joueur / staff, backtest « 4f ».
 - **V12.60** (15/10/2026, session de secours, branche `claude/presence-check-f9jlgz`) — retours du soir : (1) **DIAGNOSTIC-MODS.bat**
   (`scripts/windows/diagnostic-mods.ps1`) : fichiers abîmés, vêtements en conflit (même dlcName), voitures en double, fichiers
   en double, lignes mortes de addons.cfg ; corrections sûres (pause / ligne enlevée, copie `addons.cfg.avant-diagnostic`) ;

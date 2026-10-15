@@ -10,9 +10,9 @@ SESSIONS = [
     # validé (arrivée, téléphone, métiers, papiers, staff, Discord, site, alertes, vie légale / illégale…) et retiré.
     # Reste : ce qui a été corrigé ou ajouté depuis, jamais revu en jeu, et ce qui est obligatoire avant d'ouvrir.
     ('0 · Avant de commencer (5 min)', [
-        ('METTRE-A-JOUR.bat : version V12.60 affichée, « Base de données sauvegardée » ; METTRE-A-JOUR-OVH puis GERER-OVH → 1 : « Version RoadLine : V12.60 »', 'Staff', 3),
+        ('METTRE-A-JOUR.bat : version V12.61 affichée, « Base de données sauvegardée » ; METTRE-A-JOUR-OVH puis GERER-OVH → 1 : « Version RoadLine : V12.61 »', 'Staff', 3),
         ('Console au démarrage (PC et VPS) : aucune ligne ROUGE ; en jaune seulement « Conflit tranché » (2 fichiers Patoche) ; F8 en jeu : aucune erreur rouge', 'Staff', 3),
-        ('VIDER-CACHE-FIVEM.bat si un ancien menu apparaît (F11 doit afficher « RoadLine V12.60 »)', 'Staff', 2),
+        ('VIDER-CACHE-FIVEM.bat si un ancien menu apparaît (F11 doit afficher « RoadLine V12.61 »)', 'Staff', 2),
     ]),
     ('1 · Corrections du 13/10 à confirmer (V12.37 → V12.39, 20 min)', [
         ('Garage de métier : « Sortir » donne le véhicule à chaque fois, UNE notification ; prise de service au PNJ : une seule interaction', '2', 3),
@@ -85,6 +85,13 @@ SESSIONS = [
         ('Cabine téléphonique du décor (Alt) : appel anonyme → la police en service reçoit « Appel anonyme (cabine) » avec le message, zone floue ; Weazel : tuyau en direct ou /tuyaux', '2', 3),
         ('screenshot-basic installé : F11 → Lives (ou /lives) : WATCH ouvre l\'écran du joueur dans une fenêtre déplaçable ; 2 fenêtres en même temps ; ✕ pour jouer avec les fenêtres affichées', 'Staff', 2),
         ('DIAGNOSTIC-MODS.bat : rapport (vêtements en conflit, voitures en double, fichiers abîmés), O = corrections sûres ; F11 → Monde et lieux → Blips en double', 'Staff', 2),
+    ]),
+    ('4f · V12.61 — premier jour, cabines, samedi, rapport staff (15 min)', [
+        ('Nouveau personnage : AUCUN téléphone dans le sac ; quête de Max : mairie → location → banque EN VOITURE → Pôle Emploi → téléphone acheté à la supérette (gardé) → Max', 'Seul', 3),
+        ('Cabine : « Appeler un numéro » → l\'autre voit « Numéro masqué », on se parle, X raccroche ; policier grade 2+ : mettre la cabine sur écoute → l\'appel suivant arrive au central', '2', 3),
+        ('Lives : screenshot-basic démarre tout seul (console sans erreur), F11 → Lives fonctionne sans rien installer', 'Staff', 3),
+        ('Samedi 20 h : message LSPD en jeu + #annonces ; vol de voiture sans policier : une étoile de plus ; /rapportstaff (console) : rapport dans le salon staff', 'Staff', 2),
+        ('Site : Nouveautés = V6 (teaser), V5, « V1 → V4 · Les fondations » ; Signatures : 39 systèmes (cimetière, cabines, rodéo du samedi…)', 'Staff', 1),
     ]),
     ('5 · Obligatoire avant d\'ouvrir', [
         ('SAUVEGARDER-BDD.bat puis RESTAURER-BDD.bat sur un joueur ; redémarrage de 6 h : annonces 15 / 5 / 1 min', 'Staff', 3),

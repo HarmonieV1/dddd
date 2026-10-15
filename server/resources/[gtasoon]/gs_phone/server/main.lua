@@ -114,6 +114,27 @@ lib.callback.register('gs_phone:answer', function(src, id)
     return true
 end)
 
+--- V12.60 · Appel depuis une CABINE (gs_cabines) : l'appelant n'a pas besoin de téléphone, le correspondant voit « Numéro
+--- masqué ». Mêmes règles qu'un appel normal (numéro valide, joignable, pas déjà en ligne). Renvoie true, id ou false, message.
+function Phone.boothCall(src, number)
+    if not Phone.validNumber(number) then return false, 'Numéro invalide.' end
+    if Phone.inCall[src] then return false, 'Déjà en ligne.' end
+    local target = Phone.owners[number]
+    if not target or target == src or not hasPhone(target) then return false, 'Numéro injoignable.' end
+    if Phone.inCall[target] then return false, 'Ligne occupée.' end
+    Phone.nextCall = Phone.nextCall + 1
+    local id = Phone.nextCall
+    Phone.calls[id] = { id = id, caller = src, callee = target, state = 'ringing', channel = 1000 + id, hidden = true }
+    Phone.inCall[src], Phone.inCall[target] = id, id
+    TriggerClientEvent('gs_phone:client:incoming', target, { id = id, number = 'Numéro masqué' })
+    SetTimeout(Config.RingSeconds * 1000, function()
+        local c = Phone.calls[id]
+        if c and c.state == 'ringing' then Phone.endCall(id, 'Pas de réponse') end
+    end)
+    return true, id
+end
+exports('BoothCall', function(src, number) return Phone.boothCall(src, number) end)
+
 RegisterNetEvent('gs_phone:server:hangup', function()
     local src = source
     if not Security:RateLimit(src, 'gs_phone:hangup', 5, 10000) then return end

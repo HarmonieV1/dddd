@@ -119,6 +119,10 @@ Config.NpcPolice = {
     -- Rodéos, courses, vols de voiture, agressions… : police IA toujours là quand aucun policier joueur n'est en service.
     noNpc = { bank = true, jewelry = true, teller_robbery = true, shop_robbery = true, duo_contract = true },
     someNpc = { store_robbery = 0.35 }, -- supérette : police IA 1 fois sur 3 environ
+    -- V12.61 · « Rodéo du samedi » (modéré) : le samedi de 20 h à 3 h (heure du serveur), les rodéos et vols de voiture valent
+    -- une étoile de plus et une patrouille de plus ; annonce à 20 h sur Discord (#annonces) et en jeu. false = désactivé.
+    saturday = { from = 20, to = 3, stars = 1, units = 1, crimes = { street_race = true, vehicle_theft = true },
+        text = 'Samedi soir : la police renforce les contrôles routiers contre les rodéos urbains, de 20 h à 3 h.' },
 }
 
 -- Caméras de surveillance : un crime à moins de `radius` m d'une caméra est presque toujours signalé, avec une zone précise

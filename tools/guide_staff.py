@@ -101,8 +101,14 @@ def build():
             [38 * G.mm, 120 * G.mm, 22 * G.mm], font=8.2)]
     s += [Paragraph('Un point mal placé (transformateur, ring, vendeur, PNJ…) : F11 → Monde et lieux → <b>Déplacer / retirer un point</b> (filtre par ressource ; '
                     'super-admin : retirer du jeu, réversible). Points de métier : menu dédié. Tout est gardé aux mises à jour.', SMALL)]
-    s += [Paragraph('6. Nouveautés V11.4 → V12.60 pour le staff', H2)]
+    s += [Paragraph('6. Nouveautés V11.4 → V12.61 pour le staff', H2)]
     s += [t([['Quoi', 'Comment'],
+             ['Lives (V12.60)', 'F11 → Lives ou /lives : liste des joueurs, WATCH = son écran dans une fenêtre déplaçable (4 au plus). ✕ = jouer en gardant les fenêtres. Chaque visionnage est écrit dans le journal staff.'],
+             ['Mort RP (V12.60)', 'F11 → Joueurs → le joueur → Mort RP : tombe au cimetière + avis de décès (Weazel, Gazette). Le personnage n\'est PAS supprimé. F11 → Monde et lieux → Cimetière : poser / retirer.'],
+             ['Mods (V12.60)', 'DIAGNOSTIC-MODS.bat : fichiers abîmés, vêtements en conflit, voitures en double ; O = corrections sûres. F11 → Monde et lieux → Blips en double.'],
+             ['Cabines (V12.61)', 'Appels anonymes (police, Weazel, numéro masqué) tracés dans le journal staff (abus). Police grade 2+ : Alt sur une cabine → mettre sur écoute (mandat RP), 2 h.'],
+             ['Rapport de fin de soirée (V12.61)', 'Chaque jour à 4 h dans le salon staff Discord (gs_webhook_staff) : joueurs max, tickets, sanctions, alertes, Lives, crimes, morts RP. /rapportstaff en console = tout de suite.'],
+             ['Effets sur moi (V12.59)', 'F11 → Événements → Effets sur moi : super vitesse en voiture, voiture sauteuse, arc-en-ciel, caméra ivre. Persos GTA → Autre perso (nom du modèle).'],
              ['VIP (2 personnages)', 'F11 → Joueurs → le joueur → VIP (fondateur). Tout le monde a 1 personnage ; staff super-admin+ et VIP en ont 2.'],
              ['Mapping', 'F11 → Monde et lieux → Mapping : catalogue par catégorie (mobilier, chantier, éclairage, végétation, stands, plage, police), placement à la souris, retrait d\'objets de la map.'],
              ['Mappings installés', 'F11 → Monde et lieux → Mappings installés : chaque map ajoutée avec son quartier (lu dans ses fichiers), clic = téléportation dedans, blips pour soi, conflits entre deux maps signalés.'],

@@ -206,10 +206,23 @@ function Wanted.report(src, crimeType, coords, opts)
         local okL, listeners = pcall(function() return exports.gs_gangs:ScannerListeners() end)
         for _, s in ipairs(okL and listeners or {}) do TriggerClientEvent('gs_wanted:client:dispatch', s, report) end
         if #cops < Config.NpcPolice.minCops and Wanted.npcAllowed(crimeType) then
-            TriggerClientEvent('gs_wanted:client:npcPolice', src, math.min(5, Wanted.npcStars(crime.heat) + Wanted.city('NpcBonus', coords, 0)))
+            TriggerClientEvent('gs_wanted:client:npcPolice', src, math.min(5, Wanted.npcStars(crime.heat) + Wanted.city('NpcBonus', coords, 0) + Wanted.saturdayBonus(crimeType)))
         end
     end)
     return report
+end
+
+--- V12.61 · Samedi soir « rodéo » (de `from` h le samedi à `to` h le dimanche) ? t = os.date('*t') facultatif (tests)
+function Wanted.saturdayNight(t)
+    local S = Config.NpcPolice.saturday
+    if not S then return false end
+    t = t or os.date('*t')
+    return (t.wday == 7 and t.hour >= S.from) or (t.wday == 1 and t.hour < S.to)
+end
+--- Bonus d'étoiles du samedi soir pour ce crime (0 sinon)
+function Wanted.saturdayBonus(crimeType, t)
+    local S = Config.NpcPolice.saturday
+    return (S and S.crimes[crimeType] and Wanted.saturdayNight(t)) and S.stars or 0
 end
 
 --- V12.59 · Police IA pour ce crime ? Braquages : non (RP réservé à la police joueur), supérette : parfois, le reste : oui.
@@ -252,7 +265,8 @@ function Wanted.spawnUnits(src, stars, positions)
     local me = GetEntityCoords(ped)
     local mine = Wanted.units[src] or {}
     Wanted.units[src] = mine
-    local want = math.min(U.maxUnits, math.max(1, tonumber(stars) or 1)) - #mine
+    local cap = U.maxUnits + ((Wanted.saturdayNight() and Config.NpcPolice.saturday) and Config.NpcPolice.saturday.units or 0) -- V12.61 : samedi soir
+    local want = math.min(cap, math.max(1, tonumber(stars) or 1)) - #mine
     local county = me.y > 1200.0 -- au nord de Vinewood : shérif
     local out = {}
     for _, pos in ipairs(positions) do
@@ -481,3 +495,18 @@ exports('ClearHeat', Wanted.clearHeat)
 -- Derniers signalements (rumeurs, historique des véhicules…) : jamais l'identité, sauf visage connu
 exports('GetHistory', function() return Wanted.history end)
 exports('CrimeLabel', function(t) return Config.Crimes[t] and Config.Crimes[t].label or nil end)
+
+-- V12.61 · Annonce du samedi soir (une fois, à l'heure de début) : Discord #annonces + message en jeu
+CreateThread(function()
+    local announced
+    while true do
+        Wait(60000)
+        local S, t = Config.NpcPolice.saturday, os.date('*t')
+        local key = os.date('%Y-%m-%d')
+        if S and t.wday == 7 and t.hour == S.from and announced ~= key then
+            announced = key
+            TriggerClientEvent('ox_lib:notify', -1, { title = 'LSPD', description = S.text, type = 'warning', icon = 'car-burst', duration = 12000 })
+            if GetResourceState('gs_discord') == 'started' then pcall(function() exports.gs_discord:Announce('🚨 Rodéo du samedi', S.text) end) end
+        end
+    end
+end)

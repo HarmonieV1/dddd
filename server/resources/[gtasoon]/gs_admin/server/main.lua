@@ -125,6 +125,8 @@ RegisterNetEvent('gs_admin:server:report', function(message)
     Admin.nextTicket = Admin.nextTicket + 1
     local t = { id = Admin.nextTicket, src = src, name = label(src), message = message, time = os.time(), status = 'open' }
     Admin.tickets[t.id] = t
+    Admin.ticketTimes = Admin.ticketTimes or {} -- V12.61 : rapport staff de fin de soirée
+    Admin.ticketTimes[#Admin.ticketTimes + 1] = t.time
     pushToStaff('gs_admin:client:ticket', { id = t.id, name = t.name, message = t.message })
     Security:LogStaff(('[Ticket #%d] %s : %s'):format(t.id, t.name, message))
     notify(src, next(Admin.onDuty) and ('Ticket #%d envoyé au staff.'):format(t.id)
@@ -944,6 +946,27 @@ exports('GetStaffLevel', Admin.level)
 exports('NotifyStaff', function(msg) for s in pairs(Admin.onDuty) do notify(s, msg, 'warning') end return true end)
 exports('IsJailed', function(src) return Admin.jailed[src] ~= nil end)
 exports('IsOnDuty', function(src) return Admin.onDuty[src] ~= nil end) -- V12.60 : mode staff actif (gs_lives)
+--- V12.61 · Chiffres depuis `since` (os.time) pour le rapport staff de fin de soirée (gs_discord) : tickets ouverts,
+--- sanctions (avertissement, gel, expulsion, prison, bannissement) par type, alertes anti-triche, membres du staff actifs.
+local SANCTIONS = { warn = 'avertissement(s)', freeze = 'gel(s)', kick = 'expulsion(s)', jail = 'prison(s) admin', ban = 'bannissement(s)' }
+exports('NightStats', function(since)
+    since = tonumber(since) or 0
+    local out = { tickets = 0, openTickets = 0, sanctions = {}, staff = {}, alerts = 0 }
+    for _, t in ipairs(Admin.ticketTimes or {}) do if t >= since then out.tickets = out.tickets + 1 end end
+    for _, t in pairs(Admin.tickets) do if t.status ~= 'closed' then out.openTickets = out.openTickets + 1 end end
+    local seen = {}
+    for _, e in ipairs(Admin.logs) do
+        if (e.time or 0) >= since then
+            if SANCTIONS[e.action] then out.sanctions[SANCTIONS[e.action]] = (out.sanctions[SANCTIONS[e.action]] or 0) + 1 end
+            if e.staff and e.staff ~= 'console' and not seen[e.staff] then seen[e.staff] = true out.staff[#out.staff + 1] = (e.staff:gsub(' %[%d+%]$', '')) end
+        end
+    end
+    local ok, alerts = pcall(function() return Security:GetAlerts() end)
+    for _, a in ipairs(ok and type(alerts) == 'table' and alerts or {}) do
+        if type(a) ~= 'table' or not tonumber(a.time or a.at) or tonumber(a.time or a.at) >= since then out.alerts = out.alerts + 1 end
+    end
+    return out
+end)
 --- V12.4 · Bannissement actif d'une licence : { name, until_ts, reason, staff } ou nil. Lu par gs_onboarding à la connexion.
 exports('GetBan', function(lic) return lic and Store.ban(lic) or nil end)
 

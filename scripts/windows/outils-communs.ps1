@@ -53,6 +53,8 @@ $QboxPatches = @(
     # V12.59 · Discord des joueurs : « Joue à Qbox » (application Discord de Qbox). Présence de qbx_core coupée, remplacée par
     # celle de RoadLine (gs_hud/client/presence.lua, convar gs_discord_appid) ; sans identifiant : « Joue à FiveM ».
     @{ res = 'qbx_core'; file = 'config\client.lua'; find = '(discord = \{\s*\n\s*enabled = )true'; repl = '${1}false'; why = 'Discord : plus « Joue à Qbox » (présence RoadLine : gs_discord_appid)' },
+    # V12.61 · Plus de téléphone donné à la création du perso : il s'achète à la supérette (étape de la quête « Ton premier jour »)
+    @{ res = 'qbx_core'; file = 'config\shared.lua'; find = "\{ name = 'phone', amount = 1 \},"; repl = "-- RoadLine : téléphone à acheter à la supérette (quête du 1er jour)"; why = 'nouveau perso : téléphone à acheter (supérette), plus donné' },
     # V12.40 : carte (Échap) : « Powered by Qbox » → nom du serveur (gs_hud le pose aussi, au cas où le motif change)
     @{ res = 'qbx_core'; file = 'config\client.lua'; find = 'pauseMapText\s*=\s*''[^'']*'''; repl = "pauseMapText = 'RoadLine RP'"; why = 'carte Échap : nom du serveur au lieu de Powered by Qbox' },
     # V11.5 : un seul personnage par joueur ; 2 pour le fondateur, les super-admins et les VIP (gs_admin:CharacterSlots)

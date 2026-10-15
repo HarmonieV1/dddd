@@ -280,6 +280,9 @@ lib.callback.register('gs_quests:advance', function(src, point)
     elseif step.type == 'drive' then
         if not near(src, step.coords, step.radius) then return false, 'Pas encore arrivé.' end
         if GetVehiclePedIsIn(GetPlayerPed(src), false) == 0 then return false, 'Il faut arriver en véhicule.' end
+    elseif step.type == 'have' then -- V12.61 : l'objet doit être dans le sac (acheté), il n'est pas retiré
+        if not near(src, step.coords, step.radius or 6.0) then return false, 'Pas encore arrivé.' end
+        if (Bridge:GetItemCount(src, step.item) or 0) < (step.count or 1) then return false, 'Achète-le d\'abord (au comptoir).' end
     elseif step.type == 'deliver' then
         local at = step.character and charCoords(step.character) or step.coords
         if not near(src, at, step.character and talkRadius(step.character) or (step.radius or 4.0)) then return false, 'Trop loin.' end

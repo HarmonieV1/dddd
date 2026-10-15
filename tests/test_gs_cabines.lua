@@ -4,8 +4,10 @@ dofile('tests/mock.lua')
 local R = 'server/resources/[gtasoon]/'
 local duty = { police = {}, weazel = {} }
 provide('gs_jobs', { GetOnDutyPlayers = function(job) return duty[job] or {} end })
+local booths = {}
+provide('gs_phone', { BoothCall = function(src, number) if number ~= '555-0001' then return false, 'Numéro injoignable.' end booths[#booths + 1] = { src, number } return true, 7 end })
 local realState = GetResourceState
-function GetResourceState(r) if r == 'gs_jobs' then return 'started' end return realState and realState(r) or 'missing' end
+function GetResourceState(r) if r == 'gs_jobs' or r == 'gs_phone' then return 'started' end return realState and realState(r) or 'missing' end
 loadResource('gs_security', { R .. 'gs_security/server/main.lua' })
 loadResource('gs_cabines', { R .. 'gs_cabines/shared/config.lua', R .. 'gs_cabines/server/main.lua' })
 
@@ -51,6 +53,32 @@ check('sans pièce : refusé', not ok and msg:find('pièces'))
 W.players[1].money.cash = 5
 ok, msg = cb('gs_cabines:call', 1, 'press', 'abc', booth)
 check('message trop court : refusé', not ok)
+
+-- V12.61 · Appel vers un numéro (masqué) et écoute police
+W.players[1].money.cash = 10
+local okN, err = cb('gs_cabines:number', 1, '555-9999', booth)
+check('numéro injoignable : pas facturé', not okN and err:find('injoignable') and W.players[1].money.cash == 10)
+okN = cb('gs_cabines:number', 1, '555-0001', booth)
+check('appel masqué vers un numéro : passé, 1 $', okN and #booths == 1 and W.players[1].money.cash == 9)
+okN, err = cb('gs_cabines:number', 1, '555-0001', booth)
+check('rappel immédiat : refusé (délai)', not okN and err:find('Attends'))
+W.players[2].job = { name = 'police', grade = 1, onduty = true }
+tp(2, vec3(201.0, -900.0, 30.0))
+local okT, m = cb('gs_cabines:tap', 2, 'on', booth)
+check('écoute : grade insuffisant refusé', not okT and m:find('grade'))
+W.players[2].job.grade = 3
+okT = cb('gs_cabines:tap', 2, 'on', booth)
+check('écoute posée (policier grade 3 en service, à côté)', okT)
+advance(Config.NumberCooldown * 1000 + 1000)
+W.clientEvents = {}
+cb('gs_cabines:number', 1, '555-0001', booth)
+local tapEv = lastClientEvent('gs_cabines:client:tapped', 2)
+check('cabine sur écoute : le central reçoit l\'appel (destinataire, genre), jamais le nom', tapEv and tapEv.args[1].what:find('555%-0001') and tapEv.args[1].gender and not tostring(tapEv.args[1].what):find('Appelant'))
+okT = cb('gs_cabines:tap', 2, 'off', booth)
+advance(Config.NumberCooldown * 1000 + 1000)
+W.clientEvents = {}
+cb('gs_cabines:number', 1, '555-0001', booth)
+check('écoute retirée : plus d\'alerte', okT and lastClientEvent('gs_cabines:client:tapped', 2) == nil)
 
 io.write(('cabines : %d réussis, %d échoués\n'):format(passed, failed))
 os.exit(failed == 0 and 0 or 1)
