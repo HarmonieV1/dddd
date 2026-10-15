@@ -211,7 +211,8 @@ function Reset-ExpiredPassword($key, $vps) {
     throw ('Impossible de changer le mot de passe imposé par OVH. Si tu n''as pas de mot de passe dans le mail : espace client OVH ' +
         '> ton VPS > Réinstaller mon VPS, Ubuntu 24.04, SANS clé SSH : OVH envoie alors un mail avec le mot de passe ; relance cet outil.')
 }
-function SshArgs { if ($script:SshKey) { @('-i', $script:SshKey) } else { @() } }
+# V12.63 : IPv4 forcé (les coupures « Connection reset by 2001:41d0:… » venaient de la route IPv6 de la box vers OVH)
+function SshArgs { @('-o', 'AddressFamily=inet') + $(if ($script:SshKey) { @('-i', $script:SshKey) } else { @() }) }
 
 # Commande courte sur le VPS dont on lit la réponse (sans fenêtre, sans erreur PowerShell sur stderr)
 function Get-VpsOutput($vps, $command) {
