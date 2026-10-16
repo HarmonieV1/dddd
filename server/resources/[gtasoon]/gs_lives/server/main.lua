@@ -110,11 +110,12 @@ exports('Peek', function(target)
     return { img = l and l.data or nil, age = l and (now - l.at) or nil, err = (e and (not l or e.at > l.at)) and e.text or nil } -- une table (sûr entre ressources)
 end)
 
+-- V12.63 : jusqu'à 1 image/s par fenêtre (limite : 5 demandes par fenêtre toutes les 3 s, avec marge)
 RegisterNetEvent('gs_lives:server:frame', function(target)
     local src = source
     target = math.tointeger(tonumber(target))
     if not target or not GetPlayerName(target) then return end -- V12.63 : se regarder soi-même = test
-    if not Security:RateLimit(src, 'gs_lives:frame', Config.MaxWindows * 3, 3000) then return end
+    if not Security:RateLimit(src, 'gs_lives:frame', Config.MaxWindows * 5, 3000) then return end
     if not Lives.allowed(src) or not Lives.ready() then return end
     Lives.watching[src] = Lives.watching[src] or {}
     if not Lives.watching[src][target] then
@@ -127,7 +128,7 @@ RegisterNetEvent('gs_lives:server:frame', function(target)
     Lives.capture(target, Config.Quality, function(ok, data)
         if not GetPlayerName(src) then return end
         if not ok then return TriggerClientEvent('gs_lives:client:frameError', src, target, data) end
-        TriggerLatentClientEvent('gs_lives:client:frame', src, 1500000, target, data) -- latent : pas d'à-coup réseau
+        TriggerLatentClientEvent('gs_lives:client:frame', src, 3000000, target, data) -- latent : pas d'à-coup réseau
         local r = Lives.replay[target] -- un ticket est ouvert : l'image sert aussi au replay
         if r then
             r.frames[#r.frames + 1] = data

@@ -251,7 +251,8 @@ def build():
                   '<b>North Yankton</b> : un jour sur deux, le vol de l\'aéroport (LSIA) ne va pas à Cayo Perico mais dans la ville '
                   'enneigée du prologue de GTA V. Le comptoir (et le site, « En ce moment en ville ») indique la destination du jour ; retour quand tu veux au comptoir d\'arrivée.',
                   '<b>Sur place à North Yankton</b> : location de 4x4 enneigés, café de Ludendorff, et personne ne te connaît : '
-                  'ta recherche retombe plus vite.',
+                  'ta recherche retombe plus vite. GTA n\'a pas de grande carte de North Yankton (Échap) : la minimap suffit.',
+                  '<b>Vols</b> : l\'avion se pose sur la piste, et tu sors devant le pilote du comptoir.',
                   '<b>Métier : animalerie</b> (Pôle Emploi) : remplis les gamelles avec un carton de la réserve, nettoie les cages, '
                   'toilette les chiens et sers les clients au comptoir. Payé à chaque tâche.',
                   '<b>Photomaton</b> à la fête foraine (à côté du guichet des jetons) : une photo souvenir pour 3 jetons ; '

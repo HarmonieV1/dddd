@@ -20,7 +20,7 @@
 | **Gangs** | Plus de gangs créés d'office (un gang naît d'un projet RP validé par le staff) ; territoires découpés en pâtés de maisons. |
 | **Cyclone** | Vitesse maximale ramenée à 210 km/h. |
 | **Coincé sous la carte** | Tu es ramené tout seul au dernier endroit sûr après 6 secondes. |
-| **Vols plus beaux** | L'avion vole droit, nez dans l'axe, descend en douceur, se pose et roule jusqu'à l'arrêt (fini la glissade de côté). |
+| **Vols plus beaux** | L'avion vire en douceur pour s'aligner sur la piste, se pose et roule ; tu sors devant le pilote du comptoir. |
 | **North Yankton : sur place** | Location de 4x4, pick-up et berline enneigés à Ludendorff ; café chaud ; et personne ne te connaît : ta recherche y retombe plus vite. |
 | **Métier : animalerie** | Pôle Emploi → Animalerie : remplis les gamelles avec un carton de la réserve, nettoie les cages, toilette les chiens, sers les clients au comptoir. Payé à chaque tâche ; les animaux sont dans la boutique. |
 | **Site** | « ✈️ Vol du jour » dans « En ce moment en ville » (annonce dans le bandeau les jours North Yankton) ; journal « Nouveautés » mis à jour. |
@@ -35,6 +35,8 @@
 | **Destination du vol de l'île** | F11 → Monde et lieux | Alternance (un jour sur deux), Cayo ou North Yankton tous les jours ; les joueurs sur place sont rapatriés à l'aéroport ; soirée plage de Cayo seulement un jour Cayo. |
 | **Courses : véhicule imposé** | F11 → Monde et lieux → Courses | Sur un brouillon ou une course existante. |
 | **Forme des quartiers** | `/quartierforme <quartier> <angle> [taille] [allongement 0.4-2.5]` | Rectangles de pâtés de maisons. Créer un gang : F11 → Monde et lieux → Gangs. |
+| **Lives plus fluides** | F11 → Lives, appli | Une image par seconde, sans scintillement, écran entier. |
+| **Pistes des vols** | F11 → Déplacer un point | « Piste LSIA / Cayo Perico · toucher / arret » à caler si l'avion se pose à côté. |
 | **Animalerie : postes** | F11 → Monde et lieux → Déplacer un point | « Animalerie · Comptoir / Réserve / Gamelles / Cages / Toilettage » à placer dans la boutique (sinon rangés autour de la map). |
 | **North Yankton : points** | F11 → Déplacer un point | Location de Ludendorff, café, serveuse, shérif, comptoir du retour : à caler si besoin (seulement les jours North Yankton). |
 | **Journal staff** | F10 → Journal | Hommages peints, coincés ramenés, choix de destination du vol. |
@@ -49,7 +51,6 @@
 
 ## 4. Encore à faire / à vérifier
 - **Positions à caler en jeu** (F11 → Monde et lieux → Déplacer un point) : photomaton (gs_casino), postes de l'animalerie (gs_animalerie), location de Ludendorff (gs_rental), café et comptoir du vol retour à North Yankton (gs_world).
-- **North Yankton, Échap** : dis-moi ce que montre la carte du menu pause (coupée, vide…) pour que je la corrige.
 - **À confirmer en jeu** : Lives (F11 et appli), animations des gestes « visage » et « boire », décor et neige de North Yankton, barrage du shérif, hommage peint.
 - **Code cfx.re** du serveur (txAdmin → tableau de bord, ou liste FiveM en mode public : GERER-OVH → 7) pour le bouton « Rejoindre » du site.
 - **Code personnel fondateur** pour l'appli : GERER-OVH → 20 → A, rang 5.

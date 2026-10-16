@@ -70,7 +70,7 @@ RegisterNetEvent('gs_lives:client:capture', function(id, quality)
             if type(data) ~= 'string' or data:sub(1, 23) ~= 'data:image/jpeg;base64,' then
                 return TriggerServerEvent('gs_lives:server:shotFail', id, ('capture vide ou invalide (%s)'):format(type(data) == 'string' and data:sub(1, 30) or type(data)))
             end
-            TriggerLatentServerEvent('gs_lives:server:shot', 500000, id, data)
+            TriggerLatentServerEvent('gs_lives:server:shot', 1500000, id, data) -- V12.63 : envoi 3× plus rapide
         end)
     end)
     if not ok then done = true return TriggerServerEvent('gs_lives:server:shotFail', id, 'appel à screenshot-basic refusé : ' .. tostring(err):sub(1, 120)) end

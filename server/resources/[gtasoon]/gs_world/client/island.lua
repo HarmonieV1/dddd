@@ -56,18 +56,56 @@ local function flightFilm(toIsland, arrival, opts)
     local landing = not (opts.noLanding and toIsland)
     local hash = GetHashKey(c.model)
     lib.requestModel(hash, 5000)
-    -- axe unique du vol : vers l'arrivée (atterrissage) ou vers le cap de croisière (sans piste)
+    -- axe d'atterrissage : la piste de destination (V12.63), sinon l'axe départ → arrivée ; sans piste : vers le cap de croisière
+    local rw = landing and c.runways and c.runways[toIsland and 'island' or 'mainland'] or nil
     local aim = landing and vec3(arrival.x, arrival.y, from.z) or to
     local fx, fy = aim.x - from.x, aim.y - from.y
+    if rw then
+        -- une piste s'utilise dans les deux sens : on atterrit dans celui qui suit l'arrivée de l'avion (pas de demi-tour final)
+        local A, B = rw.toucher, rw.arret
+        if (B.x - A.x) * (A.x - from.x) + (B.y - A.y) * (A.y - from.y) < 0 then A, B = B, A end
+        rw = { toucher = A, arret = B }
+        fx, fy = B.x - A.x, B.y - A.y
+    end
     local flen = math.sqrt(fx * fx + fy * fy)
     if flen < 1.0 then fx, fy, flen = 1.0, 0.0, 1.0 end
     local dir = vec3(fx / flen, fy / flen, 0.0)
     local heading = GetHeadingFromVector_2d(dir.x, dir.y)
     local wheel = L.wheelHeight or 1.2
-    local touchZ = arrival.z + wheel
-    local touch = vec3(arrival.x, arrival.y, 0.0) - dir * (L.before or 110.0)
-    local stop = touch + dir * (L.roll or 90.0)
+    local refZ = rw and rw.toucher.z or arrival.z -- sol attendu au toucher des roues
+    local touchZ = refZ + wheel
+    local touch = rw and vec3(rw.toucher.x, rw.toucher.y, 0.0) or (vec3(arrival.x, arrival.y, 0.0) - dir * (L.before or 110.0))
+    local rollLen = rw and math.min(400.0, flen) or (L.roll or 90.0)
+    local stop = touch + dir * rollLen
     local final = touch - dir * (L.finalDistance or 650.0)
+    -- croisière en courbe (V12.63) : de la position de départ jusqu'au début de la finale, en arrivant DANS l'axe de la piste
+    -- (courbe de Bézier, mesurée en longueur : vitesse régulière, cap = tangente, inclinaison dans le virage)
+    local curve
+    if landing then
+        local ox, oy = final.x - from.x, final.y - from.y
+        local L3 = math.sqrt(ox * ox + oy * oy) / 3
+        local P0, P3 = vec3(from.x, from.y, 0.0), vec3(final.x, final.y, 0.0)
+        local P1 = P0 + vec3(ox, oy, 0.0) / math.max(1.0, L3 * 3) * L3
+        local P2 = P3 - dir * L3
+        local pts, acc = {}, { 0.0 }
+        for i = 0, 200 do
+            local t = i / 200
+            local a, b, cc, d = (1 - t) ^ 3, 3 * (1 - t) ^ 2 * t, 3 * (1 - t) * t * t, t ^ 3
+            pts[i + 1] = P0 * a + P1 * b + P2 * cc + P3 * d
+            if i > 0 then acc[i + 1] = acc[i] + #(pts[i + 1] - pts[i]) end
+        end
+        curve = { pts = pts, acc = acc, len = acc[#acc] }
+        function curve.at(sd)
+            local A = curve.acc
+            local lo, hi = 1, #A
+            while hi - lo > 1 do local mid = (lo + hi) // 2 if A[mid] <= sd then lo = mid else hi = mid end end
+            local seg = math.max(1e-6, A[hi] - A[lo])
+            local k = math.max(0.0, math.min(1.0, (sd - A[lo]) / seg))
+            local p = curve.pts[lo] + (curve.pts[hi] - curve.pts[lo]) * k
+            local tg = curve.pts[hi] - curve.pts[lo]
+            return p.x, p.y, GetHeadingFromVector_2d(tg.x, tg.y)
+        end
+    end
     local finalH = L.finalHeight or 70.0
     local vTouch = L.touchSpeed or 60.0
     local plane = CreateVehicle(hash, from.x, from.y, from.z, heading, false, false)
@@ -82,7 +120,7 @@ local function flightFilm(toIsland, arrival, opts)
     -- phases : a → b (au sol, x/y), durée T, vitesses de raccord v0 → v1, altitude z(f) avec f = part du segment parcourue
     local phases
     if landing then
-        local Dc, Da, Dr = #(vec3(final.x, final.y, 0.0) - vec3(from.x, from.y, 0.0)), (L.finalDistance or 650.0), (L.roll or 90.0)
+        local Dc, Da, Dr = curve.len, (L.finalDistance or 650.0), rollLen
         local Tc, Ta = c.seconds, (L.approachSeconds or 5)
         local vA = math.max(vTouch, 2 * Da / Ta - vTouch)  -- vitesse en début de finale (moyenne Da/Ta, fin à vTouch)
         local Tr = math.max(1.5, 2 * Dr / vTouch)          -- roulage : freinage régulier jusqu'à l'arrêt
@@ -99,7 +137,7 @@ local function flightFilm(toIsland, arrival, opts)
         phases = { { kind = 'cruise', a = from, b = to, D = Dc, T = c.seconds, v0 = Dc / c.seconds, v1 = Dc / c.seconds, text = label .. ' · [Espace] arriver',
             z = function(f) return from.z + (to.z - from.z) * smooth(f) end } }
     end
-    local skipped, pitch, last = false, 0.0, nil
+    local skipped, pitch, last, bank, lastHdg = false, 0.0, nil, 0.0, nil
     local camFrom = vec3(-8.0, -30.0, 6.0)
     local clock = GetGameTimer() -- horloges enchaînées : une phase reprend là où la précédente s'est arrêtée (aucune image figée)
     for _, ph in ipairs(phases) do
@@ -114,10 +152,12 @@ local function flightFilm(toIsland, arrival, opts)
             local f = ph.D > 0 and s / ph.D or 1.0
             if ph.kind ~= 'cruise' and now >= probeAt then -- sol de la piste, dès que le jeu l'a chargé (sinon altitude prévue)
                 probeAt = now + 400
-                local g = groundAt(touch.x, touch.y, arrival.z)
+                local g = groundAt(touch.x, touch.y, refZ)
                 if g then touchZ = touchZ + ((g + wheel) - touchZ) * 0.5 end
             end
             local x, y = ph.a.x + dir.x * s, ph.a.y + dir.y * s
+            local hdg = heading
+            if ph.kind == 'cruise' and curve then x, y, hdg = curve.at(s) end
             local z = ph.z(f)
             if ph.kind == 'roll' then local g = groundAt(x, y, touchZ - wheel) if g then z = g + wheel end end
             -- assiette : pente réelle de la trajectoire (+ arrondi en fin de finale), lissée
@@ -129,9 +169,13 @@ local function flightFilm(toIsland, arrival, opts)
             if ph.kind == 'approach' then target = target + 7.0 * smooth((f - 0.7) / 0.3) elseif ph.kind == 'roll' then target = 2.0 * (1 - f) end
             target = math.max(-6.0, math.min(9.0, target))
             pitch = pitch + (target - pitch) * 0.08
+            -- inclinaison dans le virage : proportionnelle à la vitesse de rotation du cap, lissée, 25° au plus
+            local dh = lastHdg and ((hdg - lastHdg + 540.0) % 360.0 - 180.0) or 0.0
+            bank = bank + (math.max(-25.0, math.min(25.0, -dh * 18.0)) - bank) * 0.06
+            lastHdg = hdg
             last = vec3(x, y, z)
             SetEntityCoordsNoOffset(plane, x, y, z, false, false, false)
-            SetEntityRotation(plane, pitch, 0.0, heading, 2, true)
+            SetEntityRotation(plane, pitch, bank, hdg, 2, true)
             SetFocusPosAndVel(x, y, z, 0.0, 0.0, 0.0)
             local off
             if ph.kind == 'cruise' then
@@ -302,7 +346,7 @@ end)
 AddEventHandler('gs_world:client:landed', function(side, m)
     if side == 'mainland' then
         lib.notify({ title = m == 'yankton' and 'North Yankton' or 'Cayo Perico', type = 'inform', duration = 10000,
-            description = m == 'yankton' and 'Vol retour au comptoir de l\'arrivée. Ici, personne ne te connaît : ta recherche retombe plus vite. Location de 4x4 et café à Ludendorff.'
+            description = m == 'yankton' and 'Vol retour au comptoir de l\'arrivée. Ici, personne ne te connaît : ta recherche retombe plus vite. Location de 4x4 et café à Ludendorff. GTA n\'a pas de grande carte de North Yankton (Échap) : la minimap suffit.'
                 or 'Vol retour : comptoir à l\'arrivée (logo avion), quand tu veux.' })
     end
 end)

@@ -18,14 +18,22 @@ Config.Island = {
     -- vol régulier : comptoir à l'aéroport de LS ↔ piste de l'île (fondu au noir). Accès libre : 0 = gratuit.
     flight = {
         price = 0,
-        mainland = { counter = vec3(-1037.8, -2737.8, 20.17), arrival = vec4(-1042.1, -2745.3, 21.36, 330.0), label = 'Vol pour Cayo Perico' },
-        island = { counter = vec3(4494.3, -4525.3, 4.41), arrival = vec4(4500.8, -4522.0, 4.41, 20.0), label = 'Vol retour pour Los Santos' },
+        -- V12.63 : arrivée = devant le pilote du comptoir (on sort du vol face à lui)
+        mainland = { counter = vec3(-1037.8, -2737.8, 20.17), arrival = vec4(-1037.4, -2737.9, 20.17, 330.0), label = 'Vol pour Cayo Perico' },
+        island = { counter = vec3(4494.3, -4525.3, 4.41), arrival = vec4(4493.8, -4524.6, 4.41, 290.0), label = 'Vol retour pour Los Santos' },
         -- Petit film du vol (avion au-dessus de l'océan) ; [Espace] = transfert rapide. false = simple fondu au noir.
         cinematic = { enabled = true, seconds = 10, model = 'luxor', from = vec3(-1300.0, -3400.0, 420.0), to = vec3(4300.0, -4650.0, 380.0),
             -- V12.33 : l'avion atterrit près du comptoir d'arrivée au lieu de disparaître. V12.63 : tout le vol dans l'axe de l'arrivée ;
             -- finale de `finalDistance` m commencée à `finalHeight` m, toucher des roues `before` m avant le comptoir à `touchSpeed` m/s,
             -- roulage de `roll` m jusqu'à l'arrêt (il s'arrête `before - roll` m avant le comptoir)
-            landing = { approachSeconds = 5, finalDistance = 650.0, finalHeight = 70.0, touchSpeed = 60.0, before = 110.0, roll = 90.0, wheelHeight = 1.2 } },
+            landing = { approachSeconds = 5, finalDistance = 650.0, finalHeight = 70.0, touchSpeed = 60.0, before = 110.0, roll = 90.0, wheelHeight = 1.2 },
+            -- V12.63 · Pistes d'atterrissage : l'avion s'aligne dans un virage, touche les roues au point `toucher` et roule jusqu'à
+            -- `arret` (sens de la piste = de toucher vers arret, 400 m de roulage au plus). Positions estimées [À CALER] : debout au
+            -- début de la piste, F11 → Monde et lieux → Déplacer un point → « Piste … · toucher », puis au bout du roulage → « … · arret ».
+            runways = {
+                mainland = { label = 'Piste LSIA', toucher = vec3(-1336.0, -3044.0, 13.9), arret = vec3(-1040.0, -3215.0, 13.9) },
+                island = { label = 'Piste Cayo Perico', toucher = vec3(4180.0, -4545.0, 4.4), arret = vec3(4440.0, -4500.0, 4.4) },
+            } },
     },
     -- Soirée DJ sur la plage (lancée par le staff : F11 → Événements → Soirée plage Cayo) : sono, lumières, danseurs,
     -- musique des enceintes de l'île. Coords à caler en jeu.
@@ -61,7 +69,7 @@ Config.Yankton = {
         price = 0,
         mainlandLabel = 'Vol pour North Yankton',
         -- [À CALER] comptoir du vol retour à Ludendorff (F11 → Déplacer un point)
-        island = { counter = vec3(3363.5, -4846.0, 111.8), arrival = vec4(3360.19, -4849.67, 111.8, 0.0), label = 'Vol retour pour Los Santos' },
+        island = { counter = vec3(3363.5, -4846.0, 111.8), arrival = vec4(3363.9, -4846.1, 111.8, 315.0), label = 'Vol retour pour Los Santos' }, -- arrivée devant le pilote
         cinematicTo = vec3(3250.0, -4650.0, 420.0), -- film du vol : l'avion file vers la ville (pas de piste : fondu à l'arrivée)
     },
     -- Sur place (jours North Yankton) : café de Ludendorff [À CALER] (F11 → Déplacer un point) et « se mettre au vert » : la

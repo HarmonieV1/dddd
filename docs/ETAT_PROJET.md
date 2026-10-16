@@ -370,6 +370,12 @@ Résumé très condensé (le détail complet est dans `docs/ROADMAP.md`, `docs/F
   réserve → gamelles, cages, toilettage, clients au comptoir, paie à la tâche ; postes déplaçables (F11), rangés autour de la
   position de la map (export gs_admin `MapScan`, GlobalState.gsPetshopAnchor) tant qu'ils ne sont pas placés. tests/check_links.py
   lit aussi les exports JavaScript. Tests : test_gs_animalerie (17), test_gs_rental (28), test_gs_world (35).
+  Puis : atterrissage sur la vraie piste (`cinematic.runways` : points `toucher` / `arret` par piste, déplaçables F11, sens choisi
+  selon l'arrivée de l'avion ; croisière en courbe de Bézier mesurée en longueur jusqu'au début de la finale, dans l'axe, avec
+  inclinaison dans le virage), arrivée devant le pilote du comptoir (LSIA, Cayo, North Yankton). Lives : 1 image/s
+  (`Config.Every` 1000, qualité 0,5), image décodée avant affichage (plus de scintillement), écran entier (`object-fit: contain`),
+  demande suivante enchaînée, envois latents 3× plus rapides ; appli staff inchangée. North Yankton : pas de grande carte dans
+  GTA (menu pause) : prévenu à l'atterrissage.
 - **V12.62** (15/10/2026, session de secours) — propositions choisies + relecture complète du gros patch avant le backtest :
   (1) **Lives** : ▦ grille, « ⇢ TP » (action `goto` de gs_admin), **replay 30 s** (n° 137) : tant qu'un ticket est ouvert,
   20 images (1,5 s) de l'auteur et du joueur nommé (« /report 12 … », gs_admin `ReportedPlayers`) gardées EN MÉMOIRE, effacées à

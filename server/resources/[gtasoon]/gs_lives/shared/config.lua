@@ -6,8 +6,8 @@
 Config = {}
 Config.Level = 2            -- niveau gs_admin minimum (modérateur), en mode staff
 Config.MaxWindows = 4       -- fenêtres ouvertes en même temps par membre du staff
-Config.Every = 1500         -- ms entre deux images d'une fenêtre
-Config.Quality = 0.45       -- qualité JPEG (0.1 à 0.9) : plus bas = plus léger
+Config.Every = 1000         -- ms entre deux images d'une fenêtre (V12.63 : 1,5 s → 1 s)
+Config.Quality = 0.5        -- qualité JPEG (0.1 à 0.9) : plus bas = plus léger (V12.63 : 0,45 → 0,5)
 Config.Command = 'lives'
 
 -- V12.62 · Replay staff (proposition n° 137) : tant qu'un ticket est ouvert, les dernières images de l'écran de son auteur

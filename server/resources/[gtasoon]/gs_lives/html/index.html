@@ -36,7 +36,7 @@
     background: linear-gradient(180deg, rgba(16,10,28,.95), rgba(16,10,28,.6)); cursor: move; z-index: 2; }
   .win .bar .dot { width: 8px; height: 8px; border-radius: 50%; background: #ff2340; animation: blink 1.2s steps(1) infinite; }
   .win .bar .t { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .win img { width: 100%; height: 100%; object-fit: cover; display: block; background: #08050f; }
+  .win img { width: 100%; height: 100%; object-fit: contain; display: block; background: #08050f; } /* V12.63 : écran entier, pas rogné */
   .win .wait { position: absolute; inset: 26px 0 0 0; display: grid; place-items: center; color: var(--muted); font-size: 12px; }
   @keyframes blink { 50% { opacity: .2; } }
 </style>
@@ -67,7 +67,7 @@
       <button class="watch ${wins.has(p.id) ? 'on' : ''}" data-id="${p.id}">${wins.has(p.id) ? 'LIVE' : 'WATCH'}</button></div>`).join('');
   }
 
-  function ask(id) { const w = wins.get(id); if (!w || w.pending) return; w.pending = true; post('frame', { id }); setTimeout(() => { if (wins.get(id)) wins.get(id).pending = false; }, 8000); }
+  function ask(id) { const w = wins.get(id); if (!w || w.pending) return; w.pending = true; w.askedAt = Date.now(); post('frame', { id }); setTimeout(() => { if (wins.get(id)) wins.get(id).pending = false; }, 8000); }
 
   function openWin(p) {
     if (wins.has(p.id)) return closeWin(p.id);
@@ -155,7 +155,19 @@
     else if (d.action === 'frame') {
       const w = wins.get(d.id); if (!w) return;
       w.pending = false;
-      if (typeof d.src === 'string' && d.src.startsWith('data:image/')) { w.img.src = d.src; const wait = w.el.querySelector('.wait'); if (wait) wait.remove(); }
+      if (typeof d.src === 'string' && d.src.startsWith('data:image/')) {
+        // V12.63 : image décodée AVANT d'être affichée (plus de scintillement ni d'image à moitié dessinée), puis la suivante
+        // est demandée tout de suite si l'intervalle est déjà passé (plus de temps mort entre deux images)
+        const next = new Image();
+        next.onload = () => {
+          const cur = wins.get(d.id); if (!cur) return;
+          cur.img.src = next.src;
+          const wait = cur.el.querySelector('.wait'); if (wait) wait.remove();
+          const since = Date.now() - (cur.askedAt || 0);
+          if (since >= every) ask(d.id);
+        };
+        next.src = d.src;
+      }
     }
   });
 </script>
