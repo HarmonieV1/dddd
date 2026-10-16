@@ -114,7 +114,7 @@ exp('requestScreenshot', (options, cb) => {
     const realCb = (cb !== undefined) ? cb : options;
     realOptions.resultURL = null;
     realOptions.targetField = null;
-    realOptions.targetURL = `http://${GetCurrentResourceName()}/screenshot_created`;
+    realOptions.targetURL = `https://${GetCurrentResourceName()}/screenshot_created`; // RoadLine V12.63 : https (http bloqué par les versions récentes de FiveM), repli http dans ui.html
     realOptions.correlation = registerCorrelation(realCb);
     SendNuiMessage(JSON.stringify({
         request: realOptions
@@ -128,7 +128,7 @@ exp('requestScreenshotUpload', (url, field, options, cb) => {
     const realCb = (cb !== undefined) ? cb : options;
     realOptions.targetURL = url;
     realOptions.targetField = field;
-    realOptions.resultURL = `http://${GetCurrentResourceName()}/screenshot_created`;
+    realOptions.resultURL = `https://${GetCurrentResourceName()}/screenshot_created`; // RoadLine V12.63
     realOptions.correlation = registerCorrelation(realCb);
     SendNuiMessage(JSON.stringify({
         request: realOptions

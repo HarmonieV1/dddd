@@ -318,6 +318,9 @@ Résumé très condensé (le détail complet est dans `docs/ROADMAP.md`, `docs/F
   détectée côté serveur comme les guerres), figure du coin (gs_city/server/figure.lua, remise via gs_economy, KVP par personnage),
   avis du commerçant (gs_stickup, `GlobalState.gsShopNotices`, 24 h), fausse alerte (gs_cabines, `/faussealerte`, amende différée
   en KVP si l'appelant est absent). Tests : test_gs_gangs_truce, test_gs_city_figure, + cabines / wanted / stickup.
+  Lives (console VPS : « screenshot-basic n'a pas répondu en 6 s ») : screenshot-basic patché (dist/client.js : rappel NUI en
+  https:// au lieu de http://, repli http dans dist/ui.html ; demande traitée même si le cadre NUI ne dessine plus) ; F8 /livestest
+  (gs_lives) teste la capture sur son PC sans le serveur.
   METTRE-A-JOUR-OVH compare le contenu des scripts du zip et du PC (même numéro de version mais correctif non installé sur le
   PC = proposé avant l'envoi ; avant, les anciens fichiers du PC repartaient au VPS sans le voir).
 - **V12.62** (15/10/2026, session de secours) — propositions choisies + relecture complète du gros patch avant le backtest :

@@ -85,3 +85,26 @@ end)
 RegisterNetEvent('gs_lives:client:frameError', function(target, msg)
     SendNUIMessage({ action = 'frameError', id = target, text = msg })
 end)
+
+-- V12.63 · Test de capture sur SON PC (sans le serveur) : /livestest dans F8. Dit si screenshot-basic répond, en combien de
+-- temps et quelle taille d'image : permet de savoir si le souci vient du jeu du joueur (version Canary, menu…) ou d'ailleurs.
+RegisterCommand('livestest', function()
+    if GetResourceState('screenshot-basic') ~= 'started' then return print('^1[livestest] screenshot-basic n\'est pas démarré chez toi.^0') end
+    local t0, done = GetGameTimer(), false
+    print('[livestest] capture demandée à screenshot-basic…')
+    local ok, err = pcall(function()
+        exports['screenshot-basic']:requestScreenshot({ encoding = 'jpg', quality = 0.4 }, function(data)
+            done = true
+            local good = type(data) == 'string' and data:sub(1, 23) == 'data:image/jpeg;base64,'
+            print(('%s[livestest] réponse en %d ms : %s (%d caractères)^0'):format(good and '^2' or '^1', GetGameTimer() - t0,
+                good and 'image OK' or 'image invalide', type(data) == 'string' and #data or 0))
+            lib.notify({ description = good and 'Lives : capture OK sur ton PC.' or 'Lives : image invalide (voir F8).', type = good and 'success' or 'error' })
+        end)
+    end)
+    if not ok then return print('^1[livestest] appel refusé : ' .. tostring(err) .. '^0') end
+    SetTimeout(8000, function()
+        if done then return end
+        print('^1[livestest] AUCUNE réponse de screenshot-basic en 8 s. Essaie avec FiveM en version normale (pas Canary) : Paramètres → Mise à jour.^0')
+        lib.notify({ description = 'Lives : screenshot-basic ne répond pas sur ton PC (voir F8).', type = 'error' })
+    end)
+end, false)
