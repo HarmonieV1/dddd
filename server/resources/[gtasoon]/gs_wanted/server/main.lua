@@ -543,6 +543,14 @@ exports('ReportCrime', function(src, crimeType, coords, opts) return Wanted.repo
 exports('GetHeat', function(src) return Wanted.heat[src] or 0 end)
 exports('AddHeat', Wanted.addHeat)
 exports('ClearHeat', Wanted.clearHeat)
+--- V12.63 · « Se mettre au vert » (journée North Yankton, gs_world) : la chaleur retombe de `amount` (jamais sous 0)
+exports('CoolHeat', function(src, amount)
+    amount = tonumber(amount)
+    if not amount or amount <= 0 or not Wanted.heat[src] then return end
+    local new = Wanted.heat[src] - amount
+    Wanted.heat[src] = new > 0 and new or nil
+    pushHeat(src)
+end)
 -- Derniers signalements (rumeurs, historique des véhicules…) : jamais l'identité, sauf visage connu
 exports('GetHistory', function() return Wanted.history end)
 --- V12.62 · Poursuite filmée en cours (bandeau Weazel du site) : la plus récente, sans aucune identité. nil s'il n'y en a pas.

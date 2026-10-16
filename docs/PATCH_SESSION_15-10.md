@@ -84,11 +84,12 @@
 | **Mods : textures et versions** | DIAGNOSTIC-MODS | Liste des textures / modèles de plus de 32 Mo ; même map installée en deux versions (animalerie `_1`) : la copie passe en pause, l'original reste (Shadow Complex `_1` gardé : l'ancien est retiré) |
 | **Idées du 16/10** | `gs_gangs`, `gs_city`, `gs_roadside`, `gs_casino` | Hommage peint au nom d'un membre disparu (n° 170), voisins vigilants `/voisins` (n° 173), alcootest du shérif la nuit sans policier (n° 180), photomaton de la fête foraine (n° 189) |
 | **Journée North Yankton** | `gs_world`, F11 | Un jour sur deux, le vol de l'aéroport mène à North Yankton (ville enneigée du prologue) au lieu de Cayo Perico (même emplacement : jamais les deux) ; F11 → Monde et lieux → Destination du vol de l'île pour forcer ; joueurs sur place rapatriés à la bascule (n° 191) ; le site affiche le vol du jour |
+| **Retours du test du soir** | `gs_world`, `gs_rental`, `gs_animalerie` (nouveau) | Vol : l'avion vole droit dans l'axe et atterrit en douceur ; North Yankton : location de véhicules enneigés, café, habitants, la recherche y retombe plus vite ; nouveau métier d'animalerie (animaux exposés, gamelles, cages, toilettage, clients) |
 
 ## Encore en attente (côté fondateur)
 - `shared/config.lua` du script des auto-tamponneuses si l'achat bloque encore ;
 - dossier `mods-tri\a-convertir` (vêtements solo) en morceaux de 25 Mo — ou intégrer le convertisseur à IMPORTER-MODS après le backtest ;
 - Emerus GTR et Tempesta widebody à retélécharger (archives coupées) ;
-- positions à caler en jeu : guichet des jetons, photomaton, carré du cimetière ;
+- positions à caler en jeu : guichet des jetons, photomaton, carré du cimetière, postes de l'animalerie, location / café / comptoir de North Yankton ;
 - code cfx.re du serveur (txAdmin → tableau de bord, ou liste des serveurs FiveM) : à me donner pour le site ;
 - ~~fusion dans `feature/phase1-bridge`~~ faite le 16/10.

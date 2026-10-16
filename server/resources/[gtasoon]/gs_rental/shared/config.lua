@@ -17,6 +17,10 @@ Config.Vehicles = {
     { model = 'seashark', label = 'Jet-ski',                type = 'boat', kind = 'boat', price = 80,  minutes = 30 },
     { model = 'dinghy',   label = 'Semi-rigide',            type = 'boat', kind = 'boat', price = 150, minutes = 45 },
     { model = 'speeder',  label = 'Hors-bord',              type = 'boat', kind = 'boat', price = 260, minutes = 45 },
+    -- V12.63 · North Yankton (journée North Yankton) : véhicules enneigés du jeu de base, au comptoir de Ludendorff seulement
+    { model = 'asea2',      label = 'Berline enneigée',     type = 'automobile', kind = 'snow', price = 90,  minutes = 60 },
+    { model = 'sadler2',    label = 'Pick-up enneigé',      type = 'automobile', kind = 'snow', price = 130, minutes = 60 },
+    { model = 'rancherxl2', label = '4x4 enneigé',          type = 'automobile', kind = 'snow', price = 160, minutes = 60 },
 }
 
 Config.Points = {
@@ -29,7 +33,8 @@ Config.Points = {
     { label = 'Location · Paleto Bay',    coords = vec3(-155.2, 6360.1, 31.5), spawn = vec4(-160.3, 6364.2, 31.2, 45.0) },
     -- Nautique (spawn dans l'eau, à caler en jeu)
     { label = 'Location de bateaux · Marina de LS', kind = 'boat', coords = vec3(-794.4, -1510.8, 1.6), spawn = vec4(-800.3, -1504.2, 0.0, 110.0) },
-    { label = 'Location de bateaux · Jetée de Cayo Perico', kind = 'boat', coords = vec3(4930.0, -5170.0, 2.5), spawn = vec4(4920.0, -5150.0, 0.0, 60.0) },
+    -- V12.63 : `island` = ouvert seulement les jours où le vol de l'aéroport mène à cette île (Cayo et North Yankton se partagent la place)
+    { label = 'Location de bateaux · Jetée de Cayo Perico', kind = 'boat', island = 'cayo', coords = vec3(4930.0, -5170.0, 2.5), spawn = vec4(4920.0, -5150.0, 0.0, 60.0) },
     -- V12.37 · Retour en ville depuis la campagne et les pôles de passage (demande du fondateur) : vélos / scooters / mini
     -- citadines (pas de bateau). Ajoutés EN FIN de liste pour ne pas décaler les clés des points déjà déplacés par le staff
     -- (clé = gs_rental:Config.Points.N.coords). Coordonnées plausibles [À CALER] en jeu : F11 → Points → « Placer ce point ici ».
@@ -39,6 +44,9 @@ Config.Points = {
     { label = 'Location · Vespucci',           coords = vec3(-1215.0, -1573.0, 4.4),  spawn = vec4(-1222.0, -1580.0, 4.2, 35.0) },   -- front de mer, parking de la plage
     { label = 'Location · Aéroport (LSIA)',    coords = vec3(-1037.5, -2731.0, 13.8), spawn = vec4(-1030.0, -2743.0, 13.6, 240.0) }, -- parking devant le terminal
     { label = 'Location · Hôpital Pillbox',    coords = vec3(306.0, -592.0, 43.3),    spawn = vec4(316.0, -600.0, 43.1, 340.0) },   -- sortie principale, côté rue
+    -- V12.63 · North Yankton (jours North Yankton seulement) : à côté de l'arrivée du vol, à Ludendorff [À CALER] en jeu
+    -- (F11 → Monde et lieux → Déplacer un point) ; le véhicule est reposé au sol par le jeu à la sortie (jamais à travers la carte)
+    { label = 'Location · Ludendorff (North Yankton)', kind = 'snow', island = 'yankton', coords = vec3(3356.5, -4853.5, 111.8), spawn = vec4(3366.0, -4858.0, 111.8, 90.0) },
 }
 
 Config.Blip = { sprite = 226, color = 48, scale = 0.7 }

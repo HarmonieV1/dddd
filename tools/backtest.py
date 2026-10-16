@@ -129,6 +129,15 @@ SESSIONS = [
         ('Site, « En ce moment en ville » : « ✈️ Vol du jour : … » suit la destination choisie dans F11 (1 min) ; jour North Yankton : annonce dans le bandeau Weazel', 'Seul', 1),
         ('Jour North Yankton : F11 → Événements → Soirée plage de Cayo → refusée ; se déconnecter à North Yankton, passer en Cayo, se reconnecter → repris à l\'aéroport', 'Staff', 2),
     ]),
+    ('4k · V12.63 — retours du test du 16/10 au soir (15 min)', [
+        ('Vol LSIA ↔ Cayo et retour de North Yankton : l\'avion vole droit, nez dans l\'axe du début à la fin (plus de glissade de côté vers le PNJ), descente douce, arrondi, toucher puis roulage dans le même axe', 'Seul', 3),
+        ('Jour North Yankton : comptoir « Location · Ludendorff » → 4x4 / pick-up / berline enneigés, la voiture sort posée au sol (pas à travers la carte) ; jetée de Cayo absente ce jour-là', 'Seul', 3),
+        ('Jour North Yankton : café de Ludendorff (café, sandwich, eau) ; avec des étoiles de recherche, rester là-bas → la recherche retombe plus vite ; serveuse, shérif et pilote sur place (positions à caler si besoin)', 'Seul', 2),
+        ('Animalerie : Pôle Emploi → « Animalerie » → prendre le service ; les animaux (chat, lapin, chiens, poule) sont dans la boutique pour tout le monde', 'Seul', 3),
+        ('Animalerie, staff : F11 → Monde et lieux → Déplacer un point → « Animalerie · Comptoir / Réserve / Gamelles / Cages / Toilettage » : placer chaque poste dans la boutique (les animaux suivent)', 'Staff', 3),
+        ('Animalerie, en service : Réserve → carton porté → Gamelles (payé) ; Cages (balai) ; Toilettage ; refaire tout de suite = « reviens dans … s » ; client au comptoir après quelques minutes → Servir (payé + pourboire)', 'Seul', 2),
+        ('North Yankton, Échap : noter ce que montre la carte du menu pause (coupée, vide, Los Santos…) et me l\'envoyer', 'Seul', 1),
+    ]),
     ('5 · Obligatoire avant d\'ouvrir', [
         ('SAUVEGARDER-BDD.bat puis RESTAURER-BDD.bat sur un joueur ; redémarrage de 6 h : annonces 15 / 5 / 1 min', 'Staff', 3),
         ('Mode staff : vol libre / invisible SANS alerte anti-triche ; F10 tickets et sanctions ; carkill 2 fois → alerte', 'Staff', 3),

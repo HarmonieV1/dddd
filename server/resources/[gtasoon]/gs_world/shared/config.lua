@@ -22,8 +22,10 @@ Config.Island = {
         island = { counter = vec3(4494.3, -4525.3, 4.41), arrival = vec4(4500.8, -4522.0, 4.41, 20.0), label = 'Vol retour pour Los Santos' },
         -- Petit film du vol (avion au-dessus de l'océan) ; [Espace] = transfert rapide. false = simple fondu au noir.
         cinematic = { enabled = true, seconds = 10, model = 'luxor', from = vec3(-1300.0, -3400.0, 420.0), to = vec3(4300.0, -4650.0, 380.0),
-            -- V12.33 : l'avion atterrit près du comptoir d'arrivée (toucher des roues `before` m avant, roulage de `roll` m) au lieu de disparaître
-            landing = { approachSeconds = 4, rollSeconds = 2.5, before = 60.0, roll = 45.0, wheelHeight = 1.2 } },
+            -- V12.33 : l'avion atterrit près du comptoir d'arrivée au lieu de disparaître. V12.63 : tout le vol dans l'axe de l'arrivée ;
+            -- finale de `finalDistance` m commencée à `finalHeight` m, toucher des roues `before` m avant le comptoir à `touchSpeed` m/s,
+            -- roulage de `roll` m jusqu'à l'arrêt (il s'arrête `before - roll` m avant le comptoir)
+            landing = { approachSeconds = 5, finalDistance = 650.0, finalHeight = 70.0, touchSpeed = 60.0, before = 110.0, roll = 90.0, wheelHeight = 1.2 } },
     },
     -- Soirée DJ sur la plage (lancée par le staff : F11 → Événements → Soirée plage Cayo) : sono, lumières, danseurs,
     -- musique des enceintes de l'île. Coords à caler en jeu.
@@ -62,6 +64,11 @@ Config.Yankton = {
         island = { counter = vec3(3363.5, -4846.0, 111.8), arrival = vec4(3360.19, -4849.67, 111.8, 0.0), label = 'Vol retour pour Los Santos' },
         cinematicTo = vec3(3250.0, -4650.0, 420.0), -- film du vol : l'avion file vers la ville (pas de piste : fondu à l'arrivée)
     },
+    -- Sur place (jours North Yankton) : café de Ludendorff [À CALER] (F11 → Déplacer un point) et « se mettre au vert » : la
+    -- recherche (gs_wanted) retombe de `coolPerMinute` chaque minute passée là-bas, loin de la police de Los Santos.
+    cafe = { label = 'Café de Ludendorff', coords = vec3(3361.5, -4843.0, 111.8),
+        items = { { item = 'coffee', price = 6 }, { item = 'sandwich', price = 14 }, { item = 'water', price = 4 } } },
+    coolPerMinute = 3,
     -- Décor du prologue (IPL du jeu de base). Un nom absent du jeu est simplement ignoré.
     ipls = {
         'plg_01', 'prologue01', 'prologue01_lod', 'prologue01c', 'prologue01c_lod', 'prologue01d', 'prologue01d_lod',
@@ -100,6 +107,8 @@ Config.AmbientPeds = {
     -- V12.63 : `island` = seulement les jours où le vol mène là (Cayo et North Yankton partagent les mêmes coordonnées)
     { label = 'Pilote (vol retour)', model = 's_m_m_pilot_01', coords = vec4(4495.3, -4524.0, 4.41, 110.0), scenario = 'WORLD_HUMAN_CLIPBOARD', island = 'cayo' },
     { label = 'Pilote (vol retour, North Yankton)', model = 's_m_m_pilot_01', coords = vec4(3365.0, -4845.0, 111.8, 135.0), scenario = 'WORLD_HUMAN_CLIPBOARD', island = 'yankton' },
+    { label = 'Serveuse (café de Ludendorff)', model = 'a_f_m_salton_01', coords = vec4(3362.5, -4841.8, 111.8, 180.0), scenario = 'WORLD_HUMAN_STAND_IMPATIENT', island = 'yankton' },
+    { label = 'Shérif de Ludendorff', model = 's_m_m_snowcop_01', coords = vec4(3351.5, -4848.5, 111.8, 270.0), scenario = 'WORLD_HUMAN_COP_IDLES', island = 'yankton' },
     { label = 'Pilote (vol pour Cayo)', model = 's_m_m_pilot_01', coords = vec4(-1036.6, -2736.4, 20.17, 150.0), scenario = 'WORLD_HUMAN_CLIPBOARD' },
     -- Bahama Mamas : DJ
     { label = 'DJ (Bahama Mamas)', model = 'a_m_y_clubcust_01', coords = vec4(-1381.0, -616.0, 31.5, 120.0), anim = { dict = 'anim@amb@nightclub@djs@dixon@', clip = 'dixn_dance_cntr_open_dix' } },

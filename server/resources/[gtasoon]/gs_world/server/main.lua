@@ -127,6 +127,40 @@ end)
 
 exports('IslandMode', World.mode)
 
+-- V12.63 · Sur place à North Yankton ----------------------------------------------------------------------------------
+--- Café de Ludendorff : boissons chaudes (liquide, sinon banque), seulement les jours North Yankton
+lib.callback.register('gs_world:cafe', function(src, index)
+    if not Security:RateLimit(src, 'gs_world:cafe', 4, 10000) then return false, 'Doucement.' end
+    local C = Y.cafe
+    local it = C and C.items[tonumber(index) or 0]
+    if World.mode() ~= 'yankton' or not it then return false, 'Le café est fermé.' end
+    if not Security:InRange(src, C.coords, 4.0) then return false, 'Approche-toi du comptoir.' end
+    if not Bridge:CanCarry(src, it.item, 1) then return false, 'Plus de place dans ton sac.' end
+    if not (Bridge:RemoveMoney(src, 'cash', it.price, 'café de Ludendorff') or Bridge:RemoveMoney(src, 'bank', it.price, 'café de Ludendorff')) then
+        return false, ('Il te faut %d $.'):format(it.price)
+    end
+    Bridge:AddItem(src, it.item, 1)
+    return true, 'Bien chaud, ça réchauffe.'
+end)
+
+--- « Se mettre au vert » : à North Yankton, la recherche retombe plus vite (appelé chaque minute)
+function World.coolOff()
+    if World.mode() ~= 'yankton' or (Y.coolPerMinute or 0) <= 0 or GetResourceState('gs_wanted') ~= 'started' then return 0 end
+    local n = 0
+    for _, s in ipairs(GetPlayers()) do
+        local src = tonumber(s)
+        local ped = GetPlayerPed(src)
+        if ped and ped ~= 0 and World.onIsland(GetEntityCoords(ped)) then
+            local ok, heat = pcall(function() return exports.gs_wanted:GetHeat(src) end)
+            if ok and (tonumber(heat) or 0) > 0 then
+                pcall(function() exports.gs_wanted:CoolHeat(src, Y.coolPerMinute) end)
+                n = n + 1
+            end
+        end
+    end
+    return n
+end
+
 --- Soirée plage de Cayo Perico (appelée par gs_admin, événements en un clic). seconds = 0 pour arrêter.
 --- V12.63 : refusée les jours North Yankton (Cayo n'est pas chargée).
 function World.party(seconds)
@@ -173,6 +207,7 @@ CreateThread(function()
         Wait(60000)
         World.applyMode(wanted())
         for _, s in ipairs(GetPlayers()) do World.track(tonumber(s)) end
+        World.coolOff()
     end
 end)
 

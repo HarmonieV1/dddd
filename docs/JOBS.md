@@ -19,6 +19,14 @@
 | Staff | `/gsjob add|remove|grade|list <id> [job] [grade]` (group.admin) |
 | Audit | toutes les actions sensibles en table `gs_job_audit` + webhook Discord `gs_webhook_jobs` |
 
+## Animalerie (V12.63, ressource `gs_animalerie`)
+Emploi public `animalerie` (Pôle Emploi, service n'importe où, payé à la tâche par la ville, sur le compte en banque). Dans la
+boutique de la map Patoche : animaux exposés (visibles de tous), **Réserve** (carton de croquettes porté) → **Gamelles**,
+**Cages** (balai), **Toilettage**, **Comptoir** (un client toutes les 2 min 30 à 5 min pour l'employé en service, pourboire possible).
+Attente entre deux mêmes tâches, distance et service vérifiés par le serveur ; XP de métier au plus toutes les 10 min.
+Postes : F11 → Monde et lieux → Déplacer un point → « Animalerie · … » (tant qu'ils ne sont pas placés, ils se rangent autour de
+la position de la map lue par gs_admin). Réglages : `gs_animalerie/shared/config.lua` (paies, durées, animaux, clients).
+
 ## Ajouter un job ([CONFIG])
 Tout se passe dans `shared/jobs.lua` : copier un bloc, changer le nom, les grades, les points, les véhicules.
 Aucun code à toucher. Les coords sont à caler en jeu (`Config.Debug = true` affiche les zones).

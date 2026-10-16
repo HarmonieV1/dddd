@@ -60,6 +60,32 @@ AddEventHandler('gs_world:client:yanktonPreload', function()
     if not loaded and GlobalState.gsIslandMode == 'yankton' then setYankton(true) end
 end)
 
+-- V12.63 · Café de Ludendorff (jours North Yankton seulement) : point posé ou retiré à chaque bascule
+local function cafeMenu()
+    local options = {}
+    for i, it in ipairs(Y.cafe.items) do
+        local ok, def = pcall(function() return exports.ox_inventory:Items(it.item) end) -- [API] ox_inventory
+        options[#options + 1] = { title = (ok and def and def.label) or it.item, description = it.price .. ' $', icon = 'mug-hot',
+            onSelect = function()
+                local done, msg = lib.callback.await('gs_world:cafe', false, i)
+                lib.notify({ description = msg, type = done and 'success' or 'error' })
+            end }
+    end
+    lib.registerContext({ id = 'gs_world_cafe', title = Y.cafe.label, options = options })
+    lib.showContext('gs_world_cafe')
+end
+AddEventHandler('gs_world:client:cafe', cafeMenu)
+
+local function cafePoint(mode)
+    exports.gs_markers:Remove('gs_world:cafe')
+    if mode == 'yankton' and Y.cafe then
+        exports.gs_markers:Add('gs_world:cafe', { coords = Y.cafe.coords, style = 'shop', label = Y.cafe.label, event = 'gs_world:client:cafe',
+            prompt = 'Boire un café chaud', reach = 2.5, distance = 25.0 })
+    end
+end
+CreateThread(function() cafePoint(GlobalState.gsIslandMode) end)
+AddStateBagChangeHandler('gsIslandMode', 'global', function(_, _, value) SetTimeout(0, function() cafePoint(value) end) end)
+
 AddEventHandler('onResourceStop', function(res)
     if res == GetCurrentResourceName() and loaded then setYankton(false) end
 end)

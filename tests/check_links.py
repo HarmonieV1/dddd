@@ -29,6 +29,11 @@ for r in ROOT.iterdir():
             net["server"].add(m.group(1))
 local = {"server": set(), "client": set()}   # AddEventHandler par côté
 callbacks, exports_def = set(), defaultdict(set)
+# Exports serveur déclarés en JavaScript (exports('MapScan', …) dans gs_admin/server/maps.js)
+for r in ROOT.iterdir():
+    for js in (r / "server").glob("*.js") if (r / "fxmanifest.lua").exists() else []:
+        for m in re.finditer(r"exports\('([^']+)'", js.read_text(encoding="utf-8")):
+            exports_def[(r.name, "server")].add(m.group(1))
 uses = []                                     # (kind, name, file, line)
 commands, keys, tables = defaultdict(list), defaultdict(list), defaultdict(list)
 

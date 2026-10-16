@@ -510,6 +510,16 @@ Jobs = {
             },
         },
     },
+
+    -- V12.63 · Animalerie (map Patoche) : emploi public, travail dans la boutique avec gs_animalerie (réserve, gamelles, cages,
+    -- toilettage, clients au comptoir), payé à la tâche par la ville. Postes à placer en jeu : F11 → Déplacer un point.
+    animalerie = {
+        label = 'Animalerie', whitelisted = false, dutyAnywhere = true, salaryFrom = 'state',
+        description = 'Croquettes, litières et toilettage : les animaux comptent sur toi.',
+        icon = 'paw',
+        grades = { [0] = { label = 'Soigneur animalier', salary = 0 } },
+        points = {},
+    },
 }
 
 -- Normalisation (ne pas modifier)

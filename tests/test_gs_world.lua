@@ -3,6 +3,8 @@ dofile('tests/mock.lua')
 local R = 'server/resources/[gtasoon]/'
 local staffLevel = {}
 provide('gs_admin', { GetStaffLevel = function(src) return staffLevel[src] or 0 end })
+local heat, cooled = {}, {}
+provide('gs_wanted', { GetHeat = function(src) return heat[src] or 0 end, CoolHeat = function(src, n) cooled[src] = (cooled[src] or 0) + n end })
 loadResource('gs_security', { R .. 'gs_security/server/main.lua' })
 SetResourceKvp('gs_world:islandChoice', 'cayo') -- vols de Cayo testés d'abord (V12.63 : sinon l'alternance du jour décide)
 loadResource('gs_world', { R .. 'gs_world/shared/config.lua', R .. 'gs_world/server/main.lua' })
@@ -92,6 +94,24 @@ okm = cb('gs_world:setIslandMode', 4, 'cayo'); step()
 check('retour à Cayo : soirée plage possible', okm and GlobalState.gsIslandMode == 'cayo' and World.party(600) == true and GlobalState.gsCayoParty ~= nil)
 World.party(0)
 check('choix inconnu refusé', not cb('gs_world:setIslandMode', 4, 'lune'))
+
+-- Sur place : café de Ludendorff et « se mettre au vert » (jours North Yankton seulement)
+do
+    local C = Y.cafe
+    join(6, 'CID6', 'Frileux', C.coords)
+    W.players[6].money.cash = 20
+    GlobalState.gsIslandMode = 'cayo'
+    check('café fermé un jour Cayo', not cb('gs_world:cafe', 6, 1))
+    step()
+    GlobalState.gsIslandMode = 'yankton'
+    local okc = cb('gs_world:cafe', 6, 1); step()
+    check('café : boisson chaude payée en liquide', okc and W.players[6].items[C.items[1].item] == 1 and W.players[6].money.cash == 20 - C.items[1].price)
+    heat[6] = 40
+    heat[3] = 40 -- en ville : rien
+    check('se mettre au vert : seulement les recherchés sur place', World.coolOff() == 1 and cooled[6] == Y.coolPerMinute and cooled[3] == nil)
+    GlobalState.gsIslandMode = 'cayo'
+    check('jour Cayo : pas de mise au vert', World.coolOff() == 0)
+end
 
 -- Déconnecté sur l'île, revenu le jour de l'autre île : reprise à l'aéroport (pas dans le ciel de Cayo / sous North Yankton)
 tp(1, F.mainland.counter)

@@ -359,7 +359,17 @@ Résumé très condensé (le détail complet est dans `docs/ROADMAP.md`, `docs/F
   l'aéroport (plus d'apparition dans le ciel de Cayo ou sous le sol de North Yankton). Soirée plage de Cayo refusée les jours
   North Yankton (gs_admin, événement en un clic). Tests : test_gs_world (31). Site : « vol du jour » dans « En ce moment en
   ville » et dans le bandeau Weazel (`now.island` de ville.json, export gs_world `IslandMode`) ; journal « Nouveautés » complété.
-  Patch note de la session du 16/10 : `docs/PATCH_NOTE_V12.63.md` + version Discord `docs/PATCH_NOTE_V12.63_DISCORD.txt` (2 messages).
+  Patch note de la session du 16/10 : `docs/PATCH_NOTE_V12.63.md` + version Discord `docs/PATCH_NOTE_V12.63_DISCORD.txt` (3 messages).
+  **Retours du test du 16/10 au soir** : film du vol réécrit (gs_world `flightFilm`) : un seul axe du départ à l'arrivée (plus
+  de glissade de côté), distance parcourue en Hermite (vitesses raccordées entre croisière, finale et roulage, horloges
+  enchaînées), assiette tirée de la pente + arrondi, sol de la piste lu par le jeu quand il est chargé (`landing` : finalDistance,
+  finalHeight, touchSpeed, before, roll). North Yankton sur place : gs_rental `island` par comptoir (Ludendorff = véhicules
+  `kind = 'snow'` asea2 / sadler2 / rancherxl2, jetée de Cayo seulement un jour Cayo), véhicule loué reposé au sol côté client ;
+  gs_world café de Ludendorff (`gs_world:cafe`), serveuse / shérif (AmbientPeds `island`), « se mettre au vert » (`World.coolOff`,
+  export gs_wanted `CoolHeat`). **Nouvelle ressource `gs_animalerie`** + métier public `animalerie` (gs_jobs) : animaux exposés,
+  réserve → gamelles, cages, toilettage, clients au comptoir, paie à la tâche ; postes déplaçables (F11), rangés autour de la
+  position de la map (export gs_admin `MapScan`, GlobalState.gsPetshopAnchor) tant qu'ils ne sont pas placés. tests/check_links.py
+  lit aussi les exports JavaScript. Tests : test_gs_animalerie (17), test_gs_rental (28), test_gs_world (35).
 - **V12.62** (15/10/2026, session de secours) — propositions choisies + relecture complète du gros patch avant le backtest :
   (1) **Lives** : ▦ grille, « ⇢ TP » (action `goto` de gs_admin), **replay 30 s** (n° 137) : tant qu'un ticket est ouvert,
   20 images (1,5 s) de l'auteur et du joueur nommé (« /report 12 … », gs_admin `ReportedPlayers`) gardées EN MÉMOIRE, effacées à

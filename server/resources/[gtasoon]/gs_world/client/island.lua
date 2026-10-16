@@ -30,20 +30,46 @@ end)
 
 -- Film du vol : avion local au-dessus de l'océan, caméra qui le suit, puis APPROCHE, ATTERRISSAGE et ROULAGE près du comptoir
 -- d'arrivée (V12.33 : avant, l'avion disparaissait en plein vol). [Espace] ou [Retour] pendant la croisière = transfert rapide.
+-- V12.63 (backtest : « il vole de travers jusqu'au PNJ ») : tout le vol suit UN SEUL axe, du départ vers l'arrivée, l'avion
+-- regarde toujours où il va ; la croisière descend en douceur jusqu'au début de la finale, la finale arrive dans l'axe avec un
+-- arrondi (nez qui se relève), puis toucher et roulage dans le même axe. Vitesses raccordées d'une phase à l'autre (plus d'à-coup),
+-- assiette tirée de la pente réelle, sol de la piste lu par le jeu quand il est chargé.
+
+--- Distance parcourue au temps u (0 → 1) d'un segment de longueur D en T s, vitesse v0 au départ et v1 à l'arrivée (Hermite)
+local function travel(u, D, T, v0, v1)
+    local u2, u3 = u * u, u * u * u
+    return (u3 - 2 * u2 + u) * T * v0 + (-2 * u3 + 3 * u2) * D + (u3 - u2) * T * v1
+end
+local function smooth(x) x = math.max(0.0, math.min(1.0, x)) return x * x * (3 - 2 * x) end
+local function groundAt(x, y, near)
+    local ok, gz = GetGroundZFor_3dCoord(x, y, near + 40.0, false)
+    if ok and math.abs(gz - near) < 12.0 then return gz end -- sol plausible (piste, route) ; sinon on garde l'altitude prévue
+    return nil
+end
+
 local function flightFilm(toIsland, arrival, opts)
     local c = I.flight.cinematic
     local L = c.landing or {}
     local from, to = toIsland and c.from or c.to, toIsland and c.to or c.from
     opts = opts or {} -- V12.63 · North Yankton : autre cap (opts.to), pas de piste (opts.noLanding), autre titre (opts.label)
     if opts.to then if toIsland then to = opts.to else from = opts.to end end
+    local landing = not (opts.noLanding and toIsland)
     local hash = GetHashKey(c.model)
     lib.requestModel(hash, 5000)
-    local heading = GetHeadingFromVector_2d(to.x - from.x, to.y - from.y)
-    local flat = vec3(to.x - from.x, to.y - from.y, 0.0)
-    local dir = flat / #flat
-    local ground = arrival.z + (L.wheelHeight or 1.2)
-    local touch = vec3(arrival.x, arrival.y, ground) - dir * (L.before or 60.0) -- toucher des roues, avant le comptoir
-    local stop = touch + dir * (L.roll or 45.0)                                   -- fin du roulage, à côté du comptoir
+    -- axe unique du vol : vers l'arrivée (atterrissage) ou vers le cap de croisière (sans piste)
+    local aim = landing and vec3(arrival.x, arrival.y, from.z) or to
+    local fx, fy = aim.x - from.x, aim.y - from.y
+    local flen = math.sqrt(fx * fx + fy * fy)
+    if flen < 1.0 then fx, fy, flen = 1.0, 0.0, 1.0 end
+    local dir = vec3(fx / flen, fy / flen, 0.0)
+    local heading = GetHeadingFromVector_2d(dir.x, dir.y)
+    local wheel = L.wheelHeight or 1.2
+    local touchZ = arrival.z + wheel
+    local touch = vec3(arrival.x, arrival.y, 0.0) - dir * (L.before or 110.0)
+    local stop = touch + dir * (L.roll or 90.0)
+    local final = touch - dir * (L.finalDistance or 650.0)
+    local finalH = L.finalHeight or 70.0
+    local vTouch = L.touchSpeed or 60.0
     local plane = CreateVehicle(hash, from.x, from.y, from.z, heading, false, false)
     SetModelAsNoLongerNeeded(hash)
     SetEntityCollision(plane, false, false)
@@ -53,27 +79,69 @@ local function flightFilm(toIsland, arrival, opts)
     RenderScriptCams(true, false, 0, true, true)
     DoScreenFadeIn(800)
     local label = opts.label or (toIsland and 'Vol LSIA → Cayo Perico' or 'Vol Cayo Perico → LSIA')
-    local phases = {
-        { a = from, b = to, ms = c.seconds * 1000, kind = 'cruise', text = label .. ' · [Espace] arriver' },
-        { a = to, b = touch, ms = (L.approachSeconds or 4) * 1000, kind = 'approach', text = 'Approche finale' },
-        { a = touch, b = stop, ms = (L.rollSeconds or 2.5) * 1000, kind = 'roll', text = 'Atterrissage' },
-    }
-    if opts.noLanding and toIsland then phases = { phases[1] } end
-    local skipped = false
+    -- phases : a → b (au sol, x/y), durée T, vitesses de raccord v0 → v1, altitude z(f) avec f = part du segment parcourue
+    local phases
+    if landing then
+        local Dc, Da, Dr = #(vec3(final.x, final.y, 0.0) - vec3(from.x, from.y, 0.0)), (L.finalDistance or 650.0), (L.roll or 90.0)
+        local Tc, Ta = c.seconds, (L.approachSeconds or 5)
+        local vA = math.max(vTouch, 2 * Da / Ta - vTouch)  -- vitesse en début de finale (moyenne Da/Ta, fin à vTouch)
+        local Tr = math.max(1.5, 2 * Dr / vTouch)          -- roulage : freinage régulier jusqu'à l'arrêt
+        phases = {
+            { kind = 'cruise', a = from, b = final, D = Dc, T = Tc, v0 = Dc / Tc, v1 = math.min(vA, 3 * Dc / Tc), text = label .. ' · [Espace] arriver',
+              z = function(f) return from.z + ((touchZ + finalH) - from.z) * smooth((f - 0.45) / 0.55) end },
+            { kind = 'approach', a = final, b = touch, D = Da, T = Ta, v0 = vA, v1 = vTouch, text = 'Approche finale',
+              z = function(f) return touchZ + finalH * (1 - f) ^ 1.6 end },             -- pente qui s'adoucit : l'arrondi
+            { kind = 'roll', a = touch, b = stop, D = Dr, T = Tr, v0 = vTouch, v1 = 0.0, text = 'Atterrissage',
+              z = function() return touchZ end },
+        }
+    else
+        local Dc = flen
+        phases = { { kind = 'cruise', a = from, b = to, D = Dc, T = c.seconds, v0 = Dc / c.seconds, v1 = Dc / c.seconds, text = label .. ' · [Espace] arriver',
+            z = function(f) return from.z + (to.z - from.z) * smooth(f) end } }
+    end
+    local skipped, pitch, last = false, 0.0, nil
+    local camFrom = vec3(-8.0, -30.0, 6.0)
+    local clock = GetGameTimer() -- horloges enchaînées : une phase reprend là où la précédente s'est arrêtée (aucune image figée)
     for _, ph in ipairs(phases) do
         if ph.kind == 'approach' then SetVehicleLandingGear(plane, 0) end -- train sorti pour l'approche
-        local start = GetGameTimer()
-        -- par frame : seulement pendant le film du vol (une quinzaine de secondes, une fois par trajet)
+        local start, probeAt = clock, 0
+        clock = clock + ph.T * 1000
+        -- par frame : seulement pendant le film du vol (une vingtaine de secondes, une fois par trajet)
         while true do
-            local k = math.min(1.0, (GetGameTimer() - start) / ph.ms)
-            local e = k
-            if ph.kind == 'approach' then e = 1 - (1 - k) ^ 2 elseif ph.kind == 'roll' then e = 1 - (1 - k) ^ 3 end -- freinage
-            local p = ph.a + (ph.b - ph.a) * e
-            SetEntityCoordsNoOffset(plane, p.x, p.y, p.z, false, false, false)
-            SetEntityRotation(plane, ph.kind == 'approach' and -4.0 * (1 - k) or 0.0, 0.0, heading, 2, true)
-            SetFocusPosAndVel(p.x, p.y, p.z, 0.0, 0.0, 0.0)
-            local side = ph.kind == 'cruise' and GetOffsetFromEntityInWorldCoords(plane, -28.0 + 20.0 * k, -30.0, 6.0)
-                or GetOffsetFromEntityInWorldCoords(plane, -14.0, -26.0, 5.0)
+            local now = GetGameTimer()
+            local u = math.min(1.0, (now - start) / (ph.T * 1000))
+            local s = math.max(0.0, math.min(ph.D, travel(u, ph.D, ph.T, ph.v0, ph.v1)))
+            local f = ph.D > 0 and s / ph.D or 1.0
+            if ph.kind ~= 'cruise' and now >= probeAt then -- sol de la piste, dès que le jeu l'a chargé (sinon altitude prévue)
+                probeAt = now + 400
+                local g = groundAt(touch.x, touch.y, arrival.z)
+                if g then touchZ = touchZ + ((g + wheel) - touchZ) * 0.5 end
+            end
+            local x, y = ph.a.x + dir.x * s, ph.a.y + dir.y * s
+            local z = ph.z(f)
+            if ph.kind == 'roll' then local g = groundAt(x, y, touchZ - wheel) if g then z = g + wheel end end
+            -- assiette : pente réelle de la trajectoire (+ arrondi en fin de finale), lissée
+            local target = 0.0
+            if last then
+                local ds = math.sqrt((x - last.x) ^ 2 + (y - last.y) ^ 2)
+                if ds > 0.01 then target = math.deg(math.atan(z - last.z, ds)) end
+            end
+            if ph.kind == 'approach' then target = target + 7.0 * smooth((f - 0.7) / 0.3) elseif ph.kind == 'roll' then target = 2.0 * (1 - f) end
+            target = math.max(-6.0, math.min(9.0, target))
+            pitch = pitch + (target - pitch) * 0.08
+            last = vec3(x, y, z)
+            SetEntityCoordsNoOffset(plane, x, y, z, false, false, false)
+            SetEntityRotation(plane, pitch, 0.0, heading, 2, true)
+            SetFocusPosAndVel(x, y, z, 0.0, 0.0, 0.0)
+            local off
+            if ph.kind == 'cruise' then
+                off = vec3(-28.0 + 20.0 * u, -30.0, 6.0)
+                camFrom = off
+            else
+                local k = smooth((now - start) / 1500) -- la caméra glisse vers sa place d'atterrissage, sans saut
+                off = camFrom + (vec3(-14.0, -26.0, 5.0) - camFrom) * k
+            end
+            local side = GetOffsetFromEntityInWorldCoords(plane, off.x, off.y, off.z)
             SetCamCoord(cam, side.x, side.y, side.z)
             PointCamAtEntity(cam, plane, 0.0, 0.0, 0.0, true)
             SetTextFont(4) SetTextScale(0.0, 0.5) SetTextCentre(true) SetTextOutline() SetTextColour(255, 255, 255, 220)
@@ -81,7 +149,7 @@ local function flightFilm(toIsland, arrival, opts)
             AddTextComponentSubstringPlayerName(ph.text)
             EndTextCommandDisplayText(0.5, 0.9)
             if ph.kind == 'cruise' and (IsControlJustPressed(0, 22) or IsControlJustPressed(0, 194)) then skipped = true break end
-            if k >= 1.0 then break end
+            if u >= 1.0 then break end
             Wait(0)
         end
         if skipped then break end
@@ -233,7 +301,9 @@ end)
 -- Arrivée sur l'île : où reprendre l'avion
 AddEventHandler('gs_world:client:landed', function(side, m)
     if side == 'mainland' then
-        lib.notify({ title = m == 'yankton' and 'North Yankton' or 'Cayo Perico', description = 'Vol retour : comptoir à l\'arrivée (logo avion), quand tu veux.', type = 'inform', duration = 9000 })
+        lib.notify({ title = m == 'yankton' and 'North Yankton' or 'Cayo Perico', type = 'inform', duration = 10000,
+            description = m == 'yankton' and 'Vol retour au comptoir de l\'arrivée. Ici, personne ne te connaît : ta recherche retombe plus vite. Location de 4x4 et café à Ludendorff.'
+                or 'Vol retour : comptoir à l\'arrivée (logo avion), quand tu veux.' })
     end
 end)
 

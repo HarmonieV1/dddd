@@ -21,6 +21,11 @@ local function openMenu(pointId)
             onSelect = function()
                 local ok, msg = lib.callback.await('gs_rental:rent', false, pointId, i)
                 lib.notify({ description = msg, type = ok and 'success' or 'error' })
+                if ok then -- V12.63 : véhicule reposé au sol une fois dedans (jamais à travers la carte, North Yankton compris)
+                    local t = GetGameTimer() + 4000
+                    while not cache.vehicle and GetGameTimer() < t do Wait(100) end
+                    if cache.vehicle and GetVehicleClass(cache.vehicle) ~= 14 then SetVehicleOnGroundProperly(cache.vehicle) end
+                end
             end,
         } end
     end
@@ -30,29 +35,45 @@ end
 
 AddEventHandler('gs_rental:client:open', function(i) openMenu(i) end)
 
-CreateThread(function()
+-- V12.63 : comptoirs de l'île du jour seulement (Cayo Perico ou North Yankton, mêmes coordonnées) ; refaits à chaque bascule
+local function island() return GlobalState.gsIslandMode == 'yankton' and 'yankton' or 'cayo' end
+
+local function clear()
+    for _, z in ipairs(zones) do exports.ox_target:removeZone(z) end
+    for _, b in ipairs(blips) do RemoveBlip(b) end
+    zones, blips = {}, {}
+    exports.gs_markers:RemovePrefix('gs_rental:')
+end
+
+local function build(today)
+    clear()
     for i, p in ipairs(Config.Points) do
-        zones[#zones + 1] = exports.ox_target:addSphereZone({ coords = p.coords, radius = 1.5, options = { {
-            name = 'gs_rental_' .. i, icon = 'fa-solid fa-bicycle', label = 'Louer un véhicule',
-            onSelect = function() openMenu(i) end,
-        } } })
-        exports.gs_markers:Add('gs_rental:' .. i, { coords = p.coords, style = 'rental', label = 'Location', icon = 38,
-            event = 'gs_rental:client:open', args = { i }, prompt = 'Louer un véhicule' })
-        local b = AddBlipForCoord(p.coords.x, p.coords.y, p.coords.z)
-        SetBlipSprite(b, Config.Blip.sprite)
-        SetBlipColour(b, Config.Blip.color)
-        SetBlipScale(b, Config.Blip.scale)
-        SetBlipAsShortRange(b, true)
-        BeginTextCommandSetBlipName('STRING')
-        AddTextComponentSubstringPlayerName('Location de véhicules')
-        EndTextCommandSetBlipName(b)
-        blips[#blips + 1] = b
+        if not p.island or p.island == today then
+            zones[#zones + 1] = exports.ox_target:addSphereZone({ coords = p.coords, radius = 1.5, options = { {
+                name = 'gs_rental_' .. i, icon = 'fa-solid fa-bicycle', label = 'Louer un véhicule',
+                onSelect = function() openMenu(i) end,
+            } } })
+            exports.gs_markers:Add('gs_rental:' .. i, { coords = p.coords, style = 'rental', label = 'Location', icon = 38,
+                event = 'gs_rental:client:open', args = { i }, prompt = 'Louer un véhicule' })
+            local b = AddBlipForCoord(p.coords.x, p.coords.y, p.coords.z)
+            SetBlipSprite(b, Config.Blip.sprite)
+            SetBlipColour(b, Config.Blip.color)
+            SetBlipScale(b, Config.Blip.scale)
+            SetBlipAsShortRange(b, true)
+            BeginTextCommandSetBlipName('STRING')
+            AddTextComponentSubstringPlayerName('Location de véhicules')
+            EndTextCommandSetBlipName(b)
+            blips[#blips + 1] = b
+        end
     end
+end
+
+CreateThread(function() build(island()) end)
+AddStateBagChangeHandler('gsIslandMode', 'global', function(_, _, value)
+    SetTimeout(0, function() build(value == 'yankton' and 'yankton' or 'cayo') end)
 end)
 
 AddEventHandler('onResourceStop', function(res)
     if res ~= GetCurrentResourceName() then return end
-    for _, z in ipairs(zones) do exports.ox_target:removeZone(z) end
-    for _, b in ipairs(blips) do RemoveBlip(b) end
-    exports.gs_markers:RemovePrefix('gs_rental:')
+    clear()
 end)

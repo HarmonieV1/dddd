@@ -72,18 +72,19 @@ do
     local land, boats, okShape, okSpread = 0, 0, true, true
     for i, p in ipairs(Config.Points) do
         if type(p.label) ~= 'string' or not p.label:find('^Location') or not p.coords or not p.spawn or type(p.spawn.w) ~= 'number'
-            or (p.kind ~= nil and p.kind ~= 'boat') or #(p.spawn - p.coords) > 30.0 then okShape = false end
-        if p.kind == 'boat' then boats = boats + 1 else land = land + 1 end
+            or (p.kind ~= nil and p.kind ~= 'boat' and p.kind ~= 'snow') or #(p.spawn - p.coords) > 30.0 then okShape = false end -- V12.63 : 'snow' (North Yankton)
+        if p.kind == 'boat' then boats = boats + 1 elseif p.kind == nil then land = land + 1 end
         for j = 1, i - 1 do if #(Config.Points[j].coords - p.coords) < 100.0 then okSpread = false end end
     end
-    check('points : label « Location… », spawn à moins de 30 m du comptoir, kind vélo/voiture ou bateau', okShape)
+    check('points : label « Location… », spawn à moins de 30 m du comptoir, kind vélo/voiture, bateau ou neige', okShape)
     check('points : au moins 11 points terrestres (retour en ville) et 2 pontons', land >= 11 and boats >= 2)
     check('points : jamais deux points à moins de 100 m', okSpread)
     local sandy
     for _, p in ipairs(Config.Points) do if p.label:find('Sandy') then sandy = p end end
     check('Sandy Shores : hors du poste de police (> 60 m du hall du shérif)', sandy ~= nil and #(sandy.coords - sheriffSandy) > 60.0)
     local last = #Config.Points
-    check('dernier point : terrestre (les nouveaux points sont ajoutés en fin de liste)', Config.Points[last].kind == nil)
+    while last > 0 and (Config.Points[last].kind ~= nil or Config.Points[last].island) do last = last - 1 end -- V12.63 : dernier point de ville
+    check('dernier point de ville : terrestre (les nouveaux points sont ajoutés en fin de liste)', last > 0 and Config.Points[last].kind == nil)
     join(3, 'CID3', 'Voyageur', Config.Points[last].coords); W.players[3].money.cash = 100
     ok = cb('gs_rental:rent', 3, last, 6); step()
     check('nouveau point : bateau refusé sur un point terrestre', not ok)
@@ -91,6 +92,30 @@ do
     check('nouveau point : vélo loué', ok == true and Rental.active[3] ~= nil and W.players[3].money.cash == 100 - Config.Vehicles[1].price)
     TriggerEvent('gs_bridge:server:playerUnloaded', 3)
     check('nouveau point : déconnexion nettoie', not Rental.active[3])
+end
+
+-- V12.63 · Comptoirs liés à une île (journée North Yankton) : ouverts seulement les jours où le vol y mène
+do
+    local ny, cayo
+    for i, p in ipairs(Config.Points) do if p.island == 'yankton' then ny = i elseif p.island == 'cayo' then cayo = i end end
+    local snow
+    for i, v in ipairs(Config.Vehicles) do if v.kind == 'snow' then snow = i break end end
+    check('Ludendorff : point en fin de liste (clés des points déplacés inchangées), véhicules enneigés', ny == #Config.Points and snow ~= nil and cayo ~= nil)
+    join(7, 'CID7', 'Voyageur', Config.Points[ny].coords)
+    W.players[7].money.cash = 1000
+    GlobalState.gsIslandMode = 'cayo'
+    local ok7, msg7 = cb('gs_rental:rent', 7, ny, snow); step()
+    check('jour Cayo : comptoir de North Yankton fermé', not ok7 and msg7:find('fermé'))
+    GlobalState.gsIslandMode = 'yankton'
+    ok7 = cb('gs_rental:rent', 7, ny, snow); step()
+    check('jour North Yankton : 4x4 enneigé loué', ok7 and Rental.active[7] ~= nil)
+    ok7 = cb('gs_rental:rent', 7, ny, 4); step()
+    check('North Yankton : seulement les véhicules enneigés', not ok7)
+    Rental.clear(7)
+    tp(7, Config.Points[cayo].coords)
+    ok7, msg7 = cb('gs_rental:rent', 7, cayo, 6); step()
+    check('jour North Yankton : jetée de Cayo fermée', not ok7 and msg7:find('fermé'))
+    GlobalState.gsIslandMode = nil
 end
 
 io.write(('\n%d réussis, %d échoués\n'):format(passed, failed))

@@ -1,4 +1,4 @@
-===== MESSAGE 1 / 2 (salon #annonces ou #patch-notes) =====
+===== MESSAGE 1 / 3 (salon #annonces ou #patch-notes) =====
 
 # 📣 Mise à jour du 16 octobre
 
@@ -15,7 +15,7 @@ Le vol régulier de l'aéroport (LSIA) part une journée pour Cayo Perico… et 
 **🏘️ Voisins vigilants**
 **/voisins** dans ton quartier (hors gang) : tu es prévenu des délits signalés, et plus vous êtes nombreux, plus le calme revient vite.
 
-===== MESSAGE 2 / 2 =====
+===== MESSAGE 2 / 3 =====
 
 **🚓 La nuit, le shérif veille**
 Sans policier en service, le shérif peut tenir un **barrage** sur les routes hors de la ville : alcootest positif dès 2 verres = amende et points. Ne bois pas si tu conduis.
@@ -34,3 +34,14 @@ Le **vol du jour** s'affiche dans « En ce moment en ville ».
 
 **🛠️ Côté serveur**
 Démarrage plus rapide et captures du staff réparées. Merci pour vos retours : continuez de les envoyer en ticket ! 🙏
+
+===== MESSAGE 3 / 3 =====
+
+**🐾 Nouveau métier : animalerie**
+Au Pôle Emploi, choisis **Animalerie** : remplis les gamelles avec un carton de la réserve, nettoie les cages, toilette les chiens et sers les clients au comptoir. Payé à chaque tâche, et la boutique a enfin ses pensionnaires !
+
+**❄️ North Yankton, sur place**
+Location de 4x4 enneigés à Ludendorff, café chaud… et là-bas, personne ne te connaît : ta recherche retombe plus vite.
+
+**✈️ Vols**
+L'avion vole droit et se pose en douceur, de la croisière jusqu'à l'arrêt.
