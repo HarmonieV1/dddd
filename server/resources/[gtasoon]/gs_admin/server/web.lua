@@ -150,12 +150,17 @@ function Web.frame(who, target, reply)
         Web.seen[key] = true
         Security:LogStaff(('[Lives] Web · %s regarde l\'écran de %s [%d]'):format(who, GetPlayerName(target) or '?', target), 'staff')
     end
-    local okE = pcall(function()
-        exports.gs_lives:Capture(target, 0.45, function(ok, data)
-            if ok then reply({ ok = true, img = data }) else reply({ ok = false, text = data or 'Pas d\'image.' }) end
-        end)
+    -- V12.63 : réponse IMMÉDIATE (dernière image, ou raison du dernier échec) + capture suivante lancée en arrière-plan ;
+    -- avant, la requête restait ouverte jusqu'à 8 s en attendant le joueur et la tablette affichait « serveur injoignable »
+    local okE, pk = pcall(function()
+        exports.gs_lives:Request(target, 0.4)
+        return exports.gs_lives:Peek(target)
     end)
-    if not okE then reply({ ok = false, text = 'Capture impossible.' }) end
+    if not okE or type(pk) ~= 'table' then return reply({ ok = false, text = 'Capture impossible (gs_lives).' }) end
+    local img, age, err = pk.img, tonumber(pk.age), pk.err
+    if err then return reply({ ok = false, text = err, img = (img and age and age < 15000) and img or nil }) end
+    if img and age and age < 15000 then return reply({ ok = true, img = img, age = age }) end
+    reply({ ok = false, wait = true, text = 'Connexion à l\'écran…' })
 end
 
 -- Actions autorisées depuis l'appli (toutes revérifiées et journalisées par Admin.remote)

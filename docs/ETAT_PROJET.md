@@ -308,6 +308,11 @@ Résumé très condensé (le détail complet est dans `docs/ROADMAP.md`, `docs/F
   (`gs_lives:server:shotFail` : screenshot-basic absent, appel refusé, image vide, pas de réponse en 6 s), affichée dans la fenêtre
   et en console (« [gs_lives] capture impossible », 1/min) ; le staff peut se regarder lui-même (« (toi : test) ») pour tester seul.
   Propositions D9 (n° 147 à 166).
+  Appli staff → Lives : réponse IMMÉDIATE (exports gs_lives `Request` + `Peek` : dernière image ou raison du dernier échec ;
+  l'appli redemande toutes les 1,5 s) au lieu d'une requête HTTP tenue ouverte jusqu'à 8 s (« serveur injoignable » au backtest).
+  gs_admin/maps.js : après le contrôle d'intégrité, plus de relecture complète des maps si rien n'a été arrêté (hitch de 4,3 s en
+  jeu dans la console du VPS). DIAGNOSTIC-MODS : section « COPIES EN DOUBLE » (mod dont tous les fichiers, octet pour octet, sont
+  déjà dans un autre, packs protégés compris) → pause réversible, comme les voitures en double.
   METTRE-A-JOUR-OVH compare le contenu des scripts du zip et du PC (même numéro de version mais correctif non installé sur le
   PC = proposé avant l'envoi ; avant, les anciens fichiers du PC repartaient au VPS sans le voir).
 - **V12.62** (15/10/2026, session de secours) — propositions choisies + relecture complète du gros patch avant le backtest :

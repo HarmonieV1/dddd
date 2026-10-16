@@ -43,14 +43,15 @@ end)
 -- Maintenant : le serveur demande au joueur une capture (requestScreenshot côté joueur, rien ne passe par le web), le joueur la
 -- renvoie par le réseau du jeu (événement latent). Une seule capture en cours par joueur, partagée entre F11, les replays et
 -- l'appli staff (export Capture). Une réponse n'est acceptée que du joueur visé et pour une demande en cours.
-Lives.pending, Lives.last, Lives.nextReq = {}, {}, 0 -- pending[id] = { target, cbs, gen } ; last[cible] = { at, data }
+Lives.pending, Lives.last, Lives.nextReq, Lives.lastErr = {}, {}, 0, {} -- lastErr[cible] = { at, text } (V12.63 : appli staff) -- pending[id] = { target, cbs, gen } ; last[cible] = { at, data }
 
 local function resolve(id, ok, data)
     local p = Lives.pending[id]
     if not p then return end
     Lives.pending[id] = nil
     if Lives.busy[p.target] == id then Lives.busy[p.target] = nil end
-    if ok then Lives.last[p.target] = { at = GetGameTimer(), data = data } end
+    if ok then Lives.last[p.target], Lives.lastErr[p.target] = { at = GetGameTimer(), data = data }, nil
+    else Lives.lastErr[p.target] = { at = GetGameTimer(), text = tostring(data) } end
     for _, cb in ipairs(p.cbs) do pcall(cb, ok, data) end
 end
 
@@ -98,6 +99,16 @@ RegisterNetEvent('gs_lives:server:shotFail', function(id, reason)
 end)
 
 exports('Capture', function(target, quality, cb) Lives.capture(target, quality, cb) end) -- appli staff (gs_admin/web.lua)
+--- V12.63 (backtest : l'appli affichait « serveur injoignable ») : l'appli ne garde plus la connexion ouverte en attendant la
+--- capture. Request lance une capture (sans attendre), Peek rend tout de suite la dernière image (et son âge en ms) ou la raison
+--- du dernier échec. L'appli redemande toutes les 1,5 s : l'image arrive à la demande suivante.
+exports('Request', function(target, quality) Lives.capture(target, quality, function() end) end)
+exports('Peek', function(target)
+    target = math.tointeger(tonumber(target))
+    local l, e = target and Lives.last[target], target and Lives.lastErr[target]
+    local now = GetGameTimer()
+    return { img = l and l.data or nil, age = l and (now - l.at) or nil, err = (e and (not l or e.at > l.at)) and e.text or nil } -- une table (sûr entre ressources)
+end)
 
 RegisterNetEvent('gs_lives:server:frame', function(target)
     local src = source
@@ -135,7 +146,7 @@ AddEventHandler('playerDropped', function()
     local src = source
     Lives.watching[src] = nil
     for _, w in pairs(Lives.watching) do w[src] = nil end
-    Lives.busy[src], Lives.waiters[src], Lives.lastShot[src], Lives.last[src] = nil, nil, nil, nil -- pas de capture « en cours » orpheline
+    Lives.busy[src], Lives.waiters[src], Lives.lastShot[src], Lives.last[src], Lives.lastErr[src] = nil, nil, nil, nil, nil -- pas de capture « en cours » orpheline
     for id, p in pairs(Lives.pending) do if p.target == src then resolve(id, false, 'Le joueur est parti.') end end
     Lives.replay[src], Lives.reported[src] = nil, nil
 end)

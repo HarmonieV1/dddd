@@ -444,6 +444,21 @@ local okT = call('1.2.3.4', ('{ token = %q, action = "act", name = "tp", id = 9,
 check('web : téléporter vers un lieu de la liste', okT.ok and okT.text:find(Config.Web.places[1].label, 1, true))
 check('web : destination inconnue refusée', not call('1.2.3.4', ('{ token = %q, action = "act", name = "tp", id = 9, extra = { place = 99 } }'):format(tok)).ok)
 check('web : dossier d\'un joueur', call('1.2.3.4', ('{ token = %q, action = "dossier", id = 9 }'):format(tok)).ok)
+do -- V12.63 : écran (Lives hors jeu) : réponse immédiate, jamais de requête qui attend le joueur
+    local peekState, requested = {}, 0
+    provide('gs_lives', { Request = function() requested = requested + 1 end, Peek = function() return peekState end })
+    local realState = GetResourceState
+    GetResourceState = function(r) if r == 'gs_lives' then return 'started' end return realState(r) end
+    local f1 = call('1.2.3.4', ('{ token = %q, action = "frame", id = 9 }'):format(tok))
+    check('web : écran, première demande : « connexion » tout de suite + capture lancée', f1.wait == true and not f1.ok and requested == 1)
+    peekState = { img = 'data:image/jpeg;base64,X', age = 300 }
+    local f2 = call('1.2.3.4', ('{ token = %q, action = "frame", id = 9 }'):format(tok))
+    check('web : écran, demande suivante : image', f2.ok and f2.img:find('base64'))
+    peekState = { err = 'Capture impossible : test.' }
+    local f3 = call('1.2.3.4', ('{ token = %q, action = "frame", id = 9 }'):format(tok))
+    check('web : écran, échec : la raison est affichée', not f3.ok and f3.text:find('test', 1, true))
+    GetResourceState = realState
+end
 local okL = call('1.2.3.4', ('{ token = %q, action = "logout" }'):format(tok))
 check('web : déconnexion = jeton invalide', okL.ok and call('1.2.3.4', ('{ token = %q, action = "overview" }'):format(tok)).auth == false)
 check('V12.63 : pas de sanction à distance sur un super-admin', not remote('kick', 1, 'test', 'Web · Modo').ok and GetPlayerName(1) ~= nil)

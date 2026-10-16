@@ -864,8 +864,9 @@ if (typeof GetCurrentResourceName === 'function') {
         console.log(`^1[gs_admin] Map ARRÊTÉE : ${r.name} — fichier abîmé (téléchargement incomplet) : ${bad.slice(0, 3).join(', ')}${bad.length > 3 ? ` (+${bad.length - 3})` : ''}. Elle ferait planter les joueurs. Retélécharge le pack, remplace l'archive dans C:\\GTASOON\\mods-a-trier, relance IMPORTER-MODS puis METTRE-A-JOUR-OVH.^7`);
       }
     }
-    cache = null;
-    broadcastBlips();
+    // V12.63 (console du VPS : « hitch 4280 ms » juste après cette ligne) : relire toutes les maps bloque le serveur plusieurs
+    // secondes ; seulement si une map vient d'être arrêtée (sinon la liste et les blips n'ont pas changé)
+    if (stopped.length) { cache = null; broadcastBlips(); }
     console.log(`[gs_admin] Intégrité des maps : ${checked} vérifiée(s), ${stopped.length ? `^1${stopped.length} arrêtée(s) (fichiers abîmés)^7` : '^2aucun fichier abîmé^7'}`);
   }, 20000);
   // Au démarrage : fusion, puis une ligne en console et les conflits en clair (à corriger avant qu'un joueur tombe dans un trou)

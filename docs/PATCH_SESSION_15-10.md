@@ -70,6 +70,9 @@
 | **Site** | `docs/site` | Diaporama de photos de la ville (glisser, animé, sans légende), bande-annonce TikTok, adresse du serveur affichée pour les testeurs, « Choisis ta vie » à jour |
 | **Gazette en direct** | `gs_city`, `gs_wanted`, site | Le site montre l'édition de la semaine en cours (plus besoin d'attendre dimanche) ; poursuites filmées et avis de recherche comptés |
 | **Lives : diagnostic** | `gs_lives` | Plus d'attente muette : la raison d'un échec s'affiche dans la fenêtre (F11 et appli) et dans la console ; « (toi : test) » pour vérifier seul |
+| **Appli staff : Lives** | `gs_admin/web.lua`, `gs_lives` | Plus de « serveur injoignable » : l'appli reçoit tout de suite la dernière image (ou la raison d'un échec) |
+| **Petit à-coup en jeu** | `gs_admin/maps.js` | Le serveur ne se fige plus 4 s après le contrôle des maps |
+| **Mods en double** | DIAGNOSTIC-MODS | Les copies complètes d'un même mod (batic, hachura, sentinel…) sont repérées et mises en pause (réversible) |
 | **Outils OVH** | `scripts/windows` | GERER-OVH ne plante plus (« roadline-envoi.txt en cours d'utilisation ») ; METTRE-A-JOUR-OVH ne renvoie plus les gros fichiers déjà présents sur le VPS (fini le 1 Go à chaque fois) ; avancée affichée pendant l'envoi (Mo, %, temps restant) ; envoi coupé **complété** au lieu d'être recommencé ; GERER-OVH ne renvoie la commande roadline que si elle a changé et ouvre le menu même si l'envoi échoue, sans plus jamais toucher au serveur pendant une mise à jour (verrou) |
 
 ## Encore en attente (côté fondateur)
