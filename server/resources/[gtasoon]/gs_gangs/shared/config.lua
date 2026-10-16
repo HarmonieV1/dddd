@@ -86,7 +86,9 @@ Config.GangGarages = {
 }
 
 -- Tags : bombe de peinture (item spraycan). Limite par gang, distance mini entre deux tags, influence de quartier.
-Config.Tags = { maxPerGang = 15, minDistance = 25.0, range = 3.0, influence = 2, drawDistance = 30.0, sprayTime = 6000, eraseTime = 8000 }
+Config.Tags = { maxPerGang = 15, minDistance = 25.0, range = 3.0, influence = 2, drawDistance = 30.0, sprayTime = 6000, eraseTime = 8000,
+    -- V12.63 · Hommage (proposition n° 170) : « R.I.P. <nom> » aux couleurs du gang ; 24 h, ou permanent payé par la caisse du gang
+    memorialHours = 24, memorialCost = 1000, maxMemorials = 5 }
 
 -- Couleurs d'affichage (tags) par couleur de blip GTA
 Config.ColorRGB = { [1] = { 224, 50, 50 }, [3] = { 93, 182, 229 }, [25] = { 57, 200, 90 }, [27] = { 170, 90, 255 },

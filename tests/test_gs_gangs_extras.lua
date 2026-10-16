@@ -25,6 +25,7 @@ local tagRows, nextTag = {}, 0
 TagsStore = {
     init = function() end, all = function() return {} end,
     insert = function(g, c) nextTag = nextTag + 1 tagRows[nextTag] = g return nextTag end,
+    insertMemorial = function(g, c, h, text, exp) nextTag = nextTag + 1 tagRows[nextTag] = { g, text, exp } return nextTag end,
     delete = function(id) tagRows[id] = nil end,
 }
 loadResource('gs_gangs', { R .. 'gs_gangs/server/main.lua', R .. 'gs_gangs/server/extras.lua' })
@@ -69,6 +70,45 @@ tp(2, vec3(grove.x + 1.0, grove.y, grove.z))
 ok = cb('gs_gangs:eraseTag', 2, id); step()
 check('tag effacé par un rival, influence retirée', ok and #GlobalState.gsTags == 0 and Gangs.territories.grove.influence.ballas == 0)
 check('gang prévenu', W.notes[1] and W.notes[1].msg:find('effacé'))
+
+-- Hommage peint (n° 170)
+local money = { ballas = 500 }
+Store.removeMoney = function(g, n) if (money[g] or 0) < n then return false end money[g] = money[g] - n return true end
+Store.addMoney = function(g, n) money[g] = (money[g] or 0) + n return true end
+local function memoAt(dx) tp(1, vec3(grove.x + dx, grove.y, grove.z)) return spot(dx) end
+W.players[1].items.spraycan = 3
+ok, msg = cb('gs_gangs:tag', 1, memoAt(100), 0.0, { name = ' ' }); step()
+check('hommage : nom requis', not ok and msg:find('nom'))
+ok, msg = cb('gs_gangs:tag', 1, memoAt(100), 0.0, { name = 'Tony', permanent = true }); step()
+check('hommage permanent : caisse insuffisante', not ok and msg:find('caisse') and W.players[1].items.spraycan == 3 and money.ballas == 500)
+ok = cb('gs_gangs:tag', 1, memoAt(100), 0.0, { name = 'Tony "Le Roc" Martinez de Grove Street' }); step()
+local memo = GlobalState.gsTags[#GlobalState.gsTags]
+check('hommage peint 24 h, texte tronqué, bombe utilisée', ok and memo.label == 'R.I.P. Tony "Le Roc" Martinez d' and W.players[1].items.spraycan == 2
+    and tagRows[memo.id][3] and tagRows[memo.id][3] > os.time())
+check('hommage : ni influence ni compte dans les tags', Gangs.territories.grove.influence.ballas == 0 and Extras.countTags('ballas') == 0)
+money.ballas = 1500
+ok = cb('gs_gangs:tag', 1, memoAt(140), 0.0, { name = 'Big Mo', permanent = true }); step()
+local perm = GlobalState.gsTags[#GlobalState.gsTags]
+check('hommage permanent payé par la caisse', ok and money.ballas == 500 and perm.label == 'R.I.P. Big Mo' and tagRows[perm.id][3] == nil)
+W.players[1].items.spraycan = 0
+money.ballas = 1500
+ok, msg = cb('gs_gangs:tag', 1, memoAt(180), 0.0, { name = 'Lil Joe', permanent = true }); step()
+check('pas de bombe : caisse remboursée', not ok and money.ballas == 1500)
+W.players[1].items.spraycan = 3
+Config.Tags.maxMemorials = 2
+ok, msg = cb('gs_gangs:tag', 1, memoAt(180), 0.0, { name = 'Lil Joe' }); step()
+check('hommage : limite par gang', not ok and msg:find('hommages'))
+Config.Tags.maxMemorials = 5
+Extras.expireMemorials(os.time() + 25 * 3600)
+local left = {}
+for _, t in ipairs(GlobalState.gsTags) do left[t.id] = true end
+check('hommage 24 h effacé à l\'échéance, permanent conservé', not left[memo.id] and left[perm.id] and tagRows[memo.id] == nil)
+tp(2, vec3(grove.x + 140.0, grove.y, grove.z))
+W.notes[1] = nil
+ok, msg = cb('gs_gangs:eraseTag', 2, perm.id); step()
+check('hommage effacé par un rival : gang prévenu, influence intacte', ok and msg:find('Hommage') and W.notes[1] and W.notes[1].msg:find('hommage')
+    and Gangs.territories.grove.influence.ballas == 0)
+tp(2, grove)
 
 -- Garage
 tp(1, grove)

@@ -41,9 +41,46 @@ end
 
 AddEventHandler('gs_casino:client:fair', open)
 
+-- V12.63 · Photomaton (n° 189) : caméra face au joueur le temps du cliché (image réelle si screenshot-basic + hébergeur)
+local busy = false
+AddEventHandler('gs_casino:client:photobooth', function()
+    if busy then return end
+    local F = Config.Fair
+    if lib.alertDialog({ header = 'Photomaton', centered = true, cancel = true,
+        content = ('Une photo souvenir imprimée pour **%d jetons**. Serrez-vous dans la cabine : chacun aura sa copie.'):format(F.photoCost) }) ~= 'confirm' then return end
+    busy = true
+    local ped = cache.ped
+    TaskStandStill(ped, 2500)
+    local cam = CreateCam('DEFAULT_SCRIPTED_CAMERA', true)
+    local front = GetOffsetFromEntityInWorldCoords(ped, 0.0, 1.7, 0.65)
+    SetCamCoord(cam, front.x, front.y, front.z)
+    PointCamAtEntity(cam, ped, 0.0, 0.0, 0.55, true)
+    SetCamFov(cam, 45.0)
+    RenderScriptCams(true, false, 0, true, true)
+    Wait(800)
+    PlaySoundFrontend(-1, 'Camera_Shoot', 'Phone_Soundset_Franklin', true)
+    local url, done = nil, GetResourceState('gs_phone') ~= 'started'
+    if not done then
+        CreateThread(function()
+            local ok, u = pcall(function() return exports.gs_phone:TakePhoto() end)
+            url, done = ok and u or nil, true
+        end)
+    end
+    Wait(1200) -- le cliché est pris : on rend la caméra
+    AnimpostfxPlay('MinigameTransitionOut', 500, false)
+    RenderScriptCams(false, false, 0, true, true)
+    DestroyCam(cam, false)
+    local deadline = GetGameTimer() + 20000
+    while not done and GetGameTimer() < deadline do Wait(100) end
+    notify(lib.callback.await('gs_casino:photobooth', false, url))
+    busy = false
+end)
+
 CreateThread(function()
     exports.gs_markers:Add('gs_casino:fair', { coords = Config.Fair.booth, style = 'shop', label = 'Jetons de fête foraine', event = 'gs_casino:client:fair',
         prompt = 'Guichet des jetons', reach = Config.Fair.range, distance = 20.0 })
+    exports.gs_markers:Add('gs_casino:photobooth', { coords = Config.Fair.photobooth, style = 'shop', label = 'Photomaton', event = 'gs_casino:client:photobooth',
+        prompt = 'Photomaton (photo souvenir)', reach = Config.Fair.range, distance = 20.0 }) -- V12.63
     exports.gs_markers:Add('gs_casino:fair2', { coords = Config.Lotto.cashier + vec3(1.2, 0.0, 0.0), style = 'shop', label = 'Jetons', event = 'gs_casino:client:fair',
         prompt = 'Jetons de fête foraine', reach = Config.Lotto.range, distance = 20.0 })
 end)

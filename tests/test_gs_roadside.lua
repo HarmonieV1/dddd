@@ -5,7 +5,9 @@ local R = 'server/resources/[gtasoon]/'
 local heat, reported, points = 0, {}, {}
 provide('gs_wanted', { GetHeat = function() return heat end, ReportCrime = function(src, crime) reported[#reported + 1] = crime return true end })
 provide('gs_driving', { RemovePoints = function(src, n) points[src] = (points[src] or 0) + n end })
-provide('gs_weather', { GetGameTime = function() return 14 end, GetWeather = function() return 'CLEAR' end })
+local hour, cops = 14, {}
+provide('gs_weather', { GetGameTime = function() return hour end, GetWeather = function() return 'CLEAR' end })
+provide('gs_jobs', { GetOnDutyPlayers = function() return cops end })
 provide('gs_reputation', { Add = function() end })
 local seen = {}
 Store = { init = function() end, add = function(cid, k) seen[cid .. k] = (seen[cid .. k] or 0) + 1 end,
@@ -134,6 +136,33 @@ d = force('sheriff')
 W.clientEvents = {}
 check('shérif : recherché → poursuite', d.wanted == true and Roadside.finish(1, d.token, 'checked') == true and lastClientEvent('gs_wanted:client:npcPolice', 1) ~= nil)
 heat = 0
+
+-- V12.63 · Barrage d'alcoolémie IA (n° 180) : la nuit, sans policier en service ; positif = amende + points
+local B = Config.Breath
+d = force('wallet')
+check('alcootest : jamais le jour', d.kind == 'wallet')
+hour = 23
+cops = { 7 }
+d = force('wallet')
+check('alcootest : jamais avec un policier en service', d.kind == 'wallet')
+cops = {}
+d = force('wallet')
+check('alcootest : la nuit sans policier, barrage du shérif', d.kind == 'checkpoint')
+W.players[1].money.bank, points[1] = 5000, 0
+Player(1).state:set('gsDrunk', 1)
+check('alcootest négatif (un verre) : rien', Roadside.finish(1, d.token, 'checked') == true and W.players[1].money.bank == 5000 and points[1] == 0 and seen['CID1checkpoint'] == 1)
+d = force('wallet')
+Player(1).state:set('gsDrunk', B.limit)
+check('alcootest positif : amende + points', Roadside.finish(1, d.token, 'checked') == true and W.players[1].money.bank == 5000 - B.fine and points[1] == B.points and seen['CID1checkpoint_drunk'] == 1)
+Player(1).state:set('gsDrunk', nil)
+d = force('wallet')
+local n = #reported
+check('alcootest : fuite → refus d\'obtempérer', Roadside.finish(1, d.token, 'fled') == true and reported[n + 1] == 'refusal')
+heat = 20
+d = force('wallet')
+W.clientEvents = {}
+check('alcootest : recherché → poursuite', d.wanted == true and Roadside.finish(1, d.token, 'checked') == true and lastClientEvent('gs_wanted:client:npcPolice', 1) ~= nil)
+heat, hour = 0, 14
 
 -- Ignorer : rien ne se passe
 d = force('accident')

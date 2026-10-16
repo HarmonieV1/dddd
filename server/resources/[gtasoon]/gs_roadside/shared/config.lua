@@ -25,6 +25,11 @@ Config.Types = {
     vendor     = { label = 'Vendeur ambulant', weight = 12 },
     sheriff    = { label = 'Contrôle du shérif', weight = 14, fine = 750, points = 2 },
 }
+-- V12.63 · Contrôle d'alcoolémie IA (proposition n° 180) : la nuit, s'il n'y a aucun policier joueur en service, une
+-- rencontre sur `chance` devient un barrage du shérif (gyrophares, cônes) qui fait souffler le conducteur. Positif à partir
+-- de `limit` verres récents (effets visibles) : amende `fine` (banque) et `points` de permis. Fuir = refus d'obtempérer.
+Config.Breath = { chance = 0.3, limit = 2, fine = 600, points = 3, job = 'police',
+    props = { 'prop_roadcone02a', 'prop_roadcone02a', 'prop_barrier_work05' } }
 Config.Friend = { chance = 0.35, gift = { 200, 600 } }   -- l'auto-stoppeur aidé revient parfois (cadeau, tuyau)
 Config.Rob = { max = 800 }                                -- auto-stoppeur braqueur : cash pris au maximum
 
@@ -64,6 +69,7 @@ Config.Collection = {
     { 'breakdown', 'Dépannage' }, { 'ambush', 'Fausse panne' }, { 'accident', 'Premiers secours' }, { 'animal', 'Animal soigné' },
     { 'wallet_returned', 'Portefeuille rendu' }, { 'wallet_kept', 'Portefeuille gardé' }, { 'vendor', 'Vendeur ambulant' },
     { 'sheriff', 'Contrôle du shérif' }, { 'sheriff_fled', 'Refus d\'obtempérer' },
+    { 'checkpoint', 'Alcootest négatif' }, { 'checkpoint_drunk', 'Alcootest positif' }, -- V12.63
 }
 
 -- V8 · Halloween (événement unique) : actif automatiquement du 24 octobre au 1er novembre (ou /halloween on|off, staff).

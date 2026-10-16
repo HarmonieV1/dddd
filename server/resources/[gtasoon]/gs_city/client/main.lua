@@ -54,3 +54,30 @@ RegisterCommand(Config.Gazette.command, function()
     lib.alertDialog({ header = Config.Gazette.name, size = 'lg', centered = true,
         content = last or ('Pas encore d\'édition : la première sort dimanche à %d h.\n\n**Aperçu de la semaine**\n\n%s'):format(Config.Gazette.hour, preview) })
 end, false)
+
+-- V12.63 · /voisins : voisins vigilants du quartier (proposition n° 173)
+RegisterCommand('voisins', function()
+    local info = lib.callback.await('gs_city:watchInfo', false)
+    if not info then return end
+    local options = {
+        { title = info.mine and ('Ton groupe : %s'):format(info.mine) or 'Tu ne fais partie d\'aucun groupe', icon = 'eye', readOnly = true,
+          description = 'Prévenu des délits signalés dans ton quartier ; plus vous êtes nombreux, plus le calme revient vite.' },
+    }
+    if info.here then
+        options[#options + 1] = { title = ('%s : %d bénévole(s) connecté(s)'):format(info.here, info.count), icon = 'users', readOnly = true }
+        if not info.gang and info.mine ~= info.here then
+            options[#options + 1] = { title = 'Rejoindre les voisins vigilants de ' .. info.here, icon = 'hand-holding-heart', onSelect = function()
+                local ok, msg = lib.callback.await('gs_city:watchJoin', false, true)
+                lib.notify({ type = ok and 'success' or 'error', description = msg })
+            end }
+        end
+    end
+    if info.mine then
+        options[#options + 1] = { title = 'Quitter mon groupe', icon = 'right-from-bracket', onSelect = function()
+            local ok, msg = lib.callback.await('gs_city:watchJoin', false, false)
+            lib.notify({ type = ok and 'success' or 'error', description = msg })
+        end }
+    end
+    lib.registerContext({ id = 'gs_city_watch', title = 'Voisins vigilants', options = options })
+    lib.showContext('gs_city_watch')
+end, false)

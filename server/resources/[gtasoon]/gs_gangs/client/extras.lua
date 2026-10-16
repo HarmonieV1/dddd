@@ -14,12 +14,21 @@ exports('spray', function()
     if not member then return notify(false, 'Il faut être dans un gang pour taguer.') end
     local hit, _, coords, normal = lib.raycast.cam(1, 4, 3.0) -- [API] ox_lib : mur visé à moins de 3 m
     if not hit then return notify(false, 'Vise un mur, tout près.') end
+    -- V12.63 (n° 170) : tag du gang, ou hommage à un membre disparu
+    local memo
+    local choice = lib.inputDialog('Bombe de peinture', {
+        { type = 'select', label = 'Que peindre ?', required = true, default = 'tag', options = { { value = 'tag', label = 'Le tag du gang' }, { value = 'rip', label = 'Un hommage (R.I.P.)' } } },
+        { type = 'input', label = 'Nom de la personne disparue (hommage)', max = 24 },
+        { type = 'checkbox', label = ('Hommage permanent (%d $ de la caisse du gang ; sinon %d h)'):format(Config.Tags.memorialCost, Config.Tags.memorialHours) },
+    })
+    if not choice then return end
+    if choice[1] == 'rip' then memo = { name = choice[2] or '', permanent = choice[3] == true } end
     if not lib.progressBar({ duration = Config.Tags.sprayTime, label = 'Tag en cours…', canCancel = true,
         anim = { scenario = 'WORLD_HUMAN_AA_SMOKE' }, disable = { move = true, car = true, combat = true } }) then return end
     ClearPedTasks(cache.ped)
     local pos = coords + (normal or vec3(0.0, 0.0, 0.0)) * 0.05
     local heading = normal and (math.deg(math.atan(normal.y, normal.x)) + 90.0) or GetEntityHeading(cache.ped)
-    notify(lib.callback.await('gs_gangs:tag', false, { x = pos.x, y = pos.y, z = pos.z }, heading))
+    notify(lib.callback.await('gs_gangs:tag', false, { x = pos.x, y = pos.y, z = pos.z }, heading, memo))
 end)
 
 CreateThread(function()

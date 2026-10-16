@@ -49,11 +49,12 @@ end
 
 function City.decay()
     local changed = false
+    if Watch then Watch.refresh() end -- V12.63 : voisins vigilants connectés
     for _, d in ipairs(Config.Districts) do
         local h = City.heat[d.id]
         if h then
             local before = City.level(h)
-            h = h - Config.DecayPerMinute
+            h = h - Config.DecayPerMinute - (Watch and Watch.decayBonus(d.id) or 0)
             City.heat[d.id] = h > 0 and h or nil
             local after = City.level(City.heat[d.id])
             if after ~= before then changed = true news(d, before, after) end
@@ -72,7 +73,10 @@ exports('GetLevel', function(coords)
     if not d then return 1, nil end
     return City.level(City.heat[d.id]), d.label
 end)
-exports('ReportFactor', function(coords) return levelAt(coords).report or 1.0 end)
+exports('ReportFactor', function(coords)
+    local d = Watch and City.district(coords)
+    return (levelAt(coords).report or 1.0) * (d and Watch.reportFactor(d.id) or 1.0) -- V12.63 : voisins vigilants
+end)
 exports('NpcBonus', function(coords) return levelAt(coords).npcStars or 0 end)
 exports('AddHeat', City.add)
 --- V10 : quartiers « chauds » (libellés), pour « Que faire ? »

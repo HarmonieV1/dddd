@@ -9,8 +9,13 @@ TagsStore = TagsStore or {
             `x` FLOAT NOT NULL, `y` FLOAT NOT NULL, `z` FLOAT NOT NULL, `heading` FLOAT NOT NULL DEFAULT 0,
             `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, PRIMARY KEY (`id`)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4]])
+        -- V12.63 : hommages (texte + fin, NULL = permanent)
+        pcall(MySQL.query.await, 'ALTER TABLE `gs_gang_tags` ADD COLUMN IF NOT EXISTS `text` VARCHAR(40) NULL, ADD COLUMN IF NOT EXISTS `expires_at` INT UNSIGNED NULL')
     end,
-    all = function() return MySQL.query.await('SELECT id, gang, x, y, z, heading FROM gs_gang_tags') or {} end,
+    all = function() return MySQL.query.await('SELECT id, gang, x, y, z, heading, text, expires_at FROM gs_gang_tags') or {} end,
+    insertMemorial = function(gang, c, h, text, expires)
+        return MySQL.insert.await('INSERT INTO gs_gang_tags (gang, x, y, z, heading, text, expires_at) VALUES (?, ?, ?, ?, ?, ?, ?)', { gang, c.x, c.y, c.z, h, text, expires })
+    end,
     insert = function(gang, c, h) return MySQL.insert.await('INSERT INTO gs_gang_tags (gang, x, y, z, heading) VALUES (?, ?, ?, ?, ?)', { gang, c.x, c.y, c.z, h }) end,
     delete = function(id) MySQL.prepare('DELETE FROM gs_gang_tags WHERE id = ?', { id }) end,
     garagesInit = function()
@@ -62,7 +67,7 @@ local function publishTags()
         local g = Gangs.list[t.gang]
         if g then
             local rgb = Config.ColorRGB[g.color] or Config.ColorRGB.default
-            list[#list + 1] = { id = t.id, label = g.label, r = rgb[1], g = rgb[2], b = rgb[3], x = t.x, y = t.y, z = t.z, h = t.heading }
+            list[#list + 1] = { id = t.id, label = t.text or g.label, r = rgb[1], g = rgb[2], b = rgb[3], x = t.x, y = t.y, z = t.z, h = t.heading } -- V12.63 : hommage = son texte
         end
     end
     GlobalState.gsTags = list
@@ -70,16 +75,54 @@ end
 
 function Extras.countTags(gang)
     local n = 0
-    for _, t in pairs(Extras.tags) do if t.gang == gang then n = n + 1 end end
+    for _, t in pairs(Extras.tags) do if t.gang == gang and not t.text then n = n + 1 end end -- V12.63 : les hommages à part
     return n
 end
 
-lib.callback.register('gs_gangs:tag', function(src, coords, heading)
+--- V12.63 · Hommage à un membre disparu (proposition n° 170) : pas d'influence ni de dégradation du quartier
+function Extras.memorial(src, m, c, h, memo)
+    local T = Config.Tags
+    local name = Security:Sanitize(type(memo) == 'table' and memo.name or nil, 100)
+    if name and not utf8.len(name) then name = nil end -- UTF-8 invalide
+    if name and utf8.len(name) > 24 then name = name:sub(1, utf8.offset(name, 25) - 1) end
+    if not name or utf8.len(name) < 2 then return false, 'Indique le nom de la personne disparue.' end
+    local n = 0
+    for _, t in pairs(Extras.tags) do if t.gang == m.gang and t.text then n = n + 1 end end
+    if n >= T.maxMemorials then return false, ('Ton gang a déjà %d hommages.'):format(T.maxMemorials) end
+    for _, t in pairs(Extras.tags) do
+        if #(vec3(t.x, t.y, t.z) - c) < T.minDistance then return false, 'Un tag existe déjà juste à côté.' end
+    end
+    local permanent = type(memo) == 'table' and memo.permanent == true
+    if permanent and not Store.removeMoney(m.gang, T.memorialCost) then return false, ('La caisse du gang doit contenir %d $ pour un hommage permanent.'):format(T.memorialCost) end
+    if not Bridge:RemoveItem(src, 'spraycan', 1) then
+        if permanent then Store.addMoney(m.gang, T.memorialCost) end
+        return false, 'Il te faut une bombe de peinture.'
+    end
+    local text, expires = 'R.I.P. ' .. name, (not permanent) and (os.time() + T.memorialHours * 3600) or nil
+    local id = TagsStore.insertMemorial(m.gang, c, h, text, expires)
+    if not id then return false, 'Erreur.' end
+    Extras.tags[id] = { id = id, gang = m.gang, x = c.x, y = c.y, z = c.z, heading = h, text = text, expires = expires }
+    publishTags()
+    Security:LogStaff(('[Gang] hommage « %s » peint par %s [%d]'):format(text, GetPlayerName(src) or '?', src), 'jobs')
+    return true, permanent and 'Hommage peint pour toujours.' or ('Hommage peint (%d h).'):format(T.memorialHours)
+end
+
+function Extras.expireMemorials(now)
+    local changed = false
+    for id, t in pairs(Extras.tags) do
+        if t.expires and t.expires <= now then Extras.tags[id] = nil TagsStore.delete(id) changed = true end
+    end
+    if changed then publishTags() end
+end
+CreateThread(function() while true do Wait(600000) Extras.expireMemorials(os.time()) end end)
+
+lib.callback.register('gs_gangs:tag', function(src, coords, heading, memo)
     if not Security:RateLimit(src, 'gs_gangs:tag', 2, 10000) then return false, 'Doucement.' end
     local m = member(src)
     if not m then return false, 'Il faut être dans un gang pour taguer.' end
     local c = type(coords) == 'table' and tonumber(coords.x) and vec3(coords.x, coords.y, coords.z)
     if not c or not Security:InRange(src, c, Config.Tags.range + 1.0) then return false, 'Trop loin du mur.' end
+    if memo then return Extras.memorial(src, m, c, tonumber(heading) or 0.0, memo) end
     if Extras.countTags(m.gang) >= Config.Tags.maxPerGang then
         return false, ('Ton gang a déjà %d tags : efface-en un avant.'):format(Config.Tags.maxPerGang)
     end
@@ -104,10 +147,14 @@ lib.callback.register('gs_gangs:eraseTag', function(src, id)
     if not t then return false, 'Tag introuvable.' end
     if not Security:InRange(src, vec3(t.x, t.y, t.z), Config.Tags.range + 1.0) then return false, 'Trop loin.' end
     Extras.tags[t.id] = nil
-    TriggerEvent('gs_gangs:server:tagged', t.gang, vec3(t.x, t.y, t.z), false) -- V10 : tag effacé, le quartier respire
     TagsStore.delete(t.id)
     publishTags()
     local m = member(src)
+    if t.text then -- V12.63 : hommage effacé (aucune influence en jeu)
+        if m and m.gang ~= t.gang then notifyGang(t.gang, ('L\'hommage « %s » a été effacé par %s.'):format(t.text, Gangs.list[m.gang].label), 'warning') end
+        return true, 'Hommage effacé.'
+    end
+    TriggerEvent('gs_gangs:server:tagged', t.gang, vec3(t.x, t.y, t.z), false) -- V10 : tag effacé, le quartier respire
     if m and m.gang ~= t.gang then
         local zone = Gangs.territoryAt(vec3(t.x, t.y, t.z))
         if zone then Gangs.addInfluence(t.gang, zone, -Config.Tags.influence) end
@@ -282,7 +329,7 @@ function Extras.init()
     end
     publishGarages()
     for _, row in ipairs(TagsStore.all()) do
-        if Gangs.list[row.gang] then Extras.tags[row.id] = { id = row.id, gang = row.gang, x = row.x, y = row.y, z = row.z, heading = row.heading } end
+        if Gangs.list[row.gang] then Extras.tags[row.id] = { id = row.id, gang = row.gang, x = row.x, y = row.y, z = row.z, heading = row.heading, text = row.text, expires = row.expires_at } end
     end
     publishTags()
 end

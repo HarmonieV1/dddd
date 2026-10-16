@@ -72,6 +72,25 @@ function Fair.action(src, action, a, b)
     return false
 end
 
+--- V12.63 · Photomaton (n° 189) : jetons pris, photo imprimée par gs_evidence (rendus si l'impression échoue)
+function Fair.photo(src, url)
+    if not Security:InRange(src, F.photobooth, F.range + 2.0) then return false, 'Entre dans la cabine du photomaton.' end
+    if GetResourceState('gs_evidence') ~= 'started' then return false, 'Le photomaton est en panne.' end
+    if not Bridge:CanCarry(src, 'gs_photo', 1) then return false, 'Plus de place dans ton sac.' end
+    if not Bridge:RemoveItem(src, F.item, F.photoCost) then return false, ('Il te faut %d jetons de fête foraine.'):format(F.photoCost) end
+    local ok, r = pcall(function() return exports.gs_evidence:Souvenir(src, F.photoPlace, url, F.photoRange) end)
+    if not ok or type(r) ~= 'table' or not r.ok then
+        Bridge:AddItem(src, F.item, F.photoCost)
+        return false, (ok and type(r) == 'table' and r.msg) or 'Le photomaton est en panne : jetons rendus.'
+    end
+    return true, r.msg
+end
+
+lib.callback.register('gs_casino:photobooth', function(src, url)
+    if not Security:RateLimit(src, 'gs_casino:photobooth', 2, 15000) then return false, 'Doucement.' end
+    return Fair.photo(src, url)
+end)
+
 lib.callback.register('gs_casino:fair', function(src, action, a, b)
     if not Security:RateLimit(src, 'gs_casino:fair', 6, 10000) then return false, 'Doucement.' end
     return Fair.action(src, action, a, b)

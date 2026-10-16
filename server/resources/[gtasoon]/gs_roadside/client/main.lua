@@ -316,12 +316,26 @@ Scenes.vendor = function(d)
     if scene then finish('ignored') cleanup() end
 end
 
-Scenes.sheriff = function(d)
+local function spawnProp(model, c, heading)
+    local h = hash(model)
+    if not h then return nil end
+    local o = CreateObject(h, c.x, c.y, c.z, false, false, false)
+    SetModelAsNoLongerNeeded(h)
+    SetEntityHeading(o, heading or 0.0) PlaceObjectOnGroundProperly(o) FreezeEntityPosition(o, true)
+    return track(o)
+end
+
+--- Contrôle routier du shérif : s'arrêter près de lui puis E ; filer devant lui = refus d'obtempérer.
+--- V12.63 : partagé avec le barrage d'alcoolémie (n° 180), qui pose en plus des cônes et fait souffler.
+local function roadStop(prompt, label, props)
     local car = spawnVeh(Config.Models.sheriff.car, scene.pos, scene.heading)
     if not car then return ignore() end
     SetVehicleSiren(car, true) SetVehicleHasMutedSirens(car, true)
     local cop = spawnPed(Config.Models.sheriff.ped, GetOffsetFromEntityInWorldCoords(car, -2.2, 4.0, 0.0), scene.heading + 90.0)
     if not cop then return ignore() end
+    for i, model in ipairs(props or {}) do
+        spawnProp(model, GetOffsetFromEntityInWorldCoords(car, -3.0, -5.0 + (i - 1) * 7.5, 0.0), scene.heading)
+    end
     GiveWeaponToPed(cop, GetHashKey('WEAPON_PISTOL'), 30, false, false)
     playLoop(cop, 'amb@world_human_car_park_attendant@male@base', 'base')
     local wasClose, fast = false, false
@@ -333,10 +347,10 @@ Scenes.sheriff = function(d)
             if veh and GetEntitySpeed(veh) > 8.0 then fast = true end
         end
         if dd < 20.0 and veh and GetEntitySpeed(veh) < 1.0 then
-            if waitInteract(cop, 20.0, 'Présenter ses papiers', true) then
+            if waitInteract(cop, 20.0, prompt, true) then
                 ClearPedTasks(cop)
                 TaskTurnPedToFaceEntity(cop, cache.ped, 1500)
-                lib.progressBar({ duration = 4000, label = 'Contrôle des papiers…', canCancel = false, disable = { move = true, car = true } })
+                lib.progressBar({ duration = 4000, label = label, canCancel = false, disable = { move = true, car = true } })
                 finish('checked')
                 return cleanup(20000)
             end
@@ -350,6 +364,10 @@ Scenes.sheriff = function(d)
         Wait(dd < 80.0 and 100 or 600)
     end
 end
+
+Scenes.sheriff = function() return roadStop('Présenter ses papiers', 'Contrôle des papiers…') end
+-- V12.63 · Barrage d'alcoolémie du shérif, la nuit sans policier en service (n° 180)
+Scenes.checkpoint = function() return roadStop('Souffler dans l\'éthylotest', 'Alcootest…', Config.Breath.props) end
 
 -- V8 · Halloween : l'auto-stoppeur fantôme (il disparaît en route)
 Scenes.ghost = function(d)

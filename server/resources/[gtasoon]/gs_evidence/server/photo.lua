@@ -80,6 +80,40 @@ function Photo.take(src, url)
     return true, 'Photo développée.'
 end
 
+--- V12.63 · Photomaton de la fête foraine (proposition n° 189, payé en jetons par gs_casino) : photo souvenir de celui qui
+--- paie et de ceux qui se serrent avec lui dans la cabine (`range` m, 4 personnes au plus). Même objet que l'appareil
+--- argentique (regarder, accrocher, labo) ; une copie pour chacun (s'il a la place). Renvoie ok, message.
+function Photo.souvenir(src, place, url, range)
+    local ped = GetPlayerPed(src)
+    if not ped or ped == 0 then return false, 'Erreur.' end
+    local me = GetEntityCoords(ped)
+    local group, subjects, seen = {}, {}, {}
+    local function add(p)
+        group[#group + 1] = p
+        subjects[#subjects + 1] = { cid = Bridge:GetIdentifier(p), desc = describe(p) }
+        seen[#seen + 1] = subjects[#subjects].desc
+    end
+    add(src)
+    for _, sid in ipairs(GetPlayers()) do
+        local p = tonumber(sid)
+        local pp = p ~= src and GetPlayerPed(p)
+        if pp and pp ~= 0 and #group < 4 and #(GetEntityCoords(pp) - me) <= (tonumber(range) or 2.5) then add(p) end
+    end
+    local id = ('%d%03d'):format(os.time(), math.random(0, 999))
+    local date = os.date('%d/%m %H:%M')
+    local md = { photo = id, label = 'Photomaton · ' .. tostring(place or 'Fête foraine'), description = ('%s · Souvenir : %s'):format(date, table.concat(seen, ' ; ')),
+        image = type(url) == 'string' and Security:ValidImageUrl(url) and url or nil }
+    if not Bridge:AddItem(src, C.photo, 1, md) then return false, 'Plus de place pour la photo.' end
+    store(id, { subjects = subjects, plates = {}, place = place, date = date, by = Bridge:GetIdentifier(src), label = md.label, text = md.description, image = md.image })
+    for i = 2, #group do
+        if Bridge:CanCarry(group[i], C.photo, 1) and Bridge:AddItem(group[i], C.photo, 1, md) then
+            Bridge:Notify(group[i], 'Photomaton : ta copie de la photo souvenir.', 'success')
+        end
+    end
+    return true, #group > 1 and ('Photo souvenir imprimée en %d exemplaires.'):format(#group) or 'Photo souvenir imprimée.'
+end
+exports('Souvenir', function(...) local ok, msg = Photo.souvenir(...) return { ok = ok, msg = msg } end) -- table : sûr entre ressources
+
 --- Accrocher au mur (persistant) / décrocher (l'auteur seulement)
 local function saveWall() SetResourceKvp('gs_photo_wall', json.encode(Photo.wall)) end
 local function publishWall()

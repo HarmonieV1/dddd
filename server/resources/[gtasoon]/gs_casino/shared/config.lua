@@ -75,4 +75,8 @@ Config.Fair = {
     -- V12.62 : script Patoche des auto-tamponneuses : objet `bumpton` (vu dans son bridge : « buy_bumpton ») ; à corriger si
     -- son shared/config.lua (system.itemName) dit autre chose
     exchange = { { item = 'bumpton', label = 'Jeton d\'auto-tamponneuse' } },
+    -- V12.63 · Photomaton (proposition n° 189) : photo souvenir imprimée (objet photo de l'appareil argentique : regarder,
+    -- accrocher au mur) contre `photoCost` jetons ; ceux qui se serrent dans la cabine (`photoRange` m) ont leur copie.
+    photobooth = vec3(-1537.6, -994.2, 28.84), -- [À CALER] à côté du guichet (F11 → Déplacer un point)
+    photoCost = 3, photoRange = 2.5, photoPlace = 'Fête foraine de Del Perro',
 }

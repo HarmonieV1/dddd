@@ -231,5 +231,19 @@ do
     check('sans traces : photo ordinaire', Photo.get(id).scene == nil and Photo.get(id).label:find('^Photo'))
 end
 
+-- V12.63 · Photomaton (n° 189) : celui qui paie + ceux qui sont dans la cabine (4 au plus), une copie chacun
+do
+    for k in pairs(kvp) do if k:match('^gs_photo:') then kvp[k] = nil end end
+    local booth = vec3(500.0, 500.0, 10.0)
+    join(80, 'CID80', 'Payeur', booth) join(81, 'CID81', 'Ami', booth + vec3(1.0, 0.0, 0.0)) join(82, 'CID82', 'Passant', booth + vec3(8.0, 0.0, 0.0))
+    local r = getExport('gs_evidence', 'Souvenir')(80, 'Fête foraine', 'https://img.example/booth.jpg', 2.5)
+    local id
+    for k in pairs(kvp) do if k:match('^gs_photo:') then id = k:sub(10) end end
+    local rec = Photo.get(id)
+    check('photomaton : photo imprimée (sans appareil), une copie pour l\'ami dans la cabine', r.ok and W.players[80].items.gs_photo == 1 and W.players[81].items.gs_photo == 1
+        and (W.players[82].items.gs_photo or 0) == 0 and r.msg:find('2 exemplaires'))
+    check('photomaton : sujets connus du labo, lieu et libellé', rec and #rec.subjects == 2 and rec.subjects[1].cid == 'CID80' and rec.label == 'Photomaton · Fête foraine')
+end
+
 io.write(('\n%d réussis, %d échoués\n'):format(passed, failed))
 os.exit(failed == 0 and 0 or 1)

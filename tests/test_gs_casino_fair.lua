@@ -45,5 +45,25 @@ check('casino : 10 jetons → 1 ticket à gratter', ok and P().items.fair_token 
 ok = cb('gs_casino:fair', 1, 'scratch'); step()
 check('casino : pas assez de jetons', not ok and P().items.scratch_ticket == 1)
 
+-- V12.63 · Photomaton (n° 189) : jetons pris, photo par gs_evidence ; rendus si l'impression échoue
+local printed, fail = 0, false
+provide('gs_evidence', { Souvenir = function(src, place, url, range) if fail then return { ok = false, msg = 'Plus de place pour la photo.' } end
+    printed = printed + 1 return { ok = true, msg = 'Photo souvenir imprimée.' } end })
+P().items.fair_token = 5
+tp(1, Config.Fair.booth + vec3(40.0, 0.0, 0.0))
+ok, msg = cb('gs_casino:photobooth', 1); step()
+check('photomaton : il faut être dans la cabine', not ok and msg:find('cabine') and P().items.fair_token == 5)
+tp(1, Config.Fair.photobooth)
+ok = cb('gs_casino:photobooth', 1, 'https://img.example/x.jpg'); step()
+check('photomaton : jetons pris, photo imprimée', ok and printed == 1 and P().items.fair_token == 5 - Config.Fair.photoCost)
+fail = true
+P().items.fair_token = 5
+ok, msg = cb('gs_casino:photobooth', 1); step()
+check('photomaton : impression ratée → jetons rendus', not ok and msg:find('place') and P().items.fair_token == 5)
+fail = false
+P().items.fair_token = 1
+ok, msg = cb('gs_casino:photobooth', 1); step()
+check('photomaton : pas assez de jetons', not ok and msg:find('jetons') and printed == 1)
+
 io.write(('jetons de fête foraine : %d réussis, %d échoués\n'):format(passed, failed))
 os.exit(failed == 0 and 0 or 1)

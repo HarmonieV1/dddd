@@ -101,3 +101,9 @@ Config.Figure = {
     points = { job_mission = 3, shop_buy = 1, sell = 1, rental = 1, quest = 2 },
     threshold = 60, discount = 0.05, greetMinutes = 60, decay = 0.25, checkEvery = 30000,
 }
+
+-- V12.63 · Voisins vigilants (proposition n° 173) : /voisins pour rejoindre (hors gang) le groupe du quartier où l'on est.
+-- Par bénévole connecté (plafonné à `maxMembers`) : la tension retombe de `decayPerMember` point de plus par minute, et
+-- les témoins appellent `reportPerMember` plus volontiers (au plus `maxReport`). Prévenus des délits du quartier sans
+-- position, au plus une fois par `notifySeconds`. Changer de quartier : une fois par `changeHours`.
+Config.Watch = { maxMembers = 6, decayPerMember = 0.25, reportPerMember = 0.03, maxReport = 0.15, notifySeconds = 120, changeHours = 24 }

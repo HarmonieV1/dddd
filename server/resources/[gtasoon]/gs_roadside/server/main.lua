@@ -22,6 +22,13 @@ local function heatOf(src)
     return ok and tonumber(h) or 0
 end
 
+--- V12.63 : policiers joueurs en service (barrage d'alcoolémie IA seulement s'il n'y en a aucun)
+local function copsOnDuty()
+    if GetResourceState('gs_jobs') ~= 'started' then return 0 end
+    local ok, list = pcall(function() return exports.gs_jobs:GetOnDutyPlayers(Config.Breath.job) end)
+    return ok and type(list) == 'table' and #list or 0
+end
+
 --- Tirage pondéré d'un type de rencontre
 function Roadside.pick()
     local total = 0
@@ -56,7 +63,8 @@ function Roadside.roll(src)
         Roadside.active[src] = scene
         return { kind = 'ghost', token = scene.token, model = Config.Halloween.ghostModel }
     end
-    local def = Config.Types[kind]
+    if isNight() and math.random() < Config.Breath.chance and copsOnDuty() == 0 then kind = 'checkpoint' end -- V12.63 (n° 180)
+    local def = Config.Types[kind] or Config.Types.sheriff
     local scene = { kind = kind, token = math.random(100000, 999999), at = now(), start = { x = c.x, y = c.y, z = c.z } }
     local danger = isNight() and def.nightDanger or def.danger
     if kind == 'hitchhiker' and Roadside.friends[cid] and math.random() < Config.Friend.chance then
@@ -73,7 +81,7 @@ function Roadside.roll(src)
     if scene.kind == 'hitchhiker' then
         scene.model = Config.Models[scene.danger and 'robber' or 'hitchhiker'][math.random(1, #Config.Models[scene.danger and 'robber' or 'hitchhiker'])]
     end
-    scene.wanted = scene.kind == 'sheriff' and heatOf(src) > 0 or nil
+    scene.wanted = (scene.kind == 'sheriff' or scene.kind == 'checkpoint') and heatOf(src) > 0 or nil
     Roadside.active[src] = scene
     return { kind = scene.kind, token = scene.token, danger = scene.danger, model = scene.model, place = scene.place, wanted = scene.wanted }
 end
@@ -162,6 +170,26 @@ function Roadside.finish(src, token, outcome)
     elseif s.kind == 'sheriff' and outcome == 'fled' then
         reportCrime(src, 'refusal')
         removePoints(src, def.points, 'Refus d\'obtempérer')
+        return done('sheriff_fled')
+    elseif s.kind == 'checkpoint' and outcome == 'checked' then -- V12.63 · alcootest du shérif (n° 180)
+        local B = Config.Breath
+        if s.wanted then
+            notify(src, 'Le shérif te reconnaît : « Pas un geste ! »', 'error')
+            TriggerClientEvent('gs_wanted:client:npcPolice', src, 2)
+            return done('checkpoint')
+        end
+        local level = tonumber(Player(src).state.gsDrunk) or 0
+        if level >= B.limit then
+            Bridge:RemoveMoney(src, 'bank', B.fine)
+            removePoints(src, B.points, 'Conduite en état d\'ivresse')
+            notify(src, ('Alcootest positif : amende de %d $ et %d points de permis. « Laissez reposer le moteur un moment. »'):format(B.fine, B.points), 'error')
+            return done('checkpoint_drunk')
+        end
+        notify(src, 'Alcootest négatif. « Merci, bonne route. »', 'success')
+        return done('checkpoint')
+    elseif s.kind == 'checkpoint' and outcome == 'fled' then
+        reportCrime(src, 'refusal')
+        removePoints(src, Config.Types.sheriff.points, 'Refus d\'obtempérer')
         return done('sheriff_fled')
     elseif s.kind == 'ghost' and outcome == 'vanished' then
         if elapsed < 20 then return false end

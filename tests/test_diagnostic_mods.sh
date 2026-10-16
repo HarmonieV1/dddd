@@ -28,7 +28,18 @@ rsc "$A/gsa_comet/stream/comet.yft"; meta "$A/gsa_comet/data/vehicles.meta" '<mo
 rsc "$A/gsa_comet/stream/comet_livery1.yft"   # gsa_comet = plus complet
 mkdir -p "$A/gsa_pat/stream"; head -c 400 /dev/urandom > "$A/gsa_pat/stream/pat.ydr"; head -c 30 /dev/urandom > "$A/gsa_pat/.fxap"; cp -r "$A/gsa_pat" "$A/gsa_pat_pack_1"
 rsc "$A/gsa_proche/stream/proche.yft"; cp -r "$A/gsa_proche" "$A/gsa_proche_b"; printf 'x' >> "$A/gsa_proche_b/stream/proche.yft" # presque pareil : gardé
+# 6. V12.63 : même map en deux versions (octets différents, mêmes noms de fichiers) : « _1 » en pause, l'original gardé ;
+# jamais si l'original est retiré (mods-retires.txt ou RETIRED_MAPS de maps.js : « _1 » est alors son retour) ; mods différents : rien
+rsc "$A/gsa_animalerie/stream/petshop.ymap"; rsc "$A/gsa_animalerie/stream/petshop.ytyp"; cp -r "$A/gsa_animalerie" "$A/gsa_animalerie_1"
+rsc "$A/gsa_animalerie_1/stream/petshop.ymap"; rsc "$A/gsa_animalerie_1/stream/petshop_v2.ytyp"
+rsc "$A/gsa_shadow/stream/shadow.ymap"; rsc "$A/gsa_shadow_1/stream/shadow.ymap"
+rsc "$A/gsa_bunker/stream/bunker.ymap"; rsc "$A/gsa_bunker_1/stream/bunker.ymap"
+rsc "$A/gsa_garage/stream/garage.ymap"; rsc "$A/gsa_garage_1/stream/autre.ymap"
+printf '# retirés\nshadow\n' > "$T/mods-retires.txt"
+mkdir -p "$T/server-data/resources/[gtasoon]/gs_admin/server"
+printf "const RETIRED_MAPS = [\n  'gsa_bunker', // test\n];\n" > "$T/server-data/resources/[gtasoon]/gs_admin/server/maps.js"
 printf 'ensure gsa_comet\nensure gsa_comet_1\nensure gsa_pat\nensure gsa_pat_pack_1\nensure gsa_proche\nensure gsa_proche_b\n' > "$T/copies.cfg"
+printf 'ensure gsa_animalerie\nensure gsa_animalerie_1\nensure gsa_shadow\nensure gsa_shadow_1\nensure gsa_bunker\nensure gsa_bunker_1\nensure gsa_garage\nensure gsa_garage_1\n' >> "$T/copies.cfg"
 printf 'ensure gsa_bonne\nensure gsa_cassee\nensure gsa_robes_a\nensure gsa_robes_b\nensure gsa_double1\nensure gsa_double2\nensure gsa_double3\nensure gsa_payant\nensure gsa_disparu\n# ensure gsa_pause\n' > "$T/server-data/cfg/addons.cfg"
 cat "$T/copies.cfg" >> "$T/server-data/cfg/addons.cfg"
 GTASOON_ROOT=$T GTASOON_TEST=1 "$PWSH" -NoProfile -File "$REPO/scripts/windows/diagnostic-mods.ps1" -Fix > "$T/log.txt" 2>&1 || { cat "$T/log.txt"; exit 1; }
@@ -50,6 +61,10 @@ check 'V12.63 : copie complète (_1) en pause, le plus complet gardé' 'grep -q 
 check 'V12.63 : pack protégé copié : la copie en pause' 'grep -q "^ensure gsa_pat$" <<<"$CFG" && grep -q "^# ensure gsa_pat_pack_1$" <<<"$CFG"'
 check 'V12.63 : mods presque pareils (un octet de différence) : jamais touchés' 'grep -q "^ensure gsa_proche$" <<<"$CFG" && grep -q "^ensure gsa_proche_b$" <<<"$CFG"'
 check 'V12.63 : rapport : section copies en double' 'grep -q "gsa_comet_1 (tout est déjà dans gsa_comet)" <<<"$REP"'
+check 'V12.63 : même map en deux versions : « _1 » en pause, l original gardé' 'grep -q "^ensure gsa_animalerie$" <<<"$CFG" && grep -q "^# ensure gsa_animalerie_1$" <<<"$CFG" && grep -q "## gsa_animalerie_1 : en pause (même map en deux versions, gardé : gsa_animalerie" <<<"$CFG"'
+check 'V12.63 : original retiré (mods-retires.txt, RETIRED_MAPS) : la version « _1 » reste' 'grep -q "^ensure gsa_shadow_1$" <<<"$CFG" && grep -q "^ensure gsa_bunker_1$" <<<"$CFG"'
+check 'V12.63 : mêmes noms de dossier mais maps différentes : rien' 'grep -q "^ensure gsa_garage$" <<<"$CFG" && grep -q "^ensure gsa_garage_1$" <<<"$CFG"'
+check 'V12.63 : rapport : section même map en deux versions' 'grep -q "gsa_animalerie_1 (version de gsa_animalerie, gardée)" <<<"$REP"'
 check 'copie de sécurité de addons.cfg' '[ -f "$T/server-data/cfg/addons.cfg.avant-diagnostic" ] && grep -q "gsa_disparu" "$T/server-data/cfg/addons.cfg.avant-diagnostic"'
 # 2e passage : plus rien à corriger, rien ne change
 cp "$T/server-data/cfg/addons.cfg" "$T/avant.cfg"
