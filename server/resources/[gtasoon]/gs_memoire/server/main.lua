@@ -54,7 +54,7 @@ function Memoire.record(kind, coords, text, persist)
     if p.n == Config.PlaqueAt and not p.plaque and started('gs_scars') then
         p.plaque = true
         local okP = pcall(function()
-            return exports.gs_scars:Plaque(vec3(p.x, p.y, p.z), ('Lieu de mémoire : %d fois la ville a tremblé ici'):format(p.n), 'memoire')
+            return exports.gs_scars:Plaque(vec3(p.x, p.y, p.z), ('Lieu de mémoire : %d fois la ville a tremblé ici'):format(p.n), 'memoire', topKind(p)) -- V12.63 : objets selon le genre dominant
         end)
         if not okP then p.plaque = nil end
     end

@@ -68,6 +68,43 @@ local function readPoster(key)
 end
 AddEventHandler('gs_wanted:client:poster', readPoster)
 
+--- V12.63 (backtest : « pas réaliste, grosse écriture rouge ») : une petite affiche papier (fond crème, texte sombre), à hauteur
+--- d'yeux, lisible de près seulement, de plus en plus petite avec la distance. Affiche « sur place » = ce fugitif ; affiche fixe =
+--- la plus grosse prime (+ le nombre d'autres).
+local function posterText(key)
+    local list = GlobalState.gsFugitives or {}
+    local id = math.tointeger(tonumber(key:match('^s(%d+)$')))
+    local pick, others = nil, 0
+    for _, f in ipairs(list) do
+        if id then if f.id == id then pick = f end
+        else
+            if not pick or (f.bounty or 0) > (pick.bounty or 0) then pick = f end
+        end
+    end
+    if not id then others = math.max(0, #list - 1) end
+    return pick, others
+end
+
+local function text(str, x, y, scale, r, g, b, font)
+    SetTextFont(font or 4) SetTextScale(0.0, scale) SetTextCentre(true) SetTextColour(r, g, b, 235)
+    BeginTextCommandDisplayText('STRING') AddTextComponentSubstringPlayerName(str) EndTextCommandDisplayText(x, y)
+end
+
+local function drawPoster(key, c, d)
+    local f, others = posterText(key)
+    if not f then return end
+    local on, x, y = GetScreenCoordFromWorldCoord(c.x, c.y, c.z + 0.55)
+    if not on then return end
+    local s = math.max(0.45, math.min(1.0, 4.0 / math.max(d, 0.1)))
+    local w, h = 0.085 * s, 0.092 * s
+    DrawRect(x, y + h * 0.42, w + 0.003 * s, h + 0.003 * s, 60, 50, 40, 200)   -- bord
+    DrawRect(x, y + h * 0.42, w, h, 236, 226, 200, 235)                         -- papier
+    text('RECHERCHÉ', x, y - h * 0.02, 0.48 * s, 25, 22, 20, 4)
+    text(f.title or 'Fugitif', x, y + h * 0.30, 0.30 * s, 40, 36, 32, 4)
+    text(('Prime : %d $'):format(f.bounty or 0), x, y + h * 0.52, 0.30 * s, 110, 22, 22, 4)
+    if others > 0 then text(('+ %d autre%s'):format(others, others > 1 and 's' or ''), x, y + h * 0.72, 0.24 * s, 70, 64, 58, 4) end
+end
+
 --- Affiches à afficher maintenant : { [clé] = position } (fixes + sur place, moins celles arrachées)
 local function postersNow()
     local list, out, torn = GlobalState.gsFugitives or {}, {}, GlobalState.gsPostersTorn or {}
@@ -91,22 +128,18 @@ CreateThread(function()
             end
         end
         if next(want) then
-            local me, drew = GetEntityCoords(cache.ped), false
             local untilT = GetGameTimer() + 3000
-            repeat -- dessin du texte seulement près d'une affiche ; la liste est relue toutes les 3 s
-                drew = false
-                me = GetEntityCoords(cache.ped)
-                for _, c in pairs(want) do
-                    if #(me - c) < 25.0 then
+            repeat -- affiche dessinée seulement de près ; la liste est relue toutes les 3 s (une affiche arrachée disparaît)
+                local drew = false
+                local me = GetEntityCoords(cache.ped)
+                for key, c in pairs(want) do
+                    local d = #(me - c)
+                    if d < 12.0 and not (GlobalState.gsPostersTorn or {})[key] then
                         drew = true
-                        local on, x, y = GetScreenCoordFromWorldCoord(c.x, c.y, c.z + 1.2)
-                        if on then
-                            SetTextFont(4) SetTextScale(0.0, 0.5) SetTextCentre(true) SetTextOutline() SetTextColour(208, 18, 47, 240)
-                            BeginTextCommandDisplayText('STRING') AddTextComponentSubstringPlayerName('AVIS DE RECHERCHE') EndTextCommandDisplayText(x, y)
-                        end
+                        drawPoster(key, c, d)
                     end
                 end
-                Wait(drew and 0 or 1500)
+                Wait(drew and 0 or 1000)
             until GetGameTimer() >= untilT
         else Wait(3000) end
     end

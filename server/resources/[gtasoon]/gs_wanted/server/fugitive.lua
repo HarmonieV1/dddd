@@ -112,7 +112,8 @@ function Fugitive.tear(src, key)
     local at = Fugitive.posterAt(key)
     if not at then return false, 'Affiche introuvable.' end
     if Fugitive.torn[key] and Fugitive.torn[key] > now() then return false, 'Déjà arrachée.' end
-    if not Security:InRange(src, at, F.tearReach or 3.0) then return false, 'Approche-toi de l\'affiche.' end
+    -- V12.63 (backtest : l'affiche restait après « Arracher ») : distance à plat (la hauteur des points n'est pas calée au sol)
+    if not Security:InRangeFlat(src, at, (F.tearReach or 3.0) + 1.0, 6.0) then return false, 'Approche-toi de l\'affiche.' end
     Fugitive.torn[key] = now() + (F.tearMinutes or 30) * 60
     publish()
     local job = Bridge:GetJob(src)

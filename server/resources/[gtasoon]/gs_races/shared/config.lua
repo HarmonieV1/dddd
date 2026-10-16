@@ -23,6 +23,8 @@ Config.Organizer = { coords = vec4(236.0, -790.0, 30.6, 160.0), model = 'a_m_y_s
 -- Voitures prêtées (la même pour tous les pilotes d'une course : équitable), rendues à l'arrivée
 Config.Loaners = { { model = 'sultan', label = 'Karin Sultan' }, { model = 'futo', label = 'Karin Futo' },
     { model = 'elegy2', label = 'Annis Elegy RH8' }, { model = 'banshee', label = 'Bravado Banshee' } }
+Config.LoanerSpawnRadius = 40.0 -- V12.63 : voiture prêtée livrée sur la route à moins de 40 m de l'organisateur
+Config.GoToLineSeconds = 300  -- V12.63 : temps pour rejoindre la ligne de départ au GPS
 Config.LoanerKeep = 10            -- secondes avant de reprendre la voiture prêtée après l'arrivée
 
 Config.Circuits = {

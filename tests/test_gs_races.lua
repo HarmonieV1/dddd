@@ -174,6 +174,14 @@ W.players[20].vehicle = loan
 check('départ possible depuis la grille', cb('gs_races:start', 20, 'sprint', 'solo')); step()
 cb('gs_races:cancel', 20); step()
 check('abandon : voiture prêtée reprise', Races.loaners[20] == nil)
+-- V12.63 : circuit lointain → voiture prêtée livrée à côté de l'organisateur (plus de téléportation), puis GPS vers la ligne
+tp(20, vec3(O.x, O.y, O.z)); W.players[20].vehicle = nil
+okT, msgT = cb('gs_races:ticket', 20, 'boucle', 'solo', 2); step()
+okO, pos = cb('gs_races:organize', 20, { x = O.x + 6.0, y = O.y, z = O.z, w = 0.0 }); step()
+check('V12.63 : voiture prêtée livrée à côté de l\'organisateur pour un circuit lointain', okT and okO and Races.loaners[20]
+    and #(vec2(pos.x, pos.y) - vec2(O.x + 6.0, O.y)) < 0.1)
+check('V12.63 : pas de départ loin de la ligne', not cb('gs_races:start', 20, 'boucle', 'solo')); step()
+cb('gs_races:cancel', 20); step()
 
 -- V12.40 · Courses créées par le staff : brouillon, points posés sur place, enregistrement, organisateur, expiration
 local nextId = 0

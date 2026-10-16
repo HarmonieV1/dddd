@@ -823,6 +823,39 @@ lib.callback.register('gs_admin:mappings', function(src)
     return res
 end)
 
+-- V12.63 · Variantes de gang des maps (QG Patoche Vagos / Ballas…) : choix par groupe de .ymap (server/maps.js), gardé en KVP et
+-- publié aux joueurs (GlobalState.gsMapGangs = { [groupe] = { gang, ipls = { { ipl, gang } } } }). gang = nil : comme installé.
+Admin.mapGangs = {}
+do
+    local okJ, t = pcall(function() return json.decode(GetResourceKvpString('gs_admin:mapGangs') or '{}') end)
+    if okJ and type(t) == 'table' then Admin.mapGangs = t end
+    GlobalState.gsMapGangs = Admin.mapGangs
+end
+function Admin.setMapGang(group, gang)
+    local okS, res = pcall(function() return exports[GetCurrentResourceName()]:MapScan() end)
+    if not okS or type(res) ~= 'table' then return false, 'Analyse des maps indisponible.' end
+    local ipls, gangs = {}, {}
+    for _, m in ipairs(res.maps or {}) do
+        for _, v in ipairs(m.gangVariants or {}) do
+            if v.group == group then ipls[#ipls + 1] = { ipl = v.ipl, gang = v.gang } gangs[v.gang] = true end
+        end
+    end
+    if #ipls == 0 then return false, 'Aucune variante pour ce QG.' end
+    if gang ~= nil and not gangs[gang] then return false, 'Ce gang n\'a pas de variante pour ce QG.' end
+    Admin.mapGangs[group] = gang and { gang = gang, ipls = ipls } or nil
+    SetResourceKvp('gs_admin:mapGangs', json.encode(Admin.mapGangs))
+    GlobalState.gsMapGangs = Admin.mapGangs
+    return true
+end
+Actions.mapgang = { level = 4, duty = true, run = function(_, _, data)
+    local group = need(type(data.group) == 'string' and #data.group <= 120 and data.group:match('^[%w_#%.%-]+$') and data.group, 'QG invalide.')
+    local gang = data.gang
+    if gang ~= nil then gang = need(type(gang) == 'string' and gang:match('^%a+$') and gang, 'Gang invalide.') end
+    local ok, err = Admin.setMapGang(group, gang)
+    need(ok, err)
+    return gang and ('QG aux couleurs : %s (chez tous les joueurs)'):format(gang) or 'QG remis comme installé'
+end }
+
 --- V12.37 · Catalogue d'objets (celui de gs_builder) pour « Ajouter un objet » : super-admin et fondateur, lu une fois.
 local catalogCache
 lib.callback.register('gs_admin:staffCatalog', function(src)

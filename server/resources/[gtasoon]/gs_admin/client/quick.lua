@@ -1475,6 +1475,46 @@ local function mainMenu()
         if not r then return end
         local o = {}
         if r.error then o[#o + 1] = { title = 'Lecture des maps impossible', icon = 'triangle-exclamation', disabled = true, description = r.error } end
+        -- V12.63 · QG de gang : variantes d'une même map (…_vagos / …_ballas…), une seule chargée chez tous les joueurs
+        o[#o + 1] = { title = 'QG de gang : changer les couleurs', icon = 'people-group', arrow = true,
+            description = 'Ex. QG Patoche en Vagos → Ballas (variantes .ymap de la map)', onSelect = function()
+                local groups, order, files = {}, {}, {}
+                for _, m in ipairs(r.maps) do
+                    for _, v in ipairs(m.gangVariants or {}) do
+                        if not groups[v.group] then groups[v.group] = { label = m.label, gangs = {}, x = v.x, y = v.y, z = v.z } order[#order + 1] = v.group end
+                        groups[v.group].gangs[v.gang] = true
+                    end
+                    if m.ymapFiles then files[#files + 1] = { label = m.label, list = m.ymapFiles } end
+                end
+                local chosen = GlobalState.gsMapGangs or {}
+                local g = {}
+                for _, key in ipairs(order) do
+                    local grp = groups[key]
+                    local cur = chosen[key] and chosen[key].gang or 'comme installé'
+                    g[#g + 1] = { title = ('%s · %s'):format(grp.label, key:gsub('#', '…')), icon = 'house-flag', arrow = true,
+                        description = ('Actuel : %s · %.0f, %.0f'):format(cur, grp.x, grp.y), onSelect = function()
+                            local c = { { title = 'Comme installé (toutes les variantes)', icon = 'rotate-left', onSelect = function()
+                                notify(act('mapgang', nil, { group = key })) end } }
+                            for gang in pairs(grp.gangs) do
+                                c[#c + 1] = { title = 'Aux couleurs : ' .. gang, icon = 'flag', onSelect = function()
+                                    notify(act('mapgang', nil, { group = key, gang = gang })) end }
+                            end
+                            show('gs_staff_mapgang', grp.label, c, 'gs_staff_mapgangs')
+                        end }
+                end
+                if #g == 0 then
+                    g[1] = { title = 'Aucune variante de gang trouvée dans les fichiers', icon = 'circle-info', readOnly = true,
+                        description = 'Les variantes sont peut-être des « entity sets » : envoyer le PDF du pack au développeur' }
+                end
+                for _, f in ipairs(files) do -- diagnostic : fichiers .ymap des packs de gang
+                    g[#g + 1] = { title = 'Fichiers de ' .. f.label, icon = 'file', arrow = true, description = ('%d fichier(s) .ymap'):format(#f.list), onSelect = function()
+                        local l = {}
+                        for _, n in ipairs(f.list) do l[#l + 1] = { title = n, icon = 'file', readOnly = true } end
+                        show('gs_staff_mapfiles', f.label, l, 'gs_staff_mapgangs')
+                    end }
+                end
+                show('gs_staff_mapgangs', 'QG de gang', g, 'gs_staff_maps')
+            end }
         o[#o + 1] = { title = 'Supprimer définitivement toutes les maps', icon = 'dumpster-fire', iconColor = '#ff4d6d',
             description = 'Efface leurs dossiers, leurs lignes de addons.cfg et leurs archives : elles ne reviendront jamais. Vêtements non touchés',
             onSelect = function()

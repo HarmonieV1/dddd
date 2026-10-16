@@ -157,6 +157,16 @@ SESSIONS = [
         ('Effets sur moi : Feux d\'artifice, Pluie de confettis, Apparition dans la fumée → vus aussi par un ami à côté', '2', 1),
         ('Branding (après METTRE-A-JOUR) : menus F11 et notifications avec un fin contour violet et un halo ; titre des menus en dégradé rose → violet → cyan avec un losange ; fenêtres de saisie et inventaire bordés de violet ; F10 bordé comme les Lives. Si un menu s\'affiche mal : le dire (patch d\'ox_lib à retirer)', 'Seul', 2),
     ]),
+    ('4n · V12.63 — retours du backtest du 16/10 au soir (15 min)', [
+        ('Courses : à pied à côté de l\'organisateur ou AU VOLANT à moins de 14 m → [E] → menu → circuit → « Voiture prêtée » : livrée sur la route à côté, tu es dedans (plus d\'écran noir ni de téléportation) → GPS jaune jusqu\'à la ligne → sur la ligne [E] lance le départ, [X] annule', 'Seul', 3),
+        ('Courses : « Avec ma voiture » au volant → GPS → [E] sur la ligne → compte à rebours → chrono ; aucun plantage', 'Seul', 3),
+        ('Mises en scène (refaites) : arrestation PNJ (le policier arrive, plaque, menotte, cellule) ; enlèvement : camionnette « speedo » à côté, inconnu à pied, mains sur la tête, embarqué, écran noir → expulsé ; aucun plantage', '2', 3),
+        ('Vue d\'ensemble : touche C (à pied) → caméra autour du perso, le perso NE bouge PAS ; rappuie C pour quitter. F6 = menu des métiers seulement (si F6 met en vol libre : Paramètres → Raccourcis → FiveM → txAdmin « NoClip » → effacer la touche)', 'Seul', 2),
+        ('Avis de recherche : en cavale, affiche papier (fond crème, « RECHERCHÉ », nom, prime) lisible de près ; « Arracher » → elle disparaît pour tous (30 min)', '2', 2),
+        ('Traces : tué au couteau → couteau au sol + sang ; à la batte → batte ; par balle → douilles ; plusieurs victimes → plusieurs flaques. Lieux de mémoire : plus d\'icône flottante, des objets discrets + [E] Lire la plaque de près', '2', 2),
+        ('Mur des légendes : F11 → Monde et lieux → Déplacer un point → « Cavale · legendWall » → placer contre le mur voulu de Mission Row', 'Staff', 1),
+        ('QG de gang : F11 → Monde et lieux → Mappings installés → QG de gang → choisir le QG → « Aux couleurs : ballas » → la déco change chez tous ; si « Aucune variante trouvée » : regarder « Fichiers de … » et envoyer la liste + le PDF Patoche', 'Staff', 2),
+    ]),
     ('5 · Obligatoire avant d\'ouvrir', [
         ('SAUVEGARDER-BDD.bat puis RESTAURER-BDD.bat sur un joueur ; redémarrage de 6 h : annonces 15 / 5 / 1 min', 'Staff', 3),
         ('Mode staff : vol libre / invisible SANS alerte anti-triche ; F10 tickets et sanctions ; carkill 2 fois → alerte', 'Staff', 3),

@@ -10,6 +10,7 @@ local KEYS = [[
 | **F4** | Intervention (police / EMS en service) |
 | **F5** | Emotes · **X** annuler · **J** pointer · **G** effets · **Pavé num. 1 à 5** emotes rapides (F5 → Raccourcis) |
 | **M** | Tomber au sol (ragdoll) · rappuie pour te relever |
+| **C** | Vue d'ensemble : caméra autour de ton perso (il reste immobile) · molette : distance · rappuie pour quitter |
 | **F6** | Métiers (service, tenue, facture, patron) · **/service** prise de service par téléphone (touche à choisir) |
 | **F7** | Duo |
 | **F9** | Gang |

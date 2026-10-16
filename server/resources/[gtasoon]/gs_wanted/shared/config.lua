@@ -178,6 +178,7 @@ Config.Fame = { at = 600, precision = 0.5, chance = 0.6 }
 -- placardés en ville, prime pour la capture (policier qui l'incarcère, ou citoyen qui le livre à terre devant un
 -- commissariat). S'il tient `hours` heures de jeu sans se faire prendre : il devient une légende de Los Santos.
 Config.Fugitive = {
+    label = 'Cavale', -- V12.63 : nom des points dans F11 → Déplacer un point (« Cavale · legendWall » = mur des légendes)
     minHeat = 80, hours = 2, bountyBase = 5000, bountyPerHeat = 50, jailMinutes = 30, offlineGrace = 600,
     stations = { vec3(441.0, -981.9, 30.69), vec3(1853.2, 3689.6, 34.27), vec3(-448.4, 6012.6, 31.72) }, stationRange = 40.0,
     posters = {

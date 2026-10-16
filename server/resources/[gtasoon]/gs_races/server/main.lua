@@ -106,15 +106,21 @@ function Races.organize(src, base)
     if type(base) ~= 'table' or not tonumber(base.x) or not tonumber(base.y) or not tonumber(base.z) then return false, 'Départ introuvable.' end
     local b = vec3(base.x + 0.0, base.y + 0.0, base.z + 0.0)
     local p1 = c.points[1]
-    if #(vec2(b.x, b.y) - vec2(p1.x, p1.y)) > Config.StartRadius + Config.SnapTolerance then return false, 'Départ introuvable.' end
+    -- V12.63 (backtest : la course ne démarrait pas, téléportation sur la ligne instable) : la voiture prêtée est livrée sur la
+    -- route à côté de l'organisateur (`atOrganizer`), puis le pilote rejoint la ligne au GPS. L'ancien placement sur la ligne
+    -- reste accepté.
+    local o = Config.Organizer.coords
+    local atOrganizer = #(vec2(b.x, b.y) - vec2(o.x, o.y)) <= (Config.LoanerSpawnRadius or 40.0)
+    if not atOrganizer and #(vec2(b.x, b.y) - vec2(p1.x, p1.y)) > Config.StartRadius + Config.SnapTolerance then return false, 'Départ introuvable.' end
     -- place sur la grille : 2 colonnes, 8 m entre les rangs, derrière la ligne
     local slot = 0
-    if mode == 'group' then
+    if mode == 'group' and not atOrganizer then
         for _, l in pairs(Races.lobbies) do if l.circuit == circuitId and l.state == 'open' then slot = #l.players end end
     end
     local h = math.rad(tonumber(base.w) or 0.0)
     local fx, fy = -math.sin(h), math.cos(h)
     local row, side = slot // 2, (slot % 2 == 0) and -1 or 1
+    if atOrganizer then row, side = 0, 0 end -- livrée telle quelle sur la route de l'organisateur
     local pos = { x = b.x - fx * 8.0 * row + fy * 2.6 * side, y = b.y - fy * 8.0 * row - fx * 2.6 * side, z = b.z + 0.5, w = tonumber(base.w) or 0.0 }
     if loaner then
         local l = loaner == 'req' and c.vehicle and { model = c.vehicle } or Config.Loaners[tonumber(loaner) or 0] -- V12.63 : véhicule imposé

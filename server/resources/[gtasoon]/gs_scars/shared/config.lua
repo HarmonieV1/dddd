@@ -9,7 +9,9 @@ Config.Max = 50                        -- cicatrices visibles en même temps (le
 -- là où quelqu'un tombe, plus de bougies ni d'ours : des TRACES. Flaque de sang (une de plus à chaque nouvelle victime
 -- au même endroit, 6 au plus) et douilles si c'était par balle. Elles disparaissent après `hours` (24 h au plus).
 Config.Memorial = { hours = 4, merge = 20.0, perPlayer = 900, maxBlood = 6,
-    shotProps = { 'w_pi_flaregun_shell', 'w_pi_flaregun_shell' } } -- douilles (petit étui du jeu), seulement par balle
+    shotProps = { 'w_pi_flaregun_shell', 'w_pi_flaregun_shell', 'w_pi_flaregun_shell' }, -- douilles (petit étui du jeu), seulement par balle
+    -- V12.63 (backtest : « des objets en rapport avec l'événement ») : arme blanche → couteau au sol ; objet contondant → batte
+    bladeProps = { 'w_me_knife_01' }, bluntProps = { 'w_me_bat' } }
 Config.Glass = { crimes = { store_robbery = true, shop_robbery = true, jewelry = true, teller_robbery = true, bank = true, robbery = true, racket = true },
     merge = 25.0, pay = { 250, 450 }, duration = 15000, hours = 24, -- V12.59 : barrières de police, effacées au bout de 24 h même sans réparation
     props = { 'prop_mp_barrier_02b', 'prop_barrier_work05', 'prop_mp_cone_01', 'prop_mp_barrier_02b' } }
@@ -23,6 +25,15 @@ Config.Mural = { drawDistance = 25.0, hours = 24 } -- V12.59 : texte plus discre
 Config.Plaques = { days = 30, autoHours = 24, textRange = 6.0, max = 15, merge = 40.0, staffLevel = 3, maxLen = 80, reach = 5.0,
     crimes = { bank = 'le casse de la banque', jewelry = 'le casse de la bijouterie' },
     props = { 'prop_mem_reef_01', 'prop_mem_candle_04' },
+    -- V12.63 (backtest : « les lieux de mémoire posent des blips au lieu d'objets ») : plus d'icône flottante, des objets
+    -- discrets selon ce qui s'est passé ([E] Lire la plaque de près). Modèle absent du jeu = ignoré.
+    kindProps = {
+        heist = { 'prop_mp_cone_01', 'prop_barrier_work05', 'prop_mp_cone_01' },      -- casse : cônes et barrière de police
+        crime = { 'w_pi_flaregun_shell', 'w_pi_flaregun_shell' }, war = { 'w_pi_flaregun_shell', 'w_pi_flaregun_shell', 'w_pi_flaregun_shell' },
+        arrest = { 'prop_mp_cone_01' }, race = { 'prop_rub_tyre_01', 'prop_rub_tyre_01' },
+        wedding = { 'prop_mem_candle_04', 'prop_mem_candle_04' }, legend = { 'prop_mem_candle_04' },
+    },
+    kindBlood = { crime = true, war = true },                                        -- une tache de sang discrète en plus
     talk = { '« J\'y étais. On en parle encore au comptoir. »', '« Ma grand-mère dit que la ville a changé ce jour-là. »',
         '« Les touristes prennent des photos, maintenant. »', '« Y en a qui disent que c\'était arrangé… moi je dis rien. »',
         '« Je passe devant tous les matins. Ça fait quelque chose. »' } }

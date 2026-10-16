@@ -75,62 +75,71 @@ RegisterNetEvent('gs_races:client:end', function(msg, ok)
     lib.notify({ title = 'Course', description = msg, type = ok and 'success' or 'error', duration = 9000 })
 end)
 
---- Inscription validée : transfert sur la ligne (écran noir), place sur la grille, puis départ.
-local function goToStart(circuitId, mode, ownCar)
+--- V12.63 (backtest 16/10 : « ça lance rien », écran noir puis rien, voire plantage) : plus de téléportation sur la ligne ni
+--- de véhicule figé. Voiture prêtée : livrée sur la route à côté de l'organisateur, le pilote est mis dedans. Puis GPS jusqu'à
+--- la ligne de départ (marqueur jaune) ; sur la ligne, au volant : [E] lance le départ, [X] annule. Config.GoToLineSeconds.
+local function startLine(circuitId)
     local p1 = Config.Circuits[circuitId].points[1]
-    local veh = ownCar and cache.vehicle or nil
-    DoScreenFadeOut(400)
-    while not IsScreenFadedOut() do Wait(0) end
-    local ent = veh or cache.ped
-    FreezeEntityPosition(ent, true)
-    SetEntityCoords(ent, p1.x, p1.y, p1.z + 1.0, false, false, false, false)
-    local t = GetGameTimer() + 3000
-    while not HasCollisionLoadedAroundEntity(ent) and GetGameTimer() < t do RequestCollisionAtCoord(p1.x, p1.y, p1.z) Wait(0) end
-    Wait(500)
-    local ok, node, heading = GetClosestVehicleNodeWithHeading(p1.x, p1.y, p1.z, 1, 3.0, 0)
-    local base = ok and { x = node.x, y = node.y, z = node.z, w = heading } or nil
-    -- V12.63 (backtest : la course sur mesure ne démarrait pas) : départ posé hors route (parking, place) → la route la plus
-    -- proche était trop loin et le serveur répondait « Départ introuvable ». On part alors du point posé, tourné vers le 2e point.
-    if not base or #(vec2(base.x, base.y) - vec2(p1.x, p1.y)) > Config.StartRadius then
-        local p2 = Config.Circuits[circuitId].points[2] or p1
-        base = { x = p1.x, y = p1.y, z = p1.z, w = GetHeadingFromVector_2d(p2.x - p1.x, p2.y - p1.y) }
+    local ok, node = GetClosestVehicleNode(p1.x, p1.y, p1.z, 1, 3.0, 0)
+    if ok and #(vec2(node.x, node.y) - vec2(p1.x, p1.y)) <= Config.SnapTolerance then return vec3(node.x, node.y, node.z) end
+    return vec3(p1.x, p1.y, p1.z)
+end
+
+local function goToStart(circuitId, mode, ownCar)
+    if not ownCar then
+        local o = Config.Organizer.coords
+        local okN, node, heading = GetClosestVehicleNodeWithHeading(o.x, o.y, o.z, 1, 3.0, 0)
+        local base = (okN and #(vec2(node.x, node.y) - vec2(o.x, o.y)) <= (Config.LoanerSpawnRadius or 40.0) - 2.0)
+            and { x = node.x, y = node.y, z = node.z, w = heading } or { x = o.x, y = o.y, z = o.z, w = o.w }
+        local okPos, msg = lib.callback.await('gs_races:organize', false, base)
+        if not okPos then
+            print(('[gs_races] voiture refusée (%s) : %s'):format(tostring(circuitId), tostring(msg))) -- F8 : raison exacte
+            return notify(false, msg)
+        end
+        local t = GetGameTimer() + 5000
+        while not cache.vehicle and GetGameTimer() < t do Wait(100) end
     end
-    local okPos, pos = lib.callback.await('gs_races:organize', false, base)
-    if okPos and veh then
-        SetEntityCoords(veh, pos.x, pos.y, pos.z, false, false, false, false)
-        SetEntityHeading(veh, pos.w)
-        SetVehicleOnGroundProperly(veh)
+    local line = startLine(circuitId)
+    local gps = AddBlipForCoord(line.x, line.y, line.z)
+    SetBlipSprite(gps, 38) SetBlipColour(gps, 5) SetBlipRoute(gps, true) SetBlipRouteColour(gps, 5)
+    BeginTextCommandSetBlipName('STRING') AddTextComponentSubstringPlayerName('Ligne de départ') EndTextCommandSetBlipName(gps)
+    local label = Config.Circuits[circuitId].label or 'Course'
+    local shown
+    local function ui(near)
+        if shown == near then return end
+        shown = near
+        lib.showTextUI(near and ('[E] Lancer « %s » · [X] Annuler'):format(label) or 'Rejoins la ligne de départ (GPS) · [X] Annuler',
+            { position = 'bottom-center', icon = 'flag-checkered' })
     end
-    FreezeEntityPosition(ent, false)
-    if okPos and not veh then -- voiture prêtée : le serveur nous met dedans
-        local t2 = GetGameTimer() + 5000
-        while not cache.vehicle and GetGameTimer() < t2 do Wait(100) end
-    end
-    DoScreenFadeIn(600)
-    if not okPos then
-        print(('[gs_races] placement refusé (%s) : %s'):format(tostring(circuitId), tostring(pos))) -- F8 : raison exacte
-        return notify(false, pos)
-    end
-    local okS, msgS = lib.callback.await('gs_races:start', false, circuitId, mode)
-    if not okS then print(('[gs_races] départ refusé (%s) : %s'):format(tostring(circuitId), tostring(msgS))) end
-    notify(okS, msgS)
-    if okS then return end
-    -- V12.63 (backtest : « parle à l'organisateur », bloqué sur la ligne) : sur la ligne, on peut relancer le départ sans
-    -- retourner voir l'organisateur (E), ou annuler (X : la voiture prêtée est rendue). 60 s.
-    local untilT = GetGameTimer() + 60000
-    lib.showTextUI('[E] Lancer le départ · [X] Annuler', { position = 'bottom-center', icon = 'flag-checkered' })
+    ui(false)
+    local untilT = GetGameTimer() + (Config.GoToLineSeconds or 300) * 1000
     while GetGameTimer() < untilT and not racing do
-        if IsControlJustReleased(0, 38) and not IsNuiFocused() then
-            okS, msgS = lib.callback.await('gs_races:start', false, circuitId, mode)
-            notify(okS, msgS)
-            if okS then break end
+        local me = GetEntityCoords(cache.ped)
+        local d = #(vec2(me.x, me.y) - vec2(line.x, line.y))
+        if d < 200.0 then
+            DrawMarker(1, line.x, line.y, line.z - 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Config.StartRadius * 1.4, Config.StartRadius * 1.4, 3.0,
+                255, 196, 0, 90, false, false, 2, false, nil, nil, false)
+        end
+        local near = d <= Config.StartRadius
+        ui(near)
+        if near then DisableControlAction(0, 86, true) end -- E au volant = klaxon : coupé sur la ligne
+        if near and (IsControlJustReleased(0, 38) or IsDisabledControlJustReleased(0, 86)) and not IsNuiFocused() then
+            if not cache.vehicle then
+                notify(false, 'Monte au volant pour lancer le départ.')
+            else
+                local okS, msgS = lib.callback.await('gs_races:start', false, circuitId, mode)
+                if not okS then print(('[gs_races] départ refusé (%s) : %s'):format(tostring(circuitId), tostring(msgS))) end
+                notify(okS, msgS)
+                if okS then break end
+            end
         elseif IsControlJustReleased(0, 73) and not IsNuiFocused() then
             lib.callback.await('gs_races:cancel', false)
             notify(true, 'Course annulée.')
             break
         end
-        Wait(0)
+        Wait(d < 200.0 and 0 or 250)
     end
+    if DoesBlipExist(gps) then RemoveBlip(gps) end
     lib.hideTextUI()
 end
 
@@ -141,13 +150,13 @@ local function vehicleMenu(c, mode)
             onSelect = function()
                 local ok, msg = lib.callback.await('gs_races:ticket', false, c.id, mode, 'req')
                 if not ok then return notify(false, msg) end
-                goToStart(c.id, mode, false)
+                CreateThread(function() goToStart(c.id, mode, false) end) -- V12.63 : hors du rappel du menu
             end }
         options[#options + 1] = { title = 'Avec ma ' .. c.vehicle, icon = 'car-side', description = 'Sois au volant de ce modèle, à côté de l\'organisateur',
             onSelect = function()
                 local ok, msg = lib.callback.await('gs_races:ticket', false, c.id, mode, nil)
                 if not ok then return notify(false, msg) end
-                goToStart(c.id, mode, true)
+                CreateThread(function() goToStart(c.id, mode, true) end) -- V12.63 : hors du rappel du menu
             end }
         lib.registerContext({ id = 'gs_races_vehicle', title = c.label .. ' · véhicule imposé', menu = 'gs_races_menu', options = options })
         return lib.showContext('gs_races_vehicle')
@@ -157,14 +166,14 @@ local function vehicleMenu(c, mode)
             onSelect = function()
                 local ok, msg = lib.callback.await('gs_races:ticket', false, c.id, mode, i)
                 if not ok then return notify(false, msg) end
-                goToStart(c.id, mode, false)
+                CreateThread(function() goToStart(c.id, mode, false) end) -- V12.63 : hors du rappel du menu
             end }
     end
     options[#options + 1] = { title = 'Avec ma voiture', icon = 'car-side', description = 'Sois au volant, à côté de l\'organisateur',
         onSelect = function()
             local ok, msg = lib.callback.await('gs_races:ticket', false, c.id, mode, nil)
             if not ok then return notify(false, msg) end
-            goToStart(c.id, mode, true)
+            CreateThread(function() goToStart(c.id, mode, true) end) -- V12.63 : hors du rappel du menu
         end }
     lib.registerContext({ id = 'gs_races_vehicle', title = c.label .. ' · véhicule', menu = 'gs_races_menu', options = options })
     lib.showContext('gs_races_vehicle')

@@ -33,3 +33,21 @@ AddEventHandler('onResourceStop', function(res)
     if res ~= GetCurrentResourceName() then return end
     for _, b in ipairs(blips) do if DoesBlipExist(b) then RemoveBlip(b) end end
 end)
+
+-- V12.63 · Variantes de gang des maps (F11 → Monde et lieux → Mappings installés → QG de gang) : seule la variante choisie
+-- reste chargée (RemoveIpl / RequestIpl sur les .ymap du groupe). Un groupe remis « comme installé » recharge tout.
+local appliedGangs = {}
+local function applyMapGangs(state)
+    state = type(state) == 'table' and state or {}
+    for group, prev in pairs(appliedGangs) do
+        if not state[group] then for _, v in ipairs(prev.ipls or {}) do RequestIpl(v.ipl) end end
+    end
+    for _, c in pairs(state) do
+        for _, v in ipairs(type(c) == 'table' and c.ipls or {}) do
+            if v.gang == c.gang then RequestIpl(v.ipl) elseif IsIplActive(v.ipl) then RemoveIpl(v.ipl) end
+        end
+    end
+    appliedGangs = state
+end
+AddStateBagChangeHandler('gsMapGangs', 'global', function(_, _, value) applyMapGangs(value) end)
+SetTimeout(5000, function() applyMapGangs(GlobalState.gsMapGangs) end)

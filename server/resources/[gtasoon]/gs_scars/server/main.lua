@@ -11,7 +11,7 @@ local function v3(c) return vec3(c.x + 0.0, c.y + 0.0, c.z + 0.0) end
 local function save()
     local keep = {}
     for _, s in pairs(Scars.list) do
-        if s.kind ~= 'memorial' then keep[#keep + 1] = { kind = s.kind, x = s.x, y = s.y, z = s.z, label = s.label, text = s.text, gang = s.gang, zone = s.zone, by = s.by, at = s.at } end
+        if s.kind ~= 'memorial' then keep[#keep + 1] = { kind = s.kind, x = s.x, y = s.y, z = s.z, label = s.label, text = s.text, gang = s.gang, zone = s.zone, by = s.by, at = s.at, cause = s.cause } end
     end
     SetResourceKvp('gs_scars', json.encode(keep))
 end
@@ -20,7 +20,7 @@ local function publish()
     local out = {}
     for id, s in pairs(Scars.list) do
         out[#out + 1] = { id = id, kind = s.kind, x = s.x, y = s.y, z = s.z, label = s.label, color = s.color,
-            n = s.n, shot = s.shot, auto = s.kind == 'plaque' and not (s.by and tostring(s.by):sub(1, 6) == 'staff:') or nil } -- V12.59
+            n = s.n, shot = s.shot, blade = s.blade, blunt = s.blunt, cause = s.cause, auto = s.kind == 'plaque' and not (s.by and tostring(s.by):sub(1, 6) == 'staff:') or nil } -- V12.59
     end
     GlobalState.gsScars = out
 end
@@ -59,6 +59,10 @@ for _, w in ipairs({ 'WEAPON_UNARMED', 'WEAPON_KNIFE', 'WEAPON_BAT', 'WEAPON_CRO
     NO_CASING[GetHashKey(w)] = true
 end
 
+local BLADE, BLUNT = {}, {}
+for _, w in ipairs({ 'WEAPON_KNIFE', 'WEAPON_MACHETE', 'WEAPON_SWITCHBLADE', 'WEAPON_DAGGER', 'WEAPON_BOTTLE', 'WEAPON_HATCHET', 'WEAPON_BATTLEAXE', 'WEAPON_STONE_HATCHET' }) do BLADE[GetHashKey(w)] = true end
+for _, w in ipairs({ 'WEAPON_BAT', 'WEAPON_CROWBAR', 'WEAPON_HAMMER', 'WEAPON_GOLFCLUB', 'WEAPON_NIGHTSTICK', 'WEAPON_WRENCH', 'WEAPON_POOLCUE', 'WEAPON_KNUCKLE' }) do BLUNT[GetHashKey(w)] = true end
+
 --- Quelqu'un tombe : traces au sol (fusionnées avec celles d'à côté : une flaque de plus par victime), un par joueur et
 --- par quart d'heure. V12.59 : sang + douilles si c'était par balle (avant : bougies et ours, incohérent après une fusillade).
 function Scars.fell(src)
@@ -70,15 +74,16 @@ function Scars.fell(src)
     local c = GetEntityCoords(ped)
     local cause = GetPedCauseOfDeath(ped)
     local shot = cause ~= 0 and not NO_CASING[cause] or nil
+    local blade, blunt = BLADE[cause] or nil, BLUNT[cause] or nil -- V12.63 : couteau ou batte au sol selon l'arme
     local id, s = near('memorial', c, Config.Memorial.merge)
     if s then
         s.at = now()
         s.n = math.min((s.n or 1) + 1, Config.Memorial.maxBlood)
-        s.shot = s.shot or shot
+        s.shot, s.blade, s.blunt = s.shot or shot, s.blade or blade, s.blunt or blunt
         publish()
         return id
     end
-    return (Scars.add('memorial', c, { label = 'Traces', n = 1, shot = shot }))
+    return (Scars.add('memorial', c, { label = 'Traces', n = 1, shot = shot, blade = blade, blunt = blunt }))
 end
 
 --- Braquage : vitrine brisée à réparer (sauf si déjà une vitrine brisée tout près)
@@ -112,7 +117,7 @@ function Scars.mural(zone, gang, label, center, color)
 end
 
 --- V11 · Lieux de mémoire : plaque (fusionnée avec une plaque du même genre à moins de 40 m : la date est mise à jour)
-function Scars.plaque(coords, text, by)
+function Scars.plaque(coords, text, by, cause)
     text = Security:Sanitize(text, Config.Plaques.maxLen)
     if not coords or not text or text == '' then return nil end
     coords = v3(coords)
@@ -125,12 +130,13 @@ function Scars.plaque(coords, text, by)
         end
     end
     if n >= Config.Plaques.max and oldest then Scars.list[oldest] = nil end
-    local id = Scars.add('plaque', coords, { text = text, label = ('%s · %s'):format(text, os.date('%d/%m/%Y')), by = by })
+    cause = type(cause) == 'string' and Config.Plaques.kindProps[cause] and cause or nil -- V12.63 : objets selon l'événement
+    local id = Scars.add('plaque', coords, { text = text, label = ('%s · %s'):format(text, os.date('%d/%m/%Y')), by = by, cause = cause })
     TriggerEvent('gs_scars:server:plaque', text, coords)
     return id
 end
 
-exports('Plaque', function(coords, text, by) return Scars.plaque(coords, text, by or 'ville') end) -- V12 : gs_memoire
+exports('Plaque', function(coords, text, by, cause) return Scars.plaque(coords, text, by or 'ville', cause) end) -- V12 : gs_memoire
 
 local function plaqueCmd(src, args)
     if src == 0 then return end
@@ -163,11 +169,11 @@ end)
 AddEventHandler('gs_wanted:server:crime', function(src, crimeType, coords)
     if Config.Glass.crimes[crimeType] then Scars.robbed(src, coords) end
     local what = Config.Plaques.crimes[crimeType]
-    if what and coords then Scars.plaque(coords, 'Ici, ' .. what, 'auto') end -- V11 : lieux de mémoire
+    if what and coords then Scars.plaque(coords, 'Ici, ' .. what, 'auto', 'heist') end -- V11 : lieux de mémoire
 end)
 AddEventHandler('gs_wanted:server:legend', function(src, name) -- V11 : fin d'une cavale légendaire (nom déjà public en jeu)
     local ped = GetPlayerPed(src)
-    if ped and ped ~= 0 and name then Scars.plaque(GetEntityCoords(ped), 'Ici s\'est achevée la cavale légendaire de ' .. tostring(name), 'auto') end
+    if ped and ped ~= 0 and name then Scars.plaque(GetEntityCoords(ped), 'Ici s\'est achevée la cavale légendaire de ' .. tostring(name), 'auto', 'legend') end
 end)
 AddEventHandler('gs_gangs:server:warWon', function(zone, gang, gangLabel, center, color)
     Scars.mural(zone, gang, 'Fresque des ' .. (gangLabel or gang), center, color)

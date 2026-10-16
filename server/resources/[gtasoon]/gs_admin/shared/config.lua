@@ -119,7 +119,7 @@ Config.Hunt = { prize = 1500, maxPrize = 5000, bigPrizeLevel = 4, model = 'prop_
 -- isolement dans une cellule du commissariat de Mission Row (mêmes cellules que la garde à vue de gs_police).
 Config.Scenes = {
     level = 3,
-    kidnap = { van = 'burrito3', thug = 'g_m_m_chicold_01', maxSeconds = 45 },
+    kidnap = { van = 'speedo', thug = 'g_m_m_chicold_01', maxSeconds = 45 }, -- burrito3 : remplacé par un mod importé au handling illisible (crash)
     arrest = { cop = 's_m_y_cop_01', maxSeconds = 40, minutes = 5,
         cell = { coords = vec3(459.9, -994.3, 24.91), radius = 6.0, release = vec3(434.1, -981.9, 30.71) } },
 }

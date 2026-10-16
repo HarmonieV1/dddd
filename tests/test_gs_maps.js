@@ -380,6 +380,19 @@ fs.rmSync(tmp, { recursive: true, force: true });
     && b.some((x) => x.x === 337.97) && b.some((x) => x.x === -1542.15) && b.some((x) => x.x === 134.37));
 }
 
+// V12.63 · Variantes de gang : même nom sans le gang = même QG ; position = centre des objets
+{
+  const v = M.gangVariantsOf([
+    { file: 'patoche_gang2_hq1_vagos.ymap', entities: [[100, 200, 30, 1], [102, 202, 30, 2]] },
+    { file: 'patoche_gang2_hq1_ballas.ymap', entities: [[100, 200, 30, 1]] },
+    { file: 'patoche_gang2_hq2_vagos.ymap', entities: [] },
+    { file: 'patoche_gang2_props.ymap', entities: [[1, 1, 1, 1]] },
+  ]);
+  check('variantes de gang : 3 trouvées (fichier sans gang ignoré)', v.length === 3);
+  check('variantes de gang : vagos et ballas du même QG dans le même groupe', v[0].group === v[1].group && v[0].group !== v[2].group);
+  check('variantes de gang : nom d\'IPL sans extension, gang et centre', v[0].ipl === 'patoche_gang2_hq1_vagos' && v[1].gang === 'ballas' && v[0].x === 101 && v[0].y === 201);
+}
+
 pendingTrunc.then(() => {
   console.log(`lecteur de maps : ${passed} réussis, ${failed} échoués`);
   if (failed) process.exit(1);

@@ -173,6 +173,27 @@ function walk(dir, out = []) {
   return out;
 }
 
+// V12.63 · Variantes de gang (backtest : « deux fois les mappings Vagos de Patoche ») : les .ymap dont le nom contient un gang
+// (ex. …_vagos.ymap / …_ballas.ymap) forment un groupe (même nom sans le gang). Le staff choisit le gang d'un groupe dans F11 :
+// les autres variantes sont retirées chez chaque joueur (RemoveIpl), la choisie chargée (RequestIpl).
+const GANG_WORDS = [['ballas', 'ballas'], ['vagos', 'vagos'], ['families', 'families'], ['famillies', 'families'], ['family', 'families'],
+  ['marabunta', 'marabunta'], ['aztecas', 'aztecas'], ['azteca', 'aztecas'], ['triads', 'triads'], ['cartel', 'cartel'], ['lostmc', 'lost'], ['_lost', 'lost']];
+function gangVariantsOf(ymaps) {
+  const out = [];
+  for (const y of ymaps) {
+    const base = y.file.toLowerCase().replace(/\.ymap$/, '');
+    const hit = GANG_WORDS.find(([w]) => base.includes(w));
+    if (!hit) continue;
+    const group = base.replace(hit[0], '#').replace(/[_\-.]+/g, '_');
+    let x = 0, yy = 0, z = 0;
+    for (const e of y.entities) { x += e[0]; yy += e[1]; z += e[2]; }
+    const n = y.entities.length || 1;
+    out.push({ ipl: base, gang: hit[1], group, x: Math.round(x / n), y: Math.round(yy / n), z: Math.round(z / n) });
+    if (out.length >= 60) break;
+  }
+  return out;
+}
+
 /** Lit une ressource map : ses lieux et les fichiers du jeu qu'elle remplace. */
 function scanResource(name, dir) {
   const files = walk(dir);
@@ -201,7 +222,8 @@ function scanResource(name, dir) {
   // qu'il les a bien et qu'il arrive à les charger (F11 → Mappings installés → Contrôler). Sans eux : bâtiment invisible.
   const models = [];
   for (const y of ymaps) for (const e of y.entities) if (own.has(e[3]) && !models.includes(e[3]) && models.length < 200) models.push(e[3]);
-  return { name, label: labelOf(name), places: placesOf(ymaps, name), ymaps: ymaps.length, unreadable, assets, heavy, streamed, models, ownModels: own.size };
+  return { name, label: labelOf(name), places: placesOf(ymaps, name), ymaps: ymaps.length, unreadable, assets, heavy, streamed, models, ownModels: own.size,
+    gangVariants: gangVariantsOf(ymaps), ymapFiles: /gang/i.test(name) ? ymaps.map((y) => y.file).slice(0, 80) : undefined }; // V12.63
 }
 
 // V12.15 : vrais noms des maps installées (menu F11 et blips), au lieu du nom de fichier du mod
@@ -720,7 +742,7 @@ function applyFusions(maps, fusionDir) {
   return written;
 }
 
-if (typeof module !== 'undefined' && module.exports) module.exports = { keptOf, relaunchOrder, orderSatisfied, KEEP_ON_CONFLICT, cleanName, deleteMapsOnDisk, pruneFusions, disableInCfg, inflateRsc7, entitiesOf, memoryMB, memorySplit, pagesSize, isVanillaName, placesOf, scanResource, conflictsOf, scanAll, labelOf, mergeOcclusion, applyFusions, RETIRED_MAPS, RETIRED_PATTERNS, RESTORED_MAPS, retiredReason, retiredLabel, readRetiredList, deleteCompanionsOnDisk, retireMap, removeCfgLines, activeEnsures, publicBlips, PUBLIC, joaat, ACTIVITY, activityOf, rscTruncated, truncatedFiles, _setLuaFs: (f) => { luaFs = f; } }; // tests Node seulement
+if (typeof module !== 'undefined' && module.exports) module.exports = { gangVariantsOf, keptOf, relaunchOrder, orderSatisfied, KEEP_ON_CONFLICT, cleanName, deleteMapsOnDisk, pruneFusions, disableInCfg, inflateRsc7, entitiesOf, memoryMB, memorySplit, pagesSize, isVanillaName, placesOf, scanResource, conflictsOf, scanAll, labelOf, mergeOcclusion, applyFusions, RETIRED_MAPS, RETIRED_PATTERNS, RESTORED_MAPS, retiredReason, retiredLabel, readRetiredList, deleteCompanionsOnDisk, retireMap, removeCfgLines, activeEnsures, publicBlips, PUBLIC, joaat, ACTIVITY, activityOf, rscTruncated, truncatedFiles, _setLuaFs: (f) => { luaFs = f; } }; // tests Node seulement
 
 if (typeof GetCurrentResourceName === 'function') {
   const self = GetCurrentResourceName();

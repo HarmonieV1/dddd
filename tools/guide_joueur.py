@@ -284,7 +284,7 @@ def build():
     s += [Paragraph('Les commandes utiles', H3)]
     cmds = [['Commande', 'Ce qu\'elle fait'],
             ['/quefaire', 'Tout ce qui se passe maintenant en ville, avec le GPS (aussi dans le téléphone)'],
-            ['/vue', 'Vue d\'ensemble : la caméra tourne autour de ton personnage (molette : distance), aussi W → Moi'],
+            ['C ou /vue', 'Vue d\'ensemble : la caméra tourne autour de ton personnage, qui reste immobile (molette : distance ; rappuie pour quitter)'],
             ['/rdv', 'Le programme des rendez-vous de la semaine'],
             ['/factures', 'Payer tes factures et amendes'],
             ['/recap · /reputation', 'Ton récap du mois · tes trois réputations'],
@@ -637,7 +637,10 @@ def build():
                  ['Fleeca Legion Square (3 coffres)', '4', '2 500 à 4 200 $ par coffre', '1 h 30'],
                  ['Gros coup en duo : Fleeca (pirate + conducteur)', '4', '9 000 à 14 000 $, partagés 50/50', '2 h']],
                 [62 * mm, 28 * mm, 55 * mm, 35 * mm], font=8)]
-    s += bullets(['Butin +15 % la nuit, +20 % pendant une tempête ou le brouillard, +15 % dans ton territoire.',
+    s += bullets(['<b>Comment</b> : aucun objet spécial. Une <b>arme en main</b> (Ammu-Nation avec le permis, ou marché noir), '
+                  'puis <b>Alt</b> (ciblage) sur la caisse, la vitrine ou le coffre → « Braquer la caisse » / « Briser la vitrine » / « Forcer le coffre ». '
+                  'Sans assez de policiers en service (colonne ci-dessus), le braquage est refusé.',
+                  'Butin +15 % la nuit, +20 % pendant une tempête ou le brouillard, +15 % dans ton territoire.',
                   '<b>Braquage solo</b> : vise un caissier (supérette) ou un guichetier (6 agences Fleeca) : le braquage démarre seul. '
                   'L\'argent tombe en sacs sur le comptoir. Caisse : 280-650 $ ; guichet : 550-1 100 $ ; racket d\'un passant : 25-140 $.',
                   '<b>La peur</b> : plus tu cries (²), plus la victime cède vite. Si tu baisses ton arme, elle s\'enfuit et appelle la police.',

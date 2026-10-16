@@ -21,15 +21,24 @@ local function build(s)
     local c = vec3(s.x, s.y, s.z)
     local list = s.kind == 'glass' and Config.Glass.props
         or (s.kind == 'plaque' and not s.auto and Config.Plaques.props) -- V12.59 : plaque automatique = pas de couronne ni de bougie
-        or (s.kind == 'memorial' and s.shot and Config.Memorial.shotProps) or {} -- V12.59 : douilles seulement par balle
+        or (s.kind == 'plaque' and s.cause and Config.Plaques.kindProps[s.cause]) -- V12.63 : objets selon l'événement
+        or {}
+    if s.kind == 'memorial' then -- V12.63 : douilles (par balle), couteau (arme blanche) ou batte (coup) au sol
+        list = {}
+        for _, m in ipairs(s.shot and Config.Memorial.shotProps or {}) do list[#list + 1] = m end
+        for _, m in ipairs(s.blade and Config.Memorial.bladeProps or {}) do list[#list + 1] = m end
+        for _, m in ipairs(s.blunt and Config.Memorial.bluntProps or {}) do list[#list + 1] = m end
+    end
     for i, m in ipairs(list) do
         local a = (i / #list) * math.pi * 2
         local r = s.kind == 'glass' and 2.2 or (s.kind == 'memorial' and 0.6 or 0.8)
         ents[#ents + 1] = place(m, c, math.cos(a) * r, math.sin(a) * r, math.deg(a))
     end
-    if s.kind == 'memorial' then -- V12.59 : une flaque de sang par victime tombée ici (au sol, autour du point)
+    local blood = s.kind == 'memorial' and math.max(1, math.min(s.n or 1, Config.Memorial.maxBlood))
+        or (s.kind == 'plaque' and s.cause and Config.Plaques.kindBlood[s.cause] and 1) or 0 -- V12.63 : tache discrète (lieu de crimes)
+    if blood > 0 then -- V12.59 : une flaque de sang par victime tombée ici (au sol, autour du point)
         local list2 = {}
-        for i = 1, math.max(1, math.min(s.n or 1, Config.Memorial.maxBlood)) do
+        for i = 1, blood do
             local a, r = (i * 2.4), (i == 1 and 0.0 or 0.6 + i * 0.35)
             local x, y = c.x + math.cos(a) * r, c.y + math.sin(a) * r
             local found, gz = GetGroundZFor_3dCoord(x, y, c.z + 1.0, false)
@@ -45,7 +54,8 @@ local function build(s)
             args = { s.id }, prompt = 'Réparer la vitrine (ouvrier de la ville)', reach = 3.0, snap = true })
     end
     if s.kind == 'plaque' then -- V11 : lieux de mémoire, un passant raconte
-        exports.gs_markers:Add('gs_scars:' .. s.id, { coords = c, style = 'info', label = 'Lieu de mémoire', event = 'gs_scars:client:read',
+        -- V12.63 (backtest : « des blips au lieu d'objets ») : plus d'icône flottante, seulement « [E] Lire la plaque » de près
+        exports.gs_markers:Add('gs_scars:' .. s.id, { coords = c, style = 'hidden', event = 'gs_scars:client:read',
             args = { s.id }, prompt = 'Lire la plaque', reach = 2.5, snap = true })
     end
     return ents

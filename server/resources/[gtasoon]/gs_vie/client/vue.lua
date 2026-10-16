@@ -2,7 +2,7 @@
 -- vol libre »). Caméra qui tourne AUTOUR de son propre personnage : souris pour tourner, molette pour s'éloigner (1,5 à
 -- 8 m), jamais à travers un mur (la caméra s'arrête devant l'obstacle), jamais loin du perso : ce n'est pas un vol libre.
 -- Le perso ne bouge pas pendant la vue (pas de tir ni de déplacement) ; les emotes (/e) restent possibles.
--- /vue, menu radial (W) → Moi → Vue d'ensemble, ou une touche au choix (Paramètres → Raccourcis → FiveM → « Vue d'ensemble »).
+-- /vue, touche C (V12.63, modifiable : Paramètres → Raccourcis → FiveM → « Vue d'ensemble »), menu radial (W) → Moi → Vue d'ensemble.
 -- Sortie : même commande / touche, Retour arrière ou Échap. Coupée d'office si on meurt, monte en véhicule ou est menotté.
 local MIN, MAX, STEP = 1.5, 8.0, 0.5
 local active = false
@@ -20,7 +20,7 @@ end
 
 local function start()
     if active then active = false return end -- même commande = sortir (la boucle détruit la caméra)
-    if IsNuiFocused() then return end
+    if IsNuiFocused() or cache.vehicle then return end -- V12.63 : C en voiture = regarder derrière (rien à signaler)
     if blocked() then return lib.notify({ description = 'Vue d\'ensemble impossible maintenant.', type = 'error' }) end
     active = true
     local ped = cache.ped
@@ -59,6 +59,8 @@ local function start()
 end
 
 RegisterCommand('vue', start, false)
-RegisterKeyMapping('vue', 'Vue d\'ensemble (caméra autour de son perso)', 'keyboard', '') -- touche au choix du joueur
+-- V12.63 (backtest : « F6 = caméra mais le perso en vol libre ») : F6 reste le menu des métiers ; le vol libre sur F6 venait du
+-- raccourci « NoClip » de txAdmin posé sur F6 dans les réglages FiveM du compte. La vue d'ensemble (perso immobile) a sa touche : C.
+RegisterKeyMapping('vue', 'Vue d\'ensemble (caméra autour de son perso)', 'keyboard', 'C')
 TriggerEvent('chat:addSuggestion', '/vue', 'Caméra autour de ton perso (molette : distance), rappuie pour quitter')
 exports('ToggleView', start)

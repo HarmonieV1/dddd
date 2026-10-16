@@ -396,6 +396,14 @@ Résumé très condensé (le détail complet est dans `docs/ROADMAP.md`, `docs/F
   neige (gs_weather `snow`, chance 0, XMAS ajouté aux transitions), effets « sur moi » d'un instant (particules réseau).
   Branding : patches ox_lib (ombre sm = contour violet, titres en dégradé, cadre du titre, CSS des fenêtres Mantine) et
   ox_inventory (CSS), F10 bordé comme les Lives. Tests : test_gs_admin (262).
+  **Retours du backtest (fin de soirée)** : courses sans téléportation (voiture prêtée livrée sur la route de l'organisateur,
+  `Config.LoanerSpawnRadius`, GPS + [E] sur la ligne, `Config.GoToLineSeconds`, trajet lancé hors du rappel du menu) ; mises en
+  scène refaites (plus de conduite IA, `reach` place le PNJ s'il n'arrive pas, camionnette `speedo` : le `burrito3` est remplacé
+  par un mod importé au handling illisible) ; vue d'ensemble sur C (F6 en vol libre = raccourci txAdmin « NoClip » du compte) ;
+  `Config.Fugitive.label` (« Cavale · legendWall » dans Déplacer un point) ; affiches de cavale dessinées en papier, arrachage à
+  plat (`InRangeFlat`) ; gs_scars : couteau / batte selon l'arme, plaques sans icône (`style = 'hidden'`) avec objets selon
+  l'événement (`Config.Plaques.kindProps`, cause transmise par gs_wanted et gs_memoire) ; variantes de gang des maps
+  (`gangVariantsOf` dans maps.js, `Actions.mapgang`, GlobalState.gsMapGangs, RemoveIpl / RequestIpl dans client/mapblips.lua).
 - **V12.62** (15/10/2026, session de secours) — propositions choisies + relecture complète du gros patch avant le backtest :
   (1) **Lives** : ▦ grille, « ⇢ TP » (action `goto` de gs_admin), **replay 30 s** (n° 137) : tant qu'un ticket est ouvert,
   20 images (1,5 s) de l'auteur et du joueur nommé (« /report 12 … », gs_admin `ReportedPlayers`) gardées EN MÉMOIRE, effacées à

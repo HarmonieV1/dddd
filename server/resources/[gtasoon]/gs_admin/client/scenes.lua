@@ -57,17 +57,6 @@ local function leaveVehicle(ped)
     end
 end
 
---- Point de route entre `minD` et 60 m du joueur (camionnette), ou nil
-local function roadNear(pos, minD)
-    for i = 1, 25 do
-        local ok, node, heading = GetNthClosestVehicleNodeWithHeading(pos.x, pos.y, pos.z, i, 1, 3.0, 0)
-        if ok then
-            local d = #(vec3(node.x, node.y, node.z) - pos)
-            if d >= minD and d <= 60.0 then return node, heading end
-        end
-    end
-end
-
 local function blackOut(text)
     caption(text, 3500)
     DoScreenFadeOut(2500)
@@ -75,93 +64,116 @@ local function blackOut(text)
     while not IsScreenFadedOut() and GetGameTimer() < t do Wait(50) end
 end
 
+--- Sol sous un point (ou la hauteur du joueur si le sol n'est pas chargé)
+local function groundAt(c, fallbackZ)
+    local found, gz = GetGroundZFor_3dCoord(c.x, c.y, c.z + 3.0, false)
+    return (found and math.abs(gz - fallbackZ) < 4.0) and gz or fallbackZ
+end
+
+--- Amène `who` à côté de `ped` : à pied s'il y arrive en `ms`, sinon placé directement (jamais bloqué par l'IA)
+local function reach(who, ped, ms, run)
+    TaskGoToEntity(who, ped, ms, 1.0, run and 3.0 or 2.0, 1073741824, 0)
+    local t = GetGameTimer() + ms
+    while GetGameTimer() < t and #(GetEntityCoords(who) - GetEntityCoords(ped)) > 1.8 do Wait(100) end
+    if #(GetEntityCoords(who) - GetEntityCoords(ped)) > 1.8 then
+        local c = GetOffsetFromEntityInWorldCoords(ped, 0.0, 1.1, 0.0)
+        SetEntityCoords(who, c.x, c.y, c.z - 1.0, false, false, false, false)
+    end
+    ClearPedTasks(who)
+    TaskTurnPedToFaceEntity(who, ped, 800)
+    Wait(800)
+end
+
 -- Enlèvement -------------------------------------------------------------------------------------------------------------
+-- V12.63 (backtest : scène buguée) : plus de conduite IA jusqu'au joueur. La camionnette apparaît sur la route la plus
+-- proche (sinon juste à côté), un inconnu en descend à pied, le joueur lève les mains, fondu, il est assis à l'arrière,
+-- la camionnette repart (balade simple de l'IA), écran noir.
 local function kidnap(cfg)
     local ped = cache.ped
     leaveVehicle(ped)
     local start = GetEntityCoords(ped)
     local vanH, thugH = loadModel(cfg.van), loadModel(cfg.thug)
-    local node, heading = roadNear(start, 20.0)
-    if not (vanH and thugH and node) then -- pas de route (intérieur…) : le sac sur la tête directement
-        SetPedToRagdoll(ped, 2500, 2500, 0, false, false, false)
+    if not (vanH and thugH) then
+        SetPedToRagdoll(ped, 2000, 2000, 0, false, false, false)
         blackOut('Un sac sur la tête… tout devient noir.')
         return
     end
-    local van = CreateVehicle(vanH, node.x, node.y, node.z + 0.5, heading, true, false)
+    local okN, node, heading = GetClosestVehicleNodeWithHeading(start.x, start.y, start.z, 1, 3.0, 0)
+    local at, h
+    if okN and #(vec3(node.x, node.y, node.z) - start) <= 25.0 then
+        at, h = vec3(node.x, node.y, node.z), heading
+    else
+        local side = GetOffsetFromEntityInWorldCoords(ped, 4.0, 0.0, 0.0)
+        at, h = vec3(side.x, side.y, groundAt(side, start.z - 1.0)), GetEntityHeading(ped)
+    end
+    local van = CreateVehicle(vanH, at.x, at.y, at.z + 0.3, h, true, false)
     SetModelAsNoLongerNeeded(vanH)
+    if not DoesEntityExist(van) then blackOut('Un sac sur la tête… tout devient noir.') return end
     SetVehicleOnGroundProperly(van)
     SetVehicleColours(van, 0, 0)
-    SetVehicleDoorsLocked(van, 1)
+    SetVehicleEngineOn(van, true, true, false)
     local driver = CreatePedInsideVehicle(van, 4, thugH, -1, true, false)
-    local thug = CreatePedInsideVehicle(van, 4, thugH, 0, true, false)
+    local door = GetOffsetFromEntityInWorldCoords(van, 1.6, -1.0, 0.0)
+    local thug = CreatePed(4, thugH, door.x, door.y, groundAt(door, at.z), h, true, false)
     SetModelAsNoLongerNeeded(thugH)
     for _, p in ipairs({ driver, thug }) do
-        SetBlockingOfNonTemporaryEvents(p, true) SetPedKeepTask(p, true) SetEntityInvincible(p, true)
-        SetPedComponentVariation(p, 0, 0, 0, 0)
+        if DoesEntityExist(p) then SetBlockingOfNonTemporaryEvents(p, true) SetPedKeepTask(p, true) SetEntityInvincible(p, true) end
     end
     register({ van, driver, thug })
-    -- la camionnette arrive à hauteur du joueur
-    TaskVehicleDriveToCoord(driver, van, start.x, start.y, start.z, 14.0, 0, vanH, 786603, 7.0, true)
-    local t = GetGameTimer() + 9000
-    while GetGameTimer() < t and #(GetEntityCoords(van) - GetEntityCoords(ped)) > 9.0 do Wait(150) end
-    TaskVehicleTempAction(driver, van, 27, 3000)
-    Wait(700)
     caption('Une camionnette noire s\'arrête net…', 2500)
-    TaskLeaveVehicle(thug, van, 256)
-    Wait(1300)
-    TaskGoToEntity(thug, ped, 6000, 1.0, 3.0, 1073741824, 0)
-    t = GetGameTimer() + 6000
-    while GetGameTimer() < t and #(GetEntityCoords(thug) - GetEntityCoords(ped)) > 1.6 do Wait(100) end
-    ClearPedTasksImmediately(ped)
-    anim(ped, 'random@arrests@busted', 'idle_a', 1, 2500) -- mains sur la tête
-    TaskTurnPedToFaceEntity(thug, ped, 1000)
+    SetVehicleDoorOpen(van, 2, false, false) SetVehicleDoorOpen(van, 3, false, false)
     Wait(800)
-    anim(thug, 'mp_arresting', 'a_uncuff', 0, 2000)
+    if DoesEntityExist(thug) then reach(thug, ped, 5000, true) end
+    ClearPedTasksImmediately(ped)
+    TaskTurnPedToFaceEntity(ped, thug, 600)
+    Wait(600)
+    anim(ped, 'random@arrests@busted', 'idle_a', 1, -1) -- mains sur la tête
+    if DoesEntityExist(thug) then anim(thug, 'mp_arresting', 'a_uncuff', 0, 2500) end
     caption('« Monte. Sans faire d\'histoires. »', 2500)
-    Wait(2200)
-    DoScreenFadeOut(700)
-    Wait(800)
+    Wait(2500)
+    DoScreenFadeOut(600)
+    Wait(700)
     ClearPedTasksImmediately(ped)
-    TaskWarpPedIntoVehicle(ped, van, IsVehicleSeatFree(van, 1) and 1 or 2)
-    TaskWarpPedIntoVehicle(thug, van, IsVehicleSeatFree(van, 2) and 2 or 0)
-    Wait(300)
-    SetVehicleDoorsShut(van, false)
-    TaskVehicleDriveWander(driver, van, 28.0, 786603)
-    DoScreenFadeIn(700)
-    Wait(4500)
+    if DoesEntityExist(van) and DoesEntityExist(driver) then
+        SetVehicleDoorsShut(van, true)
+        TaskWarpPedIntoVehicle(ped, van, IsVehicleSeatFree(van, 2) and 2 or 1)
+        if DoesEntityExist(thug) then TaskWarpPedIntoVehicle(thug, van, 0) end
+        Wait(400)
+        TaskVehicleDriveWander(driver, van, 22.0, 786603)
+        DoScreenFadeIn(600)
+        Wait(4500)
+    end
     blackOut('Un sac sur la tête… tout devient noir.')
 end
 
 -- Arrestation par un policier PNJ --------------------------------------------------------------------------------------------
+-- V12.63 (backtest : scène buguée) : le policier part de 8 m derrière ; s'il n'arrive pas (obstacle), il est placé derrière le
+-- joueur. Plaquage (chute), menottes (animation à deux), puis fondu → cellule.
 local function arrest(cfg)
     local ped = cache.ped
     leaveVehicle(ped)
     local start = GetEntityCoords(ped)
     local copH = loadModel(cfg.cop)
     if not copH then blackOut('Des menottes claquent… direction le poste.') return end
-    -- il arrive de derrière, à 15 m (sinon à côté si le sol n'est pas trouvé)
-    local back = start - GetEntityForwardVector(ped) * 15.0
-    local found, gz = GetGroundZFor_3dCoord(back.x, back.y, back.z + 4.0, false)
-    if not found or math.abs(gz - start.z) > 4.0 then back, gz = start + vec3(4.0, 0.0, 0.0), start.z - 1.0 end
-    local cop = CreatePed(6, copH, back.x, back.y, gz, GetHeadingFromVector_2d(start.x - back.x, start.y - back.y), true, false)
+    local back = GetOffsetFromEntityInWorldCoords(ped, 0.0, -8.0, 0.0)
+    local cop = CreatePed(6, copH, back.x, back.y, groundAt(back, start.z - 1.0), GetEntityHeading(ped), true, false)
     SetModelAsNoLongerNeeded(copH)
+    if not DoesEntityExist(cop) then blackOut('Des menottes claquent… direction le poste.') return end
     SetBlockingOfNonTemporaryEvents(cop, true) SetPedKeepTask(cop, true) SetEntityInvincible(cop, true)
     register({ cop })
     PlayPedAmbientSpeechNative(cop, 'SHOUT_THREATEN_PED', 'SPEECH_PARAMS_FORCE_SHOUTED')
     caption('« Police ! Plus un geste ! »', 3000)
-    TaskGoToEntity(cop, ped, 8000, 0.8, 3.0, 1073741824, 0)
-    local t = GetGameTimer() + 8000
-    while GetGameTimer() < t and #(GetEntityCoords(cop) - GetEntityCoords(ped)) > 1.8 do Wait(100) end
+    reach(cop, ped, 6000, true)
     -- plaquage
-    SetPedToRagdoll(ped, 2200, 2200, 0, false, false, false)
-    local dir = GetEntityCoords(ped) - GetEntityCoords(cop)
-    ApplyForceToEntity(ped, 1, dir.x * 2.0, dir.y * 2.0, 1.0, 0.0, 0.0, 0.0, 0, false, true, true, false, true)
-    Wait(2600)
+    SetPedToRagdoll(ped, 1500, 1500, 0, false, false, false)
+    Wait(1600)
+    local t = GetGameTimer() + 3000
+    while IsPedRagdoll(ped) and GetGameTimer() < t do Wait(100) end
     -- menottes : le policier derrière le joueur, animation des deux
-    local h = GetEntityHeading(ped)
-    local behind = GetOffsetFromEntityInWorldCoords(ped, 0.0, -0.6, 0.0)
+    ClearPedTasksImmediately(ped)
+    local behind = GetOffsetFromEntityInWorldCoords(ped, 0.0, -0.75, 0.0)
     SetEntityCoords(cop, behind.x, behind.y, behind.z - 1.0, false, false, false, false)
-    SetEntityHeading(cop, h)
+    SetEntityHeading(cop, GetEntityHeading(ped))
     anim(cop, 'mp_arrest_paired', 'cop_p2_back_right', 0, 3600)
     anim(ped, 'mp_arrest_paired', 'crook_p2_back_right', 0, 3600)
     caption('« Tu as le droit de garder le silence. »', 3500)
