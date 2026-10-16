@@ -206,7 +206,7 @@ function Wanted.report(src, crimeType, coords, opts)
         local okL, listeners = pcall(function() return exports.gs_gangs:ScannerListeners() end)
         for _, s in ipairs(okL and listeners or {}) do TriggerClientEvent('gs_wanted:client:dispatch', s, report) end
         if #cops < Config.NpcPolice.minCops and Wanted.npcAllowed(crimeType) then
-            TriggerClientEvent('gs_wanted:client:npcPolice', src, math.min(5, Wanted.npcStars(crime.heat) + Wanted.city('NpcBonus', coords, 0) + Wanted.saturdayBonus(crimeType)))
+            Wanted.sendNpc(src, math.min(5, Wanted.npcStars(crime.heat) + Wanted.city('NpcBonus', coords, 0) + Wanted.saturdayBonus(crimeType)))
         end
     end)
     return report
@@ -333,7 +333,7 @@ function Wanted.spawnUnits(src, stars, positions)
                     for seat = -1, 0 do
                         local p = CreatePedInsideVehicle(veh, 6, GetHashKey(county and U.peds.county or U.peds.city), seat, true, true)
                         if waitEntity(p) then -- V12.62 : agent vraiment créé avant de l'équiper
-                            GiveWeaponToPed(p, GetHashKey(U.weapons[math.min(3, math.max(1, tonumber(stars) or 1))]), 120, false, true)
+                            GiveWeaponToPed(p, GetHashKey(U.weapons[math.min(#U.weapons, math.max(1, tonumber(stars) or 1))]), 120, false, true)
                             SetPedArmour(p, U.armour)
                             u.peds[#u.peds + 1] = p
                         end
@@ -350,6 +350,99 @@ function Wanted.spawnUnits(src, stars, positions)
     return out
 end
 
+-- V12.63 · Police IA graduée par étoiles (backtest du 16/10) ------------------------------------------------------------
+-- Le serveur retient le niveau de chaque joueur (npcLevel). 1 ★ : négociation possible (Wanted.negotiate) ; une menace sur un
+-- agent ou un refus = une étoile de plus (Wanted.escalate, chaleur remontée au palier) ; un accord = la police se retire.
+Wanted.npcLevel, Wanted.escalatedAt = {}, {}
+function Wanted.sendNpc(src, stars)
+    stars = math.max(1, math.min(5, math.floor(tonumber(stars) or 1)))
+    Wanted.npcLevel[src] = stars
+    TriggerClientEvent('gs_wanted:client:npcPolice', src, stars)
+end
+
+--- Chaleur minimale qui donne `stars` étoiles (paliers de Config.NpcPolice.stars)
+function Wanted.heatFor(stars)
+    if stars <= 1 then return 1 end
+    local s = Config.NpcPolice.stars[stars - 1]
+    return math.min(Config.Heat.max, s and (s.heat + 1) or Config.Heat.max)
+end
+
+function Wanted.escalate(src)
+    local cur = Wanted.npcLevel[src]
+    if not cur then return false end
+    local nextL = math.min(5, cur + 1)
+    local need = Wanted.heatFor(nextL)
+    if (Wanted.heat[src] or 0) < need then
+        Wanted.heat[src], Wanted.lastReport[src] = need, os.time()
+        pushHeat(src)
+    end
+    Wanted.sendNpc(src, nextL)
+    return true, nextL
+end
+RegisterNetEvent('gs_wanted:server:escalate', function()
+    local src = source
+    if not Security:RateLimit(src, 'gs_wanted:escalate', 1, 15000) then return end
+    Wanted.escalate(src)
+end)
+
+--- La police se retire (accord conclu) : plus d'étoiles, patrouilles reprises 10 s plus tard
+function Wanted.standDown(src)
+    Wanted.npcLevel[src] = nil
+    Wanted.clearHeat(src)
+    TriggerClientEvent('gs_wanted:client:npcStandDown', src)
+    SetTimeout(10000, function() Wanted.clearUnits(src) end)
+end
+
+local function nearUnit(src, range)
+    local ped = GetPlayerPed(src)
+    if not ped or ped == 0 then return false end
+    local me = GetEntityCoords(ped)
+    for _, u in ipairs(Wanted.units[src] or {}) do
+        if not u.heli then
+            for _, p in ipairs(u.peds) do if DoesEntityExist(p) and #(GetEntityCoords(p) - me) <= range then return true end end
+        end
+    end
+    return false
+end
+
+--- Négociation à 1 ★ : 'surrender' (amende), 'ransom' (pot-de-vin pour filer), 'hostage' (otage contre une fuite), 'refuse'
+function Wanted.negotiate(src, choice, hostageNet)
+    local N = Config.NpcPolice.negotiate
+    if Wanted.npcLevel[src] ~= 1 then return false, 'Trop tard pour négocier : ils ne discutent plus.' end
+    if not nearUnit(src, N.reach) then return false, 'Approche-toi de l\'agent.' end
+    if choice == 'refuse' then
+        Wanted.escalate(src)
+        return true, 'Tu refuses de discuter : la police durcit le ton (2 ★).'
+    end
+    if choice == 'surrender' then
+        local fine = math.floor(N.surrender.base + (Wanted.heat[src] or 0) * N.surrender.perHeat)
+        if not Bridge:RemoveMoney(src, 'bank', fine, 'amende : reddition à la police') then Bridge:RemoveMoney(src, 'cash', fine, 'amende : reddition à la police') end
+        Wanted.standDown(src)
+        return true, ('Tu te rends sans histoire : amende de %d $, l\'affaire est classée.'):format(fine)
+    end
+    if choice == 'ransom' then
+        if not (Bridge:RemoveMoney(src, 'cash', N.ransom, 'arrangement avec un agent') or Bridge:RemoveMoney(src, 'bank', N.ransom, 'arrangement avec un agent')) then
+            return false, ('L\'agent veut %d $ : tu ne les as pas.'):format(N.ransom)
+        end
+        Wanted.standDown(src)
+        return true, ('L\'agent empoche %d $ et regarde ailleurs. File, vite.'):format(N.ransom)
+    end
+    if choice == 'hostage' then
+        local h = NetworkGetEntityFromNetworkId(math.tointeger(tonumber(hostageNet)) or 0)
+        local me = GetEntityCoords(GetPlayerPed(src))
+        if not h or h == 0 or not DoesEntityExist(h) or GetEntityType(h) ~= 1 or IsPedAPlayer(h) or #(GetEntityCoords(h) - me) > N.hostageReach then
+            return false, 'Il te faut un otage en joue, tout près de toi.'
+        end
+        Wanted.standDown(src)
+        return true, 'Marché conclu : l\'otage contre ta fuite. Libère-le et disparais.'
+    end
+    return false, 'Choix inconnu.'
+end
+lib.callback.register('gs_wanted:negotiate', function(src, choice, hostageNet)
+    if not Security:RateLimit(src, 'gs_wanted:negotiate', 3, 10000) then return false, 'Doucement.' end
+    return Wanted.negotiate(src, choice, hostageNet)
+end)
+
 lib.callback.register('gs_wanted:npcUnits', function(src, stars, positions)
     if not Security:RateLimit(src, 'gs_wanted:npcUnits', 2, 15000) then return {} end
     return Wanted.spawnUnits(src, stars, positions)
@@ -362,12 +455,13 @@ lib.addCommand('policeia', {
     restricted = 'group.admin',
 }, function(src, args)
     local stars = math.min(5, math.max(1, math.floor(tonumber(args.etoiles) or 2)))
-    TriggerClientEvent('gs_wanted:client:npcPolice', src, stars)
+    Wanted.sendNpc(src, stars)
 end)
 
 RegisterNetEvent('gs_wanted:server:npcClear', function()
     local src = source
     if not Security:RateLimit(src, 'gs_wanted:npcClear', 3, 10000) then return end
+    Wanted.npcLevel[src] = nil
     SetTimeout(15000, function() Wanted.clearUnits(src) end) -- le temps qu'ils repartent
 end)
 
@@ -391,7 +485,7 @@ CreateThread(function()
         end
     end
 end)
-AddEventHandler('playerDropped', function() Wanted.clearUnits(source) end)
+AddEventHandler('playerDropped', function() Wanted.clearUnits(source) Wanted.npcLevel[source] = nil end)
 
 -- Détections envoyées par le client (le client ne choisit que le type, le serveur vérifie) ------
 
@@ -442,6 +536,11 @@ local function onShot(src, silenced)
     if ped == 0 or GetSelectedPedWeapon(ped) == UNARMED or isPoliceOnDuty(src) then return end
     local coords = GetEntityCoords(ped)
     if Wanted.legalHunter(src, coords) then return end
+    -- V12.63 : tirer alors que la police IA négocie / interpelle (1 ou 2 ★) = elle passe au cran au-dessus
+    if Wanted.npcLevel[src] and Wanted.npcLevel[src] < 3 and (Wanted.escalatedAt[src] or 0) + 15 <= os.time() then
+        Wanted.escalatedAt[src] = os.time()
+        Wanted.escalate(src)
+    end
     local r = Wanted.report(src, 'gunshot', coords, { silenced = silenced == true, vehicle = GetVehiclePedIsIn(ped, false) })
     if not r and silenced ~= true then Wanted.alert('gunshot', coords) end
 end

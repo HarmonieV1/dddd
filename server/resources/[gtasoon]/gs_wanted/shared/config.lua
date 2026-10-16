@@ -111,7 +111,13 @@ Config.NpcPolice = {
     -- anti-triche des entités). 1 voiture par étoile (max `maxUnits`), 2 agents armés, gyrophares, poursuite.
     units = { maxUnits = 3, maxServer = 9, spawnDistance = 170.0, lifetime = 300, cooldown = 20,
         vehicles = { city = 'police', county = 'sheriff' }, peds = { city = 's_m_y_cop_01', county = 's_m_y_sheriff_01' },
-        weapons = { [1] = 'WEAPON_STUNGUN', [2] = 'WEAPON_PISTOL', [3] = 'WEAPON_PUMPSHOTGUN' }, armour = 50 },
+        -- V12.63 (backtest : « réduire l'agressivité ») : arme selon les étoiles. 1 ★ taser rangé (agents qui viennent NÉGOCIER),
+        -- 2 ★ taser (interpellation), 3 ★ pistolet (ils tirent), 4 ★ fusil à pompe, 5 ★ carabine.
+        weapons = { [1] = 'WEAPON_STUNGUN', [2] = 'WEAPON_STUNGUN', [3] = 'WEAPON_PISTOL', [4] = 'WEAPON_PUMPSHOTGUN', [5] = 'WEAPON_CARBINERIFLE' }, armour = 50 },
+    -- V12.63 · Police IA graduée : 1 ★ = un agent vient négocier (se rendre contre une amende, rançon pour qu'on te laisse filer,
+    -- ou l'otage contre une fuite) ; 2 ★ = ils interpellent au taser ; 3 ★ et plus = ils tirent. Viser, frapper ou tirer sur un
+    -- agent, ou refuser de négocier = une étoile de plus. `reach` : distance à l'agent pour négocier (vérifiée par le serveur).
+    negotiate = { reach = 10.0, hostageReach = 6.0, surrender = { base = 300, perHeat = 15 }, ransom = 1500 },
     -- V12.59 (backtest 15/10) : les patrouilles foncent vers le suspect tout de suite (avant : elles attendaient de le voir) ;
     -- elles abandonnent au-delà de `giveUp` m (on peut toujours les semer en mettant de la distance).
     track = { every = 1500, chase = 60.0, giveUp = 450.0, speed = 42.0, onFoot = 35.0 },

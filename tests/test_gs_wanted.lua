@@ -443,5 +443,53 @@ do
     check('fin de poursuite : hélico supprimé, plus de direct', not DoesEntityExist(heli.veh) and getExport('gs_wanted', 'LiveChase')() == nil)
 end
 
+-- V12.63 · Police IA graduée : 1 ★ négociation, escalade, accord = la police se retire
+do
+    clearPeds()
+    local me = W.players[1].pos
+    local cop
+    local function newCop() -- l'accord retire les patrouilles (entités supprimées) : un nouvel agent à 3 m
+        W.nextEntity = W.nextEntity + 1
+        cop = W.nextEntity
+        W.entities[cop] = { type = 1, pos = vec3(me.x + 3.0, me.y, me.z), health = 200 }
+        Wanted.units[1] = { { veh = cop, peds = { cop }, born = os.time() } }
+    end
+    newCop()
+    W.clientEvents = {}
+    Wanted.sendNpc(1, 1)
+    check('police IA : niveau retenu et envoyé au joueur', Wanted.npcLevel[1] == 1 and lastClientEvent('gs_wanted:client:npcPolice', 1) ~= nil)
+    Wanted.heat[1] = 5
+    W.players[1].money.cash, W.players[1].money.bank = 0, 0
+    local ok, msg = Wanted.negotiate(1, 'ransom')
+    check('négociation : rançon refusée sans l\'argent', not ok and msg:find('1500'))
+    W.players[1].money.cash = 2000
+    ok = Wanted.negotiate(1, 'ransom')
+    check('négociation : rançon payée = plus de chaleur, police retirée', ok and W.players[1].money.cash == 500 and not Wanted.heat[1] and Wanted.npcLevel[1] == nil
+        and lastClientEvent('gs_wanted:client:npcStandDown', 1) ~= nil)
+    newCop()
+    Wanted.sendNpc(1, 1)
+    ok = Wanted.negotiate(1, 'refuse')
+    check('négociation : refus = 2 ★ (chaleur remontée au palier)', ok and Wanted.npcLevel[1] == 2 and (Wanted.heat[1] or 0) >= Wanted.heatFor(2))
+    ok, msg = Wanted.negotiate(1, 'surrender')
+    check('négociation : impossible à 2 ★', not ok and msg:find('Trop tard'))
+    Wanted.escalate(1)
+    check('escalade : 3 ★ ensuite', Wanted.npcLevel[1] == 3 and (Wanted.heat[1] or 0) >= Wanted.heatFor(3))
+    Wanted.sendNpc(1, 1)
+    W.entities[cop].pos = vec3(me.x + 50.0, me.y, me.z)
+    check('négociation : loin de l\'agent = refusée', not Wanted.negotiate(1, 'surrender'))
+    W.entities[cop].pos = vec3(me.x + 3.0, me.y, me.z)
+    W.nextEntity = W.nextEntity + 1
+    local hostage = W.nextEntity
+    W.entities[hostage] = { type = 1, pos = vec3(me.x + 1.0, me.y, me.z), health = 200 }
+    check('négociation : otage en joue = fuite accordée', Wanted.negotiate(1, 'hostage', hostage) and Wanted.npcLevel[1] == nil)
+    newCop()
+    Wanted.sendNpc(1, 1)
+    W.players[1].money.bank = 5000
+    Wanted.heat[1] = 8
+    ok, msg = Wanted.negotiate(1, 'surrender')
+    check('négociation : se rendre = amende selon la chaleur, affaire classée', ok and W.players[1].money.bank == 5000 - (300 + 8 * 15) and not Wanted.heat[1])
+    Wanted.units[1] = nil
+end
+
 io.write(('\n%d réussis, %d échoués\n'):format(passed, failed))
 os.exit(failed == 0 and 0 or 1)

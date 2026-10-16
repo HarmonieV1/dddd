@@ -176,6 +176,13 @@ SESSIONS = [
         ('Placement (F11 → PNJ et objets posés, Déplacer un point, /builder) : viser un mur + [F] → l\'objet se colle dos au mur, face à la pièce ; viser un plafond + [F] → suspendu (caméra) ; viser le sol + [F] → posé', 'Staff', 3),
         ('Modifier / retirer : F11 → PNJ et objets posés → « Déplacer celui que je vise » / liste → Déplacer ou Retirer ; /builder → « Supprimer l\'objet visé » (un geste + confirmation)', 'Staff', 2),
     ]),
+    ('4p · V12.63 — supérette à plusieurs, police IA graduée (15 min)', [
+        ('Supérette à deux : A vise le caissier → braquage lancé ; B (armé) vise le même caissier → « Tu rejoins le braquage » ; la jauge PEUR est commune (« 2 braqueurs »), crier fait monter plus vite ; à 100 % : sacs au comptoir pour tous, les deux sont prévenus', '2', 3),
+        ('Supérette : un témoin à côté voit aussi le caissier mains en l\'air ; un complice qui baisse son arme lâche, l\'autre continue', '2', 2),
+        ('Vitrine brisée « [E] Réparer » : n\'apparaît plus pendant le braquage, seulement ~10 min après', '2', 2),
+        ('Police IA 1 ★ (/policeia 1, seul en ville) : un agent descend, s\'approche à ~5 m sans dégainer ; [E] Parler à l\'agent → Me rendre (amende) / 1 500 $ pour filer / l\'otage contre ta fuite (en visant un passant tout près) / Refuser (→ 2 ★)', 'Staff', 3),
+        ('Police IA : viser un agent à 1 ★, le frapper ou tirer → une étoile de plus ; 2 ★ = interpellation au taser ; 3 ★ = ils tirent ; accord conclu → plus d\'étoiles, les agents repartent', 'Staff', 3),
+    ]),
     ('5 · Obligatoire avant d\'ouvrir', [
         ('SAUVEGARDER-BDD.bat puis RESTAURER-BDD.bat sur un joueur ; redémarrage de 6 h : annonces 15 / 5 / 1 min', 'Staff', 3),
         ('Mode staff : vol libre / invisible SANS alerte anti-triche ; F10 tickets et sanctions ; carkill 2 fois → alerte', 'Staff', 3),

@@ -4,7 +4,28 @@
 local Security = exports.gs_security
 local Bridge   = exports.gs_bridge
 
-Stickup = { pending = {}, zoneCd = {}, playerCd = {}, hour = {}, day = {}, notices = {} } -- notices[zone] = avis en vitrine (V12.63)
+Stickup = { pending = {}, zoneCd = {}, playerCd = {}, hour = {}, day = {}, notices = {}, live = {} } -- notices[zone] = avis en vitrine (V12.63)
+
+-- V12.63 (backtest : « braquage de supérette à deux ultra bugué, pas synchronisé ») : un braquage de caisse / guichet est
+-- PARTAGÉ. Le premier qui vise le lance (signalement, cooldown) ; un complice armé qui vise la même caisse le REJOINT. La peur
+-- est commune (chaque complice qui vise et crie la fait monter, Stickup.aim), l'argent tombe une seule fois en sacs au
+-- comptoir pour tout le monde, chacun reçoit son cooldown. live[zone] = { kind, members = { [src] = { last } }, fear, aims, startAt }
+local function liveCount(l) local n = 0 for _ in pairs(l.members) do n = n + 1 end return n end
+function Stickup.publishLive()
+    local out = {}
+    for id, l in pairs(Stickup.live) do out[id] = { fear = math.floor(l.fear), n = liveCount(l) } end
+    GlobalState.gsStickups = out
+end
+local function leaveLive(src)
+    for id, l in pairs(Stickup.live) do
+        if l.members[src] then
+            l.members[src] = nil
+            if not next(l.members) then Stickup.live[id] = nil end
+            Stickup.publishLive()
+            return id
+        end
+    end
+end
 
 local UNARMED = GetHashKey('WEAPON_UNARMED')
 local function started(res) return GetResourceState(res) == 'started' end
@@ -90,7 +111,16 @@ lib.callback.register('gs_stickup:begin', function(src, kindName, zoneId)
         zone = Stickup.zones()[zoneId]
         if not zone or zone.kind ~= kindName then return false, 'Invalide.' end
         if not Security:InRange(src, zone.coords, kind.radius + 3.0) then return false, 'Trop loin.' end
+        local l = Stickup.live[zoneId]
+        if l then -- V12.63 : un complice rejoint le braquage en cours (pas de 2e signalement, même chrono)
+            l.members[src] = { last = GetGameTimer() }
+            Stickup.pending[src] = { kind = kindName, zone = zoneId, startAt = l.startAt, coords = coords, joined = true }
+            Stickup.publishLive()
+            return true, 'join'
+        end
         if (Stickup.zoneCd[zoneId] or 0) > now then return false, 'La caisse vient d\'être vidée, il n\'y a plus rien.' end
+        Stickup.live[zoneId] = { kind = kindName, members = { [src] = { last = GetGameTimer() } }, fear = 0.0, aims = 0, startAt = GetGameTimer() }
+        Stickup.publishLive()
     end
     Stickup.pending[src] = { kind = kindName, zone = zoneId, startAt = GetGameTimer(), coords = coords }
     local where = zone and zone.coords or coords
@@ -103,9 +133,11 @@ end)
 lib.callback.register('gs_stickup:finish', function(src)
     if not Security:RateLimit(src, 'gs_stickup:finish', 4, 10000) then return false, 'Doucement.' end
     local p = Stickup.pending[src]
-    Stickup.pending[src] = nil
     if not p then return false, 'Rien en cours.' end
     local kind = Config.Kinds[p.kind]
+    local l = p.zone and Stickup.live[p.zone]
+    if l and l.aims > 0 and l.fear < 100 then return false, 'Il n\'a pas encore assez peur.' end -- V12.63 : peur commune
+    Stickup.pending[src] = nil
     if GetGameTimer() - p.startAt < kind.minTime * 1000 then return false, 'Trop rapide.' end
     local ped = GetPlayerPed(src)
     if ped == 0 or #(GetEntityCoords(ped) - p.coords) > Config.AimRange + 6.0 then return false, 'Tu t\'es éloigné.' end
@@ -120,6 +152,22 @@ lib.callback.register('gs_stickup:finish', function(src)
     Stickup.playerCd[src] = Stickup.playerCd[src] or {}
     Stickup.playerCd[src][p.kind] = now + kind.playerCooldown
     if p.zone then Stickup.zoneCd[p.zone] = now + kind.zoneCooldown end
+    -- V12.63 : braquage partagé terminé pour tous les complices (même cooldown, prévenus, sacs communs au comptoir)
+    local mates = {}
+    if l then
+        for m in pairs(l.members) do
+            if m ~= src then
+                mates[#mates + 1] = m
+                Stickup.pending[m] = nil
+                Stickup.playerCd[m] = Stickup.playerCd[m] or {}
+                Stickup.playerCd[m][p.kind] = now + kind.playerCooldown
+                Stickup.hour[m] = Stickup.hour[m] or {}
+                table.insert(Stickup.hour[m], now)
+            end
+        end
+        Stickup.live[p.zone] = nil
+        Stickup.publishLive()
+    end
     local msg
     if kind.dirty and p.zone and Bridge:ItemExists(Config.DirtyItem) then
         -- Caisse / guichet : l'argent tombe en sacs plastique au comptoir, à ramasser (Alt ou inventaire au sol)
@@ -150,7 +198,31 @@ lib.callback.register('gs_stickup:finish', function(src)
         local z = Stickup.zones()[p.zone]
         exports.gs_social:Newsroom('stickup', ('FAITS DIVERS · %s braqué(e) à main armée : %s sous le choc, l\'auteur court toujours.'):format(z and z.label or 'Un commerce', p.kind == 'teller' and 'le guichetier' or 'le caissier'))
     end
+    for _, m in ipairs(mates) do TriggerClientEvent('gs_stickup:client:shared', m, p.zone, ('Butin commun : %s. Vite, la police arrive !'):format(msg)) end
     return true, ('Butin : %s. Vite, la police arrive !'):format(msg)
+end)
+
+--- V12.63 · Peur commune d'un braquage partagé : chaque complice signale s'il vise (et sa voix) ~3 fois par seconde ;
+--- le serveur additionne (durée réelle entre deux appels, 1 s au plus) et renvoie { fear, n } à tous ceux qui demandent.
+function Stickup.aim(src, zoneId, aiming, voiceIdx)
+    local l = Stickup.live[zoneId]
+    local m = l and l.members[src]
+    if not m then return nil end
+    local nowMs = GetGameTimer()
+    local dt = math.max(0.0, math.min(1.0, (nowMs - (m.last or nowMs)) / 1000))
+    m.last = nowMs
+    local kind = Config.Kinds[l.kind]
+    if aiming == true then
+        local v = Config.Fear.voice[math.tointeger(tonumber(voiceIdx)) or 0] or 0
+        l.fear = math.min(100.0, l.fear + (Config.Fear.aim + v) * kind.fearScale * dt)
+        l.aims = l.aims + 1
+    end
+    if not l.pub or nowMs - l.pub >= 1000 or l.fear >= 100 then l.pub = nowMs Stickup.publishLive() end
+    return { fear = math.floor(l.fear), n = liveCount(l) }
+end
+lib.callback.register('gs_stickup:aim', function(src, zoneId, aiming, voiceIdx)
+    if not Security:RateLimit(src, 'gs_stickup:aim', 12, 3000) then return nil end
+    return Stickup.aim(src, zoneId, aiming, voiceIdx)
 end)
 
 --- Abandon : la victime s'enfuit. Le crime a déjà été signalé au début ; petit cooldown quand même.
@@ -159,6 +231,7 @@ RegisterNetEvent('gs_stickup:server:cancel', function()
     if not Security:RateLimit(src, 'gs_stickup:cancel', 4, 10000) then return end
     local p = Stickup.pending[src]
     Stickup.pending[src] = nil
+    leaveLive(src) -- V12.63 : les complices continuent sans lui
     if p then
         Stickup.playerCd[src] = Stickup.playerCd[src] or {}
         Stickup.playerCd[src][p.kind] = os.time() + 30
@@ -171,6 +244,7 @@ lib.callback.register('gs_stickup:zones', function(src)
 end)
 
 AddEventHandler('gs_bridge:server:playerUnloaded', function(src)
+    leaveLive(src)
     Stickup.pending[src], Stickup.playerCd[src], Stickup.hour[src] = nil, nil, nil
 end)
 

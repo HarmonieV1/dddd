@@ -413,6 +413,12 @@ Résumé très condensé (le détail complet est dans `docs/ROADMAP.md`, `docs/F
   `GetWeapontypeGroup` renvoie un entier signé, comparé à des valeurs non signées → normalisé. En plus, côté serveur
   (gs_security watch.lua, `Watch.meleeHit`, convars `gs_antimeleespam` / `gs_meleegap` = 550 ms) : un coup au corps à corps
   par joueur et par 550 ms sur un joueur, les autres annulés (`weaponDamageEvent`), alerte au-delà de 15 en 1 min. Tests anticheat (25).
+  **Supérette / police IA** : gs_stickup braquage PARTAGÉ par caisse (`Stickup.live`, rejoindre = begin renvoie 'join', peur commune
+  `Stickup.aim` / `gs_stickup:aim`, fin unique : sacs au comptoir, complices prévenus `gs_stickup:client:shared`, GlobalState
+  gsStickups → caissier mains en l'air chez les témoins) ; gs_scars : vitrine posée `Config.Glass.delay` (600 s) après ; gs_wanted
+  police IA graduée (`Wanted.npcLevel`, `sendNpc`, `escalate`, `negotiate` : rendre / rançon / otage / refus, `standDown`,
+  `Config.NpcPolice.negotiate`, armes par étoile) ; client : 1 ★ approche et attente face au suspect, [E] Parler à l'agent,
+  menace sur un agent = escalade, agents qui repartent à la fin. Tests : stickup (26), wanted (109).
 - **V12.62** (15/10/2026, session de secours) — propositions choisies + relecture complète du gros patch avant le backtest :
   (1) **Lives** : ▦ grille, « ⇢ TP » (action `goto` de gs_admin), **replay 30 s** (n° 137) : tant qu'un ticket est ouvert,
   20 images (1,5 s) de l'auteur et du joueur nommé (« /report 12 … », gs_admin `ReportedPlayers`) gardées EN MÉMOIRE, effacées à

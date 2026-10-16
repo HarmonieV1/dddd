@@ -63,6 +63,36 @@ ok = cb('gs_stickup:begin', 1, 'register', 'shop1'); step()
 net('gs_stickup:server:cancel', 1); step()
 check('abandon : plus en cours', Stickup.pending[1] == nil and Stickup.playerCd[1].register > os.time())
 
+-- V12.63 · Braquage PARTAGÉ (backtest : « à deux, pas synchronisé ») : un complice rejoint, peur commune, butin unique
+do
+    Stickup.playerCd, Stickup.zoneCd, Stickup.hour = {}, {}, {}
+    join(3, 'CID3', 'Complice', shop); W.players[3].weapon = joaat('WEAPON_PISTOL')
+    local nRep = #reports
+    local okA = cb('gs_stickup:begin', 1, 'register', 'shop1'); step()
+    local okB, how = cb('gs_stickup:begin', 3, 'register', 'shop1'); step()
+    check('à deux : le complice rejoint, un seul signalement', okA and okB and how == 'join' and #reports == nRep + 1 and GlobalState.gsStickups.shop1.n == 2)
+    Stickup.live.shop1.members[1].last = GetGameTimer() - 1000
+    Stickup.live.shop1.members[3].last = GetGameTimer() - 1000
+    local r1 = Stickup.aim(1, 'shop1', true, 3)
+    local r2 = Stickup.aim(3, 'shop1', true, 3)
+    check('à deux : la peur est commune (chacun la fait monter)', r1 and r2 and r2.fear > r1.fear and r2.n == 2)
+    check('à deux : fin refusée tant que la peur commune n\'est pas à 100', not cb('gs_stickup:finish', 1))
+    Stickup.live.shop1.fear = 100
+    advance(9000)
+    W.drops = {}
+    W.clientEvents = {}
+    local okF, msgF = cb('gs_stickup:finish', 1); step()
+    check('à deux : butin unique en sacs, le complice est prévenu et a aussi son cooldown', okF and #W.drops >= 1 and lastClientEvent('gs_stickup:client:shared', 3) ~= nil
+        and Stickup.playerCd[3] and Stickup.playerCd[3].register > os.time() and Stickup.live.shop1 == nil and Stickup.pending[3] == nil)
+    Stickup.playerCd, Stickup.zoneCd = {}, {}
+    cb('gs_stickup:begin', 1, 'register', 'shop1'); step()
+    cb('gs_stickup:begin', 3, 'register', 'shop1'); step()
+    net('gs_stickup:server:cancel', 1); step()
+    check('à deux : un complice qui lâche, l\'autre continue', Stickup.live.shop1 and Stickup.live.shop1.members[3] and not Stickup.live.shop1.members[1])
+    net('gs_stickup:server:cancel', 3); step()
+    check('à deux : plus personne = braquage terminé', Stickup.live.shop1 == nil)
+end
+
 -- Plafonds anti-farm
 Stickup.playerCd[1], Stickup.zoneCd = nil, {}
 Stickup.hour[1] = { os.time(), os.time(), os.time(), os.time(), os.time(), os.time() }

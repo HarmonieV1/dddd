@@ -25,6 +25,8 @@
 | **Traces plus parlantes** | Couteau ou batte au sol selon l'arme, douilles par balle, flaques de sang par victime ; lieux de mémoire sans icône flottante. |
 | **Dégâts réalistes** | Selon l'arme : pistolet ≈ 3-4 balles, fusil d'assaut ≈ 2-3, couteau ≈ 2-3 coups, poings ≈ 8-10 ; la tête reste mortelle. |
 | **Fini le spam de coups (« patate »)** | Un coup au corps à corps toutes les ~0,8 s ; les coups en trop sont annulés par le serveur. |
+| **Braquage de supérette à plusieurs** | Un complice rejoint le braquage en visant le même caissier : peur commune, sacs de billets au comptoir pour tous. La vitrine à réparer n'apparaît qu'après. |
+| **Police IA graduée** | 1 ★ : un agent vient négocier (te rendre, t'arranger, ou l'otage contre ta fuite) ; 2 ★ : taser ; 3 ★ : ils tirent. Menacer un agent ou refuser = une étoile de plus. |
 | **Taser** | Au sol plus longtemps, écran électrisé, puis sonné quelques secondes. |
 | **Organisateur de courses réparé** | Au volant de ta voiture près de lui, [E] ouvre enfin son menu (avant, rien ne se passait) ; à pied, [E] à côté de lui. |
 | **Gangs** | Plus de gangs créés d'office (un gang naît d'un projet RP validé par le staff) ; territoires découpés en pâtés de maisons. |

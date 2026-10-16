@@ -167,7 +167,10 @@ AddStateBagChangeHandler('qbx_medical:deathState', nil, function(bagName, _, val
     if src and src > 0 and (tonumber(value) or 0) >= 2 then Scars.fell(src) end
 end)
 AddEventHandler('gs_wanted:server:crime', function(src, crimeType, coords)
-    if Config.Glass.crimes[crimeType] then Scars.robbed(src, coords) end
+    if Config.Glass.crimes[crimeType] then -- V12.63 : après le braquage, pas pendant (Config.Glass.delay)
+        local c = coords and v3(coords)
+        if c then SetTimeout((Config.Glass.delay or 0) * 1000, function() Scars.robbed(src, c) end) end
+    end
     local what = Config.Plaques.crimes[crimeType]
     if what and coords then Scars.plaque(coords, 'Ici, ' .. what, 'auto', 'heist') end -- V11 : lieux de mémoire
 end)

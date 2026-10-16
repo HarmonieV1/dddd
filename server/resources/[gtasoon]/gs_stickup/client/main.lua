@@ -73,15 +73,13 @@ local function handover(ped, kindName)
     end
 end
 
-local function robbery(ped, kindName, zoneId)
-    local kind = Config.Kinds[kindName]
-    local ok, msg = lib.callback.await('gs_stickup:begin', false, kindName, zoneId)
-    if not ok then return notify(false, msg) end
-    active, robbed[ped] = true, true
-    control(ped)
-    TaskHandsUp(ped, -1, cache.ped, -1, true)
+local shared = {} -- [zone] = message de fin reçu du serveur (braquage partagé terminé par un complice)
+RegisterNetEvent('gs_stickup:client:shared', function(zone, msg) shared[zone] = msg or 'Braquage terminé.' end)
+
+--- Passant (racket) : seul, peur calculée ici (inchangé).
+local function mugging(ped, kind)
     local fear, lastAim, last = 0.0, GetGameTimer(), GetGameTimer()
-    -- par frame : seulement pendant un braquage en cours (jauge de peur + contrôle de la visée)
+    -- par frame : seulement pendant un racket en cours (jauge de peur + contrôle de la visée)
     while active do
         local now = GetGameTimer()
         local dt = (now - last) / 1000
@@ -94,24 +92,95 @@ local function robbery(ped, kindName, zoneId)
         else
             fear = math.max(0, fear - Config.Fear.decay * dt)
         end
-        if IsPedDeadOrDying(ped, true) or IsPedDeadOrDying(cache.ped, true) or now - lastAim > Config.LostAimTime then
-            active = false
-            TriggerServerEvent('gs_stickup:server:cancel')
-            release(ped, true)
-            return notify(false, 'Il s\'est enfui… et il appelle la police.')
-        end
+        if IsPedDeadOrDying(ped, true) or IsPedDeadOrDying(cache.ped, true) or now - lastAim > Config.LostAimTime then return false end
         local hint = idx == 3 and 'tu cries : il panique !' or idx == 1 and 'tu chuchotes : crie (²) pour l\'intimider' or vr > 0 and 'parle plus fort (²) !' or 'parle-lui (N), crie pour aller plus vite'
         text(('%s · PEUR %d %%'):format(kind.label:upper(), math.min(100, math.floor(fear))), 0.82)
         text(hint, 0.86)
-        if fear >= 100 then break end
+        if fear >= 100 then return true end
         Wait(0)
+    end
+    return false
+end
+
+--- V12.63 · Caisse / guichet : braquage PARTAGÉ. La peur est tenue par le serveur (commune à tous les complices qui visent) ;
+--- ici on envoie « je vise / ma voix » ~3 fois par seconde et on affiche la peur commune. Retourne 'done', 'shared' ou false.
+local function holdup(ped, kind, zoneId, joined)
+    local state, lastAim, nextAsk = { fear = 0, n = 1 }, GetGameTimer(), 0
+    if joined then lib.notify({ description = 'Tu rejoins le braquage en cours : visez ensemble, criez pour aller plus vite.', type = 'inform' }) end
+    while active do
+        local now = GetGameTimer()
+        if shared[zoneId] then return 'shared' end
+        local aiming = IsPlayerFreeAimingAtEntity(PlayerId(), ped) and #(GetEntityCoords(ped) - GetEntityCoords(cache.ped)) <= Config.AimRange + 2.0
+        local vr, idx = voiceRate()
+        if aiming then lastAim = now end
+        if now >= nextAsk then
+            nextAsk = now + 300
+            lib.callback('gs_stickup:aim', false, function(r) if r then state = r end end, zoneId, aiming, vr > 0 and idx or 0)
+        end
+        if IsPedDeadOrDying(ped, true) or IsPedDeadOrDying(cache.ped, true) or now - lastAim > Config.LostAimTime then return false end
+        local hint = idx == 3 and 'tu cries : il panique !' or vr > 0 and 'crie (²) pour l\'intimider plus vite' or 'parle-lui (N), crie pour aller plus vite'
+        text(('%s · PEUR %d %%%s'):format(kind.label:upper(), math.min(100, state.fear or 0), (state.n or 1) > 1 and (' · %d braqueurs'):format(state.n) or ''), 0.82)
+        text(hint, 0.86)
+        if (state.fear or 0) >= 100 then return 'done' end
+        Wait(0)
+    end
+    return false
+end
+
+local function robbery(ped, kindName, zoneId)
+    local kind = Config.Kinds[kindName]
+    local ok, msg = lib.callback.await('gs_stickup:begin', false, kindName, zoneId)
+    if not ok then return notify(false, msg) end
+    active, robbed[ped] = true, true
+    if zoneId then shared[zoneId] = nil end
+    control(ped)
+    TaskHandsUp(ped, -1, cache.ped, -1, true)
+    local result
+    if kindName == 'street' then result = mugging(ped, kind) and 'done' or false
+    else result = holdup(ped, kind, zoneId, msg == 'join') end
+    if not result then
+        active = false
+        TriggerServerEvent('gs_stickup:server:cancel')
+        release(ped, true)
+        return notify(false, kindName == 'street' and 'Il s\'est enfui… et il appelle la police.' or 'Tu as baissé ton arme : tu lâches le braquage.')
+    end
+    if result == 'shared' then -- un complice a terminé : même animation, butin commun au comptoir
+        handover(ped, kindName)
+        active = false
+        release(ped, true)
+        notify(true, shared[zoneId])
+        shared[zoneId] = nil
+        return
     end
     handover(ped, kindName)
     local done, res = lib.callback.await('gs_stickup:finish', false)
     active = false
     release(ped, true)
+    if not done and zoneId and shared[zoneId] then res, done = shared[zoneId], true shared[zoneId] = nil end -- terminé par le complice entre-temps
     notify(done, res)
 end
+
+-- V12.63 · Les caissiers sont créés chez chaque joueur : pendant un braquage partagé, chacun voit SON caissier mains en l'air
+-- (complices et témoins), toutes les 2 s, seulement près d'une caisse braquée.
+CreateThread(function()
+    while true do
+        local live = GlobalState.gsStickups or {}
+        if next(live) and not active then
+            local me = GetEntityCoords(cache.ped)
+            for id in pairs(live) do
+                local z = zones[id]
+                if z and #(me - vec3(z.coords.x, z.coords.y, z.coords.z)) < 40.0 then
+                    for _, ped in ipairs(GetGamePool('CPed')) do
+                        if not IsPedAPlayer(ped) and #(GetEntityCoords(ped) - vec3(z.coords.x, z.coords.y, z.coords.z)) < 2.5 and not IsPedFleeing(ped) then
+                            TaskHandsUp(ped, 2500, cache.ped, -1, false)
+                        end
+                    end
+                end
+            end
+            Wait(2000)
+        else Wait(3000) end
+    end
+end)
 
 -- Détection : 4 fois par seconde, seulement avec une arme en main ; boucle rapide seulement en visant une cible possible.
 CreateThread(function()

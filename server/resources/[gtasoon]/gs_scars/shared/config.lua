@@ -14,6 +14,7 @@ Config.Memorial = { hours = 4, merge = 20.0, perPlayer = 900, maxBlood = 6,
     bladeProps = { 'w_me_knife_01' }, bluntProps = { 'w_me_bat' } }
 Config.Glass = { crimes = { store_robbery = true, shop_robbery = true, jewelry = true, teller_robbery = true, bank = true, robbery = true, racket = true },
     merge = 25.0, pay = { 250, 450 }, duration = 15000, hours = 24, -- V12.59 : barrières de police, effacées au bout de 24 h même sans réparation
+    delay = 600, -- V12.63 (backtest : « la réparation apparaît en plein braquage ») : vitrine brisée posée 10 min APRÈS le braquage
     props = { 'prop_mp_barrier_02b', 'prop_barrier_work05', 'prop_mp_cone_01', 'prop_mp_barrier_02b' } }
 Config.Mural = { drawDistance = 25.0, hours = 24 } -- V12.59 : texte plus discret, effacé au bout de 24 h
 

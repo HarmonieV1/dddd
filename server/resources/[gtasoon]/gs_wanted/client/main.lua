@@ -135,6 +135,76 @@ end, false)
 -- (le « dispatch » du jeu reste coupé : avec la protection des entités du serveur il créait des voitures vides)
 local npcActive = false
 local COP = GetHashKey('COP')
+-- V12.63 · Police IA graduée : niveau courant (lu par chaque patrouille à chaque passage : une escalade change tout de suite le
+-- comportement de toutes les patrouilles), agents présents (négociation, menaces).
+local npcStars = 0
+local copPeds = {}   -- [ped] = true
+local armed = {}     -- [ped] = niveau pour lequel l'arme a été donnée
+
+--- Arme de l'agent selon le niveau (taser à 1-2 ★, arme à feu ensuite), donnée une fois par niveau
+local function ensureWeapon(ped, level)
+    if armed[ped] == level then return end
+    armed[ped] = level
+    local W = Config.NpcPolice.units.weapons[math.min(#Config.NpcPolice.units.weapons, math.max(1, level))]
+    if W then
+        local h = GetHashKey(W)
+        GiveWeaponToPed(ped, h, 120, false, level >= 2)
+        if level <= 1 then SetCurrentPedWeapon(ped, GetHashKey('WEAPON_UNARMED'), true) end -- 1 ★ : arme rangée
+    end
+end
+
+local function nearestCop(range)
+    local me, best, bestD = GetEntityCoords(cache.ped), nil, range
+    for cop in pairs(copPeds) do
+        if DoesEntityExist(cop) and not IsEntityDead(cop) then
+            local d = #(GetEntityCoords(cop) - me)
+            if d < bestD then best, bestD = cop, d end
+        else copPeds[cop] = nil end
+    end
+    return best
+end
+
+--- Négociation à 1 ★ ([E] près de l'agent) : se rendre, rançon, otage (si un civil est en joue tout près), refuser
+local function negotiateMenu(hostage)
+    local N = Config.NpcPolice.negotiate
+    local function go(choice, h)
+        local ok, msg = lib.callback.await('gs_wanted:negotiate', false, choice, h)
+        lib.notify({ title = 'Négociation', description = msg, type = ok and 'success' or 'error', duration = 8000 })
+        if ok and choice == 'hostage' and hostage and DoesEntityExist(hostage.ped) then
+            ClearPedTasks(hostage.ped)
+            TaskSmartFleePed(hostage.ped, cache.ped, 100.0, -1, false, false)
+        end
+    end
+    local opts = {
+        { title = 'Me rendre', icon = 'handcuffs', description = ('Amende (à partir de %d $ selon tes délits), l\'affaire est classée'):format(N.surrender.base),
+          onSelect = function() go('surrender') end },
+        { title = ('Proposer %d $ pour qu\'il me laisse filer'):format(N.ransom), icon = 'money-bill-wave', description = 'Liquide d\'abord, sinon la banque',
+          onSelect = function() go('ransom') end },
+    }
+    if hostage then
+        opts[#opts + 1] = { title = 'L\'otage contre ma fuite', icon = 'user-lock', description = 'Le civil que tu tiens en joue est libéré, la police te laisse partir',
+            onSelect = function() go('hostage', hostage.net) end }
+    end
+    opts[#opts + 1] = { title = 'Refuser de discuter', icon = 'hand', iconColor = '#ff4d6d', description = 'Ils durcissent le ton (2 ★)', onSelect = function() go('refuse') end }
+    lib.registerContext({ id = 'gs_wanted_nego', title = 'Agent de police · « On peut s\'arranger. »', options = opts })
+    lib.showContext('gs_wanted_nego')
+end
+
+--- Civil tenu en joue à moins de 6 m (otage possible) : { ped, net } ou nil
+local function hostageInSight()
+    if not IsPlayerFreeAiming(PlayerId()) then return nil end
+    local hit, ped = GetEntityPlayerIsFreeAimingAt(PlayerId())
+    if not hit or not ped or ped == 0 or not IsEntityAPed(ped) or IsPedAPlayer(ped) or copPeds[ped] or IsPedDeadOrDying(ped, true) then return nil end
+    if #(GetEntityCoords(ped) - GetEntityCoords(cache.ped)) > Config.NpcPolice.negotiate.hostageReach then return nil end
+    if not NetworkGetEntityIsNetworked(ped) then return nil end
+    return { ped = ped, net = NetworkGetNetworkIdFromEntity(ped) }
+end
+
+RegisterNetEvent('gs_wanted:client:npcStandDown', function()
+    npcStars = 0
+    ClearPlayerWantedLevel(PlayerId())
+    SetPlayerWantedLevelNow(PlayerId(), false)
+end)
 
 local function setStars(on)
     for i = 1, 15 do EnableDispatchService(i, false) end
@@ -213,7 +283,7 @@ local function command(units)
                 local t2 = GetGameTimer() + 3000
                 while not NetworkDoesEntityExistWithNetworkId(nid) and GetGameTimer() < t2 do Wait(100) end
                 local ped = NetworkDoesEntityExistWithNetworkId(nid) and NetToPed(nid)
-                if ped and control(ped) then setupCop(ped) peds[#peds + 1] = ped end
+                if ped and control(ped) then setupCop(ped) peds[#peds + 1] = ped copPeds[ped] = true end
             end
             local mode = {} -- [ped] = dernier ordre donné ('drive', 'chase', 'combat') : pas de ré-ordre à chaque passage
             while #peds > 0 and DoesEntityExist(veh) and GetPlayerWantedLevel(PlayerId()) > 0 do
@@ -221,20 +291,43 @@ local function command(units)
                 local d = #(GetEntityCoords(veh) - me)
                 if d > T.giveUp then break end -- trop loin : semés
                 local suspectOnFoot = not cache.vehicle
+                local level = math.max(1, npcStars)
                 for _, ped in ipairs(peds) do
                     if DoesEntityExist(ped) and not IsEntityDead(ped) and NetworkHasControlOfEntity(ped) then
+                        ensureWeapon(ped, level)
                         local pd = #(GetEntityCoords(ped) - me)
+                        local isDriver = GetPedInVehicleSeat(veh, -1) == ped
+                        local inCar = IsPedInAnyVehicle(ped, false)
                         local want
-                        if suspectOnFoot and pd < T.onFoot then want = 'combat'
-                        elseif GetPedInVehicleSeat(veh, -1) == ped then want = d > T.chase and 'drive' or 'chase' -- V12.62 : le conducteur, pas « le 1er contrôlé »
-                        elseif not IsPedInAnyVehicle(ped, false) then want = 'combat' end
+                        if level <= 1 then
+                            -- V12.63 · 1 ★ : ils viennent PARLER. À pied : ils descendent, s'approchent à 5 m et attendent face au
+                            -- suspect ([E] Parler à l'agent). En voiture : ils suivent à distance, sans percuter.
+                            if suspectOnFoot then
+                                if inCar then want = pd < 45.0 and 'exit' or (isDriver and 'drive' or nil)
+                                else want = pd > 8.0 and 'approach' or (pd <= 6.0 and 'talk' or mode[ped]) end
+                            elseif isDriver then want = d > T.chase and 'drive' or 'follow'
+                            elseif not inCar then want = 'enter' end
+                        elseif suspectOnFoot and pd < T.onFoot then want = 'combat' -- 2 ★ : au taser ; 3 ★ et plus : arme à feu
+                        elseif isDriver then want = d > T.chase and 'drive' or 'chase' -- V12.62 : le conducteur, pas « le 1er contrôlé »
+                        elseif not inCar then want = 'combat' end
                         if want == 'drive' then -- position connue : on y va par la route, sirène hurlante (renouvelé : il bouge)
                             TaskVehicleDriveToCoordLongrange(ped, veh, me.x, me.y, me.z, T.speed, 787004, 15.0)
                             mode[ped] = 'drive'
                         elseif want and mode[ped] ~= want then
                             if want == 'chase' then
                                 TaskVehicleChase(ped, cache.ped)
-                                SetTaskVehicleChaseIdealPursuitDistance(ped, 0.0)
+                                SetTaskVehicleChaseIdealPursuitDistance(ped, level <= 2 and 12.0 or 0.0)
+                            elseif want == 'follow' then
+                                TaskVehicleFollow(ped, veh, cache.vehicle or cache.ped, 25.0, 786603, 20)
+                            elseif want == 'exit' then
+                                TaskLeaveVehicle(ped, veh, 256)
+                            elseif want == 'enter' then
+                                TaskEnterVehicle(ped, veh, 10000, 0, 1.5, 1, 0)
+                            elseif want == 'approach' then
+                                TaskGoToEntity(ped, cache.ped, -1, 5.0, 1.6, 1073741824, 0)
+                            elseif want == 'talk' then
+                                ClearPedTasks(ped)
+                                TaskTurnPedToFaceEntity(ped, cache.ped, -1)
                             else
                                 TaskCombatPed(ped, cache.ped, 0, 16)
                             end
@@ -244,6 +337,14 @@ local function command(units)
                 end
                 Wait(T.every)
             end
+            -- V12.63 : fin (semés, accord, plus d'étoiles) : les agents remontent et repartent au lieu de rester figés
+            for _, ped in ipairs(peds) do
+                copPeds[ped], armed[ped] = nil, nil
+                if DoesEntityExist(ped) and NetworkHasControlOfEntity(ped) and not IsEntityDead(ped) then
+                    ClearPedTasks(ped)
+                    if GetPedInVehicleSeat(veh, -1) == ped then TaskVehicleDriveWander(ped, veh, 20.0, 786603) else TaskWanderStandard(ped, 10.0, 10) end
+                end
+            end
         end)
         ::continue::
     end
@@ -252,18 +353,47 @@ end
 RegisterNetEvent('gs_wanted:client:npcPolice', function(stars)
     stars = math.max(1, math.min(5, tonumber(stars) or 1))
     local pid = PlayerId()
+    local escalated = npcStars > 0 and stars > npcStars
+    npcStars = math.max(npcStars, stars)
     setStars(true)
     if GetPlayerWantedLevel(pid) < stars then
         SetPlayerWantedLevel(pid, stars, false)
         SetPlayerWantedLevelNow(pid, false)
     end
-    lib.notify({ title = 'Police de Los Santos', description = ('Tu es recherché (%d ★). Sème-les !'):format(stars), type = 'error', icon = 'handcuffs' })
+    local LINES = { [1] = 'Un agent vient te parler : [E] près de lui pour négocier (te rendre, t\'arranger, ou l\'otage contre ta fuite).',
+        [2] = 'La police veut t\'interpeller au taser. Sème-les !', [3] = 'La police ouvre le feu. Sème-les !' }
+    lib.notify({ title = escalated and 'La police durcit le ton' or 'Police de Los Santos', description = ('%d ★ · %s'):format(stars, LINES[math.min(3, stars)]),
+        type = 'error', icon = 'handcuffs', duration = 9000 })
     command(lib.callback.await('gs_wanted:npcUnits', false, stars, roadPositions(math.min(stars, Config.NpcPolice.units.maxUnits))) or {})
     if npcActive then return end
     npcActive = true
     CreateThread(function()
         Wait(5000)
-        while GetPlayerWantedLevel(PlayerId()) > 0 do Wait(2000) end
+        local nextThreat = 0
+        -- V12.63 : pendant la recherche, 2 à 3 fois par seconde (par image seulement à côté d'un agent, pour le [E]) :
+        -- menace sur un agent (le viser à 1 ★, le frapper) = escalade ; à 1 ★, négociation avec l'agent le plus proche
+        while GetPlayerWantedLevel(PlayerId()) > 0 do
+            local wait = 400
+            local now = GetGameTimer()
+            if npcStars > 0 and npcStars <= 2 and now >= nextThreat then
+                for cop in pairs(copPeds) do
+                    if DoesEntityExist(cop) and (HasEntityBeenDamagedByEntity(cop, cache.ped, true) or (npcStars == 1 and IsPlayerFreeAimingAtEntity(PlayerId(), cop))) then
+                        nextThreat = now + 15000
+                        ClearEntityLastDamageEntity(cop)
+                        TriggerServerEvent('gs_wanted:server:escalate')
+                        break
+                    end
+                end
+            end
+            if npcStars == 1 and not cache.vehicle and nearestCop(7.0) then
+                wait = 0
+                SetTextFont(4) SetTextScale(0.0, 0.45) SetTextCentre(true) SetTextOutline() SetTextColour(40, 224, 255, 240)
+                BeginTextCommandDisplayText('STRING') AddTextComponentSubstringPlayerName('[E] Parler à l\'agent') EndTextCommandDisplayText(0.5, 0.88)
+                if IsControlJustReleased(0, 38) and not IsNuiFocused() then negotiateMenu(hostageInSight()) end
+            end
+            Wait(wait)
+        end
+        npcStars = 0
         setStars(false)
         npcActive = false
         TriggerServerEvent('gs_wanted:server:npcClear')
