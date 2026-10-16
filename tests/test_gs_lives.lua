@@ -42,7 +42,7 @@ check('staff hors mode staff : refusé', not ok and msg:find('mode staff'))
 duty[1] = true
 local list
 ok, list = cb('gs_lives:players', 1)
-check('liste des joueurs (sans soi-même), nom de personnage', ok and #list == 2 and list[1].id == 2 and list[1].name == 'Joueur Deux')
+check('liste des joueurs (soi-même compris, pour tester), nom de personnage', ok and #list == 3 and list[2].id == 2 and list[2].name == 'Joueur Deux' and list[1].name:find('toi : test', 1, true))
 net('gs_lives:server:frame', 3, 2)
 check('capture demandée par un non-staff : ignorée', #shots == 0)
 net('gs_lives:server:frame', 1, 2)
@@ -57,11 +57,11 @@ advance(1100) -- l'image d'il y a moins d'1 s est partagée, pas recapturée
 net('gs_lives:server:frame', 1, 2)
 check('fenêtre suivante : nouvelle capture, pas de 2e ligne de journal', #shots == 2 and #logs == 1)
 net('gs_lives:server:frame', 1, 1)
-check('se regarder soi-même : ignoré', #shots == 2)
+check('se regarder soi-même : autorisé (test sans second joueur)', #shots == 3 and shots[3].target == 1)
 -- V12.62 · deux membres du staff regardent le même joueur : une seule capture, l'image part aux deux
 join(4, 'STAFF4', 'Modo Deux', vec3(1.0, 0.0, 0.0)) levels[4], duty[4] = 2, true
 net('gs_lives:server:frame', 4, 2)
-check('2e staff sur le même joueur : pas de 2e capture en cours', #shots == 2)
+check('2e staff sur le même joueur : pas de 2e capture en cours', #shots == 3)
 W.clientEvents = {}
 shots[2].fn(nil, 'data:image/jpeg;base64,BBBB')
 local to1, to4 = false, false
@@ -85,7 +85,7 @@ for i = 1, Config.Replay.frames + 3 do
 end
 check('replay : mémoire bornée', #Lives.replay[2].frames == Config.Replay.frames and Lives.replay[2].frames[Config.Replay.frames]:find('F' .. (Config.Replay.frames + 3)))
 local _, l2 = cb('gs_lives:players', 1)
-check('liste : ticket et bouton replay', l2[1].ticket == 7 and l2[1].replay == true)
+check('liste : ticket et bouton replay', l2[2].ticket == 7 and l2[2].replay == true)
 W.clientEvents = {}
 net('gs_lives:server:replay', 3, 2)
 check('replay demandé par un non-staff : ignoré', not lastClientEvent('gs_lives:client:replay'))
@@ -116,5 +116,14 @@ Lives.capture(3, 0.4, function(ok, data) got = { ok, data } end)
 net('gs_lives:server:shot', 3, shots[#shots].id, 'data:image/jpeg;base64,OK')
 check('export Capture (appli staff) : image reçue', got and got[1] == true and got[2]:find('OK'))
 
+-- V12.63 · capture impossible chez le joueur : la raison arrive au staff (et seulement depuis le joueur visé)
+local failed2
+advance(1100) -- au-delà de l'image partagée (< 1 s)
+Lives.capture(3, 0.4, function(ok, data) failed2 = { ok, data } end)
+local fid = shots[#shots].id
+net('gs_lives:server:shotFail', 2, fid, 'pirate')
+check('échec signalé par un autre joueur : ignoré', failed2 == nil)
+net('gs_lives:server:shotFail', 3, fid, 'screenshot-basic n\'a pas répondu')
+check('échec chez le joueur : raison transmise', failed2 and failed2[1] == false and failed2[2]:find('pas répondu', 1, true))
 io.write(('lives staff : %d réussis, %d échoués\n'):format(passed, failed))
 os.exit(failed == 0 and 0 or 1)

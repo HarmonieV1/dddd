@@ -304,6 +304,10 @@ Résumé très condensé (le détail complet est dans `docs/ROADMAP.md`, `docs/F
   « Choisis ta vie » complété (cavale, cabines, Weazel direct, fête foraine, circuit, cimetière). Gazette du site = **édition en
   cours** (`gazetteDraft` de ville.json, « paraît dimanche 20 h ») dès qu'il s'est passé quelque chose dans la semaine ; la Gazette
   compte maintenant les poursuites filmées (`gs_wanted:server:chase`, quartier seulement) et les avis de recherche (prime, jamais le nom).
+  Lives (backtest : « ne marchent toujours pas », F11 et appli) : chaque échec de capture chez le joueur est renvoyé avec sa raison
+  (`gs_lives:server:shotFail` : screenshot-basic absent, appel refusé, image vide, pas de réponse en 6 s), affichée dans la fenêtre
+  et en console (« [gs_lives] capture impossible », 1/min) ; le staff peut se regarder lui-même (« (toi : test) ») pour tester seul.
+  Propositions D9 (n° 147 à 166).
   METTRE-A-JOUR-OVH compare le contenu des scripts du zip et du PC (même numéro de version mais correctif non installé sur le
   PC = proposé avant l'envoi ; avant, les anciens fichiers du PC repartaient au VPS sans le voir).
 - **V12.62** (15/10/2026, session de secours) — propositions choisies + relecture complète du gros patch avant le backtest :

@@ -106,6 +106,8 @@ SESSIONS = [
         ('Appli : bannir 1 jour un compte de test → il est éjecté, onglet Sanctions → Débannir → il revient ; un super-admin ne peut pas être sanctionné depuis l\'appli', '2', 3),
         ('Appli → Lives : 2 écrans en même temps ; ticket « /report 12 … » → ⏪ Replay dans Tickets ; F10 → Carte : les joueurs bougent en direct', 'Staff', 2),
         ('Téléphone : appli en mode portrait (barre d\'onglets en bas), fiche plein écran, « Ajouter à l\'écran d\'accueil » ; 5 mauvais mots de passe → bloqué 15 min', 'Seul', 2),
+        ('Lives SEUL : F11 → Lives → ta ligne « (toi : test) » → ton écran s\'affiche ; sinon la fenêtre dit pourquoi (copie la phrase) et GERER-OVH → 3 montre « [gs_lives] capture impossible »', 'Seul', 3),
+        ('Site : diaporama « La ville » (9 photos, glisser), bande-annonce → TikTok, adresse « connect » affichée ; Gazette du site = édition en cours après une cavale (hélico)', 'Seul', 2),
     ]),
     ('5 · Obligatoire avant d\'ouvrir', [
         ('SAUVEGARDER-BDD.bat puis RESTAURER-BDD.bat sur un joueur ; redémarrage de 6 h : annonces 15 / 5 / 1 min', 'Staff', 3),

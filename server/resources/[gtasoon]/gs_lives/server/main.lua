@@ -29,11 +29,9 @@ lib.callback.register('gs_lives:players', function(src)
     local out = {}
     for _, id in ipairs(GetPlayers()) do
         local s = tonumber(id)
-        if s ~= src then
-            local r = Lives.replay[s]
-            out[#out + 1] = { id = s, name = Bridge:GetName(s) or GetPlayerName(s) or ('Joueur ' .. s), account = GetPlayerName(s) or '',
-                ticket = Lives.reported[s], replay = r and #r.frames > 0 or nil } -- V12.62
-        end
+        local r = Lives.replay[s] -- V12.63 : soi-même aussi (« (toi : test) ») pour vérifier les Lives sans second joueur
+        out[#out + 1] = { id = s, name = (Bridge:GetName(s) or GetPlayerName(s) or ('Joueur ' .. s)) .. (s == src and ' (toi : test)' or ''),
+            account = GetPlayerName(s) or '', ticket = Lives.reported[s], replay = r and #r.frames > 0 or nil } -- V12.62
     end
     table.sort(out, function(a, b) return a.id < b.id end)
     return true, out
@@ -78,8 +76,25 @@ RegisterNetEvent('gs_lives:server:shot', function(id, data)
     if not Security:RateLimit(src, 'gs_lives:shot', 12, 6000) then return end
     local p = Lives.pending[math.tointeger(tonumber(id)) or -1]
     if not p or p.target ~= src then return end -- seulement le joueur visé, pour une demande en cours
+    id = math.tointeger(tonumber(id))
     if type(data) ~= 'string' or #data > 3000000 or data:sub(1, 23) ~= 'data:image/jpeg;base64,' then return resolve(id, false, 'Image refusée.') end
-    resolve(math.tointeger(tonumber(id)), true, data)
+    resolve(id, true, data)
+end)
+
+-- V12.63 · La capture a échoué chez le joueur : la raison va dans la fenêtre du staff et (une fois par minute) dans la console
+Lives.failLog = 0
+RegisterNetEvent('gs_lives:server:shotFail', function(id, reason)
+    local src = source
+    if not Security:RateLimit(src, 'gs_lives:shotFail', 12, 6000) then return end
+    id = math.tointeger(tonumber(id))
+    local p = id and Lives.pending[id]
+    if not p or p.target ~= src then return end
+    reason = Security:Sanitize(tostring(reason or '?'), 160) or '?'
+    if GetGameTimer() - Lives.failLog > 60000 then
+        Lives.failLog = GetGameTimer()
+        print(('^3[gs_lives] capture impossible chez %s [%d] : %s^0'):format(GetPlayerName(src) or '?', src, reason))
+    end
+    resolve(id, false, 'Capture impossible : ' .. reason .. '.')
 end)
 
 exports('Capture', function(target, quality, cb) Lives.capture(target, quality, cb) end) -- appli staff (gs_admin/web.lua)
@@ -87,7 +102,7 @@ exports('Capture', function(target, quality, cb) Lives.capture(target, quality, 
 RegisterNetEvent('gs_lives:server:frame', function(target)
     local src = source
     target = math.tointeger(tonumber(target))
-    if not target or not GetPlayerName(target) or target == src then return end
+    if not target or not GetPlayerName(target) then return end -- V12.63 : se regarder soi-même = test
     if not Security:RateLimit(src, 'gs_lives:frame', Config.MaxWindows * 3, 3000) then return end
     if not Lives.allowed(src) or not Lives.ready() then return end
     Lives.watching[src] = Lives.watching[src] or {}

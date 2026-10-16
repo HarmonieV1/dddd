@@ -57,11 +57,27 @@ end)
 -- V12.63 · Capture demandée par le serveur (ce joueur est regardé par le staff) : faite ici par screenshot-basic, renvoyée par le
 -- réseau du jeu (avant : envoi par une adresse web du serveur, qui échouait en silence : « la connexion charge indéfiniment »)
 RegisterNetEvent('gs_lives:client:capture', function(id, quality)
-    if GetResourceState('screenshot-basic') ~= 'started' then return end
-    pcall(function()
+    -- V12.63 (backtest « les Lives ne marchent toujours pas ») : chaque échec est renvoyé au serveur avec sa raison,
+    -- affichée dans la fenêtre du staff et dans la console du serveur (avant : attente muette puis « ne répond pas »)
+    if GetResourceState('screenshot-basic') ~= 'started' then
+        return TriggerServerEvent('gs_lives:server:shotFail', id, 'screenshot-basic n\'est pas démarré chez ce joueur')
+    end
+    local done = false
+    local ok, err = pcall(function()
         exports['screenshot-basic']:requestScreenshot({ encoding = 'jpg', quality = tonumber(quality) or 0.45 }, function(data) -- [API] screenshot-basic
+            if done then return end
+            done = true
+            if type(data) ~= 'string' or data:sub(1, 23) ~= 'data:image/jpeg;base64,' then
+                return TriggerServerEvent('gs_lives:server:shotFail', id, ('capture vide ou invalide (%s)'):format(type(data) == 'string' and data:sub(1, 30) or type(data)))
+            end
             TriggerLatentServerEvent('gs_lives:server:shot', 500000, id, data)
         end)
+    end)
+    if not ok then done = true return TriggerServerEvent('gs_lives:server:shotFail', id, 'appel à screenshot-basic refusé : ' .. tostring(err):sub(1, 120)) end
+    SetTimeout(6000, function()
+        if done then return end
+        done = true
+        TriggerServerEvent('gs_lives:server:shotFail', id, 'screenshot-basic n\'a pas répondu en 6 s chez ce joueur (menu Échap, écran de chargement, ou capture bloquée par le jeu)')
     end)
 end)
 

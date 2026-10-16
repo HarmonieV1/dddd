@@ -69,6 +69,7 @@
 | **Appli staff : connexion** | `gs_admin/server/crypto.js` | « Connexion indisponible (crypto du serveur) » corrigé : le fichier des jetons plantait au démarrage (nom en double avec maps.js) ; contrôle automatique ajouté |
 | **Site** | `docs/site` | Diaporama de photos de la ville (glisser, animé, sans légende), bande-annonce TikTok, adresse du serveur affichée pour les testeurs, « Choisis ta vie » à jour |
 | **Gazette en direct** | `gs_city`, `gs_wanted`, site | Le site montre l'édition de la semaine en cours (plus besoin d'attendre dimanche) ; poursuites filmées et avis de recherche comptés |
+| **Lives : diagnostic** | `gs_lives` | Plus d'attente muette : la raison d'un échec s'affiche dans la fenêtre (F11 et appli) et dans la console ; « (toi : test) » pour vérifier seul |
 | **Outils OVH** | `scripts/windows` | GERER-OVH ne plante plus (« roadline-envoi.txt en cours d'utilisation ») ; METTRE-A-JOUR-OVH ne renvoie plus les gros fichiers déjà présents sur le VPS (fini le 1 Go à chaque fois) ; avancée affichée pendant l'envoi (Mo, %, temps restant) ; envoi coupé **complété** au lieu d'être recommencé ; GERER-OVH ne renvoie la commande roadline que si elle a changé et ouvre le menu même si l'envoi échoue, sans plus jamais toucher au serveur pendant une mise à jour (verrou) |
 
 ## Encore en attente (côté fondateur)
