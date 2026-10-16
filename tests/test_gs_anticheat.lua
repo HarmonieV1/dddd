@@ -75,6 +75,16 @@ local run = GetHashKey('WEAPON_RUN_OVER_BY_CAR')
 check('carkill : joueur percuté = dégâts annulés', Watch.vehicleHit(3, run, true) == true)
 check('carkill : PNJ percuté = normal', Watch.vehicleHit(3, run, false) == false)
 check('carkill : arme normale = normal', Watch.vehicleHit(3, GetHashKey('WEAPON_PISTOL'), true) == false)
+-- V12.63 · Anti « patate » (spam de coups) : un coup au corps à corps par joueur toutes les 550 ms au plus, côté serveur
+do
+    local fist = GetHashKey('WEAPON_UNARMED')
+    check('coups : premier coup = normal', Watch.meleeHit(7, fist, true, 10000) == false)
+    check('coups : coup suivant 200 ms après = annulé', Watch.meleeHit(7, fist, true, 10200) == true)
+    check('coups : 600 ms après = normal', Watch.meleeHit(7, fist, true, 10650) == false)
+    check('coups : sur un PNJ = jamais bloqué', Watch.meleeHit(7, fist, false, 10700) == false)
+    check('coups : arme à feu = non concernée', Watch.meleeHit(7, GetHashKey('WEAPON_PISTOL'), true, 10710) == false)
+    check('coups : un autre joueur a son propre rythme', Watch.meleeHit(8, fist, true, 10720) == false)
+end
 local before = alerts('carkill probable')
 Watch.vehicleHit(3, GetHashKey('WEAPON_RAMMED_BY_CAR'), true)
 check('carkill : 2 joueurs en 1 min = alerte staff', alerts('carkill probable') == before + 1)

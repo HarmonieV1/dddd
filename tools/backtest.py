@@ -169,6 +169,7 @@ SESSIONS = [
     ]),
     ('4o · V12.63 — dégâts, taser, effets, placement (15 min)', [
         ('Dégâts (sans gilet, au torse) : pistolet ≈ 3-4 balles, mitraillette ≈ 4-5, fusil d\'assaut ≈ 2-3, pompe de près 1-2, précision 1, couteau ≈ 2-3 coups, batte ≈ 3-4, poings ≈ 8-10 ; tête = mort en une balle (casque : une encaissée). À ajuster dans gs_details Config.Damage si besoin', '2', 3),
+        ('Anti « patate » : à deux, mains nues, spammer le clic → un coup toutes les ~0,8 s seulement, et le serveur annule les coups en trop (pas de dégâts) ; avec un couteau pareil ; sur un PNJ, rien ne change', '2', 3),
         ('Taser : la cible reste au sol ~6,5 s, écran électrisé et tremblement, puis sonnée ~12 s ; jamais mortel', '2', 2),
         ('Effets sur moi (2e série) : téléportation « alien », désintégration (invisible 10 s), souffle lumineux, voiture indestructible, fumée de pneus arc-en-ciel', 'Staff', 1),
         ('Événements : Rassemblements → concert, marché de nuit, défilé de voitures, match de foot, tournoi de billard, laser game (annonce + GPS à ta position)', 'Staff', 1),

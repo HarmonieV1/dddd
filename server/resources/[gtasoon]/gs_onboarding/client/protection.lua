@@ -9,12 +9,15 @@ local ATTACK = { 24, 25, 140, 141, 142, 143, 257, 263, 264 } -- tir, viser, coup
 local untilT, ghost = 0, false
 local HIT = { 24, 140, 141, 142, 257, 263, 264 } -- touches qui lancent un coup au corps à corps
 local GROUP_UNARMED, GROUP_MELEE = 2685387236, 3566412244
+-- V12.63 (backtest : « spam clic toujours pas patché ») : le jeu renvoie le groupe d'arme en entier SIGNÉ (-1609580060 pour
+-- les mains nues) : la comparaison avec les valeurs non signées ci-dessus échouait toujours, l'anti-spam ne s'activait jamais.
+local function norm(h) h = tonumber(h) or 0 return h < 0 and h + 4294967296 or h end
 local hitBlockUntil, nextScan, calm, fight = 0, 0, false, false
 
 --- Faut-il surveiller le spam de coups ? À pied, mains nues ou arme blanche, un autre joueur à portée.
 local function canFight(pos)
     if cache.vehicle then return false end
-    local group = GetWeapontypeGroup(GetSelectedPedWeapon(cache.ped))
+    local group = norm(GetWeapontypeGroup(GetSelectedPedWeapon(cache.ped)))
     if group ~= GROUP_UNARMED and group ~= GROUP_MELEE then return false end
     return lib.getClosestPlayer(pos, P.meleeWatchRange, false) ~= nil
 end

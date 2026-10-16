@@ -409,6 +409,10 @@ Résumé très condensé (le détail complet est dans `docs/ROADMAP.md`, `docs/F
   `Dont_tazeme_bro`, tremblement) ; 2e série d'effets sur moi et d'événements ; placement « coller au mur » ([F], export
   gs_markers `WallSnap`, aussi dans /builder) ; déplacer une entrée staff (gs_bridge `MoveStaffPed`, `Actions.movestaffped`) ;
   /builder : supprimer l'objet visé. Tests : test_gs_admin (265).
+  **Anti « patate »** : l'anti-spam client de la V12.51 (gs_onboarding/client/protection.lua) ne s'activait jamais :
+  `GetWeapontypeGroup` renvoie un entier signé, comparé à des valeurs non signées → normalisé. En plus, côté serveur
+  (gs_security watch.lua, `Watch.meleeHit`, convars `gs_antimeleespam` / `gs_meleegap` = 550 ms) : un coup au corps à corps
+  par joueur et par 550 ms sur un joueur, les autres annulés (`weaponDamageEvent`), alerte au-delà de 15 en 1 min. Tests anticheat (25).
 - **V12.62** (15/10/2026, session de secours) — propositions choisies + relecture complète du gros patch avant le backtest :
   (1) **Lives** : ▦ grille, « ⇢ TP » (action `goto` de gs_admin), **replay 30 s** (n° 137) : tant qu'un ticket est ouvert,
   20 images (1,5 s) de l'auteur et du joueur nommé (« /report 12 … », gs_admin `ReportedPlayers`) gardées EN MÉMOIRE, effacées à

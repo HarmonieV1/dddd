@@ -142,12 +142,41 @@ function Watch.vehicleHit(src, weaponType, victimIsPlayer)
     end
     return true -- annuler
 end
+--- V12.63 · Anti « patate » (spam de clics = coups de poing enchaînés, backtest du 16/10 : « toujours pas patché ») : côté
+--- serveur, impossible à contourner. Un même joueur ne peut pas toucher un joueur au corps à corps plus d'une fois toutes les
+--- `MELEE_GAP` ms : les coups en trop sont annulés (pas de dégâts). Un vrai coup dure ~0,6 à 0,8 s.
+local MELEE_GAP = tonumber(GetConvar('gs_meleegap', '550')) or 550
+local MELEE = {}
+for _, w in ipairs({ 'WEAPON_UNARMED', 'WEAPON_KNIFE', 'WEAPON_BAT', 'WEAPON_CROWBAR', 'WEAPON_HAMMER', 'WEAPON_GOLFCLUB', 'WEAPON_NIGHTSTICK',
+    'WEAPON_KNUCKLE', 'WEAPON_MACHETE', 'WEAPON_SWITCHBLADE', 'WEAPON_WRENCH', 'WEAPON_BATTLEAXE', 'WEAPON_POOLCUE', 'WEAPON_STONE_HATCHET',
+    'WEAPON_BOTTLE', 'WEAPON_DAGGER', 'WEAPON_HATCHET', 'WEAPON_FLASHLIGHT' }) do MELEE[norm(GetHashKey(w))] = true end
+Watch.lastMelee = {}
+function Watch.meleeHit(src, weaponType, victimIsPlayer, nowMs)
+    if not src or src <= 0 or not victimIsPlayer or weaponType == nil or not MELEE[norm(weaponType)] then return false end
+    local last = Watch.lastMelee[src]
+    if last and nowMs - last < MELEE_GAP then
+        if count(src, 'meleespam', 60) >= 15 then Watch.alert(src, 'spam de coups', 'coups de poing enchaînés trop vite (annulés)') end
+        return true -- annuler
+    end
+    Watch.lastMelee[src] = nowMs
+    return false
+end
+AddEventHandler('playerDropped', function() Watch.lastMelee[source] = nil end)
+
 if GetConvar('gs_anticarkill', 'true') ~= 'false' then
     AddEventHandler('weaponDamageEvent', function(sender, data)
         if type(data) ~= 'table' or not data.hitGlobalId then return end
         local ent = NetworkGetEntityFromNetworkId(data.hitGlobalId)
         local isPlayer = ent and ent ~= 0 and DoesEntityExist(ent) and IsPedAPlayer(ent)
         if Watch.vehicleHit(tonumber(sender), data.weaponType, isPlayer) then CancelEvent() end
+    end)
+end
+if GetConvar('gs_antimeleespam', 'true') ~= 'false' then
+    AddEventHandler('weaponDamageEvent', function(sender, data)
+        if type(data) ~= 'table' or not data.hitGlobalId then return end
+        local ent = NetworkGetEntityFromNetworkId(data.hitGlobalId)
+        local isPlayer = ent and ent ~= 0 and DoesEntityExist(ent) and IsPedAPlayer(ent)
+        if Watch.meleeHit(tonumber(sender), data.weaponType, isPlayer, GetGameTimer()) then CancelEvent() end
     end)
 end
 
