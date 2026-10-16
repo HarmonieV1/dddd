@@ -271,11 +271,20 @@
     transition: border-color .3s, box-shadow .3s; }
   .trailer:hover { border-color: var(--pink); box-shadow: 0 0 50px rgba(176, 72, 255, .25); }
   .trailer::before { content: ''; position: absolute; inset: 0; pointer-events: none; background: repeating-linear-gradient(0deg, rgba(255, 255, 255, .035) 0 1px, transparent 1px 3px); }
-  .trailer > div { position: relative; }
+  .trailer > div { position: relative; z-index: 2; }
+  /* V12.63 : image de fond de la bande-annonce (CONFIG.trailerPoster), lent zoom, assombrie pour lire le bouton */
+  .trailer .poster { position: absolute; inset: 0; z-index: 0; background-size: cover; background-position: center; transform: scale(1.04); transition: transform 1.2s var(--ease); animation: posterZoom 18s ease-in-out infinite alternate; }
+  .trailer .poster::after { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse at center, rgba(7, 4, 13, .25), rgba(7, 4, 13, .8)), linear-gradient(transparent 55%, rgba(7, 4, 13, .85)); }
+  .trailer:hover .poster { transform: scale(1.1); }
+  .trailer.has-poster { color: #fff; }
+  .trailer.has-poster small { color: rgba(255, 255, 255, .8); }
+  .trailer .rec, .trailer .corner { z-index: 2; }
+  @keyframes posterZoom { from { background-position: 45% 50%; } to { background-position: 55% 50%; } }
   .trailer .play { position: relative; width: 84px; height: 84px; border-radius: 50%; display: grid; place-items: center; margin: 0 auto 12px; background: linear-gradient(120deg, var(--red), var(--pink)); box-shadow: var(--glow-pink); font-size: 2rem; color: #fff; transition: transform .35s var(--ease); }
   .trailer .play::before, .trailer .play::after { content: ''; position: absolute; inset: 0; border-radius: 50%; border: 2px solid var(--pink); animation: ring 2.4s ease-out infinite; }
   .trailer .play::after { animation-delay: 1.2s; }
   .trailer:hover .play { transform: scale(1.12); }
+  @media (max-width: 600px) { .trailer .play { width: 58px; height: 58px; font-size: 1.4rem; margin-bottom: 6px; } .trailer small { font-size: .72rem; } }
   @keyframes ring { to { transform: scale(1.9); opacity: 0; } }
   .rec { position: absolute; top: 16px; left: 18px; font-size: .75rem; font-weight: 800; letter-spacing: .16em; color: var(--white); display: flex; align-items: center; gap: 8px; }
   .rec i { width: 9px; height: 9px; border-radius: 50%; background: var(--red); box-shadow: 0 0 10px var(--red); animation: caret 1.2s steps(1) infinite; }
@@ -791,7 +800,7 @@ body.has-glow .reticle { opacity: 1; }
     <div class="trailer rv">
       <span class="corner tl"></span><span class="corner tr"></span><span class="corner bl"></span><span class="corner br"></span>
       <span class="rec"><i></i>REC</span>
-      <div><div class="play">▶</div>Bande-annonce RoadLine RP<br><small class="js-trailer-note">Avant-première sur TikTok · version officielle bientôt sur YouTube</small></div>
+      <div><div class="play">▶</div>Bande-annonce RoadLine RP<br><small class="js-trailer-note">Clique pour la voir sur TikTok · version officielle bientôt sur YouTube</small></div>
     </div>
     <!-- V12.63 : photos de la ville (img/ville-01.jpg…) : liste dans CONFIG.photos, sans légende -->
     <div class="slider rv js-slider" aria-roledescription="carrousel" aria-label="Photos de la ville">
@@ -1122,7 +1131,8 @@ body.has-glow .reticle { opacity: 1; }
     staffUrlB64: 'L25pbWRhX3NnL29pLnBpbHNzLjM3MS0wNzEtOTIxLTc1Ly86c3B0dGg=',        // panneau staff (lien discret en bas de page, caché tant que l'IP est censurée)
     tiktok: 'https://vm.tiktok.com/ZGdCuFgXU/', twitch: '', youtube: '',
     trailerUrl: 'https://vm.tiktok.com/ZGdCuFgXU/', // V12.63 : pseudo bande-annonce (TikTok), ouverte au clic tant que « trailer » (YouTube) est vide
-    photos: ['img/ville-01.jpg', 'img/ville-02.jpg', 'img/ville-03.jpg', 'img/ville-04.jpg', 'img/ville-05.jpg'], // V12.63 : diaporama « La ville » (ajoute tes fichiers ici)
+    trailerPoster: 'img/ville-03.jpg', // V12.63 : image de fond de la bande-annonce (en attendant la miniature YouTube)
+    photos: ['img/ville-01.jpg', 'img/ville-02.jpg', 'img/ville-03.jpg', 'img/ville-04.jpg', 'img/ville-05.jpg', 'img/ville-06.jpg', 'img/ville-07.jpg', 'img/ville-08.jpg', 'img/ville-09.jpg'], // V12.63 : diaporama « La ville » (ajoute tes fichiers ici)
     opening: '2026-10-20T21:00:00+02:00',   // date et heure d'ouverture (compte à rebours)
     trailer: '',            // identifiant de la vidéo YouTube (ex. 'dQw4w9WgXcQ') : lue au clic sur la bande-annonce
     team: [                 // l'équipe (section masquée tant que la liste est vide), ex. :
@@ -1520,6 +1530,12 @@ body.has-glow .reticle { opacity: 1; }
   });
   // Liens Discord pas encore remplis
   $$('.js-discord').forEach(a => a.addEventListener('click', e => { if (CONFIG.discord.includes('A_REMPLIR')) { e.preventDefault(); toast('Le Discord ouvre très bientôt.'); } }));
+  // V12.63 : image de fond de la bande-annonce (vraie image de la ville, pas juste le bouton)
+  if (CONFIG.trailerPoster) {
+    const tr = $('.trailer'), im = new Image();
+    im.onload = () => { const p = document.createElement('i'); p.className = 'poster'; p.style.backgroundImage = `url("${CONFIG.trailerPoster}")`; tr.prepend(p); tr.classList.add('has-poster'); };
+    im.src = CONFIG.trailerPoster;
+  }
   // Bande-annonce : lue sur place quand CONFIG.trailer est rempli
   $('.trailer').addEventListener('click', e => {
     const t = e.currentTarget;

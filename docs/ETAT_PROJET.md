@@ -299,7 +299,7 @@ Résumé très condensé (le détail complet est dans `docs/ROADMAP.md`, `docs/F
   Cause réelle (console VPS : « No such export RandomToken ») : maps.js et crypto.js déclaraient tous deux `const crypto` au
   premier niveau ; FiveM exécute les .js d'une ressource dans le même contexte → crypto.js plantait. crypto.js isolé dans une
   fonction ; nouveau contrôle `tests/check_js_scope.js` (noms de premier niveau en double entre .js d'une même ressource).
-  Site : diaporama « La ville » (CONFIG.photos, img/ville-01…05.jpg, fondu + zoom lent, glisser, flèches, points, plein écran,
+  Site : diaporama « La ville » (CONFIG.photos, img/ville-01…09.jpg, image de fond de la bande-annonce `trailerPoster`, fondu + zoom lent, glisser, flèches, points, plein écran,
   sans légende), bande-annonce = TikTok en attendant YouTube (`trailerUrl`), adresse du serveur affichée (`hideIpUntilOpening: false`),
   « Choisis ta vie » complété (cavale, cabines, Weazel direct, fête foraine, circuit, cimetière). Gazette du site = **édition en
   cours** (`gazetteDraft` de ville.json, « paraît dimanche 20 h ») dès qu'il s'est passé quelque chose dans la semaine ; la Gazette
