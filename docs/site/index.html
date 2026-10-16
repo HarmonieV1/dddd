@@ -782,6 +782,7 @@ body.has-glow .reticle { opacity: 1; }
   <span class="now-i js-now-next" title="Prochain rendez-vous">📅 <b>—</b></span>
   <span class="now-i js-now-rumor" title="Dernière rumeur vérifiée">🗣️ <b>—</b></span>
   <span class="now-i js-now-mem" title="Lieux de mémoire">🏛️ <b>—</b> lieux de mémoire</span>
+  <span class="now-i js-now-island" title="Vol du jour au départ de l'aéroport (LSIA)" hidden>✈️ <b>—</b></span>
 </div>
 
 <div class="stats">
@@ -1000,8 +1001,12 @@ body.has-glow .reticle { opacity: 1; }
           <li><b>Cabines téléphoniques</b> : appels anonymes à la police, au journal ou à un numéro… attention aux écoutes.</li>
           <li><b>Police plus vive</b> : sans policier en ville, la police IA te prend en chasse, hélico au-dessus des grosses cavales ; le samedi soir, les rodéos coûtent plus cher.</li>
           <li><b>Scènes de crime</b> : photographie le sang et les douilles, la police verse la photo au dossier.</li>
-          <li><b>Ton style et ta vie</b> : des dizaines de coupes et de robes, s'asseoir partout, récolte, territoires de gang, courses sur mesure.</li></ul>
-        <div class="chips"><span>Concessions</span><span>Benny's</span><span>Cimetière</span><span>Cabines</span><span>Police IA</span><span>Courses de rue</span><span>Territoires</span><span>Coiffures et robes</span></div></div></article>
+          <li><b>Ton style et ta vie</b> : des dizaines de coupes et de robes, s'asseoir partout, récolte, territoires de gang, courses sur mesure.</li>
+          <li><b>Un jour sur deux, North Yankton</b> : le vol de l'aéroport part pour la ville enneigée du prologue au lieu de Cayo Perico.</li>
+          <li><b>La rue a de la mémoire</b> : mur des légendes devant Mission Row, affiches de cavale à arracher, hommages peints par les gangs à leurs disparus.</li>
+          <li><b>Vivre son quartier</b> : voisins vigilants, « figure du coin » saluée par les habitants, trêves négociées entre gangs.</li>
+          <li><b>Petits plaisirs</b> : photomaton à la fête foraine, gestes au lavabo, à la douche ou à la fontaine… et l'alcootest du shérif, la nuit.</li></ul>
+        <div class="chips"><span>Concessions</span><span>Benny's</span><span>Cimetière</span><span>Cabines</span><span>Police IA</span><span>Courses de rue</span><span>Territoires</span><span>Coiffures et robes</span><span>North Yankton</span><span>Photomaton</span><span>Voisins vigilants</span><span>Trêves de gangs</span></div></div></article>
       <article class="rv" style="--d:2"><time>V1 → V4</time><div><strong>Les fondations</strong>
         <p class="muted">La rue et les métiers, une ville qui se souvient de toi, une ville qui vit sans toi, puis la bêta ouverte : tout ce qui
           compte est rangé dans <a href="#signatures">les signatures</a>, plus haut.</p>
@@ -1244,6 +1249,10 @@ body.has-glow .reticle { opacity: 1; }
       set('.js-now-next', n.next ? `${n.next.label} · ${n.next.dayName} ${n.next.from}` : '—');
       set('.js-now-rumor', n.rumor ? ('« ' + n.rumor + ' »') : 'rien de vérifié');
       set('.js-now-mem', String(n.memories ?? 0));
+      // V12.63 · Journée North Yankton : destination du vol régulier aujourd'hui (un jour sur deux)
+      const ISLANDS = { cayo: 'Vol du jour : Cayo Perico 🏝️', yankton: 'Vol du jour : North Yankton ❄️' };
+      const isl = document.querySelector('.js-now-island');
+      if (isl) { isl.hidden = !ISLANDS[n.island]; if (ISLANDS[n.island]) set('.js-now-island', ISLANDS[n.island]); }
       const dot = document.querySelector('.js-now-dot'); if (dot) dot.classList.add('on');
       if (!CONFIG.cfxCode) { const p = document.querySelector('.js-players'); if (p) p.textContent = `${d.players ?? 0} / ${CONFIG.slots || d.max || '?'}`; }
       // V12.3 : Weazel News en direct : ce qui vient vraiment de la ville passe en tête du bandeau
@@ -1253,6 +1262,7 @@ body.has-glow .reticle { opacity: 1; }
         const items = [];
         (n.news || []).slice(0, 3).forEach((a) => { if (a && a.title) items.push('Weazel : ' + a.title + (a.author ? ' — ' + a.author : '')); }); // V12.59 : articles écrits en jeu
         if (n.live && n.live.zone) items.unshift(`EN DIRECT · L'hélico de la police filme une poursuite au-dessus de ${n.live.zone} (${'★'.repeat(Math.min(5, Number(n.live.stars) || 1))}, depuis ${Number(n.live.minutes) || 0} min)`); // V12.62 : poursuite filmée
+        if (n.island === 'yankton') items.push('Aéroport de Los Santos : aujourd\'hui, le vol régulier part pour North Yankton et sa neige'); // V12.63
         if (n.rumor) items.push('Rumeur confirmée : ' + n.rumor);
         if (n.hot && n.hot.length) items.push('Tension maximale à ' + n.hot.join(' et ') + ' : les habitants restent chez eux');
         if (n.next) items.push(`${n.next.label} ${n.next.dayName} à ${n.next.from} : la ville se prépare`);

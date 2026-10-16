@@ -487,3 +487,15 @@ Traductions françaises manquantes des scripts Qbox ajoutées par METTRE-A-JOUR 
   (vérifié par un test automatique). Bannissement **posé ET levé depuis le jeu** (F11 → Joueurs → Bannir, F11 → Bannissements pour la liste,
   la recherche et le déban, même sur un joueur hors ligne), ce que txAdmin ne sait pas faire. Le staff n'est jamais banni automatiquement :
   il est signalé. Et l'arrivée en bus dépose enfin devant la mairie, itinéraire tracé vers Max « le Guide ».
+
+## V12.59 → V12.63 · La ville du 15-16/10 (détail : `docs/PATCH_NOTE_V12.63.md`)
+- **Mémoire de la rue** : sang et douilles après une fusillade, barrières après un braquage (24 h) ; scène de crime photographiée versée
+  au dossier ; mur des légendes devant Mission Row ; affiches de cavale arrachables ; avis du commerçant après un braquage filmé ;
+  hommages « R.I.P. » peints par les gangs ; cimetière (tombes, épitaphes, avis de décès, fleurs).
+- **Police** : police IA qui poursuit vraiment (sans policier joueur en service), hélico au-dessus des grosses cavales (« en direct »
+  sur le site), rodéo du samedi, barrage d'alcoolémie du shérif la nuit, cabines téléphoniques (appels anonymes, écoute, fausse alerte).
+- **Quartiers et gangs** : figure du coin, voisins vigilants, trêves entre gangs, territoires en pâtés de maisons, gangs sur projet RP.
+- **Ailleurs** : journée North Yankton un jour sur deux (vol de l'aéroport, à la place de Cayo Perico), jetons de fête foraine et
+  photomaton, courses sur mesure avec véhicule imposé, gestes selon l'objet (lavabo, douche, fontaine, mer).
+- **Staff** : Lives (écrans des joueurs, replays des tickets), appli staff externe (tablette), carte en direct, rapport de fin de soirée.
+

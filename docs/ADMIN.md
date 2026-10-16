@@ -160,3 +160,21 @@ Placer n'importe quel objet du jeu, le déplacer, le tourner, le dupliquer, le s
 - **Version publique** : `setr gs_public_version "V4 · bêta"` (écran de chargement, site, statut Discord). `gs_version` (V11.3) reste pour le staff.
 - **Règlement Discord** : `docs/REGLEMENT.md` (12 messages prêts à coller). **Guides** : `tools/guide_joueur.py` (joueurs, PDF) et
   `tools/guide_staff.py` (staff, PDF interne) → `docs/pdf/`.
+
+## V12.60 → V12.63 · Lives, appli staff externe, outils du 15-16/10
+Détail joueur / staff / fondateur : `docs/PATCH_NOTE_V12.63.md` (et `docs/PATCH_SESSION_15-10.md`, version par version).
+- **Lives** (`gs_lives`) : F11 → Lives ou `/lives` (modérateur et plus, mode staff). Capture faite chez le joueur par screenshot-basic
+  et renvoyée par le réseau du jeu ; une seule capture par joueur regardé, partagée entre F11, l'appli et les replays 30 s des tickets.
+  Échec : la raison s'affiche dans la fenêtre (et dans la console, une fois par minute). Ta propre ligne « (toi : test) » = vérifier seul ;
+  F8 `/livestest` = tester la capture sur ton PC. Grille ▦, « ⇢ TP », ⏪ replay (joueurs liés à un ticket ouvert).
+- **Appli staff externe** : remplace l'ancien panneau mobile décrit plus haut. Tout est dans `docs/APPLI_STAFF.md` (connexion, rangs,
+  actions, carte avec les tickets, Lives hors jeu). Mot de passe collectif / codes avec rang : GERER-OVH → 20 (M / A).
+- **F10** : onglet **Carte** (joueurs en direct) ; action « Coincé : dernier endroit sûr ».
+- **F11 → Joueurs → un joueur** : « Coincé : ramener au dernier endroit sûr » (helper et plus) ; « Mort RP : tombe au cimetière ».
+- **F11 → Monde et lieux** (super-admin et plus) : **Destination du vol de l'île** (journée North Yankton : alternance, Cayo ou North
+  Yankton tous les jours ; joueurs sur place rapatriés), Courses (véhicule imposé), Gangs, Blips en double, Déplacer un point.
+- **Commandes** : `/quartierforme <quartier> <angle> [taille] [allongement]` (gangs), `/faussealerte <n°>` (police), `/voisins` (joueurs),
+  `/rapportstaff` (console : rapport de fin de soirée tout de suite).
+- **Outils Windows** : DIAGNOSTIC-MODS (abîmés, copies, maps en deux versions, voitures en double, textures ≥ 32 Mo ; O = corrections sûres
+  réversibles), METTRE-A-JOUR-OVH (envoi incrémental, reprise, IPv4), GERER-OVH (verrou pendant une mise à jour).
+

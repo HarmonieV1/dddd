@@ -27,3 +27,8 @@ site tiers). Taille max 1,5 Mo, une photo toutes les 20 s par joueur.
 - **Lives staff** (V12.60, gs_lives) : F11 → Lives ou `/lives` : l'écran d'un ou plusieurs joueurs dans des fenêtres
   déplaçables (une image toutes les 1,5 s, rien n'est enregistré, chaque visionnage est écrit dans le journal staff).
   Seul screenshot-basic est nécessaire (pas d'hébergeur d'images).
+  V12.63 : la capture est faite chez le joueur et renvoyée par le réseau du jeu (plus d'envoi par une adresse web) ; la même image sert
+  à F11, à l'appli staff et aux replays des tickets ; screenshot-basic livré patché pour les versions récentes de FiveM (rappel en
+  https). Si l'image ne vient pas, la fenêtre dit pourquoi ; F8 `/livestest` teste la capture sur son PC, « (toi : test) » dans la liste
+  permet de vérifier seul. Photomaton de la fête foraine (gs_casino) : même photo que l'appareil argentique, image réelle si l'hébergement
+  des photos est configuré.

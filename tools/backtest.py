@@ -126,6 +126,7 @@ SESSIONS = [
         ('Nuit, aucun policier en service, 3 verres, rouler hors de la ville : barrage du shérif (cônes) → s\'arrêter, E → « Alcootest positif » amende + points ; filer = refus d\'obtempérer', 'Seul', 2),
         ('Photomaton (à côté du guichet des jetons, à caler via F11) : 3 jetons → photo dans le sac ; un ami dans la cabine reçoit sa copie', '2', 1),
         ('F11 → Monde et lieux → Destination du vol de l\'île → North Yankton : un ami sur Cayo est ramené à l\'aéroport ; comptoir LSIA « Vol pour North Yankton » → ville enneigée, minimap du prologue, neige ; comptoir retour (à caler) → LSIA ; remettre « Alternance »', '2', 3),
+        ('Site, « En ce moment en ville » : « ✈️ Vol du jour : … » suit la destination choisie dans F11 (1 min) ; jour North Yankton : annonce dans le bandeau Weazel', 'Seul', 1),
         ('Jour North Yankton : F11 → Événements → Soirée plage de Cayo → refusée ; se déconnecter à North Yankton, passer en Cayo, se reconnecter → repris à l\'aéroport', 'Staff', 2),
     ]),
     ('5 · Obligatoire avant d\'ouvrir', [

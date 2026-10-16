@@ -28,6 +28,8 @@ function CityNow()
         news = started('gs_social') and try(function() return exports.gs_social:Headlines() end, {}) or {},
         -- V12.62 : poursuite filmée par l'hélico de la police IA (quartier, étoiles, durée ; jamais le nom du joueur)
         live = started('gs_wanted') and try(function() return exports.gs_wanted:LiveChase() end, nil) or nil,
+        -- V12.63 : destination du vol régulier de l'aéroport aujourd'hui ('cayo' ou 'yankton', journée North Yankton)
+        island = started('gs_world') and try(function() return exports.gs_world:IslandMode() end, nil) or nil,
     }
 end
 

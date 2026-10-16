@@ -1,5 +1,7 @@
 # Patch récap — session de secours du 15-16/10/2026 (V12.59 → V12.63)
 
+> Patch note à publier (joueurs, staff, fondateur) : `docs/PATCH_NOTE_V12.63.md` ; version Discord : `docs/PATCH_NOTE_V12.63_DISCORD.txt`.
+
 > Branche `claude/presence-check-f9jlgz` (fusionnée dans `feature/phase1-bridge` le 16/10, accord du fondateur). Détail technique de chaque
 > version : `docs/ETAT_PROJET.md` (historique). À tester en jeu : backtest sections **4d, 4e, 4f, 4g** (site de doc).
 > Installation : METTRE-A-JOUR → DIAGNOSTIC-MODS (O) → VIDER-CACHE-FIVEM → METTRE-A-JOUR-OVH.
@@ -81,7 +83,7 @@
 | **Staff : tickets et coincés** | appli staff, F11, `gs_admin` | Carte : anneau jaune sur l'auteur d'un ticket ouvert (n° 192) ; joueur coincé sous la carte : retour automatique après 6 s, bouton « Coincé : dernier endroit sûr » dans F11, F10 et l'appli (n° 193) |
 | **Mods : textures et versions** | DIAGNOSTIC-MODS | Liste des textures / modèles de plus de 32 Mo ; même map installée en deux versions (animalerie `_1`) : la copie passe en pause, l'original reste (Shadow Complex `_1` gardé : l'ancien est retiré) |
 | **Idées du 16/10** | `gs_gangs`, `gs_city`, `gs_roadside`, `gs_casino` | Hommage peint au nom d'un membre disparu (n° 170), voisins vigilants `/voisins` (n° 173), alcootest du shérif la nuit sans policier (n° 180), photomaton de la fête foraine (n° 189) |
-| **Journée North Yankton** | `gs_world`, F11 | Un jour sur deux, le vol de l'aéroport mène à North Yankton (ville enneigée du prologue) au lieu de Cayo Perico (même emplacement : jamais les deux) ; F11 → Monde et lieux → Destination du vol de l'île pour forcer ; joueurs sur place rapatriés à la bascule (n° 191) |
+| **Journée North Yankton** | `gs_world`, F11 | Un jour sur deux, le vol de l'aéroport mène à North Yankton (ville enneigée du prologue) au lieu de Cayo Perico (même emplacement : jamais les deux) ; F11 → Monde et lieux → Destination du vol de l'île pour forcer ; joueurs sur place rapatriés à la bascule (n° 191) ; le site affiche le vol du jour |
 
 ## Encore en attente (côté fondateur)
 - `shared/config.lua` du script des auto-tamponneuses si l'achat bloque encore ;

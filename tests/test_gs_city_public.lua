@@ -6,6 +6,7 @@ GetConvarInt = function(_, d) return d end
 provide('gs_events', { Weekly = function() return { { dayName = 'vendredi', from = '21:00', label = 'Vendredi des courses' } } end })
 provide('gs_wanted', { Legends = function() local l = {} for i = 1, 8 do l[i] = { name = 'Légende ' .. i, date = '01/10/2026', hours = 2 } end return l end })
 provide('gs_weather', { GetWeather = function() return 'CLEAR' end })
+provide('gs_world', { IslandMode = function() return 'yankton' end }) -- V12.63 : journée North Yankton
 loadResource('gs_city', { R .. 'gs_city/shared/config.lua', R .. 'gs_city/server/public.lua' })
 local passed, failed = 0, 0
 local function check(name, cond)
@@ -20,5 +21,6 @@ check('tous les quartiers', #d.districts == #Config.Districts)
 check('tension et standing du quartier', south.tensionLabel == 'chaud' and south.standingLabel == 'à l\'abandon')
 check('rendez-vous', d.weekly[1].label == 'Vendredi des courses')
 check('légendes : 5 max, sans les heures', #d.legends == 5 and d.legends[1].hours == nil)
+check('V12.63 : vol du jour publié pour le site', d.now and d.now.island == 'yankton')
 io.write(('\n%d réussis, %d échoués\n'):format(passed, failed))
 os.exit(failed == 0 and 0 or 1)

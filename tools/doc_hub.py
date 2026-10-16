@@ -15,7 +15,7 @@ OUT = os.path.join(DOCS, 'hub', 'index.html')
 
 CATEGORIES = [
     ('Pilotage', 'Où on en est, ce qui reste, la stratégie', [
-        ('ETAT_PROJET', 'État du projet (point de sauvegarde)'), ('ROADMAP', 'Feuille de route'),
+        ('ETAT_PROJET', 'État du projet (point de sauvegarde)'), ('PATCH_NOTE_V12.63', 'Patch note du 16/10 (V12.63)'), ('ROADMAP', 'Feuille de route'),
         ('STRATEGIE', 'Stratégie et positionnement'), ('PROPOSITIONS', 'Propositions et idées'),
         ('V1_CHECKLIST', 'Checklist V1')]),
     ('La ville', 'Ce que vivent les joueurs', [
