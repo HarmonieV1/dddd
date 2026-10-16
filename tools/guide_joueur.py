@@ -239,7 +239,9 @@ def build():
                   '<b>Fausse alerte</b> : un faux appel à la police depuis une cabine peut coûter 2 500 $ si l\'appel est retrouvé '
                   '(cabine sur écoute ou filmée).',
                   '<b>Gangs : trêve</b> (menu Gang → Trêves, cadres) : 48 h sans guerre entre deux gangs. Mettre l\'un des leurs à terre '
-                  'la rompt, et la réputation du gang fautif s\'effondre dans toute la ville.'])
+                  'la rompt, et la réputation du gang fautif s\'effondre dans toute la ville.',
+                  '<b>Gestes</b> (Alt sur l\'objet) : lavabo (mains, visage), douche, fontaine (boire), et dans la mer : E pour se rincer. '
+                  'Le sang et la saleté partent. Les secours peuvent nettoyer tes plaies.'])
     s += [Paragraph('Le permis de conduire', H3)]
     s += [table([['Étape', 'Prix', 'Comment'],
                  ['Obtention', 'Gratuit', 'Tout le monde a son permis dès l\'arrivée : la carte <b>Permis de conduire</b> est dans ton sac (F2). Pas d\'auto-école, ni code ni examen.'],

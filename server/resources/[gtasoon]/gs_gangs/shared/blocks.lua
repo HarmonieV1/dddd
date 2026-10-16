@@ -9,14 +9,22 @@ local function rot(x, y, a)
     return x * c - y * s, x * s + y * c
 end
 
+--- V12.63 (backtest : « toujours des ronds ») : les cases remplissent un RECTANGLE orienté sur les rues (même surface que le
+--- disque d'avant : côté = rayon × 1,77), et plus un cercle. aspect = longueur / largeur (1 = carré).
+function Blocks.inside(lx, ly, radius, aspect)
+    local k = math.sqrt(tonumber(aspect) or 1.0)
+    local hw, hh = radius * 0.886 * k, radius * 0.886 / k
+    return math.abs(lx) <= hw + 0.01 and math.abs(ly) <= hh + 0.01
+end
+
 --- Centres des cases du quartier (vec3 à l'altitude du centre).
-function Blocks.cells(center, radius, angle, cell)
+function Blocks.cells(center, radius, angle, cell, aspect)
     local a, out = math.rad(angle or 0.0), {}
-    local n = math.ceil(radius / cell)
+    local n = math.ceil(radius * 1.8 / cell)
     for i = -n, n do
         for j = -n, n do
             local lx, ly = i * cell, j * cell
-            if lx * lx + ly * ly <= radius * radius then
+            if Blocks.inside(lx, ly, radius, aspect) then
                 local x, y = rot(lx, ly, a)
                 out[#out + 1] = vec3(center.x + x, center.y + y, center.z)
             end
@@ -26,8 +34,8 @@ function Blocks.cells(center, radius, angle, cell)
 end
 
 --- Le point `p` est-il dans une des cases du quartier ?
-function Blocks.contains(center, radius, angle, cell, p)
+function Blocks.contains(center, radius, angle, cell, p, aspect)
     local x, y = rot(p.x - center.x, p.y - center.y, -math.rad(angle or 0.0))
     local lx, ly = math.floor(x / cell + 0.5) * cell, math.floor(y / cell + 0.5) * cell
-    return lx * lx + ly * ly <= radius * radius
+    return Blocks.inside(lx, ly, radius, aspect)
 end

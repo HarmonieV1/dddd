@@ -60,7 +60,11 @@ Config.Population = {
 -- Gangs créés automatiquement au 1er démarrage (si absents), avec leur QG / planque dans leur quartier du jeu.
 -- V7 : 4 gangs de rue + 2 organisations criminelles (noms de l'univers GTA). Le staff déplace une planque ou un garage en
 -- jeu (F11 → Monde et lieux → Gangs) ou en crée d'autres. color = couleur de blip GTA.
-Config.DefaultGangs = {
+-- V12.63 (fondateur) : plus de gangs créés d'office. Les gangs se créent en jeu (F11 → Monde et lieux → Gangs). Les anciens
+-- gangs par défaut ci-dessous ne sont plus créés et sont retirés au démarrage S'ILS N'ONT AUCUN MEMBRE (un gang déjà rejoint
+-- par des joueurs est gardé). Liste gardée pour mémoire (positions des planques, utiles pour recréer un gang au même endroit).
+Config.DefaultGangs = {}
+Config.LegacyGangs = {
     { name = 'families', label = 'Families', color = 25, stash = vec3(107.8, -1942.9, 20.8) },    -- Grove Street
     { name = 'ballas', label = 'Ballas', color = 27, stash = vec3(4.9, -1819.3, 29.2) },          -- Davis
     { name = 'vagos', label = 'Vagos', color = 46, stash = vec3(336.3, -2040.2, 21.4) },          -- Rancho / Jamestown
@@ -69,7 +73,7 @@ Config.DefaultGangs = {
     { name = 'triads', label = 'Triades (organisation)', color = 3, stash = vec3(-649.6, -1232.2, 11.4) },        -- [À CALER] Little Seoul
 }
 -- Gangs par défaut des versions précédentes, retirés (seulement s'ils n'ont plus aucun membre)
-Config.RemovedGangs = { 'marabunta' }
+Config.RemovedGangs = { 'marabunta', 'families', 'ballas', 'vagos', 'lostmc', 'madrazo', 'triads' } -- V12.63 : retirés s'ils sont vides
 
 -- Garage des gangs par défaut (un véhicule par membre, aux couleurs du gang). garage = sortie ; paint = couleur GTA.
 Config.GangGarages = {

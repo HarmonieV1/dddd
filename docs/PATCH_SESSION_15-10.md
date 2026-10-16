@@ -75,6 +75,7 @@
 | **Mods en double** | DIAGNOSTIC-MODS | Les copies complètes d'un même mod (batic, hachura, sentinel…) sont repérées et mises en pause (réversible) |
 | **Idées du soir** | `gs_wanted`, `gs_gangs`, `gs_city`, `gs_stickup`, `gs_cabines` | Mur des légendes, affiches de cavale arrachables, trêve entre gangs, figure du coin, avis du commerçant après un braquage, fausse alerte depuis une cabine (n° 148, 149, 152, 157, 161, 163) |
 | **Lives : capture** | `screenshot-basic`, `gs_lives` | Capture réparée pour les versions récentes de FiveM (rappel en https) ; F8 `/livestest` pour tester sur son PC |
+| **Retours du 16/10** | `gs_vie`, `gs_races`, `gs_gangs`, `gs_details`, `gs_admin` | Poubelles : seulement la fouille animée ; gestes selon l'objet (lavabo, douche, fontaine, mer, EMS) ; courses sur mesure : véhicule imposé, organisateur moins strict, relance du départ ; plus de gangs par défaut ; quartiers en rectangles de pâtés de maisons ; cyclone limité à 210 km/h ; appli staff : rangs (fondateur sur tout le monde) |
 | **Outils OVH** | `scripts/windows` | GERER-OVH ne plante plus (« roadline-envoi.txt en cours d'utilisation ») ; METTRE-A-JOUR-OVH ne renvoie plus les gros fichiers déjà présents sur le VPS (fini le 1 Go à chaque fois) ; avancée affichée pendant l'envoi (Mo, %, temps restant) ; envoi coupé **complété** au lieu d'être recommencé ; GERER-OVH ne renvoie la commande roadline que si elle a changé et ouvre le menu même si l'envoi échoue, sans plus jamais toucher au serveur pendant une mise à jour (verrou) |
 
 ## Encore en attente (côté fondateur)

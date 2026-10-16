@@ -102,14 +102,14 @@ while ($true) {
             }
             '20' {
                 Invoke-Vps $vps 'sudo roadline staffweb liste'
-                $a = (Read-Host '  M = mot de passe collectif (efface les codes personnels), A = ajouter un code, R = retirer un code, Entrée = rien').Trim().ToUpper()
+                $a = (Read-Host '  M = mot de passe collectif (rang modérateur), A = code personnel avec un rang (ex. fondateur), R = retirer un code, Entrée = rien').Trim().ToUpper()
                 if ($a -eq 'M') {
                     # V12.63 : saisi masqué, envoyé dans un fichier (jamais sur la ligne de commande ni dans le dépôt)
                     $sec = Read-Host '  Nouveau mot de passe collectif (6 caractères au moins, 12 conseillés ; sans guillemet, \ ni ;)' -AsSecureString
                     $plain = [Runtime.InteropServices.Marshal]::PtrToStringAuto([Runtime.InteropServices.Marshal]::SecureStringToBSTR($sec))
                     if ($plain.Length -lt 6 -or $plain -match '["\\;]') { Say '  6 caractères au moins, sans guillemet, \ ni ;.' 'Yellow'; break }
                     if ($plain.Length -lt 12) { Say '  Conseil : 12 caractères ou plus (ce mot de passe permet de bannir).' 'Yellow' }
-                    if ((Read-Host '  Les anciens codes personnels seront effacés et le serveur redémarré (environ 1 min). Continuer ? (O/N)') -notmatch '^[oOyY]') { break }
+                    if ((Read-Host '  Les codes personnels sans rang seront effacés (ceux avec un rang sont gardés) et le serveur redémarré (environ 1 min). Continuer ? (O/N)') -notmatch '^[oOyY]') { break }
                     # envoyé sur l'entrée standard de la commande (ni fichier temporaire, ni ligne de commande)
                     $a2 = SshArgs
                     $plain | & ssh @a2 -o StrictHostKeyChecking=accept-new "$($vps.user)@$($vps.ip)" 'sudo roadline staffweb motdepasse'
@@ -119,8 +119,14 @@ while ($true) {
                 if ($a -notin 'A', 'R') { break }
                 $who = (Read-Host '  Pseudo du membre (sans espace)').Trim()
                 if ($who -notmatch '^[A-Za-z0-9_-]{2,20}$') { Say '  Pseudo : 2 à 20 lettres, chiffres, - ou _.' 'Yellow'; break }
+                $rang = ''
+                if ($a -eq 'A') { # V12.63 : le rang suit le code (le mot de passe collectif reste au rang modérateur)
+                    $rang = (Read-Host '  Rang dans l''appli : 1 helper, 2 modérateur, 3 admin, 4 super-admin, 5 fondateur (Entrée = 2)').Trim()
+                    if ($rang -eq '') { $rang = '2' }
+                    if ($rang -notmatch '^[1-5]$') { Say '  Rang : un chiffre de 1 à 5.' 'Yellow'; break }
+                }
                 if ((Read-Host '  Le serveur va redémarrer (environ 1 min). Continuer ? (O/N)') -notmatch '^[oOyY]') { break }
-                Invoke-Vps $vps ("sudo roadline staffweb {0} {1}" -f $(if ($a -eq 'A') { 'ajouter' } else { 'retirer' }), $who)
+                Invoke-Vps $vps ("sudo roadline staffweb {0} {1} {2}" -f $(if ($a -eq 'A') { 'ajouter' } else { 'retirer' }), $who, $rang).Trim()
             }
             default { Invoke-Vps $vps $menu[$c][1] }
         }

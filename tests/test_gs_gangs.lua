@@ -25,7 +25,8 @@ Store = {
 local blinded, traces = {}, {}
 provide('gs_cctv', { BlindArea = function(x, y, r, m) blinded[#blinded + 1] = { r = r, m = m } return 3 end, Trace = function(k, g) traces[#traces + 1] = { k = k, g = g } return true end })
 loadResource('gs_gangs', { R .. 'gs_gangs/server/main.lua', R .. 'gs_gangs/server/ops.lua' })
-local defaults = Config.DefaultGangs
+local defaults = Config.LegacyGangs -- V12.63 : plus de gangs par défaut ; on teste le mécanisme avec l'ancienne liste
+local noDefault = #Config.DefaultGangs == 0
 Config.DefaultGangs = {}
 Gangs.init()
 
@@ -166,8 +167,13 @@ do
     check('V12.56 : point hors des cases refusé', not Blocks.contains(tg.center, tg.radius, 0.0, 90.0, vec3(tg.center.x + tg.radius * 1.5, tg.center.y, tg.center.z)))
     local all = true
     for _, c in ipairs(Blocks.cells(tg.center, tg.radius, 37.0, 80.0)) do if not Blocks.contains(tg.center, tg.radius, 37.0, 80.0, c) then all = false end end
+    -- V12.63 : rectangle de cases (plus de rond) : les coins du carré sont dedans, l'allongement change la forme
+    local corner = vec3(tg.center.x + tg.radius * 0.8, tg.center.y + tg.radius * 0.8, tg.center.z)
+    check('V12.63 : forme rectangulaire (coin inclus, qu\'un disque excluait)', Blocks.contains(tg.center, tg.radius, 0.0, 30.0, corner))
+    local long = vec3(tg.center.x + tg.radius * 1.2, tg.center.y, tg.center.z)
+    check('V12.63 : allongement : plus long dans un sens', Blocks.contains(tg.center, tg.radius, 0.0, 30.0, long, 2.0) and not Blocks.contains(tg.center, tg.radius, 0.0, 30.0, long, 1.0))
     check('V12.56 : chaque centre de case est bien « dans » le quartier (carte = serveur), même tourné', all)
-    check('V12.56 : /quartierforme : forme réglée et publiée', Gangs.setShape('grove', 125, 70) == true and GlobalState.gsTerritories.grove.angle == 35.0
+    check('V12.56 : /quartierforme : forme réglée et publiée (V12.63 : angle sur 180°, rectangle)', Gangs.setShape('grove', 125, 70) == true and GlobalState.gsTerritories.grove.angle == 125.0
         and GlobalState.gsTerritories.grove.cell == 70.0 and not Gangs.setShape('inconnu', 10))
     check('V12.56 : appartenance au quartier par les cases', Gangs.territoryAt(tg.center) == 'grove')
 end
@@ -209,6 +215,9 @@ Store.gangs = function()
     return l
 end
 Config.DefaultGangs = defaults
+local removedBak = Config.RemovedGangs
+check('V12.63 : aucun gang créé d\'office', noDefault)
+Config.RemovedGangs = {}
 Gangs.init()
 local n = 0
 for _ in pairs(created) do n = n + 1 end
@@ -217,6 +226,13 @@ Gangs.init()
 local n2 = 0
 for _ in pairs(created) do n2 = n2 + 1 end
 check('pas de doublon au redémarrage', n2 == n)
+-- V12.63 : les anciens gangs par défaut sont retirés au démarrage s'ils n'ont aucun membre (gardés sinon)
+local deleted = {}
+Store.deleteGang = function(n) deleted[n] = true created[n] = nil end
+Store.countMembers = function(n) return n == 'ballas' and 2 or 0 end
+Config.DefaultGangs, Config.RemovedGangs = {}, removedBak
+Gangs.init()
+check('V12.63 : ancien gang vide retiré, ancien gang avec des membres gardé', deleted.families and deleted.vagos and not deleted.ballas and created.ballas ~= nil)
 
 io.write(('\n%d réussis, %d échoués\n'):format(passed, failed))
 os.exit(failed == 0 and 0 or 1)

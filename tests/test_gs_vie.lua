@@ -128,5 +128,19 @@ check('mesure : vide', Perf.summary({}).n == 0)
 check('mesure : ligne lisible', Perf.line(3, 12, s):find('12 joueur%(s%)') and Perf.line(3, 12, s):find('2 accroc'))
 check('mesure : réservée au staff', W.commands.perfserveur ~= nil and (function() W.commands.perfserveur(2, {}) return not Perf.running end)())
 
+-- V12.63 · EMS : nettoyer les plaies (secours en service, à portée, jamais soi-même)
+do
+    join(41, 'EMS41', 'Secouriste', vec3(900.0, 900.0, 30.0))
+    join(42, 'PAT42', 'Patient', vec3(901.0, 900.0, 30.0))
+    local okE = cb('gs_vie:emsClean', 41, 42)
+    check('nettoyer les plaies : réservé aux secours en service', not okE)
+    W.players[41].job = { name = Config.Gestures.emsJob, grade = 0, onduty = true }
+    W.clientEvents = {}
+    okE = cb('gs_vie:emsClean', 41, 42)
+    check('nettoyer les plaies : le patient est nettoyé', okE and lastClientEvent('gs_vie:client:cleaned', 42))
+    check('nettoyer les plaies : pas soi-même', not cb('gs_vie:emsClean', 41, 41))
+    tp(42, vec3(950.0, 900.0, 30.0))
+    check('nettoyer les plaies : à portée seulement', not cb('gs_vie:emsClean', 41, 42))
+end
 io.write(('\n%d réussis, %d échoués\n'):format(passed, failed))
 os.exit(failed == 0 and 0 or 1)

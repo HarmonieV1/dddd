@@ -77,8 +77,17 @@ Races.tickets = {} -- [src] = { circuit, mode, loaner, til } : inscription prise
 function Races.ticket(src, circuitId, mode, loaner)
     if not Config.Circuits[circuitId] or (mode ~= 'solo' and mode ~= 'group') then return false, 'Circuit inconnu.' end
     if Races.runs[src] then return false, 'Tu es déjà dans une course.' end
-    if not Security:InRangeFlat(src, Config.Organizer.coords, 8.0, 6.0) then return false, 'Parle à l\'organisateur.' end
-    if loaner ~= nil and not Config.Loaners[tonumber(loaner) or 0] then return false, 'Voiture inconnue.' end
+    local reach = (Config.Custom and Config.Custom.organizerReach) or 15.0 -- V12.63 : 8 m refusait souvent au volant
+    if not Security:InRangeFlat(src, Config.Organizer.coords, reach, 8.0) then return false, ('Approche-toi de l\'organisateur (%d m maximum).'):format(math.floor(reach)) end
+    local c = Config.Circuits[circuitId]
+    if c.vehicle then -- V12.63 : véhicule imposé (course sur mesure)
+        if loaner ~= nil and loaner ~= 'req' then return false, ('Véhicule imposé pour cette course : %s.'):format(c.vehicle) end
+        if loaner == nil then
+            local ped = GetPlayerPed(src)
+            local veh = ped ~= 0 and GetVehiclePedIsIn(ped, false) or 0
+            if veh == 0 or GetEntityModel(veh) ~= GetHashKey(c.vehicle) then return false, ('Il faut être au volant d\'une %s (véhicule imposé), ou prendre celle de l\'organisateur.'):format(c.vehicle) end
+        end
+    elseif loaner ~= nil and not Config.Loaners[tonumber(loaner) or 0] then return false, 'Voiture inconnue.' end
     if loaner == nil and not driving(src) then return false, 'Avec ta voiture : sois au volant, à côté de l\'organisateur.' end
     Races.tickets[src] = { circuit = circuitId, mode = mode, loaner = loaner, til = os.time() + 60 }
     return true
@@ -109,7 +118,7 @@ function Races.organize(src, base)
     local row, side = slot // 2, (slot % 2 == 0) and -1 or 1
     local pos = { x = b.x - fx * 8.0 * row + fy * 2.6 * side, y = b.y - fy * 8.0 * row - fx * 2.6 * side, z = b.z + 0.5, w = tonumber(base.w) or 0.0 }
     if loaner then
-        local l = Config.Loaners[tonumber(loaner) or 0]
+        local l = loaner == 'req' and c.vehicle and { model = c.vehicle } or Config.Loaners[tonumber(loaner) or 0] -- V12.63 : véhicule imposé
         if not l then return false, 'Voiture inconnue.' end
         returnLoaner(src, 0)
         local veh = Bridge:SpawnVehicle(src, l.model, 'automobile', vec3(pos.x, pos.y, pos.z), pos.w, 'COURSE', true)
@@ -266,7 +275,7 @@ lib.callback.register('gs_races:list', function(src)
         for i, r in ipairs(Store.top(id, 3)) do top[i] = { name = r.name, time = fmt(r.ms) } end
         local open
         for _, l in pairs(Races.lobbies) do if l.circuit == id and l.state == 'open' then open = { players = #l.players, pot = l.pot, left = math.max(0, l.startAt - os.time()) } end end
-        out[#out + 1] = { id = id, label = c.label, top = top, open = open, points = #c.points }
+        out[#out + 1] = { id = id, label = c.label, top = top, open = open, points = #c.points, vehicle = c.vehicle }
     end
     table.sort(out, function(a, b) return a.label < b.label end)
     return { circuits = out, entry = Races.entry() }

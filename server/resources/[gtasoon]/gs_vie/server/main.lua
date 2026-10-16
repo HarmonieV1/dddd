@@ -61,6 +61,18 @@ function Vie.rumor()
     return f[math.random(1, #f)]
 end
 
+-- V12.63 · EMS en service : nettoyer les plaies d'un joueur à portée (le sang disparaît chez lui)
+lib.callback.register('gs_vie:emsClean', function(src, target)
+    if not Security:RateLimit(src, 'gs_vie:emsClean', 4, 10000) then return false, 'Doucement.' end
+    target = math.tointeger(tonumber(target))
+    if not target or target == src or not GetPlayerName(target) then return false, 'Personne à soigner ici.' end
+    local job = Bridge:GetJob(src)
+    if not job or job.name ~= Config.Gestures.emsJob or not job.onduty then return false, 'Réservé aux secours en service.' end
+    if not Security:PlayersInRange(src, target, Config.Gestures.emsRange) then return false, 'Approche-toi du patient.' end
+    TriggerClientEvent('gs_vie:client:cleaned', target)
+    return true, 'Plaies nettoyées.'
+end)
+
 lib.callback.register('gs_vie:rumor', function(src)
     if not Security:RateLimit(src, 'gs_vie:rumor', 1, 30000) then return nil end
     return Vie.rumor()

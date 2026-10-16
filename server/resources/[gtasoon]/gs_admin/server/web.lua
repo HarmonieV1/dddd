@@ -12,8 +12,13 @@ local RES = GetCurrentResourceName()
 local function codes()
     local out = {}
     for entry in GetConvar('gs_admin_web', ''):gmatch('[^,]+') do
-        local name, code = entry:match('^%s*([^:]+):(.-)%s*$')
-        if name and code and #code >= 12 then out[code] = name end -- code trop court = ignoré (sécurité)
+        -- « Pseudo:code » ou, V12.63, « Pseudo:code:rang » (1 à 5) : le rang suit le code, pas le pseudo tapé
+        local name, code, lvl = entry:match('^%s*([^:]+):([^:]-):(%d)%s*$')
+        if not name then name, code = entry:match('^%s*([^:]+):(.-)%s*$') end
+        if name and code and #code >= 12 then -- code trop court = ignoré (sécurité)
+            local l = math.tointeger(tonumber(lvl)) or ((Config.Web or {}).codeLevel or 2)
+            out[code] = { name = name, level = math.max(1, math.min(5, l)) }
+        end
     end
     return out
 end
@@ -88,13 +93,13 @@ function Web.login(ip, pseudo, password)
     if globalPaused() then return nil, 'Connexions suspendues 15 min (trop d\'essais ratés sur le serveur).' end
     if type(password) ~= 'string' or password == '' then failed(ip) return nil, 'Mot de passe refusé.' end
     local named = codes()[password]
-    if named then Web.fails[ip] = nil return named, password end
+    if named then Web.fails[ip] = nil return named.name, password, named.level end
     local pass = collective()
     if pass and safeEqual(password, pass) then
         local who = Security:Sanitize(pseudo, 20)
         if not who or #who < 2 then return nil, 'Indique ton pseudo staff (2 à 20 caractères) : il signe tes actions dans le journal.' end
         Web.fails[ip] = nil
-        return who, password
+        return who, password, (Config.Web or {}).collectiveLevel or 2
     end
     failed(ip)
     return nil, 'Mot de passe refusé.'
@@ -175,13 +180,14 @@ function Web.handle(ip, body, reply, direct)
         return reply({ ok = false, text = 'Connexion non chiffrée refusée : ouvre l\'adresse https de l\'appli.', auth = false })
     end
     if d.action == 'login' then
-        local who, secret = Web.login(ip, d.pseudo, d.password)
+        local who, secret, level = Web.login(ip, d.pseudo, d.password)
         if not who then return reply({ ok = false, text = secret, auth = false }) end
         local token = newToken()
         if not token then return reply({ ok = false, text = 'Connexion indisponible (aléa du serveur). Redémarre le serveur : GERER-OVH → 4.' }) end
-        Web.sessions[token] = { who = who, ip = ip, secret = secret, exp = os.time() + ((Config.Web or {}).sessionHours or 12) * 3600 }
-        Security:LogStaff(('[Appli staff] connexion de %s (%s)'):format(who, ip), 'staff')
-        return reply({ ok = true, token = token, who = who, text = 'Bonjour ' .. who .. '.' })
+        Web.sessions[token] = { who = who, ip = ip, secret = secret, level = level, exp = os.time() + ((Config.Web or {}).sessionHours or 12) * 3600 }
+        local rank = Config.LevelNames and Config.LevelNames[level] or ('rang ' .. tostring(level))
+        Security:LogStaff(('[Appli staff] connexion de %s (%s, %s)'):format(who, rank, ip), 'staff')
+        return reply({ ok = true, token = token, who = who, level = level, text = ('Bonjour %s (%s).'):format(who, rank) })
     end
     local s = Web.session(d.token)
     if not s then return reply({ ok = false, text = 'Session expirée : reconnecte-toi.', auth = false }) end
@@ -213,7 +219,7 @@ function Web.handle(ip, body, reply, direct)
     if d.action == 'act' then
         if not ACTIONS[d.name] then return reply({ ok = false, text = 'Action inconnue.' }) end
         if d.id ~= nil and not intId(d.id) then return reply({ ok = false, text = 'Joueur invalide.' }) end
-        local good, text = Admin.remote(d.name, intId(d.id), d.text, 'Web · ' .. s.who, d.extra)
+        local good, text = Admin.remote(d.name, intId(d.id), d.text, 'Web · ' .. s.who, d.extra, s.level or 2) -- V12.63 : rang de la session
         return reply({ ok = good == true, text = text or '' })
     end
     reply({ ok = false, text = 'Action inconnue.' })

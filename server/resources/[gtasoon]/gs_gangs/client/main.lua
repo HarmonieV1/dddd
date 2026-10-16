@@ -21,7 +21,7 @@ local function drawTerritories(state)
         local areas = {}
         if s.owner then -- V12.56 : pâtés de maisons alignés sur les rues (plus de disque qui déborde)
             local angle, cell = s.angle or t.angle or 0.0, s.cell or t.cell or Config.Territory.cell or 90.0
-            for _, c in ipairs(Blocks.cells(t.center, s.radius or t.radius, angle, cell)) do
+            for _, c in ipairs(Blocks.cells(t.center, s.radius or t.radius, angle, cell, s.aspect or t.aspect)) do -- V12.63 : rectangle
                 local area = AddBlipForArea(c.x, c.y, c.z, cell, cell)
                 SetBlipRotation(area, math.floor(angle + 0.5))
                 SetBlipColour(area, s.color or 4)

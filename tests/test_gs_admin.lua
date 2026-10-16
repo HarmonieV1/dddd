@@ -462,6 +462,18 @@ end
 local okL = call('1.2.3.4', ('{ token = %q, action = "logout" }'):format(tok))
 check('web : déconnexion = jeton invalide', okL.ok and call('1.2.3.4', ('{ token = %q, action = "overview" }'):format(tok)).auth == false)
 check('V12.63 : pas de sanction à distance sur un super-admin', not remote('kick', 1, 'test', 'Web · Modo').ok and GetPlayerName(1) ~= nil)
+-- V12.63 (fondateur) · rangs dans l'appli : le fondateur agit sur tout le monde, les autres sur les rangs inférieurs
+local function rem(action, id, text, lvl, extra) local ok, msg = Admin.remote(action, id, text, 'Web · Test', extra, lvl) return { ok = ok, text = msg } end
+check('appli : fondateur (5) peut avertir un super-admin', rem('warn', 1, 'test rang', 5).ok)
+check('appli : super-admin (4) ne sanctionne pas un super-admin', not rem('warn', 1, 'test rang', 4).ok)
+check('appli : mot de passe collectif (modérateur) ne bannit pas', (function() local r = rem('ban', 9, 'triche', 2, 1) return not r.ok and r.text:find('rang') end)())
+check('appli : admin (3) peut bannir un joueur', rem('ban', 9, 'triche', 3, 1).ok)
+remote('unban', nil, W.players[9] and W.players[9].license or 'license:9', 'Web · Test')
+web_convars.gs_admin_web = 'Alpha:code-tres-long-123,Fondateur:code-fondateur-99:5'
+local rf = call('1.2.3.4', '{ action = "login", password = "code-fondateur-99" }')
+check('appli : code personnel avec rang (fondateur)', rf.ok and rf.level == 5 and rf.text:find('Fondateur'))
+local rm = call('1.2.3.4', '{ action = "login", pseudo = "Alpha", password = "NRL-test!" }')
+check('appli : mot de passe collectif = modérateur, même en tapant « Alpha »', rm.ok and rm.level == Config.Web.collectiveLevel)
 check('V12.63 : bannir à distance : durée hors limites refusée', not remote('ban', 9, 'triche', 'Web · Modo', 99999).ok)
 check('V12.63 : bannir : durée non entière refusée (0,5 j ne devient pas définitif)', not remote('ban', 9, 'triche', 'Web · Modo', 0.5).ok)
 local r3 = call('1.2.3.4', '{ action = "login", pseudo = "Modo", password = "NRL-test!" }')

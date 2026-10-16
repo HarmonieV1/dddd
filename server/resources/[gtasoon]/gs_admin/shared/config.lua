@@ -130,6 +130,12 @@ Config.LogHistory = 150
 Config.Web = {
     sessionHours = 12, maxBanDays = 3650,
     protectLevel = 1, -- V12.63 (relecture) : aucune sanction ni téléportation à distance sur un membre du staff, quel que soit son rang
+    -- V12.63 (fondateur) · Rangs dans l'appli : le mot de passe collectif donne `collectiveLevel` (2 = modérateur) ; un code
+    -- personnel « Pseudo:code:rang » (GERER-OVH → 20 → A) donne son rang (5 = fondateur). Un rang agit sur les joueurs et sur
+    -- le staff de rang INFÉRIEUR ; le fondateur agit sur tout le monde. Rang minimum par action ci-dessous.
+    collectiveLevel = 2, codeLevel = 2,
+    actionLevel = { message = 1, note = 1, heal = 1, revive = 1, fixveh = 1, ticket_claim = 1, ticket_close = 1, warn = 1,
+        freeze = 2, unfreeze = 2, jail = 2, unjail = 2, kick = 2, tp = 2, clearheat = 2, ban = 3, unban = 3, announce = 3 },
     places = { -- « Téléporter vers… » (positions du jeu, à caler si besoin)
         { label = 'Hôpital Pillbox', coords = vec3(298.6, -584.4, 43.3) },
         { label = 'Commissariat Mission Row', coords = vec3(441.2, -981.9, 30.7) },

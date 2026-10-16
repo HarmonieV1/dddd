@@ -321,6 +321,12 @@ Résumé très condensé (le détail complet est dans `docs/ROADMAP.md`, `docs/F
   Lives (console VPS : « screenshot-basic n'a pas répondu en 6 s ») : screenshot-basic patché (dist/client.js : rappel NUI en
   https:// au lieu de http://, repli http dans dist/ui.html ; demande traitée même si le cadre NUI ne dessine plus) ; F8 /livestest
   (gs_lives) teste la capture sur son PC sans le serveur.
+  Retours du 16/10 : poubelles = seulement la fouille animée (gs_vie retire l'option inventaire d'ox_inventory sur les bennes) ;
+  gestes selon l'objet (gs_vie Config.Gestures : lavabo, douche, fontaine, mer [E], EMS « Nettoyer les plaies ») ; courses sur
+  mesure : véhicule imposé (F11, colonne `vehicle`), inscription à 15 m de l'organisateur, relance du départ sur la ligne (E/X) ;
+  gangs : plus de gangs créés d'office (anciens retirés s'ils sont vides), quartiers en RECTANGLE de pâtés de maisons (allongement
+  réglable : /quartierforme q angle taille allongement) ; gs_details Config.SpeedCaps (cycloneex0 210 km/h) ; appli staff : rangs
+  (code personnel « Pseudo:code:rang », mot de passe collectif = modérateur, Config.Web.actionLevel, fondateur sur tout le monde).
   METTRE-A-JOUR-OVH compare le contenu des scripts du zip et du PC (même numéro de version mais correctif non installé sur le
   PC = proposé avant l'envoi ; avant, les anciens fichiers du PC repartaient au VPS sans le voir).
 - **V12.62** (15/10/2026, session de secours) — propositions choisies + relecture complète du gros patch avant le backtest :

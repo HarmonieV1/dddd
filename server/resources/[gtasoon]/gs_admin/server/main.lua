@@ -1034,9 +1034,15 @@ function Admin.overview()
         version = GetConvar('gs_version', '?'), staffOnDuty = (function() local n = 0 for _ in pairs(Admin.onDuty) do n = n + 1 end return n end)() }
 end
 
-function Admin.remote(action, target, text, staff, extra)
+function Admin.remote(action, target, text, staff, extra, actorLevel) -- V12.63 : actorLevel = rang de l'appli staff (nil = Discord)
     staff = tostring(staff or '?'):sub(1, 40)
     if not staff:find('·', 1, true) then staff = 'Discord · ' .. staff end -- le bot passe le pseudo seul, le web « Web · pseudo »
+    if actorLevel then -- V12.63 : rang minimum par action dans l'appli (Config.Web.actionLevel)
+        local need = ((Config.Web or {}).actionLevel or {})[action]
+        if need and actorLevel < need then
+            return false, ('Ton rang ne permet pas cette action depuis l\'appli (%s minimum).'):format(Config.LevelNames and Config.LevelNames[need] or ('rang ' .. need))
+        end
+    end
     if action == 'players' then
         local out = {}
         for _, id in ipairs(GetPlayers()) do
@@ -1084,10 +1090,16 @@ function Admin.remote(action, target, text, staff, extra)
     local who = label(target)
     local reason = Security:Sanitize(text, 200)
     if reason == '' then reason = nil end
-    -- V12.63 : pas de sanction à distance sur un staff haut placé (mot de passe collectif de l'appli)
+    -- V12.63 : pas de sanction à distance sur un staff haut placé. Appli : selon le rang de la session (fondateur = tout le
+    -- monde ; sinon seulement un staff de rang inférieur) ; sans rang (Discord) : aucun membre du staff (protectLevel).
     local SANCTION = { freeze = true, warn = true, jail = true, kick = true, ban = true, tp = true }
-    if SANCTION[action] and Admin.level(target) >= ((Config.Web or {}).protectLevel or 4) then
-        return false, 'Impossible à distance sur un membre du staff de ce rang.'
+    if SANCTION[action] then
+        local tl = Admin.level(target)
+        if actorLevel then
+            if tl > 0 and actorLevel < 5 and tl >= actorLevel then return false, 'Impossible à distance sur un membre du staff de rang égal ou supérieur au tien.' end
+        elseif tl >= ((Config.Web or {}).protectLevel or 4) then
+            return false, 'Impossible à distance sur un membre du staff de ce rang.'
+        end
     end
     -- V12.63 · Assistance depuis l'appli staff : soigner, réparer, effacer la recherche, note, téléporter, amener
     if action == 'heal' then

@@ -281,13 +281,14 @@ EOF
 EOF
 }
 
-staffweb() { # appli staff : liste | ajouter PSEUDO | retirer PSEUDO | motdepasse FICHIER (redémarre le serveur pour appliquer)
-  local sec="$DATA/cfg/secrets.cfg" cur action="${1:-liste}" who="${2:-}" code pass
+staffweb() { # appli staff : liste | ajouter PSEUDO [RANG] | retirer PSEUDO | motdepasse (redémarre le serveur pour appliquer)
+  local sec="$DATA/cfg/secrets.cfg" cur action="${1:-liste}" who="${2:-}" rang="${3:-}" code pass
   cur=$(grep -E '^set gs_admin_web ' "$sec" 2>/dev/null | sed -E 's/^set gs_admin_web "?([^"]*)"?.*/\1/' || true)
   case "$action" in
     liste)
       if grep -qE '^set gs_admin_web_password "[^"]{6,}"' "$sec" 2>/dev/null; then echo "Mot de passe collectif : défini (chacun se connecte avec son pseudo)."; else echo "Mot de passe collectif : aucun."; fi
-      if [ -z "$cur" ]; then echo "Codes personnels : aucun."; else echo "Codes personnels :"; tr ',' '\n' <<<"$cur" | cut -d: -f1 | sed 's/^/  - /'; fi
+      if [ -z "$cur" ]; then echo "Codes personnels : aucun."; else echo "Codes personnels (pseudo, rang : 1 helper · 2 modérateur · 3 admin · 4 super-admin · 5 fondateur) :"
+        tr ',' '\n' <<<"$cur" | awk -F: '{ print "  - " $1 " (rang " ($3 != "" ? $3 : "2") ")" }'; fi
       return 0 ;;
     motdepasse) # V12.63 : mot de passe collectif lu sur l'entrée standard (jamais sur la ligne de commande ni dans un fichier) ;
       # les codes personnels sont effacés
@@ -295,26 +296,29 @@ staffweb() { # appli staff : liste | ajouter PSEUDO | retirer PSEUDO | motdepass
       [ "${#pass}" -ge 6 ] || { echo "Mot de passe : 6 caractères au moins."; exit 1; }
       case "$pass" in *'"'*|*'\'*|*';'*) echo "Pas de guillemet, de barre oblique inverse ni de point-virgule dans le mot de passe."; exit 1 ;; esac
       sed -i '/^set gs_admin_web_password /d' "$sec"; printf 'set gs_admin_web_password "%s"\n' "$pass" >> "$sec"
-      cur="" ;;
+      # V12.63 : les codes personnels AVEC un rang (fondateur, super-admin…) sont gardés ; les anciens codes sans rang sont effacés
+      cur=$(tr ',' '\n' <<<"$cur" | grep -E '^[^:]+:[^:]+:[1-5]$' | paste -sd, - || true) ;;
     ajouter)
       [[ "$who" =~ ^[A-Za-z0-9_-]{2,20}$ ]] || { echo "Pseudo : 2 à 20 lettres, chiffres, - ou _ (sans espace)."; exit 1; }
       cur=$(tr ',' '\n' <<<"$cur" | grep -v "^$who:" | grep -v '^$' | paste -sd, - || true)
+      [ -z "$rang" ] && rang=2
+      [[ "$rang" =~ ^[1-5]$ ]] || { echo "Rang : 1 helper, 2 modérateur, 3 admin, 4 super-admin, 5 fondateur."; exit 1; }
       code=$(openssl rand -hex 8)
-      cur="${cur:+$cur,}$who:$code" ;;
+      cur="${cur:+$cur,}$who:$code:$rang" ;;
     retirer)
       cur=$(tr ',' '\n' <<<"$cur" | grep -v "^$who:" | grep -v '^$' | paste -sd, - || true) ;;
-    *) echo "staffweb liste | ajouter PSEUDO | retirer PSEUDO | motdepasse (mot de passe sur l'entrée standard)"; exit 1 ;;
+    *) echo "staffweb liste | ajouter PSEUDO [RANG 1-5] | retirer PSEUDO | motdepasse (mot de passe sur l'entrée standard)"; exit 1 ;;
   esac
   sed -i '/^set gs_admin_web /d' "$sec"; echo "set gs_admin_web \"$cur\"" >> "$sec"
   chown fivem:fivem "$sec"; chmod 600 "$sec"
   systemctl restart roadline
   if [ "$action" = "ajouter" ]; then
     local url; url=$( [ -f "$BASE/.https" ] && echo "https://$(cat "$BASE/.https")/gs_admin/" || echo "http://$(publicip):30120/gs_admin/")
-    echo "Code de $who (à lui donner en privé, il ne sera plus affiché) : $code"
+    echo "Code de $who, rang $rang (à lui donner en privé, il ne sera plus affiché) : $code"
     echo "Adresse : $url   (serveur redémarré, prêt dans 1 min)"
   elif [ "$action" = "motdepasse" ]; then
     local url2; url2=$( [ -f "$BASE/.https" ] && echo "https://$(cat "$BASE/.https")/gs_admin/" || echo "http://$(publicip):30120/gs_admin/")
-    echo "Mot de passe collectif enregistré, anciens codes personnels effacés. Adresse : $url2   (serveur redémarré, prêt dans 1 min)"
+    echo "Mot de passe collectif enregistré (codes personnels avec rang gardés, anciens codes sans rang effacés). Adresse : $url2   (serveur redémarré, prêt dans 1 min)"
   else echo "Code de $who retiré (serveur redémarré)."; fi
 }
 
@@ -362,7 +366,7 @@ case "${1:-aide}" in
     echo "Comptes txAdmin remis à zéro (ancienne liste gardée dans $BASE/anciens)."
     echo "Ouvre http://$ip:40120 , entre le nouveau code PIN, et connecte-toi avec le BON compte Cfx.re."
     pin ;;
-  staffweb) need_root "$@"; staffweb "${2:-liste}" "${3:-}" ;;
+  staffweb) need_root "$@"; staffweb "${2:-liste}" "${3:-}" "${4:-}" ;;
   secrets) need_root "$@"; secrets "${2:-/tmp/secrets-pc.cfg}" ;;
   copie-sauvegarde) need_root "$@" # dernière sauvegarde → /tmp, lisible par le compte SSH (pour la garder aussi sur le PC)
     f=$(ls -1t "$BASE"/sauvegardes/*.sql.gz 2>/dev/null | head -1); [ -n "$f" ] || { echo "Aucune sauvegarde."; exit 1; }
@@ -417,7 +421,7 @@ roadline erreurs           erreurs de scripts depuis le démarrage, par ressourc
 roadline discord           bot connecté ? message de test dans chaque salon Discord relié
 roadline txadmin-compte    mauvais compte Cfx.re lié à txAdmin : nouveau PIN, garder la config
 roadline https             adresse https gratuite (panneau staff en appli, carte en direct du site)
-roadline staffweb liste|ajouter PSEUDO|retirer PSEUDO|motdepasse   accès à l'appli staff (motdepasse : lu sur l'entrée standard)
+roadline staffweb liste|ajouter PSEUDO [RANG]|retirer PSEUDO|motdepasse   accès à l'appli staff (rang 1-5 ; motdepasse : lu sur l'entrée standard)
 roadline redemarrage-auto HH:MM|off  redémarrage quotidien annoncé en jeu (défaut 06:00, heure de Paris)
 roadline secrets FICHIER   appliquer le secrets.cfg du PC (garde la base du VPS)
 roadline mode simple|txadmin  démarrage direct (par défaut, rien à configurer) ou avec le panneau web txAdmin

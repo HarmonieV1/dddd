@@ -154,3 +154,12 @@ exports('clean', function(data)
         notify(true, 'Nickel.')
     end)
 end)
+
+-- V12.63 · Vitesse maximale par modèle (Config.SpeedCaps) : appliquée en prenant le volant (une fois, pas de boucle)
+local capHashes = {}
+for model, kmh in pairs(Config.SpeedCaps or {}) do capHashes[GetHashKey(model)] = kmh end
+lib.onCache('vehicle', function(veh)
+    if not veh or not next(capHashes) then return end
+    local kmh = capHashes[GetEntityModel(veh)]
+    if kmh then SetVehicleMaxSpeed(veh, kmh / 3.6) end
+end)

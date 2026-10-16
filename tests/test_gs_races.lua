@@ -213,5 +213,22 @@ check('permanente : jamais retirée', Config.Circuits.c2 ~= nil)
 okE = cb('gs_races:editor', 30, 'delete', { id = 2 }); step()
 check('suppression', okE and Config.Circuits.c2 == nil)
 
+-- V12.63 · véhicule imposé (F11) : brouillon, modification après coup, inscription refusée avec une autre voiture
+cb('gs_races:editor', 30, 'new', { label = 'Coupe Sultan', hours = 0 }); step()
+check('véhicule imposé : nom invalide refusé', not cb('gs_races:editor', 30, 'vehicle', { model = 'sul tan!' })); step()
+local okV = cb('gs_races:editor', 30, 'vehicle', { model = 'Sultan' }); step()
+check('véhicule imposé sur le brouillon', okV and Custom.drafts[30].vehicle == 'sultan')
+for i = 0, 2 do tp(30, vec3(2000.0 + i * 100.0, 0.0, 30.0)) cb('gs_races:editor', 30, 'point'); step() end
+cb('gs_races:editor', 30, 'save'); step()
+check('enregistrée avec le véhicule imposé', Config.Circuits.c3 and Config.Circuits.c3.vehicle == 'sultan' and GlobalState.gsRaceCustom.c3.vehicle == 'sultan')
+okV = cb('gs_races:editor', 30, 'setvehicle', { id = 3, model = 'elegy2' }); step()
+check('véhicule changé après coup', okV and Config.Circuits.c3.vehicle == 'elegy2')
+join(31, 'CID31', 'Pilote', vec3(O.x + 10.0, O.y, O.z))
+check('organisateur : inscription possible à 10 m (au volant à côté)', cb('gs_races:ticket', 31, 'sprint', 'solo', 1)); step()
+Races.tickets[31] = nil
+check('véhicule imposé : voiture de la liste refusée', not cb('gs_races:ticket', 31, 'c3', 'solo', 1)); step()
+check('véhicule imposé : prêtée par l\'organisateur acceptée', cb('gs_races:ticket', 31, 'c3', 'solo', 'req')); step()
+okV = cb('gs_races:editor', 30, 'setvehicle', { id = 3, model = '' }); step()
+check('véhicule libre de nouveau', okV and Config.Circuits.c3.vehicle == nil)
 io.write(('\n%d réussis, %d échoués\n'):format(passed, failed))
 os.exit(failed == 0 and 0 or 1)

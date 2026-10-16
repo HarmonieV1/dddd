@@ -64,3 +64,6 @@ Config.Wardrobe = {
     },
 }
 
+-- V12.63 · Vitesse maximale par modèle (km/h), appliquée quand on prend le volant : pour les voitures importées dont le
+-- réglage (handling) n'a pas de limite. Nom du modèle = nom de spawn. Ex. backtest du 16/10 : cycloneex0 sans limite.
+Config.SpeedCaps = { cycloneex0 = 210 }

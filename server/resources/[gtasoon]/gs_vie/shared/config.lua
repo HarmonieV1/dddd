@@ -81,3 +81,24 @@ Config.Perf = {
     maxMinutes = 120,
     file = 'perf-serveur.log',
 }
+
+-- V12.63 · Emotes en rapport avec l'objet (Alt dessus) : chaque type d'objet propose ses gestes, avec une vraie animation.
+-- Les lavabos et douches enlèvent le sang et la saleté ; les fontaines désaltèrent (RP) ; dans la mer : E pour se rincer.
+-- EMS en service : « Nettoyer les plaies » sur un joueur (sang effacé chez lui, vérifié par le serveur).
+Config.Gestures = {
+    sink = { models = { 'prop_sink_02', 'prop_sink_04', 'prop_sink_05', 'prop_sink_06', 'v_res_mbsink', 'v_res_tre_sink', 'prop_ff_sink_01', 'prop_ff_sink_02', 'v_ilev_mm_faucet' },
+        options = {
+            { label = 'Se laver les mains', icon = 'fa-solid fa-hands-bubbles', dict = 'missheist_agency3aig_23', clip = 'urinal_sink_loop', ms = 5000, clean = true },
+            { label = 'Se rafraîchir le visage', icon = 'fa-solid fa-face-smile', dict = 'switch@michael@wash_face', clip = 'loop_michael', ms = 6000, clean = true },
+        } },
+    shower = { models = { 'prop_shower_rack_01', 'v_ilev_ph_bench' },
+        options = {
+            { label = 'Prendre une douche', icon = 'fa-solid fa-shower', dict = 'mp_safehouseshower@male@', clip = 'male_shower_idle_a', dictF = 'mp_safehouseshower@female@', clipF = 'shower_idle_a', ms = 10000, clean = true },
+        } },
+    drink = { models = { 'prop_watercooler', 'prop_watercooler_dark', 'prop_fountain2', 'prop_fountain1' },
+        options = {
+            { label = 'Boire un peu d\'eau', icon = 'fa-solid fa-glass-water', dict = 'mp_player_intdrink', clip = 'loop_bottle', ms = 4000, drink = true },
+            { label = 'S\'asperger le visage', icon = 'fa-solid fa-droplet', dict = 'missheist_agency3aig_23', clip = 'urinal_sink_loop', ms = 4000, clean = true },
+        } },
+    emsJob = 'ambulance', emsMs = 6000, emsRange = 3.0,
+}

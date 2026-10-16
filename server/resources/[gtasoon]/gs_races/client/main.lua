@@ -102,11 +102,46 @@ local function goToStart(circuitId, mode, ownCar)
     end
     DoScreenFadeIn(600)
     if not okPos then return notify(false, pos) end
-    notify(lib.callback.await('gs_races:start', false, circuitId, mode))
+    local okS, msgS = lib.callback.await('gs_races:start', false, circuitId, mode)
+    notify(okS, msgS)
+    if okS then return end
+    -- V12.63 (backtest : « parle à l'organisateur », bloqué sur la ligne) : sur la ligne, on peut relancer le départ sans
+    -- retourner voir l'organisateur (E), ou annuler (X : la voiture prêtée est rendue). 60 s.
+    local untilT = GetGameTimer() + 60000
+    lib.showTextUI('[E] Lancer le départ · [X] Annuler', { position = 'bottom-center', icon = 'flag-checkered' })
+    while GetGameTimer() < untilT and not racing do
+        if IsControlJustReleased(0, 38) and not IsNuiFocused() then
+            okS, msgS = lib.callback.await('gs_races:start', false, circuitId, mode)
+            notify(okS, msgS)
+            if okS then break end
+        elseif IsControlJustReleased(0, 73) and not IsNuiFocused() then
+            lib.callback.await('gs_races:cancel', false)
+            notify(true, 'Course annulée.')
+            break
+        end
+        Wait(0)
+    end
+    lib.hideTextUI()
 end
 
 local function vehicleMenu(c, mode)
     local options = {}
+    if c.vehicle then -- V12.63 : véhicule imposé (course sur mesure)
+        options[#options + 1] = { title = 'Voiture imposée : ' .. c.vehicle, icon = 'car', description = 'Prêtée par l\'organisateur, la même pour tous',
+            onSelect = function()
+                local ok, msg = lib.callback.await('gs_races:ticket', false, c.id, mode, 'req')
+                if not ok then return notify(false, msg) end
+                goToStart(c.id, mode, false)
+            end }
+        options[#options + 1] = { title = 'Avec ma ' .. c.vehicle, icon = 'car-side', description = 'Sois au volant de ce modèle, à côté de l\'organisateur',
+            onSelect = function()
+                local ok, msg = lib.callback.await('gs_races:ticket', false, c.id, mode, nil)
+                if not ok then return notify(false, msg) end
+                goToStart(c.id, mode, true)
+            end }
+        lib.registerContext({ id = 'gs_races_vehicle', title = c.label .. ' · véhicule imposé', menu = 'gs_races_menu', options = options })
+        return lib.showContext('gs_races_vehicle')
+    end
     for i, l in ipairs(Config.Loaners) do
         options[#options + 1] = { title = 'Voiture prêtée : ' .. l.label, icon = 'car', description = 'La même pour tous les pilotes, rendue à l\'arrivée',
             onSelect = function()
@@ -184,7 +219,7 @@ local function mergeCustom(list)
     for k, c in pairs(list or {}) do
         local pts = {}
         for i, p in ipairs(c.points or {}) do pts[i] = vec3(p.x, p.y, p.z) end
-        Config.Circuits[k] = { label = c.label, points = pts, custom = true }
+        Config.Circuits[k] = { label = c.label, points = pts, custom = true, vehicle = c.vehicle }
     end
 end
 AddStateBagChangeHandler('gsRaceCustom', 'global', function(_, _, value) mergeCustom(value) end)
@@ -214,6 +249,12 @@ editor = function()
             end
             editor()
         end }
+        o[#o + 1] = { title = 'Véhicule imposé : ' .. (draft.vehicle or 'libre'), icon = 'car', description = 'Nom du modèle (ex. sultan, elegy2) ; vide = chacun prend le sien',
+            onSelect = function()
+                local r = lib.inputDialog('Véhicule imposé', { { type = 'input', label = 'Modèle (vide = libre)', default = draft.vehicle or '', max = 30 } })
+                if r then note(lib.callback.await('gs_races:editor', false, 'vehicle', { model = r[1] or '' })) end
+                editor()
+            end }
         o[#o + 1] = { title = 'Retirer le dernier point', icon = 'rotate-left', onSelect = function()
             local ok2, msg = lib.callback.await('gs_races:editor', false, 'undo')
             note(ok2, msg)
@@ -243,12 +284,22 @@ editor = function()
     end
     for _, r in ipairs(races) do
         o[#o + 1] = { title = r.label, icon = 'flag-checkered', arrow = true,
-            description = ('%d points · %s · par %s'):format(r.points, r.expiresAt and 'éphémère' or 'permanente', r.author ~= '' and r.author or '?'),
-            onSelect = function()
-                local c = lib.alertDialog({ header = 'Supprimer « ' .. r.label .. ' » ?', centered = true, cancel = true,
-                    content = 'Elle disparaît de chez l\'organisateur (les temps enregistrés restent en base).' })
-                if c == 'confirm' then note(lib.callback.await('gs_races:editor', false, 'delete', { id = r.id })) end
-                editor()
+            description = ('%d points · %s · %s · par %s'):format(r.points, r.expiresAt and 'éphémère' or 'permanente', r.vehicle and ('véhicule : ' .. r.vehicle) or 'véhicule libre', r.author ~= '' and r.author or '?'),
+            onSelect = function() -- V12.63 : changer le véhicule imposé, ou supprimer
+                lib.registerContext({ id = 'gs_races_editor_one', title = r.label, menu = 'gs_races_editor', options = {
+                    { title = 'Changer le véhicule imposé', icon = 'car', description = 'Actuel : ' .. (r.vehicle or 'libre'), onSelect = function()
+                        local i = lib.inputDialog('Véhicule imposé · ' .. r.label, { { type = 'input', label = 'Modèle (vide = libre)', default = r.vehicle or '', max = 30 } })
+                        if i then note(lib.callback.await('gs_races:editor', false, 'setvehicle', { id = r.id, model = i[1] or '' })) end
+                        editor()
+                    end },
+                    { title = 'Supprimer la course', icon = 'trash', iconColor = '#ff6b6b', onSelect = function()
+                        local c = lib.alertDialog({ header = 'Supprimer « ' .. r.label .. ' » ?', centered = true, cancel = true,
+                            content = 'Elle disparaît de chez l\'organisateur (les temps enregistrés restent en base).' })
+                        if c == 'confirm' then note(lib.callback.await('gs_races:editor', false, 'delete', { id = r.id })) end
+                        editor()
+                    end },
+                } })
+                lib.showContext('gs_races_editor_one')
             end }
     end
     lib.registerContext({ id = 'gs_races_editor', title = 'Courses de rue sur mesure', options = o })

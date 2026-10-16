@@ -42,4 +42,5 @@ Config.Custom = {
     minPoints = 3, maxPoints = 30,
     minGap = 15.0,    -- m minimum entre deux points (V12.59 : 30 → 15, points posés à pied refusés trop souvent)
     maxHours = 168,   -- durée de vie max d'une course éphémère (0 = permanente)
+    organizerReach = 15.0, -- V12.63 : distance à l'organisateur pour s'inscrire (8 m : refusé au volant d'une voiture garée à côté)
 }

@@ -32,6 +32,15 @@ la ligne `set gs_admin_web_password "…"` dans `server-data\cfg\secrets.cfg` (j
 | Sanctions | Bannis actifs, recherche, débannir |
 | Journal | Toutes les actions du staff (jeu, Discord, appli) depuis le dernier redémarrage |
 
+## Rangs dans l'appli (V12.63)
+- **Mot de passe collectif** = rang **modérateur** (2), quel que soit le pseudo tapé (un pseudo ne prouve rien).
+- **Code personnel avec un rang** : GERER-OVH → 20 → **A** → pseudo → rang (5 = fondateur, 4 = super-admin, 3 = admin…).
+  Le code s'affiche une fois : se connecter avec ce code (le pseudo est celui du code).
+- Un rang agit sur les joueurs et sur le staff de **rang inférieur** ; le **fondateur agit sur tout le monde**.
+- Rang minimum par action (`Config.Web.actionLevel`) : message, note, soigner, réanimer, réparer, avertir, tickets = 1 ;
+  geler, isoler, expulser, téléporter, effacer la recherche = 2 ; bannir, débannir, annonce = 3.
+- Changer le mot de passe collectif garde les codes avec rang (efface seulement les anciens codes sans rang).
+
 ## Actions sur un joueur
 - **Assistance** : soigner, réanimer, réparer le véhicule, effacer la recherche, téléporter (lieu de la liste ou à côté d'un joueur).
 - **Contrôle** : geler / dégeler, message privé, note staff, isoler (minutes + motif), libérer.
