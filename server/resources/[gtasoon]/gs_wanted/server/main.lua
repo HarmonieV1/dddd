@@ -288,6 +288,7 @@ function Wanted.spawnHeli(src, stars, me, mine)
         if ok and type(z) == 'string' then zone = z end
     end
     Wanted.live[src] = { zone = zone, stars = tonumber(stars), since = os.time() }
+    TriggerEvent('gs_wanted:server:chase', zone, tonumber(stars)) -- V12.63 : la Gazette de la semaine (quartier seulement, jamais le nom)
     if GetResourceState('gs_jobs') == 'started' then -- la rédaction est prévenue (le quartier, jamais le nom)
         local ok, list = pcall(function() return JobsApi:GetOnDutyPlayers(H.pressJob) end)
         for _, j in ipairs(ok and list or {}) do

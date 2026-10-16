@@ -30,6 +30,8 @@ function Gazette.record(kind, a, b)
     elseif kind == 'legende' then push(w.legends, tostring(a or '?'), 3)
     elseif kind == 'plaque' then push(w.plaques, tostring(a or ''), 4)
     elseif kind == 'blackout' then push(w.blackouts, a, 6)
+    elseif kind == 'poursuite' then w.chases = (w.chases or 0) + 1 w.chaseZone = tostring(a or 'Los Santos') -- V12.63
+    elseif kind == 'cavale' then w.wanted = (w.wanted or 0) + 1 w.bounty = math.max(w.bounty or 0, tonumber(a) or 0) -- V12.63
     elseif kind == 'deces' then w.deces = w.deces or {} push(w.deces, { name = tostring(a or '?'), epitaph = b and tostring(b) or '' }, 6) end -- V12.60
     save()
 end
@@ -42,6 +44,7 @@ function Gazette.compose(w, number, at)
     for _, d in ipairs(Config.Districts) do if not w.crimes[d.id] and d.id ~= 'paleto' and d.id ~= 'sandy' then calm = d.label break end end
     local headline, lead
     if w.legends[1] then headline, lead = ('%s entre dans la légende'):format(w.legends[#w.legends]), 'La cavale a tenu jusqu\'au bout : la ville n\'en revient pas.'
+    elseif (w.chases or 0) > 0 then headline, lead = ('Course-poursuite au-dessus de %s'):format(w.chaseZone or 'Los Santos'), 'L\'hélico de la police a suivi la fuite en direct, Weazel aussi.' -- V12.63
     elseif #w.blackouts > 0 then headline, lead = ('Nuit noire à %s'):format(label(w.blackouts[#w.blackouts])), 'Un transformateur saboté a plongé le quartier dans le noir.'
     elseif hot and hotN >= 5 then headline, lead = ('%s sous tension'):format(label(hot)), ('%d incidents signalés en une semaine dans le quartier.'):format(hotN)
     elseif w.juries > 0 then headline, lead = 'Le peuple a jugé', ('%d jury(s) populaire(s) ont tranché cette semaine.'):format(w.juries)
@@ -53,6 +56,8 @@ function Gazette.compose(w, number, at)
     if calm then crime[#crime + 1] = ('Quartier le plus calme : %s.'):format(calm) end
     if w.faitsdivers > 0 then crime[#crime + 1] = ('%d fait(s) divers ont occupé le LSPD.'):format(w.faitsdivers) end
     for _, id in ipairs(w.blackouts) do crime[#crime + 1] = ('Panne de courant à %s.'):format(label(id)) end
+    if (w.chases or 0) > 0 then crime[#crime + 1] = ('%d poursuite(s) suivie(s) par l\'hélico de la police, la dernière au-dessus de %s.'):format(w.chases, w.chaseZone or 'Los Santos') end -- V12.63
+    if (w.wanted or 0) > 0 then crime[#crime + 1] = ('%d avis de recherche lancé(s), prime record : %d $.'):format(w.wanted, w.bounty or 0) end
     sec('Faits divers', crime)
     local court = {}
     if w.guilty + w.acquitted > 0 then court[#court + 1] = ('%d verdict(s) : %d condamnation(s), %d relaxe(s).'):format(w.guilty + w.acquitted, w.guilty, w.acquitted) end
@@ -120,6 +125,18 @@ AddEventHandler('gs_justice:server:jury', function() Gazette.record('jury') end)
 AddEventHandler('gs_wanted:server:legend', function(_, name) Gazette.record('legende', name) end)
 AddEventHandler('gs_scars:server:plaque', function(text) Gazette.record('plaque', text) end)
 AddEventHandler('gs_city:server:blackout', function(id, on) if on then Gazette.record('blackout', id) end end)
+AddEventHandler('gs_wanted:server:chase', function(zone) Gazette.record('poursuite', zone) end) -- V12.63
+AddEventHandler('gs_wanted:server:fugitive', function(_, bounty) Gazette.record('cavale', bounty) end) -- V12.63 (la prime, pas le nom)
+--- V12.63 · Édition en cours (ce qui s'est passé depuis lundi), pour le site : « paraît dimanche » ; nil si la semaine est vide
+function Gazette.draft()
+    local w = week()
+    local happened = next(w.crimes) or w.faitsdivers > 0 or #w.rumeurs > 0 or w.guilty + w.acquitted > 0 or w.juries > 0 or #w.legends > 0
+        or #w.plaques > 0 or #w.blackouts > 0 or (w.chases or 0) > 0 or (w.wanted or 0) > 0 or #(w.deces or {}) > 0
+    if not happened then return nil end -- rien de neuf : le site garde la dernière édition parue
+    local e = Gazette.compose(w, Gazette.number + 1)
+    e.draft = true
+    return e
+end
 AddEventHandler('gs_cimetiere:server:buried', function(name, epitaph) Gazette.record('deces', name, epitaph) end) -- V12.60
 
 CreateThread(function()

@@ -53,6 +53,7 @@ function CityPublic()
         ids = (function() local m = {} for _, d in ipairs(districts) do m[d.id] = { x = d.x, y = d.y, label = d.label } end return m end)(),
         timelapse = Timelapse and Timelapse.export() or nil, -- V11 : 24 h rejouées sur le site
         gazette = Gazette and Gazette.last or nil, -- V11.2 : dernière édition
+        gazetteDraft = Gazette and Gazette.draft and Gazette.draft() or nil, -- V12.63 : la semaine en cours (paraît dimanche)
         now = CityNow() } -- V12 : bandeau « En ce moment en ville »
 end
 
