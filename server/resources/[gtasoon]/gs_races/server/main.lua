@@ -89,7 +89,7 @@ function Races.ticket(src, circuitId, mode, loaner)
         end
     elseif loaner ~= nil and not Config.Loaners[tonumber(loaner) or 0] then return false, 'Voiture inconnue.' end
     if loaner == nil and not driving(src) then return false, 'Avec ta voiture : sois au volant, à côté de l\'organisateur.' end
-    Races.tickets[src] = { circuit = circuitId, mode = mode, loaner = loaner, til = os.time() + 60 }
+    Races.tickets[src] = { circuit = circuitId, mode = mode, loaner = loaner, til = os.time() + 120 } -- V12.63 : 2 min pour rejoindre la ligne
     return true
 end
 
@@ -100,8 +100,7 @@ end)
 
 function Races.organize(src, base)
     local t = Races.tickets[src]
-    Races.tickets[src] = nil
-    if not t or t.til < os.time() then return false, 'Repasse voir l\'organisateur.' end
+    if not t or t.til < os.time() then Races.tickets[src] = nil return false, 'Inscription expirée : repasse voir l\'organisateur.' end
     local circuitId, mode, loaner = t.circuit, t.mode, t.loaner
     local c = Config.Circuits[circuitId]
     if type(base) ~= 'table' or not tonumber(base.x) or not tonumber(base.y) or not tonumber(base.z) then return false, 'Départ introuvable.' end
@@ -125,6 +124,7 @@ function Races.organize(src, base)
         if not veh or veh == 0 then return false, 'La voiture n\'a pas pu être livrée, réessaie.' end
         Races.loaners[src] = veh
     end
+    Races.tickets[src] = nil -- V12.63 : inscription utilisée seulement quand le placement a réussi (sinon E sur la ligne la réessaie)
     return true, pos
 end
 

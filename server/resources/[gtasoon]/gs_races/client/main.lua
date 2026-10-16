@@ -88,7 +88,13 @@ local function goToStart(circuitId, mode, ownCar)
     while not HasCollisionLoadedAroundEntity(ent) and GetGameTimer() < t do RequestCollisionAtCoord(p1.x, p1.y, p1.z) Wait(0) end
     Wait(500)
     local ok, node, heading = GetClosestVehicleNodeWithHeading(p1.x, p1.y, p1.z, 1, 3.0, 0)
-    local base = ok and { x = node.x, y = node.y, z = node.z, w = heading } or { x = p1.x, y = p1.y, z = p1.z, w = 0.0 }
+    local base = ok and { x = node.x, y = node.y, z = node.z, w = heading } or nil
+    -- V12.63 (backtest : la course sur mesure ne démarrait pas) : départ posé hors route (parking, place) → la route la plus
+    -- proche était trop loin et le serveur répondait « Départ introuvable ». On part alors du point posé, tourné vers le 2e point.
+    if not base or #(vec2(base.x, base.y) - vec2(p1.x, p1.y)) > Config.StartRadius then
+        local p2 = Config.Circuits[circuitId].points[2] or p1
+        base = { x = p1.x, y = p1.y, z = p1.z, w = GetHeadingFromVector_2d(p2.x - p1.x, p2.y - p1.y) }
+    end
     local okPos, pos = lib.callback.await('gs_races:organize', false, base)
     if okPos and veh then
         SetEntityCoords(veh, pos.x, pos.y, pos.z, false, false, false, false)
@@ -101,8 +107,12 @@ local function goToStart(circuitId, mode, ownCar)
         while not cache.vehicle and GetGameTimer() < t2 do Wait(100) end
     end
     DoScreenFadeIn(600)
-    if not okPos then return notify(false, pos) end
+    if not okPos then
+        print(('[gs_races] placement refusé (%s) : %s'):format(tostring(circuitId), tostring(pos))) -- F8 : raison exacte
+        return notify(false, pos)
+    end
     local okS, msgS = lib.callback.await('gs_races:start', false, circuitId, mode)
+    if not okS then print(('[gs_races] départ refusé (%s) : %s'):format(tostring(circuitId), tostring(msgS))) end
     notify(okS, msgS)
     if okS then return end
     -- V12.63 (backtest : « parle à l'organisateur », bloqué sur la ligne) : sur la ligne, on peut relancer le départ sans
@@ -169,7 +179,7 @@ AddEventHandler('gs_races:client:menu', function()
         return
     end
     local data = lib.callback.await('gs_races:list', false)
-    if not data then return end
+    if not data then return notify(false, 'L\'organisateur ne répond pas, réessaie dans quelques secondes.') end -- V12.63 : plus de silence
     local options = {}
     for _, c in ipairs(data.circuits) do
         local desc = {}
