@@ -2,16 +2,52 @@
 -- V12.37 · Dégâts adoucis (demande du fondateur : « pas trop réaliste ») : chaque joueur inflige moins de dégâts (armes à feu,
 -- corps à corps, véhicules), donc tout le monde en encaisse moins. 1.0 = valeurs du jeu. Réappliqué toutes les 5 s (le jeu
 -- remet 1.0 à chaque réapparition / changement de personnage), jamais par image.
-local DAMAGE = { weapon = 0.75, melee = 0.8, vehicle = 0.7 }
+-- V12.63 (backtest : « dégâts réalistes, toutes armes confondues ») : multiplicateur selon la FAMILLE de l'arme en main
+-- (Config.Damage), relu toutes les 500 ms et réappliqué seulement quand l'arme change (ou toutes les 5 s : le jeu remet 1.0
+-- à chaque réapparition). Taser : temps au sol minimum réglé ici aussi (Config.Taser.groundMs).
+local D = Config.Damage
+local function norm(h) h = tonumber(h) or 0 return h < 0 and h + 4294967296 or h end
+local GROUP_MULT, BLADE, UNARMED_G, MELEE_G = {}, {}, norm(GetHashKey('GROUP_UNARMED')), norm(GetHashKey('GROUP_MELEE'))
+for name, m in pairs(D.groups) do GROUP_MULT[norm(GetHashKey(name))] = m end
+for _, w in ipairs(D.blades) do BLADE[norm(GetHashKey(w))] = true end
+local function modifiers(weapon)
+    local g = norm(GetWeapontypeGroup(weapon))
+    local melee = (g == UNARMED_G and D.unarmed) or (g == MELEE_G and (BLADE[norm(weapon)] and D.blade or D.blunt)) or D.unarmed
+    return GROUP_MULT[g] or D.weapon, melee
+end
 CreateThread(function()
+    local last, refreshAt = nil, 0
     while true do
-        local id = PlayerId()
-        SetPlayerWeaponDamageModifier(id, DAMAGE.weapon)
-        SetPlayerMeleeWeaponDamageModifier(id, DAMAGE.melee)
-        SetPlayerVehicleDamageModifier(id, DAMAGE.vehicle)
-        Wait(5000)
+        local weapon = GetSelectedPedWeapon(cache.ped)
+        if weapon ~= last or GetGameTimer() >= refreshAt then
+            last, refreshAt = weapon, GetGameTimer() + 5000
+            local id = PlayerId()
+            local w, m = modifiers(weapon)
+            SetPlayerWeaponDamageModifier(id, w)
+            SetPlayerMeleeWeaponDamageModifier(id, m)
+            SetPlayerVehicleDamageModifier(id, D.vehicle)
+            SetPedMinGroundTimeForStungun(cache.ped, Config.Taser.groundMs)
+        end
+        Wait(500)
     end
 end)
+
+--- V12.63 · Touché par un taser : écran électrisé + tremblement, puis sonné (léger tremblement) ; jamais mortel.
+local tasedUntil = 0
+local function tased()
+    local T = Config.Taser
+    if GetGameTimer() < tasedUntil then return end
+    tasedUntil = GetGameTimer() + T.fxMs
+    AnimpostfxPlay('Dont_tazeme_bro', 0, true)
+    ShakeGameplayCam('DRUNK_SHAKE', T.shake)
+    PlaySoundFrontend(-1, 'Hit_1', 'LONG_PLAYER_SWITCH_SOUNDS', true)
+    SetTimeout(T.fxMs, function()
+        AnimpostfxStop('Dont_tazeme_bro')
+        AnimpostfxPlay('DrugsDrivingOut', 0, false)
+        ShakeGameplayCam('DRUNK_SHAKE', T.shake * 0.35)
+        SetTimeout(T.dazedMs, function() StopGameplayCamShaking(false) AnimpostfxStop('DrugsDrivingOut') end)
+    end)
+end
 -- V12.41 · Balle dans la tête = à terre en un tir (cohérence RP, demande du fondateur). Vu par la VICTIME (le seul jeu
 -- qui sait vraiment quel os a été touché) : arme à balles uniquement (pas de poing, couteau, taser, balle en caoutchouc,
 -- extincteur), tireur = un autre joueur ou un PNJ. Le reste (corps, jambes) ne change pas : dégâts adoucis ci-dessus.
@@ -41,6 +77,7 @@ AddEventHandler('gameEventTriggered', function(name, args)
     if name ~= 'CEventNetworkEntityDamage' then return end
     local ped = cache.ped
     local victim, attacker, weapon = args[1], args[2], args[7]
+    if victim == ped and weapon and NOT_LETHAL[weapon] then return tased() end -- V12.63 : taser
     if victim ~= ped or attacker == ped or not weapon or NOT_LETHAL[weapon] then return end
     if GetWeaponDamageType(weapon) ~= BULLET then return end
     if IsEntityDead(ped) or GetPlayerInvincible(PlayerId()) then return end -- staff invincible : jamais

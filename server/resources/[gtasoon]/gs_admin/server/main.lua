@@ -554,6 +554,16 @@ Actions.addstaffped = { level = 4, duty = true, run = function(src, _, data)
     return ('%s #%d « %s » posé (%s)'):format(kind == 'ped' and 'PNJ' or 'Objet', res, model, target)
 end }
 
+-- V12.63 · Déplacer / tourner un PNJ ou un objet posé par le staff (placement libre, F = coller au mur)
+Actions.movestaffped = { level = 4, duty = true, run = function(src, _, data)
+    local id = need(math.tointeger(tonumber(data.id)), 'Entrée inconnue.')
+    local pose, perr = exports.gs_bridge:CleanPose(data.pose, GetEntityCoords(GetPlayerPed(src)), 60.0)
+    need(pose, perr)
+    local ok, res = exports.gs_bridge:MoveStaffPed(id, { x = pose.x, y = pose.y, z = pose.z, heading = pose.w })
+    need(ok, res)
+    return ('#%d déplacé'):format(id)
+end }
+
 Actions.delstaffped = { level = 4, duty = true, run = function(_, _, data)
     local ok, res = exports.gs_bridge:RemoveStaffPed(tonumber(data.id))
     need(ok, res)

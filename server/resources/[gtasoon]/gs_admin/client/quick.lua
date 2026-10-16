@@ -266,6 +266,9 @@ local FUN = {
     { id = 'carjump', label = 'Voiture sauteuse (Espace en conduisant)', icon = 'car-side' },
     { id = 'rainbow', label = 'Voiture arc-en-ciel', icon = 'palette' },
     { id = 'drunk', label = 'Caméra ivre', icon = 'wine-glass' },
+    -- V12.63 (2e série) : sur la voiture que je conduis
+    { id = 'carshield', label = 'Voiture indestructible (conduite)', icon = 'shield' },
+    { id = 'tyresmoke', label = 'Fumée de pneus arc-en-ciel (conduite)', icon = 'smog' },
 }
 local fun = {}
 
@@ -286,12 +289,14 @@ end
 for _, id in ipairs({ 'fastrun', 'fastswim', 'lowgravity', 'nightvision', 'thermal', 'drunk', 'carspeed' }) do applied[id] = false end
 
 local funLoopOn = false
-local function looping() return fun.superjump or fun.stamina or fun.carspeed or fun.carjump or fun.rainbow end
+local function looping() return fun.superjump or fun.stamina or fun.carspeed or fun.carjump or fun.rainbow or fun.carshield or fun.tyresmoke end
 local function funLoop()
     if funLoopOn then return end
     funLoopOn = true
     CreateThread(function()
         local hue, boosted, nextColor = 0, nil, 0
+        local shielded, nextSmoke = nil, 0
+        local SMOKE = { { 255, 46, 154 }, { 176, 72, 255 }, { 79, 216, 255 }, { 90, 255, 140 }, { 255, 210, 63 } }
         -- par frame : seulement tant qu'un effet « sur moi » à entretenir est actif (mode staff)
         while looping() do
             local pid = PlayerId()
@@ -306,6 +311,16 @@ local function funLoop()
                 if fun.carjump and IsControlJustPressed(0, 22) and IsVehicleOnAllWheels(veh) then
                     ApplyForceToEntity(veh, 1, 0.0, 0.0, 9.0, 0.0, 0.0, 0.0, 0, false, true, true, false, true)
                 end
+                if fun.carshield and shielded ~= veh then -- V12.63 : indestructible tant que l'effet est actif
+                    shielded = veh
+                    SetEntityInvincible(veh, true) SetVehicleCanBeVisiblyDamaged(veh, false) SetVehicleTyresCanBurst(veh, false)
+                end
+                if fun.tyresmoke and GetGameTimer() >= nextSmoke then -- V12.63 : fumée de pneus qui change de couleur
+                    nextSmoke = GetGameTimer() + 400
+                    ToggleVehicleMod(veh, 20, true)
+                    local c = SMOKE[(math.floor(GetGameTimer() / 400) % #SMOKE) + 1]
+                    SetVehicleTyreSmokeColor(veh, c[1], c[2], c[3])
+                end
                 if fun.rainbow and GetGameTimer() >= nextColor then
                     nextColor = GetGameTimer() + 80
                     hue = (hue + 4) % 360
@@ -316,6 +331,10 @@ local function funLoop()
                     SetVehicleCustomPrimaryColour(veh, r, g, b) SetVehicleCustomSecondaryColour(veh, r, g, b)
                 end
             end
+            if shielded and (not fun.carshield or shielded ~= veh) then
+                if DoesEntityExist(shielded) then SetEntityInvincible(shielded, false) SetVehicleCanBeVisiblyDamaged(shielded, true) SetVehicleTyresCanBurst(shielded, true) end
+                shielded = nil
+            end
             if boosted and (not fun.carspeed or boosted ~= veh) then
                 if DoesEntityExist(boosted) then ModifyVehicleTopSpeed(boosted, 0.0) end
                 boosted = nil
@@ -323,6 +342,7 @@ local function funLoop()
             Wait(0)
         end
         if boosted and DoesEntityExist(boosted) then ModifyVehicleTopSpeed(boosted, 0.0) end
+        if shielded and DoesEntityExist(shielded) then SetEntityInvincible(shielded, false) SetVehicleCanBeVisiblyDamaged(shielded, true) SetVehicleTyresCanBurst(shielded, true) end
         funLoopOn = false
     end)
 end
@@ -621,7 +641,8 @@ end
 local PLACE_HELP = table.concat({
     '[Flèches / pavé 8 5 4 6] déplacer de 10 cm  ·  [PgUp/PgDn] hauteur 5 cm',
     '[Q/E] tourner de 5°  ·  [Maj] pas × 5  ·  [Tab] viser à la souris',
-    '[G] au sol  ·  [Entrée] valider  ·  [Retour] annuler',
+    '[G] au sol  ·  [F] coller au mur / plafond visé',
+    '[Entrée] valider  ·  [Retour] annuler',
 }, '  \n')
 
 --- Aperçu + réglages ; retourne la pose { x, y, z, heading } ou nil (annulé, ou impossible : déjà notifié).
@@ -808,6 +829,26 @@ local function confirmRemoveStaff(e)
     end
 end
 
+--- V12.63 · Déplacer / tourner une entrée (placement libre depuis sa position actuelle ; F = coller au mur)
+local function moveStaff(e)
+    local pose = freePlace({ kind = e.kind, model = e.model, scenario = e.scenario, x = e.x, y = e.y, z = e.z, heading = e.heading })
+    if pose then notify(act('movestaffped', nil, { id = e.id, pose = pose })) end
+end
+
+local function staffEntryMenu(e, parent)
+    show('gs_staff_sp_entry', ('%s #%d · %s'):format(e.kind == 'ped' and 'PNJ' or 'Objet', e.id, e.model), {
+        { title = 'Déplacer / tourner', icon = 'arrows-up-down-left-right', description = 'Placement libre ; [F] le colle au mur visé', onSelect = function() moveStaff(e) end },
+        { title = 'Retirer', icon = 'trash', iconColor = '#ff4d6d', onSelect = function() confirmRemoveStaff(e) end },
+    }, parent)
+end
+
+local function aimedStaff()
+    local hit, entity = lib.raycast.cam(8 | 16, 4, 30.0) -- [API] ox_lib : PNJ et objets
+    local id = hit and entity ~= 0 and exports.gs_markers:StaffEntryOf(entity) or nil
+    if not id then return nil end
+    for _, e in ipairs(GlobalState.gsStaffPeds or {}) do if e.id == id then return e end end
+end
+
 local function removeAimedStaff()
     local hit, entity = lib.raycast.cam(8 | 16, 4, 30.0) -- [API] ox_lib : PNJ et objets
     local id = hit and entity ~= 0 and exports.gs_markers:StaffEntryOf(entity) or nil
@@ -830,10 +871,10 @@ local function staffPedsList()
         local state = e.kind ~= 'ped' and 'objet' or (claimed[e.id] and 'porte l\'interaction du point' or 'ambiance, sans interaction')
         o[#o + 1] = { title = ('%s #%d · %s'):format(e.kind == 'ped' and 'PNJ' or 'Objet', e.id, e.model), icon = e.kind == 'ped' and 'user' or 'cube', arrow = true,
             description = ('%s · %s · à %d m · par %s'):format(targetLabel(e.target), state, math.floor(list[i].dist), e.by or '?'),
-            onSelect = function() confirmRemoveStaff(e) end }
+            onSelect = function() staffEntryMenu(e, 'gs_staff_sp_list') end } -- V12.63 : déplacer ou retirer
     end
     if #o == 0 then o[1] = { title = 'Aucun PNJ ni objet posé par le staff', readOnly = true } end
-    show('gs_staff_sp_list', ('PNJ et objets posés (%d) · cliquer pour retirer'):format(#list), o, 'gs_staff_sp')
+    show('gs_staff_sp_list', ('PNJ et objets posés (%d) · déplacer ou retirer'):format(#list), o, 'gs_staff_sp')
 end
 
 local function staffPedsMenu()
@@ -842,6 +883,8 @@ local function staffPedsMenu()
           description = 'Relié à un métier (accueil, direction, garage), à un gang ou décor libre ; modèle, scénario, puis placement libre' },
         { title = 'Ajouter un objet', icon = 'cube', arrow = true, onSelect = addStaffProp,
           description = 'Catalogue (celui du Mapping) ou nom de modèle, relié à un métier / gang / libre, puis placement libre' },
+        { title = 'Déplacer celui que je vise', icon = 'arrows-up-down-left-right', description = 'Vise un PNJ ou un objet posé par le staff ; [F] le colle au mur',
+          onSelect = function() local e = aimedStaff() if e then moveStaff(e) else notify(false, 'Vise un PNJ ou un objet posé par le staff.') end end },
         { title = 'Retirer celui que je vise', icon = 'crosshairs', description = 'Vise un PNJ ou un objet posé par le staff', onSelect = removeAimedStaff },
         { title = 'Liste (les plus proches)', icon = 'list', arrow = true, onSelect = staffPedsList,
           description = ('%d posé(s) sur %d · retirer depuis la liste'):format(#(GlobalState.gsStaffPeds or {}), 200) },
@@ -894,6 +937,10 @@ local BURSTS = {
     { id = 'fireworks', label = 'Feux d\'artifice', icon = 'burst', asset = 'scr_indep_fireworks', fx = 'scr_indep_firework_starburst', n = 4, height = 18.0, scale = 1.6 },
     { id = 'confetti', label = 'Pluie de confettis', icon = 'champagne-glasses', asset = 'scr_xs_celebration', fx = 'scr_xs_confetti_burst', n = 2, height = 2.5, scale = 1.4 },
     { id = 'smoke', label = 'Apparition dans la fumée', icon = 'cloud', asset = 'scr_rcbarry2', fx = 'scr_clown_appears', n = 1, height = 0.0, scale = 1.2 },
+    -- V12.63 (2e série)
+    { id = 'teleportfx', label = 'Téléportation « alien »', icon = 'bolt', asset = 'scr_rcbarry1', fx = 'scr_alien_teleport', n = 1, height = 0.0, scale = 1.0 },
+    { id = 'vanish', label = 'Désintégration (puis invisible 10 s)', icon = 'ghost', asset = 'scr_rcbarry1', fx = 'scr_alien_disintegrate', n = 1, height = 0.0, scale = 1.0, hide = 10000 },
+    { id = 'boom', label = 'Souffle lumineux (sans dégâts)', icon = 'sun', asset = 'scr_trevor1', fx = 'scr_trev1_trailer_boosh', n = 1, height = 0.5, scale = 1.0 },
 }
 local function burst(f)
     if not lib.requestNamedPtfxAsset(f.asset, 3000) then return notify(false, 'Effet indisponible sur ce build du jeu.') end
@@ -906,6 +953,11 @@ local function burst(f)
             Wait(450)
         end
         RemoveNamedPtfxAsset(f.asset)
+        if f.hide then -- désintégration : invisible quelques secondes (réapparition automatique)
+            SetEntityVisible(cache.ped, false, false)
+            Wait(f.hide)
+            SetEntityVisible(cache.ped, not powers.invisible, false)
+        end
     end)
 end
 
@@ -954,7 +1006,7 @@ local function eventsMenu()
     end
     table.sort(gather, function(a, b) return a.title < b.title end)
     local options = {
-        { title = 'Rassemblements', icon = 'people-group', arrow = true, description = 'Rassemblement auto, club, boxe, salon de l\'emploi, course, road trip, plage',
+        { title = 'Rassemblements', icon = 'people-group', arrow = true, description = 'Auto, club, concert, marché de nuit, défilé, foot, billard, laser game, boxe, emploi, course, road trip, plage',
           onSelect = function() show('gs_staff_gather', 'Rassemblements', gather, 'gs_staff_events') end },
     }
     local hev = Config.Events.hunt
@@ -1025,7 +1077,7 @@ local function eventsMenu()
             show('gs_staff_rumors', 'Rumeurs des joueurs', o, 'gs_staff_events')
         end }
     options[#options + 1] = { title = 'Effets sur moi (animation d\'événement)', icon = 'wand-magic-sparkles', arrow = true,
-        description = 'Feux d\'artifice, confettis, super vitesse, voiture sauteuse, arc-en-ciel, gravité lunaire…', onSelect = funMenu }
+        description = 'Feux d\'artifice, confettis, téléportation, désintégration, voiture indestructible, fumée de pneus, super vitesse…', onSelect = funMenu }
     show('gs_staff_events', 'Événements', options, 'gs_staff_quick')
 end
 

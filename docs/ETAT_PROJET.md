@@ -404,6 +404,11 @@ Résumé très condensé (le détail complet est dans `docs/ROADMAP.md`, `docs/F
   plat (`InRangeFlat`) ; gs_scars : couteau / batte selon l'arme, plaques sans icône (`style = 'hidden'`) avec objets selon
   l'événement (`Config.Plaques.kindProps`, cause transmise par gs_wanted et gs_memoire) ; variantes de gang des maps
   (`gangVariantsOf` dans maps.js, `Actions.mapgang`, GlobalState.gsMapGangs, RemoveIpl / RequestIpl dans client/mapblips.lua).
+  **Puis** : dégâts par famille d'arme (gs_details `Config.Damage`, multiplicateur chez le tireur selon `GetWeapontypeGroup`,
+  remplace l'adoucissement global 0,75 de la V12.37 à la demande du fondateur) ; taser (`Config.Taser` : temps au sol,
+  `Dont_tazeme_bro`, tremblement) ; 2e série d'effets sur moi et d'événements ; placement « coller au mur » ([F], export
+  gs_markers `WallSnap`, aussi dans /builder) ; déplacer une entrée staff (gs_bridge `MoveStaffPed`, `Actions.movestaffped`) ;
+  /builder : supprimer l'objet visé. Tests : test_gs_admin (265).
 - **V12.62** (15/10/2026, session de secours) — propositions choisies + relecture complète du gros patch avant le backtest :
   (1) **Lives** : ▦ grille, « ⇢ TP » (action `goto` de gs_admin), **replay 30 s** (n° 137) : tant qu'un ticket est ouvert,
   20 images (1,5 s) de l'auteur et du joueur nommé (« /report 12 … », gs_admin `ReportedPlayers`) gardées EN MÉMOIRE, effacées à

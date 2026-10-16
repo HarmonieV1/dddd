@@ -637,6 +637,17 @@ ok = cb('gs_admin:action', 2, 'delstaffped', nil, { id = 1 }); step()
 check('retrait : modo refusé', not ok and #GlobalState.gsStaffPeds == 3)
 ok, msg = cb('gs_admin:action', 1, 'delstaffped', nil, { id = 1 }); step()
 check('retrait : supprimé, publié, message', ok and #GlobalState.gsStaffPeds == 2 and msg:find('retiré', 1, true) and dbRows[1] == nil)
+-- V12.63 · déplacer / tourner une entrée posée (placement libre, F = coller au mur)
+do
+    local e2, me1 = GlobalState.gsStaffPeds[1], W.players[1].pos
+    ok = cb('gs_admin:action', 1, 'movestaffped', nil, { id = e2.id, pose = { x = me1.x + 2.0, y = me1.y, z = me1.z, heading = 45.0 } }); step()
+    local moved = GlobalState.gsStaffPeds[1]
+    check('déplacer : position et cap mis à jour, publiés', ok and math.abs(moved.x - (me1.x + 2.0)) < 0.01 and math.abs(moved.heading - 45.0) < 0.01)
+    check('déplacer : un modo ne peut pas', not cb('gs_admin:action', 2, 'movestaffped', nil, { id = e2.id, pose = { x = me1.x, y = me1.y, z = me1.z, heading = 0.0 } }))
+    step()
+    check('déplacer : entrée inconnue refusée', not cb('gs_admin:action', 1, 'movestaffped', nil, { id = 999, pose = { x = me1.x, y = me1.y, z = me1.z, heading = 0.0 } }))
+    step()
+end
 
 -- V12.63 · Coincé sous la carte (n° 193) : retour auto validé par le serveur (altitude), bouton staff (F10 / F11)
 tp(4, vec3(500.0, 500.0, 30.0))

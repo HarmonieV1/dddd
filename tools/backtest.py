@@ -167,6 +167,14 @@ SESSIONS = [
         ('Mur des légendes : F11 → Monde et lieux → Déplacer un point → « Cavale · legendWall » → placer contre le mur voulu de Mission Row', 'Staff', 1),
         ('QG de gang : F11 → Monde et lieux → Mappings installés → QG de gang → choisir le QG → « Aux couleurs : ballas » → la déco change chez tous ; si « Aucune variante trouvée » : regarder « Fichiers de … » et envoyer la liste + le PDF Patoche', 'Staff', 2),
     ]),
+    ('4o · V12.63 — dégâts, taser, effets, placement (15 min)', [
+        ('Dégâts (sans gilet, au torse) : pistolet ≈ 3-4 balles, mitraillette ≈ 4-5, fusil d\'assaut ≈ 2-3, pompe de près 1-2, précision 1, couteau ≈ 2-3 coups, batte ≈ 3-4, poings ≈ 8-10 ; tête = mort en une balle (casque : une encaissée). À ajuster dans gs_details Config.Damage si besoin', '2', 3),
+        ('Taser : la cible reste au sol ~6,5 s, écran électrisé et tremblement, puis sonnée ~12 s ; jamais mortel', '2', 2),
+        ('Effets sur moi (2e série) : téléportation « alien », désintégration (invisible 10 s), souffle lumineux, voiture indestructible, fumée de pneus arc-en-ciel', 'Staff', 1),
+        ('Événements : Rassemblements → concert, marché de nuit, défilé de voitures, match de foot, tournoi de billard, laser game (annonce + GPS à ta position)', 'Staff', 1),
+        ('Placement (F11 → PNJ et objets posés, Déplacer un point, /builder) : viser un mur + [F] → l\'objet se colle dos au mur, face à la pièce ; viser un plafond + [F] → suspendu (caméra) ; viser le sol + [F] → posé', 'Staff', 3),
+        ('Modifier / retirer : F11 → PNJ et objets posés → « Déplacer celui que je vise » / liste → Déplacer ou Retirer ; /builder → « Supprimer l\'objet visé » (un geste + confirmation)', 'Staff', 2),
+    ]),
     ('5 · Obligatoire avant d\'ouvrir', [
         ('SAUVEGARDER-BDD.bat puis RESTAURER-BDD.bat sur un joueur ; redémarrage de 6 h : annonces 15 / 5 / 1 min', 'Staff', 3),
         ('Mode staff : vol libre / invisible SANS alerte anti-triche ; F10 tickets et sanctions ; carkill 2 fois → alerte', 'Staff', 3),

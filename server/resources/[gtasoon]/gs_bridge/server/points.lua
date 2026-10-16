@@ -156,6 +156,7 @@ StaffPedsStore = StaffPedsStore or {
             { e.kind, e.target, e.model, e.scenario, e.x, e.y, e.z, e.heading, e.by, e.at })
     end,
     delete = function(id) MySQL.update('DELETE FROM gs_staff_peds WHERE id = ?', { id }) end,
+    move = function(id, x, y, z, h) MySQL.update('UPDATE gs_staff_peds SET x = ?, y = ?, z = ?, heading = ? WHERE id = ?', { x, y, z, h, id }) end, -- V12.63
 }
 
 StaffPeds = { list = {}, max = 200 } -- list : entrées publiées, triées par id
@@ -216,6 +217,23 @@ local function RemoveStaffPed(id)
     return false, 'Entrée inconnue (déjà retirée ?).'
 end
 
+--- V12.63 · Déplace / tourne une entrée (même validation de position qu'à l'ajout). Retourne true, entrée ou false, message. [API]
+local function MoveStaffPed(id, pose)
+    id = tonumber(id)
+    if not id or type(pose) ~= 'table' then return false, 'Entrée inconnue.' end
+    local p, err = CleanPose({ x = pose.x, y = pose.y, z = pose.z, w = pose.heading }, nil)
+    if not p then return false, err end
+    for _, o in ipairs(StaffPeds.list) do
+        if o.id == id then
+            o.x, o.y, o.z, o.heading = p.x, p.y, p.z, p.w
+            if StaffPedsStore.move then StaffPedsStore.move(id, p.x, p.y, p.z, p.w) end
+            publishStaffPeds()
+            return true, o
+        end
+    end
+    return false, 'Entrée inconnue (déjà retirée ?).'
+end
+
 --- Liste des PNJ et objets posés par le staff (copie, triée par id). [API]
 local function ListStaffPeds()
     local out = {}
@@ -228,6 +246,7 @@ CreateThread(function() StaffPeds.load() end)
 exports('CleanPose', CleanPose)
 exports('AddStaffPed', AddStaffPed)
 exports('RemoveStaffPed', RemoveStaffPed)
+exports('MoveStaffPed', MoveStaffPed)
 exports('ListStaffPeds', ListStaffPeds)
 exports('CheckPoint', CheckPoint)
 exports('SetPoint', SetPoint)

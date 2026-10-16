@@ -4,7 +4,7 @@
 > Ce qui précède (nuit du 15 au 16/10 : appli staff externe, outils OVH, mur des légendes, trêves, figure du coin, diaporama du
 > site…) est dans `docs/PATCH_SESSION_15-10.md`. Version prête à coller sur Discord : `docs/PATCH_NOTE_V12.63_DISCORD.txt`.
 > Installation : METTRE-A-JOUR → DIAGNOSTIC-MODS (O) → VIDER-CACHE-FIVEM → METTRE-A-JOUR-OVH.
-> Rien n'a encore été vu en jeu : fiche de backtest, sections **4j** à **4n**.
+> Rien n'a encore été vu en jeu : fiche de backtest, sections **4j** à **4o**.
 
 ## 1. Pour les joueurs
 | Nouveauté | Comment ça marche |
@@ -23,6 +23,8 @@
 | **Vue d'ensemble sur C** | Caméra autour de ton perso, qui reste immobile. F6 reste le menu des métiers. |
 | **Avis de recherche papier** | Petite affiche crème « RECHERCHÉ » lisible de près ; une affiche arrachée disparaît vraiment. |
 | **Traces plus parlantes** | Couteau ou batte au sol selon l'arme, douilles par balle, flaques de sang par victime ; lieux de mémoire sans icône flottante. |
+| **Dégâts réalistes** | Selon l'arme : pistolet ≈ 3-4 balles, fusil d'assaut ≈ 2-3, couteau ≈ 2-3 coups, poings ≈ 8-10 ; la tête reste mortelle. |
+| **Taser** | Au sol plus longtemps, écran électrisé, puis sonné quelques secondes. |
 | **Organisateur de courses réparé** | Au volant de ta voiture près de lui, [E] ouvre enfin son menu (avant, rien ne se passait) ; à pied, [E] à côté de lui. |
 | **Gangs** | Plus de gangs créés d'office (un gang naît d'un projet RP validé par le staff) ; territoires découpés en pâtés de maisons. |
 | **Cyclone** | Vitesse maximale ramenée à 210 km/h. |
@@ -49,6 +51,8 @@
 | **Journal staff** | F10 → Journal | Hommages peints, coincés ramenés, choix de destination du vol. |
 | **Mises en scène** (admin) | F11 → fiche → Mises en scène, F10 → fiche | Enlèvement en camionnette (= expulsion, écran noir) ; arrestation par un policier PNJ (plaqué, menotté, cellule de Mission Row). |
 | **Événements rangés** | F11 → Événements | Rassemblements (+ rassemblement auto, soirée en club, salon de l'emploi), chasse au trésor (prime au premier), neige, effets « sur moi » (feux d'artifice, confettis, fumée). |
+| **Placement : coller au mur** | tout placement (F11, /builder) | [F] colle l'objet dos au mur visé, au plafond ou au sol ; déplacer / retirer celui qu'on vise en un geste. |
+| **Effets et événements (2e série)** | F11 → Événements | Téléportation, désintégration, souffle, voiture indestructible, fumée de pneus ; concert, marché de nuit, défilé, foot, billard, laser game. |
 | **QG de gang** | F11 → Mappings installés → QG de gang | Changer les couleurs d'un QG de map (ex. Patoche Vagos → Ballas) chez tous les joueurs. |
 | **Mises en scène fiabilisées** | F11 → fiche | Camionnette « speedo » posée à côté (plus de conduite IA, burrito3 importé au handling illisible écarté), policier qui arrive à coup sûr. |
 | **Branding** | menus de base | Contour violet néon des Lives sur les menus F11, notifications, saisies, inventaire et F10 ; titres en dégradé RoadLine. |

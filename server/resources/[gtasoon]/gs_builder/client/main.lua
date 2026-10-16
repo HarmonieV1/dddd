@@ -68,11 +68,12 @@ local HELP = table.concat({
     '[Souris] viser  ·  [TAB] mode viser / précis',
     '[Flèches] déplacer  ·  [PgUp/PgDn] hauteur',
     '[Q/E] tourner  ·  [Molette] rotation fine  ·  [X] remettre droit',
-    '[G] poser au sol  ·  [Shift] rapide  ·  [Ctrl] précis',
+    '[G] poser au sol  ·  [F] coller au mur / plafond visé',
+    '[Shift] rapide  ·  [Ctrl] précis',
     '[Entrée] valider  ·  [Retour] annuler',
 }, '  \n')
 
-local DISABLED = { 24, 25, 44, 38, 45, 47, 73, 172, 173, 174, 175, 10, 11, 14, 15, 16, 17, 37, 140, 141, 142, 257, 263 }
+local DISABLED = { 23, 24, 25, 44, 38, 45, 47, 73, 172, 173, 174, 175, 10, 11, 14, 15, 16, 17, 37, 140, 141, 142, 257, 263 }
 
 --- Lance le placement. start = { model, x?, y?, z?, rx?, ry?, rz? }. Retourne l'objet final ou nil.
 local function place(start)
@@ -119,6 +120,10 @@ local function place(start)
 
         SetEntityCoordsNoOffset(preview, p.x, p.y, p.z, false, false, false)
         SetEntityRotation(preview, rot.x, rot.y, rot.z, 2, false)
+        if IsDisabledControlJustPressed(0, 23) then -- F : coller au mur / plafond / sol visé (V12.63, même calcul que gs_markers)
+            local okS, snap = pcall(function() return exports.gs_markers:WallSnap('prop', start.model, { heading = rot.z }) end)
+            if okS and snap then p, rot, aim = vec3(snap.x, snap.y, snap.z), vec3(0.0, 0.0, snap.heading), false end
+        end
         if IsDisabledControlJustPressed(0, 47) then -- G : poser au sol
             PlaceObjectOnGroundProperly(preview)
             p, rot = GetEntityCoords(preview), GetEntityRotation(preview, 2)
@@ -203,6 +208,22 @@ local function aimedObject()
     lib.notify({ description = 'Cet objet fait partie de la map d\'origine (non modifiable).', type = 'error' })
 end
 
+--- V12.63 · Supprimer en un geste l'objet placé visé (confirmation, contour pendant la question)
+local function deleteAimed()
+    local hit, entity = lib.raycast.cam(16, 4, 30.0) -- [API] ox_lib
+    if not hit or entity == 0 then return notify(false, 'Vise un objet placé.') end
+    for id, o in pairs(objects) do
+        if o.handle == entity then
+            SetEntityDrawOutline(entity, true)
+            local answer = lib.alertDialog({ header = 'Supprimer ' .. o.data.model .. ' ?', content = 'Il disparaît pour tous (définitif).', centered = true, cancel = true })
+            if DoesEntityExist(entity) then SetEntityDrawOutline(entity, false) end
+            if answer == 'confirm' then notify(lib.callback.await('gs_builder:delete', false, id)) end
+            return
+        end
+    end
+    notify(false, 'Objet de la map d\'origine : utilise « Retirer l\'objet de la map visé ».')
+end
+
 --- Retire (pour tout le monde) l'objet de la map d'origine visé : poubelle, banc, barrière…
 local function removeMapObject()
     local hit, entity = lib.raycast.cam(16, 4, 30.0) -- [API] ox_lib
@@ -277,6 +298,7 @@ local function openMenu(parent)
         end },
         { title = 'Objets favoris', icon = 'star', menu = 'gs_builder_fav' },
         { title = 'Modifier l\'objet visé', icon = 'crosshairs', onSelect = aimedObject },
+        { title = 'Supprimer l\'objet visé', icon = 'trash', iconColor = '#ff4d6d', description = 'Objet placé par le staff : supprimé pour tous', onSelect = deleteAimed },
         { title = 'Objets à proximité', icon = 'list', onSelect = nearbyMenu },
         { title = 'Retirer l\'objet de la map visé', icon = 'eraser', description = 'Poubelle, banc, barrière… disparaît pour tous', onSelect = removeMapObject },
         { title = 'Objets de la map retirés', icon = 'rotate-left', onSelect = hiddenMenu },

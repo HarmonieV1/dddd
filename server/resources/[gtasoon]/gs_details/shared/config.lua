@@ -67,3 +67,16 @@ Config.Wardrobe = {
 -- V12.63 · Vitesse maximale par modèle (km/h), appliquée quand on prend le volant : pour les voitures importées dont le
 -- réglage (handling) n'a pas de limite. Nom du modèle = nom de spawn. Ex. backtest du 16/10 : cycloneex0 sans limite.
 Config.SpeedCaps = { cycloneex0 = 210 }
+
+-- V12.63 · Dégâts réalistes par famille d'arme (backtest du 16/10 : « réaliste, toutes armes confondues »). Multiplicateur
+-- appliqué chez le TIREUR selon l'arme en main (1.0 = valeurs du jeu). Repères sans gilet, au torse, avant « à terre » :
+-- pistolet ≈ 3-4 balles, mitraillette ≈ 4-5, fusil d'assaut ≈ 2-3, fusil à pompe 1-2 de près, fusil de précision 1,
+-- couteau ≈ 2-3 coups, batte ≈ 3-4, poings ≈ 8-10. La tête reste mortelle en une balle (casque : une balle encaissée).
+Config.Damage = {
+    groups = { GROUP_PISTOL = 1.15, GROUP_SMG = 1.0, GROUP_RIFLE = 1.35, GROUP_MG = 1.2, GROUP_SHOTGUN = 1.0, GROUP_SNIPER = 1.0, GROUP_HEAVY = 1.0 },
+    weapon = 1.0,                     -- autres armes à feu
+    unarmed = 0.8, blade = 1.4, blunt = 1.15, vehicle = 0.7,
+    blades = { 'WEAPON_KNIFE', 'WEAPON_MACHETE', 'WEAPON_SWITCHBLADE', 'WEAPON_DAGGER', 'WEAPON_BOTTLE', 'WEAPON_HATCHET', 'WEAPON_BATTLEAXE', 'WEAPON_STONE_HATCHET' },
+}
+-- V12.63 · Taser plus marquant (même demande) : au sol plus longtemps, écran électrisé, tremblement, puis sonné quelques secondes.
+Config.Taser = { groundMs = 6500, fxMs = 7000, shake = 1.6, dazedMs = 12000 }

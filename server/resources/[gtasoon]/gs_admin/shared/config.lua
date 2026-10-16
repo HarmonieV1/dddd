@@ -43,6 +43,12 @@ Config.Powers = {
     fireworks = 3,   -- feux d'artifice
     confetti = 3,    -- pluie de confettis
     smoke = 3,       -- apparition dans un nuage de fumée
+    -- V12.63 (2e série) : effets plus poussés, toujours sur moi / à ma position
+    teleportfx = 3,  -- téléportation « alien » (éclair vert)
+    vanish = 3,      -- désintégration (je disparais dans un éclat)
+    boom = 3,        -- souffle lumineux (sans dégâts)
+    carshield = 3,   -- ma voiture indestructible (celle que je conduis)
+    tyresmoke = 3,   -- fumée de pneus colorée sur ma voiture
 }
 
 Config.Animals = {
@@ -105,6 +111,19 @@ Config.Events = {
         text = 'Rassemblement auto : viens montrer ta voiture, armes rangées dans la zone. Rendez-vous au point GPS !' },
     club = { label = 'Soirée en club', icon = 'martini-glass', fx = 'melee', radius = 40.0, minutes = 60,
         text = 'Soirée en club : musique, verres et rencontres, armes rangées à l\'entrée. Rendez-vous au point GPS !' },
+    -- V12.63 (2e série) : événements classiques en plus, lancés là où se trouve le staff (devant le lieu choisi)
+    concert = { label = 'Concert en plein air', icon = 'guitar', fx = 'melee', radius = 60.0, minutes = 60,
+        text = 'Concert en plein air : musique live, foule et ambiance, armes rangées dans la zone. Rendez-vous au point GPS !' },
+    nightmarket = { label = 'Marché de nuit', icon = 'store', fx = 'melee', radius = 40.0, minutes = 60,
+        text = 'Marché de nuit : stands, bonnes affaires et rencontres. Rendez-vous au point GPS !' },
+    parade = { label = 'Défilé de voitures', icon = 'car-side', radius = 0.0, minutes = 30,
+        text = 'Défilé de voitures : rejoins le cortège au point GPS, on traverse la ville ensemble (code de la route respecté).' },
+    soccer = { label = 'Match de foot', icon = 'futbol', fx = 'melee', radius = 50.0, minutes = 45,
+        text = 'Match de foot : deux équipes, un ballon, des supporters. Rendez-vous au terrain (point GPS) !' },
+    billiard = { label = 'Tournoi de billard', icon = 'circle', fx = 'melee', radius = 25.0, minutes = 60,
+        text = 'Tournoi de billard : inscriptions sur place, le gagnant repart avec la gloire. Rendez-vous au point GPS !' },
+    lasergame = { label = 'Partie de laser game', icon = 'crosshairs', radius = 0.0, minutes = 45,
+        text = 'Partie de laser game : équipes formées sur place. Rendez-vous au point GPS !' },
     jobfair = { label = 'Salon de l\'emploi', icon = 'briefcase', radius = 0.0, minutes = 30,
         text = 'Salon de l\'emploi : entreprises et services recrutent, entretiens sur place. Rendez-vous au point GPS !' },
     -- Chasse au trésor : le staff cache une mallette là où il se trouve ; tout le monde reçoit une ZONE (pas le point exact) ;

@@ -360,7 +360,7 @@ end)
 -- joueur, réglé au clavier, puis Entrée / Retour. Les textes d'aide sont affichés par l'appelant (lib.showTextUI : gs_markers ne
 -- charge pas ox_lib). Une seule boucle par image, le temps du placement ; un seul placement à la fois.
 local STEP_MOVE, STEP_UP, STEP_TURN = 0.10, 0.05, 5.0      -- 10 cm, 5 cm, 5° par pas ; Maj = pas × 5
-local PLACE_DISABLED = { 24, 25, 44, 38, 45, 47, 73, 172, 173, 174, 175, 10, 11, 14, 15, 16, 17, 37, 108, 109, 111, 112, 140, 141, 142, 257, 263 }
+local PLACE_DISABLED = { 23, 24, 25, 44, 38, 45, 47, 73, 172, 173, 174, 175, 10, 11, 14, 15, 16, 17, 37, 108, 109, 111, 112, 140, 141, 142, 257, 263 }
 local placing = false
 local held = {} -- [commande] = horodatage du premier appui (répétition quand la touche reste enfoncée)
 
@@ -404,6 +404,29 @@ local function camAim()
     if hit then return at end
     return nil
 end
+
+--- V12.63 (backtest : « une touche pour coller au mur, éviter les faux placements ») : surface visée par la caméra (25 m).
+--- Mur : l'objet est collé DOS au mur (profondeur du modèle), face à la pièce ; plafond : suspendu dessous ; sol : posé dessus.
+--- `back` = distance au mur pour un PNJ ou un point. Retourne la pose, ou nil si rien n'est visé. [API]
+local function wallSnap(kind, model, pose, back)
+    local cam, rot = GetGameplayCamCoord(), GetGameplayCamRot(2)
+    local rz, rx = math.rad(rot.z), math.rad(rot.x)
+    local dir = vec3(-math.sin(rz) * math.cos(rx), math.cos(rz) * math.cos(rx), math.sin(rx))
+    local to = cam + dir * 25.0
+    local _, hit, at, normal = GetShapeTestResult(StartExpensiveSynchronousShapeTestLosProbe(cam.x, cam.y, cam.z, to.x, to.y, to.z, 1 | 16, PlayerPedId(), 4))
+    if hit ~= 1 or not normal then return nil end
+    local mn, mx = vec3(-0.2, -0.2, 0.0), vec3(0.2, 0.2, 1.0)
+    if kind == 'prop' and model then mn, mx = GetModelDimensions(GetHashKey(model)) end
+    if normal.z > 0.7 then -- sol
+        return { x = at.x, y = at.y, z = at.z + (kind == 'prop' and -mn.z or 0.0) + (kind == 'point' and 1.0 or 0.0), heading = pose.heading }
+    elseif normal.z < -0.7 then -- plafond (caméra, lampe…)
+        return { x = at.x, y = at.y, z = at.z - (kind == 'prop' and mx.z or 0.3), heading = pose.heading }
+    end
+    local d = kind == 'prop' and (-mn.y + 0.01) or (back or 0.35)
+    local p = at + normal * d
+    return { x = p.x, y = p.y, z = kind == 'ped' and (p.z - 1.0) or p.z, heading = GetHeadingFromVector_2d(normal.x, normal.y) % 360.0 }
+end
+exports('WallSnap', wallSnap)
 
 --- Fantôme : PNJ ou objet semi-transparent, sans collision, figé. Retourne l'entité (0 pour un point), ou nil + message.
 local function ghostCreate(kind, model, scenario, pose)
@@ -455,7 +478,7 @@ local function drawPointPreview(pose)
 end
 
 --- Placement libre. opts = { kind = 'point' | 'ped' | 'prop', model?, scenario?, x?, y?, z?, heading? } (sans x : 2,5 m devant le
---- joueur, au sol). Touches : flèches ou pavé 8/5/4/6 = 10 cm, PgUp/PgDn = 5 cm, Q/E = 5°, Maj = pas × 5, G = au sol, Tab = viser à
+--- joueur, au sol). Touches : flèches ou pavé 8/5/4/6 = 10 cm, PgUp/PgDn = 5 cm, Q/E = 5°, Maj = pas × 5, G = au sol, F = coller au mur visé, Tab = viser à
 --- la souris, Entrée = valider, Retour = annuler. Retourne { x, y, z, heading }, nil si annulé, nil + message si impossible. [API]
 local function place(opts)
     if placing then return nil, 'Un placement est déjà en cours.' end
@@ -491,6 +514,10 @@ local function place(opts)
             if inp.fwd ~= 0 or inp.right ~= 0 or inp.up ~= 0 then aim = false end
         end
         if IsDisabledControlJustPressed(0, 47) then pose, aim = placeGround(kind, pose, ghost), false end -- G : au sol
+        if IsDisabledControlJustPressed(0, 23) then -- F : coller au mur / plafond / sol visé (V12.63)
+            local snap = wallSnap(kind, opts.model, pose, kind == 'point' and 0.25 or 0.35)
+            if snap then pose, aim = snap, false end
+        end
         if kind == 'point' then drawPointPreview(pose) else ghostMove(kind, ghost, pose) end
         if IsControlJustPressed(0, 191) then result = pose break end -- Entrée
         if IsControlJustPressed(0, 194) then break end -- Retour
