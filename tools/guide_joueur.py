@@ -248,6 +248,8 @@ def build():
                   'et plus vous êtes nombreux, plus le calme revient vite.',
                   '<b>Alcootest</b> : la nuit, quand aucun policier n\'est en service, le shérif peut tenir un barrage sur la route. '
                   'Positif (deux verres ou plus) : amende et points de permis. Ne bois pas si tu conduis.',
+                  '<b>North Yankton</b> : un jour sur deux, le vol de l\'aéroport (LSIA) ne va pas à Cayo Perico mais dans la ville '
+                  'enneigée du prologue de GTA V. Le comptoir indique la destination du jour ; retour quand tu veux au comptoir d\'arrivée.',
                   '<b>Photomaton</b> à la fête foraine (à côté du guichet des jetons) : une photo souvenir pour 3 jetons ; '
                   'serrez-vous dans la cabine, chacun repart avec sa copie (à regarder ou accrocher au mur).'])
     s += [Paragraph('Le permis de conduire', H3)]

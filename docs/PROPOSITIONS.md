@@ -316,7 +316,7 @@ Avant l'ouverture : 149, 155, 157, 161, 165 et 166 (✚, sans nouveau mapping) s
 | 188 | **Assurance vie** : un bénéficiaire touche une somme à la mort RP (validée au cimetière) | ✚ | gs_insurance, gs_cimetiere |
 | 189 | ✅ **livrée V12.63** · **Photomaton** de la fête foraine : photo souvenir imprimée (appareil argentique) | ✚ | gs_casino, appareil photo |
 | 190 | **Fête de quartier** : un quartier « en plein essor » a sa fête mensuelle (musique, PNJ, ventes en hausse) | ✚ | gs_city, gs_events |
-| 191 | ⏸ **reportée** (North Yankton occupe les mêmes coordonnées que Cayo Perico : les deux cartes se superposent ; à refaire en « journée North Yankton » avec Cayo fermé, après un essai en jeu) · **Vols vers North Yankton** (neige, prologue de GTA V) comme Cayo Perico : planques, chasse, cavales lointaines | ✚✚ | gs_world |
+| 191 | ✅ **livrée V12.63** en « journée North Yankton » (même emplacement que Cayo Perico : un jour sur deux le vol mène à l'une ou à l'autre, ou destination choisie par le staff) · **Vols vers North Yankton** (neige, prologue de GTA V) comme Cayo Perico : planques, chasse, cavales lointaines | ✚✚ | gs_world |
 | 192 | ✅ **livrée V12.63** · **Staff : carte des tickets** dans l'appli (où se trouve l'auteur de chaque ticket ouvert) | ✚ | appli staff |
 | 193 | ✅ **livrée V12.63** · **Staff : coincé sous la map** : détection automatique (altitude), bouton « ramener au dernier point sûr » | ✚ | gs_admin |
 | 194 | **Staff : bilan de la semaine** sur Discord (joueurs uniques, heures jouées, pic, sanctions) | ✚ | gs_discord |

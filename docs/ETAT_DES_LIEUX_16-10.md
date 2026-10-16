@@ -45,7 +45,8 @@
 
 ## 5. Cartes : ce qui est autorisé
 - **Los Santos, Blaine County, Cayo Perico, North Yankton** : contenu de GTA V, aucun risque de licence. North Yankton occupe
-  les mêmes coordonnées que Cayo Perico : on ne peut pas charger les deux en même temps (vols vers North Yankton reportés).
+  les mêmes coordonnées que Cayo Perico : on ne peut pas charger les deux en même temps → « journée North Yankton » un jour sur
+  deux (F11 → Monde et lieux → Destination du vol de l'île). À vérifier en jeu : comptoir du vol retour à Ludendorff (à caler).
 - **Maps achetées (Patoche, packs .fxap)** : licences Cfx liées au compte du serveur, autorisées.
 - **Interdit** : contenu d'autres jeux (portages de Vice City, Liberty City, San Andreas), et de façon générale tout ce qui
   reprend la propriété d'un tiers (marques réelles, logos) : risque de fermeture du serveur par Cfx / Rockstar.

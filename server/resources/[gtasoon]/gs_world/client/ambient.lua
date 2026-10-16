@@ -28,8 +28,9 @@ end
 CreateThread(function()
     while true do
         local me = GetEntityCoords(cache.ped)
+        local island = GlobalState.gsIslandMode == 'yankton' and 'yankton' or 'cayo' -- V12.63 : PNJ de l'île du jour seulement
         for i, p in ipairs(Config.AmbientPeds) do
-            local d = #(me - p.coords.xyz)
+            local d = (p.island and p.island ~= island) and 1e9 or #(me - p.coords.xyz)
             if d < 60.0 and not spawned[i] then spawn(i, p)
             elseif d > 80.0 and spawned[i] then
                 if DoesEntityExist(spawned[i]) then DeletePed(spawned[i]) end

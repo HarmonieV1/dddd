@@ -80,7 +80,8 @@
 | **Démarrage plus rapide** | `gs_admin/maps.js` | Plus de gel de ~11 s après chaque démarrage : les packs en conflit ne sont relancés que si leur ordre de démarrage n'est pas déjà le bon |
 | **Staff : tickets et coincés** | appli staff, F11, `gs_admin` | Carte : anneau jaune sur l'auteur d'un ticket ouvert (n° 192) ; joueur coincé sous la carte : retour automatique après 6 s, bouton « Coincé : dernier endroit sûr » dans F11, F10 et l'appli (n° 193) |
 | **Mods : textures et versions** | DIAGNOSTIC-MODS | Liste des textures / modèles de plus de 32 Mo ; même map installée en deux versions (animalerie `_1`) : la copie passe en pause, l'original reste (Shadow Complex `_1` gardé : l'ancien est retiré) |
-| **Idées du 16/10** | `gs_gangs`, `gs_city`, `gs_roadside`, `gs_casino` | Hommage peint au nom d'un membre disparu (n° 170), voisins vigilants `/voisins` (n° 173), alcootest du shérif la nuit sans policier (n° 180), photomaton de la fête foraine (n° 189). North Yankton (n° 191) reporté : même emplacement que Cayo Perico |
+| **Idées du 16/10** | `gs_gangs`, `gs_city`, `gs_roadside`, `gs_casino` | Hommage peint au nom d'un membre disparu (n° 170), voisins vigilants `/voisins` (n° 173), alcootest du shérif la nuit sans policier (n° 180), photomaton de la fête foraine (n° 189) |
+| **Journée North Yankton** | `gs_world`, F11 | Un jour sur deux, le vol de l'aéroport mène à North Yankton (ville enneigée du prologue) au lieu de Cayo Perico (même emplacement : jamais les deux) ; F11 → Monde et lieux → Destination du vol de l'île pour forcer ; joueurs sur place rapatriés à la bascule (n° 191) |
 
 ## Encore en attente (côté fondateur)
 - `shared/config.lua` du script des auto-tamponneuses si l'achat bloque encore ;

@@ -1487,6 +1487,23 @@ local function mainMenu()
                 if GetResourceState('gs_showroom') ~= 'started' then return notify(false, 'gs_showroom n\'est pas démarré.') end
                 exports.gs_showroom:OpenStaffMenu()
             end })
+        -- V12.63 · Journée North Yankton (n° 191) : Cayo Perico et North Yankton à tour de rôle, ou une destination forcée
+        a(4, { title = 'Destination du vol de l\'île (Cayo / North Yankton)', icon = 'plane-departure', arrow = true,
+            description = 'Un jour sur deux, ou forcer une destination (les joueurs sur place sont rapatriés)',
+            onSelect = function()
+                if GetResourceState('gs_world') ~= 'started' then return notify(false, 'gs_world n\'est pas démarré.') end
+                local i = lib.callback.await('gs_world:islandInfo', false)
+                if not i then return notify(false, 'Réservé au staff.') end
+                local name = { cayo = 'Cayo Perico', yankton = 'North Yankton' }
+                local function set(c) notify(lib.callback.await('gs_world:setIslandMode', false, c)) end
+                show('gs_staff_island', 'Vol de l\'île', {
+                    { title = ('Aujourd\'hui : %s'):format(name[i.mode]), icon = 'plane', readOnly = true,
+                      description = i.choice == 'auto' and ('Alternance · demain : %s'):format(name[i.tomorrow]) or 'Destination forcée par le staff' },
+                    { title = 'Alternance (un jour sur deux)', icon = 'arrows-rotate', onSelect = function() set('auto') end },
+                    { title = 'Cayo Perico tous les jours', icon = 'umbrella-beach', onSelect = function() set('cayo') end },
+                    { title = 'North Yankton tous les jours', icon = 'snowflake', onSelect = function() set('yankton') end },
+                }, 'gs_staff_world')
+            end })
         a(4, { title = 'Mappings installés', icon = 'map', arrow = true, description = 'Où est chaque map ajoutée : y aller, la voir sur la carte, conflits',
             onSelect = function() mappingsMenu() end })
         a(4, { title = 'Copier mes coordonnées', icon = 'crosshairs', description = 'vec4 dans le presse-papiers', onSelect = function()

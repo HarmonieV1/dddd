@@ -653,7 +653,7 @@ Actions.event = { level = 3, duty = true, run = function(src, _, data)
     local seconds = ev.minutes * 60
     if ev.party then
         need(started('gs_world'), 'gs_world non démarré.')
-        exports.gs_world:StartParty(seconds)
+        need(exports.gs_world:StartParty(seconds), 'Aujourd\'hui, le vol mène à North Yankton : pas de soirée à Cayo (F11 → Monde et lieux → Destination du vol de l\'île).') -- V12.63
     end
     local n = 0
     for _, id in ipairs(GetPlayers()) do

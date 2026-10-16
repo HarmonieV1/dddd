@@ -346,9 +346,18 @@ Résumé très condensé (le détail complet est dans `docs/ROADMAP.md`, `docs/F
   bénévole connecté, plafonnés ; alerte sans position), n° 180 (barrage d'alcoolémie du shérif dans les rencontres de la route :
   nuit + aucun policier en service, `Config.Breath`, état `gsDrunk` ; scène du shérif partagée `roadStop`, contrôle des papiers
   inchangé), n° 189 (photomaton, gs_casino `Config.Fair.photobooth` / `photoCost` + export gs_evidence `Souvenir` : même objet
-  photo, une copie par personne dans la cabine, jetons rendus si l'impression échoue), n° 196 (voir plus haut). **N° 191 reportée** :
-  North Yankton et Cayo Perico occupent les mêmes coordonnées (les deux cartes se superposent) ; à faire en « journée North
-  Yankton » (Cayo fermé) après un essai en jeu.
+  photo, une copie par personne dans la cabine, jetons rendus si l'impression échoue), n° 196 (voir plus haut).
+  **N° 191 « Journée North Yankton »** (gs_world) : North Yankton et Cayo Perico occupent les mêmes coordonnées, donc jamais
+  chargées ensemble. `GlobalState.gsIslandMode` ('cayo' / 'yankton') : alternance un jour sur deux (jour de jeu de 6 h à 6 h,
+  heure du serveur, `World.autoMode`) ou choix du staff gardé en KVP (`gs_world:islandChoice`, F11 → Monde et lieux →
+  Destination du vol de l'île, niveau 4, callbacks `gs_world:islandInfo` / `setIslandMode`). Le vol régulier de LSIA mène à l'île
+  du jour (comptoirs, blips et PNJ pilotes refaits à chaque bascule, film du vol sans atterrissage pour North Yankton) ;
+  client/yankton.lua charge les IPL du prologue à moins de 2,4 km seulement les jours North Yankton (minimap du prologue, neige
+  `XMAS` chez les voyageurs seulement, sol chargé avant de reprendre la main) ; client/island.lua ne charge plus Cayo ces
+  jours-là. Bascule en cours de journée : joueurs sur l'île rapatriés à LSIA d'abord (`gs_world:client:evacuate`, AllowTeleport).
+  Séjour noté par personnage (KVP `gs_world:trip:<cid>`) : revenu après une déconnexion alors que l'île a changé → reprise à
+  l'aéroport (plus d'apparition dans le ciel de Cayo ou sous le sol de North Yankton). Soirée plage de Cayo refusée les jours
+  North Yankton (gs_admin, événement en un clic). Tests : test_gs_world (31).
 - **V12.62** (15/10/2026, session de secours) — propositions choisies + relecture complète du gros patch avant le backtest :
   (1) **Lives** : ▦ grille, « ⇢ TP » (action `goto` de gs_admin), **replay 30 s** (n° 137) : tant qu'un ticket est ouvert,
   20 images (1,5 s) de l'auteur et du joueur nommé (« /report 12 … », gs_admin `ReportedPlayers`) gardées EN MÉMOIRE, effacées à

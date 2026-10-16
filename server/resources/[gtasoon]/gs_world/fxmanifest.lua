@@ -3,11 +3,11 @@ game 'gta5'
 lua54 'yes'
 
 name 'gs_world'
-description 'Monde : densité des PNJ / trafic réglable, île de Cayo Perico chargée seulement quand on s\'en approche, vols vers l\'île.'
+description 'Monde : densité des PNJ / trafic réglable, île de Cayo Perico chargée seulement quand on s\'en approche, vols vers l\'île ; V12.63 : un jour sur deux, North Yankton à la place (mêmes coordonnées que Cayo).'
 version '0.1.0'
 
 dependencies { 'ox_lib', 'gs_security', 'gs_bridge', 'gs_markers' }
 
 shared_scripts { '@ox_lib/init.lua', 'shared/config.lua', '@gs_bridge/shared/points.lua' }
 server_scripts { 'server/main.lua' }
-client_scripts { 'client/density.lua', 'client/island.lua', 'client/ambient.lua' }
+client_scripts { 'client/density.lua', 'client/island.lua', 'client/yankton.lua', 'client/ambient.lua' }

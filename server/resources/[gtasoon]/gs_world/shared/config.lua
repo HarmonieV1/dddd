@@ -43,6 +43,40 @@ Config.Island = {
     },
 }
 
+-- V12.63 · Journée North Yankton (proposition n° 191) : la ville enneigée du prologue de GTA V occupe les MÊMES coordonnées
+-- que Cayo Perico (les deux ne peuvent pas être chargées ensemble). Le vol régulier de l'aéroport mène donc un jour à Cayo,
+-- le lendemain à North Yankton (jour de jeu = de `dayStartHour` h à `dayStartHour` h, heure du serveur : le redémarrage de 6 h),
+-- ou à la destination choisie par le staff (F11 → Monde et lieux → Destination du vol de l'île, gardée après redémarrage).
+-- Changement en cours de journée : les joueurs sur place sont d'abord rapatriés à l'aéroport. Un jour North Yankton :
+-- Cayo n'est jamais chargée (ni sa soirée plage), la neige tombe pour ceux qui sont là-bas seulement.
+Config.Yankton = {
+    alternate = true,        -- false = Cayo tous les jours (sauf choix du staff)
+    dayStartHour = 6,
+    staffLevel = 4,          -- choisir la destination (même niveau que le menu Monde et lieux)
+    zone = { x = 4300.0, y = -5000.0 }, loadRadius = 2400.0, -- centre de la zone chargée (pas un point à déplacer)
+    weather = 'XMAS',        -- neige pendant le séjour, chez les voyageurs seulement
+    flight = {
+        price = 0,
+        mainlandLabel = 'Vol pour North Yankton',
+        -- [À CALER] comptoir du vol retour à Ludendorff (F11 → Déplacer un point)
+        island = { counter = vec3(3363.5, -4846.0, 111.8), arrival = vec4(3360.19, -4849.67, 111.8, 0.0), label = 'Vol retour pour Los Santos' },
+        cinematicTo = vec3(3250.0, -4650.0, 420.0), -- film du vol : l'avion file vers la ville (pas de piste : fondu à l'arrivée)
+    },
+    -- Décor du prologue (IPL du jeu de base). Un nom absent du jeu est simplement ignoré.
+    ipls = {
+        'plg_01', 'prologue01', 'prologue01_lod', 'prologue01c', 'prologue01c_lod', 'prologue01d', 'prologue01d_lod',
+        'prologue01e', 'prologue01e_lod', 'prologue01f', 'prologue01f_lod', 'prologue01g', 'prologue01h', 'prologue01h_lod',
+        'prologue01i', 'prologue01i_lod', 'prologue01j', 'prologue01j_lod', 'prologue01k', 'prologue01k_lod', 'prologue01z',
+        'prologue01z_lod', 'plg_02', 'prologue02', 'prologue02_lod', 'plg_03', 'prologue03', 'prologue03_lod', 'prologue03b',
+        'prologue03b_lod', 'prologue03_grv_dug', 'prologue03_grv_dug_lod', 'prologue_grv_torch', 'plg_04', 'prologue04',
+        'prologue04_lod', 'prologue04b', 'prologue04b_lod', 'prologue04_cover', 'des_protree_end', 'des_protree_start',
+        'des_protree_start_lod', 'plg_05', 'prologue05', 'prologue05_lod', 'prologue05b', 'prologue05b_lod', 'plg_06', 'prologue06',
+        'prologue06_lod', 'prologue06b', 'prologue06b_lod', 'prologue06_int', 'prologue06_int_lod', 'prologue06_pannel',
+        'prologue06_pannel_lod', 'prologue_m2_door', 'prologue_m2_door_lod', 'plg_occl_00', 'prologue_occl', 'plg_rd', 'prologuerd',
+        'prologuerdb', 'prologuerd_lod',
+    },
+}
+
 -- PNJ d'ambiance (V7) : créés chez chaque joueur à l'approche (60 m), invincibles, figés dans leur animation.
 -- scenario = scénario du jeu ; anim = { dict, clip } en boucle. Coordonnées approximatives : la hauteur est recalée au sol,
 -- et tout se règle en jeu (F11 → Monde et lieux → Déplacer un point).
@@ -63,7 +97,9 @@ Config.AmbientPeds = {
     { label = 'Bassiste (Tequi-la-la)', model = 'a_m_y_hipster_01', coords = vec4(-554.6, 285.4, 82.98, 175.0), scenario = 'WORLD_HUMAN_MUSICIAN' },
     { label = 'Chanteuse (Tequi-la-la)', model = 'a_f_y_hipster_02', coords = vec4(-553.7, 283.9, 82.98, 175.0), anim = { dict = 'anim@mp_player_intcelebrationfemale@uncle_disco', clip = 'uncle_disco' } },
     -- Cayo Perico : pilote au comptoir du vol retour
-    { label = 'Pilote (vol retour)', model = 's_m_m_pilot_01', coords = vec4(4495.3, -4524.0, 4.41, 110.0), scenario = 'WORLD_HUMAN_CLIPBOARD' },
+    -- V12.63 : `island` = seulement les jours où le vol mène là (Cayo et North Yankton partagent les mêmes coordonnées)
+    { label = 'Pilote (vol retour)', model = 's_m_m_pilot_01', coords = vec4(4495.3, -4524.0, 4.41, 110.0), scenario = 'WORLD_HUMAN_CLIPBOARD', island = 'cayo' },
+    { label = 'Pilote (vol retour, North Yankton)', model = 's_m_m_pilot_01', coords = vec4(3365.0, -4845.0, 111.8, 135.0), scenario = 'WORLD_HUMAN_CLIPBOARD', island = 'yankton' },
     { label = 'Pilote (vol pour Cayo)', model = 's_m_m_pilot_01', coords = vec4(-1036.6, -2736.4, 20.17, 150.0), scenario = 'WORLD_HUMAN_CLIPBOARD' },
     -- Bahama Mamas : DJ
     { label = 'DJ (Bahama Mamas)', model = 'a_m_y_clubcust_01', coords = vec4(-1381.0, -616.0, 31.5, 120.0), anim = { dict = 'anim@amb@nightclub@djs@dixon@', clip = 'dixn_dance_cntr_open_dix' } },
