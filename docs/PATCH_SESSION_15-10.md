@@ -66,6 +66,7 @@
 | **Lives hors jeu** | `web.lua`, `gs_lives` | Écrans des joueurs dans l'appli (jusqu'à 4), replays 30 s des tickets |
 | **F10** | `gs_admin/web` | Recompilé : onglet **Carte** avec les joueurs en direct |
 | **Lives réparé** | `gs_lives` | Plus de « connexion » sans fin : capture faite chez le joueur et renvoyée par le réseau du jeu ; F11 et l'appli voient la même image |
+| **Appli staff : connexion** | `gs_admin/server/crypto.js` | « Connexion indisponible (crypto du serveur) » corrigé : le fichier des jetons plantait au démarrage (nom en double avec maps.js) ; contrôle automatique ajouté |
 | **Outils OVH** | `scripts/windows` | GERER-OVH ne plante plus (« roadline-envoi.txt en cours d'utilisation ») ; METTRE-A-JOUR-OVH ne renvoie plus les gros fichiers déjà présents sur le VPS (fini le 1 Go à chaque fois) ; avancée affichée pendant l'envoi (Mo, %, temps restant) ; envoi coupé **complété** au lieu d'être recommencé ; GERER-OVH ne renvoie la commande roadline que si elle a changé et ouvre le menu même si l'envoi échoue, sans plus jamais toucher au serveur pendant une mise à jour (verrou) |
 
 ## Encore en attente (côté fondateur)

@@ -63,6 +63,8 @@ if command -v node >/dev/null; then
     node --check "server/resources/[gtasoon]/gs_discord/server/bot.js" && node tests/test_discord_bot.js
     # Lecteur de maps (gs_admin/server/maps.js, F11 → Mappings installés) : emplacement lu dans les .ymap, conflits entre maps
     node --check "server/resources/[gtasoon]/gs_admin/server/maps.js" && node tests/test_gs_maps.js
+    # V12.63 · tous les .js d'une ressource partagent un contexte FiveM : pas deux fois le même nom au premier niveau
+    node tests/check_js_scope.js
 fi
 # IMPORTER-MODS de bout en bout (scripts compagnons des maps payantes, V12.31) : seulement si PowerShell 7 est installé
 bash tests/test_importer.sh
