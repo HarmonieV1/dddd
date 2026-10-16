@@ -13,9 +13,10 @@ export const dur = (s) => (s >= 3600 ? `${Math.floor(s / 3600)} h ${String(Math.
 const ACTION_FR = { freeze: 'gel', unfreeze: 'dégel', warn: 'avertissement', message: 'message', kick: 'expulsion', announce: 'annonce', jail: 'isolement',
   unjail: 'libération', revive: 'réanimation', heal: 'soin', fixveh: 'réparation', clearheat: 'recherche effacée', note: 'note', tp: 'téléportation',
   ban: 'bannissement', unban: 'débannissement', ticket_claim: 'ticket pris', ticket_close: 'ticket clos', goto: 'aller à', bring: 'amener',
-  staff_on: 'mode staff', staff_off: 'fin du mode staff', power: 'pouvoir', spectate: 'spectateur', setjob: 'métier' }
+  staff_on: 'mode staff', staff_off: 'fin du mode staff', power: 'pouvoir', spectate: 'spectateur', setjob: 'métier',
+  watch: 'surveillance', unwatch: 'surveillance levée', lockdown: 'arrivées', offlineban: 'ban hors ligne', evasion: 'contournement de ban ?', unstuck: 'coincé ramené' }
 export const actionFr = (a) => ACTION_FR[a] || a
-export const SEVERE = { ban: true, kick: true, jail: true, warn: true, freeze: true }
+export const SEVERE = { ban: true, kick: true, jail: true, warn: true, freeze: true, offlineban: true, evasion: true, lockdown: true }
 
 export function Sparkline({ points = [], height = 36 }) {
   if (points.length < 2) return <svg className="spark" viewBox="0 0 100 36" aria-hidden="true" />

@@ -3,12 +3,35 @@ import { api, hasToken, setToken } from './api.js'
 import LiveMap, { stateOf, STATE_LABEL } from '../shared/LiveMap.jsx'
 import Sheet from './Sheet.jsx'
 import Lives, { Replay } from './Lives.jsx'
-import { Dialog, Sparkline, actionFr, ago, SEVERE } from './ui.jsx'
+import { ActionDialog, Dialog, Sparkline, actionFr, ago, SEVERE } from './ui.jsx'
 
 const VIEWS = [
   ['dash', 'Tableau de bord', '◧'], ['players', 'Joueurs', '☰'], ['map', 'Carte', '⌖'], ['lives', 'Lives', '◉'],
   ['tickets', 'Tickets', '✉'], ['bans', 'Sanctions', '⛔'], ['logs', 'Journal', '≡'],
 ]
+
+// V12.63 : installer l'appli (téléphone, tablette, PC). Chrome / Edge / Android : bouton ; iPhone / iPad : marche à suivre.
+let installEvt = null
+const installSubs = new Set()
+if (typeof window !== 'undefined') {
+  window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); installEvt = e; installSubs.forEach((f) => f()) })
+  window.addEventListener('appinstalled', () => { installEvt = null; installSubs.forEach((f) => f()) })
+}
+
+function InstallHint() {
+  const [, tick] = useState(0)
+  useEffect(() => { const f = () => tick((n) => n + 1); installSubs.add(f); return () => installSubs.delete(f) }, [])
+  let standalone = false
+  try { standalone = window.matchMedia('(display-mode: standalone)').matches || navigator.standalone === true } catch { /* rien */ }
+  if (standalone) return null
+  const ios = /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
+  if (installEvt) {
+    const go = async () => { const e = installEvt; installEvt = null; tick((n) => n + 1); try { await e.prompt() } catch { /* rien */ } }
+    return <button type="button" className="btn wide" onClick={go}>📲 Installer l'appli sur cet appareil</button>
+  }
+  if (ios) return <p className="muted small">📲 Sur iPhone / iPad : bouton Partager de Safari → « Sur l'écran d'accueil ».</p>
+  return null
+}
 
 function Login({ onIn }) {
   const [pseudo, setPseudo] = useState(() => { try { return localStorage.getItem('rlstaff.pseudo') || '' } catch { return '' } })
@@ -43,6 +66,7 @@ function Login({ onIn }) {
         {err && <p className="errline">{err}</p>}
         <button className="btn pink wide" disabled={busy}>{busy ? 'Connexion…' : 'Entrer'}</button>
         <p className="muted small">5 essais ratés = accès bloqué 15 min depuis cette connexion. Chaque connexion est notée dans le journal staff.</p>
+        <InstallHint />
       </form>
     </main>
   )
@@ -100,6 +124,62 @@ function LogLine({ l }) {
   )
 }
 
+// V12.63 · Modération avancée (admin et plus) : arrivées fermées, joueurs surveillés, partis récemment → ban hors ligne.
+// Invisible sous le rang admin (le serveur refuse la lecture).
+const since = (s) => (s < 60 ? `${s} s` : s < 3600 ? `${Math.floor(s / 60)} min` : `${Math.floor(s / 3600)} h ${Math.floor((s % 3600) / 60)} min`)
+const LOCK_ACTION = { name: 'lockdown', label: 'Fermer les arrivées', danger: true,
+  fields: [{ key: 'minutes', label: 'Durée (minutes, 60 max)', type: 'minutes' }, { key: 'text', label: 'Motif (affiché à ceux qui tentent d’entrer)', type: 'text' }] }
+const OFFLINE_BAN = { name: 'offlineban', label: 'Bannir hors ligne', danger: true,
+  fields: [{ key: 'days', label: 'Durée', type: 'days' }, { key: 'text', label: 'Motif (publié)', type: 'text' }] }
+
+function Moderation({ toast }) {
+  const [m, setM] = useState(null)
+  const [form, setForm] = useState(null)
+  const load = useCallback(async () => { const r = await api('moderation'); setM(r.ok ? r.data : false) }, [])
+  useEffect(() => { load() }, [load])
+  if (!m) return null
+  const act = async (body) => { const r = await api('act', body); toast(r); load() }
+  return (
+    <section className="modcard">
+      <h3>Modération avancée</h3>
+      <div className="ban">
+        <div><b>Arrivées</b> {m.locked ? <span className="pill red">fermées · encore {since(m.locked.left)}</span> : <span className="pill ok">ouvertes</span>}
+          {m.locked && <div className="muted small">{m.locked.reason} · par {m.locked.staff}</div>}
+          {!m.canLock && <div className="muted small">Fermeture : super-admin et fondateur.</div>}</div>
+        {m.canLock && (m.locked
+          ? <button className="btn ghost sm" onClick={() => act({ name: 'lockdown', extra: 0 })}>Rouvrir</button>
+          : <button className="btn ghost sm" onClick={() => setForm({ a: LOCK_ACTION })}>Fermer…</button>)}
+      </div>
+      <h4>Joueurs surveillés ({(m.watch || []).length})</h4>
+      {(m.watch || []).length === 0 && <p className="muted small">Personne. Fiche d'un joueur → « Mettre sous surveillance ».</p>}
+      {(m.watch || []).map((w) => (
+        <div key={w.license} className="ban">
+          <div><b>👁 {w.name}</b> {w.online ? <span className="pill ok">en ville [{w.online}]</span> : null}<div className="muted small">{w.reason} · par {w.staff}</div></div>
+          <button className="btn ghost sm" onClick={() => act({ name: 'unwatch', text: w.license })}>Lever</button>
+        </div>
+      ))}
+      <h4>Partis récemment ({(m.departed || []).length})</h4>
+      {(m.departed || []).length === 0 && <p className="muted small">Aucun départ depuis le démarrage du serveur.</p>}
+      {(m.departed || []).map((d) => (
+        <div key={d.license} className="ban">
+          <div><b>{d.name}</b> <span className="muted small">({d.account})</span>
+            <div className="muted small">parti il y a {since(d.ago)} · resté {since(d.session)}{d.reason ? ` · ${d.reason}` : ''}</div></div>
+          {d.banned ? <span className="pill red">banni</span>
+            : m.canOfflineBan ? <button className="btn ghost sm" onClick={() => setForm({ a: OFFLINE_BAN, d })}>Bannir</button> : null}
+        </div>
+      ))}
+      {form && (
+        <ActionDialog action={form.a} target={form.d ? form.d.name : 'la ville'} places={[]} players={[]} maxJail={60}
+          onCancel={() => setForm(null)} onSubmit={(v) => {
+            const f = form; setForm(null)
+            if (f.a.name === 'lockdown') act({ name: 'lockdown', text: v.text, extra: Number(v.minutes) })
+            else act({ name: 'offlineban', text: v.text, extra: { license: f.d.license, days: Number(v.days) } })
+          }} />
+      )}
+    </section>
+  )
+}
+
 function Bans({ toast }) {
   const [q, setQ] = useState('')
   const [list, setList] = useState(null)
@@ -108,6 +188,7 @@ function Bans({ toast }) {
   useEffect(() => { load('') }, [load])
   return (
     <div className="pad view-narrow">
+      <Moderation toast={toast} />
       <div className="toolbar"><input id="ban-q" className="search" placeholder="Rechercher un banni (nom ou licence)" value={q} onChange={(e) => setQ(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && load(q)} />
         <button className="btn ghost" onClick={() => load(q)}>Rechercher</button></div>
       {list === null && <p className="muted">Chargement…</p>}

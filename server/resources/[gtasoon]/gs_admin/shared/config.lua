@@ -135,7 +135,8 @@ Config.Web = {
     -- le staff de rang INFÉRIEUR ; le fondateur agit sur tout le monde. Rang minimum par action ci-dessous.
     collectiveLevel = 2, codeLevel = 2,
     actionLevel = { message = 1, note = 1, heal = 1, revive = 1, fixveh = 1, ticket_claim = 1, ticket_close = 1, warn = 1,
-        freeze = 2, unfreeze = 2, jail = 2, unjail = 2, kick = 2, tp = 2, clearheat = 2, ban = 3, unban = 3, announce = 3, unstuck = 1 },
+        freeze = 2, unfreeze = 2, jail = 2, unjail = 2, kick = 2, tp = 2, clearheat = 2, ban = 3, unban = 3, announce = 3, unstuck = 1,
+        watch = 3, unwatch = 3, offlineban = 3, lockdown = 4 }, -- V12.63 : modération avancée (Config.Moderation)
     places = { -- « Téléporter vers… » (positions du jeu, à caler si besoin)
         { label = 'Hôpital Pillbox', coords = vec3(298.6, -584.4, 43.3) },
         { label = 'Commissariat Mission Row', coords = vec3(441.2, -981.9, 30.7) },
@@ -145,6 +146,16 @@ Config.Web = {
         { label = 'Sandy Shores', coords = vec3(1853.0, 3686.0, 34.3) },
         { label = 'Paleto Bay', coords = vec3(-448.0, 6012.0, 31.7) },
     },
+}
+
+-- V12.63 · Modération avancée (admin, super-admin, fondateur) : F11 → Modération, F10 → Serveur et fiche joueur, appli staff.
+-- Surveillance d'un compte (alerte à chaque arrivée), fermeture des arrivées (raid), contournement de ban (empreintes du PC et
+-- comptes liés, jamais l'IP), bannissement hors ligne depuis les départs récents. Rang minimum par outil ci-dessous.
+Config.Moderation = {
+    levels = { watch = 3, departed = 3, lockdown = 4, offlineban = 4 }, -- en jeu (F10 / F11) ; appli : Config.Web.actionLevel
+    lockMaxMinutes = 60,   -- fermeture des arrivées : rouvre toute seule au bout de la durée choisie (60 min maximum)
+    departedKeep = 50,     -- départs récents gardés (mémoire : vidés au redémarrage du serveur)
+    evasion = 'alert',     -- compte lié à un banni : 'alert' (staff prévenu, il entre) ou 'block' (arrivée refusée)
 }
 
 -- V12.63 · Joueur coincé sous la carte (proposition n° 193) : hors intérieur et hors de l'eau, sous `z` m pendant `seconds` s =

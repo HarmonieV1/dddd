@@ -151,6 +151,7 @@ function Admin.playerList()
             heat = started('gs_wanted') and exports.gs_wanted:GetHeat(s) or 0,
             staff = Admin.level(s) > 0, jailed = Admin.jailed[s] ~= nil,
             frozen = Admin.frozen[s] == true, -- V12.63 : carte en direct (F10 et appli staff)
+            watched = Moderation ~= nil and Moderation.watched(s) ~= nil or nil, -- V12.63 : 👁 surveillé (modération avancée)
             x = math.floor(pos.x), y = math.floor(pos.y),
         }
     end
@@ -187,6 +188,8 @@ function Admin.dossier(src, target, lvlOverride) -- V12.63 : lvlOverride = appli
     end
     if lvl >= 3 then
         d.money = { cash = Bridge:GetMoney(target, 'cash'), bank = Bridge:GetMoney(target, 'bank') }
+        local w = Moderation and Moderation.watched(target) -- V12.63 : surveillance (modération avancée)
+        d.watch = w and { reason = w.reason, staff = w.staff } or nil
     end
     return d
 end
@@ -198,6 +201,7 @@ local function need(v, msg) if not v then error({ msg = msg }, 0) end return v e
 local function reasonOf(data) return need(Security:Sanitize(data.reason, 200), 'Motif obligatoire.') end
 
 local Actions = {}
+Admin.actions = Actions -- V12.63 : complété par server/moderation.lua (surveillance, arrivées, ban hors ligne)
 
 Actions['goto'] = { level = 1, target = true, run = function(src, target)
     local c = GetEntityCoords(GetPlayerPed(target))
@@ -297,6 +301,7 @@ Actions.ban = { level = 4, target = true, sanction = true, run = function(src, t
     Store.banSet(lic, name, untilTs, reason, label(src))
     Store.addNote(lic, 'warn', ('Bannissement (%s) : %s'):format(days == 0 and 'définitif' or (days .. ' j'), reason), label(src))
     Admin.publishSanction('Bannissement', name, reason, days == 0 and 'définitif' or (days .. ' jour(s)'))
+    if Moderation then pcall(Moderation.rememberBan, target, lic) end -- V12.63 : empreintes (anti-contournement)
     DropPlayer(target, ('Banni de RoadLine RP (%s)\nMotif : %s'):format(days == 0 and 'définitif' or (days .. ' jour(s)'), reason))
     return days == 0 and 'Banni définitivement' or ('Banni %d jour(s)'):format(days)
 end }
@@ -306,6 +311,7 @@ Actions.unban = { level = 4, run = function(src, _, data)
     local lic = need(Security:Sanitize(data.license, 64), 'Licence manquante.')
     local b = Store.ban(lic)
     need(Store.banClear(lic), 'Ce joueur n\'est pas banni.')
+    if Moderation then pcall(Moderation.forgetBan, lic) end
     Store.log(label(src), 'unban', b and b.name or lic, lic)
     Admin.publishSanction('Lévée de bannissement', b and b.name or lic, 'Décision du staff')
     return ('Débanni : %s'):format(b and b.name or lic)
@@ -781,6 +787,7 @@ lib.callback.register('gs_admin:open', function(src)
             weatherEvent = started('gs_weather') and exports.gs_weather:GetEvent() or nil,
         },
         weathers = weathers, events = events, maxJail = Config.Jail.maxMinutes,
+        moderation = lvl >= 3 and Moderation and Moderation.state(lvl) or nil, -- V12.63 : modération avancée (admin et plus)
     }
 end)
 
@@ -789,7 +796,7 @@ lib.callback.register('gs_admin:quick', function(src)
     if not staffGuard(src, 'quick', 10, 10000) then return nil end
     local lvl = Admin.level(src)
     local players = {}
-    for _, p in ipairs(Admin.playerList()) do players[#players + 1] = { id = p.id, name = p.name, license = lvl >= 5 and license(p.id) or nil } end
+    for _, p in ipairs(Admin.playerList()) do players[#players + 1] = { id = p.id, name = p.name, license = lvl >= 5 and license(p.id) or nil, watched = lvl >= 3 and p.watched or nil } end
     return {
         level = lvl, levelName = Config.LevelNames[lvl], me = src, onDuty = Admin.onDuty[src] ~= nil, players = players,
         jobs = lvl >= 3 and JobsApi:ListJobs() or {}, ranks = lvl >= 5 and Config.LevelNames or nil,
@@ -1012,6 +1019,7 @@ exports('AutoBan', function(src, reason, days)
     if lic then
         Store.banSet(lic, name, untilTs, reason, 'Anti-triche (automatique)')
         Store.addNote(lic, 'warn', 'Bannissement automatique : ' .. reason, 'Anti-triche')
+        if Moderation then pcall(Moderation.rememberBan, src, lic) end
     end
     Store.log('Anti-triche (automatique)', 'ban', ('%s [%s]'):format(name, src), reason)
     Admin.publishSanction('Bannissement', name, reason, days <= 0 and 'définitif' or (days .. ' jour(s)'))
@@ -1050,6 +1058,11 @@ function Admin.remote(action, target, text, staff, extra, actorLevel) -- V12.63 
             return false, ('Ton rang ne permet pas cette action depuis l\'appli (%s minimum).'):format(Config.LevelNames and Config.LevelNames[need] or ('rang ' .. need))
         end
     end
+    -- V12.63 · Modération avancée (server/moderation.lua) : surveillance, fermeture des arrivées, ban hors ligne
+    if Moderation and Moderation.remote[action] then
+        if not actorLevel then return false, 'Action réservée à l\'appli staff.' end
+        return Moderation.remote[action](target, text, staff, extra, actorLevel)
+    end
     if action == 'players' then
         local out = {}
         for _, id in ipairs(GetPlayers()) do
@@ -1065,6 +1078,7 @@ function Admin.remote(action, target, text, staff, extra, actorLevel) -- V12.63 
         if not lic then return false, 'Licence manquante.' end
         local b = Store.ban(lic)
         if not Store.banClear(lic) then return false, 'Ce joueur n\'est pas banni.' end
+        if Moderation then pcall(Moderation.forgetBan, lic) end
         Admin.logRemote(staff, 'unban', b and b.name or lic, lic)
         Admin.publishSanction('Levée de bannissement', b and b.name or lic, 'Décision du staff')
         return true, ('Débanni : %s'):format(b and b.name or lic)
@@ -1216,6 +1230,7 @@ function Admin.remote(action, target, text, staff, extra, actorLevel) -- V12.63 
         Store.addNote(lic, 'warn', ('Bannissement (%s) : %s'):format(span, reason), staff)
         Admin.publishSanction('Bannissement', name, reason, span)
         Admin.logRemote(staff, 'ban', who, ('%s · %s'):format(span, reason))
+        if Moderation then pcall(Moderation.rememberBan, target, lic) end
         DropPlayer(target, ('Banni de RoadLine RP (%s)\nMotif : %s'):format(span, reason))
         return true, ('%s banni (%s).'):format(who, span)
     end

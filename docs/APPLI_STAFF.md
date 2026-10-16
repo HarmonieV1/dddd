@@ -5,7 +5,14 @@ lui-même (ressource `gs_admin`) : rien à installer côté staff.
 
 ## Adresse et connexion
 - Adresse : `https://<adresse https du VPS>/gs_admin/` (GERER-OVH → 21 pour l'adresse https), ou `http://IP:30120/gs_admin/`.
-- Sur tablette / téléphone : menu du navigateur → **Ajouter à l'écran d'accueil** : elle s'ouvre comme une appli.
+- **L'installer comme une vraie appli** (icône au logo RoadLine, plein écran, sans barre d'adresse) — rien à télécharger
+  sur un store, pas de site à part : c'est le VPS qui la sert, à la même adresse https.
+  - **PC (Chrome / Edge)** : bouton « 📲 Installer l'appli » sur l'écran de connexion (ou icône d'installation dans la barre
+    d'adresse) → elle apparaît dans le menu Démarrer / sur le bureau, et s'ouvre dans sa propre fenêtre.
+  - **Android (Chrome)** : même bouton, ou menu ⋮ → **Installer l'application**.
+  - **iPhone / iPad (Safari)** : bouton Partager → **Sur l'écran d'accueil**.
+  - Il faut l'adresse **https** (GERER-OVH → 21) : en http par l'IP, les navigateurs refusent l'installation.
+  - Une mise à jour du serveur met l'appli installée à jour toute seule (rien à réinstaller).
 - Connexion : **ton pseudo staff** (il signe tes actions dans le journal : « Web · pseudo ») + **le mot de passe collectif**.
 - Le mot de passe n'est envoyé qu'une fois : ensuite un jeton de session (12 h, tiré au hasard par le serveur).
 - 5 mauvais mots de passe depuis une même connexion = blocage 15 min ; plus de 30 échecs en 15 min sur tout le serveur =

@@ -198,7 +198,7 @@ end)
 CreateThread(function()
     local o = Config.Organizer
     exports.gs_markers:Add('gs_races:organizer', { coords = vec3(o.coords.x, o.coords.y, o.coords.z), style = 'objective', label = 'Courses de rue',
-        event = 'gs_races:client:menu', prompt = 'Parler à l\'organisateur de courses', reach = 2.5, distance = 30.0, snap = true })
+        event = 'gs_races:client:menu', prompt = 'Parler à l\'organisateur de courses', reach = 3.5, distance = 30.0, snap = true })
     local b = AddBlipForCoord(o.coords.x, o.coords.y, o.coords.z)
     SetBlipSprite(b, Config.Blip.sprite) SetBlipColour(b, Config.Blip.color) SetBlipScale(b, 0.8) SetBlipAsShortRange(b, true)
     BeginTextCommandSetBlipName('STRING') AddTextComponentSubstringPlayerName('Courses de rue (organisateur)') EndTextCommandSetBlipName(b)
@@ -213,6 +213,38 @@ CreateThread(function()
             DeletePed(organizer) organizer = nil
         end
         Wait(2000)
+    end
+end)
+
+-- V12.63 (backtest : « ça marque parler à l'organisateur et ça lance rien », au volant à moins de 15 m) : le [E] des points
+-- (gs_markers) ne marche qu'à pied à 2,5 m, alors que « Avec ma voiture » demande d'être au volant → impossible. Au volant,
+-- dans le rayon d'inscription, [E] ouvre ici le même menu (klaxon coupé pendant ce temps).
+CreateThread(function()
+    local o = Config.Organizer
+    local reach = ((Config.Custom and Config.Custom.organizerReach) or 15.0) - 1.0
+    while true do
+        local wait = 1000
+        local veh = cache.vehicle
+        if veh and not racing and GetPedInVehicleSeat(veh, -1) == cache.ped then
+            local p = GetEntityCoords(cache.ped)
+            local d = #(vec2(p.x, p.y) - vec2(o.coords.x, o.coords.y))
+            if d < reach and math.abs(p.z - o.coords.z) < 8.0 then
+                wait = 0
+                DisableControlAction(0, 86, true)
+                SetTextFont(4) SetTextScale(0.0, 0.45) SetTextCentre(true) SetTextOutline()
+                SetTextColour(40, 224, 255, 240)
+                BeginTextCommandDisplayText('STRING')
+                AddTextComponentSubstringPlayerName('[E] Parler à l\'organisateur de courses')
+                EndTextCommandDisplayText(0.5, 0.88)
+                if (IsDisabledControlJustReleased(0, 86) or IsControlJustReleased(0, 38)) and not IsNuiFocused() then
+                    TriggerEvent('gs_races:client:menu')
+                    wait = 500
+                end
+            elseif d < 60.0 then
+                wait = 250
+            end
+        end
+        Wait(wait)
     end
 end)
 

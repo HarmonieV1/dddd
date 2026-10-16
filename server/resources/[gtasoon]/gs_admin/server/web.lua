@@ -144,6 +144,7 @@ function Web.overview(who)
             weather = started('gs_weather') and (function() local ok, w = pcall(function() return exports.gs_weather:GetWeather() end) return ok and w or nil end)() or nil,
             lives = started('screenshot-basic') },
         maxJail = Config.Jail.maxMinutes, txadmin = GetConvar('gs_admin_txadmin', ''),
+        locked = Moderation and (function() local l = Moderation.lockInfo() return l and { left = l.untilAt - os.time(), reason = l.reason } or nil end)() or nil,
     }
 end
 
@@ -173,7 +174,8 @@ end
 
 -- Actions autorisées depuis l'appli (toutes revérifiées et journalisées par Admin.remote)
 local ACTIONS = { freeze = true, unfreeze = true, warn = true, message = true, kick = true, announce = true, jail = true, unjail = true,
-    revive = true, heal = true, fixveh = true, clearheat = true, unstuck = true, note = true, tp = true, ban = true, unban = true, ticket_claim = true, ticket_close = true }
+    revive = true, heal = true, fixveh = true, clearheat = true, unstuck = true, note = true, tp = true, ban = true, unban = true, ticket_claim = true, ticket_close = true,
+    watch = true, unwatch = true, lockdown = true, offlineban = true } -- V12.63 : modération avancée (admin et plus)
 
 function Web.handle(ip, body, reply, direct)
     local ok, d = pcall(json.decode, body or '')
@@ -211,6 +213,10 @@ function Web.handle(ip, body, reply, direct)
         for _, b in ipairs(list) do b.when = (tonumber(b.until_ts) or 0) == 0 and 'définitif' or ('jusqu\'au ' .. os.date('%d/%m/%Y %H:%M', b.until_ts)) end
         return reply({ ok = true, data = list })
     end
+    if d.action == 'moderation' then -- V12.63 : surveillés, départs récents, fermeture des arrivées (admin et plus)
+        if (s.level or 2) < 3 or not Moderation then return reply({ ok = false, text = 'Réservé aux admins (rang 3 et plus).' }) end
+        return reply({ ok = true, data = Moderation.state(s.level) })
+    end
     if d.action == 'frame' then return Web.frame(s.who, d.id, reply) end
     if d.action == 'replay' then
         if not started('gs_lives') then return reply({ ok = false, text = 'gs_lives n\'est pas démarré.' }) end
@@ -231,9 +237,15 @@ end
 -- Fichiers de l'appli (compilée dans web/dist par Vite : staff.html + assets/) ----------------------------------------------
 local MIME = { js = 'text/javascript; charset=utf-8', css = 'text/css; charset=utf-8', webp = 'image/webp', png = 'image/png',
     svg = 'image/svg+xml', woff2 = 'font/woff2', html = 'text/html; charset=utf-8' }
-local MANIFEST = json.encode({ name = 'RoadLine Staff', short_name = 'RL Staff', start_url = './', scope = './', display = 'standalone',
-    background_color = '#0b0714', theme_color = '#0b0714', lang = 'fr',
-    icons = { { src = 'icon-192.png', sizes = '192x192', type = 'image/png' }, { src = 'icon-512.png', sizes = '512x512', type = 'image/png', purpose = 'any maskable' } } })
+-- V12.63 : installable comme une appli (téléphone, tablette, PC : Chrome / Edge « Installer », Safari « Sur l'écran d'accueil »),
+-- icônes au logo RoadLine (R néon), version « maskable » pour Android (découpe ronde sans rogner le logo)
+local MANIFEST = json.encode({ id = './', name = 'RoadLine Staff', short_name = 'RL Staff', description = 'Modération de RoadLine RP sans être en jeu.',
+    start_url = './', scope = './', display = 'standalone', display_override = { 'standalone', 'minimal-ui' }, orientation = 'any',
+    background_color = '#07040d', theme_color = '#0b0714', lang = 'fr', dir = 'ltr', categories = { 'utilities', 'productivity' },
+    icons = { { src = 'icon-192.png', sizes = '192x192', type = 'image/png', purpose = 'any' },
+        { src = 'icon-512.png', sizes = '512x512', type = 'image/png', purpose = 'any' },
+        { src = 'icon-maskable-512.png', sizes = '512x512', type = 'image/png', purpose = 'maskable' } } })
+local PWA_ICONS = { ['/icon-192.png'] = true, ['/icon-512.png'] = true, ['/icon-maskable-512.png'] = true, ['/apple-touch-icon.png'] = true, ['/favicon-32.png'] = true }
 local SW = "self.addEventListener('install',e=>self.skipWaiting());self.addEventListener('activate',e=>self.clients.claim());"
     .. "self.addEventListener('fetch',e=>{if(e.request.method!=='GET')return;e.respondWith(fetch(e.request).catch(()=>new Response("
     .. "'<meta charset=utf-8><body style=\"background:#0b0714;color:#f3eaff;font:16px system-ui;padding:24px\">Serveur injoignable : réessaie dans un instant.',"
@@ -276,7 +288,7 @@ SetHttpHandler(function(req, res)
         res.writeHead(200, { ['Content-Type'] = 'text/javascript', ['Cache-Control'] = 'no-cache', ['Service-Worker-Allowed'] = './' })
         return res.send(SW)
     end
-    if path == '/icon-192.png' or path == '/icon-512.png' then return file(res, 'web/pwa' .. path, 'image/png', 'max-age=86400') end
+    if PWA_ICONS[path] then return file(res, 'web/pwa' .. path, 'image/png', 'max-age=86400') end
     if path == '/carte-ls.webp' then return file(res, 'web/dist/carte-ls.webp', 'image/webp', 'max-age=86400') end
     local asset = path:match('^/assets/([%w%-_%.]+)$')
     if asset and not asset:find('%.%.') then

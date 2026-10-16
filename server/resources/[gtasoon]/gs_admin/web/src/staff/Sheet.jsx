@@ -27,6 +27,7 @@ export default function Sheet({ id, ov, onClose, toast, onWatch, onReplay, refre
     ['Session', dur(d.session || 0)], ['Recherche', d.heat > 0 ? `${'★'.repeat(Math.min(5, Math.ceil(d.heat / 20)))} (${d.heat})` : 'aucune'],
     ['Gang', d.gang || '—'], ['Argent', d.money ? `${d.money.cash.toLocaleString('fr-FR')} $ · banque ${d.money.bank.toLocaleString('fr-FR')} $` : '—'],
     ['Isolement', d.jailedFor > 0 ? `encore ${dur(d.jailedFor)}` : 'non'], ['CitizenID', d.citizenid || '—'],
+    ...(d.watch ? [['👁 Surveillé', `${d.watch.reason} · par ${d.watch.staff}`]] : []),
   ] : []
   return (
     <aside className="sheet" aria-label={`Fiche de ${p.char || p.name}`}>
@@ -42,6 +43,7 @@ export default function Sheet({ id, ov, onClose, toast, onWatch, onReplay, refre
         {p.staff && <span className="pill staff">Staff niv. {d?.level ?? '?'}</span>}
         {p.job && p.job !== 'unemployed' && <span className={p.duty ? 'pill ok' : 'pill'}>{p.job}{p.duty ? ' · service' : ''}</span>}
         {p.replay && <span className="pill warn">Ticket #{p.replay.ticket} · replay</span>}
+        {p.watched && <span className="pill warn">👁 surveillé</span>}
       </div>
       <div className="sheet-quick">
         <button className="btn cyan" onClick={() => onWatch(p.id)} disabled={!ov.server.lives}>◉ Voir son écran</button>

@@ -653,5 +653,88 @@ check('coincé : un helper peut ramener un joueur', ok and allowedTp[4] and last
 ok = cb('gs_admin:action', 4, 'unstuck', 2); step()
 check('coincé : un joueur ne peut pas', not ok)
 
+-- V12.63 · Modération avancée (admin, super-admin, fondateur) : surveillance, arrivées fermées, contournement de ban, ban hors ligne
+function GetNumPlayerTokens(src) return W.players[src] and #(W.players[src].tokens or {}) or 0 end
+function GetPlayerToken(src, i) return W.players[src].tokens[i + 1] end
+function GetNumPlayerIdentifiers(src) return W.players[src] and #(W.players[src].ids or {}) or 0 end
+function GetPlayerIdentifier(src, i) return W.players[src].ids[i + 1] end
+loadResource('gs_admin', { R .. 'gs_admin/server/moderation.lua' })
+local arrival = getExport('gs_admin', 'ArrivalCheck')
+check('modération : outils ajoutés au panel (F10 / F11)', Admin.actions.watch and Admin.actions.lockdown and Admin.actions.offlineban and arrival)
+join(20, 'CID20', 'Suspect Un', here); W.players[20].license = 'license:20'
+W.players[20].tokens = { '3:aaa', '4:bbb' }; W.players[20].ids = { 'discord:111', 'ip:1.2.3.4', 'license:20' }
+ok = cb('gs_admin:action', 2, 'watch', 20, { reason = 'Insultes' }); step()
+check('surveillance : un modo ne peut pas', not ok)
+ok = cb('gs_admin:action', 8, 'watch', 20, { reason = '' }); step()
+check('surveillance : motif obligatoire', not ok)
+ok = cb('gs_admin:action', 8, 'watch', 20, { reason = 'Insultes répétées' }); step()
+check('surveillance : un admin peut, gardée au redémarrage (KVP)', ok and Moderation.watch['license:20'] and W_KVP['gs_admin:watchlist'] == 'license:20')
+local seen = false
+for _, p in ipairs(Admin.playerList()) do if p.id == 20 then seen = p.watched == true end end
+check('surveillance : 👁 dans la liste des joueurs', seen)
+Moderation.watch = {} Moderation.load()
+check('surveillance : relue après redémarrage', Moderation.watch['license:20'] and Moderation.watch['license:20'].reason == 'Insultes répétées')
+local nLogs = #staffLogs
+TriggerEvent('gs_bridge:server:playerLoaded', 20)
+check('surveillance : staff prévenu à son arrivée', #staffLogs > nLogs and staffLogs[#staffLogs]:find('surveillé', 1, true))
+ok = cb('gs_admin:action', 8, 'watch', 1, { reason = 'x' }); step()
+check('surveillance : pas sur un staff de rang supérieur', not ok)
+
+ok = cb('gs_admin:action', 8, 'lockdown', nil, { minutes = 10, reason = 'Raid' }); step()
+check('arrivées : un admin ne peut pas fermer (super-admin)', not ok)
+ok = cb('gs_admin:action', 1, 'lockdown', nil, { minutes = 90, reason = 'Raid' }); step()
+check('arrivées : 60 min maximum', not ok)
+ok = cb('gs_admin:action', 1, 'lockdown', nil, { minutes = 10, reason = 'Raid de trolls' }); step()
+join(30, 'CID30', 'Nouveau Venu', here); W.players[30].license = 'license:30'
+check('arrivées fermées : un joueur est refusé (message clair)', ok and type(arrival(30)) == 'string' and arrival(30):find('Raid de trolls', 1, true))
+check('arrivées fermées : le staff entre toujours', arrival(2) == nil)
+advance(11 * 60 * 1000)
+check('arrivées : rouvertes toutes seules après la durée', arrival(30) == nil and Moderation.locked == nil)
+
+ok = cb('gs_admin:action', 1, 'ban', 20, { days = 7, reason = 'Triche' }); step()
+check('ban : empreintes notées (PC + Discord, jamais IP ni licence)', ok and W_KVP['gs_admin:tokban:3:aaa'] == 'license:20'
+    and W_KVP['gs_admin:tokban:discord:111'] == 'license:20' and not W_KVP['gs_admin:tokban:ip:1.2.3.4'] and not W_KVP['gs_admin:tokban:license:20'])
+join(21, 'CID21', 'Nouveau Compte', here); W.players[21].license = 'license:21'; W.players[21].tokens = { '4:bbb' }
+nLogs = #staffLogs
+check('contournement : alerte au staff, il entre (mode alerte)', arrival(21) == nil and #staffLogs > nLogs and staffLogs[#staffLogs]:find('Contournement', 1, true))
+Config.Moderation.evasion = 'block'
+check('contournement : arrivée refusée en mode blocage', type(arrival(21)) == 'string')
+Config.Moderation.evasion = 'alert'
+check('contournement : un compte sans empreinte commune passe', arrival(30) == nil)
+ok = cb('gs_admin:action', 1, 'unban', nil, { license = 'license:20' }); step()
+check('débannir : empreintes oubliées', ok and W_KVP['gs_admin:tokban:3:aaa'] == nil and W_KVP['gs_admin:bantok:license:20'] == nil)
+
+join(22, 'CID22', 'Rage Quit', here); W.players[22].license = 'license:22'; W.players[22].tokens = { '5:ccc' }
+net('playerDropped', 22, 'Quitté')
+net('playerDropped', 5, 'Quitté') -- un modo qui part n'apparaît jamais
+W.players[22] = nil
+local st = cb('gs_admin:moderation', 8); step()
+check('départs récents : visibles d\'un admin (sans le staff ni les empreintes)', st and st.departed and #st.departed == 1 and st.departed[1].license == 'license:22'
+    and st.departed[1].fp == nil and st.canLock == false)
+check('modération : rien pour un modo', cb('gs_admin:moderation', 2) == nil)
+step()
+ok = cb('gs_admin:action', 8, 'offlineban', nil, { license = 'license:22', days = 3, reason = 'RDM puis déco' }); step()
+check('ban hors ligne : un admin ne peut pas en jeu (super-admin)', not ok)
+ok = cb('gs_admin:action', 1, 'offlineban', nil, { license = 'license:22', days = 3, reason = 'RDM puis déco' }); step()
+check('ban hors ligne : banni, empreintes notées', ok and W.bans['license:22'] and W_KVP['gs_admin:tokban:5:ccc'] == 'license:22')
+ok = cb('gs_admin:action', 1, 'offlineban', nil, { license = 'license:22', days = 3, reason = 'x' }); step()
+check('ban hors ligne : déjà banni', not ok)
+ok = cb('gs_admin:action', 1, 'offlineban', nil, { license = 'license:99', days = 3, reason = 'x' }); step()
+check('ban hors ligne : seulement les départs récents', not ok)
+
+local rok = Admin.remote('watch', 4, 'Comportement', 'Web · Test', nil, 2)
+check('appli : surveillance refusée sous le rang admin', not rok)
+rok = Admin.remote('watch', 4, 'Comportement', 'Web · Test', nil, 3)
+check('appli : surveillance par un admin', rok and Moderation.watch['license:4'])
+check('appli : pas de surveillance sur un staff', not Admin.remote('watch', 1, 'x', 'Web · Test', nil, 5))
+check('appli : fermer les arrivées = super-admin', not Admin.remote('lockdown', nil, 'Attaque', 'Web · Test', 15, 3))
+rok = Admin.remote('lockdown', nil, 'Attaque', 'Web · Test', 15, 4)
+check('appli : arrivées fermées', rok and Moderation.locked ~= nil)
+rok = Admin.remote('lockdown', nil, '', 'Web · Test', 0, 4)
+check('appli : arrivées rouvertes', rok and Moderation.locked == nil)
+check('bot Discord : pas de modération avancée', not Admin.remote('lockdown', nil, 'x', 'bot', 10, nil))
+rok = Admin.remote('unwatch', 4, nil, 'Web · Test', nil, 3)
+check('appli : surveillance levée', rok and not Moderation.watch['license:4'])
+
 io.write(('\n%d réussis, %d échoués\n'):format(passed, failed))
 os.exit(failed == 0 and 0 or 1)

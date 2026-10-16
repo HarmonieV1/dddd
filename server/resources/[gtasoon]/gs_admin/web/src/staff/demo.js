@@ -29,6 +29,9 @@ export async function demoApi(action, body) {
       money: { cash: 1250, bank: 48200 }, license: 'license:demo', notes: [{ kind: 'warn', text: 'Conduite hors RP', staff: 'Discord · Prout', time: now() - 86400 }] } }
   }
   if (action === 'bans') return { ok: true, data: [{ license: 'license:demo-ban', name: 'Demo Banni', reason: 'Triche (démo)', staff: 'Anti-triche', when: 'définitif' }] }
+  if (action === 'moderation') return { ok: true, data: { locked: null, canLock: true, canOfflineBan: true, // V12.63 : modération avancée (démo)
+    watch: [{ license: 'license:demo-w', name: 'Kevin Douteux', reason: 'Insultes répétées (démo)', staff: 'Web · Démo', at: 0, online: 7 }],
+    departed: [{ license: 'license:demo-d', name: 'Rage Quit', account: 'rq_demo', ago: 140, session: 1800, reason: 'Quitté', banned: false }] } }
   if (action === 'frame' || action === 'replay') return { ok: false, text: 'Pas d\'écran en démo.' }
   return { ok: true, text: `${body.name || action} : fait (démo).` }
 }

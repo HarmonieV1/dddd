@@ -6,7 +6,7 @@ export const DEMO = {
   players: [
     { id: 1, name: 'Alpha Boss', account: 'Alpha', ping: 32, job: 'police', duty: true, heat: 0, staff: true, jailed: false },
     { id: 4, name: 'Vice Lucia', account: 'lucia_rp', ping: 58, job: 'mechanic', duty: false, heat: 45, staff: false, jailed: false },
-    { id: 7, name: 'Jason Neon', account: 'jneon', ping: 71, job: 'unemployed', duty: false, heat: 80, staff: false, jailed: true },
+    { id: 7, name: 'Jason Neon', account: 'jneon', ping: 71, job: 'unemployed', duty: false, heat: 80, staff: false, jailed: true, watched: true },
   ],
   tickets: [
     { id: 12, src: 4, name: 'Vice Lucia [4]', message: 'Je suis bloqué sous la map près du port.', time: now - 95, status: 'open', online: true },
@@ -19,6 +19,9 @@ export const DEMO = {
   server: { players: 3, maxPlayers: 48, staffOnDuty: 2, duty: { police: 1, ambulance: 0, mechanic: 0 }, weather: 'CLEAR', weatherEvent: null },
   weathers: ['CLEAR', 'CLOUDS', 'EXTRASUNNY', 'FOGGY', 'RAIN', 'THUNDER'],
   events: [{ id: 'storm', label: 'Tempête tropicale' }, { id: 'heatwave', label: 'Canicule' }, { id: 'fog', label: 'Brouillard épais' }],
+  moderation: { locked: null, canLock: false, canOfflineBan: false, // V12.63 : modération avancée (démo, rang admin)
+    watch: [{ license: 'license:demo-w', name: 'Jason Neon', reason: 'Insultes répétées (démo)', staff: 'Alpha Boss [1]', at: now - 3600, online: 7 }],
+    departed: [{ license: 'license:demo-d', name: 'Rage Quit', account: 'rq_demo', ago: 140, session: 1800, reason: 'Quitté', banned: false }] },
 }
 
 export const DEMO_DOSSIER = {

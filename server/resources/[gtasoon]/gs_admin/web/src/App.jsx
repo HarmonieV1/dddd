@@ -19,6 +19,9 @@ const ACTIONS = [
   { name: 'jail', label: 'Isoler', level: 2, danger: true, fields: [{ key: 'minutes', label: 'Minutes', type: 'number' }, { key: 'reason', label: 'Motif (publié)' }] },
   { name: 'unjail', label: 'Libérer isolement', level: 2 },
   { name: 'kick', label: 'Expulser', level: 2, danger: true, fields: [{ key: 'reason', label: 'Motif (publié)' }] },
+  // V12.63 · Modération avancée : surveillance (le staff est prévenu à chacune de ses arrivées)
+  { name: 'watch', label: 'Mettre sous surveillance', level: 3, when: (d) => !d.watch, fields: [{ key: 'reason', label: 'Motif (staff uniquement)' }] },
+  { name: 'unwatch', label: 'Lever la surveillance', level: 3, when: (d) => !!d.watch },
   { name: 'givemoney', label: 'Donner argent', level: 4, fields: [{ key: 'account', label: 'Compte', type: 'select', options: ['cash', 'bank'] }, { key: 'amount', label: 'Montant', type: 'number' }, { key: 'reason', label: 'Motif (journal)' }] },
   { name: 'removemoney', label: 'Retirer argent', level: 4, danger: true, fields: [{ key: 'account', label: 'Compte', type: 'select', options: ['cash', 'bank'] }, { key: 'amount', label: 'Montant', type: 'number' }, { key: 'reason', label: 'Motif (journal)' }] },
   { name: 'giveitem', label: 'Donner item', level: 4, fields: [{ key: 'item', label: 'Nom de l’item' }, { key: 'amount', label: 'Quantité', type: 'number' }, { key: 'reason', label: 'Motif (journal)' }] },
@@ -93,10 +96,11 @@ function Dossier({ d, level, maxJail, onAction }) {
         {d.money && <div><span>Argent</span>{d.money.cash.toLocaleString('fr-FR')} $ · banque {d.money.bank.toLocaleString('fr-FR')} $</div>}
         {d.citizenid && <div><span>CitizenID</span>{d.citizenid}</div>}
         {d.license && <div><span>Licence</span><code>{d.license}</code></div>}
+        {d.watch && <div><span>👁 Surveillé</span>{d.watch.reason} · par {d.watch.staff}</div>}
       </div>
 
       <div className="action-grid">
-        {ACTIONS.filter((a) => a.level <= level).map((a) => (
+        {ACTIONS.filter((a) => a.level <= level && (!a.when || a.when(d))).map((a) => (
           <button key={a.name} className={a.danger ? 'act danger' : 'act'} onClick={() => run(a)}>{a.label}</button>
         ))}
       </div>
@@ -114,6 +118,47 @@ function Dossier({ d, level, maxJail, onAction }) {
         </div>
       )}
       {form && <ActionForm action={form} maxJail={maxJail} onCancel={() => setForm(null)} onSubmit={(v) => { setForm(null); onAction(form.name, d.id, v) }} />}
+    </div>
+  )
+}
+
+// V12.63 · Modération avancée (admin et plus) : fermer / rouvrir les arrivées, départs récents → ban hors ligne
+const since = (s) => (s < 60 ? `${s} s` : s < 3600 ? `${Math.floor(s / 60)} min` : `${Math.floor(s / 3600)} h ${Math.floor((s % 3600) / 60)} min`)
+const LOCK_FORM = { name: 'lockdown', label: 'Fermer les arrivées (le staff entre toujours)', danger: true,
+  fields: [{ key: 'duree', label: 'Durée en minutes (1 à 60)', type: 'number' }, { key: 'reason', label: 'Motif (affiché à ceux qui tentent d’entrer)' }] }
+const banForm = (d) => ({ name: 'offlineban', label: `Bannir hors ligne : ${d.name}`, danger: true, license: d.license,
+  fields: [{ key: 'days', label: 'Durée en jours (0 = définitif)', type: 'number' }, { key: 'reason', label: 'Motif (publié)' }] })
+
+function ModerationCard({ m, onAct }) {
+  const [form, setForm] = useState(null)
+  return (
+    <div className="card wide">
+      <h4>Modération avancée</h4>
+      <div className="kv"><span>Arrivées</span><b>{m.locked ? `FERMÉES · encore ${since(m.locked.left)} · ${m.locked.reason}` : 'ouvertes'}</b></div>
+      {m.canLock && (
+        <div className="chips">
+          {m.locked ? <button className="chip" onClick={() => onAct('lockdown', null, { minutes: 0 })}>Rouvrir les arrivées</button>
+            : <button className="chip hot" onClick={() => setForm(LOCK_FORM)}>Fermer les arrivées…</button>}
+        </div>
+      )}
+      <div className="kv"><span>Joueurs surveillés</span><b>{(m.watch || []).length}</b></div>
+      {(m.watch || []).slice(0, 8).map((w) => (
+        <div key={w.license} className="kv"><span>👁 {w.name}{w.online ? ` · en ville [${w.online}]` : ''}</span>
+          <button className="chip" onClick={() => onAct('unwatch', null, { license: w.license })}>Lever</button></div>
+      ))}
+      <h4 style={{ marginTop: 12 }}>Partis récemment</h4>
+      {(m.departed || []).length === 0 && <div className="muted small">Aucun départ depuis le démarrage.</div>}
+      {(m.departed || []).slice(0, 12).map((d) => (
+        <div key={d.license} className="kv">
+          <span>{d.name} <small className="muted">({d.account}) · il y a {since(d.ago)} · resté {since(d.session)}</small></span>
+          {d.banned ? <b>banni</b> : m.canOfflineBan ? <button className="chip hot" onClick={() => setForm(banForm(d))}>Bannir</button> : null}
+        </div>
+      ))}
+      {form && <ActionForm action={form} onCancel={() => setForm(null)} onSubmit={(v) => {
+        const f = form; setForm(null)
+        if (f.name === 'offlineban') onAct('offlineban', null, { license: f.license, days: Number(v.days), reason: v.reason })
+        else onAct('lockdown', null, { minutes: Number(v.duree), reason: v.reason })
+      }} />}
     </div>
   )
 }
@@ -200,6 +245,7 @@ export default function App() {
                     {p.job && p.job !== 'unemployed' && <i className={p.duty ? 't job on' : 't job'}>{p.job}</i>}
                     {p.heat > 0 && <i className="t heat">★{Math.ceil(p.heat / 20)}</i>}
                     {p.jailed && <i className="t jail">isolé</i>}
+                    {p.watched && <i className="t heat" title="Sous surveillance">👁</i>}
                   </span>
                 </button>
               ))}
@@ -265,6 +311,7 @@ export default function App() {
               <button className="primary" disabled={!announce.trim()}>Envoyer à tous</button>
             </form>
           )}
+          {data.moderation && <ModerationCard m={data.moderation} onAct={act} />}
           <div className="card wide muted small">
             <p style={{ margin: 0 }}>Pouvoirs (vol libre, spectate, animaux, véhicules, points de métier) : menu <code>F11</code> (raccourcis staff : Ctrl+Y TP marqueur, Ctrl+U vol libre, Ctrl+O noms). Bans : txAdmin (<code>/tx</code>). Ce panneau gère le staff : tickets, fiches, sanctions, économie, journal.</p>
           </div>

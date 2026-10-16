@@ -231,5 +231,13 @@ check('véhicule imposé : voiture de la liste refusée', not cb('gs_races:ticke
 check('véhicule imposé : prêtée par l\'organisateur acceptée', cb('gs_races:ticket', 31, 'c3', 'solo', 'req')); step()
 okV = cb('gs_races:editor', 30, 'setvehicle', { id = 3, model = '' }); step()
 check('véhicule libre de nouveau', okV and Config.Circuits.c3.vehicle == nil)
+-- V12.63 : menu de l'organisateur ouvrable au volant (le [E] des points ne marche qu'à pied, « Avec ma voiture » exige le volant)
+do
+    local f = io.open('server/resources/[gtasoon]/gs_races/client/main.lua', 'r')
+    local src = f and f:read('a') or ''
+    if f then f:close() end
+    check('organisateur : [E] au volant dans le rayon d\'inscription', src:find("GetPedInVehicleSeat(veh, -1) == cache.ped", 1, true)
+        and src:find("TriggerEvent('gs_races:client:menu')", 1, true) and src:find('organizerReach', 1, true))
+end
 io.write(('\n%d réussis, %d échoués\n'):format(passed, failed))
 os.exit(failed == 0 and 0 or 1)

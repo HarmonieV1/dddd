@@ -35,6 +35,11 @@ end
 function Onboarding.check(src)
     local banned = banMessage(src)
     if banned then return false, banned end
+    -- V12.63 · Modération avancée (gs_admin) : arrivées fermées par le staff, compte lié à un banni (alerte ou refus)
+    if GetResourceState('gs_admin') == 'started' then
+        local okA, refusal = pcall(function() return exports.gs_admin:ArrivalCheck(src) end)
+        if okA and type(refusal) == 'string' then return false, refusal end
+    end
     if not Onboarding.whitelistOn() then return true end
     if IsPlayerAceAllowed(src, Config.WhitelistBypassAce) then return true end
     local lic = license(src)

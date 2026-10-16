@@ -22,6 +22,9 @@ export const GROUPS = [
       { name: 'jail', label: 'Isoler', icon: '⛓', danger: true, when: (d) => !(d.jailedFor > 0),
         fields: [{ key: 'minutes', label: 'Durée (minutes)', type: 'minutes' }, { key: 'text', label: 'Motif (publié)', type: 'text' }] },
       { name: 'unjail', label: 'Libérer', icon: '🔓', when: (d) => d.jailedFor > 0 },
+      // V12.63 · Modération avancée (admin et plus) : le staff est prévenu à chacune de ses arrivées
+      { name: 'watch', label: 'Mettre sous surveillance', icon: '👁', when: (d) => !d.watch, fields: [{ key: 'text', label: 'Motif (staff uniquement)', type: 'text' }] },
+      { name: 'unwatch', label: 'Lever la surveillance', icon: '👁', when: (d) => !!d.watch },
     ],
   },
   {

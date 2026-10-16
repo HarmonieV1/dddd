@@ -993,6 +993,23 @@ local function playerMenu(p)
     add(1, { title = 'Coincé : ramener au dernier endroit sûr', icon = 'arrow-up', description = 'Sous la carte, dans un mur… (V12.63)',
         onSelect = function() notify(act('unstuck', p.id)) end })
     add(2, { title = 'Figer / libérer', icon = 'snowflake', onSelect = function() notify(act('freeze', p.id)) end })
+    -- V12.63 · Modération avancée : surveillance (admin et plus) — le staff est prévenu à chacune de ses arrivées
+    if p.watched then
+        add(3, { title = 'Lever la surveillance', icon = 'eye-slash', iconColor = '#ffb020', onSelect = function()
+            local ok, msg = act('unwatch', p.id)
+            notify(ok, msg)
+            if ok then p.watched = nil playerMenu(p) end
+        end })
+    else
+        add(3, { title = 'Mettre sous surveillance', icon = 'eye', description = 'Le staff en service est prévenu à chacune de ses arrivées (invisible pour lui)',
+            onSelect = function()
+                local r = lib.inputDialog('Surveiller ' .. p.name, { { type = 'input', label = 'Motif (staff uniquement)', required = true, max = 200 } })
+                if not r then return end
+                local ok, msg = act('watch', p.id, { reason = r[1] })
+                notify(ok, msg)
+                if ok then p.watched = true playerMenu(p) end
+            end })
+    end
     add(3, { title = 'Effacer sa recherche (étoiles)', icon = 'star', description = 'Chaleur remise à zéro (gs_wanted)',
         onSelect = function() ExecuteCommand('effacerrecherche ' .. p.id) notify(true, 'Recherche effacée.') end })
     add(3, { title = 'Lui mettre un métier', icon = 'briefcase', arrow = true, onSelect = function() jobsMenu(p) end })
@@ -1064,6 +1081,82 @@ local function bansMenu(search)
     show('gs_staff_bans', 'Bannissements', options, 'gs_staff_quick')
 end
 
+--- V12.63 · Modération avancée (admin, super-admin, fondateur) : arrivées fermées, joueurs surveillés, départs récents → ban
+--- hors ligne. Le serveur renvoie seulement ce que le rang permet et revérifie chaque action.
+local function since(sec)
+    sec = math.max(0, math.floor(sec or 0))
+    if sec < 60 then return sec .. ' s' end
+    if sec < 3600 then return (sec // 60) .. ' min' end
+    return ('%d h %02d'):format(sec // 3600, (sec % 3600) // 60)
+end
+
+local function moderationMenu()
+    local st = lib.callback.await('gs_admin:moderation', false)
+    if type(st) ~= 'table' then return notify(false, 'Modération avancée : admin minimum.') end
+    local o = {}
+    if st.locked then
+        o[#o + 1] = { title = ('Arrivées FERMÉES · encore %s'):format(since(st.locked.left)), icon = 'door-closed', iconColor = '#ff4d6d',
+            description = ('%s · par %s%s'):format(st.locked.reason or '—', st.locked.staff or '?', st.canLock and ' · cliquer pour rouvrir' or ''),
+            readOnly = not st.canLock, onSelect = st.canLock and function()
+                notify(act('lockdown', nil, { minutes = 0 }))
+                moderationMenu()
+            end or nil }
+    elseif st.canLock then
+        o[#o + 1] = { title = 'Fermer les arrivées', icon = 'door-open', description = 'Raid, attaque : plus personne n\'entre sauf le staff (rouvre seul)',
+            onSelect = function()
+                local r = lib.inputDialog('Fermer les arrivées', {
+                    { type = 'number', label = 'Durée (minutes)', required = true, min = 1, max = 60, default = 15 },
+                    { type = 'input', label = 'Motif (affiché à ceux qui tentent d\'entrer)', required = true, max = 120, default = 'maintenance de modération' },
+                })
+                if not r then return end
+                notify(act('lockdown', nil, { minutes = math.floor(tonumber(r[1]) or 15), reason = r[2] }))
+                moderationMenu()
+            end }
+    else
+        o[#o + 1] = { title = 'Arrivées ouvertes', icon = 'door-open', readOnly = true, description = 'Fermeture : super-admin et fondateur' }
+    end
+    -- Surveillés
+    local w = st.watch or {}
+    local wo = {}
+    for _, e in ipairs(w) do
+        wo[#wo + 1] = { title = ('%s%s'):format(e.name or '?', e.online and (' · en ville [' .. e.online .. ']') or ''), icon = 'eye',
+            iconColor = e.online and ON or nil, description = ('%s · par %s · cliquer pour lever'):format(e.reason or '—', e.staff or '?'),
+            onSelect = function()
+                if lib.alertDialog({ header = 'Lever la surveillance', content = ('**%s**\n%s'):format(e.name or '?', e.reason or ''), centered = true, cancel = true }) ~= 'confirm' then return end
+                notify(act('unwatch', nil, { license = e.license }))
+                moderationMenu()
+            end }
+    end
+    if #wo == 0 then wo[1] = { title = 'Personne sous surveillance', icon = 'circle-check', readOnly = true, description = 'Fiche d\'un joueur → Mettre sous surveillance' } end
+    o[#o + 1] = { title = ('Joueurs surveillés (%d)'):format(#w), icon = 'eye', arrow = true, onSelect = function() show('gs_staff_watch', 'Joueurs surveillés', wo, 'gs_staff_mod') end }
+    -- Départs récents → ban hors ligne
+    local dep = st.departed or {}
+    local dpo = {}
+    for _, d in ipairs(dep) do
+        dpo[#dpo + 1] = { title = ('%s (%s)'):format(d.name or '?', d.account or '?'), icon = d.banned and 'user-lock' or 'person-walking-arrow-right',
+            iconColor = d.banned and '#ff4d6d' or nil, readOnly = d.banned or not st.canOfflineBan,
+            description = ('parti il y a %s · %s · resté %s%s'):format(since(d.ago), d.reason ~= '' and d.reason or '—', since(d.session),
+                d.banned and ' · BANNI' or (st.canOfflineBan and ' · cliquer pour bannir' or '')),
+            onSelect = (not d.banned and st.canOfflineBan) and function()
+                local r = lib.inputDialog('Bannir hors ligne : ' .. (d.name or '?'), {
+                    { type = 'number', label = 'Durée en jours', description = '0 = définitif', required = true, min = 0, max = 3650, default = 3 },
+                    { type = 'input', label = 'Motif', description = 'Visible dans #sanctions et à sa prochaine tentative', required = true, max = 200 },
+                })
+                if not r then return end
+                local days = math.floor(tonumber(r[1]) or 0)
+                if lib.alertDialog({ header = 'Bannir ' .. (d.name or '?'), content = ('**Durée** : %s\n**Motif** : %s'):format(days == 0 and 'DÉFINITIF' or (days .. ' jour(s)'), r[2]),
+                    centered = true, cancel = true }) ~= 'confirm' then return end
+                notify(act('offlineban', nil, { license = d.license, days = days, reason = r[2] }))
+                moderationMenu()
+            end or nil }
+    end
+    if #dpo == 0 then dpo[1] = { title = 'Aucun départ depuis le démarrage', icon = 'circle-check', readOnly = true } end
+    o[#o + 1] = { title = ('Partis récemment (%d)'):format(#dep), icon = 'person-walking-arrow-right', arrow = true,
+        description = st.canOfflineBan and 'Le rage-quit après un RDM : bannir hors ligne' or 'Ban hors ligne : super-admin et fondateur',
+        onSelect = function() show('gs_staff_departed', 'Partis récemment', dpo, 'gs_staff_mod') end }
+    show('gs_staff_mod', 'Modération avancée', o, 'gs_staff_quick')
+end
+
 --- V10.2 : distance d'un joueur (nil s'il est trop loin pour être chargé)
 local function distanceTo(id)
     local pl = GetPlayerFromServerId(id)
@@ -1104,7 +1197,7 @@ local function playersMenu(filter)
         if r then playersMenu(r[1]) end
     end } }
     for _, e in ipairs(list) do
-        options[#options + 1] = { title = ('[%d] %s'):format(e.p.id, e.p.name), icon = 'user', arrow = true,
+        options[#options + 1] = { title = ('[%d] %s%s'):format(e.p.id, e.p.name, e.p.watched and ' 👁' or ''), icon = 'user', arrow = true,
             description = e.d and ('à %d m'):format(math.floor(e.d)) or 'loin', onSelect = function() playerMenu(e.p) end }
     end
     if #list == 0 then options[#options + 1] = { title = filter and 'Aucun joueur trouvé' or 'Aucun joueur', readOnly = true } end
@@ -1554,6 +1647,7 @@ local function mainMenu()
         end })
         -- V12.4 · Bannissements : lever un bannissement sans quitter le jeu, même sur un joueur hors ligne
         add(4, { title = 'Bannissements', icon = 'gavel', arrow = true, description = 'Voir les bannis, chercher, débannir', onSelect = bansMenu })
+        add(3, { title = 'Modération avancée', icon = 'shield-halved', arrow = true, description = 'Surveillés, partis récemment (ban hors ligne), fermer les arrivées', onSelect = moderationMenu })
         add(3, { title = 'Statistiques de rétention', icon = 'chart-line', arrow = true, description = 'Nouveaux joueurs, retours J+1 / 7 jours, abandon, sessions', onSelect = function()
             local r = GetResourceState('gs_stats') == 'started' and lib.callback.await('gs_stats:retention', false)
             if not r then return notify(false, 'Statistiques indisponibles.') end
