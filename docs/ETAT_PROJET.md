@@ -388,6 +388,14 @@ Résumé très condensé (le détail complet est dans `docs/ROADMAP.md`, `docs/F
   départs récents + ban hors ligne ; branché dans F11 (Modération avancée, fiche), F10 (Serveur, fiche) et l'appli (Sanctions,
   fiche ; `Moderation.remote`, `Config.Web.actionLevel`). Tests : test_gs_admin (246), test_gs_races (56) ; check_links lit
   moderation.lua. Propositions D11 : n° 202 à 246.
+  **Puis (demande du fondateur)** : mises en scène admin (`server/scenes.lua` + `client/scenes.lua`, `Config.Scenes`) :
+  enlèvement en camionnette = expulsion, arrestation par un policier PNJ = isolement en cellule de Mission Row (`Admin.jail`
+  accepte un lieu `place` : coords, radius, release) ; sanction appliquée à la fin de la scène ou au délai serveur, entités
+  supprimées par le serveur (`gs_admin:sceneEnts` / `sceneDone`). Événements F11 rangés par usage (rien retiré), nouveaux
+  rassemblements (`carmeet`, `club`, `jobfair`), chasse au trésor (`Config.Hunt`, `Admin.startHunt`, `gs_admin:huntClaim`),
+  neige (gs_weather `snow`, chance 0, XMAS ajouté aux transitions), effets « sur moi » d'un instant (particules réseau).
+  Branding : patches ox_lib (ombre sm = contour violet, titres en dégradé, cadre du titre, CSS des fenêtres Mantine) et
+  ox_inventory (CSS), F10 bordé comme les Lives. Tests : test_gs_admin (262).
 - **V12.62** (15/10/2026, session de secours) — propositions choisies + relecture complète du gros patch avant le backtest :
   (1) **Lives** : ▦ grille, « ⇢ TP » (action `goto` de gs_admin), **replay 30 s** (n° 137) : tant qu'un ticket est ouvert,
   20 images (1,5 s) de l'auteur et du joueur nommé (« /report 12 … », gs_admin `ReportedPlayers`) gardées EN MÉMOIRE, effacées à

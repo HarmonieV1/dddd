@@ -4,7 +4,7 @@
 > Ce qui précède (nuit du 15 au 16/10 : appli staff externe, outils OVH, mur des légendes, trêves, figure du coin, diaporama du
 > site…) est dans `docs/PATCH_SESSION_15-10.md`. Version prête à coller sur Discord : `docs/PATCH_NOTE_V12.63_DISCORD.txt`.
 > Installation : METTRE-A-JOUR → DIAGNOSTIC-MODS (O) → VIDER-CACHE-FIVEM → METTRE-A-JOUR-OVH.
-> Rien n'a encore été vu en jeu : fiche de backtest, sections **4j**, **4k** et **4l**.
+> Rien n'a encore été vu en jeu : fiche de backtest, sections **4j** à **4m**.
 
 ## 1. Pour les joueurs
 | Nouveauté | Comment ça marche |
@@ -17,6 +17,8 @@
 | **Gestes selon l'objet** | Alt sur un lavabo (mains, visage), une douche, une fontaine (boire) ; dans la mer, E pour se rincer. Le sang et la saleté partent ; les secours peuvent nettoyer tes plaies. |
 | **Poubelles** | Une seule option : la fouille animée (l'ouverture de l'inventaire de la benne a disparu). |
 | **Courses sur mesure** | L'organisateur peut imposer un véhicule ; inscription à 15 m de lui ; sur la ligne, E relance le départ et X annule. |
+| **Neige et chasses au trésor** | Le staff peut faire tomber la neige sur Los Santos (traces de pas et de pneus) et cacher une mallette : zone sur la carte, le premier qui la trouve l'empoche. |
+| **Menus aux couleurs de RoadLine** | Menus, notifications, fenêtres et inventaire bordés de violet néon, titres en dégradé. |
 | **Organisateur de courses réparé** | Au volant de ta voiture près de lui, [E] ouvre enfin son menu (avant, rien ne se passait) ; à pied, [E] à côté de lui. |
 | **Gangs** | Plus de gangs créés d'office (un gang naît d'un projet RP validé par le staff) ; territoires découpés en pâtés de maisons. |
 | **Cyclone** | Vitesse maximale ramenée à 210 km/h. |
@@ -41,6 +43,9 @@
 | **Animalerie : postes** | F11 → Monde et lieux → Déplacer un point | « Animalerie · Comptoir / Réserve / Gamelles / Cages / Toilettage » à placer dans la boutique (sinon rangés autour de la map). |
 | **North Yankton : points** | F11 → Déplacer un point | Location de Ludendorff, café, serveuse, shérif, comptoir du retour : à caler si besoin (seulement les jours North Yankton). |
 | **Journal staff** | F10 → Journal | Hommages peints, coincés ramenés, choix de destination du vol. |
+| **Mises en scène** (admin) | F11 → fiche → Mises en scène, F10 → fiche | Enlèvement en camionnette (= expulsion, écran noir) ; arrestation par un policier PNJ (plaqué, menotté, cellule de Mission Row). |
+| **Événements rangés** | F11 → Événements | Rassemblements (+ rassemblement auto, soirée en club, salon de l'emploi), chasse au trésor (prime au premier), neige, effets « sur moi » (feux d'artifice, confettis, fumée). |
+| **Branding** | menus de base | Contour violet néon des Lives sur les menus F11, notifications, saisies, inventaire et F10 ; titres en dégradé RoadLine. |
 | **Appli installable** | appli → écran de connexion | Bouton « 📲 Installer l'appli » (PC, Android) ou Partager → « Sur l'écran d'accueil » (iPhone) : icône au logo RoadLine, plein écran. |
 | **Surveillance** (admin) | F11 → fiche, F10 → fiche, appli → fiche | Motif ; le staff en service est prévenu à chacune de ses arrivées ; 👁 dans les listes. |
 | **Fermer les arrivées** (super-admin) | F11 → Modération avancée, F10 → Serveur, appli → Sanctions | Raid ou attaque : seul le staff entre, 60 min maximum, rouvre seul. |

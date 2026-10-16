@@ -130,9 +130,10 @@ admin_ui = ROOT / "gs_admin" / "web" / "src" / "App.jsx"
 admin_srv = ROOT / "gs_admin" / "server" / "main.lua"
 if admin_ui.exists() and admin_srv.exists():
     srv_text = admin_srv.read_text(encoding="utf-8")
-    mod_srv = admin_srv.parent / "moderation.lua"  # V12.63 : modération avancée (complète la table Actions)
-    if mod_srv.exists():
-        srv_text += "\n" + mod_srv.read_text(encoding="utf-8")
+    for extra in ("moderation.lua", "scenes.lua"):  # V12.63 : modération avancée, mises en scène (complètent la table Actions)
+        mod_srv = admin_srv.parent / extra
+        if mod_srv.exists():
+            srv_text += "\n" + mod_srv.read_text(encoding="utf-8")
     server_actions = set(re.findall(r"^Actions(?:\.(\w+)|\['(\w+)'\])\s*=", srv_text, re.M))
     server_actions = {a or b for a, b in server_actions}
     ui = admin_ui.read_text(encoding="utf-8")

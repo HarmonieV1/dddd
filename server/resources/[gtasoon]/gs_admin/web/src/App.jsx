@@ -22,6 +22,9 @@ const ACTIONS = [
   // V12.63 · Modération avancée : surveillance (le staff est prévenu à chacune de ses arrivées)
   { name: 'watch', label: 'Mettre sous surveillance', level: 3, when: (d) => !d.watch, fields: [{ key: 'reason', label: 'Motif (staff uniquement)' }] },
   { name: 'unwatch', label: 'Lever la surveillance', level: 3, when: (d) => !!d.watch },
+  // V12.63 · Mises en scène (sanction appliquée à la fin de la scène, jouée chez le joueur)
+  { name: 'kidnap', label: 'Enlèvement en camionnette (expulsion)', level: 3, danger: true, fields: [{ key: 'reason', label: 'Motif de l’expulsion (publié)' }] },
+  { name: 'npcarrest', label: 'Arrestation par un policier PNJ (cellule)', level: 3, danger: true, fields: [{ key: 'minutes', label: 'Minutes de cellule', type: 'number' }, { key: 'reason', label: 'Motif (publié)' }] },
   { name: 'givemoney', label: 'Donner argent', level: 4, fields: [{ key: 'account', label: 'Compte', type: 'select', options: ['cash', 'bank'] }, { key: 'amount', label: 'Montant', type: 'number' }, { key: 'reason', label: 'Motif (journal)' }] },
   { name: 'removemoney', label: 'Retirer argent', level: 4, danger: true, fields: [{ key: 'account', label: 'Compte', type: 'select', options: ['cash', 'bank'] }, { key: 'amount', label: 'Montant', type: 'number' }, { key: 'reason', label: 'Motif (journal)' }] },
   { name: 'giveitem', label: 'Donner item', level: 4, fields: [{ key: 'item', label: 'Nom de l’item' }, { key: 'amount', label: 'Quantité', type: 'number' }, { key: 'reason', label: 'Motif (journal)' }] },

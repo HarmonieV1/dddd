@@ -39,6 +39,10 @@ Config.Powers = {
     carjump = 3,     -- voiture sauteuse (Espace en conduisant)
     rainbow = 3,     -- voiture arc-en-ciel
     drunk = 3,       -- caméra ivre
+    -- V12.63 : effets d'un instant, à ma position, vus par les joueurs autour (animation d'événement)
+    fireworks = 3,   -- feux d'artifice
+    confetti = 3,    -- pluie de confettis
+    smoke = 3,       -- apparition dans un nuage de fumée
 }
 
 Config.Animals = {
@@ -96,6 +100,28 @@ Config.Events = {
         text = 'Course de rue organisée : inscription gratuite, rendez-vous au point GPS !' },
     roadtrip = { label = 'Départ du road trip du mois', icon = 'route', radius = 0.0, minutes = 30, roadtrip = true,
         text = 'Grand départ du road trip du mois : rendez-vous au point GPS, puis /carnet. Bonus pour ceux qui arrivent en convoi !' },
+    -- V12.63 : rassemblements simples et crédibles (annonce + GPS ; armes rangées dans la zone quand `fx = 'melee'`)
+    carmeet = { label = 'Rassemblement auto', icon = 'car', fx = 'melee', radius = 60.0, minutes = 45,
+        text = 'Rassemblement auto : viens montrer ta voiture, armes rangées dans la zone. Rendez-vous au point GPS !' },
+    club = { label = 'Soirée en club', icon = 'martini-glass', fx = 'melee', radius = 40.0, minutes = 60,
+        text = 'Soirée en club : musique, verres et rencontres, armes rangées à l\'entrée. Rendez-vous au point GPS !' },
+    jobfair = { label = 'Salon de l\'emploi', icon = 'briefcase', radius = 0.0, minutes = 30,
+        text = 'Salon de l\'emploi : entreprises et services recrutent, entretiens sur place. Rendez-vous au point GPS !' },
+    -- Chasse au trésor : le staff cache une mallette là où il se trouve ; tout le monde reçoit une ZONE (pas le point exact) ;
+    -- le premier qui la ramasse ([E]) empoche la prime (en banque). Le staff ne peut pas la ramasser.
+    hunt = { label = 'Chasse au trésor', icon = 'gem', radius = 150.0, minutes = 20, hunt = true,
+        text = 'Une mallette est cachée dans la zone du GPS : le premier qui la trouve l\'empoche !' },
+}
+Config.Hunt = { prize = 1500, maxPrize = 5000, bigPrizeLevel = 4, model = 'prop_cash_case_02', pickup = 3.0 } -- au-delà de `prize` : super-admin
+
+-- V12.63 · Mises en scène du staff (admin et plus) : jouées chez le joueur visé, sanction appliquée par le serveur à la fin
+-- de la scène (ou au bout de `maxSeconds` quoi qu'il arrive). Enlèvement = expulsion « en camionnette » ; arrestation PNJ =
+-- isolement dans une cellule du commissariat de Mission Row (mêmes cellules que la garde à vue de gs_police).
+Config.Scenes = {
+    level = 3,
+    kidnap = { van = 'burrito3', thug = 'g_m_m_chicold_01', maxSeconds = 45 },
+    arrest = { cop = 's_m_y_cop_01', maxSeconds = 40, minutes = 5,
+        cell = { coords = vec3(459.9, -994.3, 24.91), radius = 6.0, release = vec3(434.1, -981.9, 30.71) } },
 }
 
 Config.Vehicle = { maxDeleteDistance = 10.0 }

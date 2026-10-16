@@ -59,12 +59,14 @@ local function teleport(src, c)
     end
 end
 
-function Admin.jail(src, minutes, reason, staffName)
+--- `place` (facultatif, V12.63) : { coords, radius, release } — cellule de Mission Row pour l'arrestation par un policier PNJ.
+--- Sans `place` : salle d'isolement habituelle (Config.Jail). Après une reconnexion, la peine reprend dans la salle habituelle.
+function Admin.jail(src, minutes, reason, staffName, place)
     local untilTs = os.time() + minutes * 60
     local lic = license(src)
-    Admin.jailed[src] = { untilTs = untilTs, license = lic }
+    Admin.jailed[src] = { untilTs = untilTs, license = lic, place = place }
     if lic then Store.jailSet(lic, untilTs, reason, staffName) end
-    teleport(src, Config.Jail.coords)
+    teleport(src, place and place.coords or Config.Jail.coords)
     TriggerClientEvent('gs_admin:client:jail', src, untilTs - os.time(), reason)
 end
 
@@ -73,7 +75,7 @@ function Admin.release(src, silent)
     if not j then return false end
     Admin.jailed[src] = nil
     if j.license then Store.jailClear(j.license) end
-    teleport(src, Config.Jail.release)
+    teleport(src, j.place and j.place.release or Config.Jail.release)
     TriggerClientEvent('gs_admin:client:jail', src, 0)
     if not silent then notify(src, 'Tu es libéré de la salle d\'isolement.', 'success') end
     return true
@@ -87,8 +89,9 @@ function Admin.jailTick()
             Admin.release(src)
         else
             local ped = GetPlayerPed(src)
-            if ped ~= 0 and #(GetEntityCoords(ped) - Config.Jail.coords) > Config.Jail.radius then
-                teleport(src, Config.Jail.coords)
+            local at, radius = j.place and j.place.coords or Config.Jail.coords, j.place and j.place.radius or Config.Jail.radius
+            if ped ~= 0 and #(GetEntityCoords(ped) - at) > radius then
+                teleport(src, at)
             end
         end
     end
@@ -649,6 +652,7 @@ end }
 --- Événement en un clic : annonce + GPS à tous, effet aux joueurs dans le rayon.
 Actions.event = { level = 3, duty = true, run = function(src, _, data)
     local ev = need(Config.Events[data.kind], 'Événement inconnu.')
+    if ev.hunt then return Admin.startHunt(src, ev, data) end -- V12.63 : chasse au trésor (server/scenes.lua)
     local c = ev.at or GetEntityCoords(GetPlayerPed(src))
     local text = ev.text
     if ev.roadtrip then -- départ au premier point du carnet du mois (gs_roadbook)

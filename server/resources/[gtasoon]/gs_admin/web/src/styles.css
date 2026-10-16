@@ -17,8 +17,9 @@ code { font-size: 12px; color: var(--cyan); }
 .panel {
   /* Tiroir compact à droite : on voit encore le jeu, gestion staff rapide */
   position: fixed; top: 7vh; bottom: 7vh; right: 1.4vw; width: min(760px, 48vw); display: flex; flex-direction: column; color: var(--text);
-  background: linear-gradient(180deg, rgba(26, 15, 46, .97) 0%, rgba(11, 7, 20, .97) 30%); border: 1px solid var(--line); border-radius: 18px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, .7), 0 0 40px rgba(255, 46, 136, .12); overflow: hidden; animation: slide .18s ease-out;
+  background: linear-gradient(180deg, rgba(26, 15, 46, .97) 0%, rgba(11, 7, 20, .97) 30%); border: 1px solid rgba(155, 84, 255, .55); border-radius: 18px;
+  /* V12.63 : même contour violet néon que les fenêtres Lives (DA RoadLine) */
+  box-shadow: 0 20px 60px rgba(0, 0, 0, .7), 0 0 0 1px rgba(109, 59, 216, .25), 0 0 32px rgba(150, 70, 255, .22); overflow: hidden; animation: slide .18s ease-out;
 }
 @keyframes slide { from { transform: translateX(24px); opacity: 0 } to { transform: none; opacity: 1 } }
 

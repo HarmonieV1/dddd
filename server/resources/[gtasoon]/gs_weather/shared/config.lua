@@ -28,6 +28,7 @@ Config.Transitions = {
     THUNDER    = { RAIN = 1, CLEARING = 2 },
     CLEARING   = { CLEAR = 3, CLOUDS = 1 },
     FOGGY      = { CLEAR = 2, CLOUDS = 1 },
+    XMAS       = { CLEARING = 2, CLOUDS = 1 }, -- V12.63 : neige (seulement lancée par le staff ou /meteo XMAS), puis éclaircies
 }
 
 -- Événements météo : tirés au sort à chaque changement de météo, annoncés en jeu + Discord.
@@ -43,6 +44,11 @@ Config.Events = {
         label = 'Canicule', weather = 'EXTRASUNNY', minutes = { 40, 60 }, chance = 0.05, hours = { 9, 16 },
         icon = 'temperature-high',
         announce = 'Canicule : 42°C à l\'ombre. Buvez de l\'eau, pas que du rhum.',
+    },
+    -- V12.63 · Neige (staff seulement : chance 0) : ville enneigée, traces de pas et de pneus (client gs_weather)
+    snow = {
+        label = 'Neige sur Los Santos', weather = 'XMAS', minutes = { 30, 45 }, chance = 0.0, icon = 'snowflake',
+        announce = 'Neige sur Los Santos ! Chaussées glissantes : levez le pied et sortez les bonnets.',
     },
     fog = {
         label = 'Brouillard épais', weather = 'FOGGY', minutes = { 10, 20 }, chance = 0.05, hours = { 4, 9 },

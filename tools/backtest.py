@@ -148,6 +148,15 @@ SESSIONS = [
         ('Partis récemment (super-admin) : un ami se déconnecte → F11 → Modération avancée → Partis récemment → Bannir 1 jour → il est refusé à la connexion ; le débannir (F11 → Bannissements)', '2', 2),
         ('Contournement de ban : après le test précédent, se connecter avec un AUTRE compte FiveM sur le même PC que le banni → alerte « Contournement de ban ? » au staff (il entre : mode alerte)', '2', 1),
     ]),
+    ('4m · V12.63 — mises en scène, événements, branding (15 min)', [
+        ('Mises en scène (admin) : F11 → Joueurs → un ami → Mises en scène → « Arrestation par un policier PNJ » (2 min) → un policier arrive en courant (« Police ! »), le plaque, le menotte, fondu → cellule de Mission Row avec le compteur ; il en sort → ramené ; à la fin, libéré devant le commissariat', '2', 3),
+        ('Mises en scène : « Enlèvement en camionnette » sur un ami (motif test) → camionnette noire, un inconnu descend, mains sur la tête, embarqué, la camionnette repart, écran noir → expulsé avec « Embarqué dans une camionnette… » ; dans un intérieur (pas de route) : écran noir direct', '2', 2),
+        ('Événements : F11 → Événements → Rassemblements (rassemblement auto, club, boxe, salon de l\'emploi, course, road trip, plage de Cayo) → annonce + GPS ; dans la zone d\'un rassemblement auto, l\'arme se range', '2', 2),
+        ('Chasse au trésor : F11 → Événements → Chasse au trésor (prime 500) à un endroit caché → les joueurs voient une ZONE sur la carte ; le premier à la mallette ([E]) touche 500 $ en banque, fin annoncée à tous ; le staff ne peut pas la ramasser', '2', 2),
+        ('Neige : F11 → Événements → Météo et saisons → Neige sur Los Santos → ville blanche, traces de pas et de pneus ; « Arrêter l\'événement météo » → retour à la normale', 'Staff', 2),
+        ('Effets sur moi : Feux d\'artifice, Pluie de confettis, Apparition dans la fumée → vus aussi par un ami à côté', '2', 1),
+        ('Branding (après METTRE-A-JOUR) : menus F11 et notifications avec un fin contour violet et un halo ; titre des menus en dégradé rose → violet → cyan avec un losange ; fenêtres de saisie et inventaire bordés de violet ; F10 bordé comme les Lives. Si un menu s\'affiche mal : le dire (patch d\'ox_lib à retirer)', 'Seul', 2),
+    ]),
     ('5 · Obligatoire avant d\'ouvrir', [
         ('SAUVEGARDER-BDD.bat puis RESTAURER-BDD.bat sur un joueur ; redémarrage de 6 h : annonces 15 / 5 / 1 min', 'Staff', 3),
         ('Mode staff : vol libre / invisible SANS alerte anti-triche ; F10 tickets et sanctions ; carkill 2 fois → alerte', 'Staff', 3),

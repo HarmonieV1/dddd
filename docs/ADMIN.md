@@ -170,6 +170,19 @@ Détail version par version : `docs/PATCH_SESSION_15-10.md` ; patch note de la s
 - **Appli staff externe** : remplace l'ancien panneau mobile décrit plus haut. Tout est dans `docs/APPLI_STAFF.md` (connexion, rangs,
   actions, carte avec les tickets, Lives hors jeu). Mot de passe collectif / codes avec rang : GERER-OVH → 20 (M / A).
 - **F10** : onglet **Carte** (joueurs en direct) ; action « Coincé : dernier endroit sûr ».
+- **Mises en scène** (V12.63, admin et plus ; `server/scenes.lua`, `client/scenes.lua`, `Config.Scenes`) : F11 → Joueurs → le
+  joueur → Mises en scène, ou F10 → fiche. **Enlèvement en camionnette** = expulsion (camionnette noire sur la route la plus proche,
+  deux inconnus, écran noir) ; **Arrestation par un policier PNJ** = isolement dans une cellule de Mission Row (mêmes cellules
+  que la garde à vue de gs_police, `Config.Scenes.arrest.cell`), plaquage et menottes. Le serveur applique la sanction à la fin de
+  la scène ou au bout de `maxSeconds` quoi qu'il arrive, et supprime les entités. Jamais sur un staff de rang égal ou supérieur.
+- **Événements (F11)** rangés par usage : Rassemblements (`Config.Events` : rassemblement auto, club, boxe, salon de l'emploi,
+  course, road trip, plage de Cayo), **Chasse au trésor** (`Config.Hunt` : mallette à la position du staff, zone décalée pour
+  tous, prime en banque au premier joueur, le staff ne peut pas la ramasser), Bonus serveur, Météo et saisons (**neige** :
+  `/meteoevent snow`, gs_weather ; Halloween), Police : fait divers PNJ, Rumeurs, Effets sur moi (+ feux d'artifice, confettis,
+  fumée, `Config.Powers`). Rien n'a été retiré : Halloween est passé dans « Météo et saisons ».
+- **Branding des menus de base** (METTRE-A-JOUR, `scripts/windows/outils-communs.ps1`) : contour violet néon et halo des fenêtres
+  Lives sur les menus et notifications d'ox_lib, titres en dégradé RoadLine, fenêtres de saisie et inventaire bordés de violet.
+  Visuel seulement ; motif absent (autre version) = avertissement jaune.
 - **Modération avancée** (V12.63, admin et plus ; `gs_admin/server/moderation.lua`, `Config.Moderation`) :
   F11 → **Modération avancée**, F10 → **Serveur** (carte « Modération avancée ») et fiche joueur, appli → **Sanctions** et fiche.
   - **Surveillance** (admin) : motif obligatoire, invisible du joueur ; le staff en service est prévenu à chacune de ses arrivées ;

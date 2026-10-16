@@ -736,5 +736,57 @@ check('bot Discord : pas de modération avancée', not Admin.remote('lockdown', 
 rok = Admin.remote('unwatch', 4, nil, 'Web · Test', nil, 3)
 check('appli : surveillance levée', rok and not Moderation.watch['license:4'])
 
+-- V12.63 · Mises en scène (enlèvement = expulsion, arrestation PNJ = cellule de Mission Row) et chasse au trésor
+provide('gs_security', { RateLimit = getExport('gs_security', 'RateLimit'), Sanitize = getExport('gs_security', 'Sanitize'),
+    LogStaff = getExport('gs_security', 'LogStaff'), AllowTeleport = getExport('gs_security', 'AllowTeleport'),
+    InRange = function(src, c, r) return W.players[src] and #(W.players[src].pos - c) <= r end })
+loadResource('gs_admin', { R .. 'gs_admin/server/scenes.lua' })
+join(40, 'CID40', 'Victime Un', here); W.players[40].license = 'license:40'
+ok = cb('gs_admin:action', 2, 'kidnap', 40, { reason = 'Troll' }); step()
+check('enlèvement : un modo ne peut pas', not ok and not W.players[40].kicked)
+ok = cb('gs_admin:action', 8, 'kidnap', 40, { reason = '' }); step()
+check('enlèvement : motif obligatoire', not ok)
+W.clientEvents = {}
+ok, msg = cb('gs_admin:action', 8, 'kidnap', 40, { reason = 'Troll en boucle' }); step()
+check('enlèvement : scène envoyée au joueur, expulsé à la fin (délai serveur), sans entité restante', ok and lastClientEvent('gs_admin:client:scene', 40) ~= nil
+    and type(W.players[40].kicked) == 'string' and W.players[40].kicked:find('camionnette', 1, true) and Admin.scenes[40] == nil)
+ok = cb('gs_admin:action', 8, 'kidnap', 1, { reason = 'x' }); step()
+check('enlèvement : jamais sur un staff de rang supérieur', not ok)
+join(41, 'CID41', 'Victime Deux', here); W.players[41].license = 'license:41'
+ok = cb('gs_admin:action', 8, 'npcarrest', 41, { minutes = 9999, reason = 'x' }); step()
+check('arrestation PNJ : durée bornée', not ok)
+ok = cb('gs_admin:action', 8, 'npcarrest', 41, { minutes = 7, reason = 'Conduite dangereuse' }); step()
+local cell = Config.Scenes.arrest.cell.coords
+check('arrestation PNJ : en cellule à Mission Row (isolement à durée)', ok and Admin.jailed[41] and Admin.jailed[41].place
+    and #(W.players[41].pos - cell) < 0.1 and math.abs(Admin.jailed[41].untilTs - os.time() - 409) <= 1)
+tp(41, vec3(0.0, 0.0, 0.0)); Admin.jailTick()
+check('arrestation PNJ : ramené dans SA cellule s\'il en sort', #(W.players[41].pos - cell) < 0.1)
+Admin.release(41)
+check('arrestation PNJ : libéré devant le commissariat', #(W.players[41].pos - Config.Scenes.arrest.cell.release) < 0.1)
+check('scène : fin signalée par un joueur sans scène = rien', cb('gs_admin:sceneDone', 4) == false)
+
+Admin.onDuty[1], Admin.onDuty[8] = os.time(), os.time()
+ok = cb('gs_admin:action', 8, 'event', nil, { kind = 'hunt', prize = 4000 }); step()
+check('chasse au trésor : grosse prime réservée au super-admin', not ok and Admin.hunt == nil)
+W.clientEvents = {}
+ok, msg = cb('gs_admin:action', 8, 'event', nil, { kind = 'hunt', prize = 1200 }); step()
+local hs = lastClientEvent('gs_admin:client:huntStart', 4)
+check('chasse au trésor : lancée, zone envoyée à tous (pas centrée sur la mallette)', ok and Admin.hunt and hs
+    and #(vec3(hs.args[1].zone.x, hs.args[1].zone.y, 0.0) - vec3(Admin.hunt.at.x, Admin.hunt.at.y, 0.0)) > 1.0)
+check('chasse au trésor : une seule à la fois', not cb('gs_admin:action', 1, 'event', nil, { kind = 'hunt' }))
+step()
+tp(4, vec3(900.0, 900.0, 30.0))
+check('chasse au trésor : trop loin = refusé', not cb('gs_admin:huntClaim', 4))
+step()
+tp(2, Admin.hunt.at)
+check('chasse au trésor : le staff ne la ramasse pas', not cb('gs_admin:huntClaim', 2))
+step()
+local before = W.players[4].money.bank or 0
+tp(4, Admin.hunt.at)
+ok, msg = cb('gs_admin:huntClaim', 4); step()
+check('chasse au trésor : trouvée, prime en banque, fin annoncée', ok and (W.players[4].money.bank or 0) - before == 1200 and Admin.hunt == nil
+    and lastClientEvent('gs_admin:client:huntEnd') ~= nil)
+check('chasse au trésor : plus rien à ramasser', not cb('gs_admin:huntClaim', 4))
+
 io.write(('\n%d réussis, %d échoués\n'):format(passed, failed))
 os.exit(failed == 0 and 0 or 1)

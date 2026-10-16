@@ -181,6 +181,26 @@ $QboxPatches = @(
     @{ res = 'ox_lib'; dir = 'web\build\assets'; filter = '*.js'; why = 'menus ox_lib en noir néon'
        find = '(?i)\["#C1C2C5","#A6A7AB","#909296","#5c5f66","#373A40","#2C2E33","#25262b","#1A1B1E","#141517","#101113"\]'
        repl = '["#EDE4FF","#CBBBEA","#A493C7","#6F5E93","#3B2A5C","#2A1C45","#1E1433","#150D26","#0F091C","#0A0613"]' }
+    # V12.63 · Branding RoadLine (visuel seulement) : la DA des fenêtres Lives (contour violet néon nuancé, halo) sur les menus
+    # de base. Ombre « sm » d'ox_lib (notifications, textes [E], menus) = fin contour violet + halo ; titre des menus en dégradé
+    # rose → violet → cyan précédé d'un losange ; cadre du titre bordé de violet ; fenêtres (saisies, confirmations) bordées
+    # et barres de défilement violettes. Motif absent (autre version d'ox_lib) = avertissement jaune, rien de cassé.
+    @{ res = 'ox_lib'; dir = 'web\build\assets'; filter = '*.js'; why = 'menus ox_lib : contour violet néon (DA RoadLine)'
+       find = 'sm:"1px 1px 3px rgba\(0, ?0, ?0, ?0?\.5\)"'
+       repl = 'sm:"0 0 0 1px rgba(155,84,255,.55),0 0 16px rgba(150,70,255,.28),0 6px 18px rgba(0,0,0,.55)"' }
+    @{ res = 'ox_lib'; dir = 'web\build\assets'; filter = '*.js'; why = 'menus ox_lib : titre en dégradé RoadLine'
+       find = 'titleText:\{(?!background:)'
+       repl = 'titleText:{background:"linear-gradient(90deg,#ff5fd2,#b048ff 55%,#4fd8ff)",WebkitBackgroundClip:"text",backgroundClip:"text",WebkitTextFillColor:"transparent",fontWeight:700,letterSpacing:".04em","&::before":{content:"\"◆  \""},' }
+    @{ res = 'ox_lib'; dir = 'web\build\assets'; filter = '*.js'; why = 'menus ox_lib : cadre du titre bordé de violet'
+       find = 'titleContainer:\{(?!border:)'
+       repl = 'titleContainer:{border:"1px solid rgba(155,84,255,.6)",boxShadow:"0 0 14px rgba(150,70,255,.3)",backgroundImage:"linear-gradient(135deg,rgba(60,26,105,.55),rgba(16,9,30,0))",' }
+    @{ res = 'ox_lib'; file = 'web\build\index.html'; why = 'fenêtres ox_lib (saisies, confirmations) : contour violet néon'
+       find = '(?<!<!--gs-theme-->)</head>'
+       repl = '<style>[class*="mantine-Modal-modal"],[class*="mantine-Modal-content"]{border:1px solid rgba(155,84,255,.55)!important;box-shadow:0 0 0 1px rgba(109,59,216,.25),0 0 22px rgba(150,70,255,.28),0 10px 30px rgba(0,0,0,.55)!important}[class*="mantine-Modal-title"]{background:linear-gradient(90deg,#ff5fd2,#b048ff 55%,#4fd8ff);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;font-weight:700;letter-spacing:.04em}[class*="mantine-Button-root"]:hover{box-shadow:inset 0 0 0 1px rgba(176,72,255,.65)!important}::-webkit-scrollbar{width:6px}::-webkit-scrollbar-thumb{background:rgba(155,84,255,.55);border-radius:6px}::-webkit-scrollbar-track{background:transparent}</style><!--gs-theme--></head>' }
+    # Inventaire : mêmes contours violets autour des grilles (classes stables d'ox_inventory ; absentes = sans effet)
+    @{ res = 'ox_inventory'; file = 'web\build\index.html'; why = 'inventaire : contour violet néon (DA RoadLine)'
+       find = '(?<!<!--gs-theme-->)</head>'
+       repl = '<style>.inventory-grid-wrapper{border:1px solid rgba(155,84,255,.5)!important;border-radius:8px;box-shadow:0 0 0 1px rgba(109,59,216,.2),0 0 20px rgba(150,70,255,.22)!important;padding:6px}.inventory-slot:hover{box-shadow:inset 0 0 0 1px rgba(176,72,255,.7)!important}.tooltip-wrapper,.context-menu-list{border:1px solid rgba(155,84,255,.55)!important;box-shadow:0 0 16px rgba(150,70,255,.25)!important}</style><!--gs-theme--></head>' }
     # V12.36 : ciblage (Alt) — ox_target 1.18.1 (client\main.lua:212) appelle HAS_ENTITY_CLEAR_LOS_TO_ENTITY (0xFCDFF7B72D23A1AC) sur le
     # handle rendu par le rayon ; sur le build 3570 ce handle est parfois invalide et la native plante (« Error executing native » en F8
     # à chaque Alt, ciblage figé jusqu'au prochain Alt ; même bug connu sur qb-target, issue 210). Protégé par pcall comme ox_target le

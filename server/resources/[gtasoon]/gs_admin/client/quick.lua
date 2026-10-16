@@ -889,6 +889,26 @@ local function rankMenu(p)
     show('gs_staff_rank', 'Rang staff · ' .. p.name, options, 'gs_staff_player')
 end
 
+-- V12.63 · Effets d'un instant (feux d'artifice, confettis, fumée) : particules réseau à ma position
+local BURSTS = {
+    { id = 'fireworks', label = 'Feux d\'artifice', icon = 'burst', asset = 'scr_indep_fireworks', fx = 'scr_indep_firework_starburst', n = 4, height = 18.0, scale = 1.6 },
+    { id = 'confetti', label = 'Pluie de confettis', icon = 'champagne-glasses', asset = 'scr_xs_celebration', fx = 'scr_xs_confetti_burst', n = 2, height = 2.5, scale = 1.4 },
+    { id = 'smoke', label = 'Apparition dans la fumée', icon = 'cloud', asset = 'scr_rcbarry2', fx = 'scr_clown_appears', n = 1, height = 0.0, scale = 1.2 },
+}
+local function burst(f)
+    if not lib.requestNamedPtfxAsset(f.asset, 3000) then return notify(false, 'Effet indisponible sur ce build du jeu.') end
+    CreateThread(function()
+        for i = 1, f.n do
+            local c = GetEntityCoords(cache.ped)
+            local dx, dy = (i == 1) and 0.0 or math.random(-6, 6) + 0.0, (i == 1) and 0.0 or math.random(-6, 6) + 0.0
+            UseParticleFxAssetNextCall(f.asset)
+            StartNetworkedParticleFxNonLoopedAtCoord(f.fx, c.x + dx, c.y + dy, c.z + f.height, 0.0, 0.0, 0.0, f.scale, false, false, false)
+            Wait(450)
+        end
+        RemoveNamedPtfxAsset(f.asset)
+    end)
+end
+
 local function funMenu()
     local options = {}
     for _, f in ipairs(FUN) do
@@ -896,6 +916,13 @@ local function funMenu()
             local on = fun[f.id] == true
             options[#options + 1] = { title = ('%s : %s'):format(f.label, on and 'ON' or 'OFF'), icon = f.icon, iconColor = on and ON or OFF,
                 onSelect = function() setFun(f.id, not on) funMenu() end }
+        end
+    end
+    -- V12.63 : effets d'un instant à ma position (particules réseau : les joueurs autour les voient)
+    for _, f in ipairs(BURSTS) do
+        if info.level >= (Config.Powers[f.id] or 99) then
+            options[#options + 1] = { title = f.label, icon = f.icon, iconColor = '#b048ff', description = 'Un instant, à ta position, vu par les joueurs autour',
+                onSelect = function() if grant(f.id) then burst(f) end funMenu() end }
         end
     end
     options[#options + 1] = { title = 'Tout couper', icon = 'power-off', onSelect = function()
@@ -907,46 +934,67 @@ local function funMenu()
     show('gs_staff_fun', 'Effets sur moi', options, 'gs_staff_events')
 end
 
+--- V12.63 · Événements rangés par usage : rassemblements (annonce + GPS pour tous), chasse au trésor, bonus serveur,
+--- météo et saisons, police et faits divers, rumeurs, effets sur moi. Le serveur revérifie rang et mode staff.
 local function eventsMenu()
-    local options = {}
+    local function launch(id, ev, extra)
+        if lib.alertDialog({ header = ev.label, content = ev.text .. '\n\nTout le monde reçoit l\'annonce et le GPS.', centered = true, cancel = true }) == 'confirm' then
+            local data = extra or {}
+            data.kind = id
+            notify(act('event', nil, data))
+        end
+    end
+    -- Rassemblements
+    local gather = {}
     for id, ev in pairs(Config.Events) do
-        options[#options + 1] = { title = ev.label, icon = ev.icon, description = ('%d min · centré sur toi%s'):format(ev.minutes, ev.radius > 0 and (' · %d m'):format(math.floor(ev.radius)) or ''),
+        if not ev.hunt then
+            gather[#gather + 1] = { title = ev.label, icon = ev.icon, description = ('%d min · %s%s'):format(ev.minutes, ev.at and 'lieu fixe' or 'à ta position',
+                ev.fx == 'melee' and (' · armes rangées dans %d m'):format(math.floor(ev.radius)) or ''), onSelect = function() launch(id, ev) end }
+        end
+    end
+    table.sort(gather, function(a, b) return a.title < b.title end)
+    local options = {
+        { title = 'Rassemblements', icon = 'people-group', arrow = true, description = 'Rassemblement auto, club, boxe, salon de l\'emploi, course, road trip, plage',
+          onSelect = function() show('gs_staff_gather', 'Rassemblements', gather, 'gs_staff_events') end },
+    }
+    local hev = Config.Events.hunt
+    if hev then
+        options[#options + 1] = { title = hev.label, icon = hev.icon, description = ('Cache une mallette ICI : zone de %d m pour tous, prime au premier qui la trouve'):format(math.floor(hev.radius)),
             onSelect = function()
-                if lib.alertDialog({ header = ev.label, content = ev.text .. '\n\nTout le monde reçoit l\'annonce et le GPS vers ta position.', centered = true, cancel = true }) == 'confirm' then
-                    notify(act('event', nil, { kind = id }))
-                end
+                local H = Config.Hunt or {}
+                local r = input(hev.label, { { type = 'number', label = 'Prime (en banque)', description = ('Au-delà de %d $ : super-admin'):format(H.prize or 1500),
+                    default = H.prize or 1500, min = 100, max = H.maxPrize or 5000, required = true } })
+                if r then launch('hunt', hev, { prize = math.floor(tonumber(r[1]) or 0) }) end
             end }
     end
-    table.sort(options, function(a, b) return a.title < b.title end)
-    -- Bonus de serveur (gs_events) : même menu, plus de catégorie en double
-    for _, b in ipairs({ { 'double_xp', 'Soirée double XP (bonus serveur)', 'star' }, { 'lucky', 'Soirée chanceuse (bonus serveur)', 'clover' } }) do
-        options[#options + 1] = { title = b[2], icon = b[3], description = 'Pour tout le serveur, durée au choix', onSelect = function()
+    -- Bonus de serveur (gs_events)
+    local bonus = {}
+    for _, b in ipairs({ { 'double_xp', 'Soirée double XP', 'star' }, { 'lucky', 'Soirée chanceuse', 'clover' } }) do
+        bonus[#bonus + 1] = { title = b[2], icon = b[3], description = 'Pour tout le serveur, durée au choix', onSelect = function()
             local r = input(b[2], { { type = 'number', label = 'Durée (minutes)', default = 60, min = 5, max = 240, required = true } })
             if r then ExecuteCommand(('gsevent start %s %d'):format(b[1], r[1])) end
         end }
     end
-    options[#options + 1] = { title = 'Arrêter le bonus serveur en cours', icon = 'stop', onSelect = function() ExecuteCommand('gsevent stop') end }
-    -- V8 : météo événementielle et Halloween (admin et plus ; le serveur revérifie le rang)
+    bonus[#bonus + 1] = { title = 'Arrêter le bonus en cours', icon = 'stop', onSelect = function() ExecuteCommand('gsevent stop') end }
+    options[#options + 1] = { title = 'Bonus serveur', icon = 'star', arrow = true, description = 'Double XP, soirée chanceuse',
+        onSelect = function() show('gs_staff_bonus', 'Bonus serveur', bonus, 'gs_staff_events') end }
     if info.level >= 3 then
-        options[#options + 1] = { title = 'Météo événementielle', icon = 'cloud-bolt', arrow = true,
-            description = 'Tempête (routes fermées, interventions payées), canicule, brouillard', onSelect = function()
-                show('gs_staff_weather', 'Météo événementielle', {
+        options[#options + 1] = { title = 'Météo et saisons', icon = 'cloud-bolt', arrow = true,
+            description = 'Neige, tempête, canicule, brouillard ; Halloween', onSelect = function()
+                show('gs_staff_weather', 'Météo et saisons', {
+                    { title = 'Neige sur Los Santos', icon = 'snowflake', description = 'Ville enneigée, traces de pas et de pneus (30 à 45 min)',
+                      onSelect = function() ExecuteCommand('meteoevent snow') end },
                     { title = 'Tempête tropicale', icon = 'cloud-bolt', description = 'Routes du comté fermées, arbres et véhicules à dégager',
                       onSelect = function() ExecuteCommand('meteoevent storm') end },
                     { title = 'Canicule', icon = 'temperature-high', onSelect = function() ExecuteCommand('meteoevent heatwave') end },
                     { title = 'Brouillard épais', icon = 'smog', onSelect = function() ExecuteCommand('meteoevent fog') end },
                     { title = 'Arrêter l\'événement météo', icon = 'sun', onSelect = function() ExecuteCommand('meteoevent stop') end },
+                    { title = 'Halloween : activer', icon = 'ghost', description = 'Citrouilles sur la route (automatique du 24 oct. au 1er nov.)', onSelect = function() ExecuteCommand('halloween on') end },
+                    { title = 'Halloween : désactiver', icon = 'ban', onSelect = function() ExecuteCommand('halloween off') end },
+                    { title = 'Halloween : automatique (selon la date)', icon = 'calendar', onSelect = function() ExecuteCommand('halloween auto') end },
                 }, 'gs_staff_events')
             end }
-        options[#options + 1] = { title = 'Halloween sur la route', icon = 'ghost', arrow = true,
-            description = 'Citrouilles, auto-stoppeur fantôme (auto du 24 oct. au 1er nov.)', onSelect = function()
-                show('gs_staff_halloween', 'Halloween sur la route', {
-                    { title = 'Activer maintenant', icon = 'ghost', onSelect = function() ExecuteCommand('halloween on') end },
-                    { title = 'Désactiver', icon = 'ban', onSelect = function() ExecuteCommand('halloween off') end },
-                    { title = 'Automatique (selon la date)', icon = 'calendar', onSelect = function() ExecuteCommand('halloween auto') end },
-                }, 'gs_staff_events')
-            end }
-        options[#options + 1] = { title = 'Fait divers PNJ (police)', icon = 'magnifying-glass', arrow = true, -- V10
+        options[#options + 1] = { title = 'Police : fait divers PNJ', icon = 'magnifying-glass', arrow = true, -- V10
             description = 'Cambriolage, corps retrouvé, délit de fuite, vandalisme : la police en service est prévenue', onSelect = function()
                 show('gs_staff_fd', 'Fait divers PNJ', {
                     { title = 'Au hasard', icon = 'dice', onSelect = function() ExecuteCommand('faitdivers') end },
@@ -977,7 +1025,7 @@ local function eventsMenu()
             show('gs_staff_rumors', 'Rumeurs des joueurs', o, 'gs_staff_events')
         end }
     options[#options + 1] = { title = 'Effets sur moi (animation d\'événement)', icon = 'wand-magic-sparkles', arrow = true,
-        description = 'Super vitesse en voiture, voiture sauteuse, arc-en-ciel, super saut, gravité lunaire…', onSelect = funMenu }
+        description = 'Feux d\'artifice, confettis, super vitesse, voiture sauteuse, arc-en-ciel, gravité lunaire…', onSelect = funMenu }
     show('gs_staff_events', 'Événements', options, 'gs_staff_quick')
 end
 
@@ -1019,6 +1067,28 @@ local function playerMenu(p)
             exports.gs_cimetiere:PlayerDeath(p.id, p.name)
         end })
     add(3, { title = 'Le mettre dans un gang', icon = 'people-group', arrow = true, onSelect = function() gangsMenu(p) end })
+    -- V12.63 · Mises en scène (admin et plus) : sanction appliquée par le serveur à la fin de la scène
+    add(Config.Scenes and Config.Scenes.level or 3, { title = 'Mises en scène', icon = 'clapperboard', arrow = true,
+        description = 'Enlèvement en camionnette (expulsion), arrestation par un policier PNJ (cellule)', onSelect = function()
+            show('gs_staff_scenes', 'Mises en scène · ' .. p.name, {
+                { title = 'Enlèvement en camionnette', icon = 'van-shuttle', iconColor = '#ff4d6d',
+                  description = 'Une camionnette l\'embarque, écran noir, puis EXPULSION (motif publié comme une expulsion)', onSelect = function()
+                    local r = lib.inputDialog('Enlèvement : ' .. p.name, { { type = 'input', label = 'Motif de l\'expulsion (publié)', required = true, max = 200 } })
+                    if not r then return end
+                    if lib.alertDialog({ header = 'Enlever ' .. p.name .. ' ?', content = ('Il sera **expulsé** à la fin de la scène.\n**Motif** : %s'):format(r[1]), centered = true, cancel = true }) ~= 'confirm' then return end
+                    notify(act('kidnap', p.id, { reason = r[1] }))
+                end },
+                { title = 'Arrestation par un policier PNJ', icon = 'handcuffs', iconColor = '#5aa0ff',
+                  description = 'Plaqué, menotté, puis en cellule à Mission Row (isolement)', onSelect = function()
+                    local r = lib.inputDialog('Arrestation : ' .. p.name, {
+                        { type = 'number', label = 'Minutes de cellule', default = (Config.Scenes and Config.Scenes.arrest.minutes) or 5, min = 1, max = Config.Jail.maxMinutes, required = true },
+                        { type = 'input', label = 'Motif (publié)', required = true, max = 200 },
+                    })
+                    if not r then return end
+                    notify(act('npcarrest', p.id, { minutes = math.floor(tonumber(r[1]) or 5), reason = r[2] }))
+                end },
+            }, 'gs_staff_player')
+        end })
     add(4, { title = 'Argent', icon = 'money-bill', arrow = true, onSelect = function() moneyMenu(p) end })
     add(4, { title = 'Items', icon = 'box-open', arrow = true, onSelect = function() itemsMenu(p) end })
     -- V12.4 · Bannissement RoadLine (super-admin) : posé ici, LEVÉ depuis « Bannissements » (même hors ligne)
