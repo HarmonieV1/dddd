@@ -1107,6 +1107,12 @@ function Admin.remote(action, target, text, staff, extra, actorLevel) -- V12.63 
         Admin.logRemote(staff, 'heal', who)
         return true, who .. ' soigné.'
     end
+    if action == 'unstuck' then -- V12.63 (n° 193) : ramener au dernier endroit sûr
+        pcall(function() Security:AllowTeleport(target, 10) end)
+        TriggerClientEvent('gs_admin:client:unstuck', target)
+        Admin.logRemote(staff, 'unstuck', who)
+        return true, who .. ' ramené au dernier endroit sûr.'
+    end
     if action == 'fixveh' then
         TriggerClientEvent('gs_admin:client:fixveh', target)
         Admin.logRemote(staff, 'fixveh', who)
@@ -1236,3 +1242,14 @@ function Admin.openTickets() return openTickets() end
 
 -- Version RoadLine affichée au démarrage (console) : savoir d'un coup d'œil quelle version tourne
 CreateThread(function() print(('^5[RoadLine RP]^7 version %s'):format(GetConvar('gs_version', 'inconnue'))) end)
+
+-- V12.63 · Coincé sous la carte (n° 193) : le client le signale, le serveur vérifie (position réelle sous Config.Unstuck.z)
+-- puis autorise le déplacement (pas d'alerte anti-triche) ; le client se replace au dernier endroit sûr qu'il a noté.
+lib.callback.register('gs_admin:unstuck', function(src)
+    if not Security:RateLimit(src, 'gs_admin:unstuck', 2, 30000) then return false end
+    local ped = GetPlayerPed(src)
+    if ped == 0 or GetEntityCoords(ped).z > (Config.Unstuck and Config.Unstuck.z or -25.0) then return false end
+    pcall(function() Security:AllowTeleport(src, 10) end)
+    Security:LogStaff(('[Coincé] %s ramené au dernier endroit sûr (sous la carte)'):format(label(src)), 'staff')
+    return true
+end)

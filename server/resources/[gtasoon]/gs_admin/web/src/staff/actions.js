@@ -9,6 +9,7 @@ export const GROUPS = [
       { name: 'revive', label: 'Réanimer', icon: '♥' },
       { name: 'fixveh', label: 'Réparer le véhicule', icon: '🔧' },
       { name: 'clearheat', label: 'Effacer la recherche', icon: '★' },
+      { name: 'unstuck', label: 'Coincé : dernier endroit sûr', icon: '⤒' },
       { name: 'tp', label: 'Téléporter…', icon: '➜', fields: [{ key: 'dest', label: 'Destination', type: 'dest' }] },
     ],
   },

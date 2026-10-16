@@ -135,7 +135,7 @@ Config.Web = {
     -- le staff de rang INFÉRIEUR ; le fondateur agit sur tout le monde. Rang minimum par action ci-dessous.
     collectiveLevel = 2, codeLevel = 2,
     actionLevel = { message = 1, note = 1, heal = 1, revive = 1, fixveh = 1, ticket_claim = 1, ticket_close = 1, warn = 1,
-        freeze = 2, unfreeze = 2, jail = 2, unjail = 2, kick = 2, tp = 2, clearheat = 2, ban = 3, unban = 3, announce = 3 },
+        freeze = 2, unfreeze = 2, jail = 2, unjail = 2, kick = 2, tp = 2, clearheat = 2, ban = 3, unban = 3, announce = 3, unstuck = 1 },
     places = { -- « Téléporter vers… » (positions du jeu, à caler si besoin)
         { label = 'Hôpital Pillbox', coords = vec3(298.6, -584.4, 43.3) },
         { label = 'Commissariat Mission Row', coords = vec3(441.2, -981.9, 30.7) },
@@ -146,3 +146,7 @@ Config.Web = {
         { label = 'Paleto Bay', coords = vec3(-448.0, 6012.0, 31.7) },
     },
 }
+
+-- V12.63 · Joueur coincé sous la carte (proposition n° 193) : hors intérieur et hors de l'eau, sous `z` m pendant `seconds` s =
+-- ramené au dernier endroit sûr (noté toutes les 10 s quand il est au sol). Le staff peut aussi le faire depuis l'appli.
+Config.Unstuck = { z = -25.0, seconds = 6, fallback = vec3(215.8, -810.1, 30.7) }

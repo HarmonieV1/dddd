@@ -429,6 +429,24 @@ function relaunchOrder(conflicts, kept) {
   return out;
 }
 
+/** V12.63 · L'ordre de démarrage réel respecte-t-il déjà chaque choix (le gagnant démarré APRÈS chaque perdant) ? Si oui,
+ *  aucune relance n'est nécessaire : relancer deux gros packs figeait le serveur ~11 s juste après le démarrage.
+ *  seq(nom) = rang de démarrage (undefined = inconnu → relance par prudence). */
+function orderSatisfied(conflicts, kept, seq) {
+  for (const c of conflicts) {
+    const k = kept[c.file];
+    if (!k) continue;
+    const ks = seq(k);
+    if (ks === undefined) return false;
+    for (const r of c.resources) {
+      if (r === k) continue;
+      const rs = seq(r);
+      if (rs === undefined || rs > ks) return false;
+    }
+  }
+  return true;
+}
+
 function readMeta(raw) {
   const data = inflateRsc7(raw);
   if (!data || data.length < 0x50 || data.readUInt32LE(0x10) !== 0x50524430) return null;
@@ -702,10 +720,14 @@ function applyFusions(maps, fusionDir) {
   return written;
 }
 
-if (typeof module !== 'undefined' && module.exports) module.exports = { keptOf, relaunchOrder, KEEP_ON_CONFLICT, cleanName, deleteMapsOnDisk, pruneFusions, disableInCfg, inflateRsc7, entitiesOf, memoryMB, memorySplit, pagesSize, isVanillaName, placesOf, scanResource, conflictsOf, scanAll, labelOf, mergeOcclusion, applyFusions, RETIRED_MAPS, RETIRED_PATTERNS, RESTORED_MAPS, retiredReason, retiredLabel, readRetiredList, deleteCompanionsOnDisk, retireMap, removeCfgLines, activeEnsures, publicBlips, PUBLIC, joaat, ACTIVITY, activityOf, rscTruncated, truncatedFiles, _setLuaFs: (f) => { luaFs = f; } }; // tests Node seulement
+if (typeof module !== 'undefined' && module.exports) module.exports = { keptOf, relaunchOrder, orderSatisfied, KEEP_ON_CONFLICT, cleanName, deleteMapsOnDisk, pruneFusions, disableInCfg, inflateRsc7, entitiesOf, memoryMB, memorySplit, pagesSize, isVanillaName, placesOf, scanResource, conflictsOf, scanAll, labelOf, mergeOcclusion, applyFusions, RETIRED_MAPS, RETIRED_PATTERNS, RESTORED_MAPS, retiredReason, retiredLabel, readRetiredList, deleteCompanionsOnDisk, retireMap, removeCfgLines, activeEnsures, publicBlips, PUBLIC, joaat, ACTIVITY, activityOf, rscTruncated, truncatedFiles, _setLuaFs: (f) => { luaFs = f; } }; // tests Node seulement
 
 if (typeof GetCurrentResourceName === 'function') {
   const self = GetCurrentResourceName();
+  // V12.63 : rang de démarrage des ressources lancées après gs_admin (les maps de cfg/addons.cfg le sont toutes)
+  const startSeq = new Map();
+  let startN = 0;
+  on('onResourceStart', (name) => { startSeq.set(name, ++startN); });
   const viaLua = (ev, ...args) => {
     let r, why;
     emit(ev, ...args, (ok, err) => { r = ok; why = err; });
@@ -885,7 +907,10 @@ if (typeof GetCurrentResourceName === 'function') {
     for (const m of r.maps) if (m.activity && !m.activity.script) console.log(`^3[gs_admin] Map ${m.name} : DÉCOR SEUL. L'activité (${m.activity.what}) est un script vendu à part (aucune ressource « *${ACTIVITY[m.name].token}* » démarrée) : pas de point pour jouer. Il est dans C:\\GTASOON\\mods-tri\\scripts-a-verifier : à relire avant de l'installer. Blip affiché « (bientôt) »^7`);
     for (const m of r.maps) for (const h of m.heavy) console.log(`^3[gs_admin] Map ${m.name} : ${h.file} prend ${h.mb} Mo en mémoire (au-delà de la limite FiveM : 48 Mo graphique / 64 Mo système) : textures ou murs qui peuvent ne pas s'afficher^7`);
     const kept = keptOf(r.conflicts);
-    const relaunch = relaunchOrder(r.conflicts, kept).filter((n) => GetResourceState(n) === 'started'); // V12.53 : ordre qui respecte chaque choix
+    // V12.63 : relance seulement si l'ordre de démarrage ne respecte pas déjà chaque choix (sinon : rien, pas de gel du serveur)
+    const already = orderSatisfied(r.conflicts, kept, (n) => startSeq.get(n));
+    const relaunch = already ? [] : relaunchOrder(r.conflicts, kept).filter((n) => GetResourceState(n) === 'started'); // V12.53 : ordre qui respecte chaque choix
+    if (already && Object.keys(kept).length) console.log('[gs_admin] Conflits tranchés : ordre de démarrage déjà bon, aucune relance (pas de gel du serveur)');
     for (const n of relaunch) { StopResource(n); StartResource(n); } // relancée en dernier : sa version gagne
     for (const c of r.conflicts) {
       if (c.resolved) console.log(`^2[gs_admin] Conflit résolu : ${c.file} (${c.resources.join(' + ')}) fusionné par ${c.resolved}^7`);

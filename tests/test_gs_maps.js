@@ -365,6 +365,12 @@ fs.rmSync(tmp, { recursive: true, force: true });
   const order = M.relaunchOrder(conf, M.keptOf(conf));
   check('V12.53 : relance stand puis entrepôt (chacun garde son fichier)', order.join(',') === 'gsa_patoche_gamestand_pack,gsa_sub_patoche_storage_pack');
   check('V12.53 : ordre sans contrainte = ordre d\'origine', M.relaunchOrder([{ file: 'f', resources: ['a', 'b'], resolved: null }], { f: 'a' }).join(',') === 'a');
+  // V12.63 · ordre de démarrage réel (console du VPS : billard, stand, entrepôt) : déjà bon → aucune relance (plus de gel de 11 s)
+  const realOrder = { gsa_patoche_billiard_pack: 1, gsa_patoche_gamestand_pack: 2, gsa_sub_patoche_storage_pack: 3 };
+  check('V12.63 : ordre de démarrage déjà bon : pas de relance', M.orderSatisfied(conf, M.keptOf(conf), (n) => realOrder[n]) === true);
+  const badOrder = { gsa_patoche_billiard_pack: 3, gsa_patoche_gamestand_pack: 2, gsa_sub_patoche_storage_pack: 1 };
+  check('V12.63 : mauvais ordre : relance', M.orderSatisfied(conf, M.keptOf(conf), (n) => badOrder[n]) === false);
+  check('V12.63 : ordre inconnu : relance par prudence', M.orderSatisfied(conf, M.keptOf(conf), () => undefined) === false);
 }
 
 // V12.55 · Salle de jeu : un blip par stand, positions imposées (même si la lecture de la map ne trouve aucun lieu)

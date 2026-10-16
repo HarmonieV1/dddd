@@ -24,3 +24,8 @@
 .lmap-key.jail { background: var(--map-jail, #ff4d6d); } .lmap-key.frozen { background: var(--map-frozen, #8fb8ff); }
 @keyframes lmapPulse { 50% { box-shadow: 0 0 0 7px rgba(255, 138, 61, 0), 0 0 14px #ff8a3d; } }
 @media (prefers-reduced-motion: reduce) { .lmap-dot.wanted { animation: none; } .lmap-stage { transition: none; } }
+/* V12.63 (n° 192) : joueur qui a un ticket ouvert : anneau jaune qui clignote, bien visible sur la carte */
+.lmap-dot.ticket { outline: 3px solid var(--map-ticket, #ffd23f); outline-offset: 3px; animation: lmapTicket 1.4s infinite; }
+.lmap-key.ticket { background: transparent; border: 2px solid var(--map-ticket, #ffd23f); }
+@keyframes lmapTicket { 50% { outline-color: transparent; } }
+@media (prefers-reduced-motion: reduce) { .lmap-dot.ticket { animation: none; } }

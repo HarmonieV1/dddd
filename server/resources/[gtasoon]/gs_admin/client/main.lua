@@ -83,6 +83,34 @@ RegisterNetEvent('gs_admin:client:heal', function()
     ClearPedBloodDamage(ped)
 end)
 
+-- V12.63 · Coincé sous la carte (n° 193) : dernier endroit sûr noté toutes les 10 s ; sous la carte 6 s = ramené (serveur d'accord)
+local safe, below, lastSafeAt = nil, 0, 0
+local function backToSafe()
+    local ped, c = PlayerPedId(), safe or Config.Unstuck.fallback
+    local ent = GetVehiclePedIsIn(ped, false) ~= 0 and GetVehiclePedIsIn(ped, false) or ped
+    SetEntityCoords(ent, c.x, c.y, c.z + 0.5, false, false, false, false)
+    lib.notify({ description = 'Tu étais coincé sous la carte : ramené au dernier endroit sûr.', type = 'inform', duration = 8000 })
+end
+RegisterNetEvent('gs_admin:client:unstuck', backToSafe)
+CreateThread(function()
+    while true do
+        Wait(2000)
+        local ped = PlayerPedId()
+        local c = GetEntityCoords(ped)
+        local inside, wet = GetInteriorFromEntity(ped) ~= 0, IsEntityInWater(ped)
+        if not inside and not wet and c.z > -5.0 and not IsEntityInAir(ped) and not IsPedFalling(ped) and GetGameTimer() - lastSafeAt > 10000 then
+            safe, lastSafeAt = c, GetGameTimer()
+        end
+        if not inside and not wet and c.z < Config.Unstuck.z then
+            below = below + 2
+            if below >= Config.Unstuck.seconds then
+                below = 0
+                if lib.callback.await('gs_admin:unstuck', false) then backToSafe() end
+            end
+        else below = 0 end
+    end
+end)
+
 RegisterNetEvent('gs_admin:client:fixveh', function()
     local veh = GetVehiclePedIsIn(PlayerPedId(), false)
     if veh == 0 then return end

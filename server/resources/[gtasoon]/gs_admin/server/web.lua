@@ -125,9 +125,12 @@ end
 function Web.overview(who)
     local players = Admin.playerList()
     local replays = replayInfo()
+    local ticketOf = {} -- V12.63 (n° 192) : joueur → n° de son ticket ouvert (anneau sur la carte de l'appli)
+    for id, t in pairs(Admin.tickets or {}) do if t.status ~= 'closed' and t.src then ticketOf[t.src] = id end end
     for _, p in ipairs(players) do
         p.char = p.name; p.name = p.account
         p.replay = replays[p.id] -- { ticket, frames } : ⏪ dans l'appli
+        p.ticket = ticketOf[p.id]
     end
     local logs = {}
     for i = 1, math.min(#Admin.logs, 40) do local l = Admin.logs[i] logs[i] = { staff = l.staff, action = l.action, target = l.target, details = l.details, time = l.time } end
@@ -170,7 +173,7 @@ end
 
 -- Actions autorisées depuis l'appli (toutes revérifiées et journalisées par Admin.remote)
 local ACTIONS = { freeze = true, unfreeze = true, warn = true, message = true, kick = true, announce = true, jail = true, unjail = true,
-    revive = true, heal = true, fixveh = true, clearheat = true, note = true, tp = true, ban = true, unban = true, ticket_claim = true, ticket_close = true }
+    revive = true, heal = true, fixveh = true, clearheat = true, unstuck = true, note = true, tp = true, ban = true, unban = true, ticket_claim = true, ticket_close = true }
 
 function Web.handle(ip, body, reply, direct)
     local ok, d = pcall(json.decode, body or '')

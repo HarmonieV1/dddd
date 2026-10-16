@@ -55,8 +55,8 @@ export default function LiveMap({ players = [], selected, onSelect, src = './car
           const left = (mapX(p.x) / W) * 100, top = (mapY(p.y) / H) * 100
           if (left < 0 || left > 100 || top < 0 || top > 100) return null
           return (
-            <button key={p.id} className={`lmap-dot ${st}${selected === p.id ? ' on' : ''}`} style={{ left: `${left}%`, top: `${top}%`, '--inv': 1 / view.k }}
-              onClick={(e) => { e.stopPropagation(); pick(p.id) }} title={`${p.id} · ${p.char || p.name}`} aria-label={`${p.id} · ${p.char || p.name} (${STATE_LABEL[st]})`}>
+            <button key={p.id} className={`lmap-dot ${st}${selected === p.id ? ' on' : ''}${p.ticket ? ' ticket' : ''}`} style={{ left: `${left}%`, top: `${top}%`, '--inv': 1 / view.k }}
+              onClick={(e) => { e.stopPropagation(); pick(p.id) }} title={`${p.id} · ${p.char || p.name}${p.ticket ? ` · ticket #${p.ticket}` : ''}`} aria-label={`${p.id} · ${p.char || p.name} (${STATE_LABEL[st]})${p.ticket ? `, ticket #${p.ticket}` : ''}`}>
               <span className="lmap-tag">{p.id}</span>
             </button>
           )
@@ -69,6 +69,7 @@ export default function LiveMap({ players = [], selected, onSelect, src = './car
       </div>
       <div className="lmap-legend">
         {Object.entries(STATE_LABEL).map(([k, v]) => <span key={k}><i className={`lmap-key ${k}`} />{v}</span>)}
+        {players.some((p) => p.ticket) && <span><i className="lmap-key ticket" />Ticket ouvert</span>}
       </div>
     </div>
   )
