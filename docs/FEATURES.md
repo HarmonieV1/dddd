@@ -497,5 +497,5 @@ Traductions françaises manquantes des scripts Qbox ajoutées par METTRE-A-JOUR 
 - **Quartiers et gangs** : figure du coin, voisins vigilants, trêves entre gangs, territoires en pâtés de maisons, gangs sur projet RP.
 - **Ailleurs** : journée North Yankton un jour sur deux (vol de l'aéroport, à la place de Cayo Perico), jetons de fête foraine et
   photomaton, courses sur mesure avec véhicule imposé, gestes selon l'objet (lavabo, douche, fontaine, mer).
-- **Staff** : Lives (écrans des joueurs, replays des tickets), appli staff externe (tablette), carte en direct, rapport de fin de soirée.
+- **Staff** : Lives (écrans des joueurs, replays des tickets), appli staff externe installable (PC, téléphone, tablette, logo RoadLine), carte en direct, rapport de fin de soirée ; modération avancée (surveillance, arrivées fermées, contournement de ban, ban hors ligne).
 

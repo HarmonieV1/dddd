@@ -376,6 +376,18 @@ Résumé très condensé (le détail complet est dans `docs/ROADMAP.md`, `docs/F
   (`Config.Every` 1000, qualité 0,5), image décodée avant affichage (plus de scintillement), écran entier (`object-fit: contain`),
   demande suivante enchaînée, envois latents 3× plus rapides ; appli staff inchangée. North Yankton : pas de grande carte dans
   GTA (menu pause) : prévenu à l'atterrissage.
+  **Fin de soirée (16/10)** : (1) **organisateur de courses** : le [E] des points gs_markers ne marche qu'à pied à 2,5 m, alors que
+  « Avec ma voiture » exige d'être au volant → rien ne s'ouvrait. gs_races affiche son propre [E] au volant dans le rayon
+  d'inscription (`organizerReach` − 1 m, klaxon coupé), [E] à pied porté à 3,5 m ; inscription gardée 2 min si le placement
+  rate, départ posé hors route accepté, raisons en F8. (2) **Appli staff installable** : icônes au logo (R néon : 192, 512,
+  maskable, apple-touch 180, favicon), manifeste complet (`id`, `display_override`, catégories), bouton « Installer l'appli »
+  (`beforeinstallprompt`) et marche à suivre iPhone ; servie par le VPS, aucun site à part. (3) **Modération avancée**
+  (admin et plus, `gs_admin/server/moderation.lua`, `Config.Moderation`, propositions 197 à 200) : surveillance (KVP
+  `gs_admin:watch:<licence>`), fermeture des arrivées (mémoire, 60 min max, export `ArrivalCheck` lu par gs_onboarding),
+  contournement de ban (KVP `gs_admin:tokban:<empreinte>` / `bantok:<licence>`, jetons FiveM + identifiants sauf IP et licence),
+  départs récents + ban hors ligne ; branché dans F11 (Modération avancée, fiche), F10 (Serveur, fiche) et l'appli (Sanctions,
+  fiche ; `Moderation.remote`, `Config.Web.actionLevel`). Tests : test_gs_admin (246), test_gs_races (56) ; check_links lit
+  moderation.lua. Propositions D11 : n° 202 à 246.
 - **V12.62** (15/10/2026, session de secours) — propositions choisies + relecture complète du gros patch avant le backtest :
   (1) **Lives** : ▦ grille, « ⇢ TP » (action `goto` de gs_admin), **replay 30 s** (n° 137) : tant qu'un ticket est ouvert,
   20 images (1,5 s) de l'auteur et du joueur nommé (« /report 12 … », gs_admin `ReportedPlayers`) gardées EN MÉMOIRE, effacées à

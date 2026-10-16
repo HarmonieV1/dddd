@@ -28,6 +28,7 @@ Sans policier en service, le shérif peut tenir un **barrage** sur les routes ho
 **🏁 Courses et véhicules**
 • Courses sur mesure : l'organisateur peut **imposer un véhicule** ; sur la ligne, E relance le départ.
 • Le Cyclone plafonne à 210 km/h.
+• L'organisateur de courses répond enfin quand tu es au volant : approche-toi et appuie sur E.
 
 **🌐 Le site**
 Le **vol du jour** s'affiche dans « En ce moment en ville ».

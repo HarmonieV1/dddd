@@ -45,7 +45,8 @@ la ligne `set gs_admin_web_password "…"` dans `server-data\cfg\secrets.cfg` (j
   Le code s'affiche une fois : se connecter avec ce code (le pseudo est celui du code).
 - Un rang agit sur les joueurs et sur le staff de **rang inférieur** ; le **fondateur agit sur tout le monde**.
 - Rang minimum par action (`Config.Web.actionLevel`) : message, note, soigner, réanimer, réparer, avertir, tickets = 1 ;
-  geler, isoler, expulser, téléporter, effacer la recherche = 2 ; bannir, débannir, annonce = 3.
+  geler, isoler, expulser, téléporter, effacer la recherche = 2 ; bannir, débannir, annonce, surveillance, ban hors ligne = 3 ;
+  fermer les arrivées = 4.
 - Changer le mot de passe collectif garde les codes avec rang (efface seulement les anciens codes sans rang).
 
 ## Actions sur un joueur
@@ -54,6 +55,9 @@ la ligne `set gs_admin_web_password "…"` dans `server-data\cfg\secrets.cfg` (j
   `Config.Unstuck` ; retour automatique après 6 s sous la carte ; même bouton dans F10 et F11 → Joueurs).
 - **Contrôle** : geler / dégeler, message privé, note staff, isoler (minutes + motif), libérer.
 - **Sanctions** : avertir, expulser, bannir (1, 3, 7, 14, 30 jours ou définitif) — motif obligatoire, publié dans #sanctions.
+- **Modération avancée** (V12.63, admin et plus) : fiche → **Mettre sous surveillance** / **Lever la surveillance** ; onglet
+  **Sanctions** → arrivées (fermer 1 à 60 min / rouvrir : super-admin), joueurs surveillés, **partis récemment → bannir hors ligne**.
+  Rangs : surveillance et ban hors ligne = admin (3) ; fermer les arrivées = super-admin (4). Détails : `docs/ADMIN.md`.
 - Garde-fou : aucune sanction ni téléportation depuis l'appli sur un membre du staff, quel que soit son rang (`Config.Web.protectLevel`).
   Les durées (isolement, bannissement) doivent être des nombres entiers.
 - Lieux de téléportation : `gs_admin/shared/config.lua` → `Config.Web.places` (déplaçables via F11 → Déplacer un point).

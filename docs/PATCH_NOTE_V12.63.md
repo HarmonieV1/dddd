@@ -4,7 +4,7 @@
 > Ce qui précède (nuit du 15 au 16/10 : appli staff externe, outils OVH, mur des légendes, trêves, figure du coin, diaporama du
 > site…) est dans `docs/PATCH_SESSION_15-10.md`. Version prête à coller sur Discord : `docs/PATCH_NOTE_V12.63_DISCORD.txt`.
 > Installation : METTRE-A-JOUR → DIAGNOSTIC-MODS (O) → VIDER-CACHE-FIVEM → METTRE-A-JOUR-OVH.
-> Rien n'a encore été vu en jeu : fiche de backtest, section **4j**.
+> Rien n'a encore été vu en jeu : fiche de backtest, sections **4j**, **4k** et **4l**.
 
 ## 1. Pour les joueurs
 | Nouveauté | Comment ça marche |
@@ -17,6 +17,7 @@
 | **Gestes selon l'objet** | Alt sur un lavabo (mains, visage), une douche, une fontaine (boire) ; dans la mer, E pour se rincer. Le sang et la saleté partent ; les secours peuvent nettoyer tes plaies. |
 | **Poubelles** | Une seule option : la fouille animée (l'ouverture de l'inventaire de la benne a disparu). |
 | **Courses sur mesure** | L'organisateur peut imposer un véhicule ; inscription à 15 m de lui ; sur la ligne, E relance le départ et X annule. |
+| **Organisateur de courses réparé** | Au volant de ta voiture près de lui, [E] ouvre enfin son menu (avant, rien ne se passait) ; à pied, [E] à côté de lui. |
 | **Gangs** | Plus de gangs créés d'office (un gang naît d'un projet RP validé par le staff) ; territoires découpés en pâtés de maisons. |
 | **Cyclone** | Vitesse maximale ramenée à 210 km/h. |
 | **Coincé sous la carte** | Tu es ramené tout seul au dernier endroit sûr après 6 secondes. |
@@ -40,6 +41,11 @@
 | **Animalerie : postes** | F11 → Monde et lieux → Déplacer un point | « Animalerie · Comptoir / Réserve / Gamelles / Cages / Toilettage » à placer dans la boutique (sinon rangés autour de la map). |
 | **North Yankton : points** | F11 → Déplacer un point | Location de Ludendorff, café, serveuse, shérif, comptoir du retour : à caler si besoin (seulement les jours North Yankton). |
 | **Journal staff** | F10 → Journal | Hommages peints, coincés ramenés, choix de destination du vol. |
+| **Appli installable** | appli → écran de connexion | Bouton « 📲 Installer l'appli » (PC, Android) ou Partager → « Sur l'écran d'accueil » (iPhone) : icône au logo RoadLine, plein écran. |
+| **Surveillance** (admin) | F11 → fiche, F10 → fiche, appli → fiche | Motif ; le staff en service est prévenu à chacune de ses arrivées ; 👁 dans les listes. |
+| **Fermer les arrivées** (super-admin) | F11 → Modération avancée, F10 → Serveur, appli → Sanctions | Raid ou attaque : seul le staff entre, 60 min maximum, rouvre seul. |
+| **Partis récemment → ban hors ligne** | mêmes endroits | Le joueur qui quitte juste après un RDM se bannit quand même (super-admin en jeu, admin dans l'appli). |
+| **Contournement de ban** | automatique | Un nouveau compte qui arrive avec le PC ou le Discord d'un banni = alerte au staff (ou refus : `Config.Moderation.evasion`). |
 
 ## 3. Pour le fondateur (serveur, mods, docs)
 | Quoi | Ce que ça change |
@@ -47,7 +53,7 @@
 | **Démarrage plus rapide** | Plus de gel de ~11 s après chaque démarrage : les maps en conflit ne sont relancées que si leur ordre de démarrage n'est pas déjà le bon. |
 | **DIAGNOSTIC-MODS** | **Même map en deux versions** (archive « _1 » retéléchargée) : la version _1 en pause, l'original déjà réglé reste ; section **textures / modèles ≥ 32 Mo** (IMPORTER-MODS allège déjà seul les .ytd > 48 Mo). |
 | **Nouvelles maps du jour** | Shadow Complex revient (archive _1 ; la raison de son retrait — Plasmakart — n'existe plus) ; animalerie _1 = copie d'un pack déjà réglé → mise en pause par DIAGNOSTIC-MODS. |
-| **Docs** | État des lieux avant l'ouverture (`docs/ETAT_DES_LIEUX_16-10.md`), propositions n° 167 à 196, guides, fiche de backtest (4j), documentation à jour. |
+| **Docs** | État des lieux avant l'ouverture (`docs/ETAT_DES_LIEUX_16-10.md`), propositions n° 167 à 246 (dont 45 nouvelles ce soir), guides, fiche de backtest (4j), documentation à jour. |
 
 ## 4. Encore à faire / à vérifier
 - **Positions à caler en jeu** (F11 → Monde et lieux → Déplacer un point) : photomaton (gs_casino), postes de l'animalerie (gs_animalerie), location de Ludendorff (gs_rental), café et comptoir du vol retour à North Yankton (gs_world).

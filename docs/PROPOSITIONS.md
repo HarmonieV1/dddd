@@ -325,6 +325,85 @@ Avant l'ouverture : 149, 155, 157, 161, 165 et 166 (✚, sans nouveau mapping) s
 
 Avant l'ouverture : 174, 181, 193, 195 et 196 (✚, sans nouveau mapping ni nouveau métier) sont les plus utiles et les plus sûrs.
 
+## D11. Suite (V12.63, 16/10 soir) — modération avancée livrée, puis 45 idées tous domaines
+
+Livré ce soir (demande du fondateur : outils réservés admin / super-admin / fondateur, dans F11, F10 et l'appli) :
+
+| # | Proposition | Effort | S'appuie sur |
+|---|---|---|---|
+| 197 | ✅ **livrée V12.63** · **Joueur sous surveillance** : un compte marqué (motif) → le staff en service est prévenu à chacune de ses arrivées ; 👁 dans les listes | ✚ | gs_admin (F11, F10, appli) |
+| 198 | ✅ **livrée V12.63** · **Fermer les arrivées** pendant un raid ou une attaque : seul le staff entre, réouverture automatique (60 min max) | ✚ | gs_admin, gs_onboarding |
+| 199 | ✅ **livrée V12.63** · **Contournement de ban** : empreintes du PC et comptes liés (Discord, FiveM…) notés à chaque ban, jamais l'IP ; alerte (ou refus) si un autre compte arrive avec | ✚✚ | gs_admin, gs_onboarding |
+| 200 | ✅ **livrée V12.63** · **Partis récemment → ban hors ligne** : le rage-quit après un RDM se bannit quand même | ✚ | gs_admin |
+| 201 | ✅ **livrée V12.63** · **Appli staff installable** (PC, Android, iPhone) avec le logo RoadLine, bouton « Installer » | ✚ | appli staff |
+
+### Général — confort, vie quotidienne, ville vivante
+| # | Proposition | Effort | S'appuie sur |
+|---|---|---|---|
+| 202 | **Loterie du dimanche** : ticket au 24/7, tirage diffusé par Weazel, cagnotte = part des ventes (aucun argent créé) | ✚ | gs_casino, gs_social, site |
+| 203 | **Bulletin météo de la veille** : Weazel annonce la pluie ou la tempête du lendemain (gs_weather tire la météo à l'avance) | ✚ | gs_weather, gs_social |
+| 204 | **Défis du jour** : trois petits objectifs quotidiens (livrer, pêcher, aider un inconnu), série de jours récompensée | ✚ | gs_quests |
+| 205 | **Anniversaire du personnage** : âge sur la carte d'identité, rappel aux amis le jour J, gâteau en vente au 24/7 | ✚ | gs_civil, gs_phone |
+| 206 | **Salle de sport** : séances animées qui donnent un bonus d'endurance pour la journée ; coach joueur payé à la séance | ✚ | gs_vie, gs_business |
+| 207 | **Salon de coiffure tenu par un joueur** : le coiffeur propose la coupe, le client valide (et paie) | ✚ | gs_business, apparence |
+| 208 | **Drive-in du vendredi** : écran géant qui diffuse les meilleurs clips du serveur, voitures garées face à l'écran | ✚✚ | gs_events, DUI |
+| 209 | **Golf du Country Club** : parcours en mini-jeu, cartes de score sur le site | ✚✚ | site, gs_stats |
+| 210 | **Capsule temporelle** : enterrer un objet et un message, déterrable dans 30 jours par celui qui suit l'indice | ✚ | gs_memoire |
+| 211 | **Livreur de journaux** : tournée à vélo au petit matin ; le journal reprend les vrais faits divers de la veille | ✚ | gs_faitsdivers, gs_jobs |
+| 212 | **Banque alimentaire** : dons de nourriture redistribués aux persos sans le sou, réputation civique pour les donateurs | ✚ | gs_vie, gs_reputation |
+
+### Légal — métiers, institutions, économie
+| # | Proposition | Effort | S'appuie sur |
+|---|---|---|---|
+| 213 | **Élection du maire** : vote au bureau de vote (un par compte), mandat d'un mois, le maire règle 2 ou 3 curseurs (taxe, budget police) | ✚✚ | gs_civil, gs_economy |
+| 214 | **Douanes du port** : métier légal face à la contrebande, fouille aléatoire des conteneurs, saisies revendues aux enchères | ✚✚ | gs_smuggling, gs_auction |
+| 215 | **Taxe foncière légère** chaque semaine selon le standing du quartier : finance la caisse de la mairie (aucune création d'argent) | ✚ | gs_economy, gs_city |
+| 216 | **Permis bateau et licence de pilote** : examens à l'auto-école, contrôle par les garde-côtes ou à l'aéroport | ✚ | gs_driving |
+| 217 | **Université du soir** : formations payantes (droit, médecine, mécanique) qui débloquent les grades supérieurs des métiers | ✚✚ | gs_jobs, gs_civil |
+| 218 | **Agent immobilier** : un joueur fait visiter et touche une commission sur chaque vente | ✚ | logement, gs_furniture |
+| 219 | **Marché fermier du dimanche** : les récoltes vendues en direct aux joueurs, plus cher qu'au grossiste | ✚ | gs_harvest, gs_market |
+| 220 | **Garde-côtes** : patrouille en bateau, secours en mer, saisies au large de Cayo et de North Yankton | ✚✚ | gs_police, gs_world |
+| 221 | **Carte grise** : chaque voiture a un historique de propriétaires consultable par la police et les garages | ✚ | gs_tuning, gs_police |
+| 222 | **Coursier de nuit** : livraisons urgentes entre commerces joueurs, prix selon la distance et l'heure | ✚ | gs_jobs, gs_business |
+| 223 | **Animalerie (suite)** : adoption d'un chien qui suit son maître, à nourrir, à faire soigner chez le vétérinaire | ✚✚ | gs_animalerie |
+
+### Illégal — gangs, trafics, criminalité
+| # | Proposition | Effort | S'appuie sur |
+|---|---|---|---|
+| 224 | **Vol de cuivre** : arracher les câbles d'un chantier ou d'un poteau provoque une petite panne dans le quartier (et une enquête) | ✚ | gs_city, gs_evidence |
+| 225 | **Casse auto clandestine** : démonter une voiture volée en pièces revendues ; le numéro de série peut être retrouvé | ✚✚ | gs_tuning, gs_evidence |
+| 226 | **Plantation repérée par la facture d'électricité** : une culture en intérieur fait grimper la conso, un indice pour la police | ✚ | gs_drugs, logement |
+| 227 | **Piratage de distributeur** : mini-jeu sur un ATM la nuit, alarme si raté, caméra qui filme le visage | ✚✚ | gs_bank, gs_cctv |
+| 228 | **Transfert de détenu attaquable** : un fourgon emmène un condamné, son gang peut tenter de le libérer (validé par le staff) | ✚✚ | gs_justice, gs_gangs |
+| 229 | **Receleur nomade** : il change d'adresse chaque jour, seules les rumeurs disent où il est | ✚ | gs_rumors, gs_blackmarket |
+| 230 | **Pot-de-vin au policier PNJ** : sans policier en service, acheter le contrôleur réduit l'amende mais peut ouvrir une enquête | ✚ | gs_wanted, gs_roadside |
+| 231 | **Drone de repérage** : vue aérienne limitée en portée et en batterie, pour gangs et police, abattable | ✚✚ | gs_heists, gs_police |
+| 232 | **Livraisons vers North Yankton** : contrebande par avion les jours de neige, plus risquée, mieux payée | ✚ | gs_world, gs_smuggling |
+| 233 | **Dette de jeu** : un joueur ruiné au casino peut emprunter au casino clandestin, remboursement exigé par les gangs | ✚ | gs_casino, gs_gangs |
+| 234 | **Repaire déménagé** : une planque trop souvent perquisitionnée doit changer d'adresse (sinon bonus de chaleur) | ✚ | gs_hideouts, gs_wanted |
+
+### Serveur et staff
+| # | Proposition | Effort | S'appuie sur |
+|---|---|---|---|
+| 235 | **Notifications de l'appli staff** même fermée (nouveau ticket, alerte anti-triche, contournement de ban) sur téléphone et PC | ✚✚ | appli staff (installable) |
+| 236 | **Staff de garde** : planning dans l'appli ; celui de garde est prévenu si un ticket reste 5 min sans réponse | ✚ | appli staff, gs_discord |
+| 237 | **File d'attente prioritaire** quand le serveur est plein (staff, anciens, whitelistés), code maison à la connexion | ✚✚ | gs_onboarding |
+| 238 | **Sondages en jeu** : le staff pose une question, les joueurs répondent d'un clic, résultats dans l'appli | ✚ | gs_admin, gs_phone |
+| 239 | **Parrainage** : un ancien parraine un nouveau, petit bonus pour les deux après 10 h de jeu ensemble | ✚ | gs_onboarding, gs_stats |
+| 240 | **Santé du serveur dans l'appli** : ressources qui coûtent le plus, joueurs au ping élevé, mémoire, au même endroit | ✚ | appli staff |
+| 241 | **Fil de discussion sur un ticket** : les membres du staff échangent des notes internes avant de répondre | ✚ | appli staff |
+
+### Signatures — « la ville se souvient »
+| # | Proposition | Effort | S'appuie sur |
+|---|---|---|---|
+| 242 | **Reconstitution au procès** : le juge projette les photos de la scène de crime et la poursuite filmée devant la salle | ✚ | gs_evidence, gs_justice |
+| 243 | **Voiture à histoire** : une voiture volée trois fois devient « connue » des garages et de la police | ✚ | gs_tuning, gs_memoire |
+| 244 | **Hiver à North Yankton** : les jours de neige, un événement d'hiver (luge, course sur glace, chasse au cerf) | ✚✚ | gs_world, gs_events |
+| 245 | **Ancien du quartier** : au bout de 30 jours dans le même quartier, les PNJ saluent et les commerçants font une remise | ✚ | gs_city, gs_reputation |
+| 246 | **Plaque commémorative** : le staff dévoile une plaque pour un joueur marquant (départ, record), visible pour toujours | ✚ | gs_memoire, gs_cimetiere |
+
+Avant l'ouverture, les plus sûres (✚, sans nouveau mapping) : 202, 204, 211, 215, 221, 224, 230, 236 et 240.
+
 ---
 À coller à la suite de la section B dans `C:\Users\STEPHANE\Desktop\Base STEVEN\roadline-repo\docs\PROPOSITIONS.md` (nouvelle section D),
 puis tri par le fondateur comme pour les 57 premières. Rappel du cap décidé le 11/10 : pas de nouveau gros système avant le 20/10 ;

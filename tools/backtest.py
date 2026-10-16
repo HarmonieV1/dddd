@@ -139,6 +139,15 @@ SESSIONS = [
         ('Animalerie, staff : F11 → Monde et lieux → Déplacer un point → « Animalerie · Comptoir / Réserve / Gamelles / Cages / Toilettage » : placer chaque poste dans la boutique (les animaux suivent)', 'Staff', 3),
         ('Animalerie, en service : Réserve → carton porté → Gamelles (payé) ; Cages (balai) ; Toilettage ; refaire tout de suite = « reviens dans … s » ; client au comptoir après quelques minutes → Servir (payé + pourboire)', 'Seul', 2),
     ]),
+    ('4l · V12.63 — course, appli installable, modération avancée (15 min)', [
+        ('Courses : AU VOLANT de sa voiture, à moins de 14 m de l\'organisateur → « [E] Parler à l\'organisateur de courses » en bas de l\'écran → menu → « Avec ma voiture » → placé sur la ligne → départ (si refus : la raison s\'affiche, aussi en F8 « [gs_races] … »)', 'Seul', 3),
+        ('Courses à pied : [E] à côté de l\'organisateur → « Voiture prêtée » → mis dedans sur la ligne → départ', 'Seul', 2),
+        ('Appli staff en https sur PC (Chrome / Edge) : bouton « 📲 Installer l\'appli » sur l\'écran de connexion → icône R néon dans le menu Démarrer ; Android : même bouton ; iPhone : Partager → « Sur l\'écran d\'accueil »', 'Seul', 2),
+        ('Surveillance (admin) : F11 → Joueurs → un joueur → « Mettre sous surveillance » (motif) → 👁 dans les listes ; il se reconnecte → alerte au staff en service ; « Lever la surveillance » (aussi F10 → fiche et appli → fiche)', '2', 2),
+        ('Fermer les arrivées (super-admin) : F11 → Modération avancée → Fermer (5 min) → un ami non staff qui se connecte est refusé avec le motif ; le staff entre ; réouverture seule à la fin (ou « Rouvrir » ; aussi F10 → Serveur et appli → Sanctions)', '2', 3),
+        ('Partis récemment (super-admin) : un ami se déconnecte → F11 → Modération avancée → Partis récemment → Bannir 1 jour → il est refusé à la connexion ; le débannir (F11 → Bannissements)', '2', 2),
+        ('Contournement de ban : après le test précédent, se connecter avec un AUTRE compte FiveM sur le même PC que le banni → alerte « Contournement de ban ? » au staff (il entre : mode alerte)', '2', 1),
+    ]),
     ('5 · Obligatoire avant d\'ouvrir', [
         ('SAUVEGARDER-BDD.bat puis RESTAURER-BDD.bat sur un joueur ; redémarrage de 6 h : annonces 15 / 5 / 1 min', 'Staff', 3),
         ('Mode staff : vol libre / invisible SANS alerte anti-triche ; F10 tickets et sanctions ; carkill 2 fois → alerte', 'Staff', 3),

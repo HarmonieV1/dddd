@@ -170,6 +170,17 @@ Détail version par version : `docs/PATCH_SESSION_15-10.md` ; patch note de la s
 - **Appli staff externe** : remplace l'ancien panneau mobile décrit plus haut. Tout est dans `docs/APPLI_STAFF.md` (connexion, rangs,
   actions, carte avec les tickets, Lives hors jeu). Mot de passe collectif / codes avec rang : GERER-OVH → 20 (M / A).
 - **F10** : onglet **Carte** (joueurs en direct) ; action « Coincé : dernier endroit sûr ».
+- **Modération avancée** (V12.63, admin et plus ; `gs_admin/server/moderation.lua`, `Config.Moderation`) :
+  F11 → **Modération avancée**, F10 → **Serveur** (carte « Modération avancée ») et fiche joueur, appli → **Sanctions** et fiche.
+  - **Surveillance** (admin) : motif obligatoire, invisible du joueur ; le staff en service est prévenu à chacune de ses arrivées ;
+    👁 dans les listes. Gardée au redémarrage (KVP). Jamais sur un membre du staff de rang égal ou supérieur.
+  - **Fermer les arrivées** (super-admin ; appli : super-admin) : 1 à 60 min, motif affiché à ceux qui tentent d'entrer ; le staff
+    entre toujours ; rouvre tout seul à la fin. Contrôle fait par gs_onboarding à la connexion (export `ArrivalCheck`).
+  - **Partis récemment** (admin) et **ban hors ligne** (super-admin en jeu, admin dans l'appli) : les 50 dernières déconnexions
+    (hors staff, vidées au redémarrage) ; un joueur revenu en ville se bannit depuis sa fiche.
+  - **Contournement de ban** : à chaque ban (F10/F11, appli, anti-triche, hors ligne), les jetons FiveM du PC et les comptes liés
+    (Discord, FiveM, Xbox…) sont notés — jamais l'adresse IP ni la licence Rockstar. Un autre compte qui arrive avec l'une
+    d'elles = alerte au staff et au journal ; `evasion = 'block'` = arrivée refusée. Débannir efface ces empreintes.
 - **F11 → Joueurs → un joueur** : « Coincé : ramener au dernier endroit sûr » (helper et plus) ; « Mort RP : tombe au cimetière ».
 - **F11 → Monde et lieux** (super-admin et plus) : **Destination du vol de l'île** (journée North Yankton : alternance, Cayo ou North
   Yankton tous les jours ; joueurs sur place rapatriés), Courses (véhicule imposé), Gangs, Blips en double, Déplacer un point.
