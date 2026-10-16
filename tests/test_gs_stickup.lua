@@ -74,5 +74,23 @@ ok, msg = cb('gs_stickup:begin', 1, 'street'); step()
 check('plafond journalier', not ok)
 check('zones : caisse + guichets', Stickup.zones().shop1 and Stickup.zones().fleeca_legion.kind == 'teller')
 
+-- V12.63 · Avis du commerçant en vitrine (n° 157) : caméra qui filme = avis 24 h, deux détails au plus, jamais le nom
+do
+    provide('gs_wanted', { ReportCrime = function() return true end, Describe = function() return 'veste rouge, casquette noire, tatouage au cou, Solo' end })
+    local realState = GetResourceState
+    GetResourceState = function(r) if r == 'gs_wanted' then return 'started' end return realState and realState(r) or 'missing' end
+    local realRandom = math.random
+    math.random = function(a, b) if a == nil then return 0.99 end return realRandom(a, b) end
+    check('caméra qui n\'a rien filmé : pas d\'avis', Stickup.notice(1, 'shop1', Stickup.zones().shop1) == false)
+    math.random = function(a, b) if a == nil then return 0.1 end return realRandom(a, b) end
+    check('caméra qui a filmé : avis en vitrine', Stickup.notice(1, 'shop1', Stickup.zones().shop1) == true)
+    local n = (GlobalState.gsShopNotices or {})[1]
+    check('avis : deux détails flous, jamais le nom', n and n.label == 'Supérette' and n.desc == 'veste rouge, casquette noire' and not n.desc:find('Solo'))
+    advance((Config.ShopNotice.hours * 3600 + 60) * 1000)
+    Stickup.publishNotices()
+    check('avis retiré au bout de 24 h', #(GlobalState.gsShopNotices or {}) == 0)
+    math.random = realRandom
+    GetResourceState = realState
+end
 io.write(('\n%d réussis, %d échoués\n'):format(passed, failed))
 os.exit(failed == 0 and 0 or 1)

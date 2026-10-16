@@ -4,16 +4,19 @@ local Security = exports.gs_security
 local Bridge   = exports.gs_bridge
 local F = Config.Fugitive
 
-Fugitive = { list = {} } -- [src] = { cid, name, title, desc, bounty, played, lastTick, since }
+Fugitive = { list = {}, torn = {} } -- [src] = { cid, name, title, desc, bounty, played, lastTick, since, at } ; torn[clé d'affiche] = recollée à (V12.63)
 
 local function now() return os.time() end
 
 local function publish()
     local out = {}
     for src, f in pairs(Fugitive.list) do
-        out[#out + 1] = { id = src, title = f.title, desc = f.desc, bounty = f.bounty, left = math.max(0, F.hours * 3600 - f.played) }
+        out[#out + 1] = { id = src, title = f.title, desc = f.desc, bounty = f.bounty, left = math.max(0, F.hours * 3600 - f.played), at = f.at } -- V12.63 : affiche sur place
     end
     GlobalState.gsFugitives = out
+    local torn, t = {}, now()
+    for k, untilAt in pairs(Fugitive.torn) do if untilAt > t then torn[k] = true else Fugitive.torn[k] = nil end end
+    GlobalState.gsPostersTorn = torn
 end
 
 local function legends()
@@ -33,6 +36,9 @@ function Fugitive.start(src)
     local bounty = F.bountyBase + heat * F.bountyPerHeat
     Fugitive.list[src] = { cid = cid, name = Bridge:GetName(src) or '?', title = known and (Bridge:GetName(src) or 'Inconnu') or 'Individu non identifié',
         desc = desc, bounty = bounty, played = 0, lastTick = now(), since = now() }
+    local c = GetEntityCoords(GetPlayerPed(src)) -- V12.63 : une affiche collée là où la cavale commence (affiches recollées partout)
+    Fugitive.list[src].at = { x = math.floor(c.x * 10) / 10, y = math.floor(c.y * 10) / 10, z = math.floor(c.z * 10) / 10 }
+    Fugitive.torn = {}
     publish()
     TriggerClientEvent('gs_wanted:client:fugitive', -1, Fugitive.list[src].title, bounty)
     TriggerEvent('gs_wanted:server:fugitive', Fugitive.list[src].title, bounty) -- V10 : Radio Los Santos
@@ -89,6 +95,33 @@ function Fugitive.tick()
     publish()
 end
 
+--- V12.63 · Position d'une affiche : 'p3' (affiche fixe n° 3) ou 's12' (sur place, cavale du joueur 12)
+function Fugitive.posterAt(key)
+    if type(key) ~= 'string' then return nil end
+    local i = math.tointeger(tonumber(key:match('^p(%d+)$')))
+    if i and F.posters[i] then return F.posters[i] end
+    local s = math.tointeger(tonumber(key:match('^s(%d+)$')))
+    local f = s and Fugitive.list[s]
+    if f and f.at then return vec3(f.at.x + 0.0, f.at.y + 0.0, f.at.z + 0.0) end
+    return nil
+end
+
+--- V12.63 · Arracher une affiche (proposition n° 149) : amende pour un civil, gratuit pour la police en service
+function Fugitive.tear(src, key)
+    if not next(Fugitive.list) then return false, 'Plus d\'avis de recherche ici.' end
+    local at = Fugitive.posterAt(key)
+    if not at then return false, 'Affiche introuvable.' end
+    if Fugitive.torn[key] and Fugitive.torn[key] > now() then return false, 'Déjà arrachée.' end
+    if not Security:InRange(src, at, F.tearReach or 3.0) then return false, 'Approche-toi de l\'affiche.' end
+    Fugitive.torn[key] = now() + (F.tearMinutes or 30) * 60
+    publish()
+    local job = Bridge:GetJob(src)
+    if job and job.name == 'police' and job.onduty then return true, 'Affiche retirée (police).' end
+    local fine = math.floor(tonumber(F.tearFine) or 300)
+    if not Bridge:RemoveMoney(src, 'bank', fine, 'amende : affiche officielle arrachée') then Bridge:RemoveMoney(src, 'cash', fine, 'amende : affiche officielle arrachée') end
+    return true, ('Affiche arrachée. Un agent de la ville passait par là : amende de %d $.'):format(fine)
+end
+
 --- Citoyen chasseur de primes : livre le fugitif à terre devant un commissariat
 function Fugitive.claim(src, target)
     target = tonumber(target)
@@ -115,7 +148,8 @@ lib.callback.register('gs_wanted:fugitive', function(src, action, target)
     if not Security:RateLimit(src, 'gs_wanted:fugitive', 3, 5000) then return false, 'Doucement.' end
     if action == 'start' then return Fugitive.start(src)
     elseif action == 'claim' then return Fugitive.claim(src, target)
-    elseif action == 'legends' then return true, legends() end
+    elseif action == 'legends' then return true, legends()
+    elseif action == 'tear' then return Fugitive.tear(src, target) end -- V12.63 : target = clé de l'affiche
     return false
 end)
 

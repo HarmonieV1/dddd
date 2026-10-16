@@ -313,6 +313,11 @@ Résumé très condensé (le détail complet est dans `docs/ROADMAP.md`, `docs/F
   gs_admin/maps.js : après le contrôle d'intégrité, plus de relecture complète des maps si rien n'a été arrêté (hitch de 4,3 s en
   jeu dans la console du VPS). DIAGNOSTIC-MODS : section « COPIES EN DOUBLE » (mod dont tous les fichiers, octet pour octet, sont
   déjà dans un autre, packs protégés compris) → pause réversible, comme les voitures en double.
+  **Idées choisies (n° 148, 149, 152, 157, 161, 163)** : Mur des légendes (gs_wanted, `legendWall`), affiches de cavale sur place +
+  arrachables (`Fugitive.tear`, `GlobalState.gsPostersTorn`), trêve entre gangs (gs_gangs/server/truce.lua, KVP `gs_truces`, rupture
+  détectée côté serveur comme les guerres), figure du coin (gs_city/server/figure.lua, remise via gs_economy, KVP par personnage),
+  avis du commerçant (gs_stickup, `GlobalState.gsShopNotices`, 24 h), fausse alerte (gs_cabines, `/faussealerte`, amende différée
+  en KVP si l'appelant est absent). Tests : test_gs_gangs_truce, test_gs_city_figure, + cabines / wanted / stickup.
   METTRE-A-JOUR-OVH compare le contenu des scripts du zip et du PC (même numéro de version mais correctif non installé sur le
   PC = proposé avant l'envoi ; avant, les anciens fichiers du PC repartaient au VPS sans le voir).
 - **V12.62** (15/10/2026, session de secours) — propositions choisies + relecture complète du gros patch avant le backtest :

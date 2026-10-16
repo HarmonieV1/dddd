@@ -227,6 +227,19 @@ def build():
                   'verse au dossier (V12.62).',
                   '<b>Grosse cavale</b> (3 étoiles de la police IA) : un hélicoptère te suit, projecteur la nuit, et le site annonce la poursuite '
                   '« en direct » (le quartier, jamais ton nom).'])
+    s += [Paragraph('Nouveautés de la ville (V12.63)', H3)]
+    s += bullets(['<b>Mur des légendes</b> devant le commissariat de Mission Row : les noms de ceux qui ont tenu une cavale. '
+                  'Le dernier est écrit au-dessus du mur.',
+                  '<b>Avis de recherche</b> : pendant une cavale, une affiche est aussi collée là où elle a commencé. '
+                  'L\'arracher coûte 300 $ d\'amende (gratuit pour la police) ; elle est recollée 30 min plus tard.',
+                  '<b>Figure du coin</b> : tes missions, achats et ventes dans un quartier y font monter ta cote. '
+                  'Au-delà d\'un seuil, les habitants te saluent et les commerces du quartier te font 5 % de remise.',
+                  '<b>Avis du commerçant</b> : un commerce braqué filmé par sa caméra affiche 24 h un avis avec une image floue '
+                  'du braqueur (deux détails de sa tenue, jamais son nom).',
+                  '<b>Fausse alerte</b> : un faux appel à la police depuis une cabine peut coûter 2 500 $ si l\'appel est retrouvé '
+                  '(cabine sur écoute ou filmée).',
+                  '<b>Gangs : trêve</b> (menu Gang → Trêves, cadres) : 48 h sans guerre entre deux gangs. Mettre l\'un des leurs à terre '
+                  'la rompt, et la réputation du gang fautif s\'effondre dans toute la ville.'])
     s += [Paragraph('Le permis de conduire', H3)]
     s += [table([['Étape', 'Prix', 'Comment'],
                  ['Obtention', 'Gratuit', 'Tout le monde a son permis dès l\'arrivée : la carte <b>Permis de conduire</b> est dans ton sac (F2). Pas d\'auto-école, ni code ni examen.'],

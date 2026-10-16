@@ -4,7 +4,7 @@
 local Security = exports.gs_security
 local Bridge   = exports.gs_bridge
 
-Stickup = { pending = {}, zoneCd = {}, playerCd = {}, hour = {}, day = {} }
+Stickup = { pending = {}, zoneCd = {}, playerCd = {}, hour = {}, day = {}, notices = {} } -- notices[zone] = avis en vitrine (V12.63)
 
 local UNARMED = GetHashKey('WEAPON_UNARMED')
 local function started(res) return GetResourceState(res) == 'started' end
@@ -35,6 +35,37 @@ local function earnedToday(cid)
     local d = Stickup.day[cid]
     if not d or d.day ~= today() then d = { day = today(), amount = 0 } Stickup.day[cid] = d end
     return d
+end
+
+--- V12.63 · Avis en vitrine (proposition n° 157) : publiés pour tous, effacés au bout de Config.ShopNotice.hours
+function Stickup.publishNotices()
+    local out, now = {}, os.time()
+    for id, n in pairs(Stickup.notices) do
+        if n.untilAt > now then out[#out + 1] = { id = id, label = n.label, x = n.x, y = n.y, z = n.z, desc = n.desc, when = n.when }
+        else Stickup.notices[id] = nil end
+    end
+    GlobalState.gsShopNotices = out
+end
+
+function Stickup.notice(src, zoneId, zone)
+    local N = Config.ShopNotice
+    if not N or not zone or math.random() >= (N.camera or 0.7) then return false end
+    local desc = 'silhouette floue'
+    if started('gs_wanted') then
+        local ok, d = pcall(function() return exports.gs_wanted:Describe(src) end)
+        if ok and type(d) == 'string' and d ~= '' then
+            local parts = {}
+            for part in d:gmatch('[^,]+') do
+                parts[#parts + 1] = part:gsub('^%s+', ''):gsub('%s+$', '')
+                if #parts >= (N.details or 2) then break end
+            end
+            desc = table.concat(parts, ', ')
+        end
+    end
+    local c = zone.coords
+    Stickup.notices[zoneId] = { label = zone.label, x = c.x, y = c.y, z = c.z, desc = desc, when = os.date('%d/%m à %H:%M'), untilAt = os.time() + (N.hours or 24) * 3600 }
+    Stickup.publishNotices()
+    return true
 end
 
 --- Début : contrôles, puis signalement (la victime ou un témoin appelle, selon gs_wanted).
@@ -113,6 +144,7 @@ lib.callback.register('gs_stickup:finish', function(src)
         if Bridge:ItemExists(item) and Bridge:AddItem(src, item, 1) then msg = msg .. ' + un objet' end
     end
     if started('gs_reputation') then exports.gs_reputation:Add(src, 'street', 1) end
+    if p.zone then Stickup.notice(src, p.zone, Stickup.zones()[p.zone]) end -- V12.63 : avis en vitrine si la caméra a filmé
     Security:LogStaff(('[Braquage solo] %s : %s (%s)'):format(GetPlayerName(src) or src, kind.label, msg), 'jobs')
     if p.zone and started('gs_social') then
         local z = Stickup.zones()[p.zone]
@@ -140,4 +172,8 @@ end)
 
 AddEventHandler('gs_bridge:server:playerUnloaded', function(src)
     Stickup.pending[src], Stickup.playerCd[src], Stickup.hour[src] = nil, nil, nil
+end)
+
+CreateThread(function() -- V12.63 : avis périmés retirés (toutes les 10 min)
+    while true do Wait(600000) Stickup.publishNotices() end
 end)

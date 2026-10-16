@@ -266,22 +266,22 @@ Rappel : avant l'ouverture, 118, 120, 123, 124, 125, 127 et 130 (✚) sont les p
 | # | Proposition | Effort | S'appuie sur |
 |---|---|---|---|
 | 147 | **Le procès en direct** : une audience importante passe en texte sur le site (« EN DIRECT DU TRIBUNAL »), verdict compris | ✚ | gs_justice, site |
-| 148 | **Le quartier adopte quelqu'un** : un joueur qui aide souvent un quartier (dépannages, soins, achats) y devient « figure du coin » : remises, salut des PNJ | ✚✚ | gs_city, gs_memory |
-| 149 | **Avis de recherche imprimés** : une cavale colle des affiches papier (props) dans le quartier ; les arracher coûte une amende | ✚ | gs_wanted, gs_scars |
+| 148 | ✅ **livrée V12.63** · **Le quartier adopte quelqu'un** : un joueur qui aide souvent un quartier (dépannages, soins, achats) y devient « figure du coin » : remises, salut des PNJ | ✚✚ | gs_city, gs_memory |
+| 149 | ✅ **livrée V12.63** · **Avis de recherche imprimés** : une cavale colle des affiches papier (props) dans le quartier ; les arracher coûte une amende | ✚ | gs_wanted, gs_scars |
 | 150 | **La voiture qui a une histoire** : à la revente, le carnet du véhicule (accidents, braquages, fourrière) suit et fait baisser le prix | ✚ | gs_vehicles, concession |
 | 151 | **Le marché de la nuit volée** : les objets volés pendant un black-out se revendent plus cher, mais restent « marqués » 48 h | ✚ | gs_city (black-out), marché noir |
-| 152 | **Les rendez-vous des gangs** : une trêve négociée au téléphone ; la rompre fait chuter la réputation du gang dans toute la ville | ✚✚ | gs_gangs, gs_phone |
+| 152 | ✅ **livrée V12.63** · **Les rendez-vous des gangs** : une trêve négociée au téléphone ; la rompre fait chuter la réputation du gang dans toute la ville | ✚✚ | gs_gangs, gs_phone |
 | 153 | **Témoin protégé** : un témoin qui parle à la police peut demander une protection (escorte EMS/LSPD, nouveau logement) | ✚✚ | gs_wanted (témoins), gs_police |
 | 154 | **Course de charité** : le vendredi des courses reverse une part des paris à l'hôpital ; le gagnant fait la une | ✚ | gs_races, gs_city |
 | 155 | **Ambulance en direct sur la carte du site** : nombre d'interventions EMS du soir (jamais qui ni où exactement) | ✚ | gs_ems, ville.json |
 | 156 | **La tournée du livreur** : itinéraire qui passe par les commerces tenus par des joueurs ; ils reçoivent leur stock par lui | ✚✚ | gs_jobs, commerces joueurs |
-| 157 | **Casier de quartier** : un commerçant braqué peut afficher la photo floue du braqueur (caméra) dans sa vitrine pendant 24 h | ✚ | gs_cctv, gs_scars |
+| 157 | ✅ **livrée V12.63** · **Casier de quartier** : un commerçant braqué peut afficher la photo floue du braqueur (caméra) dans sa vitrine pendant 24 h | ✚ | gs_cctv, gs_scars |
 | 158 | **Licence de taxi au mérite** : les notes des clients (joueurs et PNJ) débloquent de meilleures courses et un taxi de luxe | ✚ | gs_jobs |
 | 159 | **Le dernier verre** : à la fermeture d'un bar joueur, les clients encore là laissent un pourboire selon l'ambiance (musique, service) | ✚ | bars joueurs |
 | 160 | **Saisie judiciaire** : un juge peut saisir un bien (voiture, maison) d'un condamné ; il part aux enchères de la fourrière | ✚✚ | gs_justice, enchères |
-| 161 | **Fausse alerte** : appeler la police pour rien depuis une cabine coûte cher si l'appel est retrouvé (écoute, caméra) | ✚ | gs_cabines |
+| 161 | ✅ **livrée V12.63** · **Fausse alerte** : appeler la police pour rien depuis une cabine coûte cher si l'appel est retrouvé (écoute, caméra) | ✚ | gs_cabines |
 | 162 | **Les nuits de la fête foraine** : le samedi, manèges et stands à moitié prix, classement des jetons gagnés sur le site | ✚ | jetons de fête foraine, site |
-| 163 | **Le mur des légendes en jeu** : un mur au commissariat ou à la mairie affiche les légendes de la cavale (les mêmes que sur le site) | ✚ | gs_wanted, gs_builder |
+| 163 | ✅ **livrée V12.63** · **Le mur des légendes en jeu** : un mur au commissariat ou à la mairie affiche les légendes de la cavale (les mêmes que sur le site) | ✚ | gs_wanted, gs_builder |
 | 164 | **Assurance habitation** : un cambriolage de faits divers est remboursé si la maison est assurée ; fraude possible (l'expert enquête) | ✚✚ | gs_faitsdivers, gs_housing |
 | 165 | **Staff : résumé d'un joueur en un clic** dans l'appli (sanctions, tickets, notes, temps de jeu sur 30 jours) avant de décider | ✚ | appli staff |
 | 166 | **Staff : alerte « joueur seul et immobile 20 min »** dans l'appli (AFK ou bloqué sous la carte) avec bouton TP / réanimer | ✚ | appli staff, gs_admin |

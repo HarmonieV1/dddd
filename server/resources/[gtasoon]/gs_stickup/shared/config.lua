@@ -38,3 +38,8 @@ Config.Tellers = {
     { id = 'fleeca_chumash', label = 'Fleeca Chumash', coords = vec4(-2961.1, 482.9, 15.7, 90.0) },
     { id = 'fleeca_route68', label = 'Fleeca Route 68', coords = vec4(1175.0, 2708.2, 38.09, 180.0) },
 }
+
+-- V12.63 · « Casier de quartier » (proposition n° 157) : après le braquage d'une caisse ou d'un guichet, si la caméra du
+-- commerce a filmé (une chance sur `camera`), le commerçant affiche en vitrine pendant `hours` heures un avis avec la photo
+-- floue du braqueur : deux détails de sa tenue au plus, jamais son nom. Lisible par tous (Alt / E devant la caisse).
+Config.ShopNotice = { hours = 24, camera = 0.7, details = 2 }

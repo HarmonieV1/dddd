@@ -106,3 +106,9 @@ TriggerEvent('chat:addSuggestion', '/tuyaux', 'Rédaction Weazel en service : é
 AddEventHandler('onResourceStop', function(res)
     if res == GetCurrentResourceName() then pcall(function() exports.ox_target:removeModel(Config.Models, { 'gs_cabines_police', 'gs_cabines_press', 'gs_cabines_number', 'gs_cabines_tap', 'gs_cabines_untap' }) end) end
 end)
+
+-- V12.63 · Fausse alerte (police en service) : /faussealerte [n° de l'appel, sinon le dernier]
+RegisterCommand('faussealerte', function(_, args)
+    notify(lib.callback.await('gs_cabines:falseAlarm', false, tonumber(args[1])))
+end, false)
+TriggerEvent('chat:addSuggestion', '/faussealerte', 'Police : classer un appel anonyme de cabine en fausse alerte (amende si l\'appel est retrouvé)', { { name = 'n°', help = 'numéro de l\'appel (dans l\'alerte du central), vide = le dernier' } })

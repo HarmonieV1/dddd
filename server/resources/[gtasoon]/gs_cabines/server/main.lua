@@ -3,7 +3,7 @@
 local Security = exports.gs_security
 local Bridge   = exports.gs_bridge
 
-Cabines = { last = {}, lastNum = {}, tips = {}, taps = {}, nextId = 90000 } -- last[cid] = dernier appel police / Weazel ; lastNum = dernier appel vers un numéro ; taps[cabine] = écoute
+Cabines = { last = {}, lastNum = {}, tips = {}, taps = {}, nextId = 90000, calls = {} } -- calls[n°] = appel anonyme police (V12.63 : fausse alerte) -- last[cid] = dernier appel police / Weazel ; lastNum = dernier appel vers un numéro ; taps[cabine] = écoute
 
 local function now() return os.time() end
 local function started(r) return GetResourceState(r) == 'started' end
@@ -98,11 +98,15 @@ function Cabines.call(src, kind, text, booth)
     Cabines.last[cid] = now()
     -- Trace staff (abus) : jamais montrée aux joueurs
     Security:LogStaff(('[Cabine] appel %s de %s [%d] : %s'):format(kind == 'police' and 'police' or 'Weazel', GetPlayerName(src) or '?', src, text), 'staff')
-    Cabines.wiretap(src, booth, kind == 'police' and 'appel au central (police)' or 'appel à la rédaction Weazel', text) -- V12.61
+    local tapped = Cabines.wiretap(src, booth, kind == 'police' and 'appel au central (police)' or 'appel à la rédaction Weazel', text) -- V12.61
     if kind == 'police' then
         local a, shift = math.random() * math.pi * 2, math.random() * Config.Blur * 0.7
         Cabines.nextId = Cabines.nextId + 1
-        local report = { id = Cabines.nextId, crime = 'anonymous_call', label = 'Appel anonyme (cabine)', radius = math.floor(Config.Blur),
+        -- V12.63 · fausse alerte : l'appel est-il retrouvable ? (cabine sur écoute, ou filmée par une caméra du quartier)
+        local F = Config.FalseAlarm or {}
+        for n, c in pairs(Cabines.calls) do if now() - c.at > (F.hours or 2) * 3600 then Cabines.calls[n] = nil end end
+        Cabines.calls[Cabines.nextId] = { cid = cid, at = now(), how = tapped and 'écoute' or (math.random() < (F.camera or 0.35) and 'caméra' or nil) }
+        local report = { id = Cabines.nextId, crime = 'anonymous_call', label = ('Appel anonyme (cabine) n° %d'):format(Cabines.nextId), radius = math.floor(Config.Blur),
             coords = vec3(at.x + math.cos(a) * shift, at.y + math.sin(a) * shift, at.z), witnesses = 0, precision = 0.3, delay = 0,
             desc = { '« ' .. text .. ' »' } }
         for _, cop in ipairs(targets) do TriggerClientEvent('gs_wanted:client:dispatch', cop, report) end
@@ -117,6 +121,46 @@ function Cabines.call(src, kind, text, booth)
     for _, j in ipairs(targets) do TriggerClientEvent('gs_cabines:client:tip', j, tip) end
     return true, 'Un journaliste a noté ton tuyau. Tu raccroches sans laisser ton nom.'
 end
+
+--- V12.63 · Fausse alerte (proposition n° 161) : un policier en service marque un appel anonyme ; retrouvé (écoute, caméra) =
+--- amende à l'appelant (en banque, ou à sa prochaine connexion s'il n'est pas en ville). n° absent = le dernier appel.
+local function fineKey(cid) return 'fausse_alerte:' .. tostring(cid) end
+function Cabines.falseAlarm(src, id)
+    local isCop = false
+    for _, c in ipairs(onDuty(Config.PoliceJob)) do if c == src then isCop = true end end
+    if not isCop then return false, 'Réservé à la police en service.' end
+    local F = Config.FalseAlarm or {}
+    id = math.tointeger(tonumber(id))
+    if not id then for n in pairs(Cabines.calls) do if not id or n > id then id = n end end end
+    local c = id and Cabines.calls[id]
+    if not c or now() - c.at > (F.hours or 2) * 3600 then return false, 'Appel inconnu ou trop ancien.' end
+    if c.flagged then return false, 'Cet appel est déjà classé « fausse alerte ».' end
+    c.flagged = true
+    Security:LogStaff(('[Cabine] appel n° %d classé fausse alerte par %s [%d] (%s)'):format(id, GetPlayerName(src) or '?', src, c.how or 'introuvable'), 'staff')
+    if not c.how then return true, ('Appel n° %d classé « fausse alerte ». Introuvable : ni écoute ni caméra sur cette cabine.'):format(id) end
+    local fine = math.floor(tonumber(F.fine) or 2500)
+    local caller = Bridge:GetSourceByIdentifier(c.cid)
+    if caller and GetPlayerName(caller) then
+        Bridge:RemoveMoney(caller, 'bank', fine, 'amende : fausse alerte depuis une cabine')
+        TriggerClientEvent('ox_lib:notify', caller, { title = 'LSPD · amende', type = 'error', duration = 10000,
+            description = ('Fausse alerte depuis une cabine : ton appel a été retrouvé (%s). Amende : %d $.'):format(c.how, fine) })
+    else
+        SetResourceKvpInt(fineKey(c.cid), (GetResourceKvpInt(fineKey(c.cid)) or 0) + fine) -- appliquée à sa prochaine connexion
+    end
+    return true, ('Appel n° %d retrouvé grâce à la %s : amende de %d $ envoyée à l\'appelant.'):format(id, c.how, fine)
+end
+
+AddEventHandler('gs_bridge:server:playerLoaded', function(src)
+    src = tonumber(src) or source
+    local cid = Bridge:GetIdentifier(src)
+    local due = cid and GetResourceKvpInt(fineKey(cid)) or 0
+    if due and due > 0 then
+        DeleteResourceKvp(fineKey(cid))
+        Bridge:RemoveMoney(src, 'bank', due, 'amende : fausse alerte depuis une cabine')
+        TriggerClientEvent('ox_lib:notify', src, { title = 'LSPD · amende', type = 'error', duration = 10000,
+            description = ('Pendant ton absence : fausse alerte depuis une cabine, appel retrouvé. Amende : %d $.'):format(due) })
+    end
+end)
 
 --- Tuyaux en attente (journalistes en service) : rendus puis effacés
 function Cabines.pending(src)
@@ -140,6 +184,10 @@ end)
 lib.callback.register('gs_cabines:tap', function(src, action, booth) -- V12.61
     if not Security:RateLimit(src, 'gs_cabines:tap', 5, 10000) then return false, 'Doucement.' end
     return Cabines.tap(src, action, booth)
+end)
+lib.callback.register('gs_cabines:falseAlarm', function(src, id) -- V12.63
+    if not Security:RateLimit(src, 'gs_cabines:falseAlarm', 3, 10000) then return false, 'Doucement.' end
+    return Cabines.falseAlarm(src, id)
 end)
 lib.callback.register('gs_cabines:tips', function(src)
     if not Security:RateLimit(src, 'gs_cabines:tips', 3, 10000) then return false, 'Doucement.' end

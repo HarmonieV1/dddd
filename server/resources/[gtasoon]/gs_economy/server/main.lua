@@ -78,7 +78,12 @@ end
 
 --- Remise de fidélité (réputation légale, gs_reputation) : 0 à 0.10
 local function discount(src)
-    return GetResourceState('gs_reputation') == 'started' and (exports.gs_reputation:GetDiscount(src) or 0) or 0
+    local d = GetResourceState('gs_reputation') == 'started' and (exports.gs_reputation:GetDiscount(src) or 0) or 0
+    if GetResourceState('gs_city') == 'started' then -- V12.63 : figure du coin (proposition n° 148), commerces de son quartier
+        local ok, f = pcall(function() return exports.gs_city:FigureDiscount(src) end)
+        if ok and tonumber(f) then d = d + f end
+    end
+    return math.min(0.15, d)
 end
 local function discounted(price, d)
     return d > 0 and math.max(1, math.floor(price * (1 - d) + 0.5)) or price

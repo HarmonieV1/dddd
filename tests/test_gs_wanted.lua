@@ -295,6 +295,23 @@ do
     bank = W.players[61].money.bank
     TriggerEvent('gs_police:server:jailed', 60, 30, 61)
     check('incarcéré par un policier : prime au policier', not Fugitive.list[60] and W.players[61].money.bank > bank)
+    -- V12.63 · affiches (n° 149) : une sur place, arrachée = amende (civil), gratuit pour la police, recollée après 30 min
+    tp(60, vec3(500.0, 500.0, 30.0)) Wanted.heat[60] = 95 Fugitive.start(60)
+    local f1 = GlobalState.gsFugitives[1]
+    check('affiche collée là où la cavale commence', f1 and f1.at and math.abs(f1.at.x - 500.0) < 1)
+    tp(61, vec3(501.0, 500.0, 30.0))
+    bank = W.players[61].money.bank
+    local okT, msgT = Fugitive.tear(61, 's60')
+    check('arracher une affiche : amende pour un civil', okT and msgT:find('amende') and W.players[61].money.bank == bank - F.tearFine and GlobalState.gsPostersTorn['s60'])
+    check('affiche déjà arrachée', not Fugitive.tear(61, 's60'))
+    check('trop loin d\'une affiche fixe : refusé', not Fugitive.tear(61, 'p1'))
+    tp(61, F.posters[1]) W.players[61].job = { name = 'police', grade = 1, onduty = true }
+    bank = W.players[61].money.bank
+    okT = Fugitive.tear(61, 'p1')
+    check('police en service : affiche retirée sans amende', okT and W.players[61].money.bank == bank)
+    advance((F.tearMinutes + 1) * 60000) Fugitive.tick()
+    check('affiches recollées au bout de 30 min', not GlobalState.gsPostersTorn['p1'] and not GlobalState.gsPostersTorn['s60'])
+    W.players[61].job = nil
 end
 
 -- V10.2 : alertes systématiques (tirs, arme blanche) : rue + GPS même sans témoin, pas de rafale, policier exempté

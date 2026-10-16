@@ -109,6 +109,14 @@ SESSIONS = [
         ('Lives SEUL : F11 → Lives → ta ligne « (toi : test) » → ton écran s\'affiche ; sinon la fenêtre dit pourquoi (copie la phrase) et GERER-OVH → 3 montre « [gs_lives] capture impossible »', 'Seul', 3),
         ('Site : diaporama « La ville » (9 photos, glisser), bande-annonce → TikTok, adresse « connect » affichée ; Gazette du site = édition en cours après une cavale (hélico)', 'Seul', 2),
     ]),
+    ('4i · V12.63 — idées du soir (15 min)', [
+        ('Mur des légendes (devant Mission Row) : E → liste ; texte « Dernière légende » au-dessus', 'Seul', 2),
+        ('Cavale (/cavale à 5 ★) : affiche collée sur place ; un civil l\'arrache → 300 $ ; un policier → gratuit ; recollée 30 min après', '2', 2),
+        ('Gangs : cadre A → Trêves → proposer ; cadre B → accepter ; déclarer la guerre → refusé ; A met B à terre → « TRÊVE ROMPUE », influence en baisse', '3+', 2),
+        ('Figure du coin : missions / achats dans un quartier → message « t\'a adopté » ; remise à la supérette du quartier ; salut en revenant', 'Seul', 1),
+        ('Braquage de caisse : « AVIS · BRAQUEUR RECHERCHÉ » au comptoir (si la caméra a filmé), E → 2 détails, jamais le nom', '2', 2),
+        ('Cabine : appel anonyme police → l\'alerte porte un n° ; policier /faussealerte n° → amende si retrouvé, sinon « Introuvable »', '2', 2),
+    ]),
     ('5 · Obligatoire avant d\'ouvrir', [
         ('SAUVEGARDER-BDD.bat puis RESTAURER-BDD.bat sur un joueur ; redémarrage de 6 h : annonces 15 / 5 / 1 min', 'Staff', 3),
         ('Mode staff : vol libre / invisible SANS alerte anti-triche ; F10 tickets et sanctions ; carkill 2 fois → alerte', 'Staff', 3),

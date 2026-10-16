@@ -49,43 +49,107 @@ AddEventHandler('gs_wanted:client:heatChanged', function(heat)
     elseif heat <= F.minHeat then offered = false end
 end)
 
--- Avis de recherche placardés : visibles tant qu'il y a un fugitif
-local function readPoster()
+-- Avis de recherche placardés : visibles tant qu'il y a un fugitif. V12.63 (n° 149) : une affiche aussi là où la cavale a
+-- commencé ; chaque affiche peut être arrachée (amende pour un civil, gratuit pour la police), recollée 30 min plus tard.
+local function readPoster(key)
     local options = {}
     for _, f in ipairs(GlobalState.gsFugitives or {}) do
         options[#options + 1] = { title = f.title, icon = 'user-secret', iconColor = '#d0122f', readOnly = true,
             description = ('Prime : %d $ · %s'):format(f.bounty, f.desc ~= '' and f.desc or 'pas de description') }
     end
     if #options == 0 then options[1] = { title = 'Avis périmé.', readOnly = true } end
+    if key then
+        options[#options + 1] = { title = 'Arracher l\'affiche', icon = 'hand', iconColor = '#999999',
+            description = ('Amende de %d $ (gratuit pour la police en service)'):format(F.tearFine or 300),
+            onSelect = function() notify(call('tear', key)) end }
+    end
     lib.registerContext({ id = 'gs_wanted_poster', title = 'AVIS DE RECHERCHE', options = options })
     lib.showContext('gs_wanted_poster')
 end
 AddEventHandler('gs_wanted:client:poster', readPoster)
 
+--- Affiches à afficher maintenant : { [clé] = position } (fixes + sur place, moins celles arrachées)
+local function postersNow()
+    local list, out, torn = GlobalState.gsFugitives or {}, {}, GlobalState.gsPostersTorn or {}
+    if #list == 0 then return out end
+    for i, c in ipairs(F.posters) do if not torn['p' .. i] then out['p' .. i] = c end end
+    for _, f in ipairs(list) do
+        if f.at and not torn['s' .. f.id] then out['s' .. f.id] = vec3(f.at.x + 0.0, f.at.y + 0.0, f.at.z + 0.0) end
+    end
+    return out
+end
+
 CreateThread(function()
-    local shown = false
+    local placed = {} -- [clé] = position déclarée à gs_markers
     while true do
-        local active = #(GlobalState.gsFugitives or {}) > 0
-        if active ~= shown then
-            shown = active
-            for i, c in ipairs(F.posters) do
-                if active then exports.gs_markers:Add('gs_wanted:poster' .. i, { coords = c, style = 'hidden', event = 'gs_wanted:client:poster', prompt = 'Lire l\'avis de recherche', reach = 2.0 })
-                else exports.gs_markers:Remove('gs_wanted:poster' .. i) end
+        local want = postersNow()
+        for key in pairs(placed) do if not want[key] then exports.gs_markers:Remove('gs_wanted:poster:' .. key) placed[key] = nil end end
+        for key, c in pairs(want) do
+            if not placed[key] or #(placed[key] - c) > 0.5 then
+                exports.gs_markers:Add('gs_wanted:poster:' .. key, { coords = c, style = 'hidden', event = 'gs_wanted:client:poster', args = { key }, prompt = 'Lire l\'avis de recherche', reach = 2.0 })
+                placed[key] = c
             end
         end
-        if active then
+        if next(want) then
             local me, drew = GetEntityCoords(cache.ped), false
-            for _, c in ipairs(F.posters) do
-                if #(me - c) < 25.0 then
-                    drew = true
-                    local on, x, y = GetScreenCoordFromWorldCoord(c.x, c.y, c.z + 1.2)
-                    if on then
-                        SetTextFont(4) SetTextScale(0.0, 0.5) SetTextCentre(true) SetTextOutline() SetTextColour(208, 18, 47, 240)
-                        BeginTextCommandDisplayText('STRING') AddTextComponentSubstringPlayerName('AVIS DE RECHERCHE') EndTextCommandDisplayText(x, y)
+            local untilT = GetGameTimer() + 3000
+            repeat -- dessin du texte seulement près d'une affiche ; la liste est relue toutes les 3 s
+                drew = false
+                me = GetEntityCoords(cache.ped)
+                for _, c in pairs(want) do
+                    if #(me - c) < 25.0 then
+                        drew = true
+                        local on, x, y = GetScreenCoordFromWorldCoord(c.x, c.y, c.z + 1.2)
+                        if on then
+                            SetTextFont(4) SetTextScale(0.0, 0.5) SetTextCentre(true) SetTextOutline() SetTextColour(208, 18, 47, 240)
+                            BeginTextCommandDisplayText('STRING') AddTextComponentSubstringPlayerName('AVIS DE RECHERCHE') EndTextCommandDisplayText(x, y)
+                        end
                     end
                 end
-            end
-            Wait(drew and 0 or 1500)
+                Wait(drew and 0 or 1500)
+            until GetGameTimer() >= untilT
         else Wait(3000) end
+    end
+end)
+
+-- V12.63 · Mur des légendes (proposition n° 163) : devant le commissariat, la liste des légendes de la cavale ; le dernier nom
+-- est écrit au-dessus du mur (liste relue au plus toutes les 5 min, seulement quand on passe à côté).
+local wall = { at = 0, last = nil }
+local function showLegends()
+    local ok, list = call('legends')
+    if not ok then return end
+    local options = {}
+    for _, l in ipairs(list or {}) do
+        options[#options + 1] = { title = l.name, icon = 'crown', iconColor = '#ffd23f', readOnly = true,
+            description = ('Cavale de %d h tenue · %s'):format(l.hours or F.hours, l.date or '') }
+    end
+    if #options == 0 then options[1] = { title = 'Personne… pour l\'instant. Tiens une cavale et ton nom sera gravé ici.', icon = 'crown', readOnly = true } end
+    lib.registerContext({ id = 'gs_legends', title = 'Mur des légendes de Los Santos', options = options })
+    lib.showContext('gs_legends')
+end
+AddEventHandler('gs_wanted:client:legendWall', showLegends)
+CreateThread(function()
+    if not F.legendWall then return end
+    exports.gs_markers:Add('gs_wanted:legendwall', { coords = F.legendWall, style = 'hidden', event = 'gs_wanted:client:legendWall', prompt = 'Mur des légendes', reach = 2.5 })
+    while true do
+        local c = F.legendWall
+        local d = #(GetEntityCoords(cache.ped) - c)
+        if d < 20.0 then
+            if GetGameTimer() - wall.at > 300000 then
+                wall.at = GetGameTimer()
+                local ok, list = call('legends')
+                wall.last = ok and list and list[1] and list[1].name or false
+            end
+            local on, x, y = GetScreenCoordFromWorldCoord(c.x, c.y, c.z + 1.4)
+            if on then
+                SetTextFont(4) SetTextScale(0.0, 0.55) SetTextCentre(true) SetTextOutline() SetTextColour(255, 210, 63, 240)
+                BeginTextCommandDisplayText('STRING') AddTextComponentSubstringPlayerName('MUR DES LÉGENDES') EndTextCommandDisplayText(x, y)
+                if wall.last then
+                    SetTextFont(4) SetTextScale(0.0, 0.38) SetTextCentre(true) SetTextOutline() SetTextColour(255, 255, 255, 220)
+                    BeginTextCommandDisplayText('STRING') AddTextComponentSubstringPlayerName('Dernière légende : ' .. wall.last) EndTextCommandDisplayText(x, y + 0.03)
+                end
+            end
+            Wait(0)
+        else Wait(1500) end
     end
 end)

@@ -209,6 +209,31 @@ local function openMenu()
         lib.registerContext({ id = 'gs_gang_wars', title = 'Guerres de territoire', menu = 'gs_gang', options = opts })
         lib.showContext('gs_gang_wars')
     end }
+    -- V12.63 · Trêves (proposition n° 152)
+    options[#options + 1] = { title = 'Trêves', icon = 'handshake', iconColor = '#7bd88f', arrow = true, description = 'Proposer ou accepter une trêve ; la rompre coûte la réputation du gang', onSelect = function()
+        local ok, d = lib.callback.await('gs_gangs:truce', false, 'list')
+        if not ok then return result(false, d) end
+        local o = {}
+        if d.offer then
+            o[#o + 1] = { title = ('Accepter la trêve de %s'):format(d.offer.label), icon = 'handshake', iconColor = '#7bd88f', disabled = not d.canManage,
+                description = ('%d h sans guerre · encore %d min pour répondre'):format(Config.Truce.hours, d.offer.minutes),
+                onSelect = function() result(lib.callback.await('gs_gangs:truce', false, 'accept', d.offer.gang)) end }
+        end
+        for _, t in ipairs(d.truces) do
+            o[#o + 1] = { title = ('En trêve avec %s'):format(t.label), icon = 'dove', readOnly = true, description = ('Encore %d h · mettre l\'un des leurs à terre la rompt'):format(t.hours) }
+        end
+        if d.canManage then
+            for _, g in ipairs(d.gangs) do
+                if not g.truce then
+                    o[#o + 1] = { title = ('Proposer une trêve à %s'):format(g.label), icon = 'envelope',
+                        onSelect = function() result(lib.callback.await('gs_gangs:truce', false, 'offer', g.gang)) end }
+                end
+            end
+        end
+        if #o == 0 then o[1] = { title = 'Aucune trêve. Seuls les cadres peuvent en proposer.', icon = 'dove', readOnly = true } end
+        lib.registerContext({ id = 'gs_gang_truce', title = 'Trêves', menu = 'gs_gang', options = o })
+        lib.showContext('gs_gang_truce')
+    end }
     -- V12 · Opérations (guerre de l'information), payées par la caisse
     if info.grade >= 2 then
         options[#options + 1] = { title = 'Opérations', icon = 'satellite-dish', iconColor = '#ffb347', arrow = true, description = 'Brouiller les caméras, pirater le scanner police', onSelect = function()

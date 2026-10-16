@@ -92,3 +92,12 @@ Config.Blackout = {
 -- V11.2 · La Gazette du dimanche : la ville compte sa semaine et publie une édition le dimanche à 20 h (Discord #annonces,
 -- site, /gazette en jeu). Staff (admin) : /gazette publier = édition tout de suite (test).
 Config.Gazette = { day = 0, hour = 20, staffLevel = 3, command = 'gazette', name = 'La Gazette de Los Santos' }
+
+-- V12.63 · « Le quartier adopte quelqu'un » (proposition n° 148) : chaque activité légale faite dans un quartier (mission de
+-- métier, achat, vente, location, quête) y rapporte des points. Au-delà de `threshold`, le joueur devient « figure du coin » :
+-- les habitants le saluent quand il revient (au plus une fois par `greetMinutes`) et les commerces du quartier lui font
+-- `discount` de remise (s'ajoute à la fidélité, 15 % au plus en tout). Les points baissent de `decay` par semaine sans activité.
+Config.Figure = {
+    points = { job_mission = 3, shop_buy = 1, sell = 1, rental = 1, quest = 2 },
+    threshold = 60, discount = 0.05, greetMinutes = 60, decay = 0.25, checkEvery = 30000,
+}

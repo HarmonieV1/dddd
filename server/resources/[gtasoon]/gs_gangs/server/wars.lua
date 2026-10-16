@@ -40,6 +40,7 @@ function Wars.declare(src, id)
     local t = Gangs.territories[id]
     if not t or not Config.Territories[id] then return false, 'Quartier inconnu.' end
     if not t.owner or t.owner == m.gang then return false, 'Il faut viser un quartier tenu par un autre gang.' end
+    if Truce and Truce.active(m.gang, t.owner) then return false, 'Vous êtes en trêve avec ce gang : la rompre coûterait votre réputation.' end -- V12.63
     if Wars.list[id] or busy(m.gang) or busy(t.owner) then return false, 'Une guerre est déjà en cours ou annoncée pour l\'un des gangs.' end
     local left = (Wars.cool[m.gang] or 0) - os.time()
     if left > 0 then return false, ('Ton gang doit se reposer encore %d min.'):format(math.ceil(left / 60)) end

@@ -168,3 +168,43 @@ AddEventHandler('onResourceStop', function(res)
     if res ~= GetCurrentResourceName() then return end
     for _, p in pairs(tellers) do if DoesEntityExist(p) then DeletePed(p) end end
 end)
+
+-- V12.63 · Avis du commerçant en vitrine (proposition n° 157) : photo floue du braqueur pendant 24 h, lisible par tous
+AddEventHandler('gs_stickup:client:notice', function(id)
+    for _, n in ipairs(GlobalState.gsShopNotices or {}) do
+        if n.id == id then
+            lib.alertDialog({ header = 'AVIS · ' .. (n.label or 'Commerce'), centered = true,
+                content = ('Ce commerce a été braqué le %s.\n\n**Image de la caméra (floue)** : %s.\n\nVous le reconnaissez ? Prévenez le LSPD.'):format(n.when or '?', n.desc or 'silhouette floue') })
+            return
+        end
+    end
+end)
+CreateThread(function()
+    local placed = {}
+    while true do
+        local list, want = GlobalState.gsShopNotices or {}, {}
+        for _, n in ipairs(list) do want[n.id] = vec3(n.x + 0.0, n.y + 0.0, n.z + 0.0) end
+        for id in pairs(placed) do if not want[id] then exports.gs_markers:Remove('gs_stickup:notice:' .. id) placed[id] = nil end end
+        for id, c in pairs(want) do
+            if not placed[id] then
+                exports.gs_markers:Add('gs_stickup:notice:' .. id, { coords = c, style = 'hidden', event = 'gs_stickup:client:notice', args = { id }, prompt = 'Lire l\'avis du commerçant', reach = 2.5 })
+                placed[id] = c
+            end
+        end
+        local untilT = GetGameTimer() + 3000
+        repeat -- texte au-dessus de la caisse seulement à proximité ; liste relue toutes les 3 s
+            local me, near = GetEntityCoords(cache.ped), false
+            for _, c in pairs(want) do
+                if #(me - c) < 15.0 then
+                    near = true
+                    local on, x, y = GetScreenCoordFromWorldCoord(c.x, c.y, c.z + 1.1)
+                    if on then
+                        SetTextFont(4) SetTextScale(0.0, 0.42) SetTextCentre(true) SetTextOutline() SetTextColour(255, 200, 40, 235)
+                        BeginTextCommandDisplayText('STRING') AddTextComponentSubstringPlayerName('AVIS · BRAQUEUR RECHERCHÉ') EndTextCommandDisplayText(x, y)
+                    end
+                end
+            end
+            Wait(near and 0 or 1500)
+        until GetGameTimer() >= untilT
+    end
+end)

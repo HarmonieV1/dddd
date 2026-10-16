@@ -155,3 +155,9 @@ Config.Wars = {
     victimCooldown = 60,         -- une même victime ne rapporte qu'une fois par minute
     winInfluence = 65,           -- influence du vainqueur sur le quartier (dépasse le seuil de 50)
 }
+
+-- V12.63 · Trêve entre gangs (proposition n° 152) : un cadre propose une trêve à un autre gang (menu Gang → Trêves), un cadre
+-- d'en face l'accepte dans les `offerMinutes`. Pendant `hours` heures : pas de guerre déclarée entre eux. Mettre à terre un
+-- membre du gang ami pendant la trêve la ROMPT : le gang fautif perd `penalty` points d'influence dans chaque quartier où il
+-- en a (sa réputation chute dans toute la ville), Weazel l'annonce, les deux gangs sont prévenus.
+Config.Truce = { hours = 48, offerMinutes = 10, penalty = 15 }

@@ -9,5 +9,5 @@ version '0.1.0'
 dependencies { 'oxmysql', 'ox_lib', 'ox_target', 'gs_security', 'gs_bridge', 'gs_markers' }
 
 shared_scripts { '@ox_lib/init.lua', 'shared/config.lua', '@gs_bridge/shared/points.lua' }
-server_scripts { '@oxmysql/lib/MySQL.lua', 'server/main.lua', 'server/standing.lua', 'server/timelapse.lua', 'server/blackout.lua', 'server/gazette.lua', 'server/public.lua', 'server/recap.lua' }
+server_scripts { '@oxmysql/lib/MySQL.lua', 'server/main.lua', 'server/standing.lua', 'server/timelapse.lua', 'server/blackout.lua', 'server/gazette.lua', 'server/public.lua', 'server/recap.lua', 'server/figure.lua' }
 client_scripts { 'client/main.lua', 'client/standing.lua', 'client/blackout.lua' }

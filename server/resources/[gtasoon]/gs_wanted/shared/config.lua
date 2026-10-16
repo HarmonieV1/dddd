@@ -184,6 +184,11 @@ Config.Fugitive = {
         vec3(195.0, -935.0, 30.7), vec3(-1185.0, -1505.0, 4.4), vec3(98.0, -1925.0, 20.8), vec3(1155.0, -470.0, 66.6),
         vec3(1965.0, 3740.0, 32.3), vec3(-150.0, 6340.0, 31.5), vec3(-1340.0, -275.0, 39.6), vec3(1700.0, 4810.0, 42.0),
     },
+    -- V12.63 · Affiches papier (proposition n° 149) : une affiche est aussi collée là où la cavale a commencé ; toute affiche
+    -- peut être arrachée (amende de `tearFine` $ pour un civil, gratuit pour la police en service), recollée `tearMinutes` plus tard
+    tearFine = 300, tearMinutes = 30, tearReach = 3.0,
+    -- V12.63 · Mur des légendes (proposition n° 163) : devant le commissariat de Mission Row (F11 → Déplacer un point)
+    legendWall = vec3(427.6, -978.9, 30.71),
 }
 
 Config.VehicleTypes = { automobile = 'Voiture', bike = 'Deux-roues', boat = 'Bateau', heli = 'Hélicoptère', plane = 'Avion', quadbike = 'Quad' }

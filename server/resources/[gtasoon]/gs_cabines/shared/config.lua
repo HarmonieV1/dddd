@@ -21,3 +21,8 @@ Config.NumberCooldown = 60
 -- V12.61 · Écoute : la police (grade `grade` et plus, en service, sur mandat du juge en RP) met une cabine sur écoute pendant
 -- `hours` heures. Chaque appel passé depuis elle arrive au central : heure, destinataire, message, et le genre de l'appelant.
 Config.Tap = { grade = 2, hours = 2, max = 5 }
+-- V12.63 · Fausse alerte (proposition n° 161) : un policier en service marque un appel anonyme « fausse alerte »
+-- (/faussealerte [n°], le n° est dans l'alerte du central). Si l'appel est RETROUVÉ (cabine sur écoute, ou filmée : `camera`
+-- = une chance sur trois environ), l'appelant reçoit une amende de `fine` $ (en banque ; s'il n'est pas en ville, à sa prochaine
+-- connexion). Le policier ne voit jamais le nom : seulement que l'amende est partie. Appels marquables pendant `hours` heures.
+Config.FalseAlarm = { fine = 2500, camera = 0.35, hours = 2 }

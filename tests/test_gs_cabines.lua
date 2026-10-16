@@ -80,5 +80,31 @@ W.clientEvents = {}
 cb('gs_cabines:number', 1, '555-0001', booth)
 check('écoute retirée : plus d\'alerte', okT and lastClientEvent('gs_cabines:client:tapped', 2) == nil)
 
+-- V12.63 · Fausse alerte (n° 161) : appel numéroté, retrouvé (écoute/caméra) = amende, introuvable = rien, jamais le nom
+do
+    Cabines.last = {}
+    duty.police = { 2 }
+    W.players[1].money.cash = 50; W.players[1].money.bank = 10000
+    local realRandom = math.random
+    math.random = function(a, b) if a == nil then return 0.0 end return realRandom(a, b) end -- caméra : toujours filmée
+    W.clientEvents = {}
+    local okC = cb('gs_cabines:call', 1, 'police', 'Braquage à la banque centrale', booth)
+    local ev2 = lastClientEvent('gs_wanted:client:dispatch', 2)
+    local num = ev2 and ev2.args[1].id
+    check('fausse alerte : appel numéroté dans l\'alerte', okC and num and ev2.args[1].label:find(tostring(num), 1, true))
+    local okF, txt = cb('gs_cabines:falseAlarm', 3, num)
+    check('fausse alerte : réservé à la police', not okF)
+    okF, txt = cb('gs_cabines:falseAlarm', 2, num)
+    check('fausse alerte : appel retrouvé → amende, sans le nom', okF and txt:find('amende') and not txt:find('Appelant') and W.players[1].money.bank == 10000 - Config.FalseAlarm.fine)
+    okF = cb('gs_cabines:falseAlarm', 2, num)
+    check('fausse alerte : une seule fois par appel', not okF)
+    math.random = function(a, b) if a == nil then return 0.99 end return realRandom(a, b) end -- pas de caméra
+    Cabines.last = {}
+    advance(1000)
+    cb('gs_cabines:call', 1, 'police', 'Encore un faux braquage', booth)
+    okF, txt = cb('gs_cabines:falseAlarm', 2) -- sans n° : le dernier appel
+    check('fausse alerte : introuvable (ni écoute ni caméra) → pas d\'amende', okF and txt:find('Introuvable') and W.players[1].money.bank == 10000 - Config.FalseAlarm.fine)
+    math.random = realRandom
+end
 io.write(('cabines : %d réussis, %d échoués\n'):format(passed, failed))
 os.exit(failed == 0 and 0 or 1)
