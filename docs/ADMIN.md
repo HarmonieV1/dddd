@@ -162,7 +162,7 @@ Placer n'importe quel objet du jeu, le déplacer, le tourner, le dupliquer, le s
   `tools/guide_staff.py` (staff, PDF interne) → `docs/pdf/`.
 
 ## V12.60 → V12.63 · Lives, appli staff externe, outils du 15-16/10
-Détail joueur / staff / fondateur : `docs/PATCH_NOTE_V12.63.md` (et `docs/PATCH_SESSION_15-10.md`, version par version).
+Détail version par version : `docs/PATCH_SESSION_15-10.md` ; patch note de la session du 16/10 : `docs/PATCH_NOTE_V12.63.md`.
 - **Lives** (`gs_lives`) : F11 → Lives ou `/lives` (modérateur et plus, mode staff). Capture faite chez le joueur par screenshot-basic
   et renvoyée par le réseau du jeu ; une seule capture par joueur regardé, partagée entre F11, l'appli et les replays 30 s des tickets.
   Échec : la raison s'affiche dans la fenêtre (et dans la console, une fois par minute). Ta propre ligne « (toi : test) » = vérifier seul ;

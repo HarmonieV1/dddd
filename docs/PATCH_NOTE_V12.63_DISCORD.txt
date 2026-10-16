@@ -1,4 +1,4 @@
-===== MESSAGE 1 / 3 (salon #annonces ou #patch-notes) =====
+===== MESSAGE 1 / 2 (salon #annonces ou #patch-notes) =====
 
 # 📣 Mise à jour du 16 octobre
 
@@ -8,39 +8,29 @@ Le vol régulier de l'aéroport (LSIA) part une journée pour Cayo Perico… et 
 **📸 Photomaton à la fête foraine**
 À côté du guichet des jetons : une photo souvenir pour 3 jetons. Serrez-vous dans la cabine, chacun repart avec sa copie.
 
-**🏆 Mur des légendes**
-Devant Mission Row, les noms de ceux qui ont tenu une cavale. Pendant une cavale, une affiche est aussi collée sur place : l'arracher coûte 300 $ (gratuit pour la police).
-
 **🎨 Gangs**
 • **Hommage peint** : avec une bombe, peins « R.I.P. » et le nom d'un membre disparu, aux couleurs du gang (24 h, ou pour toujours avec 1 000 $ de la caisse).
-• **Trêves** : 48 h sans guerre entre deux gangs. La rompre fait s'effondrer la réputation du gang fautif.
 • Territoires découpés en **pâtés de maisons** ; les gangs naissent d'un **projet RP validé** par le staff.
 
-===== MESSAGE 2 / 3 =====
+**🏘️ Voisins vigilants**
+**/voisins** dans ton quartier (hors gang) : tu es prévenu des délits signalés, et plus vous êtes nombreux, plus le calme revient vite.
 
-**🏘️ Ton quartier**
-• **/voisins** : rejoins les voisins vigilants de ton quartier (hors gang). Tu es prévenu des délits signalés, et plus vous êtes nombreux, plus le calme revient vite.
-• **Figure du coin** : à force de missions et d'achats dans un quartier, les habitants te saluent et les commerces te font 5 % de remise.
-• **Avis du commerçant** : un commerce braqué et filmé affiche 24 h l'image floue du braqueur (jamais son nom).
+===== MESSAGE 2 / 2 =====
 
-**🚓 Police et route**
-• La nuit, sans policier en service, le **shérif peut tenir un barrage** hors de la ville : alcootest positif dès 2 verres = amende et points. Ne bois pas si tu conduis.
-• **Fausse alerte** depuis une cabine : 2 500 $ si l'appel est retrouvé.
+**🚓 La nuit, le shérif veille**
+Sans policier en service, le shérif peut tenir un **barrage** sur les routes hors de la ville : alcootest positif dès 2 verres = amende et points. Ne bois pas si tu conduis.
 
 **🧼 Vie quotidienne**
 • **Gestes** (Alt sur l'objet) : lavabo, douche, fontaine, et E dans la mer pour se rincer. Les secours peuvent nettoyer tes plaies.
 • Poubelles : la fouille animée seulement.
 • Coincé sous la carte ? Tu es ramené tout seul au dernier endroit sûr.
 
-===== MESSAGE 3 / 3 =====
-
 **🏁 Courses et véhicules**
 • Courses sur mesure : l'organisateur peut **imposer un véhicule** ; sur la ligne, E relance le départ.
-• Concessions : véhicules exposés au sol, modèles à faire défiler même sans vendeur.
 • Le Cyclone plafonne à 210 km/h.
 
 **🌐 Le site**
-Diaporama de la ville, bande-annonce, la **Gazette de la semaine en cours**, et le **vol du jour** dans « En ce moment en ville ».
+Le **vol du jour** s'affiche dans « En ce moment en ville ».
 
 **🛠️ Côté serveur**
-Démarrage plus rapide, captures du staff réparées, outils de mise à jour fiabilisés. Merci pour vos retours : continuez de les envoyer en ticket ! 🙏
+Démarrage plus rapide et captures du staff réparées. Merci pour vos retours : continuez de les envoyer en ticket ! 🙏

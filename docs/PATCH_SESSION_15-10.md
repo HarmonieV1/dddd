@@ -1,6 +1,6 @@
 # Patch récap — session de secours du 15-16/10/2026 (V12.59 → V12.63)
 
-> Patch note à publier (joueurs, staff, fondateur) : `docs/PATCH_NOTE_V12.63.md` ; version Discord : `docs/PATCH_NOTE_V12.63_DISCORD.txt`.
+> Patch note à publier de la session du 16/10 (joueurs, staff, fondateur) : `docs/PATCH_NOTE_V12.63.md` ; version Discord : `docs/PATCH_NOTE_V12.63_DISCORD.txt`.
 
 > Branche `claude/presence-check-f9jlgz` (fusionnée dans `feature/phase1-bridge` le 16/10, accord du fondateur). Détail technique de chaque
 > version : `docs/ETAT_PROJET.md` (historique). À tester en jeu : backtest sections **4d, 4e, 4f, 4g** (site de doc).

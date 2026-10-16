@@ -359,7 +359,7 @@ Résumé très condensé (le détail complet est dans `docs/ROADMAP.md`, `docs/F
   l'aéroport (plus d'apparition dans le ciel de Cayo ou sous le sol de North Yankton). Soirée plage de Cayo refusée les jours
   North Yankton (gs_admin, événement en un clic). Tests : test_gs_world (31). Site : « vol du jour » dans « En ce moment en
   ville » et dans le bandeau Weazel (`now.island` de ville.json, export gs_world `IslandMode`) ; journal « Nouveautés » complété.
-  Patch note complet : `docs/PATCH_NOTE_V12.63.md` + version Discord `docs/PATCH_NOTE_V12.63_DISCORD.txt` (3 messages).
+  Patch note de la session du 16/10 : `docs/PATCH_NOTE_V12.63.md` + version Discord `docs/PATCH_NOTE_V12.63_DISCORD.txt` (2 messages).
 - **V12.62** (15/10/2026, session de secours) — propositions choisies + relecture complète du gros patch avant le backtest :
   (1) **Lives** : ▦ grille, « ⇢ TP » (action `goto` de gs_admin), **replay 30 s** (n° 137) : tant qu'un ticket est ouvert,
   20 images (1,5 s) de l'auteur et du joueur nommé (« /report 12 … », gs_admin `ReportedPlayers`) gardées EN MÉMOIRE, effacées à

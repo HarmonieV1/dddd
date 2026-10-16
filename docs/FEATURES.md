@@ -488,7 +488,7 @@ Traductions françaises manquantes des scripts Qbox ajoutées par METTRE-A-JOUR 
   la recherche et le déban, même sur un joueur hors ligne), ce que txAdmin ne sait pas faire. Le staff n'est jamais banni automatiquement :
   il est signalé. Et l'arrivée en bus dépose enfin devant la mairie, itinéraire tracé vers Max « le Guide ».
 
-## V12.59 → V12.63 · La ville du 15-16/10 (détail : `docs/PATCH_NOTE_V12.63.md`)
+## V12.59 → V12.63 · La ville du 15-16/10 (détail : `docs/PATCH_SESSION_15-10.md`)
 - **Mémoire de la rue** : sang et douilles après une fusillade, barrières après un braquage (24 h) ; scène de crime photographiée versée
   au dossier ; mur des légendes devant Mission Row ; affiches de cavale arrachables ; avis du commerçant après un braquage filmé ;
   hommages « R.I.P. » peints par les gangs ; cimetière (tombes, épitaphes, avis de décès, fleurs).
