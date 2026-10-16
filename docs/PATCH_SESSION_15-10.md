@@ -1,6 +1,6 @@
 # Patch récap — session de secours du 15-16/10/2026 (V12.59 → V12.63)
 
-> Branche `claude/presence-check-f9jlgz` (pas encore fusionnée dans `feature/phase1-bridge`). Détail technique de chaque
+> Branche `claude/presence-check-f9jlgz` (fusionnée dans `feature/phase1-bridge` le 16/10, accord du fondateur). Détail technique de chaque
 > version : `docs/ETAT_PROJET.md` (historique). À tester en jeu : backtest sections **4d, 4e, 4f, 4g** (site de doc).
 > Installation : METTRE-A-JOUR → DIAGNOSTIC-MODS (O) → VIDER-CACHE-FIVEM → METTRE-A-JOUR-OVH.
 
@@ -81,4 +81,4 @@
 - dossier `mods-tri\a-convertir` (vêtements solo) en morceaux de 25 Mo — ou intégrer le convertisseur à IMPORTER-MODS après le backtest ;
 - Emerus GTR et Tempesta widebody à retélécharger (archives coupées) ;
 - positions à caler en jeu : guichet des jetons, carré du cimetière ;
-- fusion dans `feature/phase1-bridge` sur accord.
+- ~~fusion dans `feature/phase1-bridge`~~ faite le 16/10.
