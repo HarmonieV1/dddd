@@ -34,12 +34,13 @@ provide('gs_weather', {
     StartEvent = function(id) return id == 'storm' end, StopEvent = function() return true end,
     ListWeathers = function() return { 'CLEAR', 'RAIN' }, { { id = 'storm', label = 'Tempête' } } end,
 })
-local sanctions, staffLogs = {}, {}
+local sanctions, staffLogs, allowedTp = {}, {}, {}
 loadResource('gs_security', { R .. 'gs_security/server/main.lua' })
 provide('gs_security', {
     RateLimit = getExport('gs_security', 'RateLimit'),
     Sanitize = getExport('gs_security', 'Sanitize'),
     LogStaff = function(msg, channel) if channel == 'sanctions' then sanctions[#sanctions + 1] = msg else staffLogs[#staffLogs + 1] = msg end end,
+    AllowTeleport = function(src) allowedTp[src] = true end,
 })
 loadResource('gs_admin', { R .. 'gs_admin/shared/config.lua' })
 local jail, notes = {}, {}
@@ -636,6 +637,21 @@ ok = cb('gs_admin:action', 2, 'delstaffped', nil, { id = 1 }); step()
 check('retrait : modo refusé', not ok and #GlobalState.gsStaffPeds == 3)
 ok, msg = cb('gs_admin:action', 1, 'delstaffped', nil, { id = 1 }); step()
 check('retrait : supprimé, publié, message', ok and #GlobalState.gsStaffPeds == 2 and msg:find('retiré', 1, true) and dbRows[1] == nil)
+
+-- V12.63 · Coincé sous la carte (n° 193) : retour auto validé par le serveur (altitude), bouton staff (F10 / F11)
+tp(4, vec3(500.0, 500.0, 30.0))
+allowedTp[4] = nil
+check('coincé : refusé au-dessus du sol', cb('gs_admin:unstuck', 4) == false and not allowedTp[4])
+step()
+tp(4, vec3(500.0, 500.0, -60.0))
+check('coincé : sous la carte → accepté, téléportation autorisée (anti-triche)', cb('gs_admin:unstuck', 4) == true and allowedTp[4])
+step()
+allowedTp[4] = nil
+W.clientEvents = {}
+ok, msg = cb('gs_admin:action', 3, 'unstuck', 4); step()
+check('coincé : un helper peut ramener un joueur', ok and allowedTp[4] and lastClientEvent('gs_admin:client:unstuck', 4) ~= nil)
+ok = cb('gs_admin:action', 4, 'unstuck', 2); step()
+check('coincé : un joueur ne peut pas', not ok)
 
 io.write(('\n%d réussis, %d échoués\n'):format(passed, failed))
 os.exit(failed == 0 and 0 or 1)

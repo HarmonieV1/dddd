@@ -117,6 +117,15 @@ SESSIONS = [
         ('Braquage de caisse : « AVIS · BRAQUEUR RECHERCHÉ » au comptoir (si la caméra a filmé), E → 2 détails, jamais le nom', '2', 2),
         ('Cabine : appel anonyme police → l\'alerte porte un n° ; policier /faussealerte n° → amende si retrouvé, sinon « Introuvable »', '2', 2),
     ]),
+    ('4j · V12.63 — idées et corrections du 16/10 au soir (15 min)', [
+        ('Redémarrage du serveur : la console dit « ordre de démarrage déjà bon, aucune relance » (plus de gel de 11 s) ; sinon les maps en conflit sont relancées comme avant', 'Staff', 2),
+        ('Se mettre sous la carte (noclip sous le sol) puis attendre 6 s (retour automatique) ou F11 → Joueurs → soi → « Coincé : ramener au dernier endroit sûr » : retour au dernier endroit au sol ; appli → Carte : anneau jaune sur l\'auteur d\'un ticket', '2', 2),
+        ('DIAGNOSTIC-MODS.bat : « MÊME MAP EN DEUX VERSIONS » liste gsa_patoche_petshop_pack_1 (O = pause) ; Shadow Complex _1 démarre (lieu rempli, plus de lieu vide)', 'Staff', 3),
+        ('Gang : bombe de peinture → « Un hommage », nom « Tony » → « R.I.P. Tony » au mur ; permanent coche → 1 000 $ pris dans la caisse ; un rival l\'efface → gang prévenu', '2', 2),
+        ('/voisins dans un quartier → Rejoindre ; un ami tire en l\'air dans le quartier → notification « Voisins vigilants » sans position', '2', 2),
+        ('Nuit, aucun policier en service, 3 verres, rouler hors de la ville : barrage du shérif (cônes) → s\'arrêter, E → « Alcootest positif » amende + points ; filer = refus d\'obtempérer', 'Seul', 2),
+        ('Photomaton (à côté du guichet des jetons, à caler via F11) : 3 jetons → photo dans le sac ; un ami dans la cabine reçoit sa copie', '2', 1),
+    ]),
     ('5 · Obligatoire avant d\'ouvrir', [
         ('SAUVEGARDER-BDD.bat puis RESTAURER-BDD.bat sur un joueur ; redémarrage de 6 h : annonces 15 / 5 / 1 min', 'Staff', 3),
         ('Mode staff : vol libre / invisible SANS alerte anti-triche ; F10 tickets et sanctions ; carkill 2 fois → alerte', 'Staff', 3),

@@ -990,6 +990,8 @@ local function playerMenu(p)
     add(2, { title = 'Spectate', icon = 'eye', onSelect = function() local ok, msg = act('spectate', p.id) if not ok then notify(false, msg) end end })
     add(2, { title = 'Soigner', icon = 'heart', onSelect = function() notify(act('heal', p.id)) end })
     add(2, { title = 'Réanimer', icon = 'heart-pulse', onSelect = function() notify(act('revive', p.id)) end })
+    add(1, { title = 'Coincé : ramener au dernier endroit sûr', icon = 'arrow-up', description = 'Sous la carte, dans un mur… (V12.63)',
+        onSelect = function() notify(act('unstuck', p.id)) end })
     add(2, { title = 'Figer / libérer', icon = 'snowflake', onSelect = function() notify(act('freeze', p.id)) end })
     add(3, { title = 'Effacer sa recherche (étoiles)', icon = 'star', description = 'Chaleur remise à zéro (gs_wanted)',
         onSelect = function() ExecuteCommand('effacerrecherche ' .. p.id) notify(true, 'Recherche effacée.') end })

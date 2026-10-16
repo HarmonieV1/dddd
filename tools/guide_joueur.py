@@ -241,7 +241,15 @@ def build():
                   '<b>Gangs : trêve</b> (menu Gang → Trêves, cadres) : 48 h sans guerre entre deux gangs. Mettre l\'un des leurs à terre '
                   'la rompt, et la réputation du gang fautif s\'effondre dans toute la ville.',
                   '<b>Gestes</b> (Alt sur l\'objet) : lavabo (mains, visage), douche, fontaine (boire), et dans la mer : E pour se rincer. '
-                  'Le sang et la saleté partent. Les secours peuvent nettoyer tes plaies.'])
+                  'Le sang et la saleté partent. Les secours peuvent nettoyer tes plaies.',
+                  '<b>Hommage</b> (gangs) : avec une bombe de peinture, choisis « Un hommage » pour peindre « R.I.P. » et le nom d\'un '
+                  'membre disparu, aux couleurs du gang. 24 h, ou pour toujours (1 000 $ de la caisse du gang).',
+                  '<b>Voisins vigilants</b> : <b>/voisins</b> dans ton quartier (hors gang). Tu es prévenu des délits qui y sont signalés, '
+                  'et plus vous êtes nombreux, plus le calme revient vite.',
+                  '<b>Alcootest</b> : la nuit, quand aucun policier n\'est en service, le shérif peut tenir un barrage sur la route. '
+                  'Positif (deux verres ou plus) : amende et points de permis. Ne bois pas si tu conduis.',
+                  '<b>Photomaton</b> à la fête foraine (à côté du guichet des jetons) : une photo souvenir pour 3 jetons ; '
+                  'serrez-vous dans la cabine, chacun repart avec sa copie (à regarder ou accrocher au mur).'])
     s += [Paragraph('Le permis de conduire', H3)]
     s += [table([['Étape', 'Prix', 'Comment'],
                  ['Obtention', 'Gratuit', 'Tout le monde a son permis dès l\'arrivée : la carte <b>Permis de conduire</b> est dans ton sac (F2). Pas d\'auto-école, ni code ni examen.'],

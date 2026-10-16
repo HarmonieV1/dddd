@@ -235,6 +235,13 @@ Actions.fixveh = { level = 2, target = true, run = function(_, target)
     return 'Véhicule réparé'
 end }
 
+-- V12.63 (n° 193) : joueur coincé sous la carte → ramené au dernier endroit sûr (comme dans l'appli staff)
+Actions.unstuck = { level = 1, target = true, run = function(_, target)
+    pcall(function() Security:AllowTeleport(target, 10) end)
+    TriggerClientEvent('gs_admin:client:unstuck', target)
+    return 'Ramené au dernier endroit sûr'
+end }
+
 Actions.clearheat = { level = 2, target = true, run = function(_, target)
     need(started('gs_wanted'), 'gs_wanted non démarré.')
     exports.gs_wanted:ClearHeat(target)

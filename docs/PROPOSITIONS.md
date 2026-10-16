@@ -295,17 +295,17 @@ Avant l'ouverture : 149, 155, 157, 161, 165 et 166 (✚, sans nouveau mapping) s
 | 167 | **Panne d'antenne** : le réseau téléphonique tombe 15 min dans un quartier ; seules les cabines marchent, la police est plus lente à prévenir | ✚ | gs_phone, gs_cabines |
 | 168 | **Affaires non classées** : un tableau au commissariat garde les scènes de crime sans coupable 30 jours ; un enquêteur peut les rouvrir | ✚ | gs_evidence |
 | 169 | **Journal du personnage** : le téléphone note tout seul les faits marquants (arrestations, courses gagnées, mariage) | ✚ | gs_phone, gs_stats |
-| 170 | **Tag en mémoire** : à la mort RP d'un membre, son gang peut peindre son nom sur un mur du quartier (24 h → permanent si payé) | ✚ | gs_gangs, gs_cimetiere |
+| 170 | ✅ **livrée V12.63** · **Tag en mémoire** : à la mort RP d'un membre, son gang peut peindre son nom sur un mur du quartier (24 h → permanent si payé) | ✚ | gs_gangs, gs_cimetiere |
 | 171 | **Souvenirs de collection** : trophées de course, tickets gagnants, plaques d'événement, revendus entre collectionneurs | ✚ | gs_races, gs_casino |
 | 172 | **Contrat entre gangs** : prime sur un membre adverse, visible des seuls gangs ; payée à la mise à terre (détection serveur) | ✚✚ | gs_gangs |
-| 173 | **Voisins vigilants** : bénévoles qui signalent les délits du quartier ; plus ils sont nombreux, plus la tension baisse | ✚ | gs_city, gs_wanted |
+| 173 | ✅ **livrée V12.63** · **Voisins vigilants** : bénévoles qui signalent les délits du quartier ; plus ils sont nombreux, plus la tension baisse | ✚ | gs_city, gs_wanted |
 | 174 | **Procureur de permanence** : sans juge connecté, un dossier simple est jugé avec la peine standard (la justice ne bloque jamais) | ✚ | gs_justice |
 | 175 | **Pizza de nuit** : livraisons dont les clients et les pourboires changent avec le standing du quartier | ✚ | gs_jobs, gs_city |
 | 176 | **Permis de port d'arme** : examen au stand de tir Ammu-Nation ; arme sans permis = délit au contrôle | ✚✚ | gs_police, maps Ammu-Nation |
 | 177 | **Inspection sanitaire** : la mairie note bars et restaurants des joueurs ; la note s'affiche en vitrine | ✚ | gs_business, gs_civil |
 | 178 | **Taxi partagé** : plusieurs clients dans la même course, le chauffeur gagne plus | ✚ | gs_jobs |
 | 179 | **Carnet de santé** : l'EMS voit l'historique médical (blessures, overdoses) ; secret médical vis-à-vis de la police | ✚ | gs_ems, gs_dossier |
-| 180 | **Contrôle d'alcoolémie IA** : sans policier en service, un barrage PNJ arrête parfois les conducteurs la nuit | ✚✚ | gs_wanted (police IA) |
+| 180 | ✅ **livrée V12.63** (rencontres de la route, la nuit) · **Contrôle d'alcoolémie IA** : sans policier en service, un barrage PNJ arrête parfois les conducteurs la nuit | ✚✚ | gs_wanted (police IA) |
 | 181 | **Derniers mots** : à terre depuis longtemps, un SMS d'adieu à un contact (lu même si on est réanimé) | ✚ | gs_phone |
 | 182 | **Immobilier vivant** : le prix des maisons suit le standing du quartier | ✚ | gs_city, logement |
 | 183 | **Chantiers de la ville** : une rue fermée par des ouvriers PNJ, déviation sur le GPS ; métier BTP pour les rouvrir | ✚✚ | gs_jobs, gs_world |
@@ -314,14 +314,14 @@ Avant l'ouverture : 149, 155, 157, 161, 165 et 166 (✚, sans nouveau mapping) s
 | 186 | **Concours de tir** : chaque semaine au stand, classement sur le site | ✚ | maps Ammu-Nation, site |
 | 187 | **Bookmaker** : paris entre joueurs sur les courses et les combats, depuis le téléphone, tenus par un joueur | ✚✚ | gs_races, gs_fightclub |
 | 188 | **Assurance vie** : un bénéficiaire touche une somme à la mort RP (validée au cimetière) | ✚ | gs_insurance, gs_cimetiere |
-| 189 | **Photomaton** de la fête foraine : photo souvenir imprimée (appareil argentique) | ✚ | gs_casino, appareil photo |
+| 189 | ✅ **livrée V12.63** · **Photomaton** de la fête foraine : photo souvenir imprimée (appareil argentique) | ✚ | gs_casino, appareil photo |
 | 190 | **Fête de quartier** : un quartier « en plein essor » a sa fête mensuelle (musique, PNJ, ventes en hausse) | ✚ | gs_city, gs_events |
-| 191 | **Vols vers North Yankton** (neige, prologue de GTA V) comme Cayo Perico : planques, chasse, cavales lointaines | ✚✚ | gs_world |
-| 192 | **Staff : carte des tickets** dans l'appli (où se trouve l'auteur de chaque ticket ouvert) | ✚ | appli staff |
-| 193 | **Staff : coincé sous la map** : détection automatique (altitude), bouton « ramener au dernier point sûr » | ✚ | gs_admin |
+| 191 | ⏸ **reportée** (North Yankton occupe les mêmes coordonnées que Cayo Perico : les deux cartes se superposent ; à refaire en « journée North Yankton » avec Cayo fermé, après un essai en jeu) · **Vols vers North Yankton** (neige, prologue de GTA V) comme Cayo Perico : planques, chasse, cavales lointaines | ✚✚ | gs_world |
+| 192 | ✅ **livrée V12.63** · **Staff : carte des tickets** dans l'appli (où se trouve l'auteur de chaque ticket ouvert) | ✚ | appli staff |
+| 193 | ✅ **livrée V12.63** · **Staff : coincé sous la map** : détection automatique (altitude), bouton « ramener au dernier point sûr » | ✚ | gs_admin |
 | 194 | **Staff : bilan de la semaine** sur Discord (joueurs uniques, heures jouées, pic, sanctions) | ✚ | gs_discord |
 | 195 | **Mon dossier** : chaque joueur voit ses avertissements et leur date d'expiration (moins de frustration, moins de tickets) | ✚ | gs_admin |
-| 196 | **Réduction des textures lourdes** : outil Windows qui passe en 2K les textures de plus de 32 Mo des mods importés | ✚ | IMPORTER-MODS |
+| 196 | ✅ **livrée V12.63** (IMPORTER-MODS allège déjà les .ytd > 48 Mo ; DIAGNOSTIC-MODS liste ceux de 32 à 48 Mo) · **Réduction des textures lourdes** : outil Windows qui passe en 2K les textures de plus de 32 Mo des mods importés | ✚ | IMPORTER-MODS |
 
 Avant l'ouverture : 174, 181, 193, 195 et 196 (✚, sans nouveau mapping ni nouveau métier) sont les plus utiles et les plus sûrs.
 

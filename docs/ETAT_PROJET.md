@@ -329,6 +329,26 @@ Résumé très condensé (le détail complet est dans `docs/ROADMAP.md`, `docs/F
   (code personnel « Pseudo:code:rang », mot de passe collectif = modérateur, Config.Web.actionLevel, fondateur sur tout le monde).
   METTRE-A-JOUR-OVH compare le contenu des scripts du zip et du PC (même numéro de version mais correctif non installé sur le
   PC = proposé avant l'envoi ; avant, les anciens fichiers du PC repartaient au VPS sans le voir).
+  **Risques du 16/10 traités** : (1) gel de ~11 s au démarrage : gs_admin/maps.js note l'ordre de démarrage des ressources
+  (`onResourceStart`) et ne relance plus les packs en conflit si l'ordre est déjà le bon (`orderSatisfied`, testé) ;
+  (2) textures lourdes : DIAGNOSTIC-MODS lit la mémoire réelle des fichiers RSC7 (même formule que maps.js) et liste ceux
+  ≥ 32 Mo (IMPORTER-MODS allège déjà seul les .ytd > 48 Mo des mods non protégés ; rien n'est réduit automatiquement au-delà :
+  modèles .yft/.ydr et packs chiffrés ne se retouchent pas sans risque) ; (3) Shadow Complex : l'archive `_1` réimportée revient
+  (l'ancien nom reste dans RETIRED_MAPS, la raison du retrait — Plasmakart — n'existe plus). DIAGNOSTIC-MODS : « même map en deux
+  versions » (`X` + `X_1`, au moins la moitié des .ymap/.ytyp/.ybn aux mêmes noms) → `_1` en pause, l'original déjà réglé reste ;
+  jamais si l'original est retiré (RETIRED_MAPS de maps.js, mods-retires.txt).
+  **Propositions D10 livrées** : n° 192 (appli staff : anneau jaune sur la carte pour l'auteur d'un ticket ouvert), n° 193 (coincé
+  sous la carte : gs_admin suit le dernier point sûr, retour automatique après 6 s, bouton « Coincé » dans F11, F10 et l'appli
+  (`Actions.unstuck`, `Admin.remote`), `Config.Unstuck`, AllowTeleport), n° 170
+  (hommage peint : la bombe propose « R.I.P. <nom> », 24 h ou permanent payé 1 000 $ par la caisse, 5 par gang, sans influence ;
+  colonnes `text` / `expires_at` de `gs_gang_tags` ajoutées par ALTER … IF NOT EXISTS), n° 173 (voisins vigilants, gs_city
+  server/watch.lua, `/voisins`, KVP `watch:<cid>`, `Config.Watch` : tension qui retombe plus vite et témoins plus prompts par
+  bénévole connecté, plafonnés ; alerte sans position), n° 180 (barrage d'alcoolémie du shérif dans les rencontres de la route :
+  nuit + aucun policier en service, `Config.Breath`, état `gsDrunk` ; scène du shérif partagée `roadStop`, contrôle des papiers
+  inchangé), n° 189 (photomaton, gs_casino `Config.Fair.photobooth` / `photoCost` + export gs_evidence `Souvenir` : même objet
+  photo, une copie par personne dans la cabine, jetons rendus si l'impression échoue), n° 196 (voir plus haut). **N° 191 reportée** :
+  North Yankton et Cayo Perico occupent les mêmes coordonnées (les deux cartes se superposent) ; à faire en « journée North
+  Yankton » (Cayo fermé) après un essai en jeu.
 - **V12.62** (15/10/2026, session de secours) — propositions choisies + relecture complète du gros patch avant le backtest :
   (1) **Lives** : ▦ grille, « ⇢ TP » (action `goto` de gs_admin), **replay 30 s** (n° 137) : tant qu'un ticket est ouvert,
   20 images (1,5 s) de l'auteur et du joueur nommé (« /report 12 … », gs_admin `ReportedPlayers`) gardées EN MÉMOIRE, effacées à

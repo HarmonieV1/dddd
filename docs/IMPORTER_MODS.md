@@ -45,6 +45,11 @@ de spawn), **fichiers en double** (même nom, contenu différent), lignes de `ad
 très lourds. Réponds **O** pour les corrections sûres : mod abîmé mis en pause (`#` + raison), ligne morte enlevée (copie
 `cfg\addons.cfg.avant-diagnostic`). Les conflits ne sont jamais tranchés seuls : garde-en un, ou envoie-moi le rapport.
 Packs protégés (.fxap) : chiffrés, jamais lus ni signalés à tort. Blips en double : en jeu, F11 → Monde et lieux → Blips en double.
+V12.63 : **copies en double** (tous les fichiers déjà dans un autre mod) et **même map en deux versions** (`x` + `x_1`, archive
+retéléchargée : au moins la moitié des .ymap / .ytyp / .ybn aux mêmes noms) → la copie / la version `_1` passe en pause, l'original
+déjà réglé en jeu reste ; jamais si l'original est retiré (RETIRED_MAPS de maps.js, `mods-retires.txt` : ex. Shadow Complex, dont
+la version `_1` est le retour). Section **textures / modèles ≥ 32 Mo** (mémoire réelle lue dans l'en-tête) : à remplacer si l'un
+ne s'affiche pas en jeu (les .ytd > 48 Mo des mods non protégés sont déjà allégés à l'import).
 
 ## Réparer un pack abîmé (« Map ARRÊTÉE … fichier abîmé », « Invalid fixup », « Unexpected end of archive »)
 1. portal.cfx.re → **Granted Assets** → retélécharger le pack (le zip complet, sans l'ouvrir).

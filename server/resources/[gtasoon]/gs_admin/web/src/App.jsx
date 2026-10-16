@@ -11,6 +11,7 @@ const ACTIONS = [
   { name: 'heal', label: 'Soigner', level: 2 },
   { name: 'revive', label: 'Réanimer', level: 2 },
   { name: 'fixveh', label: 'Réparer véhicule', level: 2 },
+  { name: 'unstuck', label: 'Coincé : dernier endroit sûr', level: 1 }, // V12.63 (n° 193)
   { name: 'freeze', label: 'Figer / libérer', level: 2 },
   { name: 'clearheat', label: 'Effacer recherche', level: 2 },
   { name: 'note', label: 'Note staff', level: 2, fields: [{ key: 'text', label: 'Note (visible staff uniquement)', type: 'textarea' }] },

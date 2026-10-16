@@ -15,22 +15,25 @@
 ## 2. Risques connus
 - **52 positions « à caler »** dans les configs (guichet des jetons, carré du cimetière, mur des légendes, tribunal, état civil,
   combats clandestins, assurance, Fleeca, location, quêtes…). Toutes déplaçables en jeu : F11 → Monde et lieux → Déplacer un point.
-- **Serveur figé ~11 s une fois après chaque démarrage** (relance des packs Patoche en conflit). Sans gêne au redémarrage de 6 h ;
-  à optimiser après l'ouverture (mémoriser l'ordre de relance au lieu de tout relire).
+- ~~Serveur figé ~11 s une fois après chaque démarrage~~ **corrigé (soir du 16/10)** : les packs en conflit ne sont relancés que
+  si leur ordre de démarrage n'est pas déjà le bon (console : « ordre de démarrage déjà bon, aucune relance »).
 - **Textures trop lourdes** signalées par la console (48 Mo : police.ytd du pack LSPD, sultanrsv8.ytd ; 32 Mo : nombreuses livrées).
-  Au-delà de 48 Mo graphique, FiveM peut ne pas afficher la texture. Option : réduire ces textures en 2K (outil à faire).
-- **6 mods installés jamais démarrés** dont la map `gsa_patoche_shadow_complex_pack` alors que son script tourne (lieu vide).
+  IMPORTER-MODS allège déjà seul les .ytd de plus de 48 Mo (mods non protégés). DIAGNOSTIC-MODS liste maintenant tout ce qui
+  dépasse 32 Mo ; les modèles (.yft) et les packs chiffrés ne se réduisent pas sans risque : à remplacer si l'un ne s'affiche pas.
+- **Shadow Complex** : l'archive `patoche_shadow_complex_pack_1` réimportée le remet en service (l'ancien nom reste retiré, la raison
+  du retrait — Plasmakart — n'existe plus). Animalerie `_1` : copie d'un pack déjà réglé → DIAGNOSTIC-MODS la met en pause.
 - **Clients FiveM Canary** : version de test de FiveM, plus instable. Conseiller la version normale aux joueurs.
 - **Test de charge jamais fait** (fiche section 5) : 10 joueurs ou plus, 45 min, `/perfserveur` et resmon.
 - **Boutique désactivée** (`Config.Enabled = false`) tant que prix et conformité PLA ne sont pas validés.
 - **Sauvegarde / restauration de la base** : à tester une fois de bout en bout avant l'ouverture.
 
 ## 3. Optimisations possibles (sans toucher à ce qui tourne)
-1. Démarrage : garder en mémoire le résultat de l'analyse des maps (gs_admin) quand aucune map n'a changé → plus de gel de 11 s.
-2. Textures > 32 Mo : réduction automatique (outil Windows) → téléchargement plus court, moins de textures manquantes.
+1. ~~Démarrage : plus de gel de 11 s~~ fait (16/10 soir).
+2. Textures > 32 Mo : repérées par DIAGNOSTIC-MODS (les .ytd > 48 Mo sont déjà allégés à l'import).
 3. 81 boucles client « par image » : toutes sont conditionnelles (à proximité, pendant une action). À contrôler pendant le
    test de charge avec resmon (objectif : aucune ressource gs_ au-dessus de 0,5 ms en continu).
 4. Téléchargement des joueurs : 103 mods démarrés ; retirer les voitures jamais utilisées allège la première connexion.
+   À décider après une semaine de jeu (on saura lesquelles sont achetées / sorties) : rien n'est retiré sans ton accord.
 5. Appli staff : la page se recompile avec le panneau F10 (Vite) ; rien à optimiser côté serveur (réponses immédiates).
 
 ## 4. Manques avant / juste après l'ouverture
@@ -41,7 +44,8 @@
 - Fusion des derniers changements dans `feature/phase1-bridge` (sur accord).
 
 ## 5. Cartes : ce qui est autorisé
-- **Los Santos, Blaine County, Cayo Perico, North Yankton** : contenu de GTA V, aucun risque.
+- **Los Santos, Blaine County, Cayo Perico, North Yankton** : contenu de GTA V, aucun risque de licence. North Yankton occupe
+  les mêmes coordonnées que Cayo Perico : on ne peut pas charger les deux en même temps (vols vers North Yankton reportés).
 - **Maps achetées (Patoche, packs .fxap)** : licences Cfx liées au compte du serveur, autorisées.
 - **Interdit** : contenu d'autres jeux (portages de Vice City, Liberty City, San Andreas), et de façon générale tout ce qui
   reprend la propriété d'un tiers (marques réelles, logos) : risque de fermeture du serveur par Cfx / Rockstar.

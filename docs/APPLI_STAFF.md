@@ -26,7 +26,7 @@ la ligne `set gs_admin_web_password "…"` dans `server-data\cfg\secrets.cfg` (j
 |---|---|
 | Tableau de bord | Joueurs en ville (courbe 24 h), staff en service, tickets, recherchés, isolés / gelés, carte en direct, derniers tickets, journal, annonce à la ville |
 | Joueurs | Recherche et filtres (recherchés, isolés, staff, en service) ; fiche complète (métier, session, recherche, gang, argent, isolement, dossier staff) |
-| Carte | Tous les joueurs en direct sur la carte de Los Santos (couleur = état) ; clic = fiche |
+| Carte | Tous les joueurs en direct sur la carte de Los Santos (couleur = état) ; clic = fiche ; anneau jaune = auteur d'un ticket ouvert (V12.63) |
 | Lives | Jusqu'à 4 écrans de joueurs en même temps (une image / 1,5 s), replays 30 s des tickets ouverts |
 | Tickets | Prendre en charge, clôturer, ouvrir la fiche, replay |
 | Sanctions | Bannis actifs, recherche, débannir |
@@ -42,7 +42,9 @@ la ligne `set gs_admin_web_password "…"` dans `server-data\cfg\secrets.cfg` (j
 - Changer le mot de passe collectif garde les codes avec rang (efface seulement les anciens codes sans rang).
 
 ## Actions sur un joueur
-- **Assistance** : soigner, réanimer, réparer le véhicule, effacer la recherche, téléporter (lieu de la liste ou à côté d'un joueur).
+- **Assistance** : soigner, réanimer, réparer le véhicule, effacer la recherche, téléporter (lieu de la liste ou à côté d'un joueur),
+  **coincé : dernier endroit sûr** (V12.63 : le jeu retient la dernière position au sol ; à défaut la place de Legion Square,
+  `Config.Unstuck` ; retour automatique après 6 s sous la carte ; même bouton dans F10 et F11 → Joueurs).
 - **Contrôle** : geler / dégeler, message privé, note staff, isoler (minutes + motif), libérer.
 - **Sanctions** : avertir, expulser, bannir (1, 3, 7, 14, 30 jours ou définitif) — motif obligatoire, publié dans #sanctions.
 - Garde-fou : aucune sanction ni téléportation depuis l'appli sur un membre du staff, quel que soit son rang (`Config.Web.protectLevel`).

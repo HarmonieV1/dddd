@@ -77,10 +77,15 @@
 | **Lives : capture** | `screenshot-basic`, `gs_lives` | Capture réparée pour les versions récentes de FiveM (rappel en https) ; F8 `/livestest` pour tester sur son PC |
 | **Retours du 16/10** | `gs_vie`, `gs_races`, `gs_gangs`, `gs_details`, `gs_admin` | Poubelles : seulement la fouille animée ; gestes selon l'objet (lavabo, douche, fontaine, mer, EMS) ; courses sur mesure : véhicule imposé, organisateur moins strict, relance du départ ; plus de gangs par défaut ; quartiers en rectangles de pâtés de maisons ; cyclone limité à 210 km/h ; appli staff : rangs (fondateur sur tout le monde) |
 | **Outils OVH** | `scripts/windows` | GERER-OVH ne plante plus (« roadline-envoi.txt en cours d'utilisation ») ; METTRE-A-JOUR-OVH ne renvoie plus les gros fichiers déjà présents sur le VPS (fini le 1 Go à chaque fois) ; avancée affichée pendant l'envoi (Mo, %, temps restant) ; envoi coupé **complété** au lieu d'être recommencé ; GERER-OVH ne renvoie la commande roadline que si elle a changé et ouvre le menu même si l'envoi échoue, sans plus jamais toucher au serveur pendant une mise à jour (verrou) |
+| **Démarrage plus rapide** | `gs_admin/maps.js` | Plus de gel de ~11 s après chaque démarrage : les packs en conflit ne sont relancés que si leur ordre de démarrage n'est pas déjà le bon |
+| **Staff : tickets et coincés** | appli staff, F11, `gs_admin` | Carte : anneau jaune sur l'auteur d'un ticket ouvert (n° 192) ; joueur coincé sous la carte : retour automatique après 6 s, bouton « Coincé : dernier endroit sûr » dans F11, F10 et l'appli (n° 193) |
+| **Mods : textures et versions** | DIAGNOSTIC-MODS | Liste des textures / modèles de plus de 32 Mo ; même map installée en deux versions (animalerie `_1`) : la copie passe en pause, l'original reste (Shadow Complex `_1` gardé : l'ancien est retiré) |
+| **Idées du 16/10** | `gs_gangs`, `gs_city`, `gs_roadside`, `gs_casino` | Hommage peint au nom d'un membre disparu (n° 170), voisins vigilants `/voisins` (n° 173), alcootest du shérif la nuit sans policier (n° 180), photomaton de la fête foraine (n° 189). North Yankton (n° 191) reporté : même emplacement que Cayo Perico |
 
 ## Encore en attente (côté fondateur)
 - `shared/config.lua` du script des auto-tamponneuses si l'achat bloque encore ;
 - dossier `mods-tri\a-convertir` (vêtements solo) en morceaux de 25 Mo — ou intégrer le convertisseur à IMPORTER-MODS après le backtest ;
 - Emerus GTR et Tempesta widebody à retélécharger (archives coupées) ;
-- positions à caler en jeu : guichet des jetons, carré du cimetière ;
+- positions à caler en jeu : guichet des jetons, photomaton, carré du cimetière ;
+- code cfx.re du serveur (txAdmin → tableau de bord, ou liste des serveurs FiveM) : à me donner pour le site ;
 - ~~fusion dans `feature/phase1-bridge`~~ faite le 16/10.
