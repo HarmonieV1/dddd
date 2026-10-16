@@ -27,6 +27,19 @@ if ($zipVer -and $ver -ne $zipVer) {
     $ver = [regex]::Match((Get-Content -LiteralPath (Join-Path $Data 'server.cfg') -Raw), 'setr gs_version "([^"]+)"').Groups[1].Value
     if ($ver -ne $zipVer) { Fail "Le PC est toujours en $ver : la mise à jour du PC n'a pas abouti (voir sa fenêtre)." }
 }
+# V12.63 · Même numéro de version, mais ce zip contient des correctifs que le PC n'a pas encore (METTRE-A-JOUR pas relancé) :
+# avant, on renvoyait au VPS les anciens fichiers du PC sans le voir. On compare le contenu des scripts.
+$srcG = Join-Path $Repo 'server\resources\[gtasoon]'
+$pcG = Join-Path $Res '[gtasoon]'
+$diff = @(Get-ChildItem -LiteralPath $srcG -Recurse -File | Where-Object { $_.Extension -in '.lua', '.js', '.html' -and $_.FullName -notmatch '\\node_modules\\' } | Where-Object {
+    $pc = Join-Path $pcG $_.FullName.Substring($srcG.Length + 1)
+    -not (Test-Path -LiteralPath $pc) -or (Get-FileHash -LiteralPath $pc -Algorithm MD5).Hash -ne (Get-FileHash -LiteralPath $_.FullName -Algorithm MD5).Hash })
+if ($diff.Count) {
+    Say ("Ce zip contient {0} fichier(s) plus récent(s) que le serveur du PC (ex. : {1})." -f $diff.Count, (($diff | Select-Object -First 3 | ForEach-Object { $_.FullName.Substring($srcG.Length + 1) }) -join ', ')) 'Yellow'
+    if ((Read-Host "  Mettre d'abord le PC à jour avec ce zip (METTRE-A-JOUR), puis envoyer au VPS ? (O/N, O conseillé)") -match '^[oOyY]') {
+        & powershell -NoProfile -ExecutionPolicy Bypass -File (Join-Path $PSScriptRoot 'mettre-a-jour.ps1')
+    }
+}
 Say "Version à envoyer : $ver" 'Cyan'
 $vps = Get-Vps
 Initialize-SshKey $vps # connexion sans mot de passe (clé), avant tout le reste

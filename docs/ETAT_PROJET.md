@@ -296,6 +296,8 @@ Résumé très condensé (le détail complet est dans `docs/ROADMAP.md`, `docs/F
   Connexions au VPS en IPv4 forcé (`AddressFamily=inet` dans `SshArgs`) : coupures répétées constatées en IPv6.
   Appli staff : si `server/crypto.js` n'est pas chargé (« Redémarre gs_admin » au backtest), jeton de session tiré de
   /dev/urandom (jamais math.random) + avertissement console.
+  METTRE-A-JOUR-OVH compare le contenu des scripts du zip et du PC (même numéro de version mais correctif non installé sur le
+  PC = proposé avant l'envoi ; avant, les anciens fichiers du PC repartaient au VPS sans le voir).
 - **V12.62** (15/10/2026, session de secours) — propositions choisies + relecture complète du gros patch avant le backtest :
   (1) **Lives** : ▦ grille, « ⇢ TP » (action `goto` de gs_admin), **replay 30 s** (n° 137) : tant qu'un ticket est ouvert,
   20 images (1,5 s) de l'auteur et du joueur nommé (« /report 12 … », gs_admin `ReportedPlayers`) gardées EN MÉMOIRE, effacées à
