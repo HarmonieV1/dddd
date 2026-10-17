@@ -512,6 +512,45 @@ Tout passerait par F11 → Joueurs → le joueur → Mises en scène (admin et p
 
 Les plus utiles tout de suite (✚, rien à installer) : 277, 278, 281, 282, 284, 288, 295 et 296.
 
+
+## D14. Suite (V12.64, 17/10) — appli staff et F11, signatures inédites
+
+### Appli staff et F11
+| # | Proposition | Effort | S'appuie sur |
+|---|---|---|---|
+| 297 | **Recherche universelle** (Ctrl+K) : un champ pour trouver un joueur, une plaque, un ticket, un objet | ✚ | gs_admin, appli |
+| 298 | **Fiche chronologique** : connexions, sanctions, tickets, crimes signalés, gros mouvements d'argent sur une ligne de temps | ✚✚ | gs_admin, gs_stats |
+| 299 | **Barème de sanctions** : modèles (1er RDM = avertissement, 2e = 30 min…), la récidive est proposée toute seule | ✚ | gs_admin |
+| 300 | **Annuler la dernière action** (2 min) : jail, gel, expulsion d'office ou TP faits par erreur | ✚ | gs_admin |
+| 301 | **Caméra libre autour d'un joueur** (F11) sans se téléporter, invisible | ✚ | gs_admin (spectate) |
+| 302 | **Favoris F11** : épingler 6 actions en haut du menu | ✚ | gs_admin |
+| 303 | **Chat staff** synchronisé appli ↔ jeu (/sc) | ✚ | appli, gs_admin |
+| 304 | **Carte des incidents** dans l'appli : tickets, morts, alertes anti-triche de la soirée en points chauds | ✚ | appli |
+| 305 | **Programmer un événement** (neige, chasse au trésor, soirée) à une heure donnée depuis l'appli | ✚ | gs_admin, gs_events |
+| 306 | **Fiche véhicule** : plaque → propriétaire, carnet, fourrière, signalements | ✚ | gs_carnet, appli |
+| 307 | **Double validation** pour un ban définitif (deux admins) | ✚ | gs_admin |
+| 308 | **Réponses types** aux tickets + clôture avec le replay joint | ✚ | appli, gs_lives |
+
+### Signatures inédites (pensées pour RoadLine)
+| # | Proposition | Effort | S'appuie sur |
+|---|---|---|---|
+| 309 | **La loi de la semaine** : les citoyens votent une mesure (couvre-feu à Vinewood, taxe, armes interdites dans un quartier), le serveur l'applique 7 jours | ✚✚ | gs_civil, gs_city |
+| 310 | **Les archives de Los Santos** : un musée à la mairie avec les vraies photos des grands moments (scènes de crime, courses, mariages) | ✚✚ | gs_evidence (photos) |
+| 311 | **L'écho d'un disparu** : après une mort RP définitive, un PNJ avec sa tenue erre une nuit dans son quartier | ✚ | gs_cimetiere, gs_memoire |
+| 312 | **Le journal de la ville** sur le site : une page par jour écrite avec les faits réels, archivée = l'histoire du serveur | ✚ | gs_faitsdivers, site |
+| 313 | **Le passé du personnage** : à la création, un passé (ancien détenu, ex-flic, fils de famille) qui change les réactions des PNJ et de la police IA | ✚✚ | gs_onboarding, gs_wanted |
+| 314 | **La dette de vie** : sauvé par quelqu'un (réanimé, sorti d'un incendie), tu lui dois une faveur, notée et utilisable une fois | ✚ | gs_police (EMS), gs_accords |
+| 315 | **L'énigme du mois** : un vrai trésor, des indices dans la radio, la Gazette, les cabines et le site | ✚✚ | gs_lsradio, gs_cabines, site |
+| 316 | **Objets qui ont une histoire** : une arme ou une montre garde ses anciens propriétaires, revendable comme pièce de collection | ✚✚ | gs_evidence, gs_market |
+| 317 | **Les PNJ témoignent au procès** : un passant qui a vu le crime vient décrire le suspect devant le juge | ✚ | gs_wanted (mémoire), gs_justice |
+| 318 | **La ville change avec les saisons** : un chantier finit, un commerce ouvre, selon ce que les joueurs ont fait pendant la saison | ✚✚✚ | gs_seasons, gs_city |
+| 319 | **Week-end « une seule vie »** : permadeath volontaire, titre cosmétique à ceux qui tiennent | ✚ | gs_cimetiere, gs_quests |
+| 320 | **Radio des joueurs** : un joueur anime une émission entendue dans toutes les voitures de la ville | ✚✚ | gs_lsradio, pma-voice |
+| 321 | **Enseigne au nom d'un habitué** : le bar ou le garage le plus fréquenté par un joueur prend son nom pendant un mois | ✚ | gs_memoire, gs_business |
+| 322 | **Tags qui vivent** : la pluie délave les tags de gang, la mairie les recouvre dans les quartiers calmes | ✚ | gs_gangs, gs_weather |
+
+Les plus sûres avant l'ouverture : 297, 299, 300, 302, 305, 308, 311, 312, 317 et 322.
+
 ---
 À coller à la suite de la section B dans `C:\Users\STEPHANE\Desktop\Base STEVEN\roadline-repo\docs\PROPOSITIONS.md` (nouvelle section D),
 puis tri par le fondateur comme pour les 57 premières. Rappel du cap décidé le 11/10 : pas de nouveau gros système avant le 20/10 ;
