@@ -344,7 +344,7 @@ Livré ce soir (demande du fondateur : outils réservés admin / super-admin / f
 | 203 | **Bulletin météo de la veille** : Weazel annonce la pluie ou la tempête du lendemain (gs_weather tire la météo à l'avance) | ✚ | gs_weather, gs_social |
 | 204 | **Défis du jour** : trois petits objectifs quotidiens (livrer, pêcher, aider un inconnu), série de jours récompensée | ✚ | gs_quests |
 | 205 | **Anniversaire du personnage** : âge sur la carte d'identité, rappel aux amis le jour J, gâteau en vente au 24/7 | ✚ | gs_civil, gs_phone |
-| 206 | **Salle de sport** : séances animées qui donnent un bonus d'endurance pour la journée ; coach joueur payé à la séance | ✚ | gs_vie, gs_business |
+| 206 | ✅ **livrée V12.64** · **Salle de sport** : séances animées qui donnent un bonus d'endurance pour la journée ; coach joueur payé à la séance | ✚ | gs_vie, gs_business |
 | 207 | **Salon de coiffure tenu par un joueur** : le coiffeur propose la coupe, le client valide (et paie) | ✚ | gs_business, apparence |
 | 208 | **Drive-in du vendredi** : écran géant qui diffuse les meilleurs clips du serveur, voitures garées face à l'écran | ✚✚ | gs_events, DUI |
 | 209 | **Golf du Country Club** : parcours en mini-jeu, cartes de score sur le site | ✚✚ | site, gs_stats |
@@ -373,11 +373,11 @@ Livré ce soir (demande du fondateur : outils réservés admin / super-admin / f
 | 224 | **Vol de cuivre** : arracher les câbles d'un chantier ou d'un poteau provoque une petite panne dans le quartier (et une enquête) | ✚ | gs_city, gs_evidence |
 | 225 | **Casse auto clandestine** : démonter une voiture volée en pièces revendues ; le numéro de série peut être retrouvé | ✚✚ | gs_tuning, gs_evidence |
 | 226 | **Plantation repérée par la facture d'électricité** : une culture en intérieur fait grimper la conso, un indice pour la police | ✚ | gs_drugs, logement |
-| 227 | **Piratage de distributeur** : mini-jeu sur un ATM la nuit, alarme si raté, caméra qui filme le visage | ✚✚ | gs_bank, gs_cctv |
+| 227 | ✅ **livrée V12.64** · **Piratage de distributeur** : mini-jeu sur un ATM la nuit, alarme si raté, caméra qui filme le visage | ✚✚ | gs_bank, gs_cctv |
 | 228 | **Transfert de détenu attaquable** : un fourgon emmène un condamné, son gang peut tenter de le libérer (validé par le staff) | ✚✚ | gs_justice, gs_gangs |
 | 229 | **Receleur nomade** : il change d'adresse chaque jour, seules les rumeurs disent où il est | ✚ | gs_rumors, gs_blackmarket |
-| 230 | **Pot-de-vin au policier PNJ** : sans policier en service, acheter le contrôleur réduit l'amende mais peut ouvrir une enquête | ✚ | gs_wanted, gs_roadside |
-| 231 | **Drone de repérage** : vue aérienne limitée en portée et en batterie, pour gangs et police, abattable | ✚✚ | gs_heists, gs_police |
+| 230 | ✅ **livrée V12.64** · **Pot-de-vin au policier PNJ** : sans policier en service, acheter le contrôleur réduit l'amende mais peut ouvrir une enquête | ✚ | gs_wanted, gs_roadside |
+| 231 | ✅ **livrée V12.64** · **Drone de repérage** : vue aérienne limitée en portée et en batterie, pour gangs et police, abattable | ✚✚ | gs_heists, gs_police |
 | 232 | **Livraisons vers North Yankton** : contrebande par avion les jours de neige, plus risquée, mieux payée | ✚ | gs_world, gs_smuggling |
 | 233 | **Dette de jeu** : un joueur ruiné au casino peut emprunter au casino clandestin, remboursement exigé par les gangs | ✚ | gs_casino, gs_gangs |
 | 234 | **Repaire déménagé** : une planque trop souvent perquisitionnée doit changer d'adresse (sinon bonus de chaleur) | ✚ | gs_hideouts, gs_wanted |
@@ -403,6 +403,69 @@ Livré ce soir (demande du fondateur : outils réservés admin / super-admin / f
 | 246 | **Plaque commémorative** : le staff dévoile une plaque pour un joueur marquant (départ, record), visible pour toujours | ✚ | gs_memoire, gs_cimetiere |
 
 Avant l'ouverture, les plus sûres (✚, sans nouveau mapping) : 202, 204, 211, 215, 221, 224, 230, 236 et 240.
+
+
+## D12. Suite (V12.64, 16/10 nuit) — livrées ce soir, puis 30 idées liées à la ville et aux signatures
+
+Livrées (demande du fondateur) : **206** salle de sport (bonus d'endurance), **227** piratage de distributeur (boîtier du marché
+noir + animation + mini-jeu), **230** pot-de-vin au policier PNJ (négociation à 1 ★ et contrôles du shérif), **231** drone de
+repérage (police en service, et gangs avec un accès difficile). Et les **Lives** du staff rendus fluides (F11 et appli).
+
+### La ville vivante (quartiers, tension, black-out)
+| # | Proposition | Effort | S'appuie sur |
+|---|---|---|---|
+| 247 | **Quartier en deuil** : après une mort RP, les commerces du quartier baissent le rideau une heure, bougies au coin de la rue, la radio dit un mot | ✚ | gs_city, gs_cimetiere, gs_lsradio |
+| 248 | **Quartier en fête** : un gang qui reprend son territoire déclenche une soirée (musique, PNJ) que la police IA surveille de loin | ✚ | gs_gangs, gs_nightcity |
+| 249 | **Les prix suivent la tension** : quartier tendu = commerces PNJ qui ferment plus tôt et augmentent leurs prix ; quartier calme = promotions | ✚ | gs_city, gs_economy |
+| 250 | **La rumeur qui devient vraie** : une rumeur reprise trois fois déclenche le fait divers PNJ qui va avec | ✚✚ | gs_rumors, gs_faitsdivers |
+| 251 | **Black-out complet** : un transformateur saboté coupe aussi les caméras et les distributeurs du quartier pendant la panne | ✚ | gs_city, gs_cctv, gs_bank |
+| 252 | **Distributeur hors service** : un distributeur piraté affiche « hors service » 45 min, des passants râlent devant | ✚ | gs_bank, gs_memoire |
+| 253 | **Voisins vigilants + drone** : le quartier qui a beaucoup de voisins vigilants peut demander un passage du drone LSPD (la police reçoit la demande) | ✚ | gs_city, gs_drone |
+| 254 | **Caméra de rue payée par les habitants** : cagnotte des voisins vigilants pour poser une caméra dans leur rue | ✚✚ | gs_city, gs_cctv |
+
+### Police IA, cavale, justice
+| # | Proposition | Effort | S'appuie sur |
+|---|---|---|---|
+| 255 | **L'agent PNJ se souvient** : acheté une fois, il demande le double la deuxième fois ; la troisième, il te balance | ✚ | gs_wanted (pot-de-vin) |
+| 256 | **Affaires internes en jeu** : une ligne « corruption » au casier ouvre une petite enquête pour la police joueur (témoins, caméra) | ✚✚ | gs_police, gs_evidence |
+| 257 | **Barrages après un braquage** : sans policier joueur, deux sorties du quartier sont barrées 10 min par la police IA | ✚✚ | gs_wanted, gs_roadside |
+| 258 | **Drone de la police IA** : à 4 ★, un drone suit le suspect dans les ruelles où l'hélico le perd | ✚ | gs_wanted, gs_drone |
+| 259 | **Une légende revient** : un nom du mur des légendes vu sans masque par un PNJ déclenche une rumeur « on l'a vu à… » | ✚ | gs_wanted, gs_rumors |
+
+### La mémoire (cimetière, cabines, traces)
+| # | Proposition | Effort | S'appuie sur |
+|---|---|---|---|
+| 260 | **Visite au cimetière** : des fleurs sur la tombe d'un ancien joueur, et la radio lit parfois son épitaphe | ✚ | gs_cimetiere, gs_lsradio |
+| 261 | **La cabine qui sonne** : en passant, une cabine sonne ; au bout du fil, un indic' parle d'un vrai crime récent | ✚ | gs_cabines, gs_rumors |
+| 262 | **Répondeur des cabines** : un message laissé dans une cabine est entendu par le prochain qui décroche | ✚ | gs_cabines |
+| 263 | **Objets oubliés** : une chaussure, un téléphone tombés pendant une fusillade restent 24 h, à ramasser comme preuve ou souvenir | ✚ | gs_evidence, gs_memoire |
+
+### Radio, presse, météo
+| # | Proposition | Effort | S'appuie sur |
+|---|---|---|---|
+| 264 | **Flash spécial à la radio** : pendant une grosse cavale, Radio Los Santos raconte la poursuite en direct dans les voitures | ✚ | gs_lsradio, gs_wanted |
+| 265 | **Courrier des auditeurs** : un message envoyé depuis une cabine ou le téléphone, le meilleur lu à l'antenne | ✚ | gs_social, gs_lsradio |
+| 266 | **Météo racontée** : avant une tempête, la radio dit quels quartiers éviter ; après, les rumeurs parlent des dégâts | ✚ | gs_weather, gs_lsradio, gs_rumors |
+
+### La nuit, la route, les voyages
+| # | Proposition | Effort | S'appuie sur |
+|---|---|---|---|
+| 267 | **Les habitués de la nuit** : vendeur de hot-dogs, musicien, insomniaque, toujours au même coin, qui se souviennent de toi | ✚ | gs_nightcity, gs_memoire |
+| 268 | **Le portefeuille gardé revient** : le propriétaire d'un portefeuille gardé te reconnaît sur la route une semaine plus tard | ✚ | gs_roadside |
+| 269 | **Convoi du vendredi minuit** : des voitures PNJ préparées traversent la ville ; les suivre jusqu'au bout donne de la réputation de rue | ✚✚ | gs_nightcity, gs_tuning |
+| 270 | **L'exil à North Yankton** : un fugitif peut fuir par le vol du jour ; sa cavale se met en pause, mais là-bas il est « l'étranger » | ✚ | gs_world, gs_wanted |
+| 271 | **Le shérif de Ludendorff** : un shérif PNJ qui commente les nouveaux venus et signale ceux qui sont recherchés | ✚ | gs_world |
+
+### Sport et staff
+| # | Proposition | Effort | S'appuie sur |
+|---|---|---|---|
+| 272 | **Coach de la salle de sport** : un joueur guide la séance d'un autre, bonus plus long, coach payé | ✚ | gs_vie (salle de sport) |
+| 273 | **Tour de Muscle Beach** : le samedi, un tour de la plage chronométré à pied, classement sur le site | ✚ | gs_vie, gs_races, site |
+| 274 | **Lives en mosaïque** : tout le serveur en vignettes (une image toutes les 10 s) pour repérer un souci d'un coup d'œil | ✚ | gs_lives |
+| 275 | **Replay sur alerte anti-triche** : comme pour les tickets, les 30 dernières secondes d'un joueur signalé sont gardées | ✚ | gs_lives, gs_security |
+| 276 | **Drones dans l'appli staff** : drones en vol, pilote et batterie sur la carte | ✚ | gs_drone, appli staff |
+
+Les plus sûres avant l'ouverture (✚, rien de neuf à installer) : 249, 252, 255, 259, 260, 264, 266 et 275.
 
 ---
 À coller à la suite de la section B dans `C:\Users\STEPHANE\Desktop\Base STEVEN\roadline-repo\docs\PROPOSITIONS.md` (nouvelle section D),

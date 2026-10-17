@@ -71,12 +71,13 @@ HISTORY = [
                       "robuste, site V13 (météo et heure de la ville en direct), catalogues véhicules et armes ; contrôle des doublons (aucun) ; "
                       "14 maps importées, F11 « Mappings installés » (emplacement lu dans les fichiers, téléportation, conflits entre maps), "
                       "sous-sol du commissariat de Mission Row (police)"],
-    ['V12.13 – V12.63', "Maps : conflits d'occlusion fusionnés automatiquement, vrais noms, « Monde et lieux » réservé aux super-admins, "
+    ['V12.13 – V12.64', "Maps : conflits d'occlusion fusionnés automatiquement, vrais noms, « Monde et lieux » réservé aux super-admins, "
                         "puis toutes les maps gratuites retirées définitivement ; réapparition [E] fiabilisée ; /optin réparé ; "
                         "40 maps payantes (escrow) installées et vérifiées au démarrage, optimiseur de textures réparé, outil REPARER-FIVEM, "
                         "site de la documentation avec backtest à cocher ; clés et vêtements en objets, garde-robe avec personnage en grand ; "
                         "concessions avec essais, mécano Benny's avec aperçu et facture, courses sur mesure, territoires de gang peuplés ; "
-                        "boutique en jeu avec RoadCoins, caméras de la police en direct"],
+                        "boutique en jeu avec RoadCoins, caméras de la police en direct ; V12.64 : Lives fluides, drones de repérage "
+                        "(police et gangs), piratage de distributeur, pot-de-vin à la police IA, salle de sport"],
 ]
 
 FEATURES = [

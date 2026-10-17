@@ -3,7 +3,9 @@
 dofile('tests/mock.lua')
 local R = 'server/resources/[gtasoon]/'
 local heat, reported, points = 0, {}, {}
-provide('gs_wanted', { GetHeat = function() return heat end, ReportCrime = function(src, crime) reported[#reported + 1] = crime return true end })
+local corruption = {} -- V12.64 : enquêtes ouvertes après un pot-de-vin
+provide('gs_wanted', { GetHeat = function() return heat end, ReportCrime = function(src, crime) reported[#reported + 1] = crime return true end,
+    CorruptionCase = function(src, amount) corruption[#corruption + 1] = amount return true end })
 provide('gs_driving', { RemovePoints = function(src, n) points[src] = (points[src] or 0) + n end })
 local hour, cops = 14, {}
 provide('gs_weather', { GetGameTime = function() return hour end, GetWeather = function() return 'CLEAR' end })
@@ -162,6 +164,37 @@ heat = 20
 d = force('wallet')
 W.clientEvents = {}
 check('alcootest : recherché → poursuite', d.wanted == true and Roadside.finish(1, d.token, 'checked') == true and lastClientEvent('gs_wanted:client:npcPolice', 1) ~= nil)
+heat = 0
+
+-- V12.64 · Pot-de-vin au contrôle (n° 230) : en faute seulement, moitié de l'amende en liquide, enquête possible, refus = pire
+local Bb = Config.Bribe
+local price = math.ceil(B.fine * Bb.share)
+W.players[1].money.bank, W.players[1].money.cash, points[1] = 5000, 1000, 0
+d = force('wallet')
+Player(1).state:set('gsDrunk', B.limit)
+fixRandom(0.5) -- accepté, pas d'enquête
+check('pot-de-vin accepté : ni amende ni points, billet pris', Roadside.finish(1, d.token, 'bribed') == true and W.players[1].money.cash == 1000 - price
+    and W.players[1].money.bank == 5000 and points[1] == 0 and seen['CID1bribed'] == 1 and #corruption == 0)
+d = force('wallet')
+fixRandom(0.1) -- accepté… mais enquête
+check('pot-de-vin accepté avec enquête : ligne au casier', Roadside.finish(1, d.token, 'bribed') == true and #corruption == 1 and corruption[1] == price)
+d = force('wallet')
+fixRandom(0.9) -- refusé
+check('pot-de-vin refusé : amende majorée + points', Roadside.finish(1, d.token, 'bribed') == true and W.players[1].money.bank == 5000 - math.floor(B.fine * Bb.refusedFine)
+    and points[1] == B.points and W.players[1].money.cash == 1000 - 2 * price)
+Player(1).state:set('gsDrunk', nil)
+d = force('wallet')
+local cash0 = W.players[1].money.cash
+fixRandom(0.1)
+check('en règle : le shérif refuse le billet, sans suite', Roadside.finish(1, d.token, 'bribed') == true and W.players[1].money.cash == cash0 and #corruption == 1)
+hour = 14
+W.players[1].licences = {}
+d = force('sheriff')
+W.players[1].money.cash, W.players[1].money.bank = 10, 5000
+fixRandom(0.1)
+check('sans permis, sans liquide : refusé (amende majorée)', Roadside.finish(1, d.token, 'bribed') == true and W.players[1].money.bank == 5000 - math.floor(Config.Types.sheriff.fine * Bb.refusedFine))
+fixRandom()
+W.players[1].licences = { driver = true }
 heat, hour = 0, 14
 
 -- Ignorer : rien ne se passe

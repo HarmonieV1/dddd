@@ -499,3 +499,12 @@ Traductions françaises manquantes des scripts Qbox ajoutées par METTRE-A-JOUR 
   photomaton, courses sur mesure avec véhicule imposé, gestes selon l'objet (lavabo, douche, fontaine, mer).
 - **Staff** : Lives (écrans des joueurs, replays des tickets), appli staff externe installable (PC, téléphone, tablette, logo RoadLine), carte en direct, rapport de fin de soirée ; modération avancée (surveillance, arrivées fermées, contournement de ban, ban hors ligne).
 
+
+## V12.64 · Nuit du 16/10 (détail : `docs/PATCH_NOTE_V12.64.md`)
+- **Illégal** : piratage de distributeur (boîtier du marché noir, animation, mini-jeu, alarme si raté, caméra du distributeur) ;
+  pot-de-vin à la police IA à 1 ★ (somme choisie, prix caché, enquête des affaires internes possible) et aux contrôles du shérif ;
+  drone de repérage des gangs (rare, cher, membres confirmés, abattable, repérable au radar).
+- **Police** : drone de surveillance LSPD (F4 ou `/drone`) : thermique, suspect marqué suivi par toute la patrouille.
+- **Vie** : salles de sport en plein air (séance de trois exercices = bonus d'endurance de 6 h).
+- **Staff** : Lives fluides (images réduites chez le joueur filmé, flux continu, ≈ 2 à 3 images/s) ; screenshot-basic ne recopie
+  plus l'écran en permanence chez tous les joueurs.

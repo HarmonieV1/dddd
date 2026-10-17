@@ -191,6 +191,8 @@ function Roadside.finish(src, token, outcome)
         reportCrime(src, 'refusal')
         removePoints(src, Config.Types.sheriff.points, 'Refus d\'obtempérer')
         return done('sheriff_fled')
+    elseif (s.kind == 'sheriff' or s.kind == 'checkpoint') and outcome == 'bribed' then -- V12.64 · pot-de-vin (n° 230)
+        return Roadside.bribe(src, s, def, done)
     elseif s.kind == 'ghost' and outcome == 'vanished' then
         if elapsed < 20 then return false end
         pay(src, rnd(Config.Halloween.ghostPay), 'Sur le siège passager, il a laissé')
@@ -200,6 +202,40 @@ function Roadside.finish(src, token, outcome)
         return done('friend')
     end
     return false, nil
+end
+
+--- V12.64 · Pot-de-vin au contrôle du shérif / à l'alcootest (proposition n° 230). Le serveur sait seul si le conducteur est
+--- en faute (permis, verres récents) : le prix, l'accord, l'enquête et l'amende de refus sont décidés ici.
+function Roadside.bribe(src, s, def, done)
+    local B = Config.Bribe
+    if s.wanted then
+        notify(src, 'Le shérif te reconnaît : « Pas un geste ! »', 'error')
+        TriggerClientEvent('gs_wanted:client:npcPolice', src, 2)
+        return done(s.kind)
+    end
+    local fine, points, why
+    if s.kind == 'checkpoint' then
+        if (tonumber(Player(src).state.gsDrunk) or 0) >= Config.Breath.limit then fine, points, why = Config.Breath.fine, Config.Breath.points, 'Conduite en état d\'ivresse' end
+    elseif not (Bridge:GetLicences(src) or {}).driver then
+        fine, points, why = def.fine, 0, 'Conduite sans permis'
+    end
+    if not fine then
+        notify(src, '« Rangez ça. Vos papiers sont en règle, bonne route. »', 'success')
+        return done(s.kind)
+    end
+    local price = math.ceil(fine * B.share)
+    if (Bridge:GetMoney(src, 'cash') or 0) >= price and math.random() < B.accept and Bridge:RemoveMoney(src, 'cash', price) then
+        local probe = math.random() < B.investigate
+        if probe and GetResourceState('gs_wanted') == 'started' then pcall(function() exports.gs_wanted:CorruptionCase(src, price) end) end
+        notify(src, ('Le shérif empoche %d $ : « Je n\'ai rien vu. »%s'):format(price, probe and ' Un collègue a tout noté : une enquête est ouverte.' or ''), probe and 'error' or 'success')
+        return done('bribed')
+    end
+    local total = math.floor(fine * B.refusedFine)
+    Bridge:RemoveMoney(src, 'bank', total)
+    if points > 0 then removePoints(src, points, why) end
+    notify(src, ('« Vous essayez de m\'acheter ? » %s et tentative de corruption : amende de %d $%s.'):format(why, total,
+        points > 0 and (' et %d points de permis'):format(points) or ''), 'error')
+    return done(s.kind == 'checkpoint' and 'checkpoint_drunk' or s.kind)
 end
 
 --- Vendeur ambulant : achat (scène active, vendeur à portée)

@@ -350,8 +350,24 @@ local function roadStop(prompt, label, props)
             if waitInteract(cop, 20.0, prompt, true) then
                 ClearPedTasks(cop)
                 TaskTurnPedToFaceEntity(cop, cache.ped, 1500)
-                lib.progressBar({ duration = 4000, label = label, canCancel = false, disable = { move = true, car = true } })
-                finish('checked')
+                -- V12.64 · pot-de-vin (n° 230) : présenter ses papiers / souffler, ou glisser un billet (fermer = contrôle normal)
+                local pick, picked = promise.new(), false
+                local function choose(v) if not picked then picked = true pick:resolve(v) end end
+                lib.registerContext({ id = 'gs_roadside_stop', title = 'Le shérif se penche à ta portière', onExit = function() choose('checked') end,
+                    options = {
+                        { title = prompt, icon = 'id-card', onSelect = function() choose('checked') end },
+                        { title = 'Glisser un billet (pot-de-vin)', icon = 'hand-holding-dollar',
+                          description = 'En faute : la moitié de l\'amende en liquide, ni amende ni points… s\'il accepte. Une enquête peut s\'ouvrir.',
+                          onSelect = function() choose('bribed') end },
+                    } })
+                lib.showContext('gs_roadside_stop')
+                local choice = Citizen.Await(pick)
+                if choice == 'bribed' then
+                    lib.progressBar({ duration = 2500, label = 'Tu glisses un billet…', canCancel = false, disable = { move = true, car = true } })
+                else
+                    lib.progressBar({ duration = 4000, label = label, canCancel = false, disable = { move = true, car = true } })
+                end
+                finish(choice)
                 return cleanup(20000)
             end
         end

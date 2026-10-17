@@ -257,6 +257,16 @@ def build():
                   'toilette les chiens et sers les clients au comptoir. Payé à chaque tâche.',
                   '<b>Photomaton</b> à la fête foraine (à côté du guichet des jetons) : une photo souvenir pour 3 jetons ; '
                   'serrez-vous dans la cabine, chacun repart avec sa copie (à regarder ou accrocher au mur).'])
+    s += [Paragraph('Nouveautés de la ville (V12.64)', H3)]
+    s += bullets(['<b>Salle de sport</b> (Muscle Beach, cour de Bolingbroke, plage de Sandy Shores) : [E] au point, choisis un exercice '
+                  '(pompes, abdos, haltères, yoga, course sur place). Trois exercices différents en 15 minutes = 6 heures de bonus '
+                  'd\'endurance (plus de souffle au sprint et en apnée). Gratuit.',
+                  '<b>Distributeurs</b> : avec un boîtier de piratage (marché noir), Alt sur un distributeur → « Pirater ». Mini-jeu sur la '
+                  'tablette : réussi, les billets sortent (argent sale) ; raté, l\'alarme sonne. La caméra du distributeur peut te filmer.',
+                  '<b>Pot-de-vin</b> : face à un agent de la police IA (1 étoile), au contrôle du shérif ou à l\'alcootest, tu peux glisser un '
+                  'billet. L\'agent a son prix : trop peu, il le prend mal. Même accepté, une enquête peut s\'ouvrir.',
+                  '<b>Drones</b> : la police a son drone de surveillance ; les gangs, un drone modifié rare et cher (membres confirmés). '
+                  'Un drone se fait abattre en deux balles.'])
     s += [Paragraph('Le permis de conduire', H3)]
     s += [table([['Étape', 'Prix', 'Comment'],
                  ['Obtention', 'Gratuit', 'Tout le monde a son permis dès l\'arrivée : la carte <b>Permis de conduire</b> est dans ton sac (F2). Pas d\'auto-école, ni code ni examen.'],

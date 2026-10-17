@@ -30,5 +30,7 @@ site tiers). Taille max 1,5 Mo, une photo toutes les 20 s par joueur.
   V12.63 : la capture est faite chez le joueur et renvoyée par le réseau du jeu (plus d'envoi par une adresse web) ; la même image sert
   à F11, à l'appli staff et aux replays des tickets ; screenshot-basic livré patché pour les versions récentes de FiveM (rappel en
   https). Si l'image ne vient pas, la fenêtre dit pourquoi ; F8 `/livestest` teste la capture sur son PC, « (toi : test) » dans la liste
-  permet de vérifier seul. Photomaton de la fête foraine (gs_casino) : même photo que l'appareil argentique, image réelle si l'hébergement
+  permet de vérifier seul. V12.64 : Lives fluides (image réduite à 960 px en WebP chez le joueur filmé, flux continu ≈ 2 à 3
+  images/s) ; screenshot-basic ne recopie l'écran que lorsqu'une capture est demandée (avant : à chaque image chez tous les joueurs),
+  photos et bodycam restent en pleine taille. Photomaton de la fête foraine (gs_casino) : même photo que l'appareil argentique, image réelle si l'hébergement
   des photos est configuré.

@@ -141,7 +141,8 @@ function Wanted.report(src, crimeType, coords, opts)
         precision = clamp(count * 0.15 + visibility * 0.4, 0, 1)
     end
     -- Caméra de surveillance : signalement quasi certain, zone précise, plaque lisible
-    local camera = not police and Wanted.cameraAt(coords) or nil
+    -- (V12.64 : `opts.camera` = caméra propre au lieu, ex. celle d'un distributeur piraté)
+    local camera = not police and (type(opts.camera) == 'string' and opts.camera or Wanted.cameraAt(coords)) or nil
     if camera then
         chance = clamp(chance + Config.Cameras.chanceBonus, 0, Config.Witness.maxChance)
         precision = math.max(precision, Config.Cameras.precision)
@@ -405,7 +406,17 @@ local function nearUnit(src, range)
     return false
 end
 
---- Négociation à 1 ★ : 'surrender' (amende), 'ransom' (pot-de-vin pour filer), 'hostage' (otage contre une fuite), 'refuse'
+--- V12.64 : enquête des affaires internes après un pot-de-vin (agent PNJ ou contrôleur) : une ligne au casier, visible de la
+--- police joueur (F4 → casier), jamais d'amende automatique. Partagé avec gs_roadside (export CorruptionCase).
+function Wanted.corruptionCase(src, amount)
+    local cid = Bridge:GetIdentifier(src)
+    if not cid or GetResourceState('gs_police') ~= 'started' then return false end
+    return pcall(function() exports.gs_police:AddRecord(cid, ('Corruption d\'un agent (%d $) · enquête des affaires internes'):format(math.floor(tonumber(amount) or 0)), 0, 0, 'Affaires internes') end)
+end
+exports('CorruptionCase', function(src, amount) return Wanted.corruptionCase(src, amount) == true end)
+
+--- Négociation à 1 ★ : 'surrender' (amende), 'ransom' (arrangement fixe pour filer), 'bribe' (pot-de-vin d'un montant choisi,
+--- V12.64), 'hostage' (otage contre une fuite), 'refuse'
 function Wanted.negotiate(src, choice, hostageNet)
     local N = Config.NpcPolice.negotiate
     if Wanted.npcLevel[src] ~= 1 then return false, 'Trop tard pour négocier : ils ne discutent plus.' end
@@ -426,6 +437,26 @@ function Wanted.negotiate(src, choice, hostageNet)
         end
         Wanted.standDown(src)
         return true, ('L\'agent empoche %d $ et regarde ailleurs. File, vite.'):format(N.ransom)
+    end
+    if choice == 'bribe' then -- V12.64 : pot-de-vin d'un montant choisi (liquide), prix caché, risque d'enquête
+        local B = N.bribe
+        local amount = math.tointeger(tonumber(hostageNet))
+        if not amount or amount < B.min or amount > B.max then return false, ('Somme : %d à %d $.'):format(B.min, B.max) end
+        if (Bridge:GetMoney(src, 'cash') or 0) < amount then return false, 'Tu n\'as pas ces billets sur toi (liquide).' end
+        local price = B.base + (Wanted.heat[src] or 0) * B.perHeat
+        local chance = amount >= price and B.accept or (amount >= price * 0.6 and B.accept * amount / price or 0)
+        if math.random() >= chance then
+            Wanted.escalate(src)
+            Security:LogStaff(('[Police IA] %s tente de corrompre un agent (%d $) : refusé'):format(GetPlayerName(src) or src, amount), 'jobs')
+            return true, ('L\'agent regarde tes %d $ avec mépris : « Tentative de corruption, en plus ? » La police durcit le ton (2 ★).'):format(amount)
+        end
+        if not Bridge:RemoveMoney(src, 'cash', amount, 'pot-de-vin à un agent') then return false, 'Tu n\'as pas ces billets sur toi (liquide).' end
+        Wanted.standDown(src)
+        local probe = math.random() < B.investigate
+        if probe then Wanted.corruptionCase(src, amount) end
+        Security:LogStaff(('[Police IA] %s achète un agent (%d $)%s'):format(GetPlayerName(src) or src, amount, probe and ' · enquête ouverte' or ''), 'jobs')
+        return true, ('L\'agent glisse %d $ dans sa poche et regarde ailleurs.%s'):format(amount,
+            probe and ' Mais quelqu\'un a tout vu : une enquête est ouverte.' or ' File, vite.')
     end
     if choice == 'hostage' then
         local h = NetworkGetEntityFromNetworkId(math.tointeger(tonumber(hostageNet)) or 0)

@@ -6,8 +6,13 @@
 Config = {}
 Config.Level = 2            -- niveau gs_admin minimum (modérateur), en mode staff
 Config.MaxWindows = 4       -- fenêtres ouvertes en même temps par membre du staff
-Config.Every = 1000         -- ms entre deux images d'une fenêtre (V12.63 : 1,5 s → 1 s)
-Config.Quality = 0.5        -- qualité JPEG (0.1 à 0.9) : plus bas = plus léger (V12.63 : 0,45 → 0,5)
+Config.Every = 400          -- ms minimum entre deux images d'un joueur regardé (V12.63 : 1 s ; V12.64 : flux continu ≈ 2,5 images/s)
+Config.Quality = 0.55       -- qualité de compression (0.1 à 0.9) : plus bas = plus léger (V12.64 : image réduite, donc 0,55)
+-- V12.64 · fluidité (backtest : « ça marche mais ça rame vraiment ») : image réduite CHEZ LE JOUEUR avant l'envoi (largeur en
+-- pixels, 0 = pleine taille) et compressée en WebP (repli JPEG automatique) : 4 à 6 fois plus légère qu'une capture 1080p.
+Config.MaxWidth = 960
+Config.Encoding = 'webp'    -- 'webp' (plus léger) ou 'jpg'
+Config.Lease = 3000         -- ms : la capture continue tant qu'une fenêtre (F11 ou appli) a redemandé une image depuis moins de 3 s
 Config.Command = 'lives'
 
 -- V12.62 · Replay staff (proposition n° 137) : tant qu'un ticket est ouvert, les dernières images de l'écran de son auteur

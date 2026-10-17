@@ -34,7 +34,7 @@ la ligne `set gs_admin_web_password "…"` dans `server-data\cfg\secrets.cfg` (j
 | Tableau de bord | Joueurs en ville (courbe 24 h), staff en service, tickets, recherchés, isolés / gelés, carte en direct, derniers tickets, journal, annonce à la ville |
 | Joueurs | Recherche et filtres (recherchés, isolés, staff, en service) ; fiche complète (métier, session, recherche, gang, argent, isolement, dossier staff) |
 | Carte | Tous les joueurs en direct sur la carte de Los Santos (couleur = état) ; clic = fiche ; anneau jaune = auteur d'un ticket ouvert (V12.63) |
-| Lives | Jusqu'à 4 écrans de joueurs en même temps (une image / 1,5 s), replays 30 s des tickets ouverts |
+| Lives | Jusqu'à 4 écrans de joueurs en même temps (V12.64 : flux continu, ≈ 2 à 3 images/s, compteur « img/s »), replays 30 s des tickets ouverts |
 | Tickets | Prendre en charge, clôturer, ouvrir la fiche, replay |
 | Sanctions | Bannis actifs, recherche, débannir |
 | Journal | Toutes les actions du staff (jeu, Discord, appli) depuis le dernier redémarrage |
@@ -66,5 +66,7 @@ la ligne `set gs_admin_web_password "…"` dans `server-data\cfg\secrets.cfg` (j
 - Serveur : `gs_admin/server/web.lua` (API `POST /api`, fichiers de `web/dist`), jetons : `server/crypto.js`.
 - Interface : `gs_admin/web/src/staff/` (React, compilée par Vite avec le panneau F10 : `npm run build` dans `gs_admin/web`).
 - La carte (`web/src/shared/LiveMap.jsx`) est partagée avec l'onglet **Carte** du panneau F10.
+- V12.64 : l'appli donne le numéro de sa dernière image (`since`) ; le serveur répond `same` (quelques octets) tant qu'il n'y a pas
+  d'image plus récente. Les images sont réduites chez le joueur filmé (960 px, WebP).
 - Les écrans (Lives) viennent de gs_lives (export `Capture`) : la même capture sert à F11, aux replays et à l'appli. Le joueur
   regardé doit avoir screenshot-basic (livré dans `[gtasoon]`, rien à installer).

@@ -218,6 +218,11 @@ local function policeOptions()
             notify(act('custodyend', list[1]))
         end },
         { title = 'Chien K9', icon = 'dog', arrow = true, onSelect = function() GSPolice_K9Menu() end },
+        -- V12.64 · drone de surveillance (gs_drone) : portée, thermique, [G] marque un suspect pour les collègues
+        { title = 'Drone de surveillance', icon = 'satellite-dish', description = 'Repérage aérien · [G] marquer un suspect · refaire pour le rappeler', onSelect = function()
+            if GetResourceState('gs_drone') ~= 'started' then return lib.notify({ description = 'gs_drone n\'est pas démarré.', type = 'error' }) end
+            exports.gs_drone:Launch('police')
+        end },
         { title = 'Incarcérer', icon = 'building-shield', onSelect = function()
             withTarget(function(id)
                 local r = lib.inputDialog('Prison', {

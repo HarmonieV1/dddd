@@ -34,6 +34,7 @@ Config.Crimes = {
     sabotage = { label = 'Sabotage du réseau électrique', heat = 20, chance = 0.75 },
     shop_robbery = { label = 'Braquage de commerce', heat = 25, chance = 0.45 },
     vehicle_theft = { label = 'Vol de véhicule (serrure forcée / fils)', heat = 8, chance = 0.6 }, -- qbx_vehiclekeys
+    atm_hack = { label = 'Piratage de distributeur', heat = 18, chance = 0.35 }, -- V12.64 (gs_bank)
 }
 
 -- V12.7 · Zones de chasse : un tir de chasseur AVEC permis n'est pas une alerte (avant : chaque cerf abattu envoyait
@@ -117,7 +118,12 @@ Config.NpcPolice = {
     -- V12.63 · Police IA graduée : 1 ★ = un agent vient négocier (se rendre contre une amende, rançon pour qu'on te laisse filer,
     -- ou l'otage contre une fuite) ; 2 ★ = ils interpellent au taser ; 3 ★ et plus = ils tirent. Viser, frapper ou tirer sur un
     -- agent, ou refuser de négocier = une étoile de plus. `reach` : distance à l'agent pour négocier (vérifiée par le serveur).
-    negotiate = { reach = 10.0, hostageReach = 6.0, surrender = { base = 300, perHeat = 15 }, ransom = 1500 },
+    negotiate = { reach = 10.0, hostageReach = 6.0, surrender = { base = 300, perHeat = 15 }, ransom = 1500,
+        -- V12.64 · Pot-de-vin (proposition n° 230, demandé par le fondateur) : tu choisis la somme (liquide). L'agent a un prix
+        -- caché (`base` + `perHeat` × chaleur) : au-dessus, il accepte presque toujours (`accept`) ; entre 60 % et 100 % du prix,
+        -- ça dépend ; en dessous, il le prend mal (tentative de corruption = une étoile de plus). Accepté, il peut quand même y
+        -- avoir une enquête des affaires internes (`investigate`) : une ligne « corruption » au casier, visible de la police.
+        bribe = { base = 400, perHeat = 20, accept = 0.85, min = 50, max = 5000, investigate = 0.25 } },
     -- V12.59 (backtest 15/10) : les patrouilles foncent vers le suspect tout de suite (avant : elles attendaient de le voir) ;
     -- elles abandonnent au-delà de `giveUp` m (on peut toujours les semer en mettant de la distance).
     track = { every = 1500, chase = 60.0, giveUp = 450.0, speed = 42.0, onFoot = 35.0 },

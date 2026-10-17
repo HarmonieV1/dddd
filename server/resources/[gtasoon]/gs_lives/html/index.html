@@ -36,6 +36,7 @@
     background: linear-gradient(180deg, rgba(16,10,28,.95), rgba(16,10,28,.6)); cursor: move; z-index: 2; }
   .win .bar .dot { width: 8px; height: 8px; border-radius: 50%; background: #ff2340; animation: blink 1.2s steps(1) infinite; }
   .win .bar .t { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .win .bar .fps { color: var(--muted); font-size: 10px; font-variant-numeric: tabular-nums; } /* V12.64 : images par seconde */
   .win img { width: 100%; height: 100%; object-fit: contain; display: block; background: #08050f; } /* V12.63 : écran entier, pas rogné */
   .win .wait { position: absolute; inset: 26px 0 0 0; display: grid; place-items: center; color: var(--muted); font-size: 12px; }
   @keyframes blink { 50% { opacity: .2; } }
@@ -51,7 +52,7 @@
 <script>
   const RES = (window.GetParentResourceName && GetParentResourceName()) || 'gs_lives';
   const post = (name, data) => fetch(`https://${RES}/${name}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data || {}) }).catch(() => {});
-  let players = [], max = 4, every = 1500, z = 10;
+  let players = [], max = 4, every = 400, z = 10;
   const wins = new Map(); // id → { el, img, pending, timer }
   const $ = (s) => document.querySelector(s);
   const esc = (t) => String(t).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -76,9 +77,9 @@
     el.className = 'win';
     const n = wins.size;
     el.style.left = (330 + (n % 2) * 500) + 'px'; el.style.top = (70 + Math.floor(n / 2) * 320) + 'px'; el.style.zIndex = ++z;
-    el.innerHTML = `<div class="bar"><i class="dot"></i><span class="t">${esc(p.name)} · #${p.id}</span><button class="tp" title="Me téléporter près de lui">⇢ TP</button><button class="x" title="Fermer">✕</button></div><div class="wait">Connexion à l'écran…</div><img alt="">`;
+    el.innerHTML = `<div class="bar"><i class="dot"></i><span class="t">${esc(p.name)} · #${p.id}</span><small class="fps"></small><button class="tp" title="Me téléporter près de lui">⇢ TP</button><button class="x" title="Fermer">✕</button></div><div class="wait">Connexion à l'écran…</div><img alt="">`;
     document.body.appendChild(el);
-    const w = { el, img: el.querySelector('img'), pending: false };
+    const w = { el, img: el.querySelector('img'), pending: false, fps: el.querySelector('.fps'), times: [] };
     w.timer = setInterval(() => ask(p.id), every);
     wins.set(p.id, w);
     el.querySelector('.x').onclick = () => closeWin(p.id);
@@ -144,7 +145,7 @@
 
   window.addEventListener('message', (e) => {
     const d = e.data || {};
-    if (d.action === 'players') { players = d.players || []; max = d.max || 4; every = d.every || 1500; render(); }
+    if (d.action === 'players') { players = d.players || []; max = d.max || 4; every = Math.max(250, d.every || 400); render(); }
     else if (d.action === 'focus') { document.body.classList.toggle('focus', !!d.on); if (d.on) $('#search').focus(); }
     else if (d.action === 'replay') openReplay(d.id, d.frames, d.every);
     else if (d.action === 'frameError') { // V12.63 : message clair au lieu d'une attente sans fin
@@ -163,8 +164,11 @@
           const cur = wins.get(d.id); if (!cur) return;
           cur.img.src = next.src;
           const wait = cur.el.querySelector('.wait'); if (wait) wait.remove();
-          const since = Date.now() - (cur.askedAt || 0);
-          if (since >= every) ask(d.id);
+          // V12.64 : image suivante demandée TOUT DE SUITE (le serveur la prépare déjà : flux continu), compteur d'images/s
+          const now = Date.now();
+          cur.times.push(now); while (cur.times.length > 6) cur.times.shift();
+          if (cur.times.length > 1) cur.fps.textContent = `${((cur.times.length - 1) * 1000 / (now - cur.times[0])).toFixed(1).replace('.', ',')} img/s`;
+          ask(d.id);
         };
         next.src = d.src;
       }

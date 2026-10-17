@@ -202,3 +202,10 @@ Détail version par version : `docs/PATCH_SESSION_15-10.md` ; patch note de la s
 - **Outils Windows** : DIAGNOSTIC-MODS (abîmés, copies, maps en deux versions, voitures en double, textures ≥ 32 Mo ; O = corrections sûres
   réversibles), METTRE-A-JOUR-OVH (envoi incrémental, reprise, IPv4), GERER-OVH (verrou pendant une mise à jour).
 
+## V12.64 · Lives fluides, drones, distributeur, pot-de-vin
+- **Lives** : images réduites chez le joueur filmé (960 px, WebP, repli JPEG), flux continu tant qu'une fenêtre (F11 ou appli)
+  redemande dans les 3 s, ≈ 2 à 3 images/s (compteur « img/s ») ; plus aucune capture quand toutes les fenêtres sont fermées.
+  Réglages : `gs_lives/shared/config.lua` (Every, MaxWidth, Encoding, Lease, Quality).
+- **Drones** (`gs_drone`) : police en service → F4 → Drone de surveillance ou `/drone` ; gangs → objet du marché noir. Journal staff :
+  décollage, drone abattu (par qui), suspect marqué. Réglages : `Config.Types` (portée, batterie, recharge, radar).
+- **Journal staff** : piratages de distributeur (réussis / ratés) et pots-de-vin (acceptés, refusés, enquête ouverte).

@@ -15,7 +15,7 @@ OUT = os.path.join(DOCS, 'hub', 'index.html')
 
 CATEGORIES = [
     ('Pilotage', 'Où on en est, ce qui reste, la stratégie', [
-        ('ETAT_PROJET', 'État du projet (point de sauvegarde)'), ('PATCH_NOTE_V12.63', 'Patch note de la session du 16/10'), ('ROADMAP', 'Feuille de route'),
+        ('ETAT_PROJET', 'État du projet (point de sauvegarde)'), ('PATCH_NOTE_V12.64', 'Patch note de la nuit du 16/10 (V12.64)'), ('PATCH_NOTE_V12.63', 'Patch note de la session du 16/10'), ('ROADMAP', 'Feuille de route'),
         ('STRATEGIE', 'Stratégie et positionnement'), ('PROPOSITIONS', 'Propositions et idées'),
         ('V1_CHECKLIST', 'Checklist V1')]),
     ('La ville', 'Ce que vivent les joueurs', [
@@ -41,7 +41,7 @@ PRIORITIES = [
         'Démarrage : aucune ligne rouge (maps « NON démarrée », scripts Patoche : stand de jeux, circuit, FastBox, villa bunker)',
         'Les 9 zips ROADTRIP-… (coiffures et tenues converties) dans mods-a-trier → IMPORTER-MODS → METTRE-A-JOUR-OVH',
         'IMPORTER-MODS relancé (V12.48) : patoche_interact sous son vrai nom → script de la villa bunker installé ; scripts billard / football remis dans mods-a-trier',
-        'Version V12.63+ sur le PC ET sur le VPS (console : [RoadLine RP] version …)',
+        'Version V12.64+ sur le PC ET sur le VPS (console : [RoadLine RP] version …)',
     ]),
     ('Priorité haute (cette semaine)', [
         'Backtest allégé (onglet Backtest, 31 tests) en commençant par les ★★★',

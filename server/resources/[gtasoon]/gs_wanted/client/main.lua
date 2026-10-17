@@ -180,6 +180,13 @@ local function negotiateMenu(hostage)
           onSelect = function() go('surrender') end },
         { title = ('Proposer %d $ pour qu\'il me laisse filer'):format(N.ransom), icon = 'money-bill-wave', description = 'Liquide d\'abord, sinon la banque',
           onSelect = function() go('ransom') end },
+        -- V12.64 · pot-de-vin d'un montant choisi (proposition n° 230)
+        { title = 'Glisser un billet (pot-de-vin)', icon = 'hand-holding-dollar', description = 'Tu choisis la somme (liquide). Trop peu : il le prend mal (2 ★). Même accepté, une enquête peut s\'ouvrir.',
+          onSelect = function()
+              local r = lib.inputDialog('Pot-de-vin', { { type = 'number', label = 'Somme en liquide ($)', min = N.bribe.min, max = N.bribe.max, step = 50, required = true,
+                  description = 'L\'agent a son prix, et il ne le dit pas.' } })
+              if r and r[1] then go('bribe', math.floor(r[1])) end
+          end },
     }
     if hostage then
         opts[#opts + 1] = { title = 'L\'otage contre ma fuite', icon = 'user-lock', description = 'Le civil que tu tiens en joue est libéré, la police te laisse partir',

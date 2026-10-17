@@ -30,6 +30,11 @@ Config.Types = {
 -- de `limit` verres récents (effets visibles) : amende `fine` (banque) et `points` de permis. Fuir = refus d'obtempérer.
 Config.Breath = { chance = 0.3, limit = 2, fine = 600, points = 3, job = 'police',
     props = { 'prop_roadcone02a', 'prop_roadcone02a', 'prop_barrier_work05' } }
+-- V12.64 · Pot-de-vin au contrôle (proposition n° 230) : au lieu de présenter ses papiers / souffler, on glisse un billet.
+-- En faute (sans permis, alcootest positif), le shérif demande `share` × l'amende en liquide : accepté (`accept`), ni amende
+-- ni points, mais une enquête des affaires internes peut s'ouvrir (`investigate`, ligne au casier). Refusé : l'amende
+-- × `refusedFine` et les points quand même. En règle : il refuse le billet, sans suite.
+Config.Bribe = { share = 0.5, accept = 0.7, investigate = 0.25, refusedFine = 1.5 }
 Config.Friend = { chance = 0.35, gift = { 200, 600 } }   -- l'auto-stoppeur aidé revient parfois (cadeau, tuyau)
 Config.Rob = { max = 800 }                                -- auto-stoppeur braqueur : cash pris au maximum
 
@@ -70,6 +75,7 @@ Config.Collection = {
     { 'wallet_returned', 'Portefeuille rendu' }, { 'wallet_kept', 'Portefeuille gardé' }, { 'vendor', 'Vendeur ambulant' },
     { 'sheriff', 'Contrôle du shérif' }, { 'sheriff_fled', 'Refus d\'obtempérer' },
     { 'checkpoint', 'Alcootest négatif' }, { 'checkpoint_drunk', 'Alcootest positif' }, -- V12.63
+    { 'bribed', 'Contrôleur acheté' }, -- V12.64
 }
 
 -- V8 · Halloween (événement unique) : actif automatiquement du 24 octobre au 1er novembre (ou /halloween on|off, staff).

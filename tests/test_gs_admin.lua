@@ -455,6 +455,11 @@ do -- V12.63 : écran (Lives hors jeu) : réponse immédiate, jamais de requête
     peekState = { img = 'data:image/jpeg;base64,X', age = 300 }
     local f2 = call('1.2.3.4', ('{ token = %q, action = "frame", id = 9 }'):format(tok))
     check('web : écran, demande suivante : image', f2.ok and f2.img:find('base64'))
+    peekState = { img = 'data:image/webp;base64,Y', age = 200, seq = 41 }
+    local f4 = call('1.2.3.4', ('{ token = %q, action = "frame", id = 9, since = 40 }'):format(tok))
+    check('V12.64 : écran, image nouvelle (n° 41) envoyée avec son numéro', f4.ok and f4.img and f4.seq == 41)
+    local f5 = call('1.2.3.4', ('{ token = %q, action = "frame", id = 9, since = 41 }'):format(tok))
+    check('V12.64 : écran, même image : réponse légère sans l\'image', f5.ok and f5.same == true and f5.img == nil)
     peekState = { err = 'Capture impossible : test.' }
     local f3 = call('1.2.3.4', ('{ token = %q, action = "frame", id = 9 }'):format(tok))
     check('web : écran, échec : la raison est affichée', not f3.ok and f3.text:find('test', 1, true))

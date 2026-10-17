@@ -125,13 +125,14 @@ class ScreenshotUI {
         window.addEventListener('message', event => {
             this.request = event.data.request;
             // RoadLine V12.63 : si le cadre NUI ne dessine plus (animation en pause), la demande est traitée quand même
+            // (V12.64 : au bout de 150 ms au lieu de 400 : l'animation normale répond en ~35 ms, ce filet ne sert qu'en pause)
             setTimeout(() => {
                 if (!this.request) return;
                 try { this.renderer.clear(); this.renderer.render(this.sceneRTT, this.cameraRTT, this.rtTexture, true); } catch (e) {}
                 const r = this.request;
                 this.request = null;
                 this.handleRequest(r);
-            }, 400);
+            }, 150);
         });
         window.addEventListener('resize', event => {
             this.resize();
@@ -194,13 +195,16 @@ class ScreenshotUI {
     }
     animate() {
         requestAnimationFrame(this.animate);
+        // RoadLine V12.64 : l'écran n'est recopié QUE quand une capture est demandée (avant : à chaque image, chez tous les
+        // joueurs, même sans capture : des FPS perdus pour tout le monde). Deux images de suite avant de lire : image fraîche.
+        if (!this.request) { this.warm = 0; return; }
         this.renderer.clear();
         this.renderer.render(this.sceneRTT, this.cameraRTT, this.rtTexture, true);
-        if (this.request) {
-            const request = this.request;
-            this.request = null;
-            this.handleRequest(request);
-        }
+        if ((this.warm = (this.warm || 0) + 1) < 2) return;
+        this.warm = 0;
+        const request = this.request;
+        this.request = null;
+        this.handleRequest(request);
     }
     handleRequest(request) {
         // read the screenshot
@@ -231,8 +235,21 @@ class ScreenshotUI {
         if (!request.quality) {
             request.quality = 0.92;
         }
+        // RoadLine V12.64 : `maxWidth` (Lives staff) = image réduite AVANT la compression : 4 à 6 fois plus légère à envoyer,
+        // et plus rapide à compresser. Sans `maxWidth` (photos, bodycam) : pleine taille, comme avant.
+        let out = canvas;
+        const maxWidth = Number(request.maxWidth) || 0;
+        if (maxWidth > 0 && canvas.width > maxWidth) {
+            out = document.createElement('canvas');
+            out.width = Math.round(maxWidth);
+            out.height = Math.max(1, Math.round(canvas.height * maxWidth / canvas.width));
+            const small = out.getContext('2d');
+            small.imageSmoothingEnabled = true;
+            small.imageSmoothingQuality = 'medium';
+            small.drawImage(canvas, 0, 0, out.width, out.height);
+        }
         // actual encoding
-        const imageURL = canvas.toDataURL(type, request.quality);
+        const imageURL = out.toDataURL(type, request.quality);
         const getFormData = () => {
             const formData = new FormData();
             formData.append(request.targetField, dataURItoBlob(imageURL), `screenshot.${request.encoding}`);

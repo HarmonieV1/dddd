@@ -150,7 +150,7 @@ end
 
 -- Écran d'un joueur (Lives hors jeu) : même capture que F11 (gs_lives, export Capture : faite chez le joueur, renvoyée par le
 -- réseau du jeu, partagée entre tous ceux qui le regardent). V12.63 : l'appli et le jeu sont synchronisés sur la même image.
-function Web.frame(who, target, reply)
+function Web.frame(who, target, reply, since)
     target = intId(target)
     if not target or not GetPlayerName(target) then return reply({ ok = false, text = 'Ce joueur n\'est plus en ville.' }) end
     if not started('gs_lives') then return reply({ ok = false, text = 'gs_lives n\'est pas démarré.' }) end
@@ -162,13 +162,15 @@ function Web.frame(who, target, reply)
     -- V12.63 : réponse IMMÉDIATE (dernière image, ou raison du dernier échec) + capture suivante lancée en arrière-plan ;
     -- avant, la requête restait ouverte jusqu'à 8 s en attendant le joueur et la tablette affichait « serveur injoignable »
     local okE, pk = pcall(function()
-        exports.gs_lives:Request(target, 0.4)
+        exports.gs_lives:Request(target) -- V12.64 : qualité et taille de gs_lives (image réduite, flux continu)
         return exports.gs_lives:Peek(target)
     end)
     if not okE or type(pk) ~= 'table' then return reply({ ok = false, text = 'Capture impossible (gs_lives).' }) end
-    local img, age, err = pk.img, tonumber(pk.age), pk.err
-    if err then return reply({ ok = false, text = err, img = (img and age and age < 15000) and img or nil }) end
-    if img and age and age < 15000 then return reply({ ok = true, img = img, age = age }) end
+    local img, age, err, seq = pk.img, tonumber(pk.age), pk.err, tonumber(pk.seq)
+    if err then return reply({ ok = false, text = err, img = (img and age and age < 15000) and img or nil, seq = seq }) end
+    -- V12.64 : l'appli a déjà cette image (même numéro) → réponse de quelques octets au lieu de renvoyer l'image
+    if img and age and age < 15000 and seq and tonumber(since) == seq then return reply({ ok = true, same = true, seq = seq, age = age }) end
+    if img and age and age < 15000 then return reply({ ok = true, img = img, age = age, seq = seq }) end
     reply({ ok = false, wait = true, text = 'Connexion à l\'écran…' })
 end
 
@@ -196,10 +198,10 @@ function Web.handle(ip, body, reply, direct)
     end
     local s = Web.session(d.token)
     if not s then return reply({ ok = false, text = 'Session expirée : reconnecte-toi.', auth = false }) end
-    local now = GetGameTimer() -- anti-rafale par session : 120 requêtes / 10 s (4 fenêtres Lives + le tableau de bord tiennent large)
+    local now = GetGameTimer() -- anti-rafale par session : 160 requêtes / 10 s (V12.64 : 4 fenêtres Lives à 2,5 images/s + le tableau de bord)
     if not s.windowAt or now - s.windowAt >= 10000 then s.windowAt, s.calls = now, 0 end
     s.calls = s.calls + 1
-    if s.calls > 120 then return reply({ ok = false, text = 'Doucement.' }) end
+    if s.calls > 160 then return reply({ ok = false, text = 'Doucement.' }) end
     if d.action == 'logout' then Web.sessions[d.token] = nil return reply({ ok = true }) end
     if d.action == 'overview' then return reply({ ok = true, data = Web.overview(s.who) }) end
     if d.action == 'dossier' then
@@ -217,7 +219,7 @@ function Web.handle(ip, body, reply, direct)
         if (s.level or 2) < 3 or not Moderation then return reply({ ok = false, text = 'Réservé aux admins (rang 3 et plus).' }) end
         return reply({ ok = true, data = Moderation.state(s.level) })
     end
-    if d.action == 'frame' then return Web.frame(s.who, d.id, reply) end
+    if d.action == 'frame' then return Web.frame(s.who, d.id, reply, d.since) end
     if d.action == 'replay' then
         if not started('gs_lives') then return reply({ ok = false, text = 'gs_lives n\'est pas démarré.' }) end
         local okR, frames = pcall(function() return exports.gs_lives:ReplayFrames(intId(d.id)) end)

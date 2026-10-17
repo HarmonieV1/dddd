@@ -44,6 +44,9 @@ Config.Catalog = {
     { item = 'advancedlockpick', label = 'Crochet avancé', price = 900, stock = 10 },
     { item = 'armour', label = 'Gilet pare-balles', price = 2500, stock = 10 },
     { item = 'gs_fakeplate', label = 'Fausse plaque', price = 3500, stock = 5 }, -- V8 : la ville ne relie plus la voiture
+    { item = 'gs_atm_hacker', label = 'Boîtier de piratage (distributeurs)', price = 2800, stock = 6 }, -- V12.64 (gs_bank)
+    -- V12.64 · drone de repérage (gs_drone) : réservé aux gangs, cher, 2 par jour, et seuls les membres confirmés le pilotent
+    { item = 'gs_drone', label = 'Drone de repérage (modifié)', price = 15000, stock = 2, gangOnly = true },
     -- V12 · Faux papiers : passent un contrôle visuel (F4 loin du commissariat), échouent au scanner du commissariat
     { item = 'gs_fake_id', label = 'Fausse carte d\'identité', price = 2500, stock = 4, fake = 'id' },
     { item = 'gs_fake_driver', label = 'Faux permis de conduire', price = 3500, stock = 4, fake = 'driver' },

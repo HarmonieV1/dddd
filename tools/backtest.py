@@ -10,9 +10,9 @@ SESSIONS = [
     # validé (arrivée, téléphone, métiers, papiers, staff, Discord, site, alertes, vie légale / illégale…) et retiré.
     # Reste : ce qui a été corrigé ou ajouté depuis, jamais revu en jeu, et ce qui est obligatoire avant d'ouvrir.
     ('0 · Avant de commencer (5 min)', [
-        ('METTRE-A-JOUR.bat : version V12.63 affichée, « Base de données sauvegardée » ; METTRE-A-JOUR-OVH puis GERER-OVH → 1 : « Version RoadLine : V12.63 »', 'Staff', 3),
+        ('METTRE-A-JOUR.bat : version V12.64 affichée, « Base de données sauvegardée » ; METTRE-A-JOUR-OVH puis GERER-OVH → 1 : « Version RoadLine : V12.64 »', 'Staff', 3),
         ('Console au démarrage (PC et VPS) : aucune ligne ROUGE ; en jaune seulement « Conflit tranché » (2 fichiers Patoche) ; F8 en jeu : aucune erreur rouge', 'Staff', 3),
-        ('VIDER-CACHE-FIVEM.bat si un ancien menu apparaît (F11 doit afficher « RoadLine V12.63 »)', 'Staff', 2),
+        ('VIDER-CACHE-FIVEM.bat si un ancien menu apparaît (F11 doit afficher « RoadLine V12.64 »)', 'Staff', 2),
     ]),
     ('1 · Corrections du 13/10 à confirmer (V12.37 → V12.39, 20 min)', [
         ('Garage de métier : « Sortir » donne le véhicule à chaque fois, UNE notification ; prise de service au PNJ : une seule interaction', '2', 3),
@@ -182,6 +182,17 @@ SESSIONS = [
         ('Vitrine brisée « [E] Réparer » : n\'apparaît plus pendant le braquage, seulement ~10 min après', '2', 2),
         ('Police IA 1 ★ (/policeia 1, seul en ville) : un agent descend, s\'approche à ~5 m sans dégainer ; [E] Parler à l\'agent → Me rendre (amende) / 1 500 $ pour filer / l\'otage contre ta fuite (en visant un passant tout près) / Refuser (→ 2 ★)', 'Staff', 3),
         ('Police IA : viser un agent à 1 ★, le frapper ou tirer → une étoile de plus ; 2 ★ = interpellation au taser ; 3 ★ = ils tirent ; accord conclu → plus d\'étoiles, les agents repartent', 'Staff', 3),
+    ]),
+    ('4q · V12.64 — Lives fluides, distributeur, pot-de-vin, drone, salle de sport (20 min)', [
+        ('Lives : F11 → Lives, 2 fenêtres ouvertes → l\'image bouge en continu, compteur « img/s » ≈ 2 à 3 dans la barre ; appli → Lives : pareil ; fenêtres fermées : plus aucune capture (personne n\'est filmé)', '2', 3),
+        ('screenshot-basic modifié : une photo à l\'appareil argentique et une photo Vibe marchent toujours (pleine taille) ; la bodycam aussi', 'Staff', 3),
+        ('Distributeur : acheter un boîtier de piratage au marché noir, [Alt] sur un distributeur → « Pirater » : animation (clé USB, étincelles), mini-jeu sur la tablette ; réussi → billets 15 s, argent sale ; raté → alarme', '1', 3),
+        ('Distributeur : le même distributeur refuse ensuite (« déjà vidé ») ; le joueur attend 10 min ; le boîtier grille parfois', '1', 2),
+        ('Pot-de-vin police IA (/policeia 1) : [E] près de l\'agent → « Glisser un billet » → somme trop basse = 2 ★ ; somme correcte = l\'agent part (parfois « enquête ouverte » → F4 → Casier : « Corruption d\'un agent »)', 'Staff', 3),
+        ('Pot-de-vin au contrôle du shérif / à l\'alcootest (la nuit sans policier) : le menu propose « Glisser un billet » ; en faute, la moitié de l\'amende en liquide, ni amende ni points s\'il accepte ; refusé = amende majorée', '1', 2),
+        ('Drone police : en service, F4 → Drone de surveillance (ou /drone) : vol à la souris, molette zoom, E vision nuit / thermique, G sur un joueur → un collègue en service voit « Suspect (drone) » sur sa carte 60 s ; X = rappel', '2', 3),
+        ('Drone gang : objet du marché noir (gang, pas recrue) → vol limité à 140 m et 2 min ; un autre joueur tire 2 balles dessus → il tombe, objet perdu ; un policier en service reçoit parfois « drone non identifié »', '2', 2),
+        ('Salle de sport (Muscle Beach) : [E] au point → 3 exercices différents (animés, 20 s) → « Séance terminée » ; sprint plus long ; se déconnecter / revenir → le bonus est toujours là', '1', 2),
     ]),
     ('5 · Obligatoire avant d\'ouvrir', [
         ('SAUVEGARDER-BDD.bat puis RESTAURER-BDD.bat sur un joueur ; redémarrage de 6 h : annonces 15 / 5 / 1 min', 'Staff', 3),

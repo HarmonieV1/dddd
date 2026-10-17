@@ -488,6 +488,36 @@ do
     Wanted.heat[1] = 8
     ok, msg = Wanted.negotiate(1, 'surrender')
     check('négociation : se rendre = amende selon la chaleur, affaire classée', ok and W.players[1].money.bank == 5000 - (300 + 8 * 15) and not Wanted.heat[1])
+    -- V12.64 · pot-de-vin d'un montant choisi : prix caché, refus = tentative de corruption (2 ★), enquête possible
+    local Bz = Config.NpcPolice.negotiate.bribe
+    local records = {}
+    provide('gs_police', { AddRecord = function(cid, charge, fine, jail, by) records[#records + 1] = { cid = cid, charge = charge, by = by } return true end })
+    newCop()
+    Wanted.sendNpc(1, 1)
+    Wanted.heat[1] = 10
+    W.players[1].money.cash = 100
+    ok, msg = Wanted.negotiate(1, 'bribe', 3000)
+    check('pot-de-vin : il faut les billets sur soi', not ok and msg:find('liquide'))
+    check('pot-de-vin : somme hors limites refusée', not Wanted.negotiate(1, 'bribe', 10) and not Wanted.negotiate(1, 'bribe', 'x'))
+    W.players[1].money.cash = 5000
+    fixRandom(0.5)
+    local low = math.floor((Bz.base + 10 * Bz.perHeat) * 0.5) -- moitié du prix caché : toujours refusé
+    ok, msg = Wanted.negotiate(1, 'bribe', low)
+    check('pot-de-vin trop bas : mal pris, 2 ★, argent gardé', ok and Wanted.npcLevel[1] == 2 and W.players[1].money.cash == 5000 and msg:find('corruption'))
+    newCop()
+    Wanted.sendNpc(1, 1)
+    Wanted.heat[1] = 10
+    fixRandom(0.5) -- accepté (0,5 < 0,85), pas d'enquête (0,5 ≥ 0,25)
+    local fair = Bz.base + 10 * Bz.perHeat
+    ok = Wanted.negotiate(1, 'bribe', fair)
+    check('pot-de-vin au prix : accepté, police retirée, liquide pris', ok and Wanted.npcLevel[1] == nil and W.players[1].money.cash == 5000 - fair and #records == 0)
+    newCop()
+    Wanted.sendNpc(1, 1)
+    Wanted.heat[1] = 10
+    fixRandom(0.1) -- accepté, enquête ouverte
+    ok, msg = Wanted.negotiate(1, 'bribe', fair)
+    check('pot-de-vin accepté mais enquête : ligne « corruption » au casier', ok and #records == 1 and records[1].charge:find('Corruption') and records[1].by == 'Affaires internes' and msg:find('enquête'))
+    fixRandom()
     Wanted.units[1] = nil
 end
 

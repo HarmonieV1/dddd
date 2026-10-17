@@ -1,5 +1,5 @@
 -- gs_lives (client) · V12.60. /lives (ou F11 → Lives) : liste des joueurs à gauche, WATCH ouvre une fenêtre avec l'écran du
--- joueur (une image toutes les 1,5 s). Fenêtres déplaçables (barre du haut), redimensionnables (coin), fermables (✕).
+-- joueur (V12.64 : flux continu, ≈ 2,5 images/s). Fenêtres déplaçables (barre du haut), redimensionnables (coin), fermables (✕).
 -- « Jouer » (ou Échap) rend la souris au jeu : les fenêtres restent affichées pendant que tu joues ; /lives pour reprendre la main.
 local open = false   -- liste ouverte, souris dans l'interface
 local count = 0      -- fenêtres ouvertes (le NUI tient la liste exacte)
@@ -56,18 +56,23 @@ end)
 
 -- V12.63 · Capture demandée par le serveur (ce joueur est regardé par le staff) : faite ici par screenshot-basic, renvoyée par le
 -- réseau du jeu (avant : envoi par une adresse web du serveur, qui échouait en silence : « la connexion charge indéfiniment »)
-RegisterNetEvent('gs_lives:client:capture', function(id, quality)
-    -- V12.63 (backtest « les Lives ne marchent toujours pas ») : chaque échec est renvoyé au serveur avec sa raison,
-    -- affichée dans la fenêtre du staff et dans la console du serveur (avant : attente muette puis « ne répond pas »)
-    if GetResourceState('screenshot-basic') ~= 'started' then
-        return TriggerServerEvent('gs_lives:server:shotFail', id, 'screenshot-basic n\'est pas démarré chez ce joueur')
-    end
+-- V12.64 · fluidité : image réduite (maxWidth) et WebP. Si le jeu ne sait pas faire de WebP (il rend alors un PNG, lourd),
+-- on repasse en JPEG pour toute la session.
+local webpBroken = false
+local function shoot(id, quality, opts, retry)
+    local encoding = (opts.encoding == 'webp' and not webpBroken) and 'webp' or 'jpg'
+    local maxWidth = math.tointeger(tonumber(opts.maxWidth)) or 0
     local done = false
     local ok, err = pcall(function()
-        exports['screenshot-basic']:requestScreenshot({ encoding = 'jpg', quality = tonumber(quality) or 0.45 }, function(data) -- [API] screenshot-basic
+        exports['screenshot-basic']:requestScreenshot({ encoding = encoding, quality = tonumber(quality) or 0.45, maxWidth = maxWidth > 0 and maxWidth or nil }, function(data) -- [API] screenshot-basic
             if done then return end
             done = true
-            if type(data) ~= 'string' or data:sub(1, 23) ~= 'data:image/jpeg;base64,' then
+            if type(data) == 'string' and encoding == 'webp' and data:sub(1, 15) == 'data:image/png;' and not retry then
+                webpBroken = true -- pas de WebP ici : même capture refaite tout de suite en JPEG, puis JPEG pour la session
+                return shoot(id, quality, opts, true)
+            end
+            local head = type(data) == 'string' and data:sub(1, 23) or ''
+            if head ~= 'data:image/jpeg;base64,' and head ~= 'data:image/webp;base64,' then
                 return TriggerServerEvent('gs_lives:server:shotFail', id, ('capture vide ou invalide (%s)'):format(type(data) == 'string' and data:sub(1, 30) or type(data)))
             end
             TriggerLatentServerEvent('gs_lives:server:shot', 1500000, id, data) -- V12.63 : envoi 3× plus rapide
@@ -79,6 +84,15 @@ RegisterNetEvent('gs_lives:client:capture', function(id, quality)
         done = true
         TriggerServerEvent('gs_lives:server:shotFail', id, 'screenshot-basic n\'a pas répondu en 6 s chez ce joueur (menu Échap, écran de chargement, ou capture bloquée par le jeu)')
     end)
+end
+
+RegisterNetEvent('gs_lives:client:capture', function(id, quality, opts)
+    -- V12.63 (backtest « les Lives ne marchent toujours pas ») : chaque échec est renvoyé au serveur avec sa raison,
+    -- affichée dans la fenêtre du staff et dans la console du serveur (avant : attente muette puis « ne répond pas »)
+    if GetResourceState('screenshot-basic') ~= 'started' then
+        return TriggerServerEvent('gs_lives:server:shotFail', id, 'screenshot-basic n\'est pas démarré chez ce joueur')
+    end
+    shoot(id, quality, type(opts) == 'table' and opts or {})
 end)
 
 -- V12.63 · Le joueur regardé ne répond pas : la fenêtre l'affiche au lieu de « Connexion à l'écran… » sans fin

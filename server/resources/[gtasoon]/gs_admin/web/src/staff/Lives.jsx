@@ -1,22 +1,34 @@
 import { useEffect, useRef, useState } from 'react'
 import { api } from './api.js'
 
-/** Une fenêtre d'écran : une image toutes les ~1,5 s tant qu'elle est ouverte et l'onglet visible. */
+/** Une fenêtre d'écran tant qu'elle est ouverte et l'onglet visible. V12.64 : flux continu (≈ 2,5 images/s) ; l'appli donne
+ *  le numéro de sa dernière image et le serveur ne renvoie l'image que si elle est nouvelle (sinon quelques octets). */
 function Screen({ p, onClose, onOpen }) {
   const [img, setImg] = useState('')
   const [msg, setMsg] = useState('Connexion à l\'écran…')
+  const [fps, setFps] = useState('')
   const alive = useRef(true)
   useEffect(() => {
     alive.current = true
-    let t
+    let t, since = null
+    const times = []
     const tick = async () => {
       if (!alive.current) return
+      let wait = 1500
       if (!document.hidden) {
-        const r = await api('frame', { id: p.id })
+        const r = await api('frame', { id: p.id, since })
         if (!alive.current) return
-        if (r.ok && r.img) { setImg(r.img); setMsg('') } else setMsg(r.text || 'Pas d\'image.')
+        if (r.ok && r.same) wait = 300 // rien de neuf : on redemande vite
+        else if (r.ok && r.img) {
+          since = r.seq ?? null
+          setImg(r.img); setMsg('')
+          const now = Date.now()
+          times.push(now); while (times.length > 6) times.shift()
+          if (times.length > 1) setFps(`${((times.length - 1) * 1000 / (now - times[0])).toFixed(1).replace('.', ',')} img/s`)
+          wait = 300
+        } else { setMsg(r.text || 'Pas d\'image.'); if (r.wait) wait = 500 }
       }
-      t = setTimeout(tick, 1500)
+      t = setTimeout(tick, wait)
     }
     tick()
     return () => { alive.current = false; clearTimeout(t) }
@@ -24,7 +36,7 @@ function Screen({ p, onClose, onOpen }) {
   return (
     <figure className="screen">
       <figcaption><i className="rec" aria-hidden="true" /> <b>{p.id}</b> {p.char || p.name}
-        <span className="grow" /><button className="icon" onClick={() => onOpen(p.id)} aria-label="Fiche">☰</button>
+        <span className="grow" />{fps && <small className="muted">{fps}</small>}<button className="icon" onClick={() => onOpen(p.id)} aria-label="Fiche">☰</button>
         <button className="icon" onClick={() => onClose(p.id)} aria-label="Fermer">✕</button></figcaption>
       {img ? <img src={img} alt={`Écran de ${p.char || p.name}`} /> : <div className="screen-wait">{msg}</div>}
       {img && msg && <div className="screen-note">{msg}</div>}
@@ -64,7 +76,7 @@ export default function Lives({ ov, watching, setWatching, onOpen, onReplay }) {
       {!ov.server.lives && <div className="banner warn">screenshot-basic n'est pas démarré sur le serveur : pas d'écran disponible.</div>}
       <div className="lives-grid" data-n={shown.length}>
         {shown.map((p) => <Screen key={p.id} p={p} onClose={del} onOpen={onOpen} />)}
-        {shown.length === 0 && <div className="lives-empty"><b>Aucun écran ouvert</b><span>Choisis jusqu'à 4 joueurs dans la liste : leur écran s'affiche ici, une image toutes les 1,5 s. Chaque visionnage est noté dans le journal staff.</span></div>}
+        {shown.length === 0 && <div className="lives-empty"><b>Aucun écran ouvert</b><span>Choisis jusqu'à 4 joueurs dans la liste : leur écran s'affiche ici en continu (environ 2 à 3 images par seconde). Chaque visionnage est noté dans le journal staff.</span></div>}
       </div>
       <aside className="lives-side">
         {replays.length > 0 && (
