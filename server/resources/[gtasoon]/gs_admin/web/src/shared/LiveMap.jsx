@@ -16,7 +16,10 @@ export function stateOf(p) {
 }
 export const STATE_LABEL = { civil: 'Citoyen', staff: 'Staff', wanted: 'Recherché', jail: 'Isolé', frozen: 'Gelé' }
 
-export default function LiveMap({ players = [], selected, onSelect, src = './carte-ls.webp', compact = false }) {
+// V12.65 · incidents de la soirée (tickets, joueurs à terre, alertes anti-triche) : petits repères par type
+export const INCIDENT_LABEL = { ticket: 'Ticket', death: 'À terre', ac: 'Anti-triche' }
+
+export default function LiveMap({ players = [], incidents = [], selected, onSelect, src = './carte-ls.webp', compact = false }) {
   const [view, setView] = useState({ k: 1, x: 0, y: 0 })
   const drag = useRef(null)
   const box = useRef(null)
@@ -50,6 +53,13 @@ export default function LiveMap({ players = [], selected, onSelect, src = './car
     <div className={compact ? 'lmap compact' : 'lmap'} ref={box} onPointerDown={onDown} onPointerMove={onMove} onPointerUp={onUp} onPointerCancel={onUp}>
       <div className="lmap-stage" style={{ transform: `translate(${view.x}px, ${view.y}px) scale(${view.k})` }}>
         <img src={src} alt="Carte de Los Santos" draggable="false" />
+        {incidents.filter((i) => Number.isFinite(i.x) && Number.isFinite(i.y)).map((i, n) => {
+          const left = (mapX(i.x) / W) * 100, top = (mapY(i.y) / H) * 100
+          if (left < 0 || left > 100 || top < 0 || top > 100) return null
+          const when = new Date(i.at * 1000).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })
+          return <span key={`i${n}`} className={`lmap-inc ${i.kind}`} style={{ left: `${left}%`, top: `${top}%`, '--inv': 1 / view.k }}
+            title={`${when} · ${INCIDENT_LABEL[i.kind] || i.kind} · ${i.text || ''}`} aria-label={`${INCIDENT_LABEL[i.kind] || i.kind} à ${when}`} />
+        })}
         {players.filter((p) => Number.isFinite(p.x) && Number.isFinite(p.y)).map((p) => {
           const st = stateOf(p)
           const left = (mapX(p.x) / W) * 100, top = (mapY(p.y) / H) * 100
@@ -70,6 +80,7 @@ export default function LiveMap({ players = [], selected, onSelect, src = './car
       <div className="lmap-legend">
         {Object.entries(STATE_LABEL).map(([k, v]) => <span key={k}><i className={`lmap-key ${k}`} />{v}</span>)}
         {players.some((p) => p.ticket) && <span><i className="lmap-key ticket" />Ticket ouvert</span>}
+        {incidents.length > 0 && Object.entries(INCIDENT_LABEL).map(([k, v]) => <span key={k}><i className={`lmap-inc key ${k}`} />{v}</span>)}
       </div>
     </div>
   )

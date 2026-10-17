@@ -32,6 +32,18 @@ function Admin.finishScene(target)
     Admin.scenes[target] = nil
     deleteEnts(s.ents)
     if not online(target) then return true end
+    if s.kind == 'desert' then -- V12.65 : version douce, sans expulsion
+        local cash = (S.desert.takeCash and Bridge:GetMoney(target, 'cash')) or 0
+        if cash > 0 then Bridge:RemoveMoney(target, 'cash', cash, 'relâché dans le désert') end
+        TriggerClientEvent('ox_lib:notify', target, { title = 'Relâché dans le désert', type = 'error', duration = 9000,
+            description = cash > 0 and ('Ils sont partis avec tes %d $ en liquide… et tes vêtements.'):format(cash) or 'Ils sont partis avec tes vêtements.' })
+        Admin.logRemote('Mise en scène', 'desert', label(target), ('relâché dans le désert (%d $ pris) · %s · par %s'):format(cash, s.reason, s.staff))
+        return true
+    end
+    if s.kind == 'transfer' then -- V12.65 : arrivé à Bolingbroke (ou délai écoulé) = isolement
+        Admin.jail(target, s.minutes, s.reason, s.staff)
+        return true
+    end
     if s.kind == 'kidnap' then
         -- V12.64 : entités supprimées d'abord, expulsion 1,5 s plus tard (le jeu du joueur se ferme proprement)
         local msg = ('Embarqué dans une camionnette par des inconnus… (expulsé par le staff : %s)'):format(s.reason)
@@ -46,14 +58,103 @@ local function startScene(src, target, kind, data, minutes)
     local reason = need(Security:Sanitize(data.reason, 200), 'Motif obligatoire.')
     need(not Admin.scenes[target], 'Une mise en scène est déjà en cours sur ce joueur.')
     need(not (Admin.jailed and Admin.jailed[target]), 'Ce joueur est déjà isolé.')
-    Admin.scenes[target] = { kind = kind, reason = reason, minutes = minutes, staff = label(src), ents = {} }
-    pcall(function() Security:AllowTeleport(target, (S[kind].maxSeconds or 30) + 10) end)
-    TriggerClientEvent('gs_admin:client:scene', target, kind, S[kind])
-    SetTimeout((S[kind].maxSeconds or 30) * 1000, function() Admin.finishScene(target) end)
+    local cfg, maxS = S[kind], S[kind].maxSeconds or 30
+    if kind == 'arrest' and data.interrogation and S.arrest.interrogation then -- V12.65 : interrogatoire avant la cellule
+        cfg = {}
+        for k, v in pairs(S.arrest) do cfg[k] = v end
+        cfg.interrogate = true
+        maxS = S.arrest.interrogation.maxSeconds
+    end
+    Admin.scenes[target] = { kind = kind, reason = reason, minutes = minutes, staff = label(src), staffSrc = src, ents = {}, interrogation = cfg.interrogate }
+    pcall(function() Security:AllowTeleport(target, maxS + 10) end)
+    TriggerClientEvent('gs_admin:client:scene', target, kind, cfg)
+    SetTimeout(maxS * 1000, function() Admin.finishScene(target) end)
     return reason
 end
 
 local Actions = Admin.actions
+
+-- V12.65 · Relâché dans le désert (sans argent liquide ni vêtements, pas d'expulsion)
+Actions.desert = { level = S.level or 3, target = true, sanction = true, run = function(src, target, data)
+    startScene(src, target, 'desert', data)
+    return 'Camionnette en route : relâché dans le désert, sans liquide ni vêtements'
+end }
+
+-- V12.65 · Transfert en fourgon vers Bolingbroke, attaquable (annonce Weazel optionnelle)
+Actions.transfer = { level = S.level or 3, target = true, sanction = true, run = function(src, target, data)
+    local minutes = tonumber(data.minutes) or S.transfer.minutes
+    need(minutes == math.floor(minutes) and minutes >= 1 and minutes <= Config.Jail.maxMinutes, ('Durée : 1 à %d min.'):format(Config.Jail.maxMinutes))
+    local reason = startScene(src, target, 'transfer', data, minutes)
+    if data.announce and GetResourceState('gs_social') == 'started' then
+        pcall(function() exports.gs_social:Newsroom('police', 'FLASH · Un fourgon de transfert de détenu quitte Mission Row en direction de Bolingbroke.') end)
+    end
+    return ('Fourgon parti (%d min d\'isolement à l\'arrivée%s) · %s'):format(minutes, data.announce and ', annoncé sur Weazel' or '', reason)
+end }
+
+--- Le détenu dit qu'on l'a libéré : vérifié ici (fourgon détruit ou absent, ou conducteur à terre)
+lib.callback.register('gs_admin:transferFreed', function(src)
+    if not Security:RateLimit(src, 'gs_admin:transferFreed', 3, 10000) then return false end
+    local s = Admin.scenes[src]
+    if not s or s.kind ~= 'transfer' then return false end
+    local van, driver = s.ents[1] and NetworkGetEntityFromNetworkId(s.ents[1]), s.ents[2] and NetworkGetEntityFromNetworkId(s.ents[2])
+    local broken = not van or van == 0 or not DoesEntityExist(van) or GetVehicleEngineHealth(van) <= S.transfer.engineFail
+    local downed = not driver or driver == 0 or not DoesEntityExist(driver) or GetEntityHealth(driver) <= 0
+    if not (broken or downed) then return false end
+    Admin.scenes[src] = nil
+    SetTimeout(20000, function() deleteEnts(s.ents) end) -- le temps de s'enfuir
+    Admin.logRemote('Mise en scène', 'transfer', label(src), ('ÉVADÉ pendant le transfert (%s) · lancé par %s'):format(broken and 'fourgon arrêté' or 'conducteur à terre', s.staff))
+    for staffSrc in pairs(Admin.onDuty or {}) do
+        TriggerClientEvent('ox_lib:notify', staffSrc, { title = 'Transfert', description = ('%s s\'est évadé du fourgon !'):format(label(src)), type = 'error', duration = 10000 })
+    end
+    return true
+end)
+
+-- V12.65 · Interrogatoire avant la cellule : les réponses arrivent au staff qui a lancé la scène et au journal
+RegisterNetEvent('gs_admin:server:interrogation', function(answers)
+    local src = source
+    if not Security:RateLimit(src, 'gs_admin:interrogation', 2, 30000) then return end
+    local s = Admin.scenes[src]
+    if not s or s.kind ~= 'arrest' or not s.interrogation or type(answers) ~= 'table' then return end
+    local qs, lines = S.arrest.interrogation.questions, {}
+    for i = 1, #qs do lines[#lines + 1] = ('%s → %s'):format(qs[i], Security:Sanitize(answers[i], 200) or '(silence)') end
+    local text = table.concat(lines, ' | ')
+    Admin.logRemote('Interrogatoire', 'npcarrest', label(src), text)
+    if s.staffSrc and GetPlayerName(s.staffSrc) then
+        TriggerClientEvent('ox_lib:notify', s.staffSrc, { title = 'Interrogatoire · ' .. label(src), description = text, type = 'inform', duration = 20000 })
+    end
+end)
+
+-- V12.65 · Mises en scène d'ambiance (sans sanction) --------------------------------------------------------------------
+Admin.stages = {} -- [cible] = { kind, ents, untilAt }
+local function endStage(target)
+    local st = Admin.stages[target]
+    if not st then return end
+    Admin.stages[target] = nil
+    deleteEnts(st.ents)
+end
+Admin.endStage = endStage
+
+Actions.stage = { level = S.level or 3, target = true, run = function(src, target, data)
+    local kind = type(data) == 'table' and data.kind or nil
+    local cfg = need(S.stages and S.stages[kind], 'Mise en scène inconnue.')
+    need(not Admin.scenes[target], 'Une mise en scène est déjà en cours sur ce joueur.')
+    local text
+    if kind == 'call' then text = need(Security:Sanitize(data.text, 300), 'Écris ce que dit la voix au téléphone.') end
+    endStage(target)
+    Admin.stages[target] = { kind = kind, ents = {}, untilAt = os.time() + cfg.seconds }
+    TriggerClientEvent('gs_admin:client:stage', target, kind, cfg, text)
+    SetTimeout((cfg.seconds + 20) * 1000, function()
+        local st = Admin.stages[target]
+        if st and st.untilAt <= os.time() then endStage(target) end
+    end)
+    return ('%s lancé (%d s)%s'):format(cfg.label, cfg.seconds, text and (' : « ' .. text .. ' »') or '')
+end }
+
+lib.callback.register('gs_admin:stageDone', function(src)
+    if not Security:RateLimit(src, 'gs_admin:stageDone', 3, 10000) then return false end
+    endStage(src)
+    return true
+end)
 
 Actions.kidnap = { level = S.level or 3, target = true, sanction = true, run = function(src, target, data)
     local reason = startScene(src, target, 'kidnap', data)
@@ -66,12 +167,14 @@ Actions.npcarrest = { level = S.level or 3, target = true, sanction = true, run 
     need(minutes == math.floor(minutes) and minutes >= 1 and minutes <= Config.Jail.maxMinutes, ('Durée : 1 à %d min.'):format(Config.Jail.maxMinutes))
     local reason = startScene(src, target, 'arrest', data, minutes)
     Admin.publishSanction('Isolement', nameOf(target), reason, minutes .. ' min')
+    if data.interrogation then return ('Policier en route : interrogatoire, puis %d min de cellule (réponses envoyées ici)'):format(minutes) end
     return ('Policier en route : %d min de cellule à Mission Row'):format(minutes)
 end }
 
 --- Le joueur visé signale les entités de sa scène (le serveur les supprimera) : 6 au plus, entiers seulement
 lib.callback.register('gs_admin:sceneEnts', function(src, nets)
-    local s = Admin.scenes[src]
+    if not Security:RateLimit(src, 'gs_admin:sceneEnts', 6, 10000) then return false end
+    local s = Admin.scenes[src] or (Admin.stages and Admin.stages[src]) -- V12.65 : aussi les scènes d'ambiance
     if not s or type(nets) ~= 'table' then return false end
     for i = 1, math.min(#nets, 6) do
         local n = math.tointeger(tonumber(nets[i]))
@@ -89,6 +192,7 @@ end)
 AddEventHandler('playerDropped', function()
     local s = Admin.scenes[source]
     if s then Admin.scenes[source] = nil deleteEnts(s.ents) end
+    if Admin.stages and Admin.stages[source] then Admin.endStage(source) end -- V12.65
 end)
 
 -- Chasse au trésor ------------------------------------------------------------------------------------------------------
@@ -96,13 +200,13 @@ function Admin.startHunt(src, ev, data)
     need(not (Admin.hunt and os.time() < Admin.hunt.untilAt), 'Une chasse au trésor est déjà en cours.')
     local prize = math.tointeger(tonumber(data.prize)) or H.prize or 1500
     need(prize >= 100 and prize <= (H.maxPrize or 5000), ('Prime : 100 à %d $.'):format(H.maxPrize or 5000))
-    if prize > (H.prize or 1500) then need(Admin.level(src) >= (H.bigPrizeLevel or 4), ('Prime au-delà de %d $ : super-admin.'):format(H.prize or 1500)) end
-    local c = GetEntityCoords(GetPlayerPed(src))
+    if prize > (H.prize or 1500) then need(src ~= 0 and Admin.level(src) >= (H.bigPrizeLevel or 4), ('Prime au-delà de %d $ : super-admin.'):format(H.prize or 1500)) end
+    local c = data.at or GetEntityCoords(GetPlayerPed(src)) -- V12.65 : lieu imposé (événement programmé)
     local at = vec3(c.x, c.y, c.z)
     -- zone affichée : centrée à côté de la mallette (jamais dessus), rayon `ev.radius`
     local a, r = math.random() * 2 * math.pi, ev.radius * (0.25 + math.random() * 0.4)
     local zone = vec3(at.x + math.cos(a) * r, at.y + math.sin(a) * r, at.z)
-    Admin.hunt = { at = at, prize = prize, by = label(src), untilAt = os.time() + ev.minutes * 60 }
+    Admin.hunt = { at = at, prize = prize, by = src ~= 0 and label(src) or 'programmé', untilAt = os.time() + ev.minutes * 60 }
     local n = 0
     for _, id in ipairs(GetPlayers()) do
         TriggerClientEvent('gs_admin:client:huntStart', tonumber(id), { zone = zone, radius = ev.radius, at = at, prize = prize,

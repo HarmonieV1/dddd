@@ -135,6 +135,7 @@ RegisterNetEvent('gs_admin:server:report', function(message)
     Admin.ticketTimes[#Admin.ticketTimes + 1] = t.time
     while Admin.ticketTimes[1] and Admin.ticketTimes[1] < t.time - 172800 do table.remove(Admin.ticketTimes, 1) end -- V12.62 : 48 h gardées
     pushToStaff('gs_admin:client:ticket', { id = t.id, name = t.name, message = t.message })
+    if Hub then Hub.incident('ticket', GetEntityCoords(GetPlayerPed(src)), ('Ticket #%d · %s'):format(t.id, t.name)) end -- V12.65
     Security:LogStaff(('[Ticket #%d] %s : %s'):format(t.id, t.name, message))
     notify(src, next(Admin.onDuty) and ('Ticket #%d envoyé au staff.'):format(t.id)
         or ('Ticket #%d enregistré : aucun staff en service, il sera traité dès que possible.'):format(t.id), 'success')
@@ -301,11 +302,15 @@ Actions.ban = { level = 4, target = true, sanction = true, run = function(src, t
     local lic = need(license(target), 'Licence introuvable.')
     local name = Bridge:GetName(target) or GetPlayerName(target) or '?'
     local untilTs = days == 0 and 0 or (os.time() + days * 86400)
+    local span = days == 0 and 'définitif' or (days .. ' jour(s)')
+    local held = days == 0 and BanReview and BanReview.needed(Admin.level(src)) -- V12.65 : 2e admin pour un définitif
+    if held then untilTs, span = BanReview.hold(lic, name, reason, label(src), license(src) or label(src)) end
     Store.banSet(lic, name, untilTs, reason, label(src))
-    Store.addNote(lic, 'warn', ('Bannissement (%s) : %s'):format(days == 0 and 'définitif' or (days .. ' j'), reason), label(src))
-    Admin.publishSanction('Bannissement', name, reason, days == 0 and 'définitif' or (days .. ' jour(s)'))
+    Store.addNote(lic, 'warn', ('Bannissement (%s) : %s'):format(span, reason), label(src))
+    if not held then Admin.publishSanction('Bannissement', name, reason, span) end
     if Moderation then pcall(Moderation.rememberBan, target, lic) end -- V12.63 : empreintes (anti-contournement)
-    DropPlayer(target, ('Banni de RoadLine RP (%s)\nMotif : %s'):format(days == 0 and 'définitif' or (days .. ' jour(s)'), reason))
+    DropPlayer(target, ('Banni de RoadLine RP (%s)\nMotif : %s'):format(held and ('%d jour(s), décision définitive en cours'):format((Config.StaffHub.banReview.tempDays or 1)) or span, reason))
+    if held then return 'Banni 24 h : le ban définitif attend la validation d\'un autre admin (F11 → Bans définitifs à valider)' end
     return days == 0 and 'Banni définitivement' or ('Banni %d jour(s)'):format(days)
 end }
 
@@ -660,10 +665,12 @@ Actions.delveh = { level = 2, duty = true, run = function(src, _, data)
 end }
 
 --- Événement en un clic : annonce + GPS à tous, effet aux joueurs dans le rayon.
-Actions.event = { level = 3, duty = true, run = function(src, _, data)
-    local ev = need(Config.Events[data.kind], 'Événement inconnu.')
-    if ev.hunt then return Admin.startHunt(src, ev, data) end -- V12.63 : chasse au trésor (server/scenes.lua)
-    local c = ev.at or GetEntityCoords(GetPlayerPed(src))
+--- V12.65 : `at` = lieu imposé (événement programmé depuis l'appli, sans membre du staff en jeu)
+function Admin.runEventAt(kind, at, src, data)
+    data = data or {}
+    local ev = need(Config.Events[kind], 'Événement inconnu.')
+    if ev.hunt then data.at = data.at or at return Admin.startHunt(tonumber(src) or 0, ev, data) end -- V12.63 : chasse au trésor (server/scenes.lua)
+    local c = ev.at or at or GetEntityCoords(GetPlayerPed(src))
     local text = ev.text
     if ev.roadtrip then -- départ au premier point du carnet du mois (gs_roadbook)
         need(started('gs_roadbook'), 'gs_roadbook non démarré.')
@@ -685,6 +692,9 @@ Actions.event = { level = 3, duty = true, run = function(src, _, data)
     if ev.freeRaces and started('gs_races') then exports.gs_races:SetFreeEntry(seconds) end
     if started('gs_social') then exports.gs_social:Newsroom('event', ('ÉVÉNEMENT · %s : %s'):format(ev.label, text)) end
     return ('%s lancé (%d joueurs prévenus, %d min)'):format(ev.label, n, ev.minutes)
+end
+Actions.event = { level = 3, duty = true, run = function(src, _, data)
+    return Admin.runEventAt(data.kind, nil, src, data)
 end }
 
 Actions.announce = { level = 3, run = function(_, _, data)
@@ -1273,9 +1283,11 @@ function Admin.remote(action, target, text, staff, extra, actorLevel) -- V12.63 
         local name = Bridge:GetName(target) or GetPlayerName(target) or '?'
         local untilTs = days == 0 and 0 or (os.time() + days * 86400)
         local span = days == 0 and 'définitif' or (days .. ' jour(s)')
+        local held = days == 0 and BanReview and BanReview.needed(actorLevel) -- V12.65 : 2e admin pour un définitif
+        if held then untilTs, span = BanReview.hold(lic, name, reason, staff, staff) end
         Store.banSet(lic, name, untilTs, reason, staff)
         Store.addNote(lic, 'warn', ('Bannissement (%s) : %s'):format(span, reason), staff)
-        Admin.publishSanction('Bannissement', name, reason, span)
+        if not held then Admin.publishSanction('Bannissement', name, reason, span) end
         Admin.logRemote(staff, 'ban', who, ('%s · %s'):format(span, reason))
         if Moderation then pcall(Moderation.rememberBan, target, lic) end
         DropPlayer(target, ('Banni de RoadLine RP (%s)\nMotif : %s'):format(span, reason))

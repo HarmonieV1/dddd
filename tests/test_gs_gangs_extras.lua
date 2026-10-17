@@ -183,5 +183,34 @@ check('perso : couleur invalide', not ok)
 ok = cb('gs_gangs:setCustom', 1, 'faction3', 145, 12); step()
 check('perso enregistré', ok and GlobalState.gsGangGarages.ballas.custom.model == 'faction3' and Config.GangGarages.ballas.vehicles[2] == 'manchez')
 
+-- V12.65 · Tags qui vivent : la pluie délave (pâlit puis efface), la mairie repeint les vieux tags des quartiers calmes
+do
+    local weather, level = 'CLEAR', 3
+    provide('gs_weather', { GetGameTime = function() return hour, 0 end, GetWeather = function() return weather end })
+    provide('gs_city', { GetLevel = function() return level, 'Grove' end })
+    Extras.tags, Extras.wear = {}, {}
+    Extras.tags[901] = { id = 901, gang = 'ballas', x = grove.x + 60.0, y = grove.y, z = grove.z, heading = 0.0 }
+    Extras.tags[902] = { id = 902, gang = 'ballas', x = grove.x - 60.0, y = grove.y, z = grove.z, heading = 0.0, text = 'R.I.P. Tony', expires = os.time() + 9999 }
+    Extras.weatherTags(os.time())
+    check('tags : beau temps, rien ne bouge', Extras.tags[901] and Extras.wear[901].wear == 100)
+    weather = 'RAIN'
+    Extras.weatherTags(os.time())
+    local a1
+    for _, t in ipairs(GlobalState.gsTags) do if t.id == 901 then a1 = t.a end end
+    check('tags : la pluie le délave (plus pâle)', Extras.wear[901].wear == 100 - Config.TagLife.rainWear and a1 and a1 < 235)
+    for _ = 1, 20 do Extras.weatherTags(os.time()) end
+    check('tags : assez de pluie = effacé, hommage intact', Extras.tags[901] == nil and Extras.tags[902] ~= nil)
+    weather = 'CLEAR'
+    Extras.tags[903] = { id = 903, gang = 'ballas', x = grove.x + 80.0, y = grove.y, z = grove.z, heading = 0.0 }
+    Extras.wear[903] = { wear = 100, born = os.time() - Config.TagLife.calmHours * 3600 - 10 }
+    fixRandom(0.0)
+    Extras.weatherTags(os.time())
+    check('tags : quartier tendu, la mairie n\'y touche pas', Extras.tags[903] ~= nil)
+    level = 1
+    Extras.weatherTags(os.time())
+    fixRandom()
+    check('tags : quartier calme, vieux tag repeint par la mairie', Extras.tags[903] == nil)
+end
+
 io.write(('\n%d réussis, %d échoués\n'):format(passed, failed))
 os.exit(failed == 0 and 0 or 1)

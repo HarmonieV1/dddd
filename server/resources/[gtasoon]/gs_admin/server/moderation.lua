@@ -189,7 +189,7 @@ function Moderation.departedList()
     return out
 end
 
-function Moderation.offlineBan(lic, days, reason, staff)
+function Moderation.offlineBan(lic, days, reason, staff, level)
     local d
     for _, e in ipairs(Moderation.departed) do if e.license == lic then d = e break end end
     if not d then return false, 'Ce joueur n\'est pas (ou plus) dans les départs récents.' end
@@ -199,10 +199,13 @@ function Moderation.offlineBan(lic, days, reason, staff)
     if Store.ban(lic) then return false, 'Déjà banni.' end
     local name = d.name or d.account
     local span = spanOf(days)
-    Store.banSet(lic, name, days == 0 and 0 or (os.time() + days * 86400), reason, staff)
+    local untilTs = days == 0 and 0 or (os.time() + days * 86400)
+    local held = days == 0 and BanReview and BanReview.needed(level) -- V12.65 : 2e admin pour un définitif
+    if held then untilTs, span = BanReview.hold(lic, name, reason, staff, staff) end
+    Store.banSet(lic, name, untilTs, reason, staff)
     Store.addNote(lic, 'warn', ('Bannissement hors ligne (%s) : %s'):format(span, reason), staff)
     Moderation.rememberBan(nil, lic, d.fp)
-    Admin.publishSanction('Bannissement', name, reason, span)
+    if not held then Admin.publishSanction('Bannissement', name, reason, span) end
     return true, ('%s banni hors ligne (%s).'):format(name, span)
 end
 
@@ -250,7 +253,7 @@ end }
 
 Actions.offlineban = { level = L.offlineban or 4, run = function(src, _, data)
     local lic = need(Security:Sanitize(data.license, 64), 'Licence manquante.')
-    local ok, msg = Moderation.offlineBan(lic, daysOf(data.days), reason(data.reason), label(src))
+    local ok, msg = Moderation.offlineBan(lic, daysOf(data.days), reason(data.reason), label(src), Admin.level(src))
     return need(ok and msg, msg)
 end }
 
@@ -294,7 +297,7 @@ R.lockdown = function(_, text, staff, extra)
     return true, ('Arrivées fermées %d min.'):format(m)
 end
 
-R.offlineban = function(_, text, staff, extra)
+R.offlineban = function(_, text, staff, extra, actorLevel)
     local e = type(extra) == 'table' and extra or {}
     local lic = Security:Sanitize(e.license, 64)
     if not lic then return false, 'Licence manquante.' end
@@ -302,7 +305,7 @@ R.offlineban = function(_, text, staff, extra)
     if not days or days < 0 or days > 3650 then return false, 'Durée : 0 (définitif) à 3650 jours (nombre entier).' end
     local r = Security:Sanitize(text, 200)
     if not r or r == '' then return false, 'Motif obligatoire.' end
-    local ok, msg = Moderation.offlineBan(lic, days, r, staff)
+    local ok, msg = Moderation.offlineBan(lic, days, r, staff, actorLevel)
     if ok then Admin.logRemote(staff, 'offlineban', lic, ('%s · %s'):format(spanOf(days), r)) end
     return ok, msg
 end

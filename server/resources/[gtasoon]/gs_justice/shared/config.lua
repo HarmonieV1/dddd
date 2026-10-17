@@ -3,7 +3,11 @@ Config = {}
 
 Config.JudgeJob, Config.LawyerJob, Config.PoliceJob = 'judge', 'lawyer', 'police'
 Config.Court = vec3(-540.3, -209.9, 38.2)
-Config.CourtRadius = 30.0          -- prévenu, avocat et juge présents dans la salle pour un verdict
+Config.CourtRadius = 30.0
+-- V12.65 · Témoin PNJ à la barre (proposition n° 317) : un passant qui a vu un crime signalé du prévenu vient le raconter.
+-- `stand` = place du témoin (à caler en jeu) ; un témoin par affaire et par témoignage ; le récit devient une pièce du dossier.
+Config.Witness = { stand = vec4(-541.6, -207.4, 38.2, 180.0), models = { 'a_m_m_business_01', 'a_f_m_bevhills_01', 'a_m_y_hipster_01', 'a_f_y_tourist_01', 'a_m_m_socenlat_01' },
+    seconds = 30 }          -- prévenu, avocat et juge présents dans la salle pour un verdict
 Config.MaxFine = 250000
 Config.MaxJail = 120               -- minutes
 Config.ConsentTimeout = 60         -- secondes pour que le client accepte l'accès de son avocat au casier

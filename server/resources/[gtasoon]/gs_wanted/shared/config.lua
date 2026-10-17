@@ -159,6 +159,9 @@ Config.Cameras = {
     },
 }
 
+-- V12.65 · Témoins au procès (gs_justice) : témoignages gardés par suspect (les `keep` derniers, `days` jours)
+Config.Testimony = { keep = 5, days = 14 }
+
 Config.Dispatch = {
     blipSeconds = 90,
     history = 20,

@@ -70,3 +70,9 @@ la ligne `set gs_admin_web_password "…"` dans `server-data\cfg\secrets.cfg` (j
   d'image plus récente. Les images sont réduites chez le joueur filmé (960 px, WebP).
 - Les écrans (Lives) viennent de gs_lives (export `Capture`) : la même capture sert à F11, aux replays et à l'appli. Le joueur
   regardé doit avoir screenshot-basic (livré dans `[gtasoon]`, rien à installer).
+
+## V12.65
+- **Chat staff** (tableau de bord) : le même fil que `/sc` en jeu.
+- **Événements programmés** (tableau de bord, admin et plus) : type, lieu (liste « Téléporter vers… ») et heure du serveur.
+- **Bans définitifs à valider** (tableau de bord) : un 2e admin valide ou refuse.
+- **Carte** : bouton « Incidents de la soirée » (tickets, joueurs à terre, alertes anti-triche des 12 dernières heures).

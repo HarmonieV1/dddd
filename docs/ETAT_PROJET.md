@@ -1,4 +1,4 @@
-# État du projet RoadLine RP — récapitulatif complet (à jour au 17/10/2026, V12.64)
+# État du projet RoadLine RP — récapitulatif complet (à jour au 17/10/2026, V12.65)
 
 Ce document sert de **point de sauvegarde** : si une conversation avec Claude est perdue, compressée ou doit reprendre
 ailleurs, tout ce qu'il faut savoir est ici. Il est versionné avec le code (`git log` en garde aussi l'historique).
@@ -12,7 +12,7 @@ En bas de ce fichier : un **prompt prêt à coller** dans une nouvelle conversat
 **20/10/2026 à 21 h**. Décision du 11/10 : pas de gel des nouveautés, mais désormais **surtout du correctif, de la
 configuration et de l'optimisation** ; l'utilisateur se consacre à la promotion.
 
-**Le serveur en chiffres** : 73 ressources maison (V12.64), 40 systèmes exclusifs (« signatures »), 40 mappings payants installés,
+**Le serveur en chiffres** : 73 ressources maison (V12.65), 40 systèmes exclusifs (« signatures »), 40 mappings payants installés,
 3 770 tests automatiques, tous verts ; 27 pièges anti-triche ; 25 types de crimes reliés au central police ; budget de performance
 tenu (136 boucles client, 6 permanentes par image).
 
@@ -272,6 +272,15 @@ Résumé très condensé (le détail complet est dans `docs/ROADMAP.md`, `docs/F
   façon chargement de mission (Entrée / clic pour passer). Tout coupé par `prefers-reduced-motion`, souris seulement
   sur ordinateur. Une seule boucle rAF qui s'endort quand rien ne bouge. Vérifié dans le navigateur : 0 erreur.
 
+- **V12.65** (17/10/2026) — choix du fondateur dans les propositions (`docs/PATCH_NOTE_V12.65.md`) : mises en scène d'ambiance
+  (gs_admin `Actions.stage`, `Admin.stages`, client `Stage.*` : hélico, foule, appel masqué, chien, alcoolo), désert (`Actions.desert`,
+  argent liquide pris au serveur, `strip` côté client), interrogatoire (`npcarrest` + `interrogation`, réponses →
+  `gs_admin:server:interrogation`), transfert attaquable (`Actions.transfer`, évasion vérifiée par `gs_admin:transferFreed` :
+  moteur ≤ `engineFail` ou conducteur à terre), favoris F11 (KVP client `gs_admin:favs`). **server/staffhub.lua** : chat `/sc` ↔
+  appli, incidents (state bag `qbx_medical:deathState`, tickets, alertes), événements programmés (`Hub.plan`, `Admin.runEventAt`
+  extrait de `Actions.event`), double validation des bans définitifs (`BanReview` branché sur `Actions.ban`, `Admin.remote` ban,
+  `Moderation.offlineBan`). Témoins (gs_wanted `Testimony`, gs_justice `Pieces.witness`). Tags qui vivent (gs_gangs
+  `Extras.weatherTags`, KVP `gs_gangs:tagwear`).
 - **V12.64** (nuit du 16 au 17/10/2026) — demandes du fondateur après le récap du soir (`docs/PATCH_NOTE_V12.64.md`) :
   **Correctif « 0 dégâts »** : gs_onboarding/client/protection.lua retirait l'invincibilité de fin de protection seulement si
   `GetPlayerInvincible` était faux… alors que la protection venait elle-même de la poser : tout le monde restait invincible.

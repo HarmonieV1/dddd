@@ -61,16 +61,69 @@ local function started(res) return GetResourceState(res) == 'started' end
 
 -- Tags -------------------------------------------------------------------------------------------------------------
 
+-- V12.65 · fraîcheur des tags (pluie, mairie) : wear[id] = { wear = 0-100, born = os.time() }, gardée en KVP
+Extras.wear = {}
+do
+    local ok, v = pcall(json.decode, GetResourceKvpString('gs_gangs:tagwear') or '{}')
+    if ok and type(v) == 'table' then for k, w in pairs(v) do Extras.wear[tonumber(k) or k] = w end end
+end
+local function wearOf(id)
+    local w = Extras.wear[id]
+    if not w then w = { wear = 100, born = os.time() } Extras.wear[id] = w end
+    return w
+end
+local function saveWear()
+    local out = {}
+    for id, w in pairs(Extras.wear) do if Extras.tags[id] then out[tostring(id)] = w end end
+    SetResourceKvp('gs_gangs:tagwear', json.encode(out))
+end
+
 local function publishTags()
     local list = {}
+    local L = Config.TagLife or {}
     for _, t in pairs(Extras.tags) do
         local g = Gangs.list[t.gang]
         if g then
             local rgb = Config.ColorRGB[g.color] or Config.ColorRGB.default
-            list[#list + 1] = { id = t.id, label = t.text or g.label, r = rgb[1], g = rgb[2], b = rgb[3], x = t.x, y = t.y, z = t.z, h = t.heading } -- V12.63 : hommage = son texte
+            local a = t.text and 235 or math.floor((L.minAlpha or 70) + (235 - (L.minAlpha or 70)) * wearOf(t.id).wear / 100) -- V12.65 : pâlit sous la pluie
+            list[#list + 1] = { id = t.id, label = t.text or g.label, r = rgb[1], g = rgb[2], b = rgb[3], a = a, x = t.x, y = t.y, z = t.z, h = t.heading } -- V12.63 : hommage = son texte
         end
     end
     GlobalState.gsTags = list
+end
+
+--- V12.65 · Toutes les 10 min : pluie (délave), mairie (repeint les vieux tags des quartiers calmes)
+function Extras.weatherTags(now)
+    local L = Config.TagLife or {}
+    if not L.enabled then return end
+    local raining = false
+    if started('gs_weather') then
+        local ok, w = pcall(function() return exports.gs_weather:GetWeather() end)
+        raining = ok and L.rainWeathers[tostring(w or ''):upper()] == true
+    end
+    local changed, gone = false, {}
+    for id, t in pairs(Extras.tags) do
+        if not t.text then
+            local w = wearOf(id)
+            if raining then w.wear = w.wear - L.rainWear changed = true end
+            local why
+            if w.wear <= 0 then why = 'rain'
+            elseif now - (w.born or now) >= L.calmHours * 3600 and started('gs_city') and math.random() < L.calmCover then
+                local ok, level = pcall(function() return exports.gs_city:GetLevel(vec3(t.x, t.y, t.z)) end)
+                if ok and tonumber(level) == 1 then why = 'city' end
+            end
+            if why then gone[#gone + 1] = { id = id, t = t, why = why } end
+        end
+    end
+    for _, g in ipairs(gone) do
+        Extras.tags[g.id] = nil
+        Extras.wear[g.id] = nil
+        TagsStore.delete(g.id)
+        TriggerEvent('gs_gangs:server:tagged', g.t.gang, vec3(g.t.x, g.t.y, g.t.z), false) -- le quartier respire
+        notifyGang(g.t.gang, g.why == 'rain' and 'Un de vos tags a été délavé par la pluie.' or 'La mairie a repeint un de vos tags (quartier calme).', 'warning')
+        changed = true
+    end
+    if changed then saveWear() publishTags() end
 end
 
 function Extras.countTags(gang)
@@ -114,7 +167,7 @@ function Extras.expireMemorials(now)
     end
     if changed then publishTags() end
 end
-CreateThread(function() while true do Wait(600000) Extras.expireMemorials(os.time()) end end)
+CreateThread(function() while true do Wait(600000) Extras.expireMemorials(os.time()) Extras.weatherTags(os.time()) end end)
 
 lib.callback.register('gs_gangs:tag', function(src, coords, heading, memo)
     if not Security:RateLimit(src, 'gs_gangs:tag', 2, 10000) then return false, 'Doucement.' end
@@ -134,6 +187,7 @@ lib.callback.register('gs_gangs:tag', function(src, coords, heading, memo)
     local id = TagsStore.insert(m.gang, c, h)
     if not id then return false, 'Erreur.' end
     Extras.tags[id] = { id = id, gang = m.gang, x = c.x, y = c.y, z = c.z, heading = h }
+    Extras.wear[id] = { wear = 100, born = os.time() } -- V12.65 : tag frais
     publishTags()
     local zone = Gangs.territoryAt(c)
     if zone then Gangs.addInfluence(m.gang, zone, Config.Tags.influence) end

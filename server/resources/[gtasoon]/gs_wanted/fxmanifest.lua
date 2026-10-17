@@ -9,5 +9,5 @@ version '0.1.0'
 dependencies { 'oxmysql', 'ox_lib', 'gs_security', 'gs_bridge', 'gs_jobs' }
 
 shared_scripts { '@ox_lib/init.lua', 'shared/config.lua', '@gs_bridge/shared/points.lua' }
-server_scripts { '@oxmysql/lib/MySQL.lua', 'server/memory.lua', 'server/main.lua', 'server/fugitive.lua' }
+server_scripts { '@oxmysql/lib/MySQL.lua', 'server/memory.lua', 'server/testimony.lua', 'server/main.lua', 'server/fugitive.lua' } -- V12.65 : témoins
 client_scripts { 'client/main.lua', 'client/search.lua', 'client/fugitive.lua' }

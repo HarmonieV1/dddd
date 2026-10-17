@@ -3,6 +3,7 @@ import { api, hasToken, setToken } from './api.js'
 import LiveMap, { stateOf, STATE_LABEL } from '../shared/LiveMap.jsx'
 import Sheet from './Sheet.jsx'
 import Lives, { Replay } from './Lives.jsx'
+import { StaffChat, Schedule, BanReviews } from './Hub.jsx'
 import { ActionDialog, Dialog, Sparkline, actionFr, ago, SEVERE } from './ui.jsx'
 
 const VIEWS = [
@@ -219,6 +220,7 @@ export default function App() {
   const [watching, setWatching] = useState([])
   const [replay, setReplay] = useState(null)
   const [announce, setAnnounce] = useState('')
+  const [incidents, setIncidents] = useState(false) // V12.65 : carte des incidents de la soirée
   const timer = useRef(null)
 
   const toast = useCallback((r) => {
@@ -308,10 +310,14 @@ export default function App() {
             </div>
             <div className="dash-grid">
               <section className="card map-card">
-                <div className="card-head"><h4>Los Santos en direct</h4><button className="btn ghost sm" onClick={() => setView('map')}>Plein écran</button></div>
-                <LiveMap players={ov.players} selected={sel} onSelect={(id) => { setSel(id); setView('map') }} compact />
+                <div className="card-head"><h4>Los Santos en direct</h4>
+                  <span className="toolbar"><button className={incidents ? 'btn cyan sm' : 'btn ghost sm'} onClick={() => setIncidents((v) => !v)} aria-pressed={incidents}>Incidents ({(ov.incidents || []).length})</button>
+                  <button className="btn ghost sm" onClick={() => setView('map')}>Plein écran</button></span></div>
+                <LiveMap players={ov.players} incidents={incidents ? ov.incidents : []} selected={sel} onSelect={(id) => { setSel(id); setView('map') }} compact />
               </section>
               <div className="dash-col">
+                <BanReviews list={ov.banReviews} refresh={refresh} toast={toast} />
+                <StaffChat chat={ov.chat} refresh={refresh} toast={toast} />
                 <section className="card">
                   <div className="card-head"><h4>Tickets</h4><button className="btn ghost sm" onClick={() => setView('tickets')}>Tout voir</button></div>
                   {ov.tickets.length === 0 && <p className="empty sm">Aucun ticket ouvert.</p>}
@@ -331,6 +337,7 @@ export default function App() {
                   <div className="toolbar"><input id="announce" maxLength={200} value={announce} onChange={(e) => setAnnounce(e.target.value)} placeholder="Redémarrage dans 10 min…" />
                     <button className="btn pink" disabled={!announce.trim()}>Envoyer</button></div>
                 </form>
+                <Schedule ov={ov} refresh={refresh} toast={toast} />
               </div>
             </div>
           </div>
@@ -356,7 +363,8 @@ export default function App() {
 
         {view === 'map' && (
           <div className={sel != null ? 'split map-split with-sheet' : 'split map-split'}>
-            <div className="map-pane"><LiveMap players={ov.players} selected={sel} onSelect={setSel} compact /></div>
+            <div className="map-pane"><LiveMap players={ov.players} incidents={incidents ? ov.incidents : []} selected={sel} onSelect={setSel} compact />
+              <button className={incidents ? 'btn cyan sm map-toggle' : 'btn ghost sm map-toggle'} onClick={() => setIncidents((v) => !v)} aria-pressed={incidents}>Incidents de la soirée ({(ov.incidents || []).length})</button></div>
             {sheet || (
               <aside className="sheet light">
                 <h4>Sur la carte <span className="muted">{ov.players.length}</span></h4>

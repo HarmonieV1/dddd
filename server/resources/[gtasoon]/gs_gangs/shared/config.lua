@@ -89,6 +89,11 @@ Config.GangGarages = {
 Config.Tags = { maxPerGang = 15, minDistance = 25.0, range = 3.0, influence = 2, drawDistance = 30.0, sprayTime = 6000, eraseTime = 8000,
     -- V12.63 · Hommage (proposition n° 170) : « R.I.P. <nom> » aux couleurs du gang ; 24 h, ou permanent payé par la caisse du gang
     memorialHours = 24, memorialCost = 1000, maxMemorials = 5 }
+-- V12.65 · Tags qui vivent (proposition n° 322) : la pluie délave les tags (`rainWear` points de fraîcheur perdus toutes les
+-- 10 min de pluie, sur 100 : ~2 h de pluie l'effacent ; il pâlit à l'écran) ; dans un quartier CALME (gs_city, niveau 1), la
+-- mairie repeint un tag de plus de `calmHours` h (chance `calmCover` toutes les 10 min). Le gang est prévenu. Les hommages
+-- (R.I.P.) ne sont pas touchés. Repeindre par-dessus (nouveau tag) = tag frais.
+Config.TagLife = { enabled = true, rainWear = 8, rainWeathers = { RAIN = true, THUNDER = true, CLEARING = true }, calmHours = 12, calmCover = 0.15, minAlpha = 70 }
 
 -- Couleurs d'affichage (tags) par couleur de blip GTA
 Config.ColorRGB = { [1] = { 224, 50, 50 }, [3] = { 93, 182, 229 }, [25] = { 57, 200, 90 }, [27] = { 170, 90, 255 },

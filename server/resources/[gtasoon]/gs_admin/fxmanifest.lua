@@ -9,7 +9,7 @@ version '0.1.0'
 dependencies { 'oxmysql', 'ox_lib', 'gs_security', 'gs_bridge', 'gs_jobs' }
 
 shared_scripts { '@ox_lib/init.lua', 'shared/config.lua' }
-server_scripts { '@oxmysql/lib/MySQL.lua', 'server/store.lua', 'server/main.lua', 'server/moderation.lua', 'server/scenes.lua', 'server/web.lua', 'server/restart.lua', 'server/fsw.lua', 'server/maps.js', 'server/crypto.js' }
+server_scripts { '@oxmysql/lib/MySQL.lua', 'server/store.lua', 'server/main.lua', 'server/moderation.lua', 'server/scenes.lua', 'server/staffhub.lua', 'server/web.lua', 'server/restart.lua', 'server/fsw.lua', 'server/maps.js', 'server/crypto.js' }
 client_scripts { 'client/main.lua', 'client/quick.lua', 'client/mapblips.lua', 'client/scenes.lua' }
 
 ui_page 'web/dist/index.html'

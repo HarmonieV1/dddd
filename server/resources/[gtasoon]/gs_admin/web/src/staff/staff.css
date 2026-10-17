@@ -244,3 +244,12 @@ textarea { resize: vertical; }
   .facts { grid-template-columns: 1fr; }
 }
 @media (prefers-reduced-motion: reduce) { .rec { animation: none; } * { transition: none !important; } }
+/* V12.65 · chat staff, événements programmés, bans à valider, bouton incidents de la carte */
+.chat { max-height: 220px; overflow-y: auto; display: flex; flex-direction: column; gap: 4px; margin-bottom: 8px; }
+.chat-line { margin: 0; font-size: 13px; line-height: 1.4; overflow-wrap: anywhere; }
+.row-line { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 6px 0; border-bottom: 1px solid rgba(255, 255, 255, .06); font-size: 13px; flex-wrap: wrap; }
+.toolbar.wrap { flex-wrap: wrap; }
+.toolbar select, .toolbar input[type='time'] { min-width: 0; }
+.warn-card { border-color: rgba(255, 77, 109, .55); }
+.map-pane { position: relative; }
+.map-toggle { position: absolute; left: 12px; top: 12px; z-index: 3; }

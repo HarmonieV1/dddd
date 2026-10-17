@@ -1123,7 +1123,7 @@ local function playerMenu(p)
     add(3, { title = 'Le mettre dans un gang', icon = 'people-group', arrow = true, onSelect = function() gangsMenu(p) end })
     -- V12.63 · Mises en scène (admin et plus) : sanction appliquée par le serveur à la fin de la scène
     add(Config.Scenes and Config.Scenes.level or 3, { title = 'Mises en scène', icon = 'clapperboard', arrow = true,
-        description = 'Enlèvement en camionnette (expulsion), arrestation par un policier PNJ (cellule)', onSelect = function()
+        description = 'Enlèvement, désert, arrestation (+ interrogatoire), transfert attaquable, et scènes d\'ambiance sans sanction', onSelect = function()
             show('gs_staff_scenes', 'Mises en scène · ' .. p.name, {
                 { title = 'Enlèvement en camionnette', icon = 'van-shuttle', iconColor = '#ff4d6d',
                   description = 'Une camionnette l\'embarque, écran noir, puis EXPULSION (motif publié comme une expulsion)', onSelect = function()
@@ -1132,15 +1132,49 @@ local function playerMenu(p)
                     if lib.alertDialog({ header = 'Enlever ' .. p.name .. ' ?', content = ('Il sera **expulsé** à la fin de la scène.\n**Motif** : %s'):format(r[1]), centered = true, cancel = true }) ~= 'confirm' then return end
                     notify(act('kidnap', p.id, { reason = r[1] }))
                 end },
+                -- V12.65 · version douce : relâché dans le désert, sans argent liquide ni vêtements (n° 295)
+                { title = 'Relâché dans le désert', icon = 'sun', iconColor = '#ffb020',
+                  description = 'Même camionnette, mais jeté en plein désert, SANS son argent liquide et en sous-vêtements (pas d\'expulsion)', onSelect = function()
+                    local r = lib.inputDialog('Désert : ' .. p.name, { { type = 'input', label = 'Motif (journal staff)', required = true, max = 200 } })
+                    if not r then return end
+                    if lib.alertDialog({ header = 'Relâcher ' .. p.name .. ' dans le désert ?', content = ('Il perd **tout son argent liquide** et ses vêtements.\n**Motif** : %s'):format(r[1]), centered = true, cancel = true }) ~= 'confirm' then return end
+                    notify(act('desert', p.id, { reason = r[1] }))
+                end },
                 { title = 'Arrestation par un policier PNJ', icon = 'handcuffs', iconColor = '#5aa0ff',
-                  description = 'Plaqué, menotté, puis en cellule à Mission Row (isolement)', onSelect = function()
+                  description = 'Plaqué, menotté, (interrogatoire), puis en cellule à Mission Row (isolement)', onSelect = function()
                     local r = lib.inputDialog('Arrestation : ' .. p.name, {
                         { type = 'number', label = 'Minutes de cellule', default = (Config.Scenes and Config.Scenes.arrest.minutes) or 5, min = 1, max = Config.Jail.maxMinutes, required = true },
                         { type = 'input', label = 'Motif (publié)', required = true, max = 200 },
+                        { type = 'checkbox', label = 'Interrogatoire avant la cellule (ses réponses arrivent ici)' }, -- V12.65 (n° 292)
                     })
                     if not r then return end
-                    notify(act('npcarrest', p.id, { minutes = math.floor(tonumber(r[1]) or 5), reason = r[2] }))
+                    notify(act('npcarrest', p.id, { minutes = math.floor(tonumber(r[1]) or 5), reason = r[2], interrogation = r[3] == true }))
                 end },
+                -- V12.65 · transfert attaquable vers Bolingbroke (n° 294)
+                { title = 'Transfert en fourgon (attaquable)', icon = 'truck', iconColor = '#5aa0ff',
+                  description = 'Fourgon de police de Mission Row à Bolingbroke ; arrêté en route = évadé, arrivé = isolement', onSelect = function()
+                    local r = lib.inputDialog('Transfert : ' .. p.name, {
+                        { type = 'number', label = 'Minutes d\'isolement à l\'arrivée', default = (Config.Scenes and Config.Scenes.transfer.minutes) or 10, min = 1, max = Config.Jail.maxMinutes, required = true },
+                        { type = 'input', label = 'Motif (publié)', required = true, max = 200 },
+                        { type = 'checkbox', label = 'Annoncer le convoi sur Weazel (la ville est prévenue)' },
+                    })
+                    if not r then return end
+                    notify(act('transfer', p.id, { minutes = math.floor(tonumber(r[1]) or 10), reason = r[2], announce = r[3] == true }))
+                end },
+                -- V12.65 · Ambiance (sans sanction) : pimenter la scène plutôt que la couper
+                { title = 'Ambiance · Hélico de la police', icon = 'helicopter', description = '30 s au-dessus de lui, projecteur la nuit, puis il repart',
+                  onSelect = function() notify(act('stage', p.id, { kind = 'heli' })) end },
+                { title = 'Ambiance · Foule de curieux', icon = 'people-group', description = 'Des passants s\'arrêtent, filment, commentent (40 s)',
+                  onSelect = function() notify(act('stage', p.id, { kind = 'crowd' })) end },
+                { title = 'Ambiance · Appel masqué', icon = 'phone', description = 'Son téléphone sonne : une voix dit ton texte (menace, info, rendez-vous…)',
+                  onSelect = function()
+                    local r = lib.inputDialog('Appel masqué : ' .. p.name, { { type = 'textarea', label = 'Ce que dit la voix', required = true, max = 300 } })
+                    if r then notify(act('stage', p.id, { kind = 'call', text = r[1] })) end
+                  end },
+                { title = 'Ambiance · Chien errant', icon = 'dog', description = 'Un chien aboie et le colle pendant une minute',
+                  onSelect = function() notify(act('stage', p.id, { kind = 'stray' })) end },
+                { title = 'Ambiance · Alcoolo collant', icon = 'wine-bottle', description = 'Un ivrogne titube derrière lui et lui raconte sa vie (1 min)',
+                  onSelect = function() notify(act('stage', p.id, { kind = 'drunk' })) end },
             }, 'gs_staff_player')
         end })
     add(4, { title = 'Argent', icon = 'money-bill', arrow = true, onSelect = function() moneyMenu(p) end })
@@ -1812,6 +1846,25 @@ local function mainMenu()
         -- V12.4 · Bannissements : lever un bannissement sans quitter le jeu, même sur un joueur hors ligne
         add(4, { title = 'Bannissements', icon = 'gavel', arrow = true, description = 'Voir les bannis, chercher, débannir', onSelect = bansMenu })
         add(3, { title = 'Modération avancée', icon = 'shield-halved', arrow = true, description = 'Surveillés, partis récemment (ban hors ligne), fermer les arrivées', onSelect = moderationMenu })
+        -- V12.65 · double validation des bans définitifs (proposition n° 307)
+        add(3, { title = 'Bans définitifs à valider', icon = 'scale-balanced', arrow = true, description = 'Un ban définitif demande l\'accord d\'un 2e admin (24 h en attendant)', onSelect = function()
+            local function reviews()
+                local list = lib.callback.await('gs_admin:banReviews', false) or {}
+                local o = {}
+                for _, r in ipairs(list) do
+                    o[#o + 1] = { title = ('%s · %s'):format(r.name, r.reason), icon = 'gavel', iconColor = '#ff4d6d', arrow = true,
+                        description = ('Demandé par %s · il y a %d min'):format(r.by, math.floor(r.ago / 60)), onSelect = function()
+                            show('gs_staff_banrev1', r.name, {
+                                { title = 'Valider le ban DÉFINITIF', icon = 'check', iconColor = '#ff4d6d', onSelect = function() notify(lib.callback.await('gs_admin:banDecide', false, r.id, true)) reviews() end },
+                                { title = 'Refuser (il garde son ban temporaire)', icon = 'xmark', onSelect = function() notify(lib.callback.await('gs_admin:banDecide', false, r.id, false)) reviews() end },
+                            }, 'gs_staff_banrev')
+                        end }
+                end
+                if #o == 0 then o[1] = { title = 'Rien à valider', icon = 'circle-check', readOnly = true } end
+                show('gs_staff_banrev', 'Bans définitifs à valider', o, 'gs_staff_quick')
+            end
+            reviews()
+        end })
         add(3, { title = 'Statistiques de rétention', icon = 'chart-line', arrow = true, description = 'Nouveaux joueurs, retours J+1 / 7 jours, abandon, sessions', onSelect = function()
             local r = GetResourceState('gs_stats') == 'started' and lib.callback.await('gs_stats:retention', false)
             if not r then return notify(false, 'Statistiques indisponibles.') end
@@ -1829,9 +1882,79 @@ local function mainMenu()
             show('gs_staff_stats', 'Rétention', o, 'gs_staff_quick')
         end })
     end
+    -- V12.65 · Favoris (proposition n° 302) : jusqu'à 6 actions épinglées en haut du menu (gardées sur ce PC)
+    if info.onDuty then
+        local cands = {}
+        for _, o in ipairs(options) do
+            local t = o.title or ''
+            if not o.readOnly and not t:find('^Mode staff') and not t:find('^Joueur en face') then cands[#cands + 1] = { id = t, opt = o } end
+        end
+        local function quick(minLvl, id, opt) if lvl >= minLvl then cands[#cands + 1] = { id = id, opt = opt } end end
+        quick(Config.Powers.noclip, 'q:noclip', { title = ('Vol libre : %s'):format(powers.noclip and 'ON' or 'OFF'), icon = 'feather', iconColor = powers.noclip and ON or OFF,
+            onSelect = function() setNoclip(not powers.noclip) mainMenu() end })
+        quick(Config.Powers.invisible, 'q:invisible', { title = ('Invisible : %s'):format(powers.invisible and 'ON' or 'OFF'), icon = 'ghost', iconColor = powers.invisible and ON or OFF,
+            onSelect = function()
+                local on = not powers.invisible
+                if on and not grant('invisible') then return end
+                if not on then act('power', nil, { power = 'invisible', on = false }) end
+                powers.invisible = on applyVisibility() mainMenu()
+            end })
+        quick(Config.Powers.godmode, 'q:godmode', { title = ('Invincible : %s'):format(powers.godmode and 'ON' or 'OFF'), icon = 'shield', iconColor = powers.godmode and ON or OFF,
+            onSelect = function()
+                local on = not powers.godmode
+                if on and not grant('godmode') then return end
+                if not on then act('power', nil, { power = 'godmode', on = false }) end
+                powers.godmode = on applyGodmode() mainMenu()
+            end })
+        quick(Config.Powers.names, 'q:names', { title = ('Noms et ID : %s'):format(powers.names and 'ON' or 'OFF'), icon = 'id-badge', iconColor = powers.names and ON or OFF,
+            onSelect = function()
+                local on = not powers.names
+                if on and not grant('names') then return end
+                powers.names = on if on then namesLoop() end mainMenu()
+            end })
+        quick(Config.Powers.tpm, 'q:tpm', { title = 'Téléportation au marqueur', icon = 'map-pin', onSelect = teleportToMarker })
+        quick(2, 'q:revive', { title = 'Me soigner et réanimer', icon = 'heart', onSelect = function() notify(act('revive', info.me)) end })
+        local favs = {}
+        pcall(function() favs = json.decode(GetResourceKvpString('gs_admin:favs') or '[]') or {} end)
+        local byId = {}
+        for _, c in ipairs(cands) do byId[c.id] = c end
+        local at = 2 -- juste sous « Mode staff »
+        for _, id in ipairs(favs) do
+            local c = byId[id]
+            if c then
+                local clone = {}
+                for k, v in pairs(c.opt) do clone[k] = v end
+                clone.title = '⭐ ' .. c.opt.title
+                table.insert(options, at, clone)
+                at = at + 1
+            end
+        end
+        local function favMenu()
+            local cur = {}
+            pcall(function() cur = json.decode(GetResourceKvpString('gs_admin:favs') or '[]') or {} end)
+            local pinned = {}
+            for i, id in ipairs(cur) do pinned[id] = i end
+            local o = { { title = ('%d / 6 épinglés'):format(#cur), icon = 'star', readOnly = true, description = 'Clique pour épingler ou retirer ; ils apparaissent en haut du menu F11' } }
+            for _, c in ipairs(cands) do
+                o[#o + 1] = { title = (pinned[c.id] and '⭐ ' or '') .. (c.opt.title or c.id), icon = c.opt.icon, iconColor = pinned[c.id] and '#ffd166' or nil,
+                    onSelect = function()
+                        if pinned[c.id] then table.remove(cur, pinned[c.id])
+                        elseif #cur >= 6 then return notify(false, '6 favoris au maximum : retire-en un d\'abord.')
+                        else cur[#cur + 1] = c.id end
+                        SetResourceKvp('gs_admin:favs', json.encode(cur))
+                        favMenu()
+                    end }
+            end
+            show('gs_staff_favs', 'Mes favoris', o, 'gs_staff_quick')
+        end
+        options[#options + 1] = { title = 'Gérer mes favoris', icon = 'star', iconColor = '#ffd166', description = 'Épingle jusqu\'à 6 actions en haut de ce menu', onSelect = favMenu }
+    end
     add(1, { title = 'Panel complet (F10)', icon = 'table-columns', onSelect = function() ExecuteCommand('admin') end })
     show('gs_staff_quick', ('Staff · %s · RoadLine %s'):format(info.levelName or '', GetConvar('gs_version', '?')), options)
 end
+
+-- V12.65 · chat staff synchronisé avec l'appli
+TriggerEvent('chat:addSuggestion', '/sc', 'Chat staff (synchronisé avec l\'appli staff)', { { name = 'message', help = 'Ton message au staff' } })
 
 -- Déplacer / retirer un point (toutes ressources) : les plus proches (300 m), filtre par ressource.
 -- V11.6 : « Retirer du jeu » (super-admin, réversible) en plus de déplacer / remettre à l'origine.

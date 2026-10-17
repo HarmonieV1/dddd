@@ -88,6 +88,19 @@ end
 -- V12.63 (backtest : scène buguée) : plus de conduite IA jusqu'au joueur. La camionnette apparaît sur la route la plus
 -- proche (sinon juste à côté), un inconnu en descend à pied, le joueur lève les mains, fondu, il est assis à l'arrière,
 -- la camionnette repart (balade simple de l'IA), écran noir.
+--- V12.65 · Relâché dans le désert : en sous-vêtements (tenue changée chez le joueur seulement ; sa tenue enregistrée revient
+--- à la reconnexion ou à la garde-robe), chapeau / lunettes / sac retirés
+local function strip(ped)
+    local male = GetEntityModel(ped) == GetHashKey('mp_m_freemode_01')
+    SetPedComponentVariation(ped, 11, 15, 0, 0) -- haut
+    SetPedComponentVariation(ped, 8, 15, 0, 0)  -- dessous
+    SetPedComponentVariation(ped, 3, 15, 0, 0)  -- bras nus
+    SetPedComponentVariation(ped, 4, male and 21 or 15, 0, 0) -- caleçon / culotte
+    SetPedComponentVariation(ped, 6, male and 34 or 35, 0, 0) -- pieds nus
+    SetPedComponentVariation(ped, 5, 0, 0, 0) SetPedComponentVariation(ped, 9, 0, 0, 0) SetPedComponentVariation(ped, 7, 0, 0, 0)
+    ClearPedProp(ped, 0) ClearPedProp(ped, 1)
+end
+
 --- V12.64 · point où la camionnette jette le joueur : au hasard parmi ceux à plus de `minDistance` m de l'enlèvement
 local function pickDrop(cfg, from)
     local far = {}
@@ -175,22 +188,113 @@ local function kidnap(cfg)
         end
         SetEntityCoordsNoOffset(ped, drop.x, drop.y, z, false, false, false)
         SetEntityHeading(ped, (drop.w or 0.0) + 90.0)
+        if cfg.strip then strip(ped) end -- V12.65 : relâché dans le désert, en sous-vêtements
         SetPedToRagdoll(ped, 4000, 4000, 0, false, false, false) -- jeté dehors
         ApplyForceToEntityCenterOfMass(ped, 1, -math.cos(hr) * 6.0, -math.sin(hr) * 6.0, 1.5, false, false, true, false)
         DoScreenFadeIn(600)
-        caption('On te jette sur le bord de la route, le sac sur la tête…', 3500)
+        caption(cfg.desert and 'On te jette en plein désert… sans un sou, et sans tes vêtements.' or 'On te jette sur le bord de la route, le sac sur la tête…', 3500)
         Wait(1200)
         if DoesEntityExist(van) then
             SetVehicleDoorsShut(van, false)
             if DoesEntityExist(driver) then TaskVehicleDriveWander(driver, van, 30.0, 786603) end
         end
         Wait(3000)
+        if cfg.desert then return end -- V12.65 : pas d'expulsion, il reste là (sans écran noir)
         blackOut('La camionnette disparaît au loin…')
     else
         SetEntityCoordsNoOffset(ped, start.x, start.y, start.z, false, false, false)
+        if cfg.desert then if cfg.strip then strip(ped) end return end
     end
     FreezeEntityPosition(ped, true)
     Wait(300)
+end
+
+-- V12.65 · Interrogatoire (proposition n° 292) : salle d'interrogatoire de Mission Row, un inspecteur PNJ pose ses questions,
+-- le joueur répond (ou se tait) ; les réponses partent au staff qui a lancé la scène. Puis la cellule.
+local function interrogate(I)
+    local ped = cache.ped
+    blackOut('Direction la salle d\'interrogatoire de Mission Row…')
+    local r = I.room
+    SetEntityCoordsNoOffset(ped, r.x, r.y, r.z, false, false, false)
+    SetEntityHeading(ped, r.w)
+    RequestCollisionAtCoord(r.x, r.y, r.z)
+    local t = GetGameTimer() + 5000
+    while not HasCollisionLoadedAroundEntity(ped) and GetGameTimer() < t do Wait(100) end
+    local h = loadModel(I.inspector)
+    local inspector
+    if h then
+        local face = GetOffsetFromEntityInWorldCoords(ped, 0.0, 1.6, 0.0)
+        inspector = CreatePed(6, h, face.x, face.y, r.z - 1.0, (r.w + 180.0) % 360.0, true, false)
+        SetModelAsNoLongerNeeded(h)
+        if DoesEntityExist(inspector) then
+            SetBlockingOfNonTemporaryEvents(inspector, true) SetPedKeepTask(inspector, true) SetEntityInvincible(inspector, true)
+            register({ inspector })
+            TaskStartScenarioInPlace(inspector, 'WORLD_HUMAN_CLIPBOARD', 0, true)
+        end
+    end
+    anim(ped, 'mp_arresting', 'idle', 49, -1)
+    DoScreenFadeIn(800)
+    caption('« Assieds-toi. On a quelques questions. »', 3000)
+    Wait(3000)
+    for i, q in ipairs(I.questions) do caption(('Inspecteur : « %s »'):format(q), 3200) Wait(3300) end
+    local fields = {}
+    for i, q in ipairs(I.questions) do fields[i] = { type = 'input', label = q, description = 'Laisse vide pour garder le silence', max = 200 } end
+    local closed = false
+    SetTimeout((I.answerSeconds or 30) * 1000, function() if not closed then pcall(lib.closeInputDialog) end end)
+    local answers = lib.inputDialog('Interrogatoire', fields) or {}
+    closed = true
+    TriggerServerEvent('gs_admin:server:interrogation', answers)
+    caption('« C\'est noté. On verra ce qu\'en dit le juge. »', 2500)
+    Wait(2500)
+    blackOut('Direction la cellule…')
+end
+
+-- V12.65 · Transfert en fourgon vers Bolingbroke (proposition n° 294) : le détenu est assis à l'arrière, portes verrouillées ;
+-- si le fourgon est arrêté (moteur détruit, conducteur à terre), le serveur vérifie et le libère. Sinon : isolement à l'arrivée.
+local function transfer(cfg)
+    local ped = cache.ped
+    leaveVehicle(ped)
+    blackOut('Des policiers te conduisent au fourgon de transfert…')
+    local vanH, copH = loadModel(cfg.van), loadModel(cfg.cop)
+    if not (vanH and copH) then return end
+    local f = cfg.from
+    SetEntityCoordsNoOffset(ped, f.x + 3.0, f.y, f.z, false, false, false)
+    RequestCollisionAtCoord(f.x, f.y, f.z)
+    local t = GetGameTimer() + 6000
+    while not HasCollisionLoadedAroundEntity(ped) and GetGameTimer() < t do Wait(100) end
+    local van = CreateVehicle(vanH, f.x, f.y, f.z, f.w, true, false)
+    SetModelAsNoLongerNeeded(vanH)
+    if not DoesEntityExist(van) then return end
+    SetVehicleOnGroundProperly(van)
+    local driver = CreatePedInsideVehicle(van, 6, copH, -1, true, false)
+    local escort = CreatePedInsideVehicle(van, 6, copH, 0, true, false)
+    SetModelAsNoLongerNeeded(copH)
+    register({ van, driver, escort }) -- l'ordre compte : fourgon, conducteur (vérifiés par le serveur)
+    SetBlockingOfNonTemporaryEvents(driver, true) SetPedKeepTask(driver, true)
+    GiveWeaponToPed(escort, GetHashKey('WEAPON_PISTOL'), 60, false, true)
+    TaskWarpPedIntoVehicle(ped, van, IsVehicleSeatFree(van, 1) and 1 or 2)
+    SetVehicleDoorsLocked(van, 4)
+    SetVehicleSiren(van, true)
+    SetVehicleEngineOn(van, true, true, false)
+    Wait(500)
+    TaskVehicleDriveToCoordLongrange(driver, van, cfg.to.x, cfg.to.y, cfg.to.z, 24.0, 786603, 25.0)
+    DoScreenFadeIn(800)
+    caption('Transfert vers la prison de Bolingbroke…', 4000)
+    local deadline = GetGameTimer() + (cfg.seconds or 400) * 1000
+    while GetGameTimer() < deadline do
+        local broken = not DoesEntityExist(van) or GetVehicleEngineHealth(van) <= (cfg.engineFail or 300.0)
+        local downed = not DoesEntityExist(driver) or IsEntityDead(driver)
+        if broken or downed then
+            if lib.callback.await('gs_admin:transferFreed', false) then
+                if DoesEntityExist(van) then SetVehicleDoorsLocked(van, 1) end
+                caption('Le fourgon est arrêté : les portes s\'ouvrent… fuis !', 5000)
+                return 'freed'
+            end
+        end
+        if DoesEntityExist(van) and #(GetEntityCoords(van) - cfg.to) < 40.0 then break end
+        Wait(500)
+    end
+    blackOut('Arrivée à Bolingbroke…')
 end
 
 -- Arrestation par un policier PNJ --------------------------------------------------------------------------------------------
@@ -227,6 +331,7 @@ local function arrest(cfg)
     Wait(3600)
     anim(ped, 'mp_arresting', 'idle', 49, -1)
     Wait(1200)
+    if cfg.interrogate and cfg.interrogation then return interrogate(cfg.interrogation) end -- V12.65
     blackOut('Direction le commissariat de Mission Row…')
 end
 
@@ -234,16 +339,183 @@ RegisterNetEvent('gs_admin:client:scene', function(kind, cfg)
     if busy or type(cfg) ~= 'table' then return end
     busy = true
     lockControls()
-    local ok, err = pcall(kind == 'kidnap' and kidnap or arrest, cfg)
-    if not ok then print('[gs_admin] mise en scène : ' .. tostring(err)) end
-    if not IsScreenFadedOut() then DoScreenFadeOut(500) Wait(600) end
-    lib.callback.await('gs_admin:sceneDone', false) -- expulsion, ou cellule (téléportation par le serveur)
+    local fn = ({ kidnap = kidnap, desert = kidnap, arrest = arrest, transfer = transfer })[kind] or arrest -- V12.65
+    local ok, res = pcall(fn, cfg)
+    if not ok then print('[gs_admin] mise en scène : ' .. tostring(res)) end
+    if res == 'freed' then busy = false return end -- évadé du fourgon : la scène s'arrête là (vérifié par le serveur)
+    if kind ~= 'desert' and not IsScreenFadedOut() then DoScreenFadeOut(500) Wait(600) end
+    lib.callback.await('gs_admin:sceneDone', false) -- expulsion, cellule, isolement (téléportation par le serveur) ou désert
     FreezeEntityPosition(cache.ped, false)
-    Wait(1200)
-    ClearPedTasksImmediately(cache.ped)
+    if kind ~= 'desert' then Wait(1200) ClearPedTasksImmediately(cache.ped) end
     busy = false
     DoScreenFadeIn(900)
-    if kind ~= 'kidnap' then lib.notify({ title = 'Cellule de Mission Row', description = 'Tu as été arrêté. Patiente jusqu\'à la fin de ta peine.', type = 'error', duration = 8000 }) end
+    if kind == 'arrest' then lib.notify({ title = 'Cellule de Mission Row', description = 'Tu as été arrêté. Patiente jusqu\'à la fin de ta peine.', type = 'error', duration = 8000 })
+    elseif kind == 'transfer' then lib.notify({ title = 'Bolingbroke', description = 'Transfert terminé : isolement à la prison.', type = 'error', duration = 8000 }) end
+end)
+
+-- V12.65 · Mises en scène d'AMBIANCE (sans sanction, admin et plus) : pimenter une scène RP au lieu de la couper.
+-- Jouées chez le joueur visé, entités réseau (tout le monde les voit), supprimées ici à la fin ET par le serveur.
+local staging = false
+
+local function cleanStage(ents)
+    for _, e in ipairs(ents) do if e and DoesEntityExist(e) then SetEntityAsMissionEntity(e, true, true) DeleteEntity(e) end end
+    lib.callback.await('gs_admin:stageDone', false)
+end
+
+local Stage = {}
+
+--- Hélico de la police : tourne au-dessus du joueur, projecteur la nuit, puis repart
+function Stage.heli(cfg)
+    local me = GetEntityCoords(cache.ped)
+    local h, ph = loadModel(cfg.model), loadModel(cfg.pilot)
+    if not (h and ph) then return {} end
+    local a = math.random() * 2 * math.pi
+    local heli = CreateVehicle(h, me.x + math.cos(a) * 220.0, me.y + math.sin(a) * 220.0, me.z + cfg.height + 30.0, 0.0, true, false)
+    if not DoesEntityExist(heli) then return {} end
+    local pilot = CreatePedInsideVehicle(heli, 6, ph, -1, true, false)
+    SetModelAsNoLongerNeeded(h) SetModelAsNoLongerNeeded(ph)
+    register({ heli, pilot })
+    SetVehicleEngineOn(heli, true, true, false) SetHeliBladesFullSpeed(heli)
+    SetBlockingOfNonTemporaryEvents(pilot, true) SetPedKeepTask(pilot, true)
+    local untilT = GetGameTimer() + cfg.seconds * 1000
+    while GetGameTimer() < untilT and DoesEntityExist(heli) and DoesEntityExist(pilot) do
+        TaskHeliMission(pilot, heli, 0, cache.ped, 0.0, 0.0, 0.0, 9, 30.0, cfg.radius, -1.0, math.floor(cfg.height), math.floor(cfg.height * 0.6), -1.0, 0)
+        local hour = GetClockHours()
+        SetVehicleSearchlight(heli, hour >= 20 or hour < 6, true)
+        Wait(5000)
+    end
+    if DoesEntityExist(heli) and DoesEntityExist(pilot) then -- repart au loin
+        SetVehicleSearchlight(heli, false, false)
+        local far = GetOffsetFromEntityInWorldCoords(heli, 0.0, 900.0, 60.0)
+        TaskHeliMission(pilot, heli, 0, 0, far.x, far.y, far.z, 4, 40.0, 10.0, -1.0, 120, 80, -1.0, 0)
+        Wait(15000)
+    end
+    return { heli, pilot }
+end
+
+--- Foule de curieux : des passants s'arrêtent, filment, commentent, puis s'en vont
+function Stage.crowd(cfg)
+    local me = GetEntityCoords(cache.ped)
+    local peds = {}
+    for i = 1, cfg.count do
+        local h = loadModel(cfg.models[math.random(#cfg.models)])
+        if h then
+            local a = (i / cfg.count) * 2 * math.pi + math.random() * 0.4
+            local d = 6.0 + math.random() * 3.0
+            local x, y = me.x + math.cos(a) * d, me.y + math.sin(a) * d
+            local p = CreatePed(4, h, x, y, groundAt(vec3(x, y, me.z), me.z - 1.0), 0.0, true, false)
+            SetModelAsNoLongerNeeded(h)
+            if DoesEntityExist(p) then
+                SetBlockingOfNonTemporaryEvents(p, true)
+                TaskTurnPedToFaceEntity(p, cache.ped, 1200)
+                peds[#peds + 1] = p
+            end
+        end
+    end
+    register(peds)
+    Wait(1300)
+    local scen = { 'WORLD_HUMAN_MOBILE_FILM_SHOCKING', 'WORLD_HUMAN_STAND_MOBILE', 'WORLD_HUMAN_SMOKING', 'WORLD_HUMAN_HANG_OUT_STREET' }
+    for i, p in ipairs(peds) do if DoesEntityExist(p) then TaskStartScenarioInPlace(p, scen[(i - 1) % #scen + 1], 0, true) end end
+    local lines = { '« Vous avez vu ça ?! »', '« Filme, filme ! »', '« J\'appelle les flics, moi… »', '« C\'est pas lui qu\'on a vu aux infos ? »', '« Allez, on se pousse pas, on regarde ! »' }
+    local untilT = GetGameTimer() + cfg.seconds * 1000
+    while GetGameTimer() < untilT do
+        local p = peds[math.random(#peds)]
+        if p and DoesEntityExist(p) then PlayPedAmbientSpeechNative(p, 'GENERIC_SHOCKED_MED', 'SPEECH_PARAMS_FORCE') end
+        caption(lines[math.random(#lines)], 2500)
+        Wait(5000 + math.random(2000))
+    end
+    for _, p in ipairs(peds) do if DoesEntityExist(p) then ClearPedTasks(p) TaskWanderStandard(p, 10.0, 10) end end
+    Wait(15000)
+    return peds
+end
+
+--- Appel masqué : le téléphone sonne, une voix dit le texte écrit par le staff
+function Stage.call(cfg, text)
+    local ped = cache.ped
+    for _ = 1, 3 do PlaySoundFrontend(-1, 'Remote_Ring', 'Phone_SoundSet_Michael', true) Wait(1500) end
+    local phone
+    if not cache.vehicle and lib.requestAnimDict('cellphone@', 2000) then
+        TaskPlayAnim(ped, 'cellphone@', 'cellphone_call_listen_base', 3.0, 3.0, -1, 49, 0, false, false, false)
+        local h = loadModel('prop_npc_phone_02')
+        if h then
+            local c = GetEntityCoords(ped)
+            phone = CreateObject(h, c.x, c.y, c.z + 0.2, false, false, false)
+            AttachEntityToEntity(phone, ped, GetPedBoneIndex(ped, 28422), 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, true, true, false, true, 1, true)
+            SetModelAsNoLongerNeeded(h)
+        end
+    end
+    lib.notify({ title = '📞 Numéro masqué', description = text, type = 'inform', icon = 'phone', duration = 15000 })
+    caption(('Une voix : « %s »'):format(text), 8000)
+    Wait(math.max(6000, (cfg.seconds or 12) * 1000 - 4500))
+    StopAnimTask(ped, 'cellphone@', 'cellphone_call_listen_base', 1.0)
+    if phone and DoesEntityExist(phone) then DeleteEntity(phone) end
+    lib.notify({ title = '📞 Appel terminé', description = 'L\'appelant a raccroché.', type = 'inform', duration = 4000 })
+    return {}
+end
+
+--- Chien errant : il aboie et colle le joueur
+function Stage.stray(cfg)
+    local h = loadModel(cfg.model)
+    if not h then return {} end
+    local c = GetOffsetFromEntityInWorldCoords(cache.ped, 6.0, -6.0, 0.0)
+    local dog = CreatePed(28, h, c.x, c.y, groundAt(c, c.z - 1.0), 0.0, true, false)
+    SetModelAsNoLongerNeeded(h)
+    if not DoesEntityExist(dog) then return {} end
+    SetBlockingOfNonTemporaryEvents(dog, true)
+    register({ dog })
+    caption('Un chien errant te repère… et ne te lâche plus.', 3000)
+    local untilT = GetGameTimer() + cfg.seconds * 1000
+    while GetGameTimer() < untilT and DoesEntityExist(dog) do
+        local d = #(GetEntityCoords(dog) - GetEntityCoords(cache.ped))
+        if d < 3.0 and math.random() < 0.5 then
+            TaskStartScenarioInPlace(dog, 'WORLD_DOG_BARKING_RETRIEVER', 0, true) -- aboie (son du jeu)
+            Wait(3500)
+        end
+        TaskFollowToOffsetOfEntity(dog, cache.ped, 0.6, -1.2, 0.0, 3.0, -1, 1.0, true)
+        Wait(2500)
+    end
+    if DoesEntityExist(dog) then ClearPedTasks(dog) TaskWanderStandard(dog, 10.0, 10) Wait(10000) end
+    return { dog }
+end
+
+--- Alcoolo collant : il titube, suit le joueur, bouteille à la main, et raconte sa vie
+function Stage.drunk(cfg)
+    local h = loadModel(cfg.model)
+    if not h then return {} end
+    local c = GetOffsetFromEntityInWorldCoords(cache.ped, -5.0, -5.0, 0.0)
+    local bum = CreatePed(4, h, c.x, c.y, groundAt(c, c.z - 1.0), 0.0, true, false)
+    SetModelAsNoLongerNeeded(h)
+    if not DoesEntityExist(bum) then return {} end
+    SetBlockingOfNonTemporaryEvents(bum, true)
+    if lib.requestAnimSet('move_m@drunk@verydrunk', 2000) then SetPedMovementClipset(bum, 'move_m@drunk@verydrunk', 1.0) end
+    local bh = loadModel('prop_cs_beer_bot_01')
+    local bottle
+    if bh then
+        bottle = CreateObject(bh, c.x, c.y, c.z, true, true, false)
+        AttachEntityToEntity(bottle, bum, GetPedBoneIndex(bum, 57005), 0.12, 0.0, -0.05, -70.0, 0.0, 0.0, true, true, false, true, 1, true)
+        SetModelAsNoLongerNeeded(bh)
+    end
+    register({ bum, bottle })
+    local untilT = GetGameTimer() + cfg.seconds * 1000
+    while GetGameTimer() < untilT and DoesEntityExist(bum) do
+        TaskFollowToOffsetOfEntity(bum, cache.ped, 0.8, -1.0, 0.0, 1.2, -1, 1.2, true)
+        if #(GetEntityCoords(bum) - GetEntityCoords(cache.ped)) < 6.0 then
+            PlayPedAmbientSpeechNative(bum, 'GENERIC_DRUNK_HIGH', 'SPEECH_PARAMS_FORCE')
+            caption(('Un ivrogne : %s'):format(cfg.lines[math.random(#cfg.lines)]), 3000)
+        end
+        Wait(6000 + math.random(3000))
+    end
+    if DoesEntityExist(bum) then ClearPedTasks(bum) TaskWanderStandard(bum, 10.0, 10) Wait(10000) end
+    return { bum, bottle }
+end
+
+RegisterNetEvent('gs_admin:client:stage', function(kind, cfg, text)
+    if staging or busy or type(cfg) ~= 'table' or not Stage[kind] then return end
+    staging = true
+    local ok, ents = pcall(Stage[kind], cfg, text)
+    if not ok then print('[gs_admin] mise en scène d\'ambiance : ' .. tostring(ents)) ents = {} end
+    cleanStage(ents or {})
+    staging = false
 end)
 
 -- Chasse au trésor ------------------------------------------------------------------------------------------------------------

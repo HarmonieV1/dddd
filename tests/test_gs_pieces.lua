@@ -50,5 +50,21 @@ cb('gs_justice:pieces', 2, 'decide', 1, 1, true); step()
 cb('gs_justice:pieces', 2, 'decide', 1, 2, false); step()
 check('une retenue, une écartée', Pieces.retained(1) == 1)
 
+-- V12.65 · témoin PNJ à la barre : témoignages de gs_wanted pour le prévenu, une seule fois chacun, versé comme pièce
+cases[3] = { id = 3, status = 'open', defendant = 'CIDP' }
+local testi = { CIDP = { { crime = 'Braquage de supérette', desc = 'homme, veste rouge, masque', at = 1000, place = 'Davis' } } }
+provide('gs_wanted', { Testimonies = function(cid) return testi[cid] or {} end, TestimonySpeech = function(t) return 'Un passant témoigne : ' .. t.desc end })
+local okW, msgW = cb('gs_justice:pieces', 3, 'witness', 3); step()
+check('témoin : un civil ne cite pas de témoin', not okW)
+W.clientEvents = {}
+okW, msgW = cb('gs_justice:pieces', 2, 'witness', 3); step()
+local wev = lastClientEvent('gs_justice:client:witness', 1)
+check('témoin : cité par le juge, récit entendu dans la salle, pièce versée', okW and wev and wev.args[1]:find('veste rouge') and Pieces.list(3)[1].kind == 'witness')
+okW, msgW = cb('gs_justice:pieces', 2, 'witness', 3); step()
+check('témoin : déjà entendu = pas deux fois', not okW and msgW:find('déjà'))
+cases[4] = { id = 4, status = 'open', defendant = 'PERSONNE' }
+okW, msgW = cb('gs_justice:pieces', 2, 'witness', 4); step()
+check('témoin : aucun crime signalé = aucun témoin', not okW and msgW:find('Aucun témoin'))
+
 io.write(('\n%d réussis, %d échoués\n'):format(passed, failed))
 os.exit(failed == 0 and 0 or 1)

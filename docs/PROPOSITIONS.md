@@ -478,15 +478,15 @@ Tout passerait par F11 → Joueurs → le joueur → Mises en scène (admin et p
 | # | Proposition | Effort | S'appuie sur |
 |---|---|---|---|
 | 277 | **Sirènes au loin** : sirènes et gyrophares qui se rapprochent sans patrouille réelle ; les joueurs doivent décider vite | ✚ | sons du jeu |
-| 278 | **Hélico qui passe** : un hélicoptère de la police survole la zone 30 s, projecteur la nuit, puis repart | ✚ | gs_wanted (hélico) |
+| 278 | ✅ **livrée V12.65** · **Hélico qui passe** : un hélicoptère de la police survole la zone 30 s, projecteur la nuit, puis repart | ✚ | gs_wanted (hélico) |
 | 279 | **Témoin qui appelle** : un passant sort son téléphone et filme, puis s'enfuit ; signalement si on ne le rattrape pas | ✚ | gs_wanted (témoins) |
-| 280 | **Foule de curieux** : 5 ou 6 passants s'arrêtent et regardent, commentent à voix haute | ✚ | gs_memoire (passants) |
+| 280 | ✅ **livrée V12.65** · **Foule de curieux** : 5 ou 6 passants s'arrêtent et regardent, commentent à voix haute | ✚ | gs_memoire (passants) |
 | 281 | **Voiture qui cale** : le moteur du véhicule du joueur cale 10 s en pleine fuite | ✚ | gs_details |
 
 ### Détourner (relancer une scène qui tourne en rond)
 | # | Proposition | Effort | S'appuie sur |
 |---|---|---|---|
-| 282 | **Le téléphone sonne** : appel masqué avec une voix (texte) qui donne une info ou une menace écrite par le staff | ✚ | gs_cabines, gs_phone |
+| 282 | ✅ **livrée V12.65** · **Le téléphone sonne** : appel masqué avec une voix (texte) qui donne une info ou une menace écrite par le staff | ✚ | gs_cabines, gs_phone |
 | 283 | **Livreur au mauvais moment** : un livreur PNJ arrive avec un colis au nom d'un joueur (contenu choisi par le staff) | ✚ | gs_quests (colis) |
 | 284 | **Panne de courant de la rue** : black-out de 2 min sur le pâté de maisons | ✚ | gs_city (black-out) |
 | 285 | **Accident devant eux** : deux voitures PNJ s'accrochent et bloquent la route | ✚✚ | gs_roadside |
@@ -498,16 +498,16 @@ Tout passerait par F11 → Joueurs → le joueur → Mises en scène (admin et p
 | 287 | **Ambulance IA** après une fusillade : brancardiers, puis départ sirène hurlante | ✚ | gs_services |
 | 288 | **Journaliste PNJ** : une équipe Weazel arrive et filme la scène ; une brève tombe sur Vibe | ✚ | gs_social (Weazel) |
 | 289 | **Fourrière PNJ** : la dépanneuse vient chercher la voiture abandonnée au milieu de la scène | ✚ | gs_auction (fourrière) |
-| 290 | **Chien errant** qui aboie et suit un joueur (gêne une planque, alerte les voisins) | ✚ | gs_animalerie (modèles) |
+| 290 | ✅ **livrée V12.65** (+ alcoolo collant, idée du fondateur) · **Chien errant** qui aboie et suit un joueur (gêne une planque, alerte les voisins) | ✚ | gs_animalerie (modèles) |
 | 291 | **Pluie soudaine** sur la zone seulement le temps de la scène | ✚ | gs_weather |
 
 ### Faire vivre une arrestation ou un enlèvement (suite des deux scènes qui marchent)
 | # | Proposition | Effort | S'appuie sur |
 |---|---|---|---|
-| 292 | **Interrogatoire PNJ** : après l'arrestation, un inspecteur PNJ pose 3 questions (réponses libres lues par le staff) avant la cellule | ✚✚ | gs_police (salle) |
+| 292 | ✅ **livrée V12.65** · **Interrogatoire PNJ** : après l'arrestation, un inspecteur PNJ pose 3 questions (réponses libres lues par le staff) avant la cellule | ✚✚ | gs_police (salle) |
 | 293 | **Rançon** : la camionnette n'expulse pas tout de suite ; le gang du joueur reçoit un appel « rançon » à payer en 5 min | ✚✚ | gs_cabines, gs_gangs |
-| 294 | **Transfert attaquable** : l'arrêté par le policier PNJ part en fourgon, ses amis peuvent tenter de le libérer (staff valide) | ✚✚ | gs_justice |
-| 295 | **Relâché dans le désert** : variante douce de l'enlèvement, le joueur se réveille sans argent au milieu du désert | ✚ | gs_admin (scènes) |
+| 294 | ✅ **livrée V12.65** · **Transfert attaquable** : l'arrêté par le policier PNJ part en fourgon, ses amis peuvent tenter de le libérer (staff valide) | ✚✚ | gs_justice |
+| 295 | ✅ **livrée V12.65** · **Relâché dans le désert** : variante douce de l'enlèvement, le joueur se réveille sans argent au milieu du désert | ✚ | gs_admin (scènes) |
 | 296 | **Avertissement mis en scène** : deux PNJ costauds encadrent le joueur et lui parlent (texte du staff), sans sanction | ✚ | gs_admin (scènes) |
 
 Les plus utiles tout de suite (✚, rien à installer) : 277, 278, 281, 282, 284, 288, 295 et 296.
@@ -523,12 +523,12 @@ Les plus utiles tout de suite (✚, rien à installer) : 277, 278, 281, 282, 284
 | 299 | **Barème de sanctions** : modèles (1er RDM = avertissement, 2e = 30 min…), la récidive est proposée toute seule | ✚ | gs_admin |
 | 300 | **Annuler la dernière action** (2 min) : jail, gel, expulsion d'office ou TP faits par erreur | ✚ | gs_admin |
 | 301 | **Caméra libre autour d'un joueur** (F11) sans se téléporter, invisible | ✚ | gs_admin (spectate) |
-| 302 | **Favoris F11** : épingler 6 actions en haut du menu | ✚ | gs_admin |
-| 303 | **Chat staff** synchronisé appli ↔ jeu (/sc) | ✚ | appli, gs_admin |
-| 304 | **Carte des incidents** dans l'appli : tickets, morts, alertes anti-triche de la soirée en points chauds | ✚ | appli |
-| 305 | **Programmer un événement** (neige, chasse au trésor, soirée) à une heure donnée depuis l'appli | ✚ | gs_admin, gs_events |
+| 302 | ✅ **livrée V12.65** · **Favoris F11** : épingler 6 actions en haut du menu | ✚ | gs_admin |
+| 303 | ✅ **livrée V12.65** · **Chat staff** synchronisé appli ↔ jeu (/sc) | ✚ | appli, gs_admin |
+| 304 | ✅ **livrée V12.65** · **Carte des incidents** dans l'appli : tickets, morts, alertes anti-triche de la soirée en points chauds | ✚ | appli |
+| 305 | ✅ **livrée V12.65** · **Programmer un événement** (neige, chasse au trésor, soirée) à une heure donnée depuis l'appli | ✚ | gs_admin, gs_events |
 | 306 | **Fiche véhicule** : plaque → propriétaire, carnet, fourrière, signalements | ✚ | gs_carnet, appli |
-| 307 | **Double validation** pour un ban définitif (deux admins) | ✚ | gs_admin |
+| 307 | ✅ **livrée V12.65** · **Double validation** pour un ban définitif (deux admins) | ✚ | gs_admin |
 | 308 | **Réponses types** aux tickets + clôture avec le replay joint | ✚ | appli, gs_lives |
 
 ### Signatures inédites (pensées pour RoadLine)
@@ -542,12 +542,12 @@ Les plus utiles tout de suite (✚, rien à installer) : 277, 278, 281, 282, 284
 | 314 | **La dette de vie** : sauvé par quelqu'un (réanimé, sorti d'un incendie), tu lui dois une faveur, notée et utilisable une fois | ✚ | gs_police (EMS), gs_accords |
 | 315 | **L'énigme du mois** : un vrai trésor, des indices dans la radio, la Gazette, les cabines et le site | ✚✚ | gs_lsradio, gs_cabines, site |
 | 316 | **Objets qui ont une histoire** : une arme ou une montre garde ses anciens propriétaires, revendable comme pièce de collection | ✚✚ | gs_evidence, gs_market |
-| 317 | **Les PNJ témoignent au procès** : un passant qui a vu le crime vient décrire le suspect devant le juge | ✚ | gs_wanted (mémoire), gs_justice |
+| 317 | ✅ **livrée V12.65** · **Les PNJ témoignent au procès** : un passant qui a vu le crime vient décrire le suspect devant le juge | ✚ | gs_wanted (mémoire), gs_justice |
 | 318 | **La ville change avec les saisons** : un chantier finit, un commerce ouvre, selon ce que les joueurs ont fait pendant la saison | ✚✚✚ | gs_seasons, gs_city |
 | 319 | **Week-end « une seule vie »** : permadeath volontaire, titre cosmétique à ceux qui tiennent | ✚ | gs_cimetiere, gs_quests |
 | 320 | **Radio des joueurs** : un joueur anime une émission entendue dans toutes les voitures de la ville | ✚✚ | gs_lsradio, pma-voice |
 | 321 | **Enseigne au nom d'un habitué** : le bar ou le garage le plus fréquenté par un joueur prend son nom pendant un mois | ✚ | gs_memoire, gs_business |
-| 322 | **Tags qui vivent** : la pluie délave les tags de gang, la mairie les recouvre dans les quartiers calmes | ✚ | gs_gangs, gs_weather |
+| 322 | ✅ **livrée V12.65** · **Tags qui vivent** : la pluie délave les tags de gang, la mairie les recouvre dans les quartiers calmes | ✚ | gs_gangs, gs_weather |
 
 Les plus sûres avant l'ouverture : 297, 299, 300, 302, 305, 308, 311, 312, 317 et 322.
 

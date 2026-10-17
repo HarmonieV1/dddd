@@ -187,6 +187,7 @@ function Wanted.report(src, crimeType, coords, opts)
     report.named = Memory.famous(src, precision, masked)
     if seen then report.linked, report.linkedBy = seen.id, seenBy end
     Memory.remember(cid, report.id, ped, veh)
+    if Testimony then pcall(Testimony.add, cid, report, coords) end -- V12.65 : témoin au procès (gs_justice)
     TriggerEvent('gs_wanted:server:report', report) -- V8 : rumeurs (jamais l'identité, sauf visage connu)
 
     if camera then -- preuve vidéo pour la police (description, jamais l'identité)

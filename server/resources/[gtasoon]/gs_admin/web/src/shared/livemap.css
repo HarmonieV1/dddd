@@ -29,3 +29,9 @@
 .lmap-key.ticket { background: transparent; border: 2px solid var(--map-ticket, #ffd23f); }
 @keyframes lmapTicket { 50% { outline-color: transparent; } }
 @media (prefers-reduced-motion: reduce) { .lmap-dot.ticket { animation: none; } }
+/* V12.65 · incidents de la soirée : petits losanges par type (ticket jaune, à terre rouge, anti-triche orange) */
+.lmap-inc { position: absolute; width: 9px; height: 9px; transform: translate(-50%, -50%) rotate(45deg) scale(var(--inv, 1)); border: 1.5px solid rgba(11, 7, 20, .85);
+  background: var(--map-ticket, #ffd23f); opacity: .9; pointer-events: auto; }
+.lmap-inc.death { background: var(--map-jail, #ff4d6d); }
+.lmap-inc.ac { background: var(--map-wanted, #ff8a3d); }
+.lmap-inc.key { position: static; transform: rotate(45deg); width: 8px; height: 8px; }

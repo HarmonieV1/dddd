@@ -209,3 +209,11 @@ Détail version par version : `docs/PATCH_SESSION_15-10.md` ; patch note de la s
 - **Drones** (`gs_drone`) : police en service → F4 → Drone de surveillance ou `/drone` ; gangs → objet du marché noir. Journal staff :
   décollage, drone abattu (par qui), suspect marqué. Réglages : `Config.Types` (portée, batterie, recharge, radar).
 - **Journal staff** : piratages de distributeur (réussis / ratés) et pots-de-vin (acceptés, refusés, enquête ouverte).
+
+## V12.65 · Mises en scène, outils staff
+- **Mises en scène** (F11 → joueur, admin et plus) : enlèvement (expulsion), désert (sans liquide ni vêtements), arrestation PNJ
+  (+ interrogatoire), transfert en fourgon attaquable ; ambiance sans sanction : hélico, foule, appel masqué, chien errant, alcoolo.
+- **Favoris F11** : F11 → Gérer mes favoris (6 au plus). **Chat staff** : `/sc message`, aussi dans l'appli.
+- **Bans définitifs** : 24 h tout de suite, définitif après validation d'un AUTRE admin (F11 → Bans définitifs à valider, appli) ;
+  fondateur sans validation. Réglages : `Config.StaffHub.banReview`.
+- **Événements programmés** (appli) et **incidents de la soirée** (appli → Carte).

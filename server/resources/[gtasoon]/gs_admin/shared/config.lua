@@ -153,7 +153,37 @@ Config.Scenes = {
             vec4(-1585.0, 2101.0, 68.0, 230.0),   -- route de Tongva, dans les collines
         } },
     arrest = { cop = 's_m_y_cop_01', maxSeconds = 40, minutes = 5,
-        cell = { coords = vec3(459.9, -994.3, 24.91), radius = 6.0, release = vec3(434.1, -981.9, 30.71) } },
+        cell = { coords = vec3(459.9, -994.3, 24.91), radius = 6.0, release = vec3(434.1, -981.9, 30.71) },
+        -- V12.65 (proposition n° 292) : option « interrogatoire » : avant la cellule, un inspecteur PNJ pose ses questions dans la
+        -- salle d'interrogatoire de Mission Row ; les réponses du joueur arrivent au staff qui a lancé la scène (et au journal).
+        interrogation = { room = vec4(472.3, -994.9, 24.91, 90.0), inspector = 's_m_m_ciasec_01', maxSeconds = 150, answerSeconds = 30,
+            questions = { 'Où étais-tu ce soir, entre 21 h et minuit ?', 'Qui était avec toi ?', 'Tu as quelque chose à ajouter avant qu\'on te mette au frais ?' } } },
+    -- V12.65 (proposition n° 295, « version douce » de l'enlèvement) : même camionnette, mais le joueur est relâché dans le
+    -- désert, SANS son argent liquide (`takeCash`) et en sous-vêtements (`strip`) ; pas d'expulsion. Journalisé (motif).
+    desert = { van = 'speedo', thug = 'g_m_m_chicold_01', maxSeconds = 55, minDistance = 800.0, takeCash = true, strip = true, desert = true,
+        drops = {
+            vec4(1595.0, 2830.0, 39.0, 120.0),    -- désert du Grand Senora
+            vec4(2425.0, 3090.0, 48.2, 30.0),     -- casse au milieu du désert
+            vec4(-1100.0, 2690.0, 18.9, 220.0),   -- bord de la route 68, côté ouest
+            vec4(2715.0, 4140.0, 43.9, 300.0),    -- route de Grapeseed, champs vides
+        } },
+    -- V12.65 (propositions n° 294) : transfert vers Bolingbroke en fourgon, attaquable. Le fourgon part de `from` ; s'il est
+    -- arrêté (moteur détruit, conducteur à terre) avant `seconds` s, le détenu est libre (évasion journalisée) ; sinon,
+    -- isolement à Bolingbroke pour la durée donnée. L'annonce Weazel (optionnelle) prévient la ville.
+    transfer = { van = 'policet', cop = 's_m_y_cop_01', maxSeconds = 420, seconds = 400, minutes = 10, engineFail = 300.0,
+        from = vec4(408.0, -1000.0, 29.2, 180.0), to = vec3(1855.0, 2600.0, 45.6) },
+    -- V12.65 · Mises en scène d'AMBIANCE (sans sanction) : pimenter une scène plutôt que la couper (propositions 278, 280, 282,
+    -- chien errant / alcoolique collant). Entités réseau (tout le monde les voit), supprimées par le serveur à la fin.
+    stages = {
+        heli = { label = 'Hélico de la police', seconds = 30, model = 'polmav', pilot = 's_m_y_pilot_01', height = 45.0, radius = 40.0 },
+        crowd = { label = 'Foule de curieux', seconds = 40, count = 6,
+            models = { 'a_m_y_hipster_01', 'a_f_y_hipster_02', 'a_m_m_business_01', 'a_f_m_bevhills_01', 'a_m_y_skater_01', 'a_f_y_tourist_01', 'a_m_m_socenlat_01' } },
+        call = { label = 'Appel masqué', seconds = 12 },
+        stray = { label = 'Chien errant', seconds = 60, model = 'a_c_retriever' },
+        drunk = { label = 'Alcoolo collant', seconds = 60, model = 'a_m_o_tramp_01',
+            lines = { 'Eh toi ! T\'aurais pas une petite pièce ?', 'T\'as une bonne tête, toi… on est amis maintenant.', 'C\'est moi le roi de Vespucci, tu le savais ?',
+                'Attends-moi ! Je marche moins vite que toi…', 'Tu sens ça ? C\'est l\'odeur de la liberté… et du whisky.' } },
+    },
 }
 
 Config.Vehicle = { maxDeleteDistance = 10.0 }
@@ -219,3 +249,15 @@ Config.Moderation = {
 -- V12.63 · Joueur coincé sous la carte (proposition n° 193) : hors intérieur et hors de l'eau, sous `z` m pendant `seconds` s =
 -- ramené au dernier endroit sûr (noté toutes les 10 s quand il est au sol). Le staff peut aussi le faire depuis l'appli.
 Config.Unstuck = { z = -25.0, seconds = 6, fallback = vec3(215.8, -810.1, 30.7) }
+
+-- V12.65 · Outils staff (F11 + appli) : server/staffhub.lua
+-- Chat staff synchronisé jeu ↔ appli (/sc), carte des incidents de la soirée, événements programmés, double validation des
+-- bans définitifs (proposition n° 307) : un ban définitif posé par un admin ou un super-admin est d'abord un ban de
+-- `tempDays` jour(s) ; il devient définitif quand un AUTRE admin le valide (F11 → Bans définitifs à valider, ou appli →
+-- Sanctions). Refusé ou jamais validé : il reste au ban temporaire. Le fondateur (rang 5) n'a pas besoin de validation.
+Config.StaffHub = {
+    chatKeep = 60,                       -- messages gardés (mémoire)
+    incidentHours = 12,                  -- carte des incidents : les X dernières heures
+    banReview = { enabled = true, tempDays = 1, bypassLevel = 5, minLevel = 3, keepHours = 72 },
+    scheduleMax = 12,                    -- événements programmés en même temps
+}

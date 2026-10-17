@@ -780,6 +780,49 @@ check('arrestation PNJ : ramené dans SA cellule s\'il en sort', #(W.players[41]
 Admin.release(41)
 check('arrestation PNJ : libéré devant le commissariat', #(W.players[41].pos - Config.Scenes.arrest.cell.release) < 0.1)
 check('scène : fin signalée par un joueur sans scène = rien', cb('gs_admin:sceneDone', 4) == false)
+-- V12.65 · désert (sans liquide), transfert attaquable, interrogatoire, scènes d'ambiance
+join(42, 'CID42', 'Victime Trois', here); W.players[42].license = 'license:42'; W.players[42].money.cash = 730
+ok = cb('gs_admin:action', 8, 'desert', 42, { reason = 'Arnaque RP' }); step()
+check('désert : scène jouée, argent liquide pris, pas d\'expulsion', ok and W.players[42].money.cash == 0 and not W.players[42].kicked and Admin.scenes[42] == nil)
+local realST = SetTimeout
+SetTimeout = function() end -- la scène reste en cours (délai serveur coupé)
+local flash
+provide('gs_social', { GetHandle = function() return 'vice_lucia' end, Newsroom = function(_, text) flash = text return true end })
+ok = cb('gs_admin:action', 8, 'transfer', 42, { minutes = 12, reason = 'Transfert', announce = true }); step()
+check('transfert : scène en cours, annonce Weazel', ok and Admin.scenes[42] and Admin.scenes[42].kind == 'transfer' and flash and flash:find('fourgon'))
+W.nextEntity = W.nextEntity + 1; local van = W.nextEntity; W.entities[van] = { type = 2, pos = here }
+W.nextEntity = W.nextEntity + 1; local drv = W.nextEntity; W.entities[drv] = { type = 1, pos = here, health = 200 }
+cb('gs_admin:sceneEnts', 42, { van, drv }); step()
+local engine = 900.0
+GetVehicleEngineHealth = function() return engine end
+check('transfert : « libéré » refusé si le fourgon roule et le conducteur va bien', cb('gs_admin:transferFreed', 42) == false and Admin.scenes[42])
+step()
+W.entities[drv].health = 0
+check('transfert : conducteur à terre = évadé, scène terminée sans isolement', cb('gs_admin:transferFreed', 42) == true and Admin.scenes[42] == nil and not Admin.jailed[42])
+step()
+ok = cb('gs_admin:action', 8, 'npcarrest', 42, { minutes = 3, reason = 'Vol', interrogation = true }); step()
+local sc = lastClientEvent('gs_admin:client:scene', 42)
+check('arrestation + interrogatoire : la scène reçoit les questions', ok and sc and sc.args[2].interrogate == true and #sc.args[2].interrogation.questions == 3)
+W.clientEvents = {}
+net('gs_admin:server:interrogation', 42, { 'Chez moi', '', 'Rien' }); step()
+local iv = lastClientEvent('ox_lib:notify', 8)
+check('interrogatoire : réponses envoyées au staff qui a lancé la scène', iv and iv.args[1].description:find('Chez moi', 1, true) and iv.args[1].description:find('(silence)', 1, true))
+SetTimeout = realST
+Admin.finishScene(42)
+W.clientEvents = {}
+ok = cb('gs_admin:action', 8, 'stage', 41, { kind = 'call', text = '' }); step()
+check('ambiance : appel masqué sans texte refusé', not ok)
+ok = cb('gs_admin:action', 8, 'stage', 41, { kind = 'call', text = 'On sait où tu habites.' }); step()
+local st = lastClientEvent('gs_admin:client:stage', 41)
+check('ambiance : appel masqué envoyé au joueur avec le texte', ok and st and st.args[1] == 'call' and st.args[3] == 'On sait où tu habites.')
+check('ambiance : type inconnu refusé', not cb('gs_admin:action', 8, 'stage', 41, { kind = 'meteore' }))
+step()
+check('ambiance : réservé aux admins', not cb('gs_admin:action', 2, 'stage', 41, { kind = 'heli' }))
+step()
+for _, k in ipairs({ 'heli', 'crowd', 'stray', 'drunk' }) do
+    ok = cb('gs_admin:action', 8, 'stage', 41, { kind = k }); step()
+    check('ambiance : ' .. k .. ' lancé', ok)
+end
 
 Admin.onDuty[1], Admin.onDuty[8] = os.time(), os.time()
 ok = cb('gs_admin:action', 8, 'event', nil, { kind = 'hunt', prize = 4000 }); step()
@@ -803,6 +846,45 @@ ok, msg = cb('gs_admin:huntClaim', 4); step()
 check('chasse au trésor : trouvée, prime en banque, fin annoncée', ok and (W.players[4].money.bank or 0) - before == 1200 and Admin.hunt == nil
     and lastClientEvent('gs_admin:client:huntEnd') ~= nil)
 check('chasse au trésor : plus rien à ramasser', not cb('gs_admin:huntClaim', 4))
+
+-- V12.65 · outils staff partagés (server/staffhub.lua) : chat /sc ↔ appli, événements programmés, double validation des bans
+do
+    local realST = SetTimeout
+    loadResource('gs_admin', { R .. 'gs_admin/server/staffhub.lua' })
+    W.clientEvents = {}
+    W.commands.sc(8, { 'Rendez-vous', 'à', 'Legion' })
+    local cm = lastClientEvent('chat:addMessage', 1)
+    check('chat staff : /sc arrive aux autres membres du staff', cm and cm.args[1].args[2] == 'Rendez-vous à Legion' and #Hub.chat == 1)
+    W.clientEvents = {}
+    W.commands.sc(4, { 'je', 'suis', 'joueur' })
+    check('chat staff : un joueur sans rang ne peut pas écrire', #Hub.chat == 1)
+    check('chat staff : message de l\'appli marqué « appli »', Hub.say('Alpha', 'Je regarde les Lives', 'appli') and Hub.chat[2].origin == 'appli')
+    -- événements programmés
+    local okP, msgP = Hub.plan('carmeet', '21:30', nil, 'test')
+    check('programmé : lieu obligatoire pour un rassemblement', not okP and msgP:find('lieu'))
+    okP = Hub.plan('carmeet', '21:30', 1, 'test')
+    check('programmé : rassemblement au lieu choisi', okP and Hub.schedule[#Hub.schedule].place == Config.Web.places[1].label)
+    check('programmé : heure invalide refusée', not Hub.plan('carmeet', '25:99', 1, 'test'))
+    check('programmé : météo (neige) sans lieu', Hub.plan('weather:snow', '06:00', nil, 'test'))
+    local snowId = Hub.schedule[#Hub.schedule].id
+    check('programmé : annulation', Hub.unplan(snowId) and #Hub.schedule == 1)
+    Hub.schedule[1].at = os.time() - 5
+    W.clientEvents = {}
+    Hub.tick()
+    check('programmé : lancé à l\'heure, au lieu choisi, sans staff en jeu', #Hub.schedule == 0 and lastClientEvent('gs_admin:client:eventStart', 4) ~= nil
+        and math.abs(lastClientEvent('gs_admin:client:eventStart', 4).args[1].x - Config.Web.places[1].coords.x) < 0.1)
+    -- double validation du ban définitif
+    join(43, 'CID43', 'Tricheur', here); W.players[43].license = 'license:43'
+    local okB, msgB = cb('gs_admin:action', 1, 'ban', 43, { days = 0, reason = 'Cheat' }); step()
+    check('ban définitif : en attente d\'un 2e admin (24 h en attendant)', okB and msgB:find('valid') and #BanReview.pending() == 1)
+    local rv = BanReview.pending()[1]
+    local okS, msgS = cb('gs_admin:banDecide', 1, rv.id, true); step()
+    check('ban définitif : celui qui l\'a demandé ne peut pas le valider', not okS and msgS:find('autre admin'))
+    check('ban définitif : un modérateur ne valide pas', not cb('gs_admin:banDecide', 2, rv.id, true)); step()
+    local okV = cb('gs_admin:banDecide', 8, rv.id, true); step()
+    check('ban définitif : validé par un 2e admin', okV and #BanReview.pending() == 0)
+    SetTimeout = realST
+end
 
 io.write(('\n%d réussis, %d échoués\n'):format(passed, failed))
 os.exit(failed == 0 and 0 or 1)

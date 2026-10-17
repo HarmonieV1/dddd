@@ -508,3 +508,9 @@ Traductions françaises manquantes des scripts Qbox ajoutées par METTRE-A-JOUR 
 - **Vie** : salles de sport en plein air (séance de trois exercices = bonus d'endurance de 6 h).
 - **Staff** : Lives fluides (images réduites chez le joueur filmé, flux continu, ≈ 2 à 3 images/s) ; screenshot-basic ne recopie
   plus l'écran en permanence chez tous les joueurs.
+
+## V12.65 · 17/10 (détail : `docs/PATCH_NOTE_V12.65.md`)
+- **Justice** : témoins PNJ au procès (récit des passants, jamais le nom, versé comme pièce).
+- **Gangs** : tags qui vivent (la pluie délave, la mairie repeint les quartiers calmes).
+- **Staff** : mises en scène d'ambiance (hélico, foule, appel masqué, chien, alcoolo), désert, interrogatoire, transfert attaquable,
+  favoris F11, chat staff jeu ↔ appli, incidents sur la carte, événements programmés, double validation des bans définitifs.

@@ -16,7 +16,7 @@ provide('gs_weather', {
     IsBlackout = function() return weather.blackout end,
 })
 loadResource('gs_security', { R .. 'gs_security/server/main.lua' })
-loadResource('gs_wanted', { R .. 'gs_wanted/shared/config.lua', R .. 'gs_wanted/server/memory.lua', R .. 'gs_wanted/server/main.lua', R .. 'gs_wanted/server/fugitive.lua' })
+loadResource('gs_wanted', { R .. 'gs_wanted/shared/config.lua', R .. 'gs_wanted/server/memory.lua', R .. 'gs_wanted/server/testimony.lua', R .. 'gs_wanted/server/main.lua', R .. 'gs_wanted/server/fugitive.lua' })
 
 local passed, failed = 0, 0
 local function check(name, cond)
@@ -521,5 +521,21 @@ do
     Wanted.units[1] = nil
 end
 
+-- V12.65 · témoins au procès : un crime signalé laisse un témoignage (sans le nom), rattaché au suspect
+do
+    local store, re, rd = {}, json.encode, json.decode -- le json simulé ne garde rien : petit stockage pour ce test
+    json.encode = function(t) store[#store + 1] = t return 'T' .. #store end
+    json.decode = function(s) if s == '[]' then return {} end return store[tonumber(tostring(s):sub(2))] end
+    local list = getExport('gs_wanted', 'Testimonies')(W.players[1].cid)
+    local any = Testimony.list(W.players[1].cid)
+    Testimony.add('CIDT', { label = 'Agression', desc = { 'homme', 'casquette' }, witnesses = 2 }, vec3(0.0, 0.0, 0.0))
+    Testimony.add('CIDT', { label = 'Rien vu', desc = {}, witnesses = 0 }, vec3(0.0, 0.0, 0.0))
+    local t = Testimony.list('CIDT')
+    check('témoin : témoignage gardé seulement si quelqu\'un a vu', #t == 1 and t[1].crime == 'Agression')
+    local sp = Testimony.speech(t[1])
+    check('témoin : récit sans nom, avec la description', sp:find('casquette') and not sp:find(W.players[1].name or 'xx', 1, true))
+    check('témoin : export lisible', type(list) == 'table' and type(any) == 'table')
+    json.encode, json.decode = re, rd
+end
 io.write(('\n%d réussis, %d échoués\n'):format(passed, failed))
 os.exit(failed == 0 and 0 or 1)

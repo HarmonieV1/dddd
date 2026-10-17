@@ -60,9 +60,12 @@ local function caseMenu(c, d)
         local r = lib.inputDialog('Verser un scellé', { { type = 'number', label = 'N° du scellé', required = true, min = 1 } })
         if r then notify(lib.callback.await('gs_justice:pieces', false, 'deposit', c.id, 'seal', r[1])) end
     end }
+    -- V12.65 · témoin PNJ à la barre (proposition n° 317)
+    options[#options + 1] = { title = 'Faire venir un témoin', icon = 'person-circle-question', description = 'Un passant qui a vu un crime signalé du prévenu vient le raconter (pièce du dossier)',
+        onSelect = function() notify(lib.callback.await('gs_justice:pieces', false, 'witness', c.id)) end }
     for _, p in ipairs(ok and list or {}) do
         local st = STATUS[p.status] or STATUS.pending
-        options[#options + 1] = { title = ('Pièce n°%d · %s'):format(p.id, st[1]), icon = p.kind == 'photo' and 'image' or 'box-archive', iconColor = st[2],
+        options[#options + 1] = { title = ('Pièce n°%d · %s'):format(p.id, st[1]), icon = p.kind == 'photo' and 'image' or (p.kind == 'witness' and 'person-circle-question' or 'box-archive'), iconColor = st[2],
             description = ('%s (versée par %s)'):format(p.text, p.by), readOnly = not d.judge, onSelect = d.judge and function()
                 local a = lib.alertDialog({ header = ('Pièce n°%d'):format(p.id), content = p.text, centered = true, cancel = true,
                     labels = { confirm = 'Retenir', cancel = 'Écarter' } })
@@ -114,4 +117,40 @@ end)
 
 CreateThread(function()
     exports.gs_markers:Add('gs_justice:court', { coords = Config.Court, style = 'hidden', prompt = 'Tribunal : /tribunal' })
+end)
+
+-- V12.65 · Témoin PNJ à la barre : celui qui l'a cité fait venir le passant (réseau, vu de tous) ; tous les présents lisent le récit
+local witnessBusy = false
+local function courtCaption(text, ms)
+    local untilT = GetGameTimer() + ms
+    CreateThread(function()
+        while GetGameTimer() < untilT do
+            SetTextFont(4) SetTextScale(0.0, 0.42) SetTextCentre(true) SetTextOutline() SetTextWrap(0.15, 0.85)
+            SetTextColour(236, 230, 255, 235)
+            BeginTextCommandDisplayText('STRING')
+            AddTextComponentSubstringPlayerName(text)
+            EndTextCommandDisplayText(0.5, 0.82)
+            Wait(0)
+        end
+    end)
+end
+RegisterNetEvent('gs_justice:client:witness', function(speech, host, W)
+    if type(speech) ~= 'string' or type(W) ~= 'table' then return end
+    courtCaption(speech, (W.seconds or 30) * 1000)
+    if not host or witnessBusy then return end
+    witnessBusy = true
+    local h = GetHashKey(W.models[math.random(#W.models)])
+    if IsModelInCdimage(h) and lib.requestModel(h, 4000) then
+        local s = W.stand
+        local ped = CreatePed(4, h, s.x, s.y, s.z - 1.0, s.w, true, false)
+        SetModelAsNoLongerNeeded(h)
+        if DoesEntityExist(ped) then
+            SetBlockingOfNonTemporaryEvents(ped, true) SetEntityInvincible(ped, true) FreezeEntityPosition(ped, true)
+            TaskStartScenarioInPlace(ped, 'WORLD_HUMAN_STAND_IMPATIENT', 0, true)
+            PlayPedAmbientSpeechNative(ped, 'GENERIC_HI', 'SPEECH_PARAMS_FORCE')
+            Wait((W.seconds or 30) * 1000)
+            if DoesEntityExist(ped) then DeleteEntity(ped) end
+        end
+    end
+    witnessBusy = false
 end)

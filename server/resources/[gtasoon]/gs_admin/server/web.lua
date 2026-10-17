@@ -122,7 +122,7 @@ local function replayInfo()
     return ok and type(r) == 'table' and r or {}
 end
 
-function Web.overview(who)
+function Web.overview(who, level)
     local players = Admin.playerList()
     local replays = replayInfo()
     local ticketOf = {} -- V12.63 (n° 192) : joueur → n° de son ticket ouvert (anneau sur la carte de l'appli)
@@ -145,6 +145,10 @@ function Web.overview(who)
             lives = started('screenshot-basic') },
         maxJail = Config.Jail.maxMinutes, txadmin = GetConvar('gs_admin_txadmin', ''),
         locked = Moderation and (function() local l = Moderation.lockInfo() return l and { left = l.untilAt - os.time(), reason = l.reason } or nil end)() or nil,
+        -- V12.65 · chat staff, incidents de la soirée, événements programmés (types + lieux), bans définitifs à valider
+        chat = Hub and Hub.chat or {}, incidents = Hub and Hub.recentIncidents() or {},
+        schedule = Hub and Hub.schedule or {}, kinds = Hub and Hub.kinds() or {},
+        banReviews = (BanReview and (level or 2) >= ((Config.StaffHub.banReview or {}).minLevel or 3)) and BanReview.pending() or {},
     }
 end
 
@@ -203,7 +207,25 @@ function Web.handle(ip, body, reply, direct)
     s.calls = s.calls + 1
     if s.calls > 160 then return reply({ ok = false, text = 'Doucement.' }) end
     if d.action == 'logout' then Web.sessions[d.token] = nil return reply({ ok = true }) end
-    if d.action == 'overview' then return reply({ ok = true, data = Web.overview(s.who) }) end
+    if d.action == 'overview' then return reply({ ok = true, data = Web.overview(s.who, s.level) }) end
+    -- V12.65 · chat staff, événements programmés, double validation des bans définitifs
+    if d.action == 'chat' then
+        if not Hub then return reply({ ok = false, text = 'Indisponible.' }) end
+        local okC, err = Hub.say(s.who, d.text, 'appli')
+        return reply({ ok = okC, text = okC and '' or err })
+    end
+    if d.action == 'plan' or d.action == 'unplan' then
+        if not Hub or (s.level or 2) < 3 then return reply({ ok = false, text = 'Réservé aux admins (rang 3 et plus).' }) end
+        local okP, msg
+        if d.action == 'plan' then okP, msg = Hub.plan(d.kind, d.time, d.place, 'Web · ' .. s.who) else okP, msg = Hub.unplan(d.id) end
+        if okP then Admin.logRemote('Web · ' .. s.who, d.action == 'plan' and 'schedule' or 'unschedule', nil, msg) end
+        return reply({ ok = okP == true, text = msg })
+    end
+    if d.action == 'banconfirm' or d.action == 'banreject' then
+        if not BanReview then return reply({ ok = false, text = 'Indisponible.' }) end
+        local okB, msg = BanReview.decide(d.id, d.action == 'banconfirm', 'Web · ' .. s.who, 'Web · ' .. s.who, s.level)
+        return reply({ ok = okB == true, text = msg })
+    end
     if d.action == 'dossier' then
         local id = intId(d.id)
         if not id or not GetPlayerName(id) then return reply({ ok = false, text = 'Ce joueur n\'est plus en ville.' }) end

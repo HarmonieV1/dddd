@@ -267,6 +267,9 @@ def build():
                   'billet. L\'agent a son prix : trop peu, il le prend mal. Même accepté, une enquête peut s\'ouvrir.',
                   '<b>Drones</b> : la police a son drone de surveillance ; les gangs, un drone modifié rare et cher (membres confirmés). '
                   'Un drone se fait abattre en deux balles.'])
+    s += [Paragraph('Nouveautés de la ville (V12.65)', H3)]
+    s += bullets(['<b>Au tribunal</b> : un passant qui a vu un de tes crimes peut venir témoigner à la barre (ce qu\'il a vu : ta tenue, ton véhicule).',
+                  '<b>Tags de gang</b> : la pluie les délave, et la mairie repeint ceux des quartiers calmes. Un tag, ça s\'entretient.'])
     s += [Paragraph('Le permis de conduire', H3)]
     s += [table([['Étape', 'Prix', 'Comment'],
                  ['Obtention', 'Gratuit', 'Tout le monde a son permis dès l\'arrivée : la carte <b>Permis de conduire</b> est dans ton sac (F2). Pas d\'auto-école, ni code ni examen.'],

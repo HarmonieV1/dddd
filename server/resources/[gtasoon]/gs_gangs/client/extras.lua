@@ -52,7 +52,7 @@ CreateThread(function()
                     local onScreen, x, y = GetScreenCoordFromWorldCoord(t.x, t.y, t.z)
                     if onScreen then
                         SetTextFont(1) SetTextScale(0.0, math.max(0.35, 1.6 - n.d * 0.045)) SetTextCentre(true)
-                        SetTextColour(t.r, t.g, t.b, 235) SetTextDropshadow(2, 0, 0, 0, 200)
+                        SetTextColour(t.r, t.g, t.b, t.a or 235) SetTextDropshadow(2, 0, 0, 0, 200) -- V12.65 : délavé = plus pâle
                         BeginTextCommandDisplayText('STRING')
                         AddTextComponentSubstringPlayerName(t.label)
                         EndTextCommandDisplayText(x, y)

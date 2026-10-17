@@ -10,9 +10,9 @@ SESSIONS = [
     # validé (arrivée, téléphone, métiers, papiers, staff, Discord, site, alertes, vie légale / illégale…) et retiré.
     # Reste : ce qui a été corrigé ou ajouté depuis, jamais revu en jeu, et ce qui est obligatoire avant d'ouvrir.
     ('0 · Avant de commencer (5 min)', [
-        ('METTRE-A-JOUR.bat : version V12.64 affichée, « Base de données sauvegardée » ; METTRE-A-JOUR-OVH puis GERER-OVH → 1 : « Version RoadLine : V12.64 »', 'Staff', 3),
+        ('METTRE-A-JOUR.bat : version V12.65 affichée, « Base de données sauvegardée » ; METTRE-A-JOUR-OVH puis GERER-OVH → 1 : « Version RoadLine : V12.65 »', 'Staff', 3),
         ('Console au démarrage (PC et VPS) : aucune ligne ROUGE ; en jaune seulement « Conflit tranché » (2 fichiers Patoche) ; F8 en jeu : aucune erreur rouge', 'Staff', 3),
-        ('VIDER-CACHE-FIVEM.bat si un ancien menu apparaît (F11 doit afficher « RoadLine V12.64 »)', 'Staff', 2),
+        ('VIDER-CACHE-FIVEM.bat si un ancien menu apparaît (F11 doit afficher « RoadLine V12.65 »)', 'Staff', 2),
     ]),
     ('1 · Corrections du 13/10 à confirmer (V12.37 → V12.39, 20 min)', [
         ('Garage de métier : « Sortir » donne le véhicule à chaque fois, UNE notification ; prise de service au PNJ : une seule interaction', '2', 3),
@@ -197,6 +197,19 @@ SESSIONS = [
         ('Enlèvement (F11 → joueur → Mises en scène) : après le trajet en camionnette, le joueur est jeté au bord d\'une route loin de là (écran qui se rallume, camionnette qui repart), puis expulsé ; à sa reconnexion il est à cet endroit', 'Staff', 2),
         ('Prison : la musculation de la cour (pompes, abdos, haltères, tractions) affiche « Séance x/3 » ; 3 séries différentes = bonus d\'endurance', '1', 2),
         ('Salle de sport (Muscle Beach) : [E] au point → 3 exercices différents (animés, 20 s) → « Séance terminée » ; sprint plus long ; se déconnecter / revenir → le bonus est toujours là', '1', 2),
+    ]),
+    ('4r · V12.65 — mises en scène, outils staff, témoins, tags (25 min)', [
+        ('F11 → joueur → Mises en scène → Ambiance : hélico (30 s au-dessus, projecteur la nuit), foule de curieux (filment, commentent), appel masqué (texte écrit par toi, sonnerie), chien errant, alcoolo collant : tout disparaît à la fin', 'Staff', 3),
+        ('Relâché dans le désert : camionnette, jeté en plein désert en sous-vêtements, argent liquide perdu, PAS d\'expulsion ; sa tenue revient à la reconnexion', 'Staff', 2),
+        ('Arrestation PNJ avec « Interrogatoire » coché : salle d\'interrogatoire, 3 questions, le joueur répond (ou se tait) ; ses réponses s\'affichent chez toi ; puis la cellule', 'Staff', 3),
+        ('Transfert en fourgon (annoncé sur Weazel) : le joueur à l\'arrière d\'un fourgon qui roule vers Bolingbroke ; des amis tirent sur le conducteur ou détruisent le moteur → « fuis ! », portes ouvertes ; sinon isolement à l\'arrivée', '3+', 3),
+        ('F11 → Gérer mes favoris : épingler 2 actions (ex. Vol libre, Lives) → elles apparaissent en haut du F11 (⭐), toujours là après un redémarrage du jeu', 'Staff', 2),
+        ('/sc Bonjour en jeu → visible des autres membres du staff ET dans l\'appli (Tableau de bord → Chat staff) ; message envoyé depuis l\'appli → visible en jeu', 'Staff', 3),
+        ('Appli → Carte → « Incidents de la soirée » : tickets, joueurs à terre, alertes anti-triche en losanges colorés', 'Staff', 2),
+        ('Appli → Événements programmés : rassemblement auto à un lieu de la liste, dans 2 min → il se lance tout seul, même sans staff en jeu ; « Annuler » le retire', 'Staff', 3),
+        ('Ban définitif par un super-admin (pas le fondateur) → le joueur est banni 24 h ; F11 → Bans définitifs à valider (ou appli) : le même admin ne peut pas valider, un 2e admin valide → définitif', 'Staff', 3),
+        ('Tribunal : affaire ouverte contre un joueur qui a eu un crime signalé → « Faire venir un témoin » → un passant à la barre, son récit (tenue, véhicule, jamais le nom) lu par toute la salle et versé comme pièce', '3+', 2),
+        ('Tags de gang : sous la pluie, un tag pâlit puis s\'efface (gang prévenu) ; dans un quartier calme, un vieux tag finit repeint par la mairie ; les hommages R.I.P. ne bougent pas', '1', 1),
     ]),
     ('5 · Obligatoire avant d\'ouvrir', [
         ('SAUVEGARDER-BDD.bat puis RESTAURER-BDD.bat sur un joueur ; redémarrage de 6 h : annonces 15 / 5 / 1 min', 'Staff', 3),
