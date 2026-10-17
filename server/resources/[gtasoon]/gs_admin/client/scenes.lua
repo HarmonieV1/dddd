@@ -88,6 +88,16 @@ end
 -- V12.63 (backtest : scène buguée) : plus de conduite IA jusqu'au joueur. La camionnette apparaît sur la route la plus
 -- proche (sinon juste à côté), un inconnu en descend à pied, le joueur lève les mains, fondu, il est assis à l'arrière,
 -- la camionnette repart (balade simple de l'IA), écran noir.
+--- V12.64 · point où la camionnette jette le joueur : au hasard parmi ceux à plus de `minDistance` m de l'enlèvement
+local function pickDrop(cfg, from)
+    local far = {}
+    for _, d in ipairs(cfg.drops or {}) do
+        if #(vec3(d.x, d.y, d.z) - from) >= (cfg.minDistance or 800.0) then far[#far + 1] = d end
+    end
+    if #far == 0 then return nil end
+    return far[math.random(#far)]
+end
+
 local function kidnap(cfg)
     local ped = cache.ped
     leaveVehicle(ped)
@@ -144,10 +154,41 @@ local function kidnap(cfg)
         Wait(4500)
     end
     blackOut('Un sac sur la tête… tout devient noir.')
-    -- V12.64 (crash à la fermeture du jeu après l'expulsion) : écran noir, le joueur sort de la camionnette AVANT l'expulsion
-    -- (avant : la camionnette était supprimée avec lui dedans, puis le jeu se fermait)
+    -- V12.64 (fondateur : « qu'ils jettent bien le joueur plus loin ») : la camionnette le jette au bord d'une route isolée, loin
+    -- de l'enlèvement ; il s'y reconnectera. Le joueur sort aussi de la camionnette AVANT l'expulsion (crash de FiveM à la
+    -- fermeture constaté quand la camionnette était supprimée avec lui dedans).
+    local drop = pickDrop(cfg, start)
     ClearPedTasksImmediately(ped)
-    SetEntityCoordsNoOffset(ped, start.x, start.y, start.z, false, false, false)
+    if drop then
+        SetEntityCoordsNoOffset(ped, drop.x, drop.y, drop.z + 1.0, false, false, false)
+        RequestCollisionAtCoord(drop.x, drop.y, drop.z)
+        local t = GetGameTimer() + 6000
+        while not HasCollisionLoadedAroundEntity(ped) and GetGameTimer() < t do Wait(100) end
+        local found, gz = GetGroundZFor_3dCoord(drop.x, drop.y, drop.z + 50.0, false)
+        local z = found and gz or drop.z
+        local hr = math.rad(drop.w or 0.0)
+        if DoesEntityExist(van) then -- la camionnette s'arrête à côté de lui, porte ouverte
+            SetEntityCoordsNoOffset(van, drop.x + math.cos(hr) * 3.2, drop.y + math.sin(hr) * 3.2, z + 0.5, false, false, false)
+            SetEntityHeading(van, drop.w or 0.0)
+            SetVehicleOnGroundProperly(van)
+            SetVehicleDoorOpen(van, 2, false, false) SetVehicleDoorOpen(van, 3, false, false)
+        end
+        SetEntityCoordsNoOffset(ped, drop.x, drop.y, z, false, false, false)
+        SetEntityHeading(ped, (drop.w or 0.0) + 90.0)
+        SetPedToRagdoll(ped, 4000, 4000, 0, false, false, false) -- jeté dehors
+        ApplyForceToEntityCenterOfMass(ped, 1, -math.cos(hr) * 6.0, -math.sin(hr) * 6.0, 1.5, false, false, true, false)
+        DoScreenFadeIn(600)
+        caption('On te jette sur le bord de la route, le sac sur la tête…', 3500)
+        Wait(1200)
+        if DoesEntityExist(van) then
+            SetVehicleDoorsShut(van, false)
+            if DoesEntityExist(driver) then TaskVehicleDriveWander(driver, van, 30.0, 786603) end
+        end
+        Wait(3000)
+        blackOut('La camionnette disparaît au loin…')
+    else
+        SetEntityCoordsNoOffset(ped, start.x, start.y, start.z, false, false, false)
+    end
     FreezeEntityPosition(ped, true)
     Wait(300)
 end

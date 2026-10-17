@@ -194,6 +194,7 @@ SESSIONS = [
         ('Pot-de-vin au contrôle du shérif / à l\'alcootest (la nuit sans policier) : le menu propose « Glisser un billet » ; en faute, la moitié de l\'amende en liquide, ni amende ni points s\'il accepte ; refusé = amende majorée', '1', 2),
         ('Drone police : en service, F4 → Drone de surveillance (ou /drone) : vol à la souris, molette zoom, E vision nuit / thermique, G sur un joueur → un collègue en service voit « Suspect (drone) » sur sa carte 60 s ; X = rappel', '2', 3),
         ('Drone gang : objet du marché noir (gang, pas recrue) → vol limité à 140 m et 2 min ; un autre joueur tire 2 balles dessus → il tombe, objet perdu ; un policier en service reçoit parfois « drone non identifié »', '2', 2),
+        ('Enlèvement (F11 → joueur → Mises en scène) : après le trajet en camionnette, le joueur est jeté au bord d\'une route loin de là (écran qui se rallume, camionnette qui repart), puis expulsé ; à sa reconnexion il est à cet endroit', 'Staff', 2),
         ('Prison : la musculation de la cour (pompes, abdos, haltères, tractions) affiche « Séance x/3 » ; 3 séries différentes = bonus d\'endurance', '1', 2),
         ('Salle de sport (Muscle Beach) : [E] au point → 3 exercices différents (animés, 20 s) → « Séance terminée » ; sprint plus long ; se déconnecter / revenir → le bonus est toujours là', '1', 2),
     ]),

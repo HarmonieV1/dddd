@@ -31,6 +31,9 @@ photo perdue si elle tombait pendant un Lives (file d'attente dans screenshot-ba
 Crash du 17/10 à 0 h 08 (dump envoyé) : c'est FiveM qui plante **en se fermant** après l'expulsion de la scène d'enlèvement
 (même chose à 19 h 33 sur une simple déconnexion : rien à voir avec la musculation). Par prudence, le joueur enlevé sort de la
 camionnette, écran noir, avant l'expulsion, et l'expulsion part 1,5 s après la suppression de la camionnette.
+**Enlèvement plus cohérent** (demande du fondateur) : après le trajet, la camionnette jette le joueur sur le bord d'une route isolée
+(docks, Cypress Flats, carrière, désert, lac Alamo, collines…), à plus de 800 m de l'endroit de l'enlèvement, puis repart ; il
+s'y reconnectera (Qbox garde la dernière position). Points dans `gs_admin/shared/config.lua` (Config.Scenes.kidnap.drops).
 
 ## 3. Pour le fondateur (serveur, objets, docs)
 - **Nouvelle ressource** `gs_drone` (ajoutée à `server/cfg/resources.cfg` après gs_police).

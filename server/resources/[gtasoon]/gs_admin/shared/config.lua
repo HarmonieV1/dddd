@@ -138,7 +138,20 @@ Config.Hunt = { prize = 1500, maxPrize = 5000, bigPrizeLevel = 4, model = 'prop_
 -- isolement dans une cellule du commissariat de Mission Row (mêmes cellules que la garde à vue de gs_police).
 Config.Scenes = {
     level = 3,
-    kidnap = { van = 'speedo', thug = 'g_m_m_chicold_01', maxSeconds = 45 }, -- burrito3 : remplacé par un mod importé au handling illisible (crash)
+    kidnap = { van = 'speedo', thug = 'g_m_m_chicold_01', maxSeconds = 55, -- burrito3 : remplacé par un mod importé au handling illisible (crash)
+        -- V12.64 (fondateur : « qu'ils jettent bien le joueur plus loin ») : après le trajet, la camionnette le jette sur le bord
+        -- d'une route isolée, à plus de `minDistance` m de l'enlèvement (il s'y reconnecte : Qbox garde la dernière position).
+        -- Altitude recalculée au sol ; points à caler en jeu si l'un d'eux tombe mal.
+        minDistance = 800.0,
+        drops = {
+            vec4(1218.0, -2995.0, 5.9, 90.0),     -- docks du Terminal
+            vec4(868.0, -2352.0, 30.3, 175.0),    -- zone industrielle de Cypress Flats
+            vec4(1127.0, -1296.0, 34.7, 0.0),     -- terrain vague de Murrieta Heights
+            vec4(2948.0, 2782.0, 42.0, 300.0),    -- carrière de Davis Quartz
+            vec4(-24.0, 2862.0, 58.0, 160.0),     -- route 68, bord du désert
+            vec4(1312.0, 4292.0, 33.9, 260.0),    -- rive du lac Alamo
+            vec4(-1585.0, 2101.0, 68.0, 230.0),   -- route de Tongva, dans les collines
+        } },
     arrest = { cop = 's_m_y_cop_01', maxSeconds = 40, minutes = 5,
         cell = { coords = vec3(459.9, -994.3, 24.91), radius = 6.0, release = vec3(434.1, -981.9, 30.71) } },
 }
