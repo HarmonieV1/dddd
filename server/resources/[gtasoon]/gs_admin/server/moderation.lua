@@ -189,7 +189,7 @@ function Moderation.departedList()
     return out
 end
 
-function Moderation.offlineBan(lic, days, reason, staff, level)
+function Moderation.offlineBan(lic, days, reason, staff, level, staffKey)
     local d
     for _, e in ipairs(Moderation.departed) do if e.license == lic then d = e break end end
     if not d then return false, 'Ce joueur n\'est pas (ou plus) dans les départs récents.' end
@@ -201,7 +201,7 @@ function Moderation.offlineBan(lic, days, reason, staff, level)
     local span = spanOf(days)
     local untilTs = days == 0 and 0 or (os.time() + days * 86400)
     local held = days == 0 and BanReview and BanReview.needed(level) -- V12.65 : 2e admin pour un définitif
-    if held then untilTs, span = BanReview.hold(lic, name, reason, staff, staff) end
+    if held then untilTs, span = BanReview.hold(lic, name, reason, staff, staffKey or staff) end
     Store.banSet(lic, name, untilTs, reason, staff)
     Store.addNote(lic, 'warn', ('Bannissement hors ligne (%s) : %s'):format(span, reason), staff)
     Moderation.rememberBan(nil, lic, d.fp)
@@ -253,7 +253,7 @@ end }
 
 Actions.offlineban = { level = L.offlineban or 4, run = function(src, _, data)
     local lic = need(Security:Sanitize(data.license, 64), 'Licence manquante.')
-    local ok, msg = Moderation.offlineBan(lic, daysOf(data.days), reason(data.reason), label(src), Admin.level(src))
+    local ok, msg = Moderation.offlineBan(lic, daysOf(data.days), reason(data.reason), label(src), Admin.level(src), license(src))
     return need(ok and msg, msg)
 end }
 

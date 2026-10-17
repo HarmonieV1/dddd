@@ -215,7 +215,8 @@ Détail version par version : `docs/PATCH_SESSION_15-10.md` ; patch note de la s
   (+ interrogatoire), transfert en fourgon attaquable ; ambiance sans sanction : hélico, foule, appel masqué, chien errant, alcoolo.
 - **Favoris F11** : F11 → Gérer mes favoris (6 au plus). **Chat staff** : `/sc message`, aussi dans l'appli.
 - **Bans définitifs** : 24 h tout de suite, définitif après validation d'un AUTRE admin (F11 → Bans définitifs à valider, appli) ;
-  fondateur sans validation. Réglages : `Config.StaffHub.banReview`.
+  aussi pour les bans posés depuis Discord ; fondateur sans validation ; jamais validé par celui qui l'a demandé (même via
+  l'appli) ; un joueur débanni entre-temps n'est pas rebanni. Réglages : `Config.StaffHub.banReview`.
 - **Événements programmés** (appli) et **incidents de la soirée** (appli → Carte).
 - **Rangs** (V12.65) : helpers et modérateurs = modération seulement ; admins = arrestation PNJ (+ interrogatoire), appel masqué,
   foule, rassemblements, fait divers, effets légers sur soi ; super-admins et fondateur = tout le reste (mises en scène poussées,

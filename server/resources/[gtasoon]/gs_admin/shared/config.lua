@@ -176,7 +176,7 @@ Config.Scenes = {
     -- V12.65 (propositions n° 294) : transfert vers Bolingbroke en fourgon, attaquable. Le fourgon part de `from` ; s'il est
     -- arrêté (moteur détruit, conducteur à terre) avant `seconds` s, le détenu est libre (évasion journalisée) ; sinon,
     -- isolement à Bolingbroke pour la durée donnée. L'annonce Weazel (optionnelle) prévient la ville.
-    transfer = { van = 'policet', cop = 's_m_y_cop_01', maxSeconds = 420, seconds = 400, minutes = 10, engineFail = 300.0,
+    transfer = { van = 'policet', cop = 's_m_y_cop_01', maxSeconds = 440, seconds = 400, minutes = 10, engineFail = 300.0,
         from = vec4(408.0, -1000.0, 29.2, 180.0), to = vec3(1855.0, 2600.0, 45.6) },
     -- V12.65 · Mises en scène d'AMBIANCE (sans sanction) : pimenter une scène plutôt que la couper (propositions 278, 280, 282,
     -- chien errant / alcoolique collant). Entités réseau (tout le monde les voit), supprimées par le serveur à la fin.

@@ -85,6 +85,7 @@ Actions.transfer = { level = (S.levels and S.levels.transfer) or S.level or 3, t
     local minutes = tonumber(data.minutes) or S.transfer.minutes
     need(minutes == math.floor(minutes) and minutes >= 1 and minutes <= Config.Jail.maxMinutes, ('Durée : 1 à %d min.'):format(Config.Jail.maxMinutes))
     local reason = startScene(src, target, 'transfer', data, minutes)
+    Admin.publishSanction('Isolement', nameOf(target), reason, minutes .. ' min (transfert)')
     if data.announce and GetResourceState('gs_social') == 'started' then
         pcall(function() exports.gs_social:Newsroom('police', 'FLASH · Un fourgon de transfert de détenu quitte Mission Row en direction de Bolingbroke.') end)
     end
@@ -95,10 +96,11 @@ end }
 lib.callback.register('gs_admin:transferFreed', function(src)
     if not Security:RateLimit(src, 'gs_admin:transferFreed', 3, 10000) then return false end
     local s = Admin.scenes[src]
-    if not s or s.kind ~= 'transfer' then return false end
-    local van, driver = s.ents[1] and NetworkGetEntityFromNetworkId(s.ents[1]), s.ents[2] and NetworkGetEntityFromNetworkId(s.ents[2])
-    local broken = not van or van == 0 or not DoesEntityExist(van) or GetVehicleEngineHealth(van) <= S.transfer.engineFail
-    local downed = not driver or driver == 0 or not DoesEntityExist(driver) or GetEntityHealth(driver) <= 0
+    if not s or s.kind ~= 'transfer' or not s.vanOk or #s.ents < 2 then return false end -- V12.65 (relecture) : fourgon vérifié d'abord
+    local van, driver = NetworkGetEntityFromNetworkId(s.ents[1]), NetworkGetEntityFromNetworkId(s.ents[2])
+    if not van or van == 0 or not DoesEntityExist(van) then return false end -- fourgon disparu : pas une évasion
+    local broken = GetVehicleEngineHealth(van) <= S.transfer.engineFail
+    local downed = driver and driver ~= 0 and DoesEntityExist(driver) and GetEntityHealth(driver) <= 0
     if not (broken or downed) then return false end
     Admin.scenes[src] = nil
     SetTimeout(20000, function() deleteEnts(s.ents) end) -- le temps de s'enfuir
@@ -118,6 +120,7 @@ RegisterNetEvent('gs_admin:server:interrogation', function(answers)
     local qs, lines = S.arrest.interrogation.questions, {}
     for i = 1, #qs do lines[#lines + 1] = ('%s → %s'):format(qs[i], Security:Sanitize(answers[i], 200) or '(silence)') end
     local text = table.concat(lines, ' | ')
+    s.interrogation = nil -- une seule fois
     Admin.logRemote('Interrogatoire', 'npcarrest', label(src), text)
     if s.staffSrc and GetPlayerName(s.staffSrc) then
         TriggerClientEvent('ox_lib:notify', s.staffSrc, { title = 'Interrogatoire · ' .. label(src), description = text, type = 'inform', duration = 20000 })
@@ -179,7 +182,12 @@ lib.callback.register('gs_admin:sceneEnts', function(src, nets)
     if not s or type(nets) ~= 'table' then return false end
     for i = 1, math.min(#nets, 6) do
         local n = math.tointeger(tonumber(nets[i]))
-        if n and #s.ents < 6 then s.ents[#s.ents + 1] = n end
+        local e = n and NetworkGetEntityFromNetworkId(n)
+        -- V12.65 (relecture) : seulement une entité qui existe, créée par ce joueur, et jamais un joueur
+        if e and e ~= 0 and DoesEntityExist(e) and NetworkGetEntityOwner(e) == src and not (GetEntityType(e) == 1 and IsPedAPlayer(e)) and #s.ents < 6 then
+            s.ents[#s.ents + 1] = n
+            if s.kind == 'transfer' and #s.ents == 1 and GetEntityType(e) == 2 and GetEntityModel(e) == GetHashKey(S.transfer.van) then s.vanOk = true end
+        end
     end
     return true
 end)

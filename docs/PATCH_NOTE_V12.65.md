@@ -37,4 +37,14 @@ Vérifié côté serveur (même en contournant le menu) ; `/gsevent`, `/meteoeve
   `gs_justice` Config.Witness (place du témoin à caler) ; `gs_gangs` Config.TagLife.
 - Points à caler en jeu : place du témoin au tribunal (Config.Witness.stand), départ du fourgon (Config.Scenes.transfer.from),
   lieux du désert (Config.Scenes.desert.drops).
-- Tests : 39 contrôles en plus ; toute la suite est verte. Propositions D14 mises à jour.
+- Tests : 46 contrôles en plus ; toute la suite est verte. Propositions D14 mises à jour.
+- **Relecture avant livraison (corrigé)** :
+  - un ban définitif ne peut pas être validé par la même personne passée par l'appli (pseudo comparé) ;
+  - un joueur débanni entre-temps n'est pas rebanni à la validation ;
+  - les bans définitifs posés depuis Discord passent aussi par la validation ;
+  - un événement programmé raté de plus de 10 min (serveur éteint) n'est pas lancé en retard ;
+  - le serveur n'accepte pour une scène que les PNJ et véhicules créés par le joueur concerné, jamais un autre joueur ;
+  - le transfert n'est « évadé » que si le vrai fourgon a été vu et est arrêté ;
+  - l'interrogatoire n'accepte qu'une seule série de réponses ;
+  - le transfert est publié dans #sanctions ;
+  - un joueur à terre ne compte qu'une fois par minute sur la carte des incidents.

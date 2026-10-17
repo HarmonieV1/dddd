@@ -674,7 +674,7 @@ function Admin.runEventAt(kind, at, src, data)
         data.at = data.at or at
         return Admin.startHunt(tonumber(src) or 0, ev, data)
     end
-    local c = ev.at or at or GetEntityCoords(GetPlayerPed(src))
+    local c = ev.at or at or ((not ev.roadtrip and tonumber(src)) and GetEntityCoords(GetPlayerPed(src))) or vec3(0.0, 0.0, 0.0)
     local text = ev.text
     if ev.roadtrip then -- départ au premier point du carnet du mois (gs_roadbook)
         need(started('gs_roadbook'), 'gs_roadbook non démarré.')

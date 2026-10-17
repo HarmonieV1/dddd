@@ -52,10 +52,13 @@ function Hub.recentIncidents()
     return out
 end
 -- joueur à terre ou mort (qbx_medical : 2 = à terre)
+Hub.lastDown = {}
 AddStateBagChangeHandler('qbx_medical:deathState', nil, function(bagName, _, value)
-    if value ~= 2 then return end
+    if value ~= 2 and value ~= 3 then return end
     local src = GetPlayerFromStateBagName(bagName)
     if not src or src == 0 then return end
+    if (Hub.lastDown[src] or 0) > now() - 60 then return end
+    Hub.lastDown[src] = now()
     Hub.incident('death', GetEntityCoords(GetPlayerPed(src)), ('%s à terre'):format(lbl(src)))
 end)
 -- alertes anti-triche (relues toutes les minutes, position du joueur au moment de la lecture)
@@ -135,12 +138,13 @@ end
 function Hub.fire(e)
     if e.kind:find('^weather:') then
         if not started('gs_weather') then return false end
-        return pcall(function() exports.gs_weather:StartEvent(e.kind:sub(9)) end)
+        local ok, res = pcall(function() return exports.gs_weather:StartEvent(e.kind:sub(9)) end)
+        return ok and res ~= false
     end
     local ev = Config.Events[e.kind]
     if not ev then return false end
     local at = e.x and vec3(e.x, e.y, e.z) or nil
-    return pcall(function() Admin.runEventAt(e.kind, at, e.by) end)
+    return (pcall(function() Admin.runEventAt(e.kind, at, nil) end))
 end
 
 function Hub.tick()
@@ -150,8 +154,12 @@ function Hub.tick()
     end
     if #due > 0 then saveSchedule() end
     for _, e in ipairs(due) do
-        local ok = Hub.fire(e)
-        Security:LogStaff(('[Programmé] %s : %s %s'):format(e.by or '?', e.label, ok and 'lancé' or 'impossible'), 'staff')
+        if now() - e.at > 600 then -- serveur éteint à l'heure prévue : on ne lance pas un événement avec des heures de retard
+            Security:LogStaff(('[Programmé] %s : %s non lancé (heure dépassée de %d min)'):format(e.by or '?', e.label, (now() - e.at) // 60), 'staff')
+        else
+            local ok = Hub.fire(e)
+            Security:LogStaff(('[Programmé] %s : %s %s'):format(e.by or '?', e.label, ok and 'lancé' or 'impossible'), 'staff')
+        end
     end
     Hub.pollAlerts()
 end
@@ -176,9 +184,13 @@ for _, r in ipairs(BanReview.list) do BanReview.next = math.max(BanReview.next, 
 function BanReview.needed(level) return R.enabled and (tonumber(level) or 0) < (R.bypassLevel or 5) end
 
 --- Ban définitif mis en attente : rend la fin du ban temporaire et le libellé de durée
+local function who(label) -- « Web · Alex » / « Alex [12] » → « alex » (même personne en jeu et dans l'appli)
+    local s = tostring(label or ''):gsub('^Web · ', ''):gsub('%s*%[%d+%]$', '')
+    return s:lower()
+end
 function BanReview.hold(lic, name, reason, staff, staffKey)
     BanReview.next = BanReview.next + 1
-    BanReview.list[#BanReview.list + 1] = { id = BanReview.next, license = lic, name = name, reason = reason, by = staff, byKey = staffKey or staff, at = now() }
+    BanReview.list[#BanReview.list + 1] = { id = BanReview.next, license = lic, name = name, reason = reason, by = staff, byKey = staffKey or staff, byWho = who(staff), at = now() }
     saveReviews()
     for _, s in ipairs(staffOnline()) do
         if Admin.level(s) >= (R.minLevel or 3) then
@@ -200,7 +212,11 @@ function BanReview.decide(id, accept, deciderKey, decider, level)
     if (tonumber(level) or 0) < (R.minLevel or 3) then return false, 'Réservé aux admins.' end
     for i, r in ipairs(BanReview.list) do
         if r.id == tonumber(id) then
-            if r.byKey == deciderKey then return false, 'Un autre admin doit valider (pas celui qui a demandé le ban).' end
+            if r.byKey == deciderKey or (r.byWho and r.byWho ~= '' and r.byWho == who(decider)) then return false, 'Un autre admin doit valider (pas celui qui a demandé le ban).' end
+            if accept and not Store.ban(r.license) then -- débanni entre-temps (appel) : on ne rebannit pas
+                table.remove(BanReview.list, i) saveReviews()
+                return false, ('%s n\'est plus banni (levée entre-temps) : demande close.'):format(r.name)
+            end
             table.remove(BanReview.list, i)
             saveReviews()
             if accept then

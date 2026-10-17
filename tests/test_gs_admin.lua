@@ -791,9 +791,15 @@ local flash
 provide('gs_social', { GetHandle = function() return 'vice_lucia' end, Newsroom = function(_, text) flash = text return true end })
 ok = cb('gs_admin:action', 1, 'transfer', 42, { minutes = 12, reason = 'Transfert', announce = true }); step()
 check('transfert : scène en cours, annonce Weazel', ok and Admin.scenes[42] and Admin.scenes[42].kind == 'transfer' and flash and flash:find('fourgon'))
-W.nextEntity = W.nextEntity + 1; local van = W.nextEntity; W.entities[van] = { type = 2, pos = here }
-W.nextEntity = W.nextEntity + 1; local drv = W.nextEntity; W.entities[drv] = { type = 1, pos = here, health = 200 }
+W.nextEntity = W.nextEntity + 1; local fake = W.nextEntity; W.entities[fake] = { type = 2, pos = here, owner = 7, model = GetHashKey(Config.Scenes.transfer.van) }
+cb('gs_admin:sceneEnts', 42, { fake }); step()
+check('transfert (relecture) : entité d\'un autre joueur ignorée', #Admin.scenes[42].ents == 0 and not Admin.scenes[42].vanOk)
+check('transfert (relecture) : sans fourgon déclaré, jamais « libéré »', cb('gs_admin:transferFreed', 42) == false and Admin.scenes[42])
+step()
+W.nextEntity = W.nextEntity + 1; local van = W.nextEntity; W.entities[van] = { type = 2, pos = here, owner = 42, model = GetHashKey(Config.Scenes.transfer.van) }
+W.nextEntity = W.nextEntity + 1; local drv = W.nextEntity; W.entities[drv] = { type = 1, pos = here, health = 200, owner = 42 }
 cb('gs_admin:sceneEnts', 42, { van, drv }); step()
+check('transfert (relecture) : fourgon du joueur reconnu', Admin.scenes[42].vanOk == true and #Admin.scenes[42].ents == 2)
 local engine = 900.0
 GetVehicleEngineHealth = function() return engine end
 check('transfert : « libéré » refusé si le fourgon roule et le conducteur va bien', cb('gs_admin:transferFreed', 42) == false and Admin.scenes[42])
@@ -889,6 +895,21 @@ do
     check('ban définitif : un modérateur ne valide pas', not cb('gs_admin:banDecide', 2, rv.id, true)); step()
     local okV = cb('gs_admin:banDecide', 8, rv.id, true); step()
     check('ban définitif : validé par un 2e admin', okV and #BanReview.pending() == 0)
+    -- relecture V12.65 : même personne en jeu puis dans l'appli = refusé ; ban levé entre-temps = demande close
+    BanReview.hold('license:43', 'Tricheur', 'Cheat', 'Alex [1]', 'license:1')
+    local idW = BanReview.list[#BanReview.list].id
+    local okW, msgW = BanReview.decide(idW, true, 'web:alex', 'Web · Alex', 4)
+    check('ban définitif (relecture) : le même admin via l\'appli ne valide pas', not okW and msgW:find('autre admin'))
+    BanReview.hold('license:99', 'Parti', 'Cheat', 'Alex [1]', 'license:1')
+    local idU = BanReview.list[#BanReview.list].id
+    local okU, msgU = BanReview.decide(idU, true, 'license:8', 'Bob [8]', 4)
+    check('ban définitif (relecture) : plus banni = pas de rebannissement, demande close', not okU and msgU:find('plus banni') and BanReview.list[#BanReview.list].id ~= idU)
+    -- événement programmé raté (serveur éteint) : pas lancé des heures après
+    check('programmé (relecture) : ajout', Hub.plan('weather:snow', '06:00', nil, 'test', 5))
+    Hub.schedule[#Hub.schedule].at = os.time() - 3600
+    local before = #Hub.schedule
+    Hub.tick()
+    check('programmé (relecture) : heure dépassée de plus de 10 min = non lancé, retiré', #Hub.schedule == before - 1)
     SetTimeout = realST
 end
 
