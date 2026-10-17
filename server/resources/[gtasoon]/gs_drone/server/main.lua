@@ -4,7 +4,8 @@
 local Security = exports.gs_security
 local Bridge   = exports.gs_bridge
 
-Drone = { flying = {}, byNet = {}, cooldowns = {}, marks = {}, nextMark = 0 } -- flying[src] = { kind, net, hits, untilAt }
+Drone = { flying = {}, byNet = {}, cooldowns = {}, marks = {}, nextMark = 0, lastShot = {} }
+local UNARMED = GetHashKey('WEAPON_UNARMED') -- flying[src] = { kind, net, hits, untilAt }
 
 local function started(r) return GetResourceState(r) == 'started' end
 local function now() return os.time() end
@@ -107,7 +108,12 @@ RegisterNetEvent('gs_drone:server:hit', function(net)
     if not f or pilot == src then return end
     local ent = NetworkGetEntityFromNetworkId(net)
     if not ent or ent == 0 or not DoesEntityExist(ent) then return end
-    if #(GetEntityCoords(ent) - GetEntityCoords(GetPlayerPed(src))) > Config.Shooter.radius then return end
+    local ped = GetPlayerPed(src)
+    if #(GetEntityCoords(ent) - GetEntityCoords(ped)) > Config.Shooter.radius then return end
+    if GetSelectedPedWeapon(ped) == UNARMED then return end -- il faut une arme en main
+    local t = GetGameTimer()
+    if (Drone.lastShot[src] or -math.huge) > t - 250 then return end
+    Drone.lastShot[src] = t
     f.hits = f.hits + 1
     if f.hits < Config.HitPoints then return TriggerClientEvent('gs_drone:client:hurt', pilot, f.hits) end
     local kind = f.kind

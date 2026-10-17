@@ -68,7 +68,13 @@
       <button class="watch ${wins.has(p.id) ? 'on' : ''}" data-id="${p.id}">${wins.has(p.id) ? 'LIVE' : 'WATCH'}</button></div>`).join('');
   }
 
-  function ask(id) { const w = wins.get(id); if (!w || w.pending) return; w.pending = true; w.askedAt = Date.now(); post('frame', { id }); setTimeout(() => { if (wins.get(id)) wins.get(id).pending = false; }, 8000); }
+  // V12.64 (relecture) : le filet de 8 s ne libère que SA demande (avant : d'anciens filets relançaient des demandes en double,
+  // comptées par l'anti-flood du serveur : risque d'expulsion du staff avec 4 fenêtres)
+  function ask(id) {
+    const w = wins.get(id); if (!w || w.pending) return;
+    const at = Date.now(); w.pending = true; w.askedAt = at; post('frame', { id });
+    clearTimeout(w.to); w.to = setTimeout(() => { const c = wins.get(id); if (c && c.askedAt === at) c.pending = false; }, 8000);
+  }
 
   function openWin(p) {
     if (wins.has(p.id)) return closeWin(p.id);
@@ -91,7 +97,7 @@
   }
   function closeWin(id) {
     const w = wins.get(id); if (!w) return;
-    clearInterval(w.timer); w.el.remove(); wins.delete(id);
+    clearInterval(w.timer); clearTimeout(w.to); w.el.remove(); wins.delete(id);
     post('close', { id }); post('windows', { n: wins.size }); render();
   }
   function drag(el, handle) {
@@ -150,12 +156,12 @@
     else if (d.action === 'replay') openReplay(d.id, d.frames, d.every);
     else if (d.action === 'frameError') { // V12.63 : message clair au lieu d'une attente sans fin
       const w = wins.get(d.id); if (!w) return;
-      w.pending = false;
+      w.pending = false; clearTimeout(w.to);
       const wait = w.el.querySelector('.wait'); if (wait) wait.textContent = d.text || 'Pas d\'image pour le moment, nouvel essai…';
     }
     else if (d.action === 'frame') {
       const w = wins.get(d.id); if (!w) return;
-      w.pending = false;
+      w.pending = false; clearTimeout(w.to);
       if (typeof d.src === 'string' && d.src.startsWith('data:image/')) {
         // V12.63 : image décodée AVANT d'être affichée (plus de scintillement ni d'image à moitié dessinée), puis la suivante
         // est demandée tout de suite si l'intervalle est déjà passé (plus de temps mort entre deux images)

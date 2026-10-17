@@ -7,6 +7,7 @@
 ## 1. Pour les joueurs
 | Nouveauté | Comment ça marche |
 |---|---|
+| **🔴 Correctif : « on prend 0 dégâts »** | Après la protection d'arrivée (30 s en fantôme, à la connexion et à chaque réapparition), l'invincibilité n'était jamais retirée : tout le monde restait intouchable, police IA comme fusillade. Elle est maintenant retirée à la fin de la protection, avec un filet de sécurité (seul le pouvoir « Invincible » du staff la garde). |
 | **Salle de sport** | Muscle Beach (blip), la cour de Bolingbroke et la plage de Sandy Shores : [E] au point de la salle, choisis un exercice (pompes, abdos, haltères, yoga, course sur place, 20 s animées). Trois exercices différents en 15 min = **séance terminée** : 6 h de bonus d'endurance (plus de souffle au sprint et en apnée, récupération plus rapide). Gratuit, gardé même après une reconnexion. |
 | **Piratage de distributeur** | Avec un **boîtier de piratage** (marché noir, 2 800 $), [Alt] sur un distributeur → « Pirater le distributeur » : tu branches le boîtier (étincelles), puis mini-jeu sur la tablette (touches au bon moment). Réussi : le distributeur crache des billets 15 s (450 à 950 $ en argent sale, +25 % la nuit). Raté : l'alarme sonne. La caméra du distributeur peut te filmer (le visage, sauf masque). Le boîtier peut griller ; un distributeur vidé reste surveillé 45 min. |
 | **Pot-de-vin** | Face à la police IA à 1 ★ ([E] près de l'agent) : « Glisser un billet » et tu choisis la somme. L'agent a son prix et ne le dit pas : trop peu, il le prend mal (une étoile de plus) ; accepté, il regarde ailleurs… mais une enquête des affaires internes peut s'ouvrir (une ligne au casier). Aux **contrôles du shérif** et à **l'alcootest** aussi : la moitié de l'amende en liquide, ni amende ni points s'il accepte ; refusé, l'amende est majorée. |
@@ -20,6 +21,11 @@
 | **Drone de surveillance (police)** | F4 → Drone de surveillance, ou `/drone` (en service) | Portée 260 m, batterie 4 min, vision de nuit **et thermique**. **[G]** sur un suspect au centre de l'image : tous les collègues en service le suivent sur la carte 60 s (position rafraîchie toutes les 5 s, jamais son nom). Abattable aussi. Radar : alerte « drone non identifié » (zone floue) quand un drone de gang vole. |
 | **Corruption au casier** | F4 → Casier | Un pot-de-vin découvert ajoute « Corruption d'un agent (… $) · enquête des affaires internes » au casier (par « Affaires internes »). Aucune amende automatique : à la police de s'en saisir. |
 | **Journal staff** | F10 → Journal | Piratages de distributeur (réussis ou ratés), pots-de-vin (acceptés, refusés, enquête), drones (décollage, abattu, suspect marqué). |
+
+Relecture du code avant livraison (corrigé) : fenêtres Lives qui pouvaient renvoyer des demandes en double (risque d'expulsion
+du staff par l'anti-flood avec 4 fenêtres) ; menu du shérif qui pouvait rester bloqué ; drone abattu en une seule balle d'une
+rafale (et tirs simulables) ; distributeur « neuf » en décalant la position d'un mètre ; piratage / exercice restés en plan ;
+photo perdue si elle tombait pendant un Lives (file d'attente dans screenshot-basic).
 
 ## 3. Pour le fondateur (serveur, objets, docs)
 - **Nouvelle ressource** `gs_drone` (ajoutée à `server/cfg/resources.cfg` après gs_police).

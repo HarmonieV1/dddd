@@ -192,7 +192,7 @@ W.players[1].licences = {}
 d = force('sheriff')
 W.players[1].money.cash, W.players[1].money.bank = 10, 5000
 fixRandom(0.1)
-check('sans permis, sans liquide : refusé (amende majorée)', Roadside.finish(1, d.token, 'bribed') == true and W.players[1].money.bank == 5000 - math.floor(Config.Types.sheriff.fine * Bb.refusedFine))
+check('sans permis, sans liquide : contrôle normal (amende simple)', Roadside.finish(1, d.token, 'bribed') == true and W.players[1].money.bank == 5000 - Config.Types.sheriff.fine)
 fixRandom()
 W.players[1].licences = { driver = true }
 heat, hour = 0, 14

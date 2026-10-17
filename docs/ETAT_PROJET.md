@@ -273,6 +273,9 @@ Résumé très condensé (le détail complet est dans `docs/ROADMAP.md`, `docs/F
   sur ordinateur. Une seule boucle rAF qui s'endort quand rien ne bouge. Vérifié dans le navigateur : 0 erreur.
 
 - **V12.64** (nuit du 16 au 17/10/2026) — demandes du fondateur après le récap du soir (`docs/PATCH_NOTE_V12.64.md`) :
+  **Correctif « 0 dégâts »** : gs_onboarding/client/protection.lua retirait l'invincibilité de fin de protection seulement si
+  `GetPlayerInvincible` était faux… alors que la protection venait elle-même de la poser : tout le monde restait invincible.
+  Maintenant drapeau staff `LocalPlayer.state.gsStaffGod` (posé par gs_admin applyGodmode) + filet toutes les 400 ms.
   **Lives fluides** (« ça marche mais ça rame ») : screenshot-basic (`dist/ui.html`) ne recopie plus l'écran à chaque image chez
   tous les joueurs (rendu seulement sur demande, deux images de suite avant lecture) et accepte `maxWidth` (image réduite avant
   compression) ; gs_lives capture en 960 px WebP (repli JPEG automatique), garde le flux ouvert tant qu'une fenêtre redemande

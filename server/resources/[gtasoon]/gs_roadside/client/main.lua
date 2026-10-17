@@ -361,6 +361,7 @@ local function roadStop(prompt, label, props)
                           onSelect = function() choose('bribed') end },
                     } })
                 lib.showContext('gs_roadside_stop')
+                SetTimeout(30000, function() if not picked then lib.hideContext(false) choose('checked') end end) -- menu fermé par un autre script
                 local choice = Citizen.Await(pick)
                 if choice == 'bribed' then
                     lib.progressBar({ duration = 2500, label = 'Tu glisses un billet…', canCancel = false, disable = { move = true, car = true } })

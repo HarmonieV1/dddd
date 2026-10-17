@@ -2,6 +2,8 @@
 
 # 📣 Mise à jour de la nuit du 16 octobre
 
+**🩸 Correctif important** : après la protection d'arrivée, on restait invincible (0 dégât). C'est réparé : les balles, les coups et la police IA font de nouveau mal.
+
 **🏋️ Salle de sport**
 Muscle Beach, la cour de Bolingbroke et la plage de Sandy Shores : pompes, abdos, haltères, yoga, course sur place. **Trois exercices différents en 15 min** = 6 h de bonus d'endurance (plus de souffle au sprint et en apnée). Gratuit.
 

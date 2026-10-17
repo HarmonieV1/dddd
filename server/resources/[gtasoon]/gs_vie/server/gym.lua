@@ -41,8 +41,9 @@ lib.callback.register('gs_vie:gymBegin', function(src, kind)
     local place = Gym.placeOf(src)
     if not place then return false, 'Il faut être à une salle de sport.' end
     if GetVehiclePedIsIn(GetPlayerPed(src), false) ~= 0 then return false, 'Descends du véhicule.' end
-    if Gym.pending[src] then return false, 'Un exercice à la fois.' end
-    Gym.pending[src] = { kind = kind, place = place, readyAt = GetGameTimer() + G.duration - 750 }
+    local p0 = Gym.pending[src] -- V12.64 (relecture) : un exercice resté en plan (client planté) expire tout seul
+    if p0 and GetGameTimer() - (p0.at or 0) < G.duration + 15000 then return false, 'Un exercice à la fois.' end
+    Gym.pending[src] = { kind = kind, place = place, readyAt = GetGameTimer() + G.duration - 750, at = GetGameTimer() }
     return true, G.duration
 end)
 

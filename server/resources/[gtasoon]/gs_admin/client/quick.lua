@@ -36,8 +36,10 @@ local function applyVisibility()
 end
 
 local function applyGodmode()
-    SetEntityInvincible(PlayerPedId(), powers.godmode or powers.noclip)
-    SetPlayerInvincible(PlayerId(), powers.godmode or powers.noclip)
+    local on = powers.godmode or powers.noclip
+    SetEntityInvincible(PlayerPedId(), on)
+    SetPlayerInvincible(PlayerId(), on)
+    LocalPlayer.state:set('gsStaffGod', on == true, false) -- V12.64 : la protection d'arrivée (gs_onboarding) sait que c'est voulu
 end
 
 local NOCLIP_DISABLED = { 30, 31, 32, 33, 34, 35, 21, 22, 36, 44, 38, 24, 25, 257, 263, 140, 141, 142, 143, 75 }

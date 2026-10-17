@@ -15,6 +15,17 @@ local function now() return os.time() end
 --- Clé d'un distributeur : sa position arrondie au mètre (les props du jeu n'ont pas d'identifiant côté serveur)
 function Hack.key(c) return ('%d:%d:%d'):format(math.floor(c.x + 0.5), math.floor(c.y + 0.5), math.floor(c.z + 0.5)) end
 
+--- Distributeur verrouillé (cooldown) à moins de 3 m : une position décalée d'un mètre ne donne pas un « nouveau » distributeur
+function Hack.locked(at)
+    for key, untilAt in pairs(Hack.atms) do
+        if untilAt > now() then
+            local x, y, z = key:match('^(-?%d+):(-?%d+):(-?%d+)$')
+            if x and #(vec3(tonumber(x), tonumber(y), tonumber(z)) - at) < 3.0 then return true end
+        else Hack.atms[key] = nil end
+    end
+    return false
+end
+
 function Hack.isNight()
     if not started('gs_weather') then return false end
     local ok, hour = pcall(function() return exports.gs_weather:GetGameTime() end)
@@ -51,13 +62,14 @@ lib.callback.register('gs_bank:hackBegin', function(src, coords)
     local at = vec3(coords.x, coords.y, coords.z)
     if not Security:InRange(src, at, Config.Range + 1.5) then return false, 'Trop loin du distributeur.' end
     if GetVehiclePedIsIn(GetPlayerPed(src), false) ~= 0 then return false, 'Descends du véhicule.' end
-    if Hack.pending[src] then return false, 'Déjà en train de pirater.' end
+    local p0 = Hack.pending[src] -- V12.64 (relecture) : un piratage resté en plan (client planté) expire tout seul
+    if p0 and GetGameTimer() - (p0.at or 0) < H.install + H.drain + 30000 then return false, 'Déjà en train de pirater.' end
     if (Bridge:GetItemCount(src, H.item) or 0) < 1 then return false, 'Il te faut un boîtier de piratage (marché noir).' end
     if isCop(src) then return false, 'Pas en service de police.' end
     local cid, key = Bridge:GetIdentifier(src), Hack.key(at)
     if (Hack.players[cid] or 0) > now() then return false, ('Fais-toi oublier encore %d min.'):format(math.ceil((Hack.players[cid] - now()) / 60)) end
-    if (Hack.atms[key] or 0) > now() then return false, 'Ce distributeur a déjà été vidé : la banque le surveille.' end
-    Hack.pending[src] = { key = key, coords = at, stage = 'install', readyAt = GetGameTimer() + H.install - 750 }
+    if Hack.locked(at) then return false, 'Ce distributeur a déjà été vidé : la banque le surveille.' end
+    Hack.pending[src] = { key = key, coords = at, stage = 'install', readyAt = GetGameTimer() + H.install - 750, at = GetGameTimer() }
     return true, { install = H.install, skill = H.skill, keys = H.keys }
 end)
 

@@ -202,7 +202,7 @@ RegisterNetEvent('gs_drone:client:radar', function(zone, radius)
 end)
 
 -- Abattre un drone : seulement pendant qu'un drone vole quelque part, et seulement près de lui (par frame en tir)
-local watching = false
+local watching, lastImpact = false, nil
 RegisterNetEvent('gs_drone:client:airborne', function(net, on)
     airborne[net] = on and true or nil
     if not on or watching then return end
@@ -223,7 +223,8 @@ RegisterNetEvent('gs_drone:client:airborne', function(net, on)
             if not near then Wait(1000) else
                 if IsPedShooting(cache.ped) then
                     local okI, impact = GetPedLastWeaponImpactCoord(cache.ped)
-                    if okI then
+                    if okI and (not lastImpact or #(impact - lastImpact) > 0.01) then -- une balle = un envoi (la dernière impact reste lue)
+                        lastImpact = impact
                         for n, d in pairs(near) do
                             if #(GetEntityCoords(d) - impact) < 1.2 then TriggerServerEvent('gs_drone:server:hit', n) break end
                         end

@@ -503,7 +503,7 @@ do
     fixRandom(0.5)
     local low = math.floor((Bz.base + 10 * Bz.perHeat) * 0.5) -- moitié du prix caché : toujours refusé
     ok, msg = Wanted.negotiate(1, 'bribe', low)
-    check('pot-de-vin trop bas : mal pris, 2 ★, argent gardé', ok and Wanted.npcLevel[1] == 2 and W.players[1].money.cash == 5000 and msg:find('corruption'))
+    check('pot-de-vin trop bas : mal pris (refus), 2 ★, argent gardé', not ok and Wanted.npcLevel[1] == 2 and W.players[1].money.cash == 5000 and msg:find('corruption'))
     newCop()
     Wanted.sendNpc(1, 1)
     Wanted.heat[1] = 10

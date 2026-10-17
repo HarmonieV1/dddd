@@ -33,14 +33,23 @@ local function antiSpam(now)
     end
 end
 
+-- V12.64 (backtest : « on prend toujours 0 dégâts, police IA comme fusillade ») : la fin de la protection testait
+-- GetPlayerInvincible pour épargner l'invincibilité du staff… mais ce test voit aussi l'invincibilité posée par la protection
+-- elle-même : elle ne se retirait jamais et tout le monde restait invincible après chaque arrivée / réapparition.
+-- Maintenant : seul le drapeau du staff (gs_admin, LocalPlayer.state.gsStaffGod) garde l'invincibilité.
+local function staffGod() return LocalPlayer.state.gsStaffGod == true end
+local function clearInvincible()
+    SetEntityInvincible(cache.ped, false)
+    SetPlayerInvincible(cache.playerId, false)
+end
 local function setGhost(on)
     ghost = on
     SetLocalPlayerAsGhost(on)
     if on then
         SetGhostedEntityAlpha(170)
         SetEntityInvincible(cache.ped, true)
-    elseif not GetPlayerInvincible(cache.playerId) then -- invincibilité du staff (F11) : on n'y touche pas
-        SetEntityInvincible(cache.ped, false)
+    elseif not staffGod() then -- invincibilité du staff (F11) : on n'y touche pas
+        clearInvincible()
     end
 end
 
@@ -77,6 +86,11 @@ CreateThread(function()
             nextScan = now + 400
             local pos = GetEntityCoords(cache.ped)
             calm, fight = inCalmZone(pos), canFight(pos)
+            -- V12.64 · filet : hors protection, hors pouvoir du staff et vivant, personne ne reste invincible
+            if not ghost and not staffGod() and not dead and (LocalPlayer.state['qbx_medical:deathState'] or 1) < 2
+                and GetPlayerInvincible(cache.playerId) then
+                clearInvincible()
+            end
         end
         if ghost or calm then
             DisablePlayerFiring(cache.playerId, true)

@@ -448,7 +448,7 @@ function Wanted.negotiate(src, choice, hostageNet)
         if math.random() >= chance then
             Wanted.escalate(src)
             Security:LogStaff(('[Police IA] %s tente de corrompre un agent (%d $) : refusé'):format(GetPlayerName(src) or src, amount), 'jobs')
-            return true, ('L\'agent regarde tes %d $ avec mépris : « Tentative de corruption, en plus ? » La police durcit le ton (2 ★).'):format(amount)
+            return false, ('L\'agent regarde tes %d $ avec mépris : « Tentative de corruption, en plus ? » La police durcit le ton (2 ★).'):format(amount)
         end
         if not Bridge:RemoveMoney(src, 'cash', amount, 'pot-de-vin à un agent') then return false, 'Tu n\'as pas ces billets sur toi (liquide).' end
         Wanted.standDown(src)

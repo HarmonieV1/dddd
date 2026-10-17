@@ -123,15 +123,20 @@ function dataURItoBlob(dataURI) {
 class ScreenshotUI {
     initialize() {
         window.addEventListener('message', event => {
-            this.request = event.data.request;
+            // RoadLine V12.64 : file d'attente (avant : une seule place, une 2e demande effaçait la 1re, dont le rappel ne venait
+            // jamais : une photo prise pendant un Lives pouvait se perdre)
+            const request = event.data && event.data.request;
+            if (!request) return;
+            this.queue = this.queue || [];
+            this.queue.push(request);
             // RoadLine V12.63 : si le cadre NUI ne dessine plus (animation en pause), la demande est traitée quand même
             // (V12.64 : au bout de 150 ms au lieu de 400 : l'animation normale répond en ~35 ms, ce filet ne sert qu'en pause)
             setTimeout(() => {
-                if (!this.request) return;
+                const i = this.queue.indexOf(request);
+                if (i < 0) return;
+                this.queue.splice(i, 1);
                 try { this.renderer.clear(); this.renderer.render(this.sceneRTT, this.cameraRTT, this.rtTexture, true); } catch (e) {}
-                const r = this.request;
-                this.request = null;
-                this.handleRequest(r);
+                this.handleRequest(request);
             }, 150);
         });
         window.addEventListener('resize', event => {
@@ -197,13 +202,12 @@ class ScreenshotUI {
         requestAnimationFrame(this.animate);
         // RoadLine V12.64 : l'écran n'est recopié QUE quand une capture est demandée (avant : à chaque image, chez tous les
         // joueurs, même sans capture : des FPS perdus pour tout le monde). Deux images de suite avant de lire : image fraîche.
-        if (!this.request) { this.warm = 0; return; }
+        if (!this.queue || !this.queue.length) { this.warm = 0; return; }
         this.renderer.clear();
         this.renderer.render(this.sceneRTT, this.cameraRTT, this.rtTexture, true);
         if ((this.warm = (this.warm || 0) + 1) < 2) return;
         this.warm = 0;
-        const request = this.request;
-        this.request = null;
+        const request = this.queue.shift();
         this.handleRequest(request);
     }
     handleRequest(request) {

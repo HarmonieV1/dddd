@@ -57,6 +57,8 @@ join(2, 'CID2', 'Pirate Deux', vec3(100.0, 101.0, 30.0))
 W.players[2].items[H.item] = 1
 ok, msg = cb('gs_bank:hackBegin', 2, atm)
 check('distributeur verrouillé après une alarme', not ok and msg:find('vidé'))
+ok, msg = cb('gs_bank:hackBegin', 2, { x = 101.0, y = 100.0, z = 30.0 })
+check('même distributeur décalé d\'un mètre : toujours verrouillé', not ok and msg:find('vidé'))
 local atm2 = { x = 300.0, y = 300.0, z = 30.0 }
 tp(2, vec3(300.5, 300.0, 30.0))
 ok = cb('gs_bank:hackBegin', 2, atm2)

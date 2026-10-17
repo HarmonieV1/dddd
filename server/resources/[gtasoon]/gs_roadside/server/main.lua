@@ -224,7 +224,13 @@ function Roadside.bribe(src, s, def, done)
         return done(s.kind)
     end
     local price = math.ceil(fine * B.share)
-    if (Bridge:GetMoney(src, 'cash') or 0) >= price and math.random() < B.accept and Bridge:RemoveMoney(src, 'cash', price) then
+    if (Bridge:GetMoney(src, 'cash') or 0) < price then -- pas les billets : contrôle normal, amende simple
+        Bridge:RemoveMoney(src, 'bank', fine)
+        if points > 0 then removePoints(src, points, why) end
+        notify(src, ('Pas assez de liquide pour un billet. %s : amende de %d $%s.'):format(why, fine, points > 0 and (' et %d points de permis'):format(points) or ''), 'error')
+        return done(s.kind == 'checkpoint' and 'checkpoint_drunk' or s.kind)
+    end
+    if math.random() < B.accept and Bridge:RemoveMoney(src, 'cash', price) then
         local probe = math.random() < B.investigate
         if probe and GetResourceState('gs_wanted') == 'started' then pcall(function() exports.gs_wanted:CorruptionCase(src, price) end) end
         notify(src, ('Le shérif empoche %d $ : « Je n\'ai rien vu. »%s'):format(price, probe and ' Un collègue a tout noté : une enquête est ouverte.' or ''), probe and 'error' or 'success')

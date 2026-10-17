@@ -184,7 +184,7 @@ RegisterNetEvent('gs_lives:server:frame', function(target)
     Lives.watch(target, Config.Lease) -- V12.64 : capture continue tant que la fenêtre est ouverte
     Lives.sent[src] = Lives.sent[src] or {}
     local waitAt = Lives.sent[src].wait and Lives.sent[src].wait[target]
-    if waitAt and GetGameTimer() - waitAt < 9000 then return end -- déjà en attente de l'image suivante
+    if waitAt and GetGameTimer() - waitAt < 11000 then return end -- déjà en attente de l'image suivante
     Lives.sent[src].wait = Lives.sent[src].wait or {}
     Lives.sent[src].wait[target] = GetGameTimer()
     Lives.capture(target, Config.Quality, function(ok, data, seq)
