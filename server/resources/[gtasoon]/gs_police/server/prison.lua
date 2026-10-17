@@ -31,7 +31,10 @@ function Prison.work(src, i)
     j.untilTs = math.max(now + P.minLeft, j.untilTs - job.reduce)
     Store.jailSet(j.cid, j.untilTs, job.gym and 'peine réduite (sport)' or 'peine réduite (travail)')
     TriggerClientEvent('gs_police:client:jail', src, j.untilTs - now)
-    if job.gym then return true, ('Belle série : peine réduite de %d s, ta forme progresse.'):format(job.reduce), true end
+    if job.gym then
+        if GetResourceState('gs_vie') == 'started' then pcall(function() exports.gs_vie:GymCredit(src, job.label) end) end -- V12.64
+        return true, ('Belle série : peine réduite de %d s, ta forme progresse.'):format(job.reduce), true
+    end
     Bridge:AddItem(src, P.ticket, job.tickets)
     return true, ('Peine réduite de %d s · +%d ticket(s) de cantine'):format(job.reduce, job.tickets)
 end

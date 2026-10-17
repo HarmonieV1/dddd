@@ -37,7 +37,7 @@ end)
 
 lib.callback.register('gs_vie:gymBegin', function(src, kind)
     if not Security:RateLimit(src, 'gs_vie:gymBegin', 4, 10000) then return false, 'Doucement.' end
-    if not EX[kind] then return false, 'Exercice inconnu.' end
+    if not EX[kind] or EX[kind].prison then return false, 'Exercice inconnu.' end -- tractions : cour de la prison seulement
     local place = Gym.placeOf(src)
     if not place then return false, 'Il faut être à une salle de sport.' end
     if GetVehiclePedIsIn(GetPlayerPed(src), false) ~= 0 then return false, 'Descends du véhicule.' end
@@ -53,20 +53,34 @@ lib.callback.register('gs_vie:gymFinish', function(src)
     Gym.pending[src] = nil
     if not p or GetGameTimer() < p.readyAt then return false, 'Exercice interrompu.' end
     if Gym.placeOf(src) ~= p.place then return false, 'Tu as quitté la salle.' end
+    return Gym.count(src, p.kind)
+end)
+
+--- Exercice réussi (salle en plein air ou musculation de la prison) : compté dans la séance, bonus à la fin
+function Gym.count(src, kind)
     local cid = Bridge:GetIdentifier(src)
-    if not cid then return false end
+    if not cid or not EX[kind] then return false end
     local s = session(cid)
-    if s.done[p.kind] then return true, ('%s : déjà fait dans cette séance, change d\'exercice.'):format(EX[p.kind].label) end
-    s.done[p.kind] = true
+    if s.done[kind] then return true, ('%s : déjà fait dans cette séance, change d\'exercice.'):format(EX[kind].label) end
+    s.done[kind] = true
     local n = 0
     for _ in pairs(s.done) do n = n + 1 end
-    if n < G.session then return true, ('%s : bien joué ! Séance %d/%d.'):format(EX[p.kind].label, n, G.session) end
+    if n < G.session then return true, ('%s : bien joué ! Séance %d/%d.'):format(EX[kind].label, n, G.session) end
     Gym.sessions[cid] = nil
     local untilAt = now() + G.hours * 3600
     SetResourceKvpInt('gym:' .. cid, untilAt)
     TriggerClientEvent('gs_vie:client:gymBonus', src, untilAt - now())
     if GetResourceState('gs_quests') == 'started' then pcall(function() exports.gs_quests:Track(src, 'gym') end) end
     return true, ('Séance terminée ! Bonus d\'endurance pendant %d h : plus de souffle au sprint et en apnée.'):format(G.hours)
+end
+
+--- V12.64 · Musculation de la prison (gs_police) : la série du détenu compte pour la séance (message affiché au joueur)
+exports('GymCredit', function(src, label)
+    local kind = G.prison and G.prison[label]
+    if not kind then return false end
+    local ok, msg = Gym.count(src, kind)
+    if ok and msg then TriggerClientEvent('ox_lib:notify', src, { title = 'Salle de sport', description = msg, type = 'success', duration = 6000 }) end
+    return ok == true
 end)
 
 RegisterNetEvent('gs_vie:server:gymCancel', function()

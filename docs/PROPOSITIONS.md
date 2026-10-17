@@ -467,6 +467,51 @@ repérage (police en service, et gangs avec un accès difficile). Et les **Lives
 
 Les plus sûres avant l'ouverture (✚, rien de neuf à installer) : 249, 252, 255, 259, 260, 264, 266 et 275.
 
+
+## D13. Mises en scène du staff (V12.64, 17/10) — pimenter une scène plutôt que la couper
+
+Retour du fondateur : l'enlèvement en camionnette et l'arrestation par un policier PNJ « marchent parfaitement ». Idée : donner au
+staff des **coups de théâtre** légers pour relancer, ralentir ou rendre plus réaliste une scène RP, au lieu de l'arrêter.
+Tout passerait par F11 → Joueurs → le joueur → Mises en scène (admin et plus), journalisé, sans sanction.
+
+### Mettre la pression (une scène qui traîne, une fuite trop facile)
+| # | Proposition | Effort | S'appuie sur |
+|---|---|---|---|
+| 277 | **Sirènes au loin** : sirènes et gyrophares qui se rapprochent sans patrouille réelle ; les joueurs doivent décider vite | ✚ | sons du jeu |
+| 278 | **Hélico qui passe** : un hélicoptère de la police survole la zone 30 s, projecteur la nuit, puis repart | ✚ | gs_wanted (hélico) |
+| 279 | **Témoin qui appelle** : un passant sort son téléphone et filme, puis s'enfuit ; signalement si on ne le rattrape pas | ✚ | gs_wanted (témoins) |
+| 280 | **Foule de curieux** : 5 ou 6 passants s'arrêtent et regardent, commentent à voix haute | ✚ | gs_memoire (passants) |
+| 281 | **Voiture qui cale** : le moteur du véhicule du joueur cale 10 s en pleine fuite | ✚ | gs_details |
+
+### Détourner (relancer une scène qui tourne en rond)
+| # | Proposition | Effort | S'appuie sur |
+|---|---|---|---|
+| 282 | **Le téléphone sonne** : appel masqué avec une voix (texte) qui donne une info ou une menace écrite par le staff | ✚ | gs_cabines, gs_phone |
+| 283 | **Livreur au mauvais moment** : un livreur PNJ arrive avec un colis au nom d'un joueur (contenu choisi par le staff) | ✚ | gs_quests (colis) |
+| 284 | **Panne de courant de la rue** : black-out de 2 min sur le pâté de maisons | ✚ | gs_city (black-out) |
+| 285 | **Accident devant eux** : deux voitures PNJ s'accrochent et bloquent la route | ✚✚ | gs_roadside |
+| 286 | **Indic' qui accoste** : un PNJ glisse un tuyau (rumeur vraie choisie par le staff) | ✚ | gs_rumors |
+
+### Rendre plus réaliste (les détails qui manquent)
+| # | Proposition | Effort | S'appuie sur |
+|---|---|---|---|
+| 287 | **Ambulance IA** après une fusillade : brancardiers, puis départ sirène hurlante | ✚ | gs_services |
+| 288 | **Journaliste PNJ** : une équipe Weazel arrive et filme la scène ; une brève tombe sur Vibe | ✚ | gs_social (Weazel) |
+| 289 | **Fourrière PNJ** : la dépanneuse vient chercher la voiture abandonnée au milieu de la scène | ✚ | gs_auction (fourrière) |
+| 290 | **Chien errant** qui aboie et suit un joueur (gêne une planque, alerte les voisins) | ✚ | gs_animalerie (modèles) |
+| 291 | **Pluie soudaine** sur la zone seulement le temps de la scène | ✚ | gs_weather |
+
+### Faire vivre une arrestation ou un enlèvement (suite des deux scènes qui marchent)
+| # | Proposition | Effort | S'appuie sur |
+|---|---|---|---|
+| 292 | **Interrogatoire PNJ** : après l'arrestation, un inspecteur PNJ pose 3 questions (réponses libres lues par le staff) avant la cellule | ✚✚ | gs_police (salle) |
+| 293 | **Rançon** : la camionnette n'expulse pas tout de suite ; le gang du joueur reçoit un appel « rançon » à payer en 5 min | ✚✚ | gs_cabines, gs_gangs |
+| 294 | **Transfert attaquable** : l'arrêté par le policier PNJ part en fourgon, ses amis peuvent tenter de le libérer (staff valide) | ✚✚ | gs_justice |
+| 295 | **Relâché dans le désert** : variante douce de l'enlèvement, le joueur se réveille sans argent au milieu du désert | ✚ | gs_admin (scènes) |
+| 296 | **Avertissement mis en scène** : deux PNJ costauds encadrent le joueur et lui parlent (texte du staff), sans sanction | ✚ | gs_admin (scènes) |
+
+Les plus utiles tout de suite (✚, rien à installer) : 277, 278, 281, 282, 284, 288, 295 et 296.
+
 ---
 À coller à la suite de la section B dans `C:\Users\STEPHANE\Desktop\Base STEVEN\roadline-repo\docs\PROPOSITIONS.md` (nouvelle section D),
 puis tri par le fondateur comme pour les 57 premières. Rappel du cap décidé le 11/10 : pas de nouveau gros système avant le 20/10 ;

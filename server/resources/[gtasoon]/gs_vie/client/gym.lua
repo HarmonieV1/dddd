@@ -34,6 +34,12 @@ local function applyBonus(seconds)
     end)
 end
 RegisterNetEvent('gs_vie:client:gymBonus', function(seconds) applyBonus(tonumber(seconds) or 0) end)
+-- V12.64 · la musculation de la prison fait progresser la forme pour de bon : pendant le bonus, ce progrès est gardé pour la fin
+AddEventHandler('gs_vie:client:statProgress', function(n)
+    if not saved then return end
+    n = tonumber(n) or 0
+    saved.stamina = math.min(100, saved.stamina + n)
+end)
 
 local function exercise(e)
     if busy then return end
@@ -64,10 +70,12 @@ local function menu()
               or ('Finis-la en %d min pour gagner %d h de bonus d\'endurance'):format(math.ceil(st.left / 60), G.hours) },
     }
     for _, e in ipairs(G.exercises) do
+        if e.prison then goto continue end -- tractions : barre de la cour de la prison seulement
         local did = st.done[e.id]
         options[#options + 1] = { title = (did and '✓ ' or '') .. e.label, icon = e.icon, disabled = did == true,
             description = did and 'Déjà fait dans cette séance' or ('%d s'):format(math.floor(G.duration / 1000)),
             onSelect = function() exercise(e) end }
+        ::continue::
     end
     lib.registerContext({ id = 'gs_vie_gym', title = 'Salle de sport', options = options })
     lib.showContext('gs_vie_gym')

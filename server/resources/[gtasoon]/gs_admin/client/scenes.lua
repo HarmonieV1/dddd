@@ -144,6 +144,12 @@ local function kidnap(cfg)
         Wait(4500)
     end
     blackOut('Un sac sur la tête… tout devient noir.')
+    -- V12.64 (crash à la fermeture du jeu après l'expulsion) : écran noir, le joueur sort de la camionnette AVANT l'expulsion
+    -- (avant : la camionnette était supprimée avec lui dedans, puis le jeu se fermait)
+    ClearPedTasksImmediately(ped)
+    SetEntityCoordsNoOffset(ped, start.x, start.y, start.z, false, false, false)
+    FreezeEntityPosition(ped, true)
+    Wait(300)
 end
 
 -- Arrestation par un policier PNJ --------------------------------------------------------------------------------------------
@@ -191,6 +197,7 @@ RegisterNetEvent('gs_admin:client:scene', function(kind, cfg)
     if not ok then print('[gs_admin] mise en scène : ' .. tostring(err)) end
     if not IsScreenFadedOut() then DoScreenFadeOut(500) Wait(600) end
     lib.callback.await('gs_admin:sceneDone', false) -- expulsion, ou cellule (téléportation par le serveur)
+    FreezeEntityPosition(cache.ped, false)
     Wait(1200)
     ClearPedTasksImmediately(cache.ped)
     busy = false

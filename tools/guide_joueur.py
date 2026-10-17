@@ -258,7 +258,7 @@ def build():
                   '<b>Photomaton</b> à la fête foraine (à côté du guichet des jetons) : une photo souvenir pour 3 jetons ; '
                   'serrez-vous dans la cabine, chacun repart avec sa copie (à regarder ou accrocher au mur).'])
     s += [Paragraph('Nouveautés de la ville (V12.64)', H3)]
-    s += bullets(['<b>Salle de sport</b> (Muscle Beach, cour de Bolingbroke, plage de Sandy Shores) : [E] au point, choisis un exercice '
+    s += bullets(['<b>Salle de sport</b> (Muscle Beach, plage de Sandy Shores, et la musculation de la prison) : [E] au point, choisis un exercice '
                   '(pompes, abdos, haltères, yoga, course sur place). Trois exercices différents en 15 minutes = 6 heures de bonus '
                   'd\'endurance (plus de souffle au sprint et en apnée). Gratuit.',
                   '<b>Distributeurs</b> : avec un boîtier de piratage (marché noir), Alt sur un distributeur → « Pirater ». Mini-jeu sur la '

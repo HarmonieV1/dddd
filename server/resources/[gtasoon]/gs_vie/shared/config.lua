@@ -103,14 +103,14 @@ Config.Gestures = {
     emsJob = 'ambulance', emsMs = 6000, emsRange = 3.0,
 }
 
--- V12.64 · Salle de sport (proposition n° 206, demandée par le fondateur) : aux salles en plein air, une SÉANCE = `session`
+-- V12.64 · Salle de sport (proposition n° 206, demandée par le fondateur) : aux salles en plein air (et dans la cour de la
+-- prison, avec la musculation des détenus de gs_police), une SÉANCE = `session`
 -- exercices différents (pompes, abdos, haltères, yoga, course sur place, `duration` ms chacun, animés) en moins de `window`
 -- s. Séance finie : bonus d'endurance pendant `hours` h réelles (souffle au sprint et en apnée, récupération plus rapide),
 -- gardé même après une reconnexion ou un redémarrage. Gratuit ; les exercices sont vérifiés par le serveur (durée, lieu).
 Config.Gym = {
     places = {
         { label = 'Muscle Beach (Vespucci)', coords = vec3(-1202.6, -1566.2, 4.6), radius = 30.0, blip = true },
-        { label = 'Cour de Bolingbroke', coords = vec3(1746.4, 2481.4, 45.7), radius = 35.0, blip = false },
         { label = 'Plage de Sandy Shores', coords = vec3(1393.2, 3606.6, 34.98), radius = 20.0, blip = false },
     },
     exercises = {
@@ -120,7 +120,12 @@ Config.Gym = {
           prop = { model = 'prop_curl_bar_01', bone = 28422, pos = { 0.0, 0.0, 0.0 }, rot = { 0.0, 0.0, 0.0 } } },
         { id = 'yoga', label = 'Étirements (yoga)', icon = 'spa', anim = { dict = 'amb@world_human_yoga@male@base', clip = 'base_a' } },
         { id = 'jog', label = 'Course sur place', icon = 'person-running', anim = { dict = 'amb@world_human_jog_standing@male@idle_a', clip = 'idle_a' } },
+        -- V12.64 · prison seulement (barre de traction de la cour) : compté par la musculation de gs_police, pas dans le menu de la salle
+        { id = 'chinups', label = 'Tractions', icon = 'person', prison = true },
     },
+    -- V12.64 · Musculation de la prison (cour intérieure de Bolingbroke, gs_police) : chaque série compte pour la séance et le
+    -- même bonus d'endurance. Nom de l'exercice de gs_police → exercice de la salle.
+    prison = { ['Pompes'] = 'pushups', ['Abdos'] = 'situps', ['Haltères'] = 'weights', ['Tractions'] = 'chinups' },
     duration = 20000, session = 3, window = 900, hours = 6,
     bonus = { stamina = 100, lung = 100, regen = 0.15 }, -- statistiques du jeu (0-100) et récupération du souffle au sprint
 }

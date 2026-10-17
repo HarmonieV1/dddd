@@ -30,6 +30,7 @@ AddEventHandler('gs_police:client:prisonWork', function(i)
             local _, v = StatGetInt(h, -1)
             StatSetInt(h, math.min(100, (v or 0) + (P.gymStat or 3)), true)
         end
+        TriggerEvent('gs_vie:client:statProgress', P.gymStat or 3) -- V12.64 : gardé si un bonus d'endurance est en cours
     end
 end)
 AddEventHandler('gs_police:client:prisonShop', shop)

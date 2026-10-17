@@ -33,7 +33,9 @@ function Admin.finishScene(target)
     deleteEnts(s.ents)
     if not online(target) then return true end
     if s.kind == 'kidnap' then
-        DropPlayer(target, ('Embarqué dans une camionnette par des inconnus… (expulsé par le staff : %s)'):format(s.reason))
+        -- V12.64 : entités supprimées d'abord, expulsion 1,5 s plus tard (le jeu du joueur se ferme proprement)
+        local msg = ('Embarqué dans une camionnette par des inconnus… (expulsé par le staff : %s)'):format(s.reason)
+        SetTimeout(1500, function() if online(target) then DropPlayer(target, msg) end end)
     else
         Admin.jail(target, s.minutes, s.reason, s.staff, S.arrest.cell)
     end

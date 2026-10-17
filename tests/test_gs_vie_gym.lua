@@ -53,6 +53,14 @@ check('bonus gardé (KVP)', Gym.bonusLeft('CID1') > 0)
 W.clientEvents = {}
 TriggerEvent('gs_bridge:server:playerLoaded', 1)
 check('reconnexion : le bonus revient', lastClientEvent('gs_vie:client:gymBonus', 1) ~= nil)
+-- V12.64 · musculation de la prison : chaque série compte pour la séance (tractions comprises), jamais depuis la salle
+join(2, 'CID2', 'Détenu', vec3(1700.0, 2541.0, 45.5))
+local credit = getExport('gs_vie', 'GymCredit')
+check('tractions : pas depuis le menu de la salle', not cb('gs_vie:gymBegin', 2, 'chinups'))
+check('prison : série inconnue ignorée', credit(2, 'Ménage') == false)
+credit(2, 'Pompes') credit(2, 'Tractions')
+W.clientEvents = {}
+check('prison : 3e série différente = séance terminée, bonus', credit(2, 'Abdos') == true and lastClientEvent('gs_vie:client:gymBonus', 2) ~= nil)
 W.players[1].vehicle = 9
 check('en véhicule : refusé', not cb('gs_vie:gymBegin', 1, 'yoga'))
 io.write(('salle de sport : %d réussis, %d échoués\n'):format(passed, failed))
