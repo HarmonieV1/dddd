@@ -64,6 +64,9 @@ check('V12.41 : emplacement replacé à la position du staff', ok and Showroom.s
 tp(1, spot)
 cb('gs_showroom:staff', 1, 'move', { id = 1 }); step()
 check('client : pas staff', cb('gs_showroom:me', 2) == false and cb('gs_showroom:me', 1) == true)
+levels[2] = 3
+check('V12.65 : un admin ne gère plus les véhicules d\'exposition', cb('gs_showroom:me', 2) == false)
+levels[2] = nil
 
 ok, msg = cb('gs_showroom:test', 2, 1); step()
 check('essai refusé sans départ posé', not ok and msg:find('départ'))

@@ -321,6 +321,10 @@ lib.addCommand('gsgang', {
     restricted = 'group.admin',
 }, function(src, args)
     local who = src == 0 and 'console' or GetPlayerName(src)
+    -- V12.65 : créer / supprimer un gang et placer sa planque = super-admin et fondateur (add / remove restent admin)
+    if (args.action == 'create' or args.action == 'delete' or args.action == 'planque') and src ~= 0 and not IsPlayerAceAllowed(src, 'gs.admin.superadmin') then
+        return reply(src, 'Réservé au super-admin et au fondateur.')
+    end
     if args.action == 'create' then
         local name, color, label = args.a, tonumber(args.b), args.c
         if not name or not name:match('^[%w_]+$') or #name > 30 or not color or not label then return reply(src, 'Usage : create <nom> <couleur blip> <label>') end
@@ -480,13 +484,13 @@ function Gangs.setBonus(id, bonus)
 end
 exports('SetTerritoryBonus', Gangs.setBonus)
 RegisterCommand('territoire', function(src, args)
-    if src ~= 0 and not IsPlayerAceAllowed(src, 'gs.admin.admin') then return end
+    if src ~= 0 and not IsPlayerAceAllowed(src, 'gs.admin.superadmin') then return end -- V12.65 : super-admin et fondateur
     local ok = Gangs.setBonus(args[1], args[2])
     local msg = ok and ('Quartier %s : bonus %s (niveau %d, rayon %d m)'):format(args[1], args[2], Gangs.level(args[1]), math.floor(Gangs.radius(args[1])))
         or ('Usage : /territoire <%s> <-3..3>'):format(table.concat((function() local l = {} for k in pairs(Config.Territories) do l[#l + 1] = k end table.sort(l) return l end)(), '|'))
     if src == 0 then print(msg) else notify(src, msg, ok and 'success' or 'error') end
 end, false)
---- V12.56 · /quartierforme <quartier> <angle> [taille] [allongement] : oriente les cases sur les rues (admin), gardé au
+--- V12.56 · /quartierforme <quartier> <angle> [taille] [allongement] : oriente les cases sur les rues (super-admin), gardé au
 --- redémarrage. V12.63 : allongement = longueur / largeur du rectangle (0.4 à 2.5 ; 1 = carré).
 function Gangs.setShape(id, angle, cell, aspect)
     angle, cell, aspect = tonumber(angle), tonumber(cell), tonumber(aspect)
@@ -500,7 +504,7 @@ function Gangs.setShape(id, angle, cell, aspect)
     return true
 end
 RegisterCommand('quartierforme', function(src, args)
-    if src ~= 0 and not IsPlayerAceAllowed(src, 'gs.admin.admin') then return end
+    if src ~= 0 and not IsPlayerAceAllowed(src, 'gs.admin.superadmin') then return end -- V12.65 : super-admin et fondateur
     local ok = Gangs.setShape(args[1], args[2], args[3], args[4])
     local msg = ok and ('Quartier %s : rues à %.0f°, cases de %.0f m, allongement %.1f (carte des gangs mise à jour)'):format(args[1], Gangs.shape[args[1]].angle, Gangs.shape[args[1]].cell, Gangs.shape[args[1]].aspect)
         or 'Usage : /quartierforme <quartier> <angle 0-180> [taille 40-200 m] [allongement 0.4-2.5]'

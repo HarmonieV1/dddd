@@ -19,11 +19,12 @@ Config.Glass = { crimes = { store_robbery = true, shop_robbery = true, jewelry =
 Config.Mural = { drawDistance = 25.0, hours = 24 } -- V12.59 : texte plus discret, effacé au bout de 24 h
 
 -- V11 « Lieux de mémoire » : une plaque reste là où la ville a vécu un grand moment (30 jours). Automatique après un casse
--- de banque / bijouterie ou une cavale légendaire ; le staff (admin) en pose pour un mariage, un concert… : /plaque <texte>.
+-- de banque / bijouterie ou une cavale légendaire ; le staff (super-admin) en pose pour un mariage, un concert… : /plaque <texte>.
 -- [E] Lire la plaque : un passant raconte. /plaqueretirer : la plus proche (5 m).
 -- V12.59 : plaques AUTOMATIQUES (casse, cavale, lieu de mémoire) : 24 h, sans couronne ni bougie ; plaques du staff : 30 jours.
 -- Texte plus discret : lu de près seulement (`textRange`).
-Config.Plaques = { days = 30, autoHours = 24, textRange = 6.0, max = 15, merge = 40.0, staffLevel = 3, maxLen = 80, reach = 5.0,
+Config.Plaques = { days = 30, autoHours = 24, textRange = 6.0, max = 15, merge = 40.0, staffLevel = 4, -- V12.65 : plaques posées par le super-admin / fondateur
+    maxLen = 80, reach = 5.0,
     crimes = { bank = 'le casse de la banque', jewelry = 'le casse de la bijouterie' },
     props = { 'prop_mem_reef_01', 'prop_mem_candle_04' },
     -- V12.63 (backtest : « les lieux de mémoire posent des blips au lieu d'objets ») : plus d'icône flottante, des objets

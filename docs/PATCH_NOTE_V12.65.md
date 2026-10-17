@@ -31,6 +31,23 @@
 | Super-admin, fondateur | Tout : enlèvement, désert, transfert, hélico, chien errant, alcoolo ; chasse au trésor, bonus serveur (double XP), météo spéciale (neige, tempête, Halloween) ; tous les effets fun et transformations (peds, animaux). |
 Vérifié côté serveur (même en contournant le menu) ; `/gsevent`, `/meteoevent` et `/halloween` passent au rang super-admin.
 
+### Mapping et réglages de la ville : super-admin et fondateur (demande du fondateur)
+Pour qu'un staff complet ne puisse pas dérégler la ville, tout ce qui modifie la map ou les réglages est réservé aux super-admins
+et au fondateur, en jeu ET côté serveur :
+| Outil | Avant | Maintenant |
+|---|---|---|
+| F11 → Monde et lieux : décor (/builder), PNJ et objets posés, points, lieux publics, gangs (création, QG, garage), mappings installés, vol de l'île | Super-admin | Super-admin (inchangé) |
+| Portes verrouillées (`/doorlock`) | Admin | **Super-admin** |
+| Cimetière : poser / retirer une tombe | Admin | **Super-admin** |
+| Courses de rue sur mesure (créer, supprimer) | Admin | **Super-admin** |
+| Concessions : véhicules d'exposition | Admin | **Super-admin** |
+| `/gsgang create`, `delete`, `planque` | Admin | **Super-admin** |
+| `/territoire`, `/quartierforme` (quartiers de gang) | Admin | **Super-admin** |
+| `/meubleregle` (réglage des bancs pour tous) | Admin | **Super-admin** |
+| `/plaque` (plaque de mémoire posée par le staff) | Admin | **Super-admin** |
+Restent aux admins : mettre un joueur dans un métier ou un gang (`/gsgang add`/`remove`, F11), « Mort RP » d'un joueur,
+la liste des blips en double (lecture seule).
+
 ## 3. Pour le fondateur
 - Nouveaux fichiers : `gs_admin/server/staffhub.lua`, `gs_admin/web/src/staff/Hub.jsx`, `gs_wanted/server/testimony.lua`.
 - Réglages : `gs_admin` Config.Scenes (désert, interrogatoire, transfert, ambiance) et Config.StaffHub ; `gs_wanted` Config.Testimony ;

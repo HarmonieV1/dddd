@@ -40,7 +40,7 @@ Config.Circuits = {
 
 -- V12.40 · Courses créées en jeu par le staff (F11 → Monde et lieux → Courses de rue sur mesure)
 Config.Custom = {
-    staffLevel = 3,   -- niveau gs_admin minimum
+    staffLevel = 4,   -- niveau gs_admin minimum (V12.65 : super-admin et fondateur)
     minPoints = 3, maxPoints = 30,
     minGap = 15.0,    -- m minimum entre deux points (V12.59 : 30 → 15, points posés à pied refusés trop souvent)
     maxHours = 168,   -- durée de vie max d'une course éphémère (0 = permanente)

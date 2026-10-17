@@ -124,7 +124,7 @@ Config.AmmoCraft = {
 Config.Fence = {
     minGrade = 1, minQty = 10, maxQty = 50, bonus = 1.35, hours = { 21, 5 }, rotateMinutes = 60, reportChance = 0.35,
     -- V12.56 · Forme : cases carrées de `cell` m alignées sur les rues (angle par quartier ci-dessous). Réglage en jeu :
-    -- /quartierforme <quartier> <angle> [taille] (admin), gardé au redémarrage. 0° = rues nord-sud / est-ouest.
+    -- /quartierforme <quartier> <angle> [taille] (super-admin), gardé au redémarrage. 0° = rues nord-sud / est-ouest.
     cell = 90.0,
     locations = { vec3(-1154.9, -1558.9, 4.4), vec3(1204.7, -3116.9, 5.5), vec3(716.0, -965.0, 30.4), vec3(2474.0, 3444.0, 50.1) },
 }

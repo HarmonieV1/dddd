@@ -31,7 +31,7 @@ end
 
 lib.callback.register('gs_furniture:adjust', function(src, model, v)
     if not exports.gs_security:RateLimit(src, 'gs_furniture:adjust', 4, 10000) then return false, 'Doucement.' end
-    if not IsPlayerAceAllowed(src, 'gs.admin.admin') then return false, 'Réservé au staff.' end
+    if not IsPlayerAceAllowed(src, 'gs.admin.superadmin') then return false, 'Réservé au super-admin et au fondateur.' end -- V12.65
     local ok, msg = Furniture.set(model, v)
     if ok then print(('[gs_furniture] %s : %s'):format(GetPlayerName(src) or src, msg)) end
     return ok, msg

@@ -52,6 +52,18 @@ W.commands.gsgang(0, { action = 'create', a = 'ballas', b = '1', c = 'Doublon' }
 check('nom unique', Gangs.list.ballas.label == 'Ballas')
 W.commands.gsgang(0, { action = 'create', a = 'nom invalide', b = '1', c = 'X' })
 check('nom invalide refusé', Gangs.list['nom invalide'] == nil)
+-- V12.65 : un admin (sans l'ACE super-admin) ne crée pas de gang et ne règle pas les quartiers
+W.players[2].aces = { ['gs.admin.admin'] = true }
+W.commands.gsgang(2, { action = 'create', a = 'lost', b = '1', c = 'Lost MC' })
+check('V12.65 : admin ne crée pas de gang', Gangs.list.lost == nil)
+local bonusBefore = Gangs.territories.grove and Gangs.territories.grove.bonus
+W.commands.territoire(2, { 'grove', '3' })
+check('V12.65 : admin ne règle pas la taille d\'un quartier', (Gangs.territories.grove and Gangs.territories.grove.bonus) == bonusBefore)
+W.players[2].aces = { ['gs.admin.admin'] = true, ['gs.admin.superadmin'] = true }
+W.commands.gsgang(2, { action = 'create', a = 'lost', b = '1', c = 'Lost MC' })
+check('V12.65 : super-admin crée un gang', Gangs.list.lost ~= nil)
+W.commands.gsgang(0, { action = 'delete', a = 'lost' })
+W.players[2].aces = nil
 W.commands.gsgang(0, { action = 'add', a = '1', b = 'ballas', c = '3' })
 W.commands.gsgang(0, { action = 'add', a = '3', b = 'vagos', c = '3' })
 W.commands.gsgang(0, { action = 'add', a = '5', b = 'ballas', c = '2' })

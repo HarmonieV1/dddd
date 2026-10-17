@@ -22,6 +22,12 @@ join(1, 'STAFF1', 'Admin Test', vec3(0.0, 0.0, 0.0))
 join(2, 'CID2', 'Lucie Martin', vec3(10.0, 0.0, 0.0))
 local ok, msg = cb('gs_cimetiere:staff', 2, 'bury', { name = 'Quelqu\'un', epitaph = 'x' })
 check('joueur sans rang : refusé', not ok and #(GlobalState.gsGraves or {}) == 0)
+levels[2] = 3
+ok, msg = cb('gs_cimetiere:staff', 2, 'bury', { name = 'Quelqu\'un', epitaph = 'x' })
+check('V12.65 : admin refusé (super-admin et fondateur)', not ok and msg:find('super%-admin') and #(GlobalState.gsGraves or {}) == 0)
+ok = cb('gs_cimetiere:staff', 2, 'list')
+check('V12.65 : un admin voit toujours la liste (Mort RP reste admin)', ok)
+levels[2] = nil
 ok, msg = cb('gs_cimetiere:staff', 1, 'bury', { name = 'Jean Dupont', epitaph = 'Il aimait la route.' })
 local g = (GlobalState.gsGraves or {})[1]
 check('tombe posée au premier emplacement du carré', ok and g and g.name == 'Jean Dupont' and math.abs(g.x - Config.Origin.x) < 0.01)

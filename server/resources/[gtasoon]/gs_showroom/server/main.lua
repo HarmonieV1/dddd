@@ -74,7 +74,7 @@ end
 -- Staff : poser / retirer / départ des essais -----------------------------------------------------------------------------
 lib.callback.register('gs_showroom:staff', function(src, action, data)
     if not Security:RateLimit(src, 'gs_showroom:staff', 10, 10000) then return false, 'Doucement.' end
-    if staffLevel(src) < Config.StaffLevel then return false, 'Réservé au staff (admin).' end
+    if staffLevel(src) < Config.StaffLevel then return false, 'Réservé au super-admin et au fondateur.' end
     data = type(data) == 'table' and data or {}
     local ped = GetPlayerPed(src)
     local c, h = GetEntityCoords(ped), GetEntityHeading(ped)

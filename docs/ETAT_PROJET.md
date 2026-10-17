@@ -272,6 +272,11 @@ Résumé très condensé (le détail complet est dans `docs/ROADMAP.md`, `docs/F
   façon chargement de mission (Entrée / clic pour passer). Tout coupé par `prefers-reduced-motion`, souris seulement
   sur ordinateur. Une seule boucle rAF qui s'endort quand rien ne bouge. Vérifié dans le navigateur : 0 erreur.
 
+- **V12.65 (rangs du mapping)** : tout ce qui règle la ville passe au super-admin (4) : F11 → Monde et lieux en entier (portes,
+  cimetière, courses sur mesure, concessions passées de 3 à 4), gs_cimetiere `Config.StaffLevel` 4 (`Config.DeathLevel` 3 : Mort RP
+  reste admin), gs_races `Config.Custom.staffLevel` 4, gs_showroom 4, gs_scars `Config.Plaques.staffLevel` 4, gs_furniture ACE
+  `gs.admin.superadmin`, gs_gangs `/gsgang create|delete|planque`, `/territoire`, `/quartierforme` en `gs.admin.superadmin`,
+  permissions.cfg `command.doorlock` refusé aux admins.
 - **V12.65** (17/10/2026) — choix du fondateur dans les propositions (`docs/PATCH_NOTE_V12.65.md`) : mises en scène d'ambiance
   (gs_admin `Actions.stage`, `Admin.stages`, client `Stage.*` : hélico, foule, appel masqué, chien, alcoolo), désert (`Actions.desert`,
   argent liquide pris au serveur, `strip` côté client), interrogatoire (`npcarrest` + `interrogation`, réponses →

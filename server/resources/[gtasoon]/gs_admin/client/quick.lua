@@ -1723,7 +1723,8 @@ local function mainMenu()
         a(4, { title = 'Mapping : objets du décor', icon = 'cube', arrow = true, description = 'Catalogue par catégorie, placer, modifier, retirer de la map (/builder)',
             onSelect = function() exports.gs_builder:Open('gs_staff_world') end })
         -- V12.40 · portes verrouillées par métier / gang (ox_doorlock, éditeur en jeu) : prison, commissariat, mappings…
-        a(3, { title = 'Portes verrouillées (métiers, gangs)', icon = 'door-closed', arrow = true,
+        -- V12.65 : mapping, gangs, points, portes, tombes, courses, concessions = super-admin et fondateur seulement
+        a(4, { title = 'Portes verrouillées (métiers, gangs)', icon = 'door-closed', arrow = true,
             description = 'Viser une porte (même d\'un mapping) et la réserver à la police, aux EMS, à un gang…',
             onSelect = function()
                 local c = lib.alertDialog({ header = 'Portes verrouillées', centered = true, cancel = true, size = 'lg', labels = { confirm = 'Ouvrir l\'éditeur' },
@@ -1770,19 +1771,19 @@ local function mainMenu()
                 show('gs_staff_blipdup', 'Blips en double', o, 'gs_staff_world')
             end })
         -- V12.60 · cimetière (gs_cimetiere) : tombes, épitaphes, avis de décès
-        a(3, { title = 'Cimetière', icon = 'cross', arrow = true, description = 'Poser une tombe (carré ou ici), y aller, retirer',
+        a(4, { title = 'Cimetière', icon = 'cross', arrow = true, description = 'Poser une tombe (carré ou ici), y aller, retirer',
             onSelect = function()
                 if GetResourceState('gs_cimetiere') ~= 'started' then return notify(false, 'gs_cimetiere n\'est pas démarré.') end
                 exports.gs_cimetiere:OpenStaffMenu()
             end })
         -- V12.40 · courses de rue sur mesure (gs_races) : points posés sur place, éphémères ou permanentes
-        a(3, { title = 'Courses de rue sur mesure', icon = 'flag-checkered', arrow = true, description = 'Créer une course (points posés là où tu es), durée de vie, supprimer',
+        a(4, { title = 'Courses de rue sur mesure', icon = 'flag-checkered', arrow = true, description = 'Créer une course (points posés là où tu es), durée de vie, supprimer',
             onSelect = function()
                 if GetResourceState('gs_races') ~= 'started' then return notify(false, 'gs_races n\'est pas démarré.') end
                 exports.gs_races:OpenEditor()
             end })
         -- V12.40 · véhicules d'exposition des concessions (gs_showroom) : poser, départ des essais, changer, retirer
-        a(3, { title = 'Concessions : véhicules d\'exposition', icon = 'car', arrow = true, description = 'Exposer un véhicule ici, départ des essais, changer le modèle, retirer',
+        a(4, { title = 'Concessions : véhicules d\'exposition', icon = 'car', arrow = true, description = 'Exposer un véhicule ici, départ des essais, changer le modèle, retirer',
             onSelect = function()
                 if GetResourceState('gs_showroom') ~= 'started' then return notify(false, 'gs_showroom n\'est pas démarré.') end
                 exports.gs_showroom:OpenStaffMenu()

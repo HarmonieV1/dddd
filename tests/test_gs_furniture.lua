@@ -8,9 +8,12 @@ local function check(name, cond)
     if cond then passed = passed + 1 else failed = failed + 1; io.stderr:write('ÉCHEC : ' .. name .. '\n') end
 end
 join(1, 'CID1', 'Joueur', vec3(0.0, 0.0, 0.0))
-join(2, 'CID2', 'Staff', vec3(0.0, 0.0, 0.0)) W.players[2].aces = { ['gs.admin.admin'] = true }
+join(2, 'CID2', 'Staff', vec3(0.0, 0.0, 0.0)) W.players[2].aces = { ['gs.admin.admin'] = true, ['gs.admin.superadmin'] = true }
+join(3, 'CID3', 'Admin', vec3(0.0, 0.0, 0.0)) W.players[3].aces = { ['gs.admin.admin'] = true }
 local ok, msg = cb('gs_furniture:adjust', 1, 'prop_bench_01a', { z = 0.5, y = -0.3, h = 180.0 })
-check('joueur : refusé', not ok and msg:find('staff'))
+check('joueur : refusé', not ok and msg:find('super%-admin'))
+ok, msg = cb('gs_furniture:adjust', 3, 'prop_bench_01a', { z = 0.5, y = -0.3, h = 180.0 })
+check('V12.65 : admin refusé (super-admin et fondateur seulement)', not ok and msg:find('super%-admin'))
 ok = cb('gs_furniture:adjust', 2, 'prop_inconnu', { z = 0.5, y = 0.0, h = 0.0 })
 check('modèle inconnu refusé', not ok)
 ok = cb('gs_furniture:adjust', 2, 'prop_bench_01a', { z = 'x', y = 0.0, h = 0.0 })

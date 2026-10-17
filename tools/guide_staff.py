@@ -35,9 +35,10 @@ def build():
              ['Helper', 'Tickets (prendre, répondre, clore), aller au joueur, lire sa fiche, mode staff (noms et ID).'],
              ['Modérateur', '+ amener, soigner, réanimer, figer, spectate, vol libre, invisible, réparer / supprimer un véhicule, effacer une recherche, '
               'note staff, <b>avertir, isoler, expulser</b>. Valider les rumeurs (/rumeurvraie, /rumeurfausse).'],
-             ['Admin', '+ métiers et gangs (soi ou un joueur), apparition de véhicules, points de métier, météo, annonces, événements, '
-              '/plaque, /gazettepublier, statistiques.'],
-             ['Super-admin', '+ donner de l\'argent (100 000 $ max) ou des objets (100 max), <b>motif obligatoire</b> ; objets du décor.'],
+             ['Admin', '+ mettre un joueur dans un métier ou un gang, apparition de véhicules, météo, annonces, rassemblements, '
+              'Mort RP, /gazettepublier, statistiques.'],
+             ['Super-admin', '+ donner de l\'argent (100 000 $ max) ou des objets (100 max), <b>motif obligatoire</b> ; <b>mapping et réglages</b> '
+              '(décor, points, gangs, portes, tombes, courses, concessions, /plaque).'],
              ['Fondateur', '+ rangs du staff, txAdmin (console, bans longs), VPS (GERER-OVH).']],
             [28 * G.mm, 152 * G.mm])]
     s += [Paragraph('Un rang se donne en jeu par le fondateur : F11 → Joueurs → le joueur → Rang staff. On ne sanctionne jamais un staff '
@@ -96,10 +97,10 @@ def build():
              ['Fait divers PNJ', 'F11 → Événements → Fait divers PNJ (police en service obligatoire)', 'Admin'],
              ['Rumeurs qui deviennent vraies', 'Alerte reçue → /rumeurvraie storm|stash|crime ou /rumeurfausse (10 min pour décider)', 'Modo'],
              ['Rumeurs des joueurs', 'F11 → Événements → Rumeurs des joueurs → Valider, Valider + brève Weazel, ou Écarter', 'Modo'],
-             ['Lieux de mémoire', '/plaque Mariage de X et Y (sur place) · /plaqueretirer', 'Admin'],
+             ['Lieux de mémoire', '/plaque Mariage de X et Y (sur place) · /plaqueretirer', 'Super-admin'],
              ['Gazette', '/gazettepublier : publie tout de suite (sinon dimanche 20 h tout seul)', 'Admin'],
              ['Enchères', '/encheres : ouvrir ou clore une vente (sinon samedi 21 h 30)', 'Admin'],
-             ['Gangs', '/gsgang create… après validation du projet RP en ticket', 'Admin']],
+             ['Gangs', '/gsgang create… après validation du projet RP en ticket', 'Super-admin']],
             [38 * G.mm, 120 * G.mm, 22 * G.mm], font=8.2)]
     s += [Paragraph('Un point mal placé (transformateur, ring, vendeur, PNJ…) : F11 → Monde et lieux → <b>Déplacer / retirer un point</b> (filtre par ressource ; '
                     'super-admin : retirer du jeu, réversible). Points de métier : menu dédié. Tout est gardé aux mises à jour.', SMALL)]
@@ -125,6 +126,7 @@ def build():
              ['Appli staff installable (V12.63)', 'En https : bouton « 📲 Installer l\'appli » (PC Chrome / Edge, Android) ou Partager → « Sur l\'écran d\'accueil » (iPhone). Icône au logo RoadLine. Pas de site à part : le VPS la sert.'],
              ['Mises en scène (V12.65, admin et plus)', 'F11 → joueur → Mises en scène. Sanctions : enlèvement (expulsion), relâché dans le désert (sans liquide ni vêtements, pas d\'expulsion), arrestation PNJ (+ interrogatoire : ses réponses arrivent chez toi), transfert en fourgon vers Bolingbroke (attaquable, annonce Weazel au choix). Ambiance sans sanction : hélico, foule de curieux, appel masqué (ton texte), chien errant, alcoolo collant.'],
              ['Rangs des fonctions fun (V12.65)', 'Helpers et modérateurs : modération seulement. Admins : arrestation PNJ (+ interrogatoire), appel masqué, foule de curieux, rassemblements, fait divers, effets légers sur soi (vision de nuit / thermique, feux d\'artifice, confettis). Super-admins et fondateur : tout le reste (enlèvement, désert, transfert, hélico, chien, alcoolo, chasse au trésor, double XP, météo spéciale, effets fun, peds et animaux).'],
+             ['Mapping et réglages (V12.65)', 'Super-admins et fondateur seulement : tout F11 → Monde et lieux (décor, points, gangs, portes, tombes, courses sur mesure, concessions), /gsgang create, /territoire, /quartierforme, /meubleregle, /plaque, /doorlock. Les admins gardent : mettre un joueur dans un gang ou un métier, Mort RP.'],
              ['Outils staff (V12.65)', 'F11 → Gérer mes favoris (6 actions épinglées). /sc message = chat staff, aussi dans l\'appli (tableau de bord). Appli : incidents de la soirée sur la carte, événements programmés (lieu de la liste, heure du serveur). Ban définitif (sauf fondateur) = 24 h en attendant qu\'un AUTRE admin valide (F11 → Bans définitifs à valider, ou appli).'],
              ['Lives fluides (V12.64)', 'Images réduites chez le joueur filmé (960 px, WebP) et flux continu tant qu\'une fenêtre est ouverte : ≈ 2 à 3 images/s (compteur « img/s »). Personne n\'est filmé sans fenêtre ouverte. screenshot-basic ne travaille plus en permanence chez chaque joueur (FPS gagnés pour tous).'],
              ['Drone de surveillance (V12.64, police)', 'En service : F4 → Drone de surveillance, ou /drone. Portée 260 m, 4 min, vision thermique ; [G] marque un suspect (collègues en service : blip 60 s, jamais le nom). Drone de gang : objet du marché noir (gangs, pas les recrues), 140 m, 2 min, abattable, repérable au radar. Journal staff : décollage, abattu, suspect marqué.'],
@@ -170,11 +172,11 @@ def build():
              ['Concessions', 'V12.40 : F11 → Monde et lieux → Concessions : véhicules d\'exposition (admin+) : place-toi, « Exposer un véhicule ICI », puis « Départ des essais ICI » sur la route. Les joueurs essaient 2 min et achètent ; le vendeur en service change le modèle.'],
              ['Courses sur mesure', 'V12.40 : F11 → Courses de rue sur mesure : points posés à ta position (30 m mini), 3 à 30 points, éphémère (1 à 168 h) ou permanente.'],
              ['Portes verrouillées', 'V12.40 : F11 → Portes verrouillées : ouvre /doorlock (ox_doorlock). Groupes : police + sheriff (cellules, commissariat), ambulance, mechanic, cardealer, le gang pour son QG.'],
-             ['Territoires', 'V12.40 : visibles des seuls membres de gang ; niveaux 0-3 selon l\'influence, 3 territoires max par gang ; /territoire id -3..3 (admin) ajoute un bonus (perdu au redémarrage).'],
+             ['Territoires', 'V12.40 : visibles des seuls membres de gang ; niveaux 0-3 selon l\'influence, 3 territoires max par gang ; /territoire id -3..3 (super-admin) ajoute un bonus (perdu au redémarrage).'],
              ['Mobilier', 'V12.42 : bancs, chaises, lits, matelas, fauteuil roulant posés au F11 (ou de la ville) : Alt → S\'asseoir / S\'allonger / Rouler. Mauvaise hauteur : pendant la pose PgUp/PgDn et flèches, la ligne à recopier dans Config.Furniture (gs_furniture) s\'affiche en F8.'],
              ['Boutique et RoadCoins', 'V12.41 : /boutique = vitrine en jeu. Test console : gsstore_deliver TEST-1 roadcoins_500 <id fivem du joueur> (crédit immédiat). Remboursement : gsstore_revoke TEST-1. Jamais de commande boutique en jeu (refusée même admin).'],
              ['Base injoignable', 'V12.47 : console « [oxmysql] Unable to establish a connection to the database » (ECONNRESET) sur le PC : REPARER-BDD.bat (redémarre MariaDB, explique la cause, la relance seule si elle plante, relance le serveur).'],
-             ['Forme des territoires', 'V12.56 : /quartierforme <quartier> <angle 0-90> [taille 40-200 m] (admin) : tourne les cases pour suivre les rues (carte des gangs), gardé au redémarrage. Ex. /quartierforme canals 37'],
+             ['Forme des territoires', 'V12.56 : /quartierforme <quartier> <angle 0-90> [taille 40-200 m] (super-admin) : tourne les cases pour suivre les rues (carte des gangs), gardé au redémarrage. Ex. /quartierforme canals 37'],
              ['Prison : musculation', 'V12.53 : Pompes, Abdos, Haltères, Tractions dans la cour (détenus). Mal placés : F11 → Déplacer un point (gs_police).'],
              ['Arrivée protégée', 'V12.50 : 30 s fantôme à la connexion et après une réapparition ; points d\'apparition = zones sans coups ni tirs (Config.SpawnProtection dans gs_onboarding). Un troll qui frappe ailleurs : sanction normale.'],
              ['Voix', 'V12.51 : portées 2 / 6 / 14 m (gs_radio, Config.VoiceRanges). Spam de coups : 1 coup / 0,8 s. Un joueur qui n\'entend plus le jeu quand on parle : REPARER-SON.bat (réglage Windows Communications).'],

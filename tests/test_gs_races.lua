@@ -193,6 +193,9 @@ loadResource('gs_races', { R .. 'gs_races/server/custom.lua' })
 join(30, 'CID30', 'Admin Course', vec3(0.0, 0.0, 30.0))
 local okE, msgE = cb('gs_races:editor', 30, 'new', { label = 'Rallye du port', hours = 2 }); step()
 check('éditeur : réservé au staff', not okE)
+lv[30] = 3
+okE, msgE = cb('gs_races:editor', 30, 'new', { label = 'Rallye du port', hours = 2 }); step()
+check('V12.65 : éditeur refusé à un admin (super-admin et fondateur)', not okE and msgE:find('super%-admin'))
 lv[30] = 4
 okE = cb('gs_races:editor', 30, 'point'); step()
 check('éditeur : pas de point sans brouillon', not okE)

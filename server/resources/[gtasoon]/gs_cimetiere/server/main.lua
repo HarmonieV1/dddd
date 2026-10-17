@@ -112,7 +112,8 @@ end)
 --- Staff : 'list' | 'bury' { name, epitaph, here } | 'remove' { id } | 'player' { target, epitaph } (mort RP d'un joueur)
 lib.callback.register('gs_cimetiere:staff', function(src, action, data)
     if not Security:RateLimit(src, 'gs_cimetiere:staff', 10, 10000) then return false, 'Doucement.' end
-    if level(src) < Config.StaffLevel then return false, 'Réservé au staff (admin).' end
+    local need = (action == 'player' or action == 'list') and (Config.DeathLevel or Config.StaffLevel) or Config.StaffLevel
+    if level(src) < need then return false, need >= 4 and 'Réservé au super-admin et au fondateur.' or 'Réservé au staff (admin).' end
     data = type(data) == 'table' and data or {}
     local who = 'staff:' .. (Bridge:GetIdentifier(src) or tostring(src))
     if action == 'list' then return true, GlobalState.gsGraves or {} end

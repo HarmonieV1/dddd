@@ -2,7 +2,7 @@
 -- Concessions). Aucune coordonnée à écrire ici : le staff se place, choisit le modèle, et c'est enregistré (SQL).
 Config = {}
 
-Config.StaffLevel = 3        -- niveau staff gs_admin minimum pour poser / retirer (3 = admin)
+Config.StaffLevel = 4        -- niveau staff gs_admin minimum pour poser / retirer (V12.65 : 4 = super-admin et fondateur)
 Config.Range = 6.0           -- distance max au véhicule exposé pour l'essayer / l'acheter / voir le prix
 Config.StreamRange = 120.0   -- véhicules d'exposition créés (localement) à moins de X m du joueur
 Config.Commission = 0.10     -- part du prix versée à la caisse de la concession (métier) à chaque vente

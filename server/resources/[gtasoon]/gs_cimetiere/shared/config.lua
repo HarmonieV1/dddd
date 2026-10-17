@@ -15,6 +15,7 @@ Config.Flowers = { 'prop_mem_reef_01', 'prop_mem_candle_04' }
 Config.FlowerPrice = 25       -- liquide
 Config.FlowerHours = 72
 Config.FlowerCooldown = 600   -- un dépôt de fleurs par joueur et par tombe toutes les 10 min
-Config.StaffLevel = 3         -- niveau gs_admin pour poser / retirer une tombe
+Config.StaffLevel = 4         -- niveau gs_admin pour poser / retirer une tombe (V12.65 : super-admin et fondateur)
+Config.DeathLevel = 3         -- V12.65 : « Mort RP » d'un joueur (F11 → Joueurs) reste ouvert aux admins
 Config.Max = { name = 40, epitaph = 90 }
 Config.TextRange = 4.0        -- épitaphe lisible de près seulement (discret)

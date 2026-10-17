@@ -128,7 +128,7 @@ Placer n'importe quel objet du jeu, le déplacer, le tourner, le dupliquer, le s
   V12.36 : plus d'erreur « Error executing native 0xfcdff7b72d23a1ac » (HasEntityClearLosToEntity) au ciblage sur le build 3570 : la native est protégée par la retouche Qbox d'ox_target (METTRE-A-JOUR l'applique).
 
 ## V11 · Bêta ouverte
-- **Lieux de mémoire** (`gs_scars`, `Config.Plaques`) : `/plaque <texte>` pose une plaque là où tu es (admin et plus, 80 caractères) —
+- **Lieux de mémoire** (`gs_scars`, `Config.Plaques`) : `/plaque <texte>` pose une plaque là où tu es (V12.65 : super-admin et plus, 80 caractères) —
   mariage, concert, inauguration ; `/plaqueretirer` enlève la plus proche (5 m). Automatique après un casse banque / bijouterie et à la fin
   d'une cavale légendaire. 15 plaques maximum, 30 jours chacune.
 - **Panneau staff mobile** (appli) : codes GERER-OVH → 20, adresse https GERER-OVH → 21, détail docs/OVH.md § 5 → onglets Joueurs (toucher un joueur → geler, message, avertir, expulser),
@@ -197,7 +197,7 @@ Détail version par version : `docs/PATCH_SESSION_15-10.md` ; patch note de la s
 - **F11 → Joueurs → un joueur** : « Coincé : ramener au dernier endroit sûr » (helper et plus) ; « Mort RP : tombe au cimetière ».
 - **F11 → Monde et lieux** (super-admin et plus) : **Destination du vol de l'île** (journée North Yankton : alternance, Cayo ou North
   Yankton tous les jours ; joueurs sur place rapatriés), Courses (véhicule imposé), Gangs, Blips en double, Déplacer un point.
-- **Commandes** : `/quartierforme <quartier> <angle> [taille] [allongement]` (gangs), `/faussealerte <n°>` (police), `/voisins` (joueurs),
+- **Commandes** : `/quartierforme <quartier> <angle> [taille] [allongement]` (gangs, super-admin), `/faussealerte <n°>` (police), `/voisins` (joueurs),
   `/rapportstaff` (console : rapport de fin de soirée tout de suite).
 - **Outils Windows** : DIAGNOSTIC-MODS (abîmés, copies, maps en deux versions, voitures en double, textures ≥ 32 Mo ; O = corrections sûres
   réversibles), METTRE-A-JOUR-OVH (envoi incrémental, reprise, IPv4), GERER-OVH (verrou pendant une mise à jour).
@@ -222,3 +222,10 @@ Détail version par version : `docs/PATCH_SESSION_15-10.md` ; patch note de la s
   foule, rassemblements, fait divers, effets légers sur soi ; super-admins et fondateur = tout le reste (mises en scène poussées,
   chasse au trésor, bonus serveur, météo spéciale, effets fun, peds et animaux). Réglages : `Config.Powers`, `Config.Scenes.levels`,
   `Config.Scenes.stages[x].level`.
+- **Mapping et réglages de la ville = super-admin et fondateur** (V12.65, pour qu'un staff complet ne dérègle pas la ville) :
+  tout F11 → Monde et lieux (objets du décor, PNJ et objets posés, points, lieux publics, gangs, **portes verrouillées**, **tombes**,
+  **courses sur mesure**, **véhicules d'exposition**, mappings installés, vol de l'île), `/gsgang create|delete|planque`,
+  `/territoire`, `/quartierforme`, `/meubleregle`, `/plaque`, `/doorlock`. Vérifié côté serveur.
+  Restent aux admins : mettre un joueur dans un gang ou un métier (`/gsgang add|remove`, F11), « Mort RP », blips en double (lecture).
+  Réglages : `Config.StaffLevel` de gs_cimetiere / gs_showroom, `Config.Custom.staffLevel` (gs_races), `Config.Plaques.staffLevel`
+  (gs_scars), `permissions.cfg` (`command.doorlock`).

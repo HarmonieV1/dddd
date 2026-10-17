@@ -68,7 +68,7 @@ end
 lib.callback.register('gs_races:editor', function(src, action, data)
     if not Security:RateLimit(src, 'gs_races:editor', 20, 10000) then return false, 'Doucement.' end
     local C = Config.Custom
-    if level(src) < C.staffLevel then return false, 'Réservé au staff (admin).' end
+    if level(src) < C.staffLevel then return false, 'Réservé au super-admin et au fondateur.' end
     data = type(data) == 'table' and data or {}
     local d = Custom.drafts[src]
     if action == 'new' then
