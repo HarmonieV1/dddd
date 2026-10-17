@@ -669,7 +669,11 @@ end }
 function Admin.runEventAt(kind, at, src, data)
     data = data or {}
     local ev = need(Config.Events[kind], 'Événement inconnu.')
-    if ev.hunt then data.at = data.at or at return Admin.startHunt(tonumber(src) or 0, ev, data) end -- V12.63 : chasse au trésor (server/scenes.lua)
+    if ev.hunt then -- V12.63 : chasse au trésor (server/scenes.lua) ; V12.65 : super-admin et fondateur
+        if (tonumber(src) or 0) ~= 0 then need(Admin.level(src) >= 4, 'Chasse au trésor : réservée aux super-admins et au fondateur.') end
+        data.at = data.at or at
+        return Admin.startHunt(tonumber(src) or 0, ev, data)
+    end
     local c = ev.at or at or GetEntityCoords(GetPlayerPed(src))
     local text = ev.text
     if ev.roadtrip then -- départ au premier point du carnet du mois (gs_roadbook)
@@ -703,10 +707,13 @@ Actions.announce = { level = 3, run = function(_, _, data)
     return 'Annonce envoyée'
 end }
 
-Actions.weather = { level = 3, run = function(_, _, data)
+Actions.weather = { level = 3, run = function(src, _, data)
     need(started('gs_weather'), 'gs_weather non démarré.')
     if data.event == 'stop' then exports.gs_weather:StopEvent() return 'Événement arrêté' end
-    if data.event then need(exports.gs_weather:StartEvent(data.event), 'Événement inconnu.') return 'Événement ' .. data.event end
+    if data.event then -- V12.65 : météo spéciale (neige, tempête…) réservée aux super-admins et au fondateur
+        need(Admin.level(src) >= 4, 'Météo spéciale : réservée aux super-admins et au fondateur.')
+        need(exports.gs_weather:StartEvent(data.event), 'Événement inconnu.') return 'Événement ' .. data.event
+    end
     need(exports.gs_weather:SetWeather(tostring(data.type), tonumber(data.minutes) or 30), 'Météo inconnue.')
     return 'Météo ' .. data.type
 end }

@@ -217,3 +217,7 @@ Détail version par version : `docs/PATCH_SESSION_15-10.md` ; patch note de la s
 - **Bans définitifs** : 24 h tout de suite, définitif après validation d'un AUTRE admin (F11 → Bans définitifs à valider, appli) ;
   fondateur sans validation. Réglages : `Config.StaffHub.banReview`.
 - **Événements programmés** (appli) et **incidents de la soirée** (appli → Carte).
+- **Rangs** (V12.65) : helpers et modérateurs = modération seulement ; admins = arrestation PNJ (+ interrogatoire), appel masqué,
+  foule, rassemblements, fait divers, effets légers sur soi ; super-admins et fondateur = tout le reste (mises en scène poussées,
+  chasse au trésor, bonus serveur, météo spéciale, effets fun, peds et animaux). Réglages : `Config.Powers`, `Config.Scenes.levels`,
+  `Config.Scenes.stages[x].level`.

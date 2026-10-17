@@ -217,7 +217,7 @@ function Web.handle(ip, body, reply, direct)
     if d.action == 'plan' or d.action == 'unplan' then
         if not Hub or (s.level or 2) < 3 then return reply({ ok = false, text = 'Réservé aux admins (rang 3 et plus).' }) end
         local okP, msg
-        if d.action == 'plan' then okP, msg = Hub.plan(d.kind, d.time, d.place, 'Web · ' .. s.who) else okP, msg = Hub.unplan(d.id) end
+        if d.action == 'plan' then okP, msg = Hub.plan(d.kind, d.time, d.place, 'Web · ' .. s.who, s.level) else okP, msg = Hub.unplan(d.id) end
         if okP then Admin.logRemote('Web · ' .. s.who, d.action == 'plan' and 'schedule' or 'unschedule', nil, msg) end
         return reply({ ok = okP == true, text = msg })
     end

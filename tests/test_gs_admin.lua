@@ -762,8 +762,9 @@ ok = cb('gs_admin:action', 2, 'kidnap', 40, { reason = 'Troll' }); step()
 check('enlèvement : un modo ne peut pas', not ok and not W.players[40].kicked)
 ok = cb('gs_admin:action', 8, 'kidnap', 40, { reason = '' }); step()
 check('enlèvement : motif obligatoire', not ok)
+check('V12.65 : enlèvement réservé aux super-admins (un admin ne peut pas)', not cb('gs_admin:action', 8, 'kidnap', 40, { reason = 'Troll en boucle' })); step()
 W.clientEvents = {}
-ok, msg = cb('gs_admin:action', 8, 'kidnap', 40, { reason = 'Troll en boucle' }); step()
+ok, msg = cb('gs_admin:action', 1, 'kidnap', 40, { reason = 'Troll en boucle' }); step()
 check('enlèvement : scène envoyée au joueur, expulsé à la fin (délai serveur), sans entité restante', ok and lastClientEvent('gs_admin:client:scene', 40) ~= nil
     and type(W.players[40].kicked) == 'string' and W.players[40].kicked:find('camionnette', 1, true) and Admin.scenes[40] == nil)
 ok = cb('gs_admin:action', 8, 'kidnap', 1, { reason = 'x' }); step()
@@ -782,13 +783,13 @@ check('arrestation PNJ : libéré devant le commissariat', #(W.players[41].pos -
 check('scène : fin signalée par un joueur sans scène = rien', cb('gs_admin:sceneDone', 4) == false)
 -- V12.65 · désert (sans liquide), transfert attaquable, interrogatoire, scènes d'ambiance
 join(42, 'CID42', 'Victime Trois', here); W.players[42].license = 'license:42'; W.players[42].money.cash = 730
-ok = cb('gs_admin:action', 8, 'desert', 42, { reason = 'Arnaque RP' }); step()
+ok = cb('gs_admin:action', 1, 'desert', 42, { reason = 'Arnaque RP' }); step()
 check('désert : scène jouée, argent liquide pris, pas d\'expulsion', ok and W.players[42].money.cash == 0 and not W.players[42].kicked and Admin.scenes[42] == nil)
 local realST = SetTimeout
 SetTimeout = function() end -- la scène reste en cours (délai serveur coupé)
 local flash
 provide('gs_social', { GetHandle = function() return 'vice_lucia' end, Newsroom = function(_, text) flash = text return true end })
-ok = cb('gs_admin:action', 8, 'transfer', 42, { minutes = 12, reason = 'Transfert', announce = true }); step()
+ok = cb('gs_admin:action', 1, 'transfer', 42, { minutes = 12, reason = 'Transfert', announce = true }); step()
 check('transfert : scène en cours, annonce Weazel', ok and Admin.scenes[42] and Admin.scenes[42].kind == 'transfer' and flash and flash:find('fourgon'))
 W.nextEntity = W.nextEntity + 1; local van = W.nextEntity; W.entities[van] = { type = 2, pos = here }
 W.nextEntity = W.nextEntity + 1; local drv = W.nextEntity; W.entities[drv] = { type = 1, pos = here, health = 200 }
@@ -820,15 +821,19 @@ step()
 check('ambiance : réservé aux admins', not cb('gs_admin:action', 2, 'stage', 41, { kind = 'heli' }))
 step()
 for _, k in ipairs({ 'heli', 'crowd', 'stray', 'drunk' }) do
-    ok = cb('gs_admin:action', 8, 'stage', 41, { kind = k }); step()
-    check('ambiance : ' .. k .. ' lancé', ok)
+    ok = cb('gs_admin:action', 1, 'stage', 41, { kind = k }); step()
+    check('ambiance : ' .. k .. ' lancé (super-admin)', ok)
 end
+check('V12.65 : hélico réservé aux super-admins', not cb('gs_admin:action', 8, 'stage', 41, { kind = 'heli' })); step()
+check('V12.65 : foule de curieux ouverte aux admins', cb('gs_admin:action', 8, 'stage', 41, { kind = 'crowd' })); step()
 
 Admin.onDuty[1], Admin.onDuty[8] = os.time(), os.time()
 ok = cb('gs_admin:action', 8, 'event', nil, { kind = 'hunt', prize = 4000 }); step()
 check('chasse au trésor : grosse prime réservée au super-admin', not ok and Admin.hunt == nil)
 W.clientEvents = {}
 ok, msg = cb('gs_admin:action', 8, 'event', nil, { kind = 'hunt', prize = 1200 }); step()
+check('V12.65 : chasse au trésor réservée aux super-admins (un admin ne peut pas)', not ok and Admin.hunt == nil)
+ok, msg = cb('gs_admin:action', 1, 'event', nil, { kind = 'hunt', prize = 1200 }); step()
 local hs = lastClientEvent('gs_admin:client:huntStart', 4)
 check('chasse au trésor : lancée, zone envoyée à tous (pas centrée sur la mallette)', ok and Admin.hunt and hs
     and #(vec3(hs.args[1].zone.x, hs.args[1].zone.y, 0.0) - vec3(Admin.hunt.at.x, Admin.hunt.at.y, 0.0)) > 1.0)
@@ -865,7 +870,8 @@ do
     okP = Hub.plan('carmeet', '21:30', 1, 'test')
     check('programmé : rassemblement au lieu choisi', okP and Hub.schedule[#Hub.schedule].place == Config.Web.places[1].label)
     check('programmé : heure invalide refusée', not Hub.plan('carmeet', '25:99', 1, 'test'))
-    check('programmé : météo (neige) sans lieu', Hub.plan('weather:snow', '06:00', nil, 'test'))
+    check('V12.65 : programmer la neige = super-admin', not Hub.plan('weather:snow', '06:00', nil, 'test', 3))
+    check('programmé : météo (neige) sans lieu', Hub.plan('weather:snow', '06:00', nil, 'test', 5))
     local snowId = Hub.schedule[#Hub.schedule].id
     check('programmé : annulation', Hub.unplan(snowId) and #Hub.schedule == 1)
     Hub.schedule[1].at = os.time() - 5

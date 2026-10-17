@@ -96,11 +96,12 @@ function Hub.kinds()
 end
 
 --- Programmer : kind, heure 'HH:MM' (heure du serveur, aujourd'hui ou demain), lieu (index de Config.Web.places)
-function Hub.plan(kind, hhmm, place, by)
+function Hub.plan(kind, hhmm, place, by, level)
     if #Hub.schedule >= (H.scheduleMax or 12) then return false, 'Trop d\'événements programmés.' end
     local isWeather = type(kind) == 'string' and kind:find('^weather:') ~= nil
     local ev = not isWeather and Config.Events and Config.Events[kind]
     if not isWeather and not ev then return false, 'Événement inconnu.' end
+    if (isWeather or (ev and ev.hunt)) and (tonumber(level) or 0) < 4 then return false, 'Météo spéciale et chasse au trésor : super-admins et fondateur.' end -- V12.65
     local h, m = tostring(hhmm or ''):match('^(%d%d?):(%d%d)$')
     h, m = tonumber(h), tonumber(m)
     if not h or h > 23 or m > 59 then return false, 'Heure au format HH:MM.' end

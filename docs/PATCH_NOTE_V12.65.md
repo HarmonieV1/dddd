@@ -23,6 +23,14 @@
 | **Événements programmés** | Appli → Tableau de bord | Un événement (rassemblement, concert, chasse au trésor…) à un lieu de la liste, ou une météo (neige, tempête…), à l'heure voulue (heure du serveur), même sans staff en jeu. |
 | **Double validation des bans définitifs** | Bannir (F11, F10, appli, hors ligne) | Un ban définitif posé par un admin ou un super-admin = 24 h tout de suite ; il devient définitif quand un AUTRE admin le valide (F11 → Bans définitifs à valider, ou appli). Refusé ou jamais validé : il reste à 24 h. Le fondateur n'a pas besoin de validation. |
 
+### Qui a droit à quoi (demande du fondateur)
+| Rang | Mises en scène, événements et effets fun (F11) |
+|---|---|
+| Helper, modérateur | Rien de tout ça : outils de modération seulement (noms, vol libre, invisible, invincible, TP au marqueur). |
+| Admin | Arrestation PNJ (+ interrogatoire), appel masqué, foule de curieux ; rassemblements, fait divers PNJ, rumeurs ; effets légers sur soi (vision de nuit / thermique, feux d'artifice, confettis). |
+| Super-admin, fondateur | Tout : enlèvement, désert, transfert, hélico, chien errant, alcoolo ; chasse au trésor, bonus serveur (double XP), météo spéciale (neige, tempête, Halloween) ; tous les effets fun et transformations (peds, animaux). |
+Vérifié côté serveur (même en contournant le menu) ; `/gsevent`, `/meteoevent` et `/halloween` passent au rang super-admin.
+
 ## 3. Pour le fondateur
 - Nouveaux fichiers : `gs_admin/server/staffhub.lua`, `gs_admin/web/src/staff/Hub.jsx`, `gs_wanted/server/testimony.lua`.
 - Réglages : `gs_admin` Config.Scenes (désert, interrogatoire, transfert, ambiance) et Config.StaffHub ; `gs_wanted` Config.Testimony ;

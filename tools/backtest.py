@@ -203,6 +203,7 @@ SESSIONS = [
         ('Relâché dans le désert : camionnette, jeté en plein désert en sous-vêtements, argent liquide perdu, PAS d\'expulsion ; sa tenue revient à la reconnexion', 'Staff', 2),
         ('Arrestation PNJ avec « Interrogatoire » coché : salle d\'interrogatoire, 3 questions, le joueur répond (ou se tait) ; ses réponses s\'affichent chez toi ; puis la cellule', 'Staff', 3),
         ('Transfert en fourgon (annoncé sur Weazel) : le joueur à l\'arrière d\'un fourgon qui roule vers Bolingbroke ; des amis tirent sur le conducteur ou détruisent le moteur → « fuis ! », portes ouvertes ; sinon isolement à l\'arrivée', '3+', 3),
+        ('Rangs : avec un compte ADMIN (pas super-admin) → F11 : pas d\'enlèvement, désert, transfert, hélico, chien, alcoolo, chasse au trésor, bonus serveur ni météo spéciale ; effets sur soi limités (vision, feux d\'artifice, confettis) ; un modérateur ne voit aucun effet fun ni peds / animaux', 'Staff', 3),
         ('F11 → Gérer mes favoris : épingler 2 actions (ex. Vol libre, Lives) → elles apparaissent en haut du F11 (⭐), toujours là après un redémarrage du jeu', 'Staff', 2),
         ('/sc Bonjour en jeu → visible des autres membres du staff ET dans l\'appli (Tableau de bord → Chat staff) ; message envoyé depuis l\'appli → visible en jeu', 'Staff', 3),
         ('Appli → Carte → « Incidents de la soirée » : tickets, joueurs à terre, alertes anti-triche en losanges colorés', 'Staff', 2),

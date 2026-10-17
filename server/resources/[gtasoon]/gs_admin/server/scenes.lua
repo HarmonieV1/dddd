@@ -75,13 +75,13 @@ end
 local Actions = Admin.actions
 
 -- V12.65 · Relâché dans le désert (sans argent liquide ni vêtements, pas d'expulsion)
-Actions.desert = { level = S.level or 3, target = true, sanction = true, run = function(src, target, data)
+Actions.desert = { level = (S.levels and S.levels.desert) or S.level or 3, target = true, sanction = true, run = function(src, target, data)
     startScene(src, target, 'desert', data)
     return 'Camionnette en route : relâché dans le désert, sans liquide ni vêtements'
 end }
 
 -- V12.65 · Transfert en fourgon vers Bolingbroke, attaquable (annonce Weazel optionnelle)
-Actions.transfer = { level = S.level or 3, target = true, sanction = true, run = function(src, target, data)
+Actions.transfer = { level = (S.levels and S.levels.transfer) or S.level or 3, target = true, sanction = true, run = function(src, target, data)
     local minutes = tonumber(data.minutes) or S.transfer.minutes
     need(minutes == math.floor(minutes) and minutes >= 1 and minutes <= Config.Jail.maxMinutes, ('Durée : 1 à %d min.'):format(Config.Jail.maxMinutes))
     local reason = startScene(src, target, 'transfer', data, minutes)
@@ -137,6 +137,7 @@ Admin.endStage = endStage
 Actions.stage = { level = S.level or 3, target = true, run = function(src, target, data)
     local kind = type(data) == 'table' and data.kind or nil
     local cfg = need(S.stages and S.stages[kind], 'Mise en scène inconnue.')
+    need(Admin.level(src) >= (cfg.level or 4), 'Réservé aux super-admins et au fondateur.') -- V12.65 : niveau par scène
     need(not Admin.scenes[target], 'Une mise en scène est déjà en cours sur ce joueur.')
     local text
     if kind == 'call' then text = need(Security:Sanitize(data.text, 300), 'Écris ce que dit la voix au téléphone.') end
@@ -156,13 +157,13 @@ lib.callback.register('gs_admin:stageDone', function(src)
     return true
 end)
 
-Actions.kidnap = { level = S.level or 3, target = true, sanction = true, run = function(src, target, data)
+Actions.kidnap = { level = (S.levels and S.levels.kidnap) or S.level or 3, target = true, sanction = true, run = function(src, target, data)
     local reason = startScene(src, target, 'kidnap', data)
     Admin.publishSanction('Expulsion', nameOf(target), reason)
     return 'Camionnette en route : expulsion à la fin de la scène'
 end }
 
-Actions.npcarrest = { level = S.level or 3, target = true, sanction = true, run = function(src, target, data)
+Actions.npcarrest = { level = (S.levels and S.levels.npcarrest) or S.level or 3, target = true, sanction = true, run = function(src, target, data)
     local minutes = tonumber(data.minutes) or S.arrest.minutes
     need(minutes == math.floor(minutes) and minutes >= 1 and minutes <= Config.Jail.maxMinutes, ('Durée : 1 à %d min.'):format(Config.Jail.maxMinutes))
     local reason = startScene(src, target, 'arrest', data, minutes)

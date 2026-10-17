@@ -1012,7 +1012,7 @@ local function eventsMenu()
           onSelect = function() show('gs_staff_gather', 'Rassemblements', gather, 'gs_staff_events') end },
     }
     local hev = Config.Events.hunt
-    if hev then
+    if hev and info.level >= 4 then -- V12.65 : super-admin et fondateur
         options[#options + 1] = { title = hev.label, icon = hev.icon, description = ('Cache une mallette ICI : zone de %d m pour tous, prime au premier qui la trouve'):format(math.floor(hev.radius)),
             onSelect = function()
                 local H = Config.Hunt or {}
@@ -1030,9 +1030,9 @@ local function eventsMenu()
         end }
     end
     bonus[#bonus + 1] = { title = 'Arrêter le bonus en cours', icon = 'stop', onSelect = function() ExecuteCommand('gsevent stop') end }
+    if info.level >= 4 then -- V12.65 : bonus serveur et météo spéciale = super-admin et fondateur
     options[#options + 1] = { title = 'Bonus serveur', icon = 'star', arrow = true, description = 'Double XP, soirée chanceuse',
         onSelect = function() show('gs_staff_bonus', 'Bonus serveur', bonus, 'gs_staff_events') end }
-    if info.level >= 3 then
         options[#options + 1] = { title = 'Météo et saisons', icon = 'cloud-bolt', arrow = true,
             description = 'Neige, tempête, canicule, brouillard ; Halloween', onSelect = function()
                 show('gs_staff_weather', 'Météo et saisons', {
@@ -1048,6 +1048,8 @@ local function eventsMenu()
                     { title = 'Halloween : automatique (selon la date)', icon = 'calendar', onSelect = function() ExecuteCommand('halloween auto') end },
                 }, 'gs_staff_events')
             end }
+    end
+    if info.level >= 3 then
         options[#options + 1] = { title = 'Police : fait divers PNJ', icon = 'magnifying-glass', arrow = true, -- V10
             description = 'Cambriolage, corps retrouvé, délit de fuite, vandalisme : la police en service est prévenue', onSelect = function()
                 show('gs_staff_fd', 'Fait divers PNJ', {
@@ -1124,8 +1126,15 @@ local function playerMenu(p)
     -- V12.63 · Mises en scène (admin et plus) : sanction appliquée par le serveur à la fin de la scène
     add(Config.Scenes and Config.Scenes.level or 3, { title = 'Mises en scène', icon = 'clapperboard', arrow = true,
         description = 'Enlèvement, désert, arrestation (+ interrogatoire), transfert attaquable, et scènes d\'ambiance sans sanction', onSelect = function()
-            show('gs_staff_scenes', 'Mises en scène · ' .. p.name, {
-                { title = 'Enlèvement en camionnette', icon = 'van-shuttle', iconColor = '#ff4d6d',
+            -- V12.65 : chaque mise en scène a son rang (Config.Scenes.levels / stages[x].level) ; on ne montre que celles permises
+            local SL, ST = Config.Scenes.levels or {}, Config.Scenes.stages or {}
+            local function allowed(list)
+                local out = {}
+                for _, o in ipairs(list) do if info.level >= (o._lv or 3) then o._lv = nil out[#out + 1] = o end end
+                return out
+            end
+            show('gs_staff_scenes', 'Mises en scène · ' .. p.name, allowed({
+                { _lv = SL.kidnap or 4, title = 'Enlèvement en camionnette', icon = 'van-shuttle', iconColor = '#ff4d6d',
                   description = 'Une camionnette l\'embarque, écran noir, puis EXPULSION (motif publié comme une expulsion)', onSelect = function()
                     local r = lib.inputDialog('Enlèvement : ' .. p.name, { { type = 'input', label = 'Motif de l\'expulsion (publié)', required = true, max = 200 } })
                     if not r then return end
@@ -1133,14 +1142,14 @@ local function playerMenu(p)
                     notify(act('kidnap', p.id, { reason = r[1] }))
                 end },
                 -- V12.65 · version douce : relâché dans le désert, sans argent liquide ni vêtements (n° 295)
-                { title = 'Relâché dans le désert', icon = 'sun', iconColor = '#ffb020',
+                { _lv = SL.desert or 4, title = 'Relâché dans le désert', icon = 'sun', iconColor = '#ffb020',
                   description = 'Même camionnette, mais jeté en plein désert, SANS son argent liquide et en sous-vêtements (pas d\'expulsion)', onSelect = function()
                     local r = lib.inputDialog('Désert : ' .. p.name, { { type = 'input', label = 'Motif (journal staff)', required = true, max = 200 } })
                     if not r then return end
                     if lib.alertDialog({ header = 'Relâcher ' .. p.name .. ' dans le désert ?', content = ('Il perd **tout son argent liquide** et ses vêtements.\n**Motif** : %s'):format(r[1]), centered = true, cancel = true }) ~= 'confirm' then return end
                     notify(act('desert', p.id, { reason = r[1] }))
                 end },
-                { title = 'Arrestation par un policier PNJ', icon = 'handcuffs', iconColor = '#5aa0ff',
+                { _lv = SL.npcarrest or 3, title = 'Arrestation par un policier PNJ', icon = 'handcuffs', iconColor = '#5aa0ff',
                   description = 'Plaqué, menotté, (interrogatoire), puis en cellule à Mission Row (isolement)', onSelect = function()
                     local r = lib.inputDialog('Arrestation : ' .. p.name, {
                         { type = 'number', label = 'Minutes de cellule', default = (Config.Scenes and Config.Scenes.arrest.minutes) or 5, min = 1, max = Config.Jail.maxMinutes, required = true },
@@ -1151,7 +1160,7 @@ local function playerMenu(p)
                     notify(act('npcarrest', p.id, { minutes = math.floor(tonumber(r[1]) or 5), reason = r[2], interrogation = r[3] == true }))
                 end },
                 -- V12.65 · transfert attaquable vers Bolingbroke (n° 294)
-                { title = 'Transfert en fourgon (attaquable)', icon = 'truck', iconColor = '#5aa0ff',
+                { _lv = SL.transfer or 4, title = 'Transfert en fourgon (attaquable)', icon = 'truck', iconColor = '#5aa0ff',
                   description = 'Fourgon de police de Mission Row à Bolingbroke ; arrêté en route = évadé, arrivé = isolement', onSelect = function()
                     local r = lib.inputDialog('Transfert : ' .. p.name, {
                         { type = 'number', label = 'Minutes d\'isolement à l\'arrivée', default = (Config.Scenes and Config.Scenes.transfer.minutes) or 10, min = 1, max = Config.Jail.maxMinutes, required = true },
@@ -1162,20 +1171,20 @@ local function playerMenu(p)
                     notify(act('transfer', p.id, { minutes = math.floor(tonumber(r[1]) or 10), reason = r[2], announce = r[3] == true }))
                 end },
                 -- V12.65 · Ambiance (sans sanction) : pimenter la scène plutôt que la couper
-                { title = 'Ambiance · Hélico de la police', icon = 'helicopter', description = '30 s au-dessus de lui, projecteur la nuit, puis il repart',
+                { _lv = (ST.heli or {}).level or 4, title = 'Ambiance · Hélico de la police', icon = 'helicopter', description = '30 s au-dessus de lui, projecteur la nuit, puis il repart',
                   onSelect = function() notify(act('stage', p.id, { kind = 'heli' })) end },
-                { title = 'Ambiance · Foule de curieux', icon = 'people-group', description = 'Des passants s\'arrêtent, filment, commentent (40 s)',
+                { _lv = (ST.crowd or {}).level or 4, title = 'Ambiance · Foule de curieux', icon = 'people-group', description = 'Des passants s\'arrêtent, filment, commentent (40 s)',
                   onSelect = function() notify(act('stage', p.id, { kind = 'crowd' })) end },
-                { title = 'Ambiance · Appel masqué', icon = 'phone', description = 'Son téléphone sonne : une voix dit ton texte (menace, info, rendez-vous…)',
+                { _lv = (ST.call or {}).level or 4, title = 'Ambiance · Appel masqué', icon = 'phone', description = 'Son téléphone sonne : une voix dit ton texte (menace, info, rendez-vous…)',
                   onSelect = function()
                     local r = lib.inputDialog('Appel masqué : ' .. p.name, { { type = 'textarea', label = 'Ce que dit la voix', required = true, max = 300 } })
                     if r then notify(act('stage', p.id, { kind = 'call', text = r[1] })) end
                   end },
-                { title = 'Ambiance · Chien errant', icon = 'dog', description = 'Un chien aboie et le colle pendant une minute',
+                { _lv = (ST.stray or {}).level or 4, title = 'Ambiance · Chien errant', icon = 'dog', description = 'Un chien aboie et le colle pendant une minute',
                   onSelect = function() notify(act('stage', p.id, { kind = 'stray' })) end },
-                { title = 'Ambiance · Alcoolo collant', icon = 'wine-bottle', description = 'Un ivrogne titube derrière lui et lui raconte sa vie (1 min)',
+                { _lv = (ST.drunk or {}).level or 4, title = 'Ambiance · Alcoolo collant', icon = 'wine-bottle', description = 'Un ivrogne titube derrière lui et lui raconte sa vie (1 min)',
                   onSelect = function() notify(act('stage', p.id, { kind = 'drunk' })) end },
-            }, 'gs_staff_player')
+            }), 'gs_staff_player')
         end })
     add(4, { title = 'Argent', icon = 'money-bill', arrow = true, onSelect = function() moneyMenu(p) end })
     add(4, { title = 'Items', icon = 'box-open', arrow = true, onSelect = function() itemsMenu(p) end })

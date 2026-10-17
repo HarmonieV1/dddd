@@ -52,7 +52,7 @@ lib.callback.register('gs_roadside:pumpkin', function(src, i)
     return Halloween.pumpkin(src, i)
 end)
 
-lib.addCommand('halloween', { help = 'Halloween sur la route : on / off / auto (staff)', restricted = 'group.admin',
+lib.addCommand('halloween', { help = 'Halloween sur la route : on / off / auto (staff)', restricted = 'group.superadmin', -- V12.65
     params = { { name = 'mode', type = 'string', help = 'on, off ou auto' } } }, function(src, args)
     if args.mode == 'on' then Halloween.forced = true elseif args.mode == 'off' then Halloween.forced = false else Halloween.forced = nil end
     Halloween.refresh()

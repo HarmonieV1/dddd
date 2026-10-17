@@ -19,36 +19,39 @@ Config.Shortcuts = {
     names = 'O',    -- Ctrl + O : noms et ID
 }
 -- Pouvoirs du menu rapide : niveau minimum. Tous exigent le mode staff (/staff ou 1re ligne du menu).
+-- V12.65 (fondateur) : les fonctions fun « sur moi » et les transformations sont réservées aux super-admins et au fondateur ;
+-- les admins gardent quelques effets légers (vision de nuit / thermique, feux d'artifice, confettis). Helpers et modérateurs : outils
+-- de modération seulement (noms, vol libre, invisible, invincible, TP au marqueur).
 Config.Powers = {
     names = 1,       -- noms + ID au-dessus des joueurs
     noclip = 2,      -- vol libre
     invisible = 2,
     godmode = 2,
-    animal = 2,      -- se transformer (Config.Animals)
+    animal = 4,      -- se transformer (Config.Animals)
     tpm = 2,         -- téléportation au marqueur
     -- Section « Fun » (staff et événements) : sur soi uniquement, jamais sur un joueur
-    fastrun = 3,     -- course rapide
-    superjump = 3,   -- super saut
-    stamina = 3,     -- endurance infinie
-    lowgravity = 3,  -- gravité lunaire (sur ton écran seulement)
+    fastrun = 4,     -- course rapide
+    superjump = 4,   -- super saut
+    stamina = 4,     -- endurance infinie
+    lowgravity = 4,  -- gravité lunaire (sur ton écran seulement)
     nightvision = 3, -- vision nocturne
     thermal = 3,     -- vision thermique
-    fastswim = 3,    -- nage rapide
+    fastswim = 4,    -- nage rapide
     -- V12.59 (backtest 15/10) : délires « sur moi » en plus, pour animer un événement
-    carspeed = 3,    -- super vitesse de la voiture que je conduis
-    carjump = 3,     -- voiture sauteuse (Espace en conduisant)
-    rainbow = 3,     -- voiture arc-en-ciel
-    drunk = 3,       -- caméra ivre
+    carspeed = 4,    -- super vitesse de la voiture que je conduis
+    carjump = 4,     -- voiture sauteuse (Espace en conduisant)
+    rainbow = 4,     -- voiture arc-en-ciel
+    drunk = 4,       -- caméra ivre
     -- V12.63 : effets d'un instant, à ma position, vus par les joueurs autour (animation d'événement)
     fireworks = 3,   -- feux d'artifice
     confetti = 3,    -- pluie de confettis
-    smoke = 3,       -- apparition dans un nuage de fumée
+    smoke = 4,       -- apparition dans un nuage de fumée
     -- V12.63 (2e série) : effets plus poussés, toujours sur moi / à ma position
-    teleportfx = 3,  -- téléportation « alien » (éclair vert)
-    vanish = 3,      -- désintégration (je disparais dans un éclat)
-    boom = 3,        -- souffle lumineux (sans dégâts)
-    carshield = 3,   -- ma voiture indestructible (celle que je conduis)
-    tyresmoke = 3,   -- fumée de pneus colorée sur ma voiture
+    teleportfx = 4,  -- téléportation « alien » (éclair vert)
+    vanish = 4,      -- désintégration (je disparais dans un éclat)
+    boom = 4,        -- souffle lumineux (sans dégâts)
+    carshield = 4,   -- ma voiture indestructible (celle que je conduis)
+    tyresmoke = 4,   -- fumée de pneus colorée sur ma voiture
 }
 
 Config.Animals = {
@@ -138,6 +141,9 @@ Config.Hunt = { prize = 1500, maxPrize = 5000, bigPrizeLevel = 4, model = 'prop_
 -- isolement dans une cellule du commissariat de Mission Row (mêmes cellules que la garde à vue de gs_police).
 Config.Scenes = {
     level = 3,
+    -- V12.65 (fondateur) : les mises en scène poussées pour les super-admins et le fondateur ; l'arrestation PNJ (et son
+    -- interrogatoire), l'appel masqué et la foule de curieux restent ouverts aux admins
+    levels = { kidnap = 4, desert = 4, transfer = 4, npcarrest = 3 },
     kidnap = { van = 'speedo', thug = 'g_m_m_chicold_01', maxSeconds = 55, -- burrito3 : remplacé par un mod importé au handling illisible (crash)
         -- V12.64 (fondateur : « qu'ils jettent bien le joueur plus loin ») : après le trajet, la camionnette le jette sur le bord
         -- d'une route isolée, à plus de `minDistance` m de l'enlèvement (il s'y reconnecte : Qbox garde la dernière position).
@@ -175,12 +181,12 @@ Config.Scenes = {
     -- V12.65 · Mises en scène d'AMBIANCE (sans sanction) : pimenter une scène plutôt que la couper (propositions 278, 280, 282,
     -- chien errant / alcoolique collant). Entités réseau (tout le monde les voit), supprimées par le serveur à la fin.
     stages = {
-        heli = { label = 'Hélico de la police', seconds = 30, model = 'polmav', pilot = 's_m_y_pilot_01', height = 45.0, radius = 40.0 },
-        crowd = { label = 'Foule de curieux', seconds = 40, count = 6,
+        heli = { label = 'Hélico de la police', level = 4, seconds = 30, model = 'polmav', pilot = 's_m_y_pilot_01', height = 45.0, radius = 40.0 },
+        crowd = { label = 'Foule de curieux', level = 3, seconds = 40, count = 6,
             models = { 'a_m_y_hipster_01', 'a_f_y_hipster_02', 'a_m_m_business_01', 'a_f_m_bevhills_01', 'a_m_y_skater_01', 'a_f_y_tourist_01', 'a_m_m_socenlat_01' } },
-        call = { label = 'Appel masqué', seconds = 12 },
-        stray = { label = 'Chien errant', seconds = 60, model = 'a_c_retriever' },
-        drunk = { label = 'Alcoolo collant', seconds = 60, model = 'a_m_o_tramp_01',
+        call = { label = 'Appel masqué', level = 3, seconds = 12 },
+        stray = { label = 'Chien errant', level = 4, seconds = 60, model = 'a_c_retriever' },
+        drunk = { label = 'Alcoolo collant', level = 4, seconds = 60, model = 'a_m_o_tramp_01',
             lines = { 'Eh toi ! T\'aurais pas une petite pièce ?', 'T\'as une bonne tête, toi… on est amis maintenant.', 'C\'est moi le roi de Vespucci, tu le savais ?',
                 'Attends-moi ! Je marche moins vite que toi…', 'Tu sens ça ? C\'est l\'odeur de la liberté… et du whisky.' } },
     },

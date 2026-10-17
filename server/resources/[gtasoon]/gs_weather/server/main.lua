@@ -154,7 +154,7 @@ end)
 lib.addCommand('meteoevent', {
     help = 'Lancer ou arrêter un événement météo (storm, heatwave, fog, stop)',
     params = { { name = 'id', type = 'string', help = 'storm | heatwave | fog | stop' } },
-    restricted = 'group.admin',
+    restricted = 'group.superadmin', -- V12.65 : météo spéciale réservée aux super-admins et au fondateur
 }, function(src, args)
     if args.id == 'stop' then
         Weather.endEvent(false)
