@@ -2,6 +2,8 @@
 
 # 📣 Mise à jour de la nuit du 16 octobre
 
+**🗺️ Gangs** : les quartiers réapparaissent sur la carte des membres de gang (gris clair = libre, à prendre ; couleur du gang = tenu).
+
 **🩸 Correctif important** : après la protection d'arrivée, on restait invincible (0 dégât). C'est réparé : les balles, les coups et la police IA font de nouveau mal.
 
 **🏋️ Salle de sport**

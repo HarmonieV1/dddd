@@ -184,6 +184,7 @@ SESSIONS = [
         ('Police IA : viser un agent à 1 ★, le frapper ou tirer → une étoile de plus ; 2 ★ = interpellation au taser ; 3 ★ = ils tirent ; accord conclu → plus d\'étoiles, les agents repartent', 'Staff', 3),
     ]),
     ('4q · V12.64 — Lives fluides, distributeur, pot-de-vin, drone, salle de sport (20 min)', [
+        ('Gangs : membre d\'un gang → Échap → carte : les 8 quartiers apparaissent (gris clair « libre, à prendre », couleur du gang s\'il est tenu) ; hors gang : rien', '1', 3),
         ('DÉGÂTS (correctif) : se connecter, attendre la fin de la protection d\'arrivée (30 s) → un autre joueur tire / frappe : les PV baissent ; police IA à 3 ★ : ses balles blessent ; mourir puis réapparaître → 30 s protégé, puis de nouveau vulnérable', '2', 3),
         ('Lives : F11 → Lives, 2 fenêtres ouvertes → l\'image bouge en continu, compteur « img/s » ≈ 2 à 3 dans la barre ; appli → Lives : pareil ; fenêtres fermées : plus aucune capture (personne n\'est filmé)', '2', 3),
         ('screenshot-basic modifié : une photo à l\'appareil argentique et une photo Vibe marchent toujours (pleine taille) ; la bodycam aussi', 'Staff', 3),

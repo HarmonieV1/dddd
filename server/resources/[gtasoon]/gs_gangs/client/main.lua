@@ -8,7 +8,7 @@ local stashZone
 
 -- Carte des territoires · V12.40 : visible SEULEMENT des membres d'un gang (les autres joueurs n'ont rien sur leur carte).
 -- Style épuré : quartier tenu = couleur du gang, discrète (le sien un peu plus marqué), au rayon effectif (il grandit avec
--- le niveau) ; quartier libre = pas de zone, juste un petit repère gris. Plus de grands disques blancs.
+-- le niveau) ; quartier libre = zone gris clair très transparente (V12.64) + petit repère gris. Plus de grands disques blancs.
 local lastState
 local function drawTerritories(state)
     lastState = state
@@ -19,13 +19,16 @@ local function drawTerritories(state)
         local s = state and state[id] or {}
         local mine = s.ownerId and s.ownerId == membership.gang
         local areas = {}
-        if s.owner then -- V12.56 : pâtés de maisons alignés sur les rues (plus de disque qui déborde)
+        -- V12.64 (backtest : « plus du tout les zones de gang, même en étant dans un gang ») : depuis le retrait des anciens gangs
+        -- par défaut (V12.63), tous les quartiers étaient libres, et un quartier libre ne dessinait rien. Les quartiers libres
+        -- sont maintenant dessinés aussi, en gris clair et très transparents : on voit où sont les quartiers à prendre.
+        do -- pâtés de maisons alignés sur les rues (V12.56), rectangle (V12.63)
             local angle, cell = s.angle or t.angle or 0.0, s.cell or t.cell or Config.Territory.cell or 90.0
-            for _, c in ipairs(Blocks.cells(t.center, s.radius or t.radius, angle, cell, s.aspect or t.aspect)) do -- V12.63 : rectangle
+            for _, c in ipairs(Blocks.cells(t.center, s.radius or t.radius, angle, cell, s.aspect or t.aspect)) do
                 local area = AddBlipForArea(c.x, c.y, c.z, cell, cell)
                 SetBlipRotation(area, math.floor(angle + 0.5))
-                SetBlipColour(area, s.color or 4)
-                SetBlipAlpha(area, mine and 95 or math.min(85, 45 + (s.heat or 0) * 6))
+                SetBlipColour(area, s.owner and (s.color or 4) or 4)
+                SetBlipAlpha(area, not s.owner and 28 or (mine and 95 or math.min(85, 45 + (s.heat or 0) * 6)))
                 SetBlipAsShortRange(area, true)
                 SetBlipDisplay(area, 3)
                 areas[#areas + 1] = area
@@ -40,7 +43,7 @@ local function drawTerritories(state)
         SetBlipCategory(label, 10)
         BeginTextCommandSetBlipName('STRING')
         AddTextComponentSubstringPlayerName(s.owner and ('%s · %s%s'):format(t.label, s.owner, (s.level or 0) > 0 and (' · niv. %d'):format(s.level) or '')
-            or ('%s · libre'):format(t.label))
+            or ('%s · libre, à prendre'):format(t.label))
         EndTextCommandSetBlipName(label)
         blips[id] = { areas = areas, label = label }
     end
